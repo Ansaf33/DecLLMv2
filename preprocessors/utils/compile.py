@@ -10,6 +10,7 @@ from typing import List, Optional, Tuple, Dict
 from enum import Enum
 from logger import setup_logger
 import argparse
+import shutil
 
 
 
@@ -175,7 +176,13 @@ class Compiler:
     results = {}
     source_path = Path(source_file_path)
     output_dir = Path(output_dir_path)
-    output_dir.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Delete and recreate output directory to avoid conflicts
+    if output_dir.exists():
+      shutil.rmtree(output_dir)
+      
+      
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     for level in opt_list:
       output_name = f"{source_path.stem}_{level.name}"
@@ -277,7 +284,6 @@ class Compiler:
   
   
 def main():
-  """
   base_path = "/home/nsladmin/fyp-jaefar-ansaf/repos/ansaf/cgc-challenge-corpus/CROMU_00017"
   source_path = base_path + "/src"
   lib_path = base_path + "/lib"
@@ -337,10 +343,8 @@ def main():
   
   # Print results
   print(message)
-  """
   
-  
-  
-
 if __name__ == "__main__":
     main()
+    
+  
