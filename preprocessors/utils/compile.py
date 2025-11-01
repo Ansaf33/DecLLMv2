@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 from typing import List, Optional, Tuple, Dict
 from enum import Enum
-from logger import setup_logger
+from .logger import setup_logger
 import argparse
 import shutil
 
