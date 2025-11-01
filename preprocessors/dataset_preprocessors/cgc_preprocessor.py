@@ -157,24 +157,14 @@ def compile_cgc_corpus(
 
 
 def main():
-    import argparse
-    
-    parser = argparse.ArgumentParser(description="Compile CGC corpus into single binaries")
-    parser.add_argument("--corpus-root", default=DEFAULT_CORPUS_ROOT, help="Path to cgc-challenge-corpus root")
-    parser.add_argument("--output-root", default=DEFAULT_OUTPUT_DIR, help="Where to store compiled binaries")
-    parser.add_argument("--opt-level", choices=[l.name for l in OptimizationLevel], default=OptimizationLevel.O0.name)
-    parser.add_argument("--gcc", default="gcc", help="Path to gcc")
-    parser.add_argument("--gpp", default="g++", help="Path to g++")
-
-    args = parser.parse_args()
-    opt_enum = OptimizationLevel[args.opt_level]
+    opt = OptimizationLevel[config["compiler"]["optimization"]]
 
     results = compile_cgc_corpus(
-        corpus_root=args.corpus_root,
-        output_root=args.output_root,
-        opt_level=opt_enum,
-        gcc_path=args.gcc,
-        gpp_path=args.gpp,
+        corpus_root=DEFAULT_CORPUS_ROOT,
+        output_root=DEFAULT_OUTPUT_DIR,
+        opt_level=opt,
+        gcc_path=config["compiler"]["gcc_path"],
+        gpp_path=config["compiler"]["gpp_path"],
     )
 
     succ = sum(1 for r in results.values() if r[0])
