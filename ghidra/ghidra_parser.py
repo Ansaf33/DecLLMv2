@@ -112,7 +112,7 @@ def guess_binary_name(cpath: Path) -> str:
 
 def build_metadata(cpath: Path) -> Dict:
     return {
-        "binary_name": guess_binary_name(cpath),
+        "binary_name": cpath.stem,
         "opt_level": "O0",
         "compiler": "gcc",
         "arch": "x86_64",
@@ -171,8 +171,7 @@ def parse_and_enrich(cpath: Path) -> Dict:
                 "called_functions": called,
                 "calling_functions": callers,
                 "defined_in_file": defined_in_file,
-            },
-            "metadata": metadata_common,
+            }
         })
 
-    return {"header": header_text, "functions": functions_out}
+    return {"header": header_text, "functions": functions_out, "metadata": metadata_common}

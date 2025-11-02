@@ -281,25 +281,7 @@ class Disassembler:
     
     self.logger.info(f"Processed {len(results)}/{len(candidates)} binaries")
     return results
-  
-def main():
-  base_dir = "/home/nsladmin/fyp-jaefar-ansaf/repos/ansaf/DecLLM-v2/preprocessors/utils/output"
-  output_dir = "disassembled_binaries"
-  dis = Disassembler()
-  
-  dis.disassemble_binary_directory(
-    binary_dir=base_dir,
-    output_dir=output_dir,
-    recursive=True
-  )
-    
-    
-    
-    
-    
-if __name__ == "__main__":
-  main()
-    
+
   
   
   

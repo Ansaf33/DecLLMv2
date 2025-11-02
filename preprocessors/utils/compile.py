@@ -130,7 +130,7 @@ class Compiler:
         self.logger.info(success_message)
         return True, success_message
       else:
-        error_message = f"Compilation failed:\n{result.stderr}"
+        error_message = f"Compilation failed: {result.stderr}"
         self.logger.error(error_message)
         return False, error_message
       
@@ -282,69 +282,4 @@ class Compiler:
       
     return results
   
-  
-def main():
-  base_path = "/home/nsladmin/fyp-jaefar-ansaf/repos/ansaf/cgc-challenge-corpus/CROMU_00017"
-  source_path = base_path + "/src"
-  lib_path = base_path + "/lib"
-  libcgc_path = "/home/nsladmin/fyp-jaefar-ansaf/repos/ansaf/libcgc"
-  
-  include_dirs = [libcgc_path, base_path + "/include"]
-  
-  # Add lib to include dirs if it exists
-  if os.path.exists(lib_path):
-    include_dirs.append(lib_path)
-  
-  # We need to compile all source files together as one binary for CGC challenges
-  # CGC binaries are 32-bit and use custom libraries, so we need special flags
-  output_path = "output/CROMU_00017"
-  
-  compiler = Compiler()
-  
-  # Collect all source files in src directory
-  from pathlib import Path
-  src_files = list(Path(source_path).glob("*.c"))
-  
-  # Collect all lib files
-  lib_files = []
-  if os.path.exists(lib_path):
-    lib_files = list(Path(lib_path).glob("*.c"))
-  
-  # Compile for 32-bit CGC architecture with all necessary source files
-  extra_flags = [
-    "-m32",                        # Compile for 32-bit architecture
-    "-nostdlib",                   # Don't use standard library
-    "-fno-builtin",                # Don't use built-in functions
-    "-nostartfiles",               # Don't use standard startup files
-    "-fcommon",                    # Allow common/multiple definitions of globals (needed for CGC)
-    libcgc_path + "/libcgc.s",     # Include libcgc assembly
-    libcgc_path + "/maths.s"       # Include maths assembly
-  ]
-  
-  # Add all source files from src (except the main one we'll compile)
-  main_file = str(src_files[0])
-  for src_file in src_files[1:]:
-    extra_flags.append(str(src_file))
-  
-  # Add all lib files
-  for lib_file in lib_files:
-    extra_flags.append(str(lib_file))
-  
-  print(f"Compiling {len(src_files)} source files and {len(lib_files)} library files into single binary...")
-  
-  success, message = compiler.compile_source(
-          source_file_path=main_file,
-          output_file_path=output_path,
-          opt=OptimizationLevel.O0,
-          is_cpp=False,
-          include_dirs=include_dirs,
-          extra_flags=extra_flags
-    )
-  
-  # Print results
-  print(message)
-  
-if __name__ == "__main__":
-    main()
-    
   

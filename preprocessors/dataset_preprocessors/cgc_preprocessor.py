@@ -18,7 +18,7 @@ with open(CONFIG_PATH, "r") as f:
     config = yaml.safe_load(f)
 
 DEFAULT_CORPUS_ROOT = config["paths"]["cgc_corpus_root"]
-DEFAULT_OUTPUT_DIR = config["paths"]["cgc_output_dir"]
+DEFAULT_OUTPUT_DIR = config["paths"]["cgc_compiled_dir"]
 DEFAULT_LIBCGC_PATH = config["paths"]["cgc_libcgc_path"]
 
 
@@ -139,6 +139,7 @@ def compile_cgc_corpus(
             extra_flags.append(str(s))
         for l in lib_files:
             extra_flags.append(str(l))
+
 
         logger.info(f"Compiling challenge {chal_name}: {len(src_files)} src files, {len(lib_files)} lib files")
 
