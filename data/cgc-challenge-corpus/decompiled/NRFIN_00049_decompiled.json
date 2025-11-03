@@ -1,0 +1,205 @@
+{
+    "file": "NRFIN_00049",
+    "decompiled_code": {
+        "dfa.c": [
+            {
+                "func_name": "dfa_init",
+                "func_c_signature": "void dfa_init(undefined4 *param_1)",
+                "decompiled_code": "void dfa_init(undefined4 *param_1) {\n  uint local_14;\n  uint local_10;\n  \n  for (local_10 = 0; local_10 < 0xff; local_10 = local_10 + 1) {\n    for (local_14 = 0; local_14 < 0x100; local_14 = local_14 + 1) {\n      *(undefined *)((int)param_1 + local_14 + local_10 * 0x108 + 0x10) = 0xff;\n    }\n    param_1[local_10 * 0x42 + 2] = 0;\n    param_1[local_10 * 0x42 + 3] = 0;\n  }\n  bitset_init(param_1 + 0x41c0,0xff);\n  *param_1 = 0;\n  param_1[1] = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dfa_init",
+                        "bitset_init"
+                    ],
+                    "calling_functions": [
+                        "dfa_init",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00049_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dfa_reset",
+                "func_c_signature": "void dfa_reset(int param_1)",
+                "decompiled_code": "void dfa_reset(int param_1) {\n  *(int *)(param_1 + 4) = param_1 + 8;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dfa_reset"
+                    ],
+                    "calling_functions": [
+                        "dfa_reset",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00049_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dfa_update_onmatch",
+                "func_c_signature": "undefined ** dfa_update_onmatch(int param_1,undefined4 param_2,undefined **param_3)",
+                "decompiled_code": "undefined ** dfa_update_onmatch(int param_1,undefined4 param_2,undefined **param_3) {\n  undefined **ppuVar1;\n  uint local_8;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  for (local_8 = 0; local_8 < 0xff; local_8 = local_8 + 1) {\n    ppuVar1 = *(undefined ***)(local_8 * 0x108 + param_1 + 8);\n    if (ppuVar1 != (undefined **)0x0) {\n      *(undefined4 *)(local_8 * 0x108 + param_1 + 8) = param_2;\n      *(undefined ***)(local_8 * 0x108 + param_1 + 0xc) = param_3;\n      ppuVar1 = param_3;\n    }\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dfa_update_onmatch"
+                    ],
+                    "calling_functions": [
+                        "dfa_update_onmatch",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00049_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_dfa",
+                "func_c_signature": "undefined4 validate_dfa(int param_1,byte param_2)",
+                "decompiled_code": "undefined4 validate_dfa(int param_1,byte param_2) {\n  byte bVar1;\n  uint local_c;\n  uint local_8;\n  \n  local_8 = 0;\n  do {\n    if (param_2 <= local_8) {\n      return 0;\n    }\n    for (local_c = 0; local_c < 0x100; local_c = local_c + 1) {\n      bVar1 = *(byte *)(local_c + param_1 + local_8 * 0x108 + 0x10);\n      if ((bVar1 != 0xff) && (param_2 < bVar1)) {\n        return 0xffffffff;\n      }\n    }\n    local_8 = local_8 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_dfa"
+                    ],
+                    "calling_functions": [
+                        "validate_dfa",
+                        "dfa_parse_desc"
+                    ],
+                    "defined_in_file": "NRFIN_00049_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dfa_parse_desc",
+                "func_c_signature": "undefined4 dfa_parse_desc(undefined4 *param_1,char *param_2,undefined4 param_3,undefined4 param_4)",
+                "decompiled_code": "undefined4 dfa_parse_desc(undefined4 *param_1,char *param_2,undefined4 param_3,undefined4 param_4) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 uVar3;\n  uint local_14;\n  char *local_10;\n  \n  iVar1 = strncmp(param_2,\"state\",5);\n  if (iVar1 == 0) {\n    if (param_1[1] == 0) {\n      puVar2 = param_1 + 2;\n    }\n    else {\n      puVar2 = (undefined4 *)(param_1[1] + 0x108);\n    }\n    param_1[1] = puVar2;\n    iVar1 = strcmp(param_2 + 6,\"accept\");\n    if ((iVar1 == 0) && ((undefined4 *)param_1[1] != param_1 + 2)) {\n      *(undefined4 *)param_1[1] = param_3;\n      *(undefined4 *)(param_1[1] + 4) = param_4;\n      uVar3 = bitset_set_bit(param_1 + 0x41c0,\n                             (param_1[1] - (int)(param_1 + 2) >> 3) * 0x3e0f83e1 & 0xff);\n    }\n    else {\n      uVar3 = 0;\n    }\n  }\n  else {\n    iVar1 = strcmp(param_2,\"done\");\n    if (iVar1 == 0) {\n      iVar1 = validate_dfa(param_1,(param_1[1] - (int)(param_1 + 2) >> 3) * 0x3e0f83e1 + 1U & 0xff);\n      if (iVar1 == 0) {\n        *param_1 = 1;\n        param_1[1] = param_1 + 2;\n        uVar3 = 1;\n      }\n      else {\n        uVar3 = 0xffffffff;\n      }\n    }\n    else {\n      iVar1 = strncmp(param_2,\"transition \",0xb);\n      if (iVar1 == 0) {\n        param_2[10] = '\\0';\n        local_10 = strrchr(param_2 + 0xb,0x20);\n        if (local_10 == (char *)0x0) {\n          uVar3 = 0xffffffff;\n        }\n        else {\n          iVar1 = strtou(local_10 + 1,10,&local_14);\n          if ((iVar1 == -1) || (param_2 = param_2 + 0xb, 0xff < local_14)) {\n            uVar3 = 0xffffffff;\n          }\n          else {\n            while (param_2 != local_10) {\n              *(char *)(param_1[1] + 8 + (int)*param_2) = (char)local_14;\n              param_2 = param_2 + 1;\n            }\n            uVar3 = 0;\n          }\n        }\n      }\n      else {\n        uVar3 = 0xffffffff;\n      }\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dfa_parse_desc",
+                        "strncmp",
+                        "strcmp",
+                        "bitset_set_bit",
+                        "validate_dfa",
+                        "strrchr",
+                        "strtou"
+                    ],
+                    "calling_functions": [
+                        "dfa_parse_desc",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00049_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dfa_process_input",
+                "func_c_signature": "undefined4 dfa_process_input(int *param_1,char param_2)",
+                "decompiled_code": "undefined4 dfa_process_input(int *param_1,char param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  \n  if (*param_1 == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else if (*(char *)(param_1[1] + 8 + (int)param_2) == -1) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    param_1[1] = (int)(param_1 + *(char *)(param_1[1] + 8 + (int)param_2) * 0x42 + 2);\n    iVar2 = bitset_get_bit(param_1 + 0x41c0,\n                           (param_1[1] - (int)(param_1 + 2) >> 3) * 0x3e0f83e1 & 0xff);\n    if (iVar2 == 1) {\n      if (*(int *)param_1[1] != 0) {\n        (**(code **)param_1[1])();\n      }\n      uVar1 = 1;\n    }\n    else {\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dfa_process_input",
+                        "bitset_get_bit"
+                    ],
+                    "calling_functions": [
+                        "dfa_process_input",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00049_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dfa_give_example",
+                "func_c_signature": "undefined4 dfa_give_example(int *param_1,int param_2,int param_3)",
+                "decompiled_code": "undefined4 dfa_give_example(int *param_1,int param_2,int param_3) {\n  int iVar1;\n  bool bVar2;\n  int iVar3;\n  char local_25;\n  uint local_24;\n  uint local_20;\n  uint local_1c;\n  uint local_18;\n  undefined4 local_10;\n  \n  local_10 = 0xffffffff;\n  bVar2 = false;\n  iVar1 = param_1[1];\n  local_18 = 0;\n  param_1[1] = (int)(param_1 + 2);\n  if (*param_1 != 0) {\n    for (local_1c = 0; local_1c < 0xff; local_1c = local_1c + 1) {\n      iVar3 = bitset_get_bit(param_1 + 0x41c0,local_1c);\n      if (iVar3 == 1) {\n        bVar2 = true;\n        break;\n      }\n    }\n    if (bVar2) {\n      while ((local_18 < param_3 - 1U &&\n             (iVar3 = bitset_get_bit(param_1 + 0x41c0,\n                                     (param_1[1] - (int)(param_1 + 2) >> 3) * 0x3e0f83e1 & 0xff),\n             iVar3 == 0))) {\n        local_24 = 0;\n        for (local_1c = 0; local_1c < 0x100; local_1c = local_1c + 1) {\n          if (*(char *)(local_1c + param_1[1] + 8) != -1) {\n            local_24 = local_24 + 1;\n          }\n        }\n        if (local_24 == 0) goto LAB_000116a7;\n        local_25 = '\\0';\n        local_20 = rand();\n        local_20 = local_20 % local_24;\n        for (local_1c = 0; local_1c < 0x100; local_1c = local_1c + 1) {\n          if (*(char *)(local_1c + param_1[1] + 8) != -1) {\n            if (local_20 == 0) {\n              local_25 = (char)local_1c;\n              break;\n            }\n            local_20 = local_20 - 1;\n          }\n        }\n        if (local_25 == '\\0') goto LAB_000116a7;\n        *(char *)(param_2 + local_18) = local_25;\n        param_1[1] = (int)(param_1 + *(char *)(param_1[1] + 8 + (int)local_25) * 0x42 + 2);\n        local_18 = local_18 + 1;\n      }\n      *(undefined *)(local_18 + param_2) = 0;\n      iVar3 = bitset_get_bit(param_1 + 0x41c0,\n                             (param_1[1] - (int)(param_1 + 2) >> 3) * 0x3e0f83e1 & 0xff);\n      if (iVar3 == 1) {\n        local_10 = 0;\n      }\n    }\n  }\nLAB_000116a7:\n  param_1[1] = iVar1;\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dfa_give_example",
+                        "bitset_get_bit",
+                        "rand"
+                    ],
+                    "calling_functions": [
+                        "dfa_give_example",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00049_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "calculate_csum",
+                "func_c_signature": "uint calculate_csum(char *param_1)",
+                "decompiled_code": "uint calculate_csum(char *param_1) {\n  uint uVar1;\n  size_t sVar2;\n  uint local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  for (local_14 = 0; local_14 < 0x400; local_14 = local_14 + 1) {\n    uVar1 = get_flag_byte(local_14);\n    local_10 = local_10 ^ uVar1 & 0xff;\n  }\n  sVar2 = strlen(param_1);\n  for (local_14 = 0; local_14 < sVar2; local_14 = local_14 + 1) {\n    local_10 = local_10 ^ (int)param_1[local_14];\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "calculate_csum",
+                        "get_flag_byte",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "calculate_csum",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00049_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  bool bVar1;\n  int iVar2;\n  char *pcVar3;\n  undefined4 uVar4;\n  code *local_20;\n  int local_18;\n  char *local_14;\n  \n  bVar1 = true;\n  local_20 = default_onmatch;\n  dfa_init(&DAT_00020414);\n  do {\n    while( true ) {\n      while( true ) {\n        while( true ) {\n          while( true ) {\n            memset(&state,0,0x8392);\n            iVar2 = fread_until(&state,10,0x8392,stdin);\n            if (iVar2 == -1) {\n              return 0xffffffff;\n            }\n            pcVar3 = strchr(&state,10);\n            if (pcVar3 == (char *)0x0) {\n              return 0xffffffff;\n            }\n            *pcVar3 = '\\0';\n            iVar2 = strcmp(&state,\"quit\");\n            if (iVar2 == 0) {\n              return 0;\n            }\n            iVar2 = strcmp(&state,\"reset\");\n            if (iVar2 != 0) break;\n            printf(\"Please re-enter state machine\\n\");\n            dfa_init(&DAT_00020414);\n            bVar1 = true;\n          }\n          iVar2 = strcmp(&state,\"example\");\n          if (iVar2 != 0) break;\n          iVar2 = dfa_give_example(&DAT_00020414,&state,0x28);\n          if (iVar2 == 0) {\n            printf(\"Here\\'s an example: \\\"%s\\\"\\n\",&state);\n          }\n          else {\n            printf(\"Error, are you done initializing?\\n\");\n          }\n        }\n        iVar2 = strncmp(&state,\"onmatch \",8);\n        if (iVar2 == 0) break;\n        if (bVar1) {\n          local_18 = dfa_parse_desc(&DAT_00020414,&state,local_20,&state);\n          if (local_18 == -1) {\n            printf(\"Invalid\\n\");\n          }\n          else if (local_18 == 1) {\n            printf(\"Ok, matching input now\\n\");\n            bVar1 = false;\n          }\n        }\n        else {\n          dfa_reset(&DAT_00020414);\n          local_14 = &state;\n          while ((*local_14 != '\\0' &&\n                 (local_18 = dfa_process_input(&DAT_00020414,(int)*local_14), local_18 == 0))) {\n            local_14 = local_14 + 1;\n          }\n          if ((local_18 == 0) || (local_18 == -1)) {\n            printf(\"No match :( \\\"%s\\\"\\n\",&state);\n          }\n          else {\n            uVar4 = calculate_csum(&state);\n            printf(\"%x\\n\",uVar4);\n          }\n        }\n      }\n      iVar2 = strcmp(&DAT_00018088,\"default\");\n      if (iVar2 != 0) break;\n      local_20 = default_onmatch;\nLAB_00011ef3:\n      dfa_update_onmatch(&DAT_00020414,local_20,&state);\n      printf(\"Match action updated\\n\");\n    }\n    iVar2 = strcmp(&DAT_00018088,\"length\");\n    if (iVar2 == 0) {\n      local_20 = length_onmatch;\n      goto LAB_00011ef3;\n    }\n    iVar2 = strcmp(&DAT_00018088,\"xor\");\n    if (iVar2 == 0) {\n      local_20 = xor_onmatch;\n      goto LAB_00011ef3;\n    }\n    iVar2 = strcmp(&DAT_00018088,\"magic\");\n    if (iVar2 == 0) {\n      local_20 = magic_onmatch;\n      goto LAB_00011ef3;\n    }\n    printf(\"Unrecognized action\\n\");\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "dfa_init",
+                        "memset",
+                        "fread_until",
+                        "strchr",
+                        "strcmp",
+                        "printf",
+                        "dfa_give_example",
+                        "strncmp",
+                        "dfa_parse_desc",
+                        "dfa_reset",
+                        "dfa_process_input",
+                        "calculate_csum",
+                        "dfa_update_onmatch"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00049_decompiled.c"
+                }
+            }
+        ]
+    }
+}

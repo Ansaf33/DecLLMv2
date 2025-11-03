@@ -1,0 +1,177 @@
+{
+    "file": "paste",
+    "decompiled_code": {
+        "paste.c": [
+            {
+                "func_name": "collapse_escapes",
+                "func_c_signature": "undefined collapse_escapes(char *param_1)",
+                "decompiled_code": "undefined collapse_escapes(char *param_1) {\n  char cVar1;\n  int iVar2;\n  char *local_20;\n  char *local_10;\n  \n  delims = (char *)xstrdup(param_1);\n  local_20 = param_1;\n  local_10 = delims;\n  do {\n    while( true ) {\n      if (*local_20 == '\\0') {\n        delim_end = local_10;\n        return 0;\n      }\n      if (*local_20 == '\\\\') break;\n      *local_10 = *local_20;\n      local_20 = local_20 + 1;\n      local_10 = local_10 + 1;\n    }\n    cVar1 = local_20[1];\n    iVar2 = (int)cVar1;\n    if (iVar2 < 0x77) {\n      if (iVar2 < 0x5c) {\n        if (cVar1 == '\\0') {\n          delim_end = local_10;\n          return 1;\n        }\n        if (iVar2 != 0x30) goto switchD_00100410_caseD_5d;\n        *local_10 = '\\0';\n      }\n      else {\n        switch(iVar2) {\n        case 0x5c:\n          *local_10 = '\\\\';\n          break;\n        default:\n          goto switchD_00100410_caseD_5d;\n        case 0x62:\n          *local_10 = '\\b';\n          break;\n        case 0x66:\n          *local_10 = '\\f';\n          break;\n        case 0x6e:\n          *local_10 = '\\n';\n          break;\n        case 0x72:\n          *local_10 = '\\r';\n          break;\n        case 0x74:\n          *local_10 = '\\t';\n          break;\n        case 0x76:\n          *local_10 = '\\v';\n        }\n      }\n    }\n    else {\nswitchD_00100410_caseD_5d:\n      *local_10 = local_20[1];\n    }\n    local_10 = local_10 + 1;\n    local_20 = local_20 + 2;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "collapse_escapes",
+                        "xstrdup"
+                    ],
+                    "calling_functions": [
+                        "collapse_escapes",
+                        "main"
+                    ],
+                    "defined_in_file": "paste_decompiled.c"
+                }
+            },
+            {
+                "func_name": "xputchar",
+                "func_c_signature": "void xputchar(char param_1)",
+                "decompiled_code": "void xputchar(char param_1) {\n  int iVar1;\n  \n  iVar1 = putchar_unlocked((int)param_1);\n  if (iVar1 < 0) {\n    write_error();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "xputchar",
+                        "putchar_unlocked",
+                        "write_error"
+                    ],
+                    "calling_functions": [
+                        "xputchar",
+                        "paste_parallel",
+                        "paste_serial"
+                    ],
+                    "defined_in_file": "paste_decompiled.c"
+                }
+            },
+            {
+                "func_name": "paste_parallel",
+                "func_c_signature": "undefined paste_parallel(ulong param_1,long param_2)",
+                "decompiled_code": "undefined paste_parallel(ulong param_1,long param_2) {\n  bool bVar1;\n  bool bVar2;\n  char cVar3;\n  byte bVar4;\n  int iVar5;\n  void *__ptr;\n  void *__ptr_00;\n  undefined8 uVar6;\n  int *piVar7;\n  size_t sVar8;\n  undefined local_85;\n  uint local_80;\n  int local_7c;\n  ulong local_60;\n  char *local_58;\n  size_t local_50;\n  ulong local_48;\n  \n  local_85 = 1;\n  __ptr = (void *)xmalloc(param_1 + 2);\n  __ptr_00 = (void *)xnmalloc(param_1 + 1,8);\n  bVar1 = false;\n  for (local_60 = 0; local_60 < param_1; local_60 = local_60 + 1) {\n    cVar3 = streq(*(undefined8 *)(param_2 + local_60 * 8),&DAT_0010149c);\n    if (cVar3 == '\\0') {\n      uVar6 = rpl_fopen(*(undefined8 *)(param_2 + local_60 * 8),&DAT_0010149e);\n      *(undefined8 *)(local_60 * 8 + (long)__ptr_00) = uVar6;\n      if (*(long *)((long)__ptr_00 + local_60 * 8) == 0) {\n        uVar6 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_2 + local_60 * 8));\n        piVar7 = __errno_location();\n        error(1,*piVar7,&DAT_001014a0,uVar6);\n      }\n      iVar5 = fileno_unlocked(*(FILE **)((long)__ptr_00 + local_60 * 8));\n      if (iVar5 == 0) {\n        bVar1 = true;\n      }\n      fadvise(*(undefined8 *)((long)__ptr_00 + local_60 * 8),2);\n    }\n    else {\n      have_read_stdin = '\\x01';\n      *(long *)(local_60 * 8 + (long)__ptr_00) = _stdin;\n    }\n  }\n  if (!bVar1) goto LAB_00100afb;\n  if (have_read_stdin == '\\0') goto LAB_00100afb;\n  uVar6 = gettext(\"standard input is closed\");\n  error(1,0,uVar6);\n  do {\n    bVar1 = false;\n    local_58 = delims;\n    local_50 = 0;\n    local_48 = 0;\n    while ((local_48 < param_1 && (local_60 != 0))) {\n      bVar2 = false;\n      if (*(long *)((long)__ptr_00 + local_48 * 8) != 0) {\n        local_80 = getc_unlocked(*(FILE **)((long)__ptr_00 + local_48 * 8));\n        piVar7 = __errno_location();\n        local_7c = *piVar7;\n        if ((local_80 != 0xffffffff) && (local_50 != 0)) {\n          sVar8 = fwrite_unlocked(__ptr,1,local_50,_stdout);\n          if (local_50 != sVar8) {\n            write_error();\n          }\n          local_50 = 0;\n        }\n        while ((local_80 != 0xffffffff && (bVar2 = true, local_80 != line_delim))) {\n          xputchar((int)(char)local_80);\n          local_80 = getc_unlocked(*(FILE **)((long)__ptr_00 + local_48 * 8));\n          piVar7 = __errno_location();\n          local_7c = *piVar7;\n        }\n      }\n      if (bVar2) {\n        bVar1 = true;\n        if (param_1 == local_48 + 1) {\n          bVar4 = line_delim;\n          if (local_80 != 0xffffffff) {\n            bVar4 = (byte)local_80;\n          }\n          xputchar((int)(char)bVar4);\n        }\n        else {\n          if ((local_80 != line_delim) && (local_80 != 0xffffffff)) {\n            xputchar((int)(char)(byte)local_80);\n          }\n          if (*local_58 != '\\0') {\n            xputchar((int)*local_58);\n          }\n          local_58 = local_58 + 1;\n          if (local_58 == delim_end) {\n            local_58 = delims;\n          }\n        }\n      }\n      else {\n        if (*(long *)((long)__ptr_00 + local_48 * 8) != 0) {\n          iVar5 = ferror_unlocked(*(FILE **)((long)__ptr_00 + local_48 * 8));\n          if (iVar5 == 0) {\n            local_7c = 0;\n          }\n          if (*(long *)((long)__ptr_00 + local_48 * 8) == _stdin) {\n            clearerr_unlocked(*(FILE **)((long)__ptr_00 + local_48 * 8));\n          }\n          else {\n            iVar5 = rpl_fclose(*(undefined8 *)((long)__ptr_00 + local_48 * 8));\n            if ((iVar5 == -1) && (local_7c == 0)) {\n              piVar7 = __errno_location();\n              local_7c = *piVar7;\n            }\n          }\n          if (local_7c != 0) {\n            uVar6 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_2 + local_48 * 8));\n            error(0,local_7c,&DAT_001014a0,uVar6);\n            local_85 = 0;\n          }\n          *(undefined8 *)((long)__ptr_00 + local_48 * 8) = 0;\n          local_60 = local_60 - 1;\n        }\n        if (param_1 == local_48 + 1) {\n          if (bVar1) {\n            if (local_50 != 0) {\n              sVar8 = fwrite_unlocked(__ptr,1,local_50,_stdout);\n              if (local_50 != sVar8) {\n                write_error();\n              }\n              local_50 = 0;\n            }\n            xputchar((int)(char)line_delim);\n          }\n        }\n        else {\n          if (*local_58 != '\\0') {\n            *(char *)((long)__ptr + local_50) = *local_58;\n            local_50 = local_50 + 1;\n          }\n          local_58 = local_58 + 1;\n          if (local_58 == delim_end) {\n            local_58 = delims;\n          }\n        }\n      }\n      local_48 = local_48 + 1;\n    }\nLAB_00100afb:\n  } while (local_60 != 0);\n  free(__ptr_00);\n  free(__ptr);\n  return local_85;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "paste_parallel",
+                        "xmalloc",
+                        "xnmalloc",
+                        "streq",
+                        "rpl_fopen",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "fileno_unlocked",
+                        "fadvise",
+                        "gettext",
+                        "getc_unlocked",
+                        "fwrite_unlocked",
+                        "write_error",
+                        "xputchar",
+                        "ferror_unlocked",
+                        "clearerr_unlocked",
+                        "rpl_fclose",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "paste_parallel"
+                    ],
+                    "defined_in_file": "paste_decompiled.c"
+                }
+            },
+            {
+                "func_name": "paste_serial",
+                "func_c_signature": "undefined paste_serial(long param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined paste_serial(long param_1,undefined8 *param_2) {\n  char cVar1;\n  uint uVar2;\n  int iVar3;\n  int *piVar4;\n  undefined8 uVar5;\n  undefined8 *local_68;\n  long local_60;\n  undefined local_56;\n  uint local_54;\n  int local_50;\n  char *local_38;\n  FILE *local_30;\n  \n  local_56 = 1;\n  local_68 = param_2;\n  local_60 = param_1;\n  do {\n    if (local_60 == 0) {\n      return local_56;\n    }\n    cVar1 = streq(*local_68,&DAT_0010149c);\n    if (cVar1 == '\\0') {\n      local_30 = (FILE *)rpl_fopen(*local_68,&DAT_0010149e);\n      if (local_30 != (FILE *)0x0) {\n        fadvise(local_30,2);\n        goto LAB_00100c0f;\n      }\n      uVar5 = quotearg_n_style_colon(0,3,*local_68);\n      piVar4 = __errno_location();\n      error(0,*piVar4,&DAT_001014a0,uVar5);\n      local_56 = 0;\n    }\n    else {\n      have_read_stdin = 1;\n      local_30 = _stdin;\nLAB_00100c0f:\n      local_38 = delims;\n      local_54 = getc_unlocked(local_30);\n      piVar4 = __errno_location();\n      local_50 = *piVar4;\n      if (local_54 != 0xffffffff) {\n        while( true ) {\n          uVar2 = getc_unlocked(local_30);\n          if (uVar2 == 0xffffffff) break;\n          if (local_54 == line_delim) {\n            if (*local_38 != '\\0') {\n              xputchar((int)*local_38);\n            }\n            local_38 = local_38 + 1;\n            local_54 = uVar2;\n            if (local_38 == delim_end) {\n              local_38 = delims;\n            }\n          }\n          else {\n            xputchar((int)(char)local_54);\n            local_54 = uVar2;\n          }\n        }\n        piVar4 = __errno_location();\n        local_50 = *piVar4;\n        xputchar((int)(char)local_54);\n      }\n      if (local_54 != line_delim) {\n        xputchar((int)(char)line_delim);\n      }\n      iVar3 = ferror_unlocked(local_30);\n      if (iVar3 == 0) {\n        local_50 = 0;\n      }\n      if (cVar1 == '\\0') {\n        iVar3 = rpl_fclose(local_30);\n        if ((iVar3 != 0) && (local_50 == 0)) {\n          piVar4 = __errno_location();\n          local_50 = *piVar4;\n        }\n      }\n      else {\n        clearerr_unlocked(local_30);\n      }\n      if (local_50 != 0) {\n        uVar5 = quotearg_n_style_colon(0,3,*local_68);\n        error(0,local_50,&DAT_001014a0,uVar5);\n        local_56 = 0;\n      }\n    }\n    local_60 = local_60 + -1;\n    local_68 = local_68 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "paste_serial",
+                        "streq",
+                        "rpl_fopen",
+                        "fadvise",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "getc_unlocked",
+                        "xputchar",
+                        "ferror_unlocked",
+                        "rpl_fclose",
+                        "clearerr_unlocked"
+                    ],
+                    "calling_functions": [
+                        "paste_serial"
+                    ],
+                    "defined_in_file": "paste_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [FILE]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Write lines consisting of the sequentially corresponding lines from\\neach FILE, separated by TABs, to standard output.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_stdin_note();\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -d, --delimiters=LIST   reuse characters from LIST instead of TABs\\n  -s, --serial            paste one file at a time instead of in parallel\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  -z, --zero-terminated    line delimiter is NUL, not newline\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"paste\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_stdin_note",
+                        "emit_mandatory_arg_note",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "paste_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  byte bVar1;\n  int iVar2;\n  long lVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  code *pcVar6;\n  int *piVar7;\n  int local_48;\n  char *local_30;\n  \n  local_30 = \"\\t\";\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  have_read_stdin = '\\0';\n  serial_merge = '\\0';\nLAB_00101087:\n  while( true ) {\n    iVar2 = getopt_long(param_1,param_2,&DAT_00101711,longopts,0);\n    if (iVar2 == -1) {\n      local_48 = param_1 - _optind;\n      if (local_48 == 0) {\n        lVar3 = (long)_optind;\n        uVar4 = bad_cast(&DAT_0010149c);\n        param_2[lVar3] = uVar4;\n        local_48 = 1;\n      }\n      iVar2 = collapse_escapes(local_30);\n      if (iVar2 != 0) {\n        uVar4 = quotearg_n_style_colon(0,6,local_30);\n        uVar5 = gettext(\"delimiter list ends with an unescaped backslash: %s\");\n        error(1,0,uVar5,uVar4);\n      }\n      if (serial_merge == '\\0') {\n        pcVar6 = paste_parallel;\n      }\n      else {\n        pcVar6 = paste_serial;\n      }\n      bVar1 = (*pcVar6)((long)local_48,param_2 + _optind);\n      free(delims);\n      if ((have_read_stdin != '\\0') && (iVar2 = rpl_fclose(_stdin), iVar2 == -1)) {\n        piVar7 = __errno_location();\n        error(1,*piVar7,&DAT_0010149c);\n      }\n      return bVar1 ^ 1;\n    }\n    if (iVar2 != 0x7a) break;\n    line_delim = 0;\n  }\n  if (iVar2 < 0x7b) {\n    if (iVar2 == 0x73) {\n      serial_merge = '\\x01';\n      goto LAB_00101087;\n    }\n    if (0x73 < iVar2) goto LAB_0010107d;\n    if (iVar2 == 100) {\n      local_30 = _optarg;\n      if (*_optarg == '\\0') {\n        local_30 = \"\\\\0\";\n      }\n      goto LAB_00101087;\n    }\n    if (iVar2 < 0x65) {\n      if (iVar2 == -0x83) {\nLAB_00100fff:\n        uVar4 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n        uVar5 = proper_name_lite(\"David M. Ihnat\",\"David M. Ihnat\");\n        version_etc(_stdout,\"paste\",\"GNU coreutils\",_Version,uVar5,uVar4,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar2 == -0x82) {\n        usage(0);\n        goto LAB_00100fff;\n      }\n    }\n  }\nLAB_0010107d:\n  usage(1);\n  goto LAB_00101087;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "bad_cast",
+                        "collapse_escapes",
+                        "quotearg_n_style_colon",
+                        "gettext",
+                        "error",
+                        "free",
+                        "rpl_fclose",
+                        "__errno_location",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "paste_decompiled.c"
+                }
+            }
+        ]
+    }
+}

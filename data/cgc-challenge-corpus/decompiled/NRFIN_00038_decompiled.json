@@ -1,0 +1,328 @@
+{
+    "file": "NRFIN_00038",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "make_token",
+                "func_c_signature": "char * make_token(char *param_1)",
+                "decompiled_code": "char * make_token(char *param_1) {\n  size_t sVar1;\n  size_t sVar2;\n  size_t in_stack_ffffffd8;\n  void *local_18;\n  char *local_14;\n  size_t local_10;\n  \n  local_10 = 1;\n  local_18 = calloc(4,in_stack_ffffffd8);\n  if (local_18 == (void *)0x0) {\n    local_14 = (char *)0x0;\n  }\n  else {\n    sVar1 = strlen(\"counter=\");\n    local_10 = local_10 + sVar1 + 9;\n    sVar1 = strlen(\"name=\");\n    sVar2 = strlen(param_1);\n    local_10 = local_10 + sVar2 + sVar1;\n    local_14 = (char *)calloc(local_10,in_stack_ffffffd8);\n    if (local_14 == (char *)0x0) {\n      free(local_18);\n      local_14 = (char *)0x0;\n    }\n    else {\n      strcpy(local_14,\"counter=\");\n      sVar1 = strlen(local_14);\n      bin_to_hex(local_14 + sVar1,&local_18,4);\n      strcat(local_14,\"|name=\");\n      strcat(local_14,param_1);\n    }\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "make_token",
+                        "calloc",
+                        "strlen",
+                        "free",
+                        "strcpy",
+                        "bin_to_hex",
+                        "strcat"
+                    ],
+                    "calling_functions": [
+                        "make_token",
+                        "xor_login",
+                        "adler32_login",
+                        "md5_login",
+                        "md5_hmac_login"
+                    ],
+                    "defined_in_file": "NRFIN_00038_decompiled.c"
+                }
+            },
+            {
+                "func_name": "xor_sig",
+                "func_c_signature": "uint xor_sig(int param_1,uint param_2,int param_3)",
+                "decompiled_code": "uint xor_sig(int param_1,uint param_2,int param_3) {\n  uint local_c;\n  \n  if (0x11 < param_2) {\n    param_2 = 0x11;\n  }\n  for (local_c = 0; local_c < param_2; local_c = local_c + 1) {\n    *(byte *)(local_c + param_3) = *(byte *)(local_c + param_1) ^ \"s00pEr5eCretsAUc3\"[local_c];\n  }\n  return param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "xor_sig"
+                    ],
+                    "calling_functions": [
+                        "xor_sig",
+                        "xor_login"
+                    ],
+                    "defined_in_file": "NRFIN_00038_decompiled.c"
+                }
+            },
+            {
+                "func_name": "xor_login",
+                "func_c_signature": "undefined4 xor_login(undefined4 param_1)",
+                "decompiled_code": "undefined4 xor_login(undefined4 param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  int *piVar3;\n  int local_2c;\n  void *local_28;\n  int local_24;\n  size_t local_20;\n  int local_1c;\n  undefined *local_18;\n  undefined4 local_14;\n  int local_10;\n  \n  local_10 = 0x11;\n  local_14 = 0x10;\n  for (piVar3 = &local_2c; piVar3 != &local_2c; piVar3 = (int *)((int)piVar3 + -0x1000)) {\n    *(undefined4 *)((int)piVar3 + -4) = *(undefined4 *)((int)piVar3 + -4);\n  }\n  *(undefined4 *)((int)piVar3 + -4) = *(undefined4 *)((int)piVar3 + -4);\n  local_18 = (undefined *)((int)piVar3 + -0x20);\n  *(undefined4 *)((int)piVar3 + -0x30) = param_1;\n  *(undefined4 *)((int)piVar3 + -0x34) = 0x11214;\n  local_1c = make_token();\n  if (local_1c == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    *(int *)((int)piVar3 + -0x30) = local_1c;\n    *(undefined4 *)((int)piVar3 + -0x34) = 0x11235;\n    local_20 = strlen(*(char **)((int)piVar3 + -0x30));\n    local_24 = local_20 + local_10 * 2 + 2;\n    *(int *)((int)piVar3 + -0x2c) = local_24;\n    *(int *)((int)piVar3 + -0x30) = local_1c;\n    *(undefined4 *)((int)piVar3 + -0x34) = 0x1125a;\n    local_28 = realloc(*(void **)((int)piVar3 + -0x30),*(size_t *)((int)piVar3 + -0x2c));\n    if (local_28 == (void *)0x0) {\n      *(int *)((int)piVar3 + -0x30) = local_1c;\n      *(undefined4 *)((int)piVar3 + -0x34) = 0x11271;\n      free(*(void **)((int)piVar3 + -0x30));\n      uVar1 = 0xffffffff;\n    }\n    else {\n      *(undefined **)((int)piVar3 + -0x28) = local_18;\n      *(size_t *)((int)piVar3 + -0x2c) = local_20;\n      *(void **)((int)piVar3 + -0x30) = local_28;\n      *(undefined4 *)((int)piVar3 + -0x34) = 0x1128f;\n      local_2c = xor_sig();\n      if (local_2c == 0) {\n        *(void **)((int)piVar3 + -0x30) = local_28;\n        *(undefined4 *)((int)piVar3 + -0x34) = 0x112a6;\n        free(*(void **)((int)piVar3 + -0x30));\n        uVar1 = 0xffffffff;\n      }\n      else {\n        *(undefined *)(local_20 + (int)local_28) = 0x7c;\n        iVar2 = (int)local_28 + local_20 + 1;\n        *(int *)((int)piVar3 + -0x28) = local_2c;\n        *(undefined **)((int)piVar3 + -0x2c) = local_18;\n        *(int *)((int)piVar3 + -0x30) = iVar2;\n        *(undefined4 *)((int)piVar3 + -0x34) = 0x112d8;\n        bin_to_hex();\n        *(undefined *)((int)local_28 + local_24 + -1) = 10;\n        *(int *)((int)piVar3 + -0x28) = local_24;\n        *(void **)((int)piVar3 + -0x2c) = local_28;\n        *(undefined4 *)((int)piVar3 + -0x30) = 1;\n        *(undefined4 *)((int)piVar3 + -0x34) = 0x112f9;\n        iVar2 = write_all();\n        if (iVar2 == local_24) {\n          *(int *)((int)piVar3 + -0x28) = local_2c;\n          *(undefined4 *)((int)piVar3 + -0x2c) = 0;\n          *(undefined **)((int)piVar3 + -0x30) = local_18;\n          *(undefined4 *)((int)piVar3 + -0x34) = 0x1131c;\n          memset(*(void **)((int)piVar3 + -0x30),*(int *)((int)piVar3 + -0x2c),\n                 *(size_t *)((int)piVar3 + -0x28));\n          *(int *)((int)piVar3 + -0x28) = local_24;\n          *(undefined4 *)((int)piVar3 + -0x2c) = 0;\n          *(void **)((int)piVar3 + -0x30) = local_28;\n          *(undefined4 *)((int)piVar3 + -0x34) = 0x1132f;\n          memset(*(void **)((int)piVar3 + -0x30),*(int *)((int)piVar3 + -0x2c),\n                 *(size_t *)((int)piVar3 + -0x28));\n          *(void **)((int)piVar3 + -0x30) = local_28;\n          *(undefined4 *)((int)piVar3 + -0x34) = 0x1133d;\n          free(*(void **)((int)piVar3 + -0x30));\n          uVar1 = 0;\n        }\n        else {\n          uVar1 = 0xffffffff;\n        }\n      }\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "xor_login",
+                        "make_token",
+                        "strlen",
+                        "realloc",
+                        "free",
+                        "xor_sig",
+                        "bin_to_hex",
+                        "write_all",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "xor_login"
+                    ],
+                    "defined_in_file": "NRFIN_00038_decompiled.c"
+                }
+            },
+            {
+                "func_name": "adler32_sig",
+                "func_c_signature": "undefined4 adler32_sig(char *param_1,int param_2,undefined4 *param_3)",
+                "decompiled_code": "undefined4 adler32_sig(char *param_1,int param_2,undefined4 *param_3) {\n  char *__dest;\n  undefined4 uVar1;\n  size_t in_stack_ffffffd8;\n  \n  __dest = (char *)calloc(param_2 + 0x12U,in_stack_ffffffd8);\n  if (__dest == (char *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    strcpy(__dest,\"s00pEr5eCretsAUc3\");\n    strcat(__dest,param_1);\n    uVar1 = adler32ish(__dest,param_2 + 0x11);\n    *param_3 = uVar1;\n    memset(__dest,0,param_2 + 0x12U);\n    free(__dest);\n    uVar1 = 4;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "adler32_sig",
+                        "calloc",
+                        "strcpy",
+                        "strcat",
+                        "adler32ish",
+                        "memset",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "adler32_sig",
+                        "adler32_login"
+                    ],
+                    "defined_in_file": "NRFIN_00038_decompiled.c"
+                }
+            },
+            {
+                "func_name": "adler32_login",
+                "func_c_signature": "undefined4 adler32_login(undefined4 param_1)",
+                "decompiled_code": "undefined4 adler32_login(undefined4 param_1) {\n  size_t sVar1;\n  undefined4 uVar2;\n  undefined4 local_24;\n  int local_20;\n  void *local_1c;\n  size_t local_18;\n  size_t local_14;\n  char *local_10;\n  \n  uVar2 = 0x113fe;\n  local_10 = (char *)make_token(param_1);\n  if (local_10 == (char *)0x0) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    local_14 = strlen(local_10);\n    local_18 = local_14 + 10;\n    local_1c = realloc(local_10,local_18);\n    if (local_1c == (void *)0x0) {\n      free(local_10);\n      uVar2 = 0xffffffff;\n    }\n    else {\n      local_20 = adler32_sig(local_1c,local_14,&local_24,uVar2);\n      if (local_20 == 0) {\n        free(local_1c);\n        uVar2 = 0xffffffff;\n      }\n      else {\n        *(undefined *)(local_14 + (int)local_1c) = 0x7c;\n        bin_to_hex(local_14 + 1 + (int)local_1c,&local_24,local_20);\n        *(undefined *)((int)local_1c + (local_18 - 1)) = 10;\n        sVar1 = write_all(1,local_1c,local_18);\n        if (sVar1 == local_18) {\n          local_24 = 0;\n          memset(local_1c,0,local_18);\n          free(local_1c);\n          uVar2 = 0;\n        }\n        else {\n          uVar2 = 0xffffffff;\n        }\n      }\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "adler32_login",
+                        "make_token",
+                        "strlen",
+                        "realloc",
+                        "free",
+                        "adler32_sig",
+                        "bin_to_hex",
+                        "write_all",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "adler32_login"
+                    ],
+                    "defined_in_file": "NRFIN_00038_decompiled.c"
+                }
+            },
+            {
+                "func_name": "md5_sig",
+                "func_c_signature": "undefined4 md5_sig(char *param_1,int param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 md5_sig(char *param_1,int param_2,undefined4 param_3) {\n  char *__dest;\n  undefined4 uVar1;\n  size_t in_stack_ffffffd8;\n  \n  __dest = (char *)calloc(param_2 + 0x12U,in_stack_ffffffd8);\n  if (__dest == (char *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    strcpy(__dest,\"s00pEr5eCretsAUc3\");\n    strcat(__dest,param_1);\n    md5(__dest,param_2 + 0x11,param_3);\n    memset(__dest,0,param_2 + 0x12U);\n    free(__dest);\n    uVar1 = 0x10;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "md5_sig",
+                        "calloc",
+                        "strcpy",
+                        "strcat",
+                        "md5",
+                        "memset",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "md5_sig",
+                        "md5_login"
+                    ],
+                    "defined_in_file": "NRFIN_00038_decompiled.c"
+                }
+            },
+            {
+                "func_name": "md5_login",
+                "func_c_signature": "undefined4 md5_login(undefined4 param_1)",
+                "decompiled_code": "undefined4 md5_login(undefined4 param_1) {\n  size_t sVar1;\n  undefined4 uVar2;\n  undefined local_30 [16];\n  size_t local_20;\n  void *local_1c;\n  size_t local_18;\n  size_t local_14;\n  char *local_10;\n  \n  uVar2 = 0x115e1;\n  local_10 = (char *)make_token(param_1);\n  if (local_10 == (char *)0x0) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    local_14 = strlen(local_10);\n    local_18 = local_14 + 0x22;\n    local_1c = realloc(local_10,local_18);\n    if (local_1c == (void *)0x0) {\n      free(local_10);\n      uVar2 = 0xffffffff;\n    }\n    else {\n      local_20 = md5_sig(local_1c,local_14,local_30,uVar2);\n      if (local_20 == 0) {\n        free(local_1c);\n        uVar2 = 0xffffffff;\n      }\n      else {\n        *(undefined *)(local_14 + (int)local_1c) = 0x7c;\n        bin_to_hex(local_14 + 1 + (int)local_1c,local_30,local_20);\n        *(undefined *)((int)local_1c + (local_18 - 1)) = 10;\n        sVar1 = write_all(1,local_1c,local_18);\n        if (sVar1 == local_18) {\n          memset(local_30,0,local_20);\n          memset(local_1c,0,local_18);\n          free(local_1c);\n          uVar2 = 0;\n        }\n        else {\n          uVar2 = 0xffffffff;\n        }\n      }\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "md5_login",
+                        "make_token",
+                        "strlen",
+                        "realloc",
+                        "free",
+                        "md5_sig",
+                        "bin_to_hex",
+                        "write_all",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "md5_login"
+                    ],
+                    "defined_in_file": "NRFIN_00038_decompiled.c"
+                }
+            },
+            {
+                "func_name": "md5_hmac_sig",
+                "func_c_signature": "undefined4 md5_hmac_sig(undefined4 param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 md5_hmac_sig(undefined4 param_1,undefined4 param_2,undefined4 param_3) {\n  md5_hmac(\"s00pEr5eCretsAUc3\",0x11,param_1,param_2,param_3);\n  return 0x10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "md5_hmac_sig",
+                        "md5_hmac"
+                    ],
+                    "calling_functions": [
+                        "md5_hmac_sig",
+                        "md5_hmac_login"
+                    ],
+                    "defined_in_file": "NRFIN_00038_decompiled.c"
+                }
+            },
+            {
+                "func_name": "md5_hmac_login",
+                "func_c_signature": "undefined4 md5_hmac_login(undefined4 param_1)",
+                "decompiled_code": "undefined4 md5_hmac_login(undefined4 param_1) {\n  size_t sVar1;\n  undefined4 uVar2;\n  undefined local_30 [16];\n  size_t local_20;\n  void *local_1c;\n  size_t local_18;\n  size_t local_14;\n  char *local_10;\n  \n  uVar2 = 0x11769;\n  local_10 = (char *)make_token(param_1);\n  if (local_10 == (char *)0x0) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    local_14 = strlen(local_10);\n    local_18 = local_14 + 0x22;\n    local_1c = realloc(local_10,local_18);\n    if (local_1c == (void *)0x0) {\n      free(local_10);\n      uVar2 = 0xffffffff;\n    }\n    else {\n      local_20 = md5_hmac_sig(local_1c,local_14,local_30,uVar2);\n      if (local_20 == 0) {\n        free(local_1c);\n        uVar2 = 0xffffffff;\n      }\n      else {\n        *(undefined *)(local_14 + (int)local_1c) = 0x7c;\n        bin_to_hex(local_14 + 1 + (int)local_1c,local_30,local_20);\n        *(undefined *)((int)local_1c + (local_18 - 1)) = 10;\n        sVar1 = write_all(1,local_1c,local_18);\n        if (sVar1 == local_18) {\n          memset(local_30,0,local_20);\n          memset(local_1c,0,local_18);\n          free(local_1c);\n          uVar2 = 0;\n        }\n        else {\n          uVar2 = 0xffffffff;\n        }\n      }\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "md5_hmac_login",
+                        "make_token",
+                        "strlen",
+                        "realloc",
+                        "free",
+                        "md5_hmac_sig",
+                        "bin_to_hex",
+                        "write_all",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "md5_hmac_login"
+                    ],
+                    "defined_in_file": "NRFIN_00038_decompiled.c"
+                }
+            },
+            {
+                "func_name": "login",
+                "func_c_signature": "undefined4 login(char *param_1)",
+                "decompiled_code": "undefined4 login(char *param_1) {\n  size_t sVar1;\n  undefined4 uVar2;\n  code *local_20 [4];\n  int local_10;\n  \n  local_20[0] = xor_login;\n  local_20[1] = adler32_login;\n  local_20[2] = md5_login;\n  sVar1 = strlen(param_1);\n  if (sVar1 < 0x11) {\n    local_10 = 3;\n    uVar2 = (*local_20[cur_0])(param_1);\n    cur_0 = cur_0 + 1;\n    if (local_10 == cur_0) {\n      cur_0 = 0;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "login",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "login"
+                    ],
+                    "defined_in_file": "NRFIN_00038_decompiled.c"
+                }
+            },
+            {
+                "func_name": "greet",
+                "func_c_signature": "undefined4 greet(char *param_1)",
+                "decompiled_code": "undefined4 greet(char *param_1) {\n  code *pcVar1;\n  char *pcVar2;\n  undefined4 uVar3;\n  int iVar4;\n  size_t sVar5;\n  size_t sVar6;\n  code *local_16c [3];\n  char local_15d [17];\n  char local_14c [200];\n  char local_84 [64];\n  undefined local_44 [32];\n  int local_24;\n  char *local_20;\n  int local_1c;\n  uint local_18;\n  int *local_14;\n  char *local_10;\n  \n  local_14 = (int *)0x0;\n  local_1c = 0;\n  local_16c[0] = xor_sig;\n  local_16c[1] = adler32_sig;\n  local_16c[2] = md5_sig;\n  pcVar2 = strrchr(param_1,0x7c);\n  if (pcVar2 == (char *)0x0) {\n    uVar3 = 0xffffffff;\n  }\n  else {\n    local_20 = pcVar2 + 1;\n    *pcVar2 = '\\0';\n    for (local_18 = 0; local_18 < 3; local_18 = local_18 + 1) {\n      pcVar1 = local_16c[local_18];\n      sVar5 = strlen(param_1);\n      local_24 = (*pcVar1)(param_1,sVar5,local_44);\n      bin_to_hex(local_84,local_44,local_24);\n      iVar4 = strncmp(local_20,local_84,local_24 * 2);\n      if (iVar4 == 0) {\n        local_1c = 1;\n        break;\n      }\n    }\n    if (local_1c == 0) {\n      uVar3 = 0xffffffff;\n    }\n    else {\n      memset(local_15d,0,0x11);\n      local_10 = strtok(param_1,(char *)0x7c);\n      while (local_10 != (char *)0x0) {\n        iVar4 = strncmp(local_10,\"name=\",5);\n        if (iVar4 == 0) {\n          strcpy(local_15d,local_10 + 5);\n        }\n        else {\n          iVar4 = strncmp(local_10,\"counter=\",8);\n          if (iVar4 == 0) {\n            sVar5 = strlen(local_10 + 8);\n            if (sVar5 == 8) {\n              local_14 = (int *)hex_to_uint(local_10 + 8);\n            }\n          }\n        }\n        local_10 = strtok((char *)0x0,(char *)0x7c);\n      }\n      sVar5 = strlen(local_15d);\n      if ((sVar5 == 0) || (local_14 == (int *)0x0)) {\n        uVar3 = 0xffffffff;\n      }\n      else {\n        memset(local_14c,0,200);\n        *local_14 = *local_14 + 1;\n        strcpy(local_14c,\"Hello \");\n        strcat(local_14c,local_15d);\n        strcat(local_14c,\", we\\'ve seen you \");\n        sVar5 = strlen(local_14c);\n        itoa(*local_14,local_14c + sVar5);\n        strcat(local_14c,\" times!\\n\");\n        sVar5 = strlen(local_14c);\n        sVar5 = write_all(1,local_14c,sVar5);\n        sVar6 = strlen(local_14c);\n        if (sVar5 == sVar6) {\n          uVar3 = 0;\n        }\n        else {\n          uVar3 = 0xffffffff;\n        }\n      }\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "greet",
+                        "strrchr",
+                        "strlen",
+                        "bin_to_hex",
+                        "strncmp",
+                        "memset",
+                        "strtok",
+                        "strcpy",
+                        "hex_to_uint",
+                        "strcat",
+                        "itoa",
+                        "write_all"
+                    ],
+                    "calling_functions": [
+                        "greet"
+                    ],
+                    "defined_in_file": "NRFIN_00038_decompiled.c"
+                }
+            },
+            {
+                "func_name": "quit",
+                "func_c_signature": "undefined4 quit(void)",
+                "decompiled_code": "undefined4 quit(void) {\n  code *pcVar1;\n  char *pcVar2;\n  size_t sVar3;\n  int iVar4;\n  char *pcStack_74;\n  code *pcStack_70;\n  char *pcStack_6c;\n  code *pcStack_68;\n  undefined *puStack_64;\n  code *pcStack_60;\n  undefined auStack_59 [8];\n  undefined uStack_51;\n  undefined4 uStack_50;\n  char *pcStack_4c;\n  size_t sStack_48;\n  uint uStack_44;\n  undefined *puStack_38;\n  undefined **ppuStack_34;\n  undefined auStack_18 [8];\n  undefined4 uStack_10;\n  \n  uStack_10 = 0x11c3e;\n  _terminate();\n  puStack_38 = auStack_18;\n  pcStack_74 = \"login \";\n  pcStack_70 = login;\n  pcStack_6c = \"greet \";\n  pcStack_68 = greet;\n  puStack_64 = &DAT_00014058;\n  pcStack_60 = quit;\n  ppuStack_34 = &_GLOBAL_OFFSET_TABLE_;\n  do {\n    sStack_48 = read_line(0,&pcStack_4c);\n    if ((int)sStack_48 < 0) {\n      return 0xffffffff;\n    }\n    if (pcStack_4c[sStack_48 - 1] == '\\n') {\n      pcStack_4c[sStack_48 - 1] = '\\0';\n    }\n    uStack_50 = 0xffffffff;\n    for (uStack_44 = 0; uStack_44 < 3; uStack_44 = uStack_44 + 1) {\n      sVar3 = strlen((&pcStack_74)[uStack_44 * 2]);\n      iVar4 = strncmp(pcStack_4c,(&pcStack_74)[uStack_44 * 2],sVar3);\n      pcVar2 = pcStack_4c;\n      if (iVar4 == 0) {\n        pcVar1 = (&pcStack_70)[uStack_44 * 2];\n        sVar3 = strlen((&pcStack_74)[uStack_44 * 2]);\n        uStack_50 = (*pcVar1)(pcVar2 + sVar3);\n        break;\n      }\n    }\n    memset(pcStack_4c,0,sStack_48);\n    free(pcStack_4c);\n    bin_to_hex(auStack_59,&uStack_50,4);\n    uStack_51 = 10;\n    iVar4 = write_all(1,auStack_59,9);\n    if (iVar4 != 9) {\n      return 0xffffffff;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "quit",
+                        "_terminate",
+                        "read_line",
+                        "strlen",
+                        "strncmp",
+                        "memset",
+                        "free",
+                        "bin_to_hex",
+                        "write_all"
+                    ],
+                    "calling_functions": [
+                        "quit"
+                    ],
+                    "defined_in_file": "NRFIN_00038_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  code *pcVar1;\n  char *pcVar2;\n  size_t sVar3;\n  int iVar4;\n  char *local_54;\n  code *local_50;\n  char *local_4c;\n  code *local_48;\n  undefined *local_44;\n  code *local_40;\n  undefined local_39 [8];\n  undefined local_31;\n  undefined4 local_30;\n  char *local_2c;\n  size_t local_28;\n  uint local_24;\n  undefined *local_18;\n  \n  local_18 = &stack0x00000004;\n  local_54 = \"login \";\n  local_50 = login;\n  local_4c = \"greet \";\n  local_48 = greet;\n  local_44 = &DAT_00014058;\n  local_40 = quit;\n  do {\n    local_28 = read_line(0,&local_2c);\n    if ((int)local_28 < 0) {\n      return 0xffffffff;\n    }\n    if (local_2c[local_28 - 1] == '\\n') {\n      local_2c[local_28 - 1] = '\\0';\n    }\n    local_30 = 0xffffffff;\n    for (local_24 = 0; local_24 < 3; local_24 = local_24 + 1) {\n      sVar3 = strlen((&local_54)[local_24 * 2]);\n      iVar4 = strncmp(local_2c,(&local_54)[local_24 * 2],sVar3);\n      pcVar2 = local_2c;\n      if (iVar4 == 0) {\n        pcVar1 = (&local_50)[local_24 * 2];\n        sVar3 = strlen((&local_54)[local_24 * 2]);\n        local_30 = (*pcVar1)(pcVar2 + sVar3);\n        break;\n      }\n    }\n    memset(local_2c,0,local_28);\n    free(local_2c);\n    bin_to_hex(local_39,&local_30,4);\n    local_31 = 10;\n    iVar4 = write_all(1,local_39,9);\n    if (iVar4 != 9) {\n      return 0xffffffff;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "read_line",
+                        "strlen",
+                        "strncmp",
+                        "memset",
+                        "free",
+                        "bin_to_hex",
+                        "write_all"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "NRFIN_00038_decompiled.c"
+                }
+            }
+        ]
+    }
+}

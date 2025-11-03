@@ -1,0 +1,100 @@
+{
+    "file": "nice",
+    "decompiled_code": {
+        "nice.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION] [COMMAND [ARG]...]\\n\");\n    printf(pcVar3,uVar2);\n    pcVar3 = (char *)gettext(\n                            \"Run COMMAND with an adjusted niceness, which affects process scheduling.\\nWith no COMMAND, print the current niceness.  Niceness values range from\\n%d (most favorable to the process) to %d (least favorable to the process).\\n\"\n                            );\n    printf(pcVar3,0xffffffec,0x13);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  -n, --adjustment=N   add integer N to the niceness (default 10)\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pcVar3 = (char *)gettext(\n                            \"\\nYour shell may have its own version of %s, which usually supersedes\\nthe version described here.  Please refer to your shell\\'s documentation\\nfor details about the options it supports.\\n\"\n                            );\n    printf(pcVar3,&DAT_00100ff9);\n    emit_exec_status(&DAT_00100ff9);\n    emit_ancillary_info(&DAT_00100ff9);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "d",
+                    "niceness"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "d",
+                        "emit_mandatory_arg_note",
+                        "niceness",
+                        "fputs_unlocked",
+                        "emit_exec_status",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "nice_decompiled.c"
+                }
+            },
+            {
+                "func_name": "perm_related_errno",
+                "func_c_signature": "undefined4 perm_related_errno(int param_1)",
+                "decompiled_code": "undefined4 perm_related_errno(int param_1) {\n  undefined4 uVar1;\n  \n  if ((param_1 == 0xd) || (param_1 == 1)) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "perm_related_errno"
+                    ],
+                    "calling_functions": [
+                        "perm_related_errno",
+                        "main"
+                    ],
+                    "defined_in_file": "nice_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined4 main(int param_1,undefined8 *param_2) {\n  char cVar1;\n  uint uVar2;\n  int iVar3;\n  undefined4 uVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  long in_FS_OFFSET;\n  int local_bc;\n  int local_b8;\n  long local_70;\n  char *local_68;\n  char *local_60;\n  undefined8 *local_58;\n  undefined8 local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  undefined8 local_38;\n  undefined8 local_30;\n  undefined *local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_bc = 10;\n  local_68 = (char *)0x0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  initialize_exit_failure(0x7d);\n  atexit((__func *)&close_stdout);\n  local_b8 = 1;\nLAB_00100703:\n  do {\n    if (param_1 <= local_b8) break;\n    local_60 = (char *)param_2[local_b8];\n    if (*local_60 == '-') {\n      if ((local_60[1] == '-') || (local_60[1] == '+')) {\n        iVar3 = 1;\n      }\n      else {\n        iVar3 = 0;\n      }\n      cVar1 = c_isdigit((int)local_60[iVar3 + 1]);\n      if (cVar1 != '\\0') {\n        local_68 = local_60 + 1;\n        local_b8 = local_b8 + 1;\n        goto LAB_00100703;\n      }\n    }\n    local_58 = param_2 + (long)local_b8 + -1;\n    *local_58 = *param_2;\n    _optind = 0;\n    iVar3 = getopt_long(param_1 - (local_b8 + -1),local_58,&DAT_00101016,longopts,0);\n    local_b8 = local_b8 + _optind + -1;\n    if (iVar3 == 0x6e) {\n      local_68 = _optarg;\n    }\n    else {\n      if (iVar3 < 0x6f) {\n        if (iVar3 == -1) goto LAB_001006fa;\n        if (iVar3 < 0) {\n          if (iVar3 == -0x83) {\nLAB_00100694:\n            uVar5 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n            version_etc(_stdout,&DAT_00100ff9,\"GNU coreutils\",_Version,uVar5,0);\n                    /* WARNING: Subroutine does not return */\n            exit(0);\n          }\n          if (iVar3 == -0x82) {\n            usage(0);\n            goto LAB_00100694;\n          }\n        }\n      }\n      usage(0x7d);\n    }\nLAB_001006fa:\n  } while (iVar3 != -1);\n  if (local_68 != (char *)0x0) {\n    uVar2 = xstrtol(local_68,0,10,&local_70,&DAT_00100d04);\n    if (1 < uVar2) {\n      uVar5 = quote(local_68);\n      local_50 = gettext(\"invalid adjustment %s\");\n      error(0x7d,0,local_50,uVar5);\n    }\n    if (local_70 < -0x27) {\n      local_bc = -0x27;\n    }\n    else {\n      if (0x27 < local_70) {\n        local_70 = 0x27;\n      }\n      local_bc = (int)local_70;\n    }\n  }\n  if (local_b8 == param_1) {\n    if (local_68 != (char *)0x0) {\n      local_48 = gettext(\"a command must be given with an adjustment\");\n      error(0,0,local_48);\n      usage(0x7d);\n    }\n    piVar6 = __errno_location();\n    *piVar6 = 0;\n    uVar2 = getpriority(PRIO_PROCESS,0);\n    if ((uVar2 == 0xffffffff) && (piVar6 = __errno_location(), *piVar6 != 0)) {\n      uVar5 = gettext(\"cannot get niceness\");\n      piVar6 = __errno_location();\n      local_40 = uVar5;\n      error(0x7d,*piVar6,uVar5);\n    }\n    printf(\"%d\\n\",(ulong)uVar2);\n    uVar4 = 0;\n  }\n  else {\n    piVar6 = __errno_location();\n    *piVar6 = 0;\n    iVar3 = getpriority(PRIO_PROCESS,0);\n    if ((iVar3 == -1) && (piVar6 = __errno_location(), *piVar6 != 0)) {\n      uVar5 = gettext(\"cannot get niceness\");\n      piVar6 = __errno_location();\n      local_38 = uVar5;\n      error(0x7d,*piVar6,uVar5);\n    }\n    iVar3 = setpriority(PRIO_PROCESS,0,local_bc + iVar3);\n    if (iVar3 != 0) {\n      piVar6 = __errno_location();\n      cVar1 = perm_related_errno(*piVar6);\n      if (cVar1 == '\\0') {\n        uVar4 = 0x7d;\n      }\n      else {\n        uVar4 = 0;\n      }\n      uVar5 = gettext(\"cannot set niceness\");\n      piVar6 = __errno_location();\n      local_30 = uVar5;\n      error(uVar4,*piVar6,uVar5);\n      iVar3 = ferror_unlocked(_stderr);\n      if (iVar3 != 0) {\n        uVar4 = 0x7d;\n        goto LAB_00100ad6;\n      }\n    }\n    execvp((char *)param_2[local_b8],(char **)(param_2 + local_b8));\n    piVar6 = __errno_location();\n    if (*piVar6 == 2) {\n      uVar4 = 0x7f;\n    }\n    else {\n      uVar4 = 0x7e;\n    }\n    uVar5 = quote(param_2[local_b8]);\n    piVar6 = __errno_location();\n    local_28 = &DAT_001010a7;\n    error(0,*piVar6,&DAT_001010a7,uVar5);\n  }\nLAB_00100ad6:\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return uVar4;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "initialize_exit_failure",
+                        "atexit",
+                        "c_isdigit",
+                        "getopt_long",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage",
+                        "xstrtol",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "__errno_location",
+                        "getpriority",
+                        "printf",
+                        "setpriority",
+                        "perm_related_errno",
+                        "ferror_unlocked",
+                        "execvp",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "nice_decompiled.c"
+                }
+            }
+        ]
+    }
+}

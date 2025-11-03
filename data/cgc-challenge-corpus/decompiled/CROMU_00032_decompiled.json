@@ -1,0 +1,396 @@
+{
+    "file": "CROMU_00032",
+    "decompiled_code": {
+        "bitstream.c": [
+            {
+                "func_name": "freeStream",
+                "func_c_signature": "void freeStream(int **param_1)",
+                "decompiled_code": "void freeStream(int **param_1) {\n  void **__ptr;\n  \n  if ((param_1 != (int **)0x0) && (__ptr = (void **)*param_1, __ptr != (void **)0x0)) {\n    if (*__ptr != (void *)0x0) {\n      free(*__ptr);\n    }\n    free(__ptr);\n    *param_1 = (int *)0x0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "freeStream",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "freeStream",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initStream",
+                "func_c_signature": "void ** initStream(void *param_1,void *param_2)",
+                "decompiled_code": "void ** initStream(void *param_1,void *param_2) {\n  void **__s;\n  void *pvVar1;\n  \n  if (param_1 == (void *)0x0) {\n    __s = (void **)0x0;\n  }\n  else if (param_2 == (void *)0x0) {\n    __s = (void **)0x0;\n  }\n  else {\n    __s = (void **)malloc(0x10);\n    if (__s != (void **)0x0) {\n      memset(__s,0,0x10);\n      pvVar1 = malloc((size_t)param_2);\n      *__s = pvVar1;\n      if (*__s == (void *)0x0) {\n        free(__s);\n        __s = (void **)0x0;\n      }\n      else {\n        __s[1] = param_2;\n        memcpy(*__s,param_1,(size_t)param_2);\n      }\n    }\n  }\n  return __s;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initStream",
+                        "malloc",
+                        "memset",
+                        "free",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "initStream",
+                        "readImageData"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "readBits",
+                "func_c_signature": "int readBits(int *param_1,uint param_2,uint *param_3)",
+                "decompiled_code": "int readBits(int *param_1,uint param_2,uint *param_3) {\n  uint local_10;\n  int local_c;\n  \n  local_c = 0;\n  local_10 = 0;\n  if (((param_1 == (int *)0x0) || (param_3 == (uint *)0x0)) || (param_2 == 0)) {\n    local_c = 0;\n  }\n  else if (*param_1 == 0) {\n    local_c = 0;\n  }\n  else if (param_2 < 0x21) {\n    if ((uint)(param_1[1] * 8) < param_1[2] * 8 + param_1[3] + param_2) {\n      local_c = 0;\n    }\n    else {\n      for (; param_2 != 0; param_2 = param_2 - 1) {\n        local_10 = local_10 << 1 |\n                   (int)(char)((byte)((int)*(char *)(param_1[2] + *param_1) >>\n                                     (7U - (char)param_1[3] & 0x1f)) & 1);\n        param_1[3] = param_1[3] + 1U & 7;\n        if (param_1[3] == 0) {\n          param_1[2] = param_1[2] + 1;\n        }\n        local_c = local_c + 1;\n      }\n      *param_3 = local_10;\n    }\n  }\n  else {\n    local_c = 0;\n  }\n  return local_c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readBits"
+                    ],
+                    "calling_functions": [
+                        "readBits",
+                        "parseCVFFrame",
+                        "parseCVFPixelDict",
+                        "parseCVFDescription",
+                        "parseCVFName",
+                        "parseCVFHeader",
+                        "renderCVF"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            }
+        ],
+        "parseCVF.c": [
+            {
+                "func_name": "receiveWrapper",
+                "func_c_signature": "uint receiveWrapper(int param_1,uint param_2)",
+                "decompiled_code": "uint receiveWrapper(int param_1,uint param_2) {\n  int iVar1;\n  int local_18;\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  local_14 = param_1;\n  if (param_1 == 0) {\n    local_10 = 0;\n  }\n  else {\n    for (; local_10 < param_2; local_10 = local_10 + local_18) {\n      local_18 = 0;\n      iVar1 = receive(0,local_14 + local_10,1,&local_18);\n      if (iVar1 != 0) {\n        printf(\"[ERROR] Read fail\\n\");\n        return 0;\n      }\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "receiveWrapper",
+                        "receive",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "receiveWrapper",
+                        "playVideo"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "freeCVF",
+                "func_c_signature": "void freeCVF(void *param_1)",
+                "decompiled_code": "void freeCVF(void *param_1) {\n  uint local_10;\n  \n  local_10 = 0;\n  if (param_1 != (void *)0x0) {\n    for (; local_10 < 8; local_10 = local_10 + 1) {\n      if (*(int *)((int)param_1 + (local_10 + 0x40) * 8 + 0x10) != 0) {\n        free(*(void **)((int)param_1 + (local_10 + 0x40) * 8 + 0x10));\n        *(undefined4 *)((int)param_1 + (local_10 + 0x40) * 8 + 0x10) = 0;\n        *(undefined4 *)((int)param_1 + (local_10 + 0x40) * 8 + 0xc) = 0;\n      }\n    }\n    if (*(int *)((int)param_1 + 0x250) != 0) {\n      for (local_10 = 0; local_10 < *(uint *)((int)param_1 + 0x24c); local_10 = local_10 + 1) {\n        if (*(int *)(*(int *)((int)param_1 + 0x250) + local_10 * 4) != 0) {\n          if (*(int *)(*(int *)(*(int *)((int)param_1 + 0x250) + local_10 * 4) + 8) != 0) {\n            free(*(void **)(*(int *)(*(int *)((int)param_1 + 0x250) + local_10 * 4) + 8));\n            *(undefined4 *)(*(int *)(*(int *)((int)param_1 + 0x250) + local_10 * 4) + 8) = 0;\n            **(undefined4 **)(*(int *)((int)param_1 + 0x250) + local_10 * 4) = 0;\n            *(undefined4 *)(*(int *)(*(int *)((int)param_1 + 0x250) + local_10 * 4) + 4) = 0;\n          }\n          free(*(void **)(*(int *)((int)param_1 + 0x250) + local_10 * 4));\n          *(undefined4 *)(*(int *)((int)param_1 + 0x250) + local_10 * 4) = 0;\n        }\n      }\n      free(*(void **)((int)param_1 + 0x250));\n      *(undefined4 *)((int)param_1 + 0x250) = 0;\n    }\n    free(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "freeCVF",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "freeCVF",
+                        "renderCVF"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "playVideo",
+                "func_c_signature": "undefined4 playVideo(uint *param_1)",
+                "decompiled_code": "undefined4 playVideo(uint *param_1) {\n  int iVar1;\n  int iVar2;\n  undefined4 local_2c;\n  undefined4 local_28;\n  undefined4 local_24;\n  int local_20;\n  int local_1c;\n  uint local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  local_20 = 0;\n  local_24 = 1;\n  local_2c = 0;\n  local_28 = 0;\n  if (param_1 == (uint *)0x0) {\n    local_24 = 0;\n  }\n  else if (param_1[0x94] == 0) {\n    local_24 = 0;\n  }\n  else {\n    local_1c = *param_1 * param_1[1];\n    printf(\"--------------------Playing video-------------------\\n\");\n    printf(\"INFO: Height: $d Width: $d Frames: $d\\n\",*param_1,param_1[1],param_1[0x93]);\n    printf(\"INFO: Set your terminal height so that only the \\'|\\'s show.\\n\");\n    printf(\"INFO: This will provide a better viewing experience\\n\");\n    printf(\"INFO: When ready press a key...\\n\");\n    for (local_14 = 0; local_14 < *param_1; local_14 = local_14 + 1) {\n      printf(\"|\\n\");\n    }\n    iVar2 = 1;\n    iVar1 = receiveWrapper(&local_2c,1);\n    if (iVar1 == 0) {\n      local_24 = 0;\n    }\n    else {\n      while (local_10 < param_1[0x93]) {\n        local_20 = *(int *)(param_1[0x94] + local_10 * 4);\n        if (local_20 == 0) {\n          return 0;\n        }\n        for (local_18 = 0; (int)local_18 < local_1c; local_18 = local_18 + 1) {\n          if ((local_18 != 0) && (local_18 % *(uint *)(local_20 + 4) == 0)) {\n            printf(\"\\n\",iVar2);\n          }\n          iVar2 = (int)*(char *)(local_18 + *(int *)(local_20 + 8));\n          printf(\"$c\",iVar2);\n        }\n        local_10 = local_10 + 1;\n        printf(\"\\n\",iVar2);\n      }\n    }\n  }\n  return local_24;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "playVideo",
+                        "printf",
+                        "receiveWrapper"
+                    ],
+                    "calling_functions": [
+                        "playVideo",
+                        "renderCVF"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "bitsNeeded",
+                "func_c_signature": "int bitsNeeded(uint param_1)",
+                "decompiled_code": "int bitsNeeded(uint param_1) {\n  int local_8;\n  \n  local_8 = 0;\n  if (param_1 == 0) {\n    local_8 = 1;\n  }\n  else {\n    for (; param_1 != 0; param_1 = param_1 >> 1) {\n      local_8 = local_8 + 1;\n    }\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bitsNeeded"
+                    ],
+                    "calling_functions": [
+                        "bitsNeeded",
+                        "parseCVFFrame"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parseCVFFrame",
+                "func_c_signature": "undefined4 parseCVFFrame(int param_1,int *param_2)",
+                "decompiled_code": "undefined4 parseCVFFrame(int param_1,int *param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  void *pvVar3;\n  uint uVar4;\n  size_t local_48;\n  uint local_44;\n  uint local_40;\n  uint local_3c;\n  char *local_38;\n  uint local_34;\n  int local_30;\n  undefined4 local_2c;\n  size_t local_28;\n  int *local_24;\n  byte local_20;\n  byte local_1f;\n  byte local_1e;\n  byte local_1d;\n  uint local_1c;\n  int local_18;\n  int local_14;\n  uint *local_10;\n  \n  local_34 = 0;\n  local_1d = 0;\n  local_1e = 0;\n  local_1f = 0;\n  local_20 = 0;\n  local_24 = (int *)0x0;\n  local_10 = (uint *)0x0;\n  local_28 = 0;\n  local_2c = 0;\n  local_40 = 0;\n  local_44 = 0;\n  local_14 = 0;\n  local_48 = 0;\n  local_18 = 0;\n  local_30 = 0;\n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else if (param_2 == (int *)0x0) {\n    uVar1 = 0;\n  }\n  else if (*param_2 == 0) {\n    printf(\"[ERROR] Header must be specified prior to frame rendering.\\n\");\n    uVar1 = 0;\n  }\n  else {\n    iVar2 = readBits(param_1,8,&local_34);\n    if (iVar2 == 0) {\n      uVar1 = 0;\n    }\n    else {\n      local_1d = (byte)(local_34 >> 7) & 1;\n      local_1e = (byte)(local_34 >> 6) & 1;\n      local_1f = (byte)(local_34 >> 3) & 7;\n      local_20 = (byte)local_34 & 7;\n      if ((param_2[0x93] == 0) && ((local_34 >> 7 & 1) != 0)) {\n        printf(\"[ERROR] First frame must be full\\n\");\n        uVar1 = 0;\n      }\n      else {\n        if ((local_34 >> 3 & 7) == 0) {\n          if (param_2[(local_20 + 0x40) * 2 + 3] == 0) {\n            printf(\"[ERROR] Custom Dictionary $d does not exist\\n\",(uint)local_1f);\n            return 0;\n          }\n          local_10 = (uint *)(param_2 + (local_20 + 0x40) * 2 + 3);\n        }\n        else if (local_1f == 1) {\n          local_3c = 2;\n          local_38 = \" .\";\n          local_10 = &local_3c;\n        }\n        else if (local_1f == 2) {\n          local_3c = 4;\n          local_38 = \" .|#\";\n          local_10 = &local_3c;\n        }\n        else if (local_1f == 3) {\n          local_3c = 8;\n          local_38 = \" .|#@$()\";\n          local_10 = &local_3c;\n        }\n        else if (local_1f == 4) {\n          local_3c = 0x10;\n          local_38 = \" .|#@$()*HOEWM%&\";\n          local_10 = &local_3c;\n        }\n        else if (local_1f == 5) {\n          local_3c = 0x2a;\n          local_38 = \" .|#@$()*HOEWM%&abcdefghijklmnopqrstuvwxyz\";\n          local_10 = &local_3c;\n        }\n        else if (local_1f == 6) {\n          local_3c = 0x3e;\n          local_38 = \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\";\n          local_10 = &local_3c;\n        }\n        else if (local_1f == 7) {\n          local_3c = 0x5f;\n          local_38 = \n          \" !\\\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\"\n          ;\n          local_10 = &local_3c;\n        }\n        local_30 = bitsNeeded(*local_10 - 1);\n        local_24 = (int *)malloc(0xc);\n        if (local_24 == (int *)0x0) {\n          uVar1 = 0;\n        }\n        else {\n          local_28 = param_2[1] * *param_2;\n          *local_24 = *param_2;\n          local_24[1] = param_2[1];\n          pvVar3 = malloc(local_28);\n          local_24[2] = (int)pvVar3;\n          if (local_24[2] == 0) {\n            free(local_24);\n            uVar1 = 0;\n          }\n          else {\n            if (local_1d == 1) {\n              local_48 = 0;\n              local_14 = bitsNeeded(local_28);\n              iVar2 = readBits(param_1,local_14,&local_48);\n              if (iVar2 == 0) {\n                free((void *)local_24[2]);\n                local_24[2] = 0;\n                free(local_24);\n                return 0;\n              }\n              if (local_48 == 0) {\n                printf(\"[ERROR] Empty frames not allowed\\n\");\n                free((void *)local_24[2]);\n                local_24[2] = 0;\n                free(local_24);\n                return 0;\n              }\n              local_18 = bitsNeeded(local_28 - 1);\n            }\n            else {\n              local_48 = local_28;\n            }\n            if (local_1d == 0) {\n              memset((void *)local_24[2],0x20,local_28);\n              for (local_40 = 0; local_40 < local_48; local_40 = local_40 + 1) {\n                iVar2 = readBits(param_1,local_30,&local_44);\n                if (iVar2 == 0) {\n                  free((void *)local_24[2]);\n                  local_24[2] = 0;\n                  free(local_24);\n                  return 0;\n                }\n                if (*local_10 < local_44) {\n                  printf(\"[ERROR] invalid pixel\\n\");\n                  free((void *)local_24[2]);\n                  local_24[2] = 0;\n                  free(local_24);\n                  return 0;\n                }\n                *(undefined *)(local_24[2] + local_40) = *(undefined *)(local_10[1] + local_44);\n                local_44 = 0;\n              }\n              uVar4 = local_48 * local_30;\n            }\n            else {\n              if (*(int *)((param_2[0x93] + 0x3fffffff) * 4 + param_2[0x94]) == 0) {\n                free((void *)local_24[2]);\n                local_24[2] = 0;\n                free(local_24);\n                return 0;\n              }\n              memcpy((void *)local_24[2],\n                     *(void **)(*(int *)((param_2[0x93] + 0x3fffffff) * 4 + param_2[0x94]) + 8),\n                     local_28);\n              for (local_1c = 0; local_1c < local_48; local_1c = local_1c + 1) {\n                local_40 = 0;\n                local_44 = 0;\n                iVar2 = readBits(param_1,local_18,&local_40);\n                if (iVar2 == 0) {\n                  free((void *)local_24[2]);\n                  local_24[2] = 0;\n                  free(local_24);\n                  local_24 = (int *)0x0;\n                  printf(\"[ERROR] Failed to read pixel index\\n\");\n                  return 0;\n                }\n                iVar2 = readBits(param_1,local_30,&local_44);\n                if (iVar2 == 0) {\n                  free((void *)local_24[2]);\n                  local_24[2] = 0;\n                  free(local_24);\n                  local_24 = (int *)0x0;\n                  printf(\"[ERROR] Failed to read pixel value\\n\");\n                  return 0;\n                }\n                if (local_28 <= local_40) {\n                  printf(\"[ERROR] Index out of image bounds\\n\");\n                  free((void *)local_24[2]);\n                  local_24[2] = 0;\n                  free(local_24);\n                  return 0;\n                }\n                if (*local_10 <= local_44) {\n                  printf(\"[ERROR] Pixel beyond dictionary bounds\\n\");\n                  free((void *)local_24[2]);\n                  local_24[2] = 0;\n                  free(local_24);\n                  return 0;\n                }\n                *(undefined *)(local_24[2] + local_40) = *(undefined *)(local_10[1] + local_44);\n              }\n              uVar4 = local_14 + (local_18 + local_30) * local_48 & 7;\n            }\n            local_40 = -uVar4 & 7;\n            if ((local_40 != 0) && (iVar2 = readBits(param_1,local_40,&local_44), iVar2 == 0)) {\n              free((void *)local_24[2]);\n              local_24[2] = 0;\n              free(local_24);\n              local_24 = (int *)0x0;\n              printf(\"[ERROR] Failed to read padding bits\\n\");\n              return 0;\n            }\n            *(int **)(param_2[0x94] + param_2[0x93] * 4) = local_24;\n            param_2[0x93] = param_2[0x93] + 1;\n            uVar1 = 1;\n          }\n        }\n      }\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parseCVFFrame",
+                        "printf",
+                        "readBits",
+                        "bitsNeeded",
+                        "malloc",
+                        "free",
+                        "memset",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "parseCVFFrame",
+                        "renderCVF"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parseCVFPixelDict",
+                "func_c_signature": "uint parseCVFPixelDict(int param_1,int param_2,int param_3)",
+                "decompiled_code": "uint parseCVFPixelDict(int param_1,int param_2,int param_3) {\n  int iVar1;\n  undefined4 local_1c;\n  uint local_18;\n  void *local_14;\n  uint local_10;\n  \n  local_18 = 0;\n  local_1c = 0;\n  local_14 = (void *)0x0;\n  if (param_1 == 0) {\n    local_18 = 0;\n  }\n  else if (param_2 == 0) {\n    local_18 = 0;\n  }\n  else if ((param_3 < 0) || (7 < param_3)) {\n    local_18 = 0;\n  }\n  else if (*(int *)(param_2 + 0xc + (param_3 + 0x40) * 8) == 0) {\n    iVar1 = readBits(param_1,8,&local_18);\n    if (iVar1 == 0) {\n      local_18 = 0;\n    }\n    else if (local_18 == 0) {\n      printf(\"[ERROR] Zero length pixel dictionary not allowed.\\n\");\n    }\n    else {\n      local_14 = malloc(local_18 + 1);\n      if (local_14 == (void *)0x0) {\n        local_18 = 0;\n      }\n      else {\n        memset(local_14,0,local_18 + 1);\n        for (local_10 = 0; local_10 < local_18; local_10 = local_10 + 1) {\n          iVar1 = readBits(param_1,8,&local_1c);\n          if (iVar1 == 0) {\n            printf(\"[ERROR] Failed to read custom pixel dictionary\\n\");\n            free(local_14);\n            return 0;\n          }\n          *(char *)(local_10 + (int)local_14) = (char)local_1c;\n          local_1c = 0;\n        }\n        memset((void *)(param_2 + (param_3 + 0x40) * 8 + 0xc),0,8);\n        *(uint *)(param_2 + 0xc + (param_3 + 0x40) * 8) = local_18;\n        *(void **)(param_2 + 0x10 + (param_3 + 0x40) * 8) = local_14;\n        local_18 = 1;\n      }\n    }\n  }\n  else {\n    printf(\"[ERROR] Only one type %d pixel allowed.\\n\");\n    local_18 = 0;\n  }\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parseCVFPixelDict",
+                        "readBits",
+                        "printf",
+                        "malloc",
+                        "memset",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "parseCVFPixelDict",
+                        "renderCVF"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parseCVFDescription",
+                "func_c_signature": "undefined4 parseCVFDescription(int param_1,int param_2)",
+                "decompiled_code": "undefined4 parseCVFDescription(int param_1,int param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  undefined4 local_1c;\n  uint local_18;\n  byte local_11;\n  uint local_10;\n  \n  local_18 = 0;\n  local_10 = 0;\n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else if (param_2 == 0) {\n    uVar1 = 0;\n  }\n  else if (*(char *)(param_2 + 0x10c) == '\\0') {\n    iVar2 = readBits(param_1,8,&local_18);\n    if (iVar2 == 0) {\n      uVar1 = 0;\n    }\n    else if (local_18 < 0x100) {\n      for (local_10 = 0; local_10 < local_18; local_10 = local_10 + 1) {\n        iVar2 = readBits(param_1,8,&local_1c);\n        if (iVar2 == 0) {\n          return 0;\n        }\n        *(char *)(local_10 + param_2 + 0x10c) = (char)local_1c;\n        local_1c = 0;\n      }\n      for (local_10 = 0; local_10 < local_18; local_10 = local_10 + 1) {\n        local_11 = *(byte *)(local_10 + param_2 + 0x10c);\n        iVar2 = isalpha((uint)local_11);\n        if (((iVar2 == 0) && (iVar2 = isdigit((uint)local_11), iVar2 == 0)) &&\n           (iVar2 = isspace((uint)local_11), iVar2 == 0)) {\n          printf(\"[ERROR] Invalid character in description\\n\");\n          return 0;\n        }\n      }\n      uVar1 = 1;\n    }\n    else {\n      uVar1 = 0;\n    }\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parseCVFDescription",
+                        "readBits",
+                        "isalpha",
+                        "isdigit",
+                        "isspace",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "parseCVFDescription",
+                        "renderCVF"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parseCVFName",
+                "func_c_signature": "undefined4 parseCVFName(int param_1,int param_2)",
+                "decompiled_code": "undefined4 parseCVFName(int param_1,int param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  undefined4 local_1c;\n  uint local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_18 = 0;\n  local_1c = 0;\n  if ((param_1 == 0) || (param_2 == 0)) {\n    uVar1 = 0;\n  }\n  else if (*(char *)(param_2 + 0xc) == '\\0') {\n    iVar2 = readBits(param_1,8,&local_18);\n    if (iVar2 == 0) {\n      uVar1 = 0;\n    }\n    else if (local_18 < 0x100) {\n      for (local_10 = 0; local_10 < local_18; local_10 = local_10 + 1) {\n        iVar2 = readBits(param_1,8,&local_1c);\n        if (iVar2 == 0) {\n          return 0;\n        }\n        *(char *)(local_10 + param_2 + 0xc) = (char)local_1c;\n        local_1c = 0;\n      }\n      for (local_14 = 0; local_14 < local_18; local_14 = local_14 + 1) {\n        iVar2 = isascii((int)*(char *)(local_14 + param_2 + 0xc));\n        if (iVar2 == 0) {\n          printf(\"[ERROR] Invalid value in name field\\n\");\n          return 0;\n        }\n      }\n      uVar1 = 1;\n    }\n    else {\n      uVar1 = 0;\n    }\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parseCVFName",
+                        "readBits",
+                        "isascii",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "parseCVFName",
+                        "renderCVF"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parseCVFHeader",
+                "func_c_signature": "undefined4 parseCVFHeader(int param_1,uint *param_2)",
+                "decompiled_code": "undefined4 parseCVFHeader(int param_1,uint *param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  void *pvVar3;\n  \n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else if (param_2 == (uint *)0x0) {\n    uVar1 = 0;\n  }\n  else if (*param_2 == 0) {\n    iVar2 = readBits(param_1,8,param_2);\n    if (iVar2 == 0) {\n      uVar1 = 0;\n    }\n    else if (*param_2 == 0) {\n      printf(\"[ERROR] Zero length height is not permitted\\n\");\n      uVar1 = 0;\n    }\n    else if (*param_2 < 0x24) {\n      iVar2 = readBits(param_1,8,param_2 + 1);\n      if (iVar2 == 0) {\n        uVar1 = 0;\n      }\n      else if (param_2[1] == 0) {\n        printf(\"[ERROR] Zero length width is not permitted\\n\");\n        uVar1 = 0;\n      }\n      else if (param_2[1] < 0x81) {\n        iVar2 = readBits(param_1,0x10,param_2 + 2);\n        if (iVar2 == 0) {\n          uVar1 = 0;\n        }\n        else if (param_2[2] < 0x801) {\n          if (param_2[2] == 0) {\n            printf(\"[ERROR] Zero frame count is not permitted\\n\");\n            uVar1 = 0;\n          }\n          else {\n            pvVar3 = malloc(param_2[2] << 2);\n            param_2[0x94] = (uint)pvVar3;\n            if (param_2[0x94] == 0) {\n              uVar1 = 0;\n            }\n            else {\n              memset((void *)param_2[0x94],0,param_2[2] * 4);\n              uVar1 = 1;\n            }\n          }\n        }\n        else {\n          printf(\"[ERROR] Maximum frame count is 2048\\n\");\n          uVar1 = 0;\n        }\n      }\n      else {\n        printf(\"[ERROR] Width must be less than 128\\n\");\n        uVar1 = 0;\n      }\n    }\n    else {\n      printf(\"[ERROR] Height must be less than 35\\n\");\n      uVar1 = 0;\n    }\n  }\n  else {\n    printf(\"[ERROR] Multiple header sections are not permitted.\\n\");\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parseCVFHeader",
+                        "readBits",
+                        "printf",
+                        "malloc",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "parseCVFHeader",
+                        "renderCVF"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "renderCVF",
+                "func_c_signature": "void renderCVF(int param_1)",
+                "decompiled_code": "void renderCVF(int param_1) {\n  int iVar1;\n  uint local_14;\n  int local_10;\n  \n  local_14 = 0;\n  local_10 = 0;\n  if ((param_1 != 0) && (iVar1 = readBits(param_1,0x20,&local_14), iVar1 != 0)) {\n    if (local_14 == 0x435646) {\n      local_10 = initCVF();\n      if (local_10 != 0) {\nLAB_00012a78:\n        while( true ) {\n          local_14 = 0;\n          iVar1 = readBits(param_1,0x10,&local_14);\n          if (iVar1 == 0) {\n            playVideo(local_10);\n            freeCVF(local_10);\n            return;\n          }\n          if (local_14 != 0x5555) break;\n          iVar1 = parseCVFFrame(param_1,local_10);\n          if (iVar1 == 0) {\n            freeCVF(local_10);\n            return;\n          }\n        }\n        if ((local_14 < 0x5556) && (local_14 < 0x444c)) {\n          if (0x4443 < local_14) {\n            local_14 = local_14 - 0x4444;\n            iVar1 = parseCVFPixelDict(param_1,local_10,local_14);\n            if (iVar1 == 0) {\n              freeCVF(local_10);\n              return;\n            }\n            goto LAB_00012a78;\n          }\n          if (local_14 == 0x3333) {\n            iVar1 = parseCVFDescription(param_1,local_10);\n            if (iVar1 == 0) {\n              freeCVF(local_10);\n              return;\n            }\n            goto LAB_00012a78;\n          }\n          if (local_14 < 0x3334) {\n            if (local_14 == 0x1111) {\n              iVar1 = parseCVFHeader(param_1,local_10);\n              if (iVar1 == 0) {\n                freeCVF(local_10);\n                return;\n              }\n            }\n            else {\n              if (local_14 != 0x2222) goto LAB_00012a4c;\n              iVar1 = parseCVFName(param_1,local_10);\n              if (iVar1 == 0) {\n                freeCVF(local_10);\n                return;\n              }\n            }\n            goto LAB_00012a78;\n          }\n        }\nLAB_00012a4c:\n        printf(\"[ERROR] Invalid section type: $d\\n\",local_14);\n        return;\n      }\n    }\n    else {\n      printf(\"[ERROR] Invalid magic: $d\\n\",local_14);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "renderCVF",
+                        "readBits",
+                        "initCVF",
+                        "playVideo",
+                        "freeCVF",
+                        "parseCVFFrame",
+                        "parseCVFPixelDict",
+                        "parseCVFDescription",
+                        "parseCVFHeader",
+                        "parseCVFName",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "renderCVF",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initCVF",
+                "func_c_signature": "void * initCVF(void)",
+                "decompiled_code": "void * initCVF(void) {\n  void *__s;\n  \n  __s = malloc(0x254);\n  if (__s != (void *)0x0) {\n    memset(__s,0,0x254);\n  }\n  return __s;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initCVF",
+                        "malloc",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "renderCVF",
+                        "initCVF"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "receiveIt",
+                "func_c_signature": "int receiveIt(int param_1,int param_2)",
+                "decompiled_code": "int receiveIt(int param_1,int param_2) {\n  int iVar1;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_18 = 0;\n  local_14 = param_1;\n  local_10 = 0;\n  if (param_1 == 0) {\n    local_10 = 0;\n  }\n  else {\n    for (; param_2 != 0; param_2 = param_2 - local_18) {\n      iVar1 = receive(0,local_10 + local_14,param_2,&local_18);\n      if (iVar1 != 0) {\n        printf(\"[ERROR] Failed to receive\\n\");\n        return 0;\n      }\n      local_10 = local_18 + local_10;\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "receiveIt",
+                        "receive",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "receiveIt",
+                        "readImageData"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "readImageData",
+                "func_c_signature": "undefined4 readImageData(void)",
+                "decompiled_code": "undefined4 readImageData(void) {\n  size_t local_1c;\n  void *local_18;\n  undefined4 local_14;\n  size_t local_10;\n  \n  local_1c = 0;\n  local_10 = 0;\n  local_14 = 0;\n  local_18 = (void *)0x0;\n  printf(\"----------------Stream Me Your Video----------------\\n\");\n  local_10 = receiveIt(&local_1c,4);\n  if (local_10 == 4) {\n    if ((int)local_1c < 0x1001) {\n      if ((int)local_1c < 8) {\n        printf(\"[ERROR] Image must be greater than 8 bytes\\n\");\n        local_14 = 0;\n      }\n      else {\n        local_18 = malloc(local_1c);\n        if (local_18 == (void *)0x0) {\n          local_14 = 0;\n        }\n        else {\n          memset(local_18,0,local_1c);\n          local_10 = receiveIt(local_18,local_1c);\n          if (local_10 == local_1c) {\n            local_14 = initStream(local_18,local_1c);\n            free(local_18);\n          }\n          else {\n            free(local_18);\n            local_14 = 0;\n          }\n        }\n      }\n    }\n    else {\n      printf(\"[ERROR] Image must be smaller than 4096 bytes\\n\");\n      local_14 = 0;\n    }\n  }\n  else {\n    local_14 = 0;\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readImageData",
+                        "printf",
+                        "receiveIt",
+                        "malloc",
+                        "memset",
+                        "initStream",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "readImageData",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int local_18;\n  undefined local_11;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_11 = 0;\n  local_18 = readImageData();\n  if (local_18 != 0) {\n    renderCVF(local_18);\n    freeStream(&local_18);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "readImageData",
+                        "renderCVF",
+                        "freeStream"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00032_decompiled.c"
+                }
+            }
+        ]
+    }
+}

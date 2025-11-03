@@ -1,0 +1,151 @@
+{
+    "file": "comm",
+    "decompiled_code": {
+        "comm.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... FILE1 FILE2\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"Compare sorted files FILE1 and FILE2 line by line.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"\\nWhen FILE1 or FILE2 (not both) is -, read standard input.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nWith no options, produce three-column output.  Column one contains\\nlines unique to FILE1, column two contains lines unique to FILE2,\\nand column three contains lines common to both files.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\n  -1                      suppress column 1 (lines unique to FILE1)\\n  -2                      suppress column 2 (lines unique to FILE2)\\n  -3                      suppress column 3 (lines that appear in both files)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\n      --check-order       check that the input is correctly sorted, even\\n                            if all input lines are pairable\\n      --nocheck-order     do not check that the input is correctly sorted\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --output-delimiter=STR  separate columns with STR\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --total             output a summary\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  -z, --zero-terminated   line delimiter is NUL, not newline\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"\\nComparisons honor the rules specified by \\'LC_COLLATE\\'.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    uVar2 = _program_name;\n    pcVar3 = (char *)gettext(\n                            \"\\nExamples:\\n  %s -12 file1 file2  Print only lines present in both file1 and file2.\\n  %s -3 file1 file2  Print lines in file1 not in file2, and vice versa.\\n\"\n                            );\n    printf(pcVar3,uVar2,uVar2);\n    emit_ancillary_info(&DAT_00101eec);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "FILE2"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "FILE2",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "comm_decompiled.c"
+                }
+            },
+            {
+                "func_name": "writeline",
+                "func_c_signature": "void writeline(long param_1,int param_2)",
+                "decompiled_code": "void writeline(long param_1,int param_2) {\n  int iVar1;\n  \n  if (param_2 == 3) {\n    if (both != '\\x01') {\n      return;\n    }\n    if (only_file_1 != '\\0') {\n      fwrite_unlocked(col_sep,1,col_sep_len,_stdout);\n    }\n    if (only_file_2 != '\\0') {\n      fwrite_unlocked(col_sep,1,col_sep_len,_stdout);\n    }\n  }\n  else if (param_2 < 4) {\n    if (param_2 == 1) {\n      if (only_file_1 != '\\x01') {\n        return;\n      }\n    }\n    else if (param_2 == 2) {\n      if (only_file_2 != '\\x01') {\n        return;\n      }\n      if (only_file_1 != '\\0') {\n        fwrite_unlocked(col_sep,1,col_sep_len,_stdout);\n      }\n    }\n  }\n  fwrite_unlocked(*(void **)(param_1 + 0x10),1,*(size_t *)(param_1 + 8),_stdout);\n  iVar1 = ferror_unlocked(_stdout);\n  if (iVar1 != 0) {\n    write_error();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "writeline",
+                        "fwrite_unlocked",
+                        "ferror_unlocked",
+                        "write_error"
+                    ],
+                    "calling_functions": [
+                        "writeline",
+                        "compare_files"
+                    ],
+                    "defined_in_file": "comm_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_order",
+                "func_c_signature": "void check_order(long param_1,long param_2,int param_3)",
+                "decompiled_code": "void check_order(long param_1,long param_2,int param_3) {\n  undefined8 uVar1;\n  bool bVar2;\n  int local_20;\n  \n  if ((check_input_order != 2) &&\n     (((check_input_order == 1 || (seen_unpairable != '\\0')) &&\n      ((&issued_disorder_warning)[param_3 + -1] != '\\x01')))) {\n    if (hard_LC_COLLATE == '\\0') {\n      local_20 = memcmp2(*(undefined8 *)(param_1 + 0x10),*(long *)(param_1 + 8) + -1,\n                         *(undefined8 *)(param_2 + 0x10),*(long *)(param_2 + 8) + -1);\n    }\n    else {\n      local_20 = xmemcoll(*(undefined8 *)(param_1 + 0x10),*(long *)(param_1 + 8) + -1,\n                          *(undefined8 *)(param_2 + 0x10),*(long *)(param_2 + 8) + -1);\n    }\n    if (0 < local_20) {\n      bVar2 = check_input_order == 1;\n      uVar1 = gettext(\"file %d is not in sorted order\");\n      error(bVar2,0,uVar1,param_3);\n      (&issued_disorder_warning)[param_3 + -1] = 1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_order",
+                        "memcmp2",
+                        "xmemcoll",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "check_order",
+                        "compare_files"
+                    ],
+                    "defined_in_file": "comm_decompiled.c"
+                }
+            },
+            {
+                "func_name": "compare_files",
+                "func_c_signature": "void compare_files(long param_1)",
+                "decompiled_code": "void compare_files(long param_1) {\n  char cVar1;\n  int iVar2;\n  FILE *pFVar3;\n  long lVar4;\n  int *piVar5;\n  undefined8 uVar6;\n  ulong uVar7;\n  long in_FS_OFFSET;\n  int local_1f4;\n  int local_1f0;\n  int local_1ec;\n  char local_18a [2];\n  long local_188 [2];\n  FILE *apFStack_178 [2];\n  uint auStack_168 [8];\n  long local_148;\n  long local_140;\n  long local_138;\n  long alStack_128 [8];\n  undefined local_e8 [200];\n  undefined8 local_20;\n  \n  local_20 = *(undefined8 *)(in_FS_OFFSET + 0x28);\n  local_148 = 0;\n  local_140 = 0;\n  local_138 = 0;\n  for (local_1f4 = 0; local_1f4 < 2; local_1f4 = local_1f4 + 1) {\n    for (local_1f0 = 0; local_1f0 < 4; local_1f0 = local_1f0 + 1) {\n      initbuffer(local_e8 + (long)local_1f4 * 0x60 + (long)local_1f0 * 0x18);\n      alStack_128[(long)local_1f0 + (long)local_1f4 * 4] =\n           (long)(local_e8 + (long)local_1f4 * 0x60 + (long)local_1f0 * 0x18);\n    }\n    auStack_168[(long)local_1f4 * 3] = 0;\n    auStack_168[(long)local_1f4 * 3 + 1] = 0;\n    auStack_168[(long)local_1f4 * 3 + 2] = 0;\n    cVar1 = streq(*(undefined8 *)(param_1 + (long)local_1f4 * 8),&DAT_00101f17);\n    pFVar3 = _stdin;\n    if (cVar1 == '\\0') {\n      pFVar3 = (FILE *)fopen_safer(*(undefined8 *)(param_1 + (long)local_1f4 * 8),&DAT_00101f19);\n    }\n    apFStack_178[local_1f4] = pFVar3;\n    if (apFStack_178[local_1f4] == (FILE *)0x0) {\n      uVar6 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_1 + (long)local_1f4 * 8));\n      piVar5 = __errno_location();\n      error(1,*piVar5,&DAT_00101f1b,uVar6);\n    }\n    fadvise(apFStack_178[local_1f4],2);\n    lVar4 = readlinebuffer_delim\n                      (alStack_128\n                       [(long)(int)auStack_168[(long)local_1f4 * 3] + (long)local_1f4 * 4],\n                       apFStack_178[local_1f4],(int)(char)delim);\n    local_188[local_1f4] = lVar4;\n    iVar2 = ferror_unlocked(apFStack_178[local_1f4]);\n    if (iVar2 != 0) {\n      uVar6 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_1 + (long)local_1f4 * 8));\n      piVar5 = __errno_location();\n      error(1,*piVar5,&DAT_00101f1b,uVar6);\n    }\n  }\n  while ((local_188[0] != 0 || (local_188[1] != 0))) {\n    local_18a[0] = '\\0';\n    local_18a[1] = 0;\n    if (local_188[0] == 0) {\n      local_1ec = 1;\n    }\n    else if (local_188[1] == 0) {\n      local_1ec = -1;\n    }\n    else if (hard_LC_COLLATE == '\\0') {\n      lVar4 = *(long *)(local_188[0] + 8);\n      if (*(long *)(local_188[1] + 8) <= *(long *)(local_188[0] + 8)) {\n        lVar4 = *(long *)(local_188[1] + 8);\n      }\n      local_1ec = memcmp(*(void **)(local_188[0] + 0x10),*(void **)(local_188[1] + 0x10),lVar4 - 1);\n      if (local_1ec == 0) {\n        local_1ec = (uint)(*(long *)(local_188[1] + 8) < *(long *)(local_188[0] + 8)) -\n                    (uint)(*(long *)(local_188[0] + 8) < *(long *)(local_188[1] + 8));\n      }\n    }\n    else {\n      local_1ec = xmemcoll(*(undefined8 *)(local_188[0] + 0x10),*(long *)(local_188[0] + 8) + -1,\n                           *(undefined8 *)(local_188[1] + 0x10),*(long *)(local_188[1] + 8) + -1);\n    }\n    if (local_1ec == 0) {\n      local_138 = local_138 + 1;\n      writeline(local_188[1],3);\n    }\n    else {\n      seen_unpairable = 1;\n      if (local_1ec < 1) {\n        local_148 = local_148 + 1;\n        writeline(local_188[0],1);\n      }\n      else {\n        local_140 = local_140 + 1;\n        writeline(local_188[1],2);\n      }\n    }\n    if (-1 < local_1ec) {\n      local_18a[1] = 1;\n    }\n    if (local_1ec < 1) {\n      local_18a[0] = '\\x01';\n    }\n    for (local_1f4 = 0; local_1f4 < 2; local_1f4 = local_1f4 + 1) {\n      if (local_18a[local_1f4] != '\\0') {\n        auStack_168[(long)local_1f4 * 3 + 2] = auStack_168[(long)local_1f4 * 3 + 1];\n        auStack_168[(long)local_1f4 * 3 + 1] = auStack_168[(long)local_1f4 * 3];\n        auStack_168[(long)local_1f4 * 3] = auStack_168[(long)local_1f4 * 3] + 1 & 3;\n        lVar4 = readlinebuffer_delim\n                          (alStack_128\n                           [(long)(int)auStack_168[(long)local_1f4 * 3] + (long)local_1f4 * 4],\n                           apFStack_178[local_1f4],(int)(char)delim);\n        local_188[local_1f4] = lVar4;\n        if (local_188[local_1f4] == 0) {\n          if (*(long *)(alStack_128\n                        [(long)(int)auStack_168[(long)local_1f4 * 3 + 2] + (long)local_1f4 * 4] +\n                       0x10) != 0) {\n            check_order(alStack_128\n                        [(long)(int)auStack_168[(long)local_1f4 * 3 + 2] + (long)local_1f4 * 4],\n                        alStack_128\n                        [(long)(int)auStack_168[(long)local_1f4 * 3 + 1] + (long)local_1f4 * 4],\n                        local_1f4 + 1);\n          }\n        }\n        else {\n          check_order(alStack_128\n                      [(long)(int)auStack_168[(long)local_1f4 * 3 + 1] + (long)local_1f4 * 4],\n                      local_188[local_1f4],local_1f4 + 1);\n        }\n        iVar2 = ferror_unlocked(apFStack_178[local_1f4]);\n        if (iVar2 != 0) {\n          uVar6 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_1 + (long)local_1f4 * 8));\n          piVar5 = __errno_location();\n          error(1,*piVar5,&DAT_00101f1b,uVar6);\n        }\n        local_18a[local_1f4] = '\\0';\n      }\n    }\n  }\n  for (local_1f4 = 0; local_1f4 < 2; local_1f4 = local_1f4 + 1) {\n    iVar2 = rpl_fclose(apFStack_178[local_1f4]);\n    if (iVar2 != 0) {\n      uVar6 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_1 + (long)local_1f4 * 8));\n      piVar5 = __errno_location();\n      error(1,*piVar5,&DAT_00101f1b,uVar6);\n    }\n  }\n  if (total_option != '\\0') {\n    if (col_sep_len == 1) {\n      uVar7 = (ulong)delim;\n      uVar6 = gettext(\"total\");\n      printf(\"%ju%c%ju%c%ju%c%s%c\",local_148,(ulong)(uint)(int)(char)*col_sep,local_140,\n             (ulong)(uint)(int)(char)*col_sep,local_138,(ulong)(uint)(int)(char)*col_sep,uVar6,uVar7\n            );\n    }\n    else {\n      uVar7 = (ulong)delim;\n      uVar6 = gettext(\"total\");\n      printf(\"%ju%s%ju%s%ju%s%s%c\",local_148,col_sep,local_140,col_sep,local_138,col_sep,uVar6,uVar7\n            );\n    }\n  }\n  if ((issued_disorder_warning != '\\0') || (DAT_00101806 != '\\0')) {\n    uVar6 = gettext(\"input is not in sorted order\");\n    error(1,0,uVar6);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(0);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "compare_files",
+                        "initbuffer",
+                        "streq",
+                        "fopen_safer",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "fadvise",
+                        "readlinebuffer_delim",
+                        "ferror_unlocked",
+                        "memcmp",
+                        "xmemcoll",
+                        "writeline",
+                        "check_order",
+                        "rpl_fclose",
+                        "gettext",
+                        "printf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "compare_files",
+                        "main"
+                    ],
+                    "defined_in_file": "comm_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "void main(int param_1,undefined8 *param_2) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  \n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  hard_LC_COLLATE = hard_locale(3);\n  atexit((__func *)&close_stdout);\n  only_file_1 = 1;\n  only_file_2 = 1;\n  both = 1;\n  seen_unpairable = 0;\n  DAT_00101806 = 0;\n  issued_disorder_warning = 0;\n  check_input_order = 0;\n  total_option = 0;\nLAB_00101651:\n  iVar2 = getopt_long(param_1,param_2,&DAT_00101fd7,long_options,0);\n  if (iVar2 == -1) {\n    if (col_sep_len == 0) {\n      col_sep_len = 1;\n    }\n    if (param_1 - _optind < 2) {\n      if (_optind < param_1) {\n        uVar3 = quote(param_2[(long)param_1 + -1]);\n        uVar4 = gettext(\"missing operand after %s\");\n        error(0,0,uVar4,uVar3);\n      }\n      else {\n        uVar3 = gettext(\"missing operand\");\n        error(0,0,uVar3);\n      }\n      usage(1);\n    }\n    if (2 < param_1 - _optind) {\n      uVar3 = quote(param_2[(long)_optind + 2]);\n      uVar4 = gettext(\"extra operand %s\");\n      error(0,0,uVar4,uVar3);\n      usage(1);\n    }\n                    /* WARNING: Subroutine does not return */\n    compare_files(param_2 + _optind);\n  }\n  if (iVar2 < 0x84) {\n    if (0x79 < iVar2) {\n      switch(iVar2) {\n      case 0x7a:\n        delim = 0;\n        break;\n      default:\n        goto switchD_001014be_caseD_7b;\n      case 0x80:\n        check_input_order = 1;\n        break;\n      case 0x81:\n        check_input_order = 2;\n        break;\n      case 0x82:\n        if ((col_sep_len != 0) && (cVar1 = streq(col_sep,_optarg), cVar1 != '\\x01')) {\n          uVar3 = gettext(\"multiple output delimiters specified\");\n          error(1,0,uVar3);\n        }\n        col_sep = _optarg;\n        if (*_optarg == '\\0') {\n          col_sep_len = 1;\n        }\n        else {\n          col_sep_len = strlen(_optarg);\n        }\n        break;\n      case 0x83:\n        total_option = 1;\n      }\n      goto LAB_00101651;\n    }\n    if (iVar2 == 0x33) {\n      both = 0;\n      goto LAB_00101651;\n    }\n    if (iVar2 < 0x34) {\n      if (iVar2 == 0x32) {\n        only_file_2 = 0;\n        goto LAB_00101651;\n      }\n      if (0x32 < iVar2) goto switchD_001014be_caseD_7b;\n      if (iVar2 == 0x31) {\n        only_file_1 = 0;\n        goto LAB_00101651;\n      }\n      if (iVar2 < 0x32) {\n        if (iVar2 == -0x83) {\nLAB_001015c9:\n          uVar3 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n          uVar4 = proper_name_lite(\"Richard M. Stallman\",\"Richard M. Stallman\");\n          version_etc(_stdout,&DAT_00101eec,\"GNU coreutils\",_Version,uVar4,uVar3,0);\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (iVar2 == -0x82) {\n          usage(0);\n          goto LAB_001015c9;\n        }\n      }\n    }\n  }\nswitchD_001014be_caseD_7b:\n  usage(1);\n  goto LAB_00101651;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "hard_locale",
+                        "atexit",
+                        "getopt_long",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "compare_files",
+                        "streq",
+                        "strlen",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "comm_decompiled.c"
+                }
+            }
+        ]
+    }
+}

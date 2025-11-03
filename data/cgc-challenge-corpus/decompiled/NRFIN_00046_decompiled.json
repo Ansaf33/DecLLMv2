@@ -1,0 +1,124 @@
+{
+    "file": "NRFIN_00046",
+    "decompiled_code": {
+        "bytecode.c": [
+            {
+                "func_name": "bytecode_exec",
+                "func_c_signature": "undefined4 bytecode_exec(int *param_1,ushort param_2)",
+                "decompiled_code": "undefined4 bytecode_exec(int *param_1,ushort param_2) {\n  byte bVar1;\n  int iVar2;\n  uint3 uVar3;\n  byte *pbVar4;\n  uint3 *local_8;\n  \n  iVar2 = *param_1;\n  for (local_8 = (uint3 *)((int)param_1 + 3); local_8 < (uint3 *)((int)param_1 + (uint)param_2);\n      local_8 = local_8 + 2) {\n    uVar3 = *local_8;\n    bVar1 = *(byte *)((int)local_8 + 5);\n    pbVar4 = (byte *)((uint)param_2 + ((uint)param_1 & 0xff | iVar2 << 8) + 3 +\n                     (uint)*(byte *)((int)local_8 + 7));\n    if (uVar3 == 0x564944) {\n      if (bVar1 == 0) {\n        *pbVar4 = 0xaa;\n      }\n      else {\n        *pbVar4 = *pbVar4 / bVar1;\n      }\n    }\n    else if (uVar3 < 0x564945) {\n      if (uVar3 == 0x544553) {\n        *pbVar4 = bVar1;\n      }\n      else if (uVar3 < 0x544554) {\n        if (uVar3 == 0x524853) {\n          if (bVar1 < 8) {\n            *pbVar4 = (byte)((int)(uint)*pbVar4 >> (bVar1 & 0x1f));\n          }\n          else {\n            *pbVar4 = 0;\n          }\n        }\n        else if (uVar3 < 0x524854) {\n          if (uVar3 == 0x4c554e) {\n            *pbVar4 = 0;\n          }\n          else if (uVar3 < 0x4c554f) {\n            if (uVar3 == 0x4c554d) {\n              *pbVar4 = *pbVar4 * bVar1;\n            }\n            else if (uVar3 < 0x4c554e) {\n              if (uVar3 == 0x4c4853) {\n                if (bVar1 < 8) {\n                  *pbVar4 = *pbVar4 << (bVar1 & 0x1f);\n                }\n                else {\n                  *pbVar4 = 0;\n                }\n              }\n              else if (uVar3 < 0x4c4854) {\n                if (uVar3 == 0x425553) {\n                  *pbVar4 = *pbVar4 - bVar1;\n                }\n                else if (uVar3 == 0x444441) {\n                  *pbVar4 = *pbVar4 + bVar1;\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bytecode_exec"
+                    ],
+                    "calling_functions": [
+                        "bytecode_exec",
+                        "do_exec"
+                    ],
+                    "defined_in_file": "NRFIN_00046_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "find_session",
+                "func_c_signature": "undefined1 * find_session(int param_1)",
+                "decompiled_code": "undefined1 * find_session(int param_1) {\n  uint local_c;\n  \n  local_c = 0;\n  while( true ) {\n    if (0x13 < local_c) {\n      return (undefined1 *)0x0;\n    }\n    if (param_1 == *(int *)(sessions + local_c * 0xc)) break;\n    local_c = local_c + 1;\n  }\n  return sessions + local_c * 0xc;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_session"
+                    ],
+                    "calling_functions": [
+                        "find_session",
+                        "do_init",
+                        "do_exec"
+                    ],
+                    "defined_in_file": "NRFIN_00046_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_init",
+                "func_c_signature": "int do_init(uint **param_1)",
+                "decompiled_code": "int do_init(uint **param_1) {\n  int iVar1;\n  uint *puVar2;\n  long lVar3;\n  undefined *puVar4;\n  undefined auStack_1c [4];\n  int local_18;\n  uint local_14;\n  int local_10;\n  \n  local_10 = 0;\n  memset(&rx_buf,0,0x10000);\n  local_14 = 0;\n  local_10 = recv_bytes();\n  if (local_10 == 0) {\n    local_14 = rx_buf;\n    puVar4 = auStack_1c;\n    if (rx_buf == 0xe3e3f046) {\n      _terminate();\n      puVar4 = &stack0xffffffd4;\n    }\n    if ((local_14 < 0xe0000000) || (0xefffffff < local_14)) {\n      if (local_14 == 0) {\n        if (sessions_num < 0x13) {\n          *(undefined4 *)(puVar4 + -0x10) = 0;\n          *(undefined4 *)(puVar4 + -0x14) = 0x1178e;\n          puVar2 = (uint *)find_session();\n          *param_1 = puVar2;\n          if (*param_1 != (uint *)0x0) {\n            do {\n              local_18 = 0;\n              puVar2 = *param_1;\n              *(int **)(puVar4 + -8) = &local_18;\n              *(undefined4 *)(puVar4 + -0xc) = 4;\n              *(uint **)(puVar4 + -0x10) = puVar2;\n              *(undefined4 *)(puVar4 + -0x14) = 0x117c7;\n              lVar3 = random();\n              if (lVar3 != 0) {\n                return local_10;\n              }\n              if (local_18 != 4) {\n                return local_10;\n              }\n            } while ((**param_1 == 0) || ((0xdfffffff < **param_1 && (**param_1 < 0xf0000000))));\n            puVar2 = *param_1;\n            *(undefined4 *)(puVar4 + -8) = 4;\n            *(uint **)(puVar4 + -0xc) = puVar2;\n            *(undefined4 *)(puVar4 + -0x10) = 1;\n            *(undefined4 *)(puVar4 + -0x14) = 0x1181a;\n            local_10 = send_bytes();\n            if (local_10 == 0) {\n              *(undefined4 *)(puVar4 + -8) = 4;\n              *(uint **)(puVar4 + -0xc) = &tmp;\n              *(undefined4 *)(puVar4 + -0x10) = 0;\n              *(undefined4 *)(puVar4 + -0x14) = 0x11845;\n              local_10 = recv_bytes();\n              if (local_10 == 0) {\n                if (**param_1 == tmp) {\n                  puVar2 = *param_1;\n                  *(undefined4 *)(puVar4 + -8) = 2;\n                  *(uint **)(puVar4 + -0xc) = puVar2 + 2;\n                  *(undefined4 *)(puVar4 + -0x10) = 0;\n                  *(undefined4 *)(puVar4 + -0x14) = 0x118c6;\n                  local_10 = recv_bytes();\n                  if (local_10 == 0) {\n                    if ((*(ushort *)(*param_1 + 2) & 7) == 0) {\n                      if (*(ushort *)(*param_1 + 2) < 0x201) {\n                        session_window = session_window + (-0x103 - (uint)*(ushort *)(*param_1 + 2))\n                        ;\n                        (*param_1)[1] = session_window;\n                        sessions_num = sessions_num + 1;\n                        local_10 = 0;\n                      }\n                      else {\n                        tmp = 0xe33bf5be;\n                        *(undefined4 *)(puVar4 + -8) = 4;\n                        *(uint **)(puVar4 + -0xc) = &tmp;\n                        *(undefined4 *)(puVar4 + -0x10) = 1;\n                        *(undefined4 *)(puVar4 + -0x14) = 0x11929;\n                        iVar1 = send_bytes();\n                        if (iVar1 == 0) {\n                          *param_1 = (uint *)0x0;\n                          local_10 = 0;\n                        }\n                        else {\n                          local_10 = 0x20;\n                        }\n                      }\n                    }\n                    else {\n                      *param_1 = (uint *)0x0;\n                      local_10 = 0;\n                    }\n                  }\n                  else {\n                    local_10 = 0x20;\n                  }\n                }\n                else {\n                  tmp = 0xe2ddaa66;\n                  *(undefined4 *)(puVar4 + -8) = 4;\n                  *(uint **)(puVar4 + -0xc) = &tmp;\n                  *(undefined4 *)(puVar4 + -0x10) = 1;\n                  *(undefined4 *)(puVar4 + -0x14) = 0x1188b;\n                  iVar1 = send_bytes();\n                  if (iVar1 == 0) {\n                    *param_1 = (uint *)0x0;\n                    local_10 = 0;\n                  }\n                  else {\n                    local_10 = 0x20;\n                  }\n                }\n              }\n              else {\n                local_10 = 0x20;\n              }\n            }\n            else {\n              local_10 = 0x20;\n            }\n          }\n        }\n        else {\n          tmp = 0xe2ea8684;\n          *(undefined4 *)(puVar4 + -8) = 4;\n          *(uint **)(puVar4 + -0xc) = &tmp;\n          *(undefined4 *)(puVar4 + -0x10) = 1;\n          *(undefined4 *)(puVar4 + -0x14) = 0x1175d;\n          iVar1 = send_bytes();\n          if (iVar1 == 0) {\n            *param_1 = (uint *)0x0;\n            local_10 = 0;\n          }\n          else {\n            local_10 = 0x20;\n          }\n        }\n      }\n      else {\n        *(uint *)(puVar4 + -0x10) = local_14;\n        *(undefined4 *)(puVar4 + -0x14) = 0x116bd;\n        puVar2 = (uint *)find_session();\n        *param_1 = puVar2;\n        if (*param_1 == (uint *)0x0) {\n          tmp = 0xe9280dfc;\n          *(undefined4 *)(puVar4 + -8) = 4;\n          *(uint **)(puVar4 + -0xc) = &tmp;\n          *(undefined4 *)(puVar4 + -0x10) = 1;\n          *(undefined4 *)(puVar4 + -0x14) = 0x116eb;\n          iVar1 = send_bytes();\n          if (iVar1 == 0) {\n            local_10 = 0;\n          }\n          else {\n            local_10 = 0x20;\n          }\n        }\n        else {\n          puVar2 = *param_1;\n          *(undefined4 *)(puVar4 + -8) = 4;\n          *(uint **)(puVar4 + -0xc) = puVar2;\n          *(undefined4 *)(puVar4 + -0x10) = 1;\n          *(undefined4 *)(puVar4 + -0x14) = 0x11719;\n          iVar1 = send_bytes();\n          if (iVar1 == 0) {\n            local_10 = 0;\n          }\n          else {\n            local_10 = 0x20;\n          }\n        }\n      }\n    }\n    else {\n      tmp = 0xe0deade9;\n      *(undefined4 *)(puVar4 + -8) = 4;\n      *(uint **)(puVar4 + -0xc) = &tmp;\n      *(undefined4 *)(puVar4 + -0x10) = 1;\n      *(undefined4 *)(puVar4 + -0x14) = 0x11682;\n      iVar1 = send_bytes();\n      if (iVar1 == 0) {\n        *param_1 = (uint *)0x0;\n        local_10 = 0;\n      }\n      else {\n        local_10 = 0x20;\n      }\n    }\n  }\n  else {\n    local_10 = 0x20;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_init",
+                        "memset",
+                        "recv_bytes",
+                        "_terminate",
+                        "find_session",
+                        "random",
+                        "send_bytes"
+                    ],
+                    "calling_functions": [
+                        "do_init",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00046_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_exec",
+                "func_c_signature": "int do_exec(int param_1)",
+                "decompiled_code": "int do_exec(int param_1) {\n  int iVar1;\n  int local_10;\n  \n  tmp = 0;\n  iVar1 = recv_bytes(0,&tmp,4);\n  if (iVar1 == 0) {\n    iVar1 = find_session(tmp);\n    if (iVar1 == 0) {\n      local_10 = 0;\n    }\n    else {\n      tmp = (uint)CONCAT12(*(undefined *)(*(int *)(param_1 + 4) + 2),\n                           CONCAT11(*(undefined *)(*(int *)(param_1 + 4) + 1),\n                                    **(undefined **)(param_1 + 4)));\n      if (tmp == 0) {\n        tmp = *(uint *)(param_1 + 4) >> 8;\n        memcpy(*(void **)(param_1 + 4),&tmp,3);\n      }\n      iVar1 = recv_bytes(0,*(int *)(param_1 + 4) + 3,*(undefined2 *)(iVar1 + 8));\n      if (iVar1 == 0) {\n        local_10 = bytecode_exec(*(undefined4 *)(param_1 + 4),*(undefined2 *)(param_1 + 8));\n        if (local_10 == 0) {\n          iVar1 = send_bytes(1,param_1,4);\n          if (iVar1 == 0) {\n            local_10 = send_bytes(1,(uint)*(ushort *)(param_1 + 8) +\n                                    (*(uint *)(param_1 + 4) & 0xff | **(int **)(param_1 + 4) << 8) +\n                                    3,0x100);\n            if (local_10 != 0) {\n              local_10 = 0x20;\n            }\n          }\n          else {\n            local_10 = 0x20;\n          }\n        }\n      }\n      else {\n        local_10 = 0x20;\n      }\n    }\n  }\n  else {\n    local_10 = 0x20;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT12",
+                    "CONCAT11"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_exec",
+                        "recv_bytes",
+                        "find_session",
+                        "CONCAT12",
+                        "CONCAT11",
+                        "memcpy",
+                        "bytecode_exec",
+                        "send_bytes"
+                    ],
+                    "calling_functions": [
+                        "do_exec",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00046_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "int main(void)",
+                "decompiled_code": "int main(void) {\n  int iVar1;\n  int local_1c;\n  int local_18;\n  int local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_14 = 0;\n  local_18 = 0;\n  local_1c = 0;\n  local_14 = allocate(0x3c3c,0,&session_dat);\n  if (local_14 == 0) {\n    session_window = session_dat + 0x3c3c;\n    while( true ) {\n      while (local_14 = 0, local_18 == 0) {\n        local_1c = 0;\n        iVar1 = do_init(&local_1c);\n        if (iVar1 != 0) {\n          return iVar1;\n        }\n        if (local_1c != 0) {\n          local_18 = 1;\n        }\n      }\n      if (local_18 != 1) break;\n      iVar1 = do_exec(local_1c);\n      if (iVar1 != 0) {\n        return iVar1;\n      }\n      local_18 = 0;\n    }\n    local_14 = 0x41;\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "allocate",
+                        "do_init",
+                        "do_exec"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00046_decompiled.c"
+                }
+            }
+        ]
+    }
+}

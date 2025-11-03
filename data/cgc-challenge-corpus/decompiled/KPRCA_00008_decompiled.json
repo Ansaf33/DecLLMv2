@@ -1,0 +1,440 @@
+{
+    "file": "KPRCA_00008",
+    "decompiled_code": {
+        "memcpy_fast.c": [
+            {
+                "func_name": "memcpy_fast",
+                "func_c_signature": "void * memcpy_fast(void *param_1,void *param_2,uint param_3)",
+                "decompiled_code": "void * memcpy_fast(void *param_1,void *param_2,uint param_3) {\n  undefined4 uVar1;\n  undefined4 uVar2;\n  undefined4 uVar3;\n  undefined4 *puVar4;\n  undefined4 *puVar5;\n  uint local_20;\n  \n  if ((((param_3 & 0xf) == 0) && (((uint)param_1 & 0xf) == 0)) && (((uint)param_2 & 0xf) == 0)) {\n    local_20 = 0;\n    do {\n      puVar5 = (undefined4 *)(local_20 * 0x10 + (int)param_2);\n      puVar4 = (undefined4 *)((int)param_1 + local_20 * 0x10);\n      uVar1 = puVar5[1];\n      uVar2 = puVar5[2];\n      uVar3 = puVar5[3];\n      *puVar4 = *puVar5;\n      puVar4[1] = uVar1;\n      puVar4[2] = uVar2;\n      puVar4[3] = uVar3;\n      local_20 = local_20 + 1;\n    } while (local_20 < param_3 >> 4);\n  }\n  else {\n    param_1 = memcpy(param_1,param_2,param_3);\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "memcpy_fast",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "memcpy_fast",
+                        "rbc_handle_data"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            }
+        ],
+        "msc.c": [
+            {
+                "func_name": "msc_init",
+                "func_c_signature": "undefined4 msc_init(void *param_1)",
+                "decompiled_code": "undefined4 msc_init(void *param_1) {\n  memset(param_1,0,0x1050);\n  *(undefined4 *)((int)param_1 + 0x2c) = 0;\n  *(undefined1 **)((int)param_1 + 0x38) = memory;\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "msc_init",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "msc_init",
+                        "handle_import"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "msc_handle_ep0",
+                "func_c_signature": "undefined4 msc_handle_ep0(int param_1,int param_2)",
+                "decompiled_code": "undefined4 msc_handle_ep0(int param_1,int param_2) {\n  undefined local_d [5];\n  \n  if (*(char *)(param_2 + 0x1c) == -0x5f) {\n    if (*(char *)(param_2 + 0x1d) == -2) {\n      local_d[0] = 1;\n      usb_send_reply(param_1,param_2,0,1);\n      (**(code **)(param_1 + 4))(local_d,1);\n      return 1;\n    }\n  }\n  else if ((*(char *)(param_2 + 0x1c) == '!') && (*(char *)(param_2 + 0x1d) == -1)) {\n    usb_send_reply(param_1,param_2,0,0);\n    return 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "msc_handle_ep0",
+                        "usb_send_reply"
+                    ],
+                    "calling_functions": [
+                        "msc_handle_ep0",
+                        "handle_ep0"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "msc_handle_urb",
+                "func_c_signature": "undefined4 msc_handle_urb(int param_1,int param_2)",
+                "decompiled_code": "undefined4 msc_handle_urb(int param_1,int param_2) {\n  int *piVar1;\n  int iVar2;\n  uint local_10;\n  \n  piVar1 = (int *)(param_1 + 0xc);\n  if (*(int *)(param_1 + 0x38) == 0) {\n    if (*(int *)(param_2 + 8) != 0) {\n      return 0;\n    }\n    if (*(uint *)(param_2 + 0x14) < 0x1f) {\n      return 0;\n    }\n    if (*(int *)(param_2 + 0x30) != 0x43425355) {\n      return 0;\n    }\n    *piVar1 = *(int *)(param_2 + 0x30);\n    *(undefined4 *)(param_1 + 0x10) = *(undefined4 *)(param_2 + 0x34);\n    *(undefined4 *)(param_1 + 0x14) = *(undefined4 *)(param_2 + 0x38);\n    *(undefined4 *)(param_1 + 0x18) = *(undefined4 *)(param_2 + 0x3c);\n    *(undefined4 *)(param_1 + 0x1c) = *(undefined4 *)(param_2 + 0x40);\n    *(undefined4 *)(param_1 + 0x20) = *(undefined4 *)(param_2 + 0x44);\n    *(undefined4 *)(param_1 + 0x24) = *(undefined4 *)(param_2 + 0x48);\n    *(undefined4 *)(param_1 + 0x27) = *(undefined4 *)(param_2 + 0x4b);\n    *(undefined4 *)(param_1 + 0x40) = 0;\n    iVar2 = rbc_handle_packet(piVar1,param_2 + 0x3f,*(undefined *)(param_2 + 0x3e));\n    *(uint *)(param_1 + 0x3c) = (uint)(iVar2 == 0);\n    usb_send_reply(param_1,param_2,0,*(undefined4 *)(param_2 + 0x14));\n  }\n  else if (*(int *)(param_1 + 0x38) == 1) {\n    if (*(int *)(param_2 + 8) != 1) {\n      return 0;\n    }\n    local_10 = *(uint *)(param_2 + 0x14);\n    if (*(uint *)(param_1 + 0x48) < local_10) {\n      local_10 = *(uint *)(param_1 + 0x48);\n    }\n    usb_send_reply(param_1,param_2,0,local_10);\n    (**(code **)(param_1 + 4))(*(int *)(param_1 + 0x40) + *(int *)(param_1 + 0x4c),local_10);\n    *(uint *)(param_1 + 0x40) = *(int *)(param_1 + 0x40) + local_10;\n    *(uint *)(param_1 + 0x48) = *(int *)(param_1 + 0x48) - local_10;\n    if (*(int *)(param_1 + 0x48) == 0) {\n      *(undefined4 *)(param_1 + 0x38) = 3;\n    }\n  }\n  else if (*(int *)(param_1 + 0x38) == 2) {\n    if (*(int *)(param_2 + 8) != 0) {\n      return 0;\n    }\n    iVar2 = rbc_handle_data(piVar1,param_2 + 0x30,*(undefined4 *)(param_2 + 0x14),0x114f5);\n    if (iVar2 == 0) {\n      *(undefined4 *)(param_1 + 0x3c) = 1;\n      *(undefined4 *)(param_1 + 0x38) = 3;\n      usb_send_reply(param_1,param_2,0,0);\n    }\n    else {\n      usb_send_reply(param_1,param_2,0,*(undefined4 *)(param_2 + 0x14));\n    }\n  }\n  else if (*(int *)(param_1 + 0x38) == 3) {\n    if (*(int *)(param_2 + 8) != 1) {\n      return 0;\n    }\n    if (*(uint *)(param_2 + 0x14) < 0xd) {\n      return 0;\n    }\n    *(undefined4 *)(param_1 + 0x2b) = 0x53425355;\n    *(undefined4 *)(param_1 + 0x2f) = *(undefined4 *)(param_1 + 0x10);\n    *(int *)(param_1 + 0x33) = *(int *)(param_1 + 0x14) - *(int *)(param_1 + 0x40);\n    *(char *)(param_1 + 0x37) = (char)*(undefined4 *)(param_1 + 0x3c);\n    usb_send_reply(param_1,param_2,0,0xd);\n    (**(code **)(param_1 + 4))(param_1 + 0x2b,0xd);\n    *(undefined4 *)(param_1 + 0x38) = 0;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "msc_handle_urb",
+                        "rbc_handle_packet",
+                        "usb_send_reply",
+                        "rbc_handle_data"
+                    ],
+                    "calling_functions": [
+                        "msc_handle_urb",
+                        "handle_submit"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "msc_send",
+                "func_c_signature": "void msc_send(int param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)",
+                "decompiled_code": "void msc_send(int param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4) {\n  *(undefined4 *)(param_1 + 0x44) = param_4;\n  *(undefined4 *)(param_1 + 0x3c) = param_3;\n  *(undefined4 *)(param_1 + 0x40) = param_2;\n  *(undefined4 *)(param_1 + 0x2c) = 1;\n  if (*(uint *)(param_1 + 8) < *(uint *)(param_1 + 0x3c)) {\n    *(undefined4 *)(param_1 + 0x3c) = *(undefined4 *)(param_1 + 8);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "msc_send"
+                    ],
+                    "calling_functions": [
+                        "msc_send",
+                        "rbc_handle_packet"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rbc_handle_packet",
+                "func_c_signature": "undefined4 rbc_handle_packet(int param_1,byte *param_2)",
+                "decompiled_code": "undefined4 rbc_handle_packet(int param_1,byte *param_2) {\n  byte bVar1;\n  ushort uVar2;\n  undefined4 *__s;\n  uint uVar3;\n  uint uVar4;\n  \n  __s = (undefined4 *)(param_1 + 0x48);\n  *(undefined4 *)(param_1 + 0x2c) = 3;\n  *(undefined4 *)(param_1 + 0x3c) = 0;\n  *(undefined4 *)(param_1 + 0x40) = 0;\n  *(undefined4 *)(param_1 + 0x44) = 0;\n  bVar1 = *param_2;\n  if (bVar1 == 0x5a) {\n    if ((param_2[2] != 0x3f) && (param_2[2] != 6)) {\n      return 1;\n    }\n    memset(__s,0,0x12);\n    *(undefined2 *)__s = 0x1000;\n    *(undefined *)(param_1 + 0x50) = 0x86;\n    *(undefined *)(param_1 + 0x51) = 8;\n    *(undefined *)(param_1 + 0x52) = 1;\n    *(undefined2 *)(param_1 + 0x53) = 2;\n    *(undefined *)(param_1 + 0x55) = 0;\n    *(undefined4 *)(param_1 + 0x56) = 0x80000000;\n    msc_send(param_1,__s,0x12,0);\n    return 1;\n  }\n  if (bVar1 < 0x5b) {\n    if (bVar1 == 0x2a) {\n      uVar3 = *(int *)(param_2 + 2) << 0x18 |\n              *(uint *)(param_2 + 2) >> 0x18 | (*(uint *)(param_2 + 2) >> 0x10 & 0xff) << 8 |\n              (*(uint *)(param_2 + 2) >> 8 & 0xff) << 0x10;\n      uVar2 = *(short *)(param_2 + 7) << 8 | *(ushort *)(param_2 + 7) >> 8;\n      if (0x80 < uVar3) {\n        return 0;\n      }\n      if (uVar3 + uVar2 < 0x81) {\n        *(undefined4 *)(param_1 + 0x2c) = 2;\n        *(uint *)(param_1 + 0x1048) = uVar3;\n        *(uint *)(param_1 + 0x104c) = (uint)uVar2 << 9;\n        return 1;\n      }\n      return 0;\n    }\n    if (bVar1 < 0x2b) {\n      if (bVar1 == 0x28) {\n        uVar4 = *(uint *)(param_2 + 2) >> 0x18 | (*(uint *)(param_2 + 2) >> 0x10 & 0xff) << 8 |\n                (*(uint *)(param_2 + 2) >> 8 & 0xff) << 0x10;\n        uVar3 = *(int *)(param_2 + 2) << 0x18 | uVar4;\n        uVar2 = *(short *)(param_2 + 7) << 8 | *(ushort *)(param_2 + 7) >> 8;\n        if (0x80 < uVar3) {\n          return 0;\n        }\n        if (uVar3 + uVar2 < 0x81) {\n          msc_send(param_1,*(int *)(param_1 + 0x38) + uVar4 * 0x200,(uint)uVar2 << 9,0);\n          return 1;\n        }\n        return 0;\n      }\n      if (bVar1 < 0x29) {\n        if (bVar1 == 0x25) {\n          *__s = 0x7f000000;\n          *(undefined4 *)(param_1 + 0x4c) = 0x20000;\n          msc_send(param_1,__s,8,0);\n          return 1;\n        }\n        if (bVar1 < 0x26) {\n          if (bVar1 == 0) {\n            *(undefined4 *)(param_1 + 0x2c) = 3;\n            return 1;\n          }\n          if (bVar1 == 0x12) {\n            bVar1 = param_2[4];\n            if (0x24 < bVar1) {\n              bVar1 = 0x24;\n            }\n            msc_send(param_1,inquiry_data,bVar1,0);\n            return 1;\n          }\n        }\n      }\n    }\n  }\n  *(undefined4 *)(param_1 + 0x30) = 1;\n  msc_send(param_1,0,0,0);\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rbc_handle_packet",
+                        "memset",
+                        "msc_send"
+                    ],
+                    "calling_functions": [
+                        "msc_handle_urb",
+                        "rbc_handle_packet"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rbc_handle_data",
+                "func_c_signature": "undefined4 rbc_handle_data(int param_1,undefined4 param_2,int param_3)",
+                "decompiled_code": "undefined4 rbc_handle_data(int param_1,undefined4 param_2,int param_3) {\n  undefined4 uVar1;\n  \n  if (*(char *)(param_1 + 0xf) == '*') {\n    if (*(uint *)(param_1 + 0x104c) < (uint)(*(int *)(param_1 + 0x34) + param_3)) {\n      param_3 = *(int *)(param_1 + 0x104c) - *(int *)(param_1 + 0x34);\n    }\n    memcpy_fast(*(int *)(param_1 + 0x34) + *(int *)(param_1 + 0x1048) * 0x200 +\n                *(int *)(param_1 + 0x38),param_2,param_3,0x11b5b);\n    *(int *)(param_1 + 0x34) = *(int *)(param_1 + 0x34) + param_3;\n    if (*(int *)(param_1 + 0x34) == *(int *)(param_1 + 0x104c)) {\n      *(undefined4 *)(param_1 + 0x2c) = 3;\n    }\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rbc_handle_data",
+                        "memcpy_fast"
+                    ],
+                    "calling_functions": [
+                        "msc_handle_urb",
+                        "rbc_handle_data"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            }
+        ],
+        "storage_device.c": [
+            {
+                "func_name": "_send",
+                "func_c_signature": "ssize_t _send(int __fd,void *__buf,size_t __n,int __flags)",
+                "decompiled_code": "ssize_t _send(int __fd,void *__buf,size_t __n,int __flags) {\n  undefined4 local_14 [3];\n  \n  transmit(1,__fd,__buf,local_14);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_send",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "_send"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_recv",
+                "func_c_signature": "ssize_t _recv(int __fd,void *__buf,size_t __n,int __flags)",
+                "decompiled_code": "ssize_t _recv(int __fd,void *__buf,size_t __n,int __flags) {\n  int iVar1;\n  int local_1c;\n  undefined4 local_18;\n  int local_14;\n  void *local_10;\n  \n  local_10 = (void *)0x0;\n  while( true ) {\n    if (local_10 == __buf) {\n      return (ssize_t)local_10;\n    }\n    local_14 = (int)__buf - (int)local_10;\n    iVar1 = receive(0,__fd,local_14,&local_1c);\n    if (iVar1 != 0) break;\n    if (local_1c == 0) {\n      return (ssize_t)local_10;\n    }\n    local_10 = (void *)((int)local_10 + local_1c);\n    local_18 = 0;\n  }\n  return (ssize_t)local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_recv",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "_recv"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  \n  usb_init(&usb);\n  _DAT_000261c4 = _send;\n  usb = _recv;\n  do {\n    iVar1 = usb_handle_packet(&usb);\n  } while (iVar1 != 0);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "usb_init",
+                        "usb_handle_packet"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            }
+        ],
+        "usb.c": [
+            {
+                "func_name": "fill_submit_reply",
+                "func_c_signature": "void fill_submit_reply(undefined4 *param_1,uint *param_2,uint param_3,uint param_4)",
+                "decompiled_code": "void fill_submit_reply(undefined4 *param_1,uint *param_2,uint param_3,uint param_4) {\n  *param_1 = 0x3000000;\n  param_1[1] = param_2[1] >> 0x18 | (param_2[1] >> 0x10 & 0xff) << 8 |\n               (param_2[1] >> 8 & 0xff) << 0x10 | param_2[1] << 0x18;\n  param_1[2] = *param_2 >> 0x18 | (*param_2 >> 0x10 & 0xff) << 8 | (*param_2 >> 8 & 0xff) << 0x10 |\n               *param_2 << 0x18;\n  param_1[3] = param_2[2] >> 0x18 | (param_2[2] >> 0x10 & 0xff) << 8 |\n               (param_2[2] >> 8 & 0xff) << 0x10 | param_2[2] << 0x18;\n  param_1[4] = param_2[3] >> 0x18 | (param_2[3] >> 0x10 & 0xff) << 8 |\n               (param_2[3] >> 8 & 0xff) << 0x10 | param_2[3] << 0x18;\n  param_1[6] = param_4 >> 0x18 | (param_4 >> 0x10 & 0xff) << 8 | (param_4 >> 8 & 0xff) << 0x10 |\n               param_4 << 0x18;\n  param_1[5] = param_3 >> 0x18 | (param_3 >> 0x10 & 0xff) << 8 | (param_3 >> 8 & 0xff) << 0x10 |\n               param_3 << 0x18;\n  param_1[7] = 0;\n  param_1[8] = 0;\n  param_1[9] = 0;\n  memset(param_1 + 10,0,8);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fill_submit_reply",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "fill_submit_reply",
+                        "usb_send_reply"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "send_config_rep",
+                "func_c_signature": "void send_config_rep(int param_1,int param_2)",
+                "decompiled_code": "void send_config_rep(int param_1,int param_2) {\n  undefined *puVar1;\n  code *pcVar2;\n  undefined *puVar3;\n  undefined auStack_1c [4];\n  undefined *local_18;\n  undefined4 local_14;\n  uint local_10;\n  \n  local_14 = 0x1f;\n  for (puVar3 = auStack_1c; puVar3 != auStack_1c; puVar3 = puVar3 + -0x1000) {\n    *(undefined4 *)(puVar3 + -4) = *(undefined4 *)(puVar3 + -4);\n  }\n  *(undefined4 *)(puVar3 + -4) = *(undefined4 *)(puVar3 + -4);\n  local_18 = puVar3 + -0x20;\n  *(undefined4 *)(puVar3 + -0x28) = 9;\n  *(undefined1 **)(puVar3 + -0x2c) = config_desc;\n  *(undefined **)(puVar3 + -0x30) = puVar3 + -0x20;\n  *(undefined4 *)(puVar3 + -0x34) = 0x11fd0;\n  memcpy(*(void **)(puVar3 + -0x30),*(void **)(puVar3 + -0x2c),*(size_t *)(puVar3 + -0x28));\n  puVar1 = local_18 + 9;\n  *(undefined4 *)(puVar3 + -0x28) = 9;\n  *(undefined1 **)(puVar3 + -0x2c) = intf_desc;\n  *(undefined **)(puVar3 + -0x30) = puVar1;\n  *(undefined4 *)(puVar3 + -0x34) = 0x11feb;\n  memcpy(*(void **)(puVar3 + -0x30),*(void **)(puVar3 + -0x2c),*(size_t *)(puVar3 + -0x28));\n  puVar1 = local_18 + 0x12;\n  *(undefined4 *)(puVar3 + -0x28) = 0xe;\n  *(undefined1 **)(puVar3 + -0x2c) = ep_desc;\n  *(undefined **)(puVar3 + -0x30) = puVar1;\n  *(undefined4 *)(puVar3 + -0x34) = 0x12006;\n  memcpy(*(void **)(puVar3 + -0x30),*(void **)(puVar3 + -0x2c),*(size_t *)(puVar3 + -0x28));\n  local_10 = *(uint *)(param_2 + 0x14);\n  if (0x20 < local_10) {\n    local_10 = 0x20;\n  }\n  *(uint *)(puVar3 + -0x24) = local_10;\n  *(undefined4 *)(puVar3 + -0x28) = 0;\n  *(int *)(puVar3 + -0x2c) = param_2;\n  *(int *)(puVar3 + -0x30) = param_1;\n  *(undefined4 *)(puVar3 + -0x34) = 0x1203a;\n  usb_send_reply();\n  pcVar2 = *(code **)(param_1 + 4);\n  *(uint *)(puVar3 + -0x2c) = local_10;\n  *(undefined **)(puVar3 + -0x30) = local_18;\n  *(undefined4 *)(puVar3 + -0x34) = 0x1204e;\n  (*pcVar2)();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "send_config_rep",
+                        "memcpy",
+                        "usb_send_reply"
+                    ],
+                    "calling_functions": [
+                        "send_config_rep",
+                        "handle_ep0"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_ep0",
+                "func_c_signature": "undefined4 handle_ep0(int param_1,int param_2)",
+                "decompiled_code": "undefined4 handle_ep0(int param_1,int param_2) {\n  undefined4 uVar1;\n  uint local_10;\n  \n  if (*(char *)(param_2 + 0x1c) == -0x80) {\n    if (*(char *)(param_2 + 0x1d) == '\\x06') {\n      if (*(char *)(param_2 + 0x1f) == '\\x01') {\n        local_10 = *(uint *)(param_2 + 0x14);\n        if (0x12 < local_10) {\n          local_10 = 0x12;\n        }\n        usb_send_reply(param_1,param_2,0,local_10);\n        (**(code **)(param_1 + 4))(device_desc,local_10);\n        return 1;\n      }\n      if (*(char *)(param_2 + 0x1f) == '\\x02') {\n        send_config_rep(param_1,param_2);\n        return 1;\n      }\n    }\n  }\n  else if (*(char *)(param_2 + 0x1c) == '\\0') {\n    if ((*(char *)(param_2 + 0x1d) == '\\t') && (*(char *)(param_2 + 0x1e) == '\\x01')) {\n      usb_send_reply(param_1,param_2,0,0);\n      return 1;\n    }\n  }\n  else if ((*(byte *)(param_2 + 0x1c) & 0x60) == 0x20) {\n    uVar1 = msc_handle_ep0(param_1,param_2);\n    return uVar1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_ep0",
+                        "usb_send_reply",
+                        "send_config_rep",
+                        "msc_handle_ep0"
+                    ],
+                    "calling_functions": [
+                        "handle_ep0",
+                        "handle_submit"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_devlist",
+                "func_c_signature": "undefined4 handle_devlist(int param_1)",
+                "decompiled_code": "undefined4 handle_devlist(int param_1) {\n  undefined2 local_18;\n  undefined2 local_16;\n  undefined4 local_14;\n  undefined4 local_10;\n  \n  memset(&local_18,0,0xc);\n  local_18 = 0x1101;\n  local_16 = 0x800;\n  local_14 = 0;\n  local_10 = 0x1000000;\n  (**(code **)(param_1 + 4))(&local_18,0xc);\n  (**(code **)(param_1 + 4))(device_info,0x138);\n  (**(code **)(param_1 + 4))(&device_intf,4);\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_devlist",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "handle_devlist"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_import",
+                "func_c_signature": "undefined4 handle_import(code **param_1)",
+                "decompiled_code": "undefined4 handle_import(code **param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined4 *puVar3;\n  undefined4 *puVar4;\n  byte bVar5;\n  undefined2 local_17c;\n  undefined2 local_17a;\n  undefined4 local_178;\n  undefined4 local_174 [78];\n  undefined local_3c [44];\n  \n  bVar5 = 0;\n  iVar1 = (**param_1)(local_3c,0x20);\n  if (iVar1 == 0x20) {\n    iVar1 = memcmp(local_3c,&DAT_00016100,0x20);\n    if (iVar1 == 0) {\n      local_17c = 0x1101;\n      local_17a = 0x900;\n      local_178 = 0;\n      puVar3 = (undefined4 *)device_info;\n      puVar4 = local_174;\n      for (iVar1 = 0x4e; iVar1 != 0; iVar1 = iVar1 + -1) {\n        *puVar4 = *puVar3;\n        puVar3 = puVar3 + (uint)bVar5 * -2 + 1;\n        puVar4 = puVar4 + (uint)bVar5 * -2 + 1;\n      }\n      iVar1 = msc_init(param_1 + 3);\n      if (iVar1 != 0) {\n        param_1[2] = (code *)0x1;\n      }\n      (*param_1[1])(&local_17c,0x140);\n    }\n    else {\n      local_17c = 0x1101;\n      local_17a = 0x900;\n      local_178 = 0x1000000;\n      (*param_1[1])(&local_17c,8);\n    }\n    uVar2 = 1;\n  }\n  else {\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_import",
+                        "memcmp",
+                        "msc_init"
+                    ],
+                    "calling_functions": [
+                        "handle_import"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_submit",
+                "func_c_signature": "undefined4 handle_submit(code **param_1,int param_2)",
+                "decompiled_code": "undefined4 handle_submit(code **param_1,int param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  uint uVar3;\n  uint local_5c [12];\n  uint local_2c;\n  uint local_28;\n  uint local_1c;\n  undefined auStack_18 [8];\n  uint *local_10;\n  \n  iVar1 = (**param_1)(&local_2c,0x1c);\n  if (iVar1 == 0x1c) {\n    if ((int)(local_28 << 0x18 |\n             local_28 >> 0x18 | (local_28 >> 0x10 & 0xff) << 8 | (local_28 >> 8 & 0xff) << 0x10) < 0\n       ) {\n      uVar2 = 0;\n    }\n    else {\n      if ((*(int *)(param_2 + 0xc) << 0x18 |\n          *(uint *)(param_2 + 0xc) >> 0x18 | (*(uint *)(param_2 + 0xc) >> 0x10 & 0xff) << 8 |\n          (*(uint *)(param_2 + 0xc) >> 8 & 0xff) << 0x10) == 0) {\n        local_10 = (uint *)malloc((local_28 << 0x18 |\n                                  local_28 >> 0x18 | (local_28 >> 0x10 & 0xff) << 8 |\n                                  (local_28 >> 8 & 0xff) << 0x10) + 0x30);\n      }\n      else {\n        local_10 = local_5c;\n      }\n      if (local_10 == (uint *)0x0) {\n        uVar2 = 0;\n      }\n      else {\n        *local_10 = *(uint *)(param_2 + 8) >> 0x18 | (*(uint *)(param_2 + 8) >> 0x10 & 0xff) << 8 |\n                    (*(uint *)(param_2 + 8) >> 8 & 0xff) << 0x10 | *(int *)(param_2 + 8) << 0x18;\n        local_10[1] = *(uint *)(param_2 + 4) >> 0x18 | (*(uint *)(param_2 + 4) >> 0x10 & 0xff) << 8\n                      | (*(uint *)(param_2 + 4) >> 8 & 0xff) << 0x10 | *(int *)(param_2 + 4) << 0x18\n        ;\n        local_10[2] = *(uint *)(param_2 + 0xc) >> 0x18 |\n                      (*(uint *)(param_2 + 0xc) >> 0x10 & 0xff) << 8 |\n                      (*(uint *)(param_2 + 0xc) >> 8 & 0xff) << 0x10 |\n                      *(int *)(param_2 + 0xc) << 0x18;\n        local_10[3] = *(uint *)(param_2 + 0x10) >> 0x18 |\n                      (*(uint *)(param_2 + 0x10) >> 0x10 & 0xff) << 8 |\n                      (*(uint *)(param_2 + 0x10) >> 8 & 0xff) << 0x10 |\n                      *(int *)(param_2 + 0x10) << 0x18;\n        local_10[4] = local_2c >> 0x18 | (local_2c >> 0x10 & 0xff) << 8 |\n                      (local_2c >> 8 & 0xff) << 0x10 | local_2c << 0x18;\n        local_10[5] = local_28 >> 0x18 | (local_28 >> 0x10 & 0xff) << 8 |\n                      (local_28 >> 8 & 0xff) << 0x10 | local_28 << 0x18;\n        local_10[6] = local_1c >> 0x18 | (local_1c >> 0x10 & 0xff) << 8 |\n                      (local_1c >> 8 & 0xff) << 0x10 | local_1c << 0x18;\n        memcpy(local_10 + 7,auStack_18,8);\n        if ((local_10[2] == 0) &&\n           (uVar3 = (**param_1)(local_10 + 0xc,local_10[5]), uVar3 != local_10[5])) {\n          free(local_10);\n          return 0;\n        }\n        if (local_10[3] == 0) {\n          uVar2 = handle_ep0(param_1,local_10);\n        }\n        else {\n          uVar2 = msc_handle_urb(param_1,local_10);\n        }\n      }\n    }\n  }\n  else {\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_submit",
+                        "malloc",
+                        "memcpy",
+                        "free",
+                        "handle_ep0",
+                        "msc_handle_urb"
+                    ],
+                    "calling_functions": [
+                        "handle_submit"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_unlink",
+                "func_c_signature": "bool handle_unlink(code **param_1)",
+                "decompiled_code": "bool handle_unlink(code **param_1) {\n  int iVar1;\n  undefined local_10 [12];\n  \n  iVar1 = (**param_1)(local_10,4);\n  return iVar1 == 4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_unlink"
+                    ],
+                    "calling_functions": [
+                        "handle_unlink"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lookup_command",
+                "func_c_signature": "int * lookup_command(int param_1)",
+                "decompiled_code": "int * lookup_command(int param_1) {\n  int *local_8;\n  \n  local_8 = &commands;\n  while( true ) {\n    if (local_8[1] == 0) {\n      return (int *)0x0;\n    }\n    if (param_1 == *local_8) break;\n    local_8 = local_8 + 2;\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lookup_command"
+                    ],
+                    "calling_functions": [
+                        "lookup_command",
+                        "usb_handle_packet"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usb_handle_packet",
+                "func_c_signature": "undefined4 usb_handle_packet(code **param_1)",
+                "decompiled_code": "undefined4 usb_handle_packet(code **param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  uint local_30 [5];\n  ushort local_1c;\n  ushort local_1a;\n  int local_14;\n  int local_10;\n  \n  if (param_1[2] == (code *)0x0) {\n    iVar1 = (**param_1)(&local_1c,8);\n    if (iVar1 == 8) {\n      if (((local_1c & 0xff) << 8 | (uint)(local_1c >> 8)) == 0x111) {\n        local_14 = lookup_command((local_1a & 0xff) << 8 | (uint)(local_1a >> 8) | 0x80000000);\n        if (local_14 == 0) {\n          uVar2 = 0;\n        }\n        else {\n          uVar2 = (**(code **)(local_14 + 4))(param_1,&local_1c);\n        }\n      }\n      else {\n        uVar2 = 0;\n      }\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  else {\n    iVar1 = (**param_1)(local_30,0x14);\n    if (iVar1 == 0x14) {\n      local_10 = lookup_command(local_30[0] << 0x18 |\n                                local_30[0] >> 0x18 | (local_30[0] >> 0x10 & 0xff) << 8 |\n                                (local_30[0] >> 8 & 0xff) << 0x10);\n      if (local_10 == 0) {\n        uVar2 = 0;\n      }\n      else {\n        uVar2 = (**(code **)(local_10 + 4))(param_1,local_30);\n      }\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usb_handle_packet",
+                        "lookup_command"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "usb_handle_packet"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usb_send_reply",
+                "func_c_signature": "undefined4 usb_send_reply(int param_1,int param_2,undefined4 param_3,uint param_4)",
+                "decompiled_code": "undefined4 usb_send_reply(int param_1,int param_2,undefined4 param_3,uint param_4) {\n  undefined local_3c [56];\n  \n  if ((param_4 < *(uint *)(param_2 + 0x14)) && ((*(uint *)(param_2 + 0x10) & 1) != 0)) {\n    param_3 = 0xffffff87;\n  }\n  fill_submit_reply(local_3c,param_2,param_3,param_4);\n  (**(code **)(param_1 + 4))(local_3c,0x30);\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usb_send_reply",
+                        "fill_submit_reply"
+                    ],
+                    "calling_functions": [
+                        "msc_handle_ep0",
+                        "msc_handle_urb",
+                        "send_config_rep",
+                        "handle_ep0",
+                        "usb_send_reply"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usb_init",
+                "func_c_signature": "undefined4 usb_init(int param_1)",
+                "decompiled_code": "undefined4 usb_init(int param_1) {\n  byte bVar1;\n  byte bVar2;\n  byte local_15;\n  \n  random();\n  bVar1 = local_15 + (byte)((ushort)((ushort)local_15 * 0x29) >> 0xc) * -100;\n  bVar2 = bVar1 / 10;\n  bVar1 = bVar1 % 10;\n  DAT_00016120 = (uint)bVar2 << 0x18;\n  DAT_00016124 = (uint)bVar1 << 0x18;\n  memset(&DAT_00016100,0,0x20);\n  DAT_00016100 = bVar2 + 0x30;\n  DAT_00016101 = 0x2d;\n  DAT_00016102 = bVar1 + 0x30;\n  *(undefined4 *)(param_1 + 8) = 0;\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usb_init",
+                        "random",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "usb_init"
+                    ],
+                    "defined_in_file": "KPRCA_00008_decompiled.c"
+                }
+            }
+        ]
+    }
+}

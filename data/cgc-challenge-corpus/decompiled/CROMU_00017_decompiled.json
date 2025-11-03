@@ -1,0 +1,710 @@
+{
+    "file": "CROMU_00017",
+    "decompiled_code": {
+        "math_lib.c": [
+            {
+                "func_name": "get_user_answer",
+                "func_c_signature": "undefined4 get_user_answer(int *param_1)",
+                "decompiled_code": "undefined4 get_user_answer(int *param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  char acStack_28 [16];\n  int local_18;\n  int local_14;\n  size_t local_10;\n  \n  bzero(acStack_28 + 1,0xf);\n  local_18 = receive(0,acStack_28 + 1,0xe,0);\n  if (local_18 == 0) {\n    local_10 = strlen(acStack_28 + 1);\n    if (acStack_28[local_10] == '\\n') {\n      local_10 = local_10 - 1;\n    }\n    for (local_14 = 0; local_14 < (int)local_10; local_14 = local_14 + 1) {\n      iVar2 = isdigit((int)acStack_28[local_14 + 1]);\n      if ((iVar2 == 0) && (acStack_28[local_14 + 1] != '-')) {\n        printf(\"incorrect item entered\\n\");\n        return 0;\n      }\n    }\n    iVar2 = atoi(acStack_28 + 1);\n    *param_1 = iVar2;\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_user_answer",
+                        "bzero",
+                        "receive",
+                        "strlen",
+                        "isdigit",
+                        "printf",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "get_user_answer",
+                        "generate_equation",
+                        "print_menu",
+                        "request_perimeter",
+                        "request_2d_peri_dim",
+                        "request_area",
+                        "request_2d_area_dim",
+                        "request_volume",
+                        "request_3d_dim_vol"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_user_equation",
+                "func_c_signature": "undefined4 get_user_equation(char *param_1)",
+                "decompiled_code": "undefined4 get_user_equation(char *param_1) {\n  undefined4 uVar1;\n  size_t sVar2;\n  char acStack_111 [257];\n  int local_10;\n  \n  bzero(acStack_111 + 1,0x100);\n  local_10 = receive(0,acStack_111 + 1,0xff,0);\n  if (local_10 == 0) {\n    sVar2 = strlen(acStack_111 + 1);\n    if (acStack_111[sVar2] == '\\n') {\n      sVar2 = strlen(acStack_111 + 1);\n      strncpy(param_1,acStack_111 + 1,sVar2 - 1);\n    }\n    else {\n      sVar2 = strlen(acStack_111 + 1);\n      strncpy(param_1,acStack_111 + 1,sVar2);\n    }\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_user_equation",
+                        "bzero",
+                        "receive",
+                        "strlen",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "get_user_equation",
+                        "prompt_for_equation"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "isValidChar",
+                "func_c_signature": "undefined4 isValidChar(char param_1)",
+                "decompiled_code": "undefined4 isValidChar(char param_1) {\n  uint local_8;\n  \n  local_8 = 0;\n  while( true ) {\n    if (0x10 < local_8) {\n      return 0;\n    }\n    if (param_1 == acceptable_char[local_8]) break;\n    local_8 = local_8 + 1;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "isValidChar"
+                    ],
+                    "calling_functions": [
+                        "isValidChar",
+                        "parse_input"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_input",
+                "func_c_signature": "undefined4 parse_input(int param_1)",
+                "decompiled_code": "undefined4 parse_input(int param_1) {\n  int iVar1;\n  int iVar2;\n  int local_10;\n  \n  iVar1 = get_str_end(param_1);\n  local_10 = 0;\n  while( true ) {\n    if (iVar1 <= local_10) {\n      return 1;\n    }\n    iVar2 = isValidChar((int)*(char *)(param_1 + local_10));\n    if (iVar2 == 0) break;\n    local_10 = local_10 + 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_input",
+                        "get_str_end",
+                        "isValidChar"
+                    ],
+                    "calling_functions": [
+                        "parse_input",
+                        "prompt_for_equation"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "generate_one_equation",
+                "func_c_signature": "int generate_one_equation(int param_1)",
+                "decompiled_code": "int generate_one_equation(int param_1) {\n  int iVar1;\n  undefined local_5f [15];\n  int local_50;\n  int local_4c;\n  char local_45;\n  int local_44;\n  int local_40;\n  int local_3c;\n  int local_38;\n  int local_34;\n  int local_30;\n  undefined4 local_2c;\n  int local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  undefined4 local_14;\n  char local_d;\n  \n  do {\n    local_d = '\\0';\n    local_14 = 1;\n    local_18 = 0;\n    local_34 = random_in_range(4,0xf);\n    local_38 = local_34 + 1;\n    local_3c = random_in_range(0,local_34);\n    local_1c = 0;\n    local_20 = 0;\n    local_24 = 0;\n    local_28 = 0;\n    while (local_28 < local_38) {\n      if (local_24 == 0) {\n        if ((local_28 < local_38 / 2) && (local_1c < local_3c)) {\n          *(undefined *)(param_1 + local_18) = 0x28;\n          local_1c = local_1c + 1;\n          local_18 = local_18 + 1;\n        }\n        local_2c = random_in_range(1,0x100);\n        if (local_d == '/') {\n          local_2c = random_in_range(1,local_14);\n        }\n        local_14 = local_2c;\n        itos(local_2c,local_5f);\n        local_4c = get_str_end(local_5f);\n        for (local_30 = 0; iVar1 = local_18, local_30 < local_4c; local_30 = local_30 + 1) {\n          local_18 = local_18 + 1;\n          *(undefined *)(iVar1 + param_1) = local_5f[local_30];\n        }\n        if ((local_38 / 2 <= local_28) && (local_20 < local_1c)) {\n          *(undefined *)(param_1 + local_18) = 0x29;\n          local_20 = local_20 + 1;\n          local_18 = local_18 + 1;\n        }\n        local_24 = 1;\n        local_28 = local_28 + 1;\n      }\n      else {\n        local_44 = random_in_range(0,3);\n        local_45 = *(char *)((int)&operator_list + local_44);\n        *(char *)(local_18 + param_1) = local_45;\n        local_24 = 0;\n        local_18 = local_18 + 1;\n        local_d = local_45;\n      }\n    }\n    for (; local_20 < local_1c; local_20 = local_20 + 1) {\n      *(undefined *)(param_1 + local_18) = 0x29;\n      local_18 = local_18 + 1;\n    }\n    *(undefined *)(param_1 + local_18) = 0;\n    local_50 = 0;\n    local_40 = solve_equation(param_1,&local_50);\n  } while ((local_40 != 1) || (local_50 == 0));\n  return local_50;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "generate_one_equation",
+                        "random_in_range",
+                        "itos",
+                        "get_str_end",
+                        "solve_equation"
+                    ],
+                    "calling_functions": [
+                        "generate_one_equation",
+                        "generate_equation",
+                        "run_tests"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "generate_equation",
+                "func_c_signature": "undefined4 generate_equation(void)",
+                "decompiled_code": "undefined4 generate_equation(void) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined *puVar3;\n  int local_114;\n  undefined local_110 [256];\n  int local_10;\n  \n  local_10 = generate_one_equation(local_110);\n  local_114 = 0;\n  puVar3 = local_110;\n  printf(\"Equation: @s\\n\",puVar3);\n  printf(\"gimme answer: \");\n  iVar1 = get_user_answer(&local_114);\n  if (iVar1 == 1) {\n    if (local_10 == local_114) {\n      printf(\"success!!\\n\",puVar3);\n      uVar2 = 1;\n    }\n    else {\n      printf(\"Incorrect answer\\n\",puVar3);\n      uVar2 = 0;\n    }\n  }\n  else {\n    printf(\"Bad input\\n\",puVar3);\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "generate_equation",
+                        "generate_one_equation",
+                        "printf",
+                        "get_user_answer"
+                    ],
+                    "calling_functions": [
+                        "generate_equation",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "seed_prng",
+                "func_c_signature": "undefined4 seed_prng(void)",
+                "decompiled_code": "undefined4 seed_prng(void) {\n  uint uVar1;\n  undefined4 uVar2;\n  uint local_130;\n  char local_12c [256];\n  int local_2c;\n  uint local_28;\n  uint local_24;\n  uint local_20;\n  \n  bzero(local_12c,0x100);\n  printf(\"Enter some data\\n\");\n  local_2c = receive(0,local_12c,0xff,&local_130);\n  if (local_2c == 0) {\n    local_24 = 0xffffffff;\n    local_20 = 0xffffffff;\n    for (local_28 = 0; local_28 < local_130; local_28 = local_28 + 1) {\n      uVar1 = local_24 >> 0x1c;\n      local_24 = (int)local_12c[local_28] ^ (local_24 << 4 | local_20 >> 0x1c);\n      local_20 = (int)local_12c[local_28] >> 0x1f ^ (local_20 << 4 | uVar1);\n    }\n    sprng(local_24,local_20);\n    uVar2 = 1;\n  }\n  else {\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "seed_prng",
+                        "bzero",
+                        "printf",
+                        "receive",
+                        "sprng"
+                    ],
+                    "calling_functions": [
+                        "seed_prng",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "prompt_for_equation",
+                "func_c_signature": "undefined4 prompt_for_equation(void)",
+                "decompiled_code": "undefined4 prompt_for_equation(void) {\n  int iVar1;\n  int iVar2;\n  undefined4 uVar3;\n  char *pcVar4;\n  size_t sVar5;\n  int local_164;\n  int local_160;\n  int local_15c [4];\n  int local_14c [4];\n  char local_13c [256];\n  int local_3c;\n  int local_38;\n  char local_31;\n  int local_30;\n  int local_2c;\n  int local_28;\n  int local_24;\n  int local_20;\n  uint local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_28 = 0;\n  bzero(local_13c,0x100);\n  local_2c = random_in_range(0,5);\n  local_30 = random_in_range(0,0x8000);\n  iVar1 = random_in_range(0,3);\n  local_31 = *(char *)((int)&operator_list + iVar1);\n  for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {\n    iVar1 = random_in_range(1,0x100);\n    local_14c[local_10] = iVar1;\n  }\n  printf(\"Enter an equation that has @d sets of parenthesis\\n\",local_2c);\n  iVar1 = (int)local_31;\n  printf(\"It must evaluate to @d and contain the @c operator\\n\",local_30,iVar1);\n  printf(\"and must use the numbers: @d @d @d and @d\\n\",local_14c[0],local_14c[1],local_14c[2],\n         local_14c[3]);\n  local_14 = 0;\n  local_18 = 0;\n  local_15c[0] = 0;\n  local_15c[1] = 0;\n  local_15c[2] = 0;\n  local_15c[3] = 0;\n  iVar2 = get_user_equation(local_13c);\n  if (iVar2 == 1) {\n    local_28 = parse_input(local_13c);\n    if (local_28 == 1) {\n      pcVar4 = \"correct\";\n    }\n    else {\n      pcVar4 = \"incorrect\";\n    }\n    printf(\"string is formatted @s\\n\",pcVar4,iVar1);\n    local_1c = 0;\n    while (sVar5 = strlen(local_13c), local_1c < sVar5) {\n      if (local_13c[local_1c] == '(') {\n        local_14 = local_14 + 1;\n      }\n      if (local_31 == local_13c[local_1c]) {\n        local_18 = local_18 + 1;\n      }\n      if ((local_13c[local_1c] < ':') && ('/' < local_13c[local_1c])) {\n        local_164 = 0;\n        pcVar4 = (char *)&local_164;\n        local_3c = stoi(local_13c + local_1c,pcVar4);\n        for (local_20 = 0; local_20 < 4; local_20 = local_20 + 1) {\n          if (local_3c == local_14c[local_20]) {\n            local_15c[local_20] = local_15c[local_20] + 1;\n          }\n        }\n        local_1c = local_1c + local_164 + -1;\n      }\n      local_1c = local_1c + 1;\n    }\n    if (local_14 == local_2c) {\n      if (local_18 == 0) {\n        printf(\"Did not use @c operator\\n\",(int)local_31);\n        uVar3 = 0;\n      }\n      else {\n        for (local_24 = 0; local_24 < 4; local_24 = local_24 + 1) {\n          if (local_15c[local_24] == 0) {\n            printf(\"Did not use number @d\\n\",local_14c[local_24]);\n            return 0;\n          }\n        }\n        local_160 = 0;\n        local_38 = solve_equation(local_13c,&local_160);\n        if (local_38 == 1) {\n          if (local_30 == local_160) {\n            printf(\"@s does resolve to @d, good!\\n\",local_13c,local_160);\n            uVar3 = 1;\n          }\n          else {\n            printf(\"incorrect answer: @d\\n\",local_160);\n            uVar3 = 0;\n          }\n        }\n        else {\n          printf(\"Invalid equation format\\n\");\n          uVar3 = 0;\n        }\n      }\n    }\n    else {\n      printf(\"Incorrect number of parenthesis\\n\",pcVar4);\n      uVar3 = 0;\n    }\n  }\n  else {\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "prompt_for_equation",
+                        "bzero",
+                        "random_in_range",
+                        "printf",
+                        "get_user_equation",
+                        "parse_input",
+                        "strlen",
+                        "stoi",
+                        "solve_equation"
+                    ],
+                    "calling_functions": [
+                        "prompt_for_equation",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "print_menu",
+                "func_c_signature": "undefined4 print_menu(void)",
+                "decompiled_code": "undefined4 print_menu(void) {\n  undefined4 local_10 [2];\n  \n  printf(\"1. Solve Equation\\n\");\n  printf(\"2. Create Equation\\n\");\n  printf(\"3. Solve Area\\n\");\n  printf(\"4. Solve Perimeter\\n\");\n  printf(\"5. Solve Volume\\n\");\n  printf(\"6. View Statistics\\n\");\n  printf(\"7. Exit\\n\");\n  get_user_answer(local_10);\n  return local_10[0];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_menu",
+                        "printf",
+                        "get_user_answer"
+                    ],
+                    "calling_functions": [
+                        "print_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_statistics",
+                "func_c_signature": "void print_statistics(void)",
+                "decompiled_code": "void print_statistics(void) {\n  undefined *puVar1;\n  undefined local_2c [36];\n  \n  printf(\"Total won: @d\\n\",game_stats);\n  printf(\"Total lost: @d\\n\",DAT_000190c4);\n  printf(\"Equations solved correctly: @d\\n\",DAT_000190c8);\n  printf(\"Equations solved incorrectly: @d\\n\",DAT_000190cc);\n  printf(\"Equations created correctly: @d\\n\",DAT_000190d8);\n  printf(\"Equations created incorrectly: @d\\n\",DAT_000190dc);\n  printf(\"Solved perimeter problems @d\\n\",DAT_000190e0);\n  printf(\"Unsolved perimeter problems @d\\n\",DAT_000190e4);\n  printf(\"Solved volume problems @d\\n\",DAT_000190e8);\n  printf(\"Unsolved volume problems @d\\n\",DAT_000190ec);\n  printf(\"Solved area problems @d\\n\",DAT_000190f0);\n  puVar1 = DAT_000190f4;\n  printf(\"Unsolved area problems @d\\n\",DAT_000190f4);\n  if (DAT_000190d8 == 0x14) {\n    printf(\"Wow, you created 20 equations! What\\'s your name?:\",puVar1);\n    bzero(local_2c,0x20);\n    receive(0,local_2c,0x4d,0);\n    puVar1 = local_2c;\n    printf(\"Good job, @s!\\n\",puVar1);\n  }\n  if (DAT_000190c8 == 0x14) {\n    printf(\"Wow, you solved 20 equations! What\\'s your name?:\",puVar1);\n    bzero(local_2c,0x20);\n    receive(0,local_2c,0x4d,0);\n    puVar1 = local_2c;\n    printf(\"Good job, @s!\\n\",puVar1);\n  }\n  if (DAT_000190f0 == 0x14) {\n    printf(\"Wow, you solved 20 area problems! What\\'s your name?:\",puVar1);\n    bzero(local_2c,0x20);\n    receive(0,local_2c,0x4d,0);\n    printf(\"Good job, @s!\\n\",local_2c);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_statistics",
+                        "printf",
+                        "bzero",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "print_statistics",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  undefined4 uVar1;\n  int iVar2;\n  undefined4 *puVar3;\n  \n  puVar3 = &game_stats;\n  for (iVar2 = 0xe; iVar2 != 0; iVar2 = iVar2 + -1) {\n    *puVar3 = 0;\n    puVar3 = puVar3 + 1;\n  }\n  game_info = 0;\n  DAT_000190fc = 0;\n  DAT_00019100 = 0;\n  iVar2 = seed_prng();\n  if (iVar2 != 1) {\n    return 1;\n  }\n  do {\n    uVar1 = print_menu();\n    switch(uVar1) {\n    default:\n      printf(\"improper input. exiting\\n\");\n      return 0;\n    case 1:\n      iVar2 = generate_equation();\n      if (iVar2 == 1) {\n        DAT_000190c8 = DAT_000190c8 + 1;\n      }\n      else {\n        DAT_000190cc = DAT_000190cc + 1;\n      }\n      break;\n    case 2:\n      iVar2 = prompt_for_equation();\n      if (iVar2 == 1) {\n        DAT_000190d8 = DAT_000190d8 + 1;\n      }\n      else {\n        DAT_000190dc = DAT_000190dc + 1;\n      }\n      break;\n    case 3:\n      iVar2 = random_in_range(0,1);\n      if (iVar2 == 0) {\n        iVar2 = request_area();\n        if (iVar2 == 1) {\n          DAT_000190f0 = DAT_000190f0 + 1;\n        }\n        else {\n          DAT_000190f4 = DAT_000190f4 + 1;\n        }\n      }\n      else {\n        iVar2 = request_2d_area_dim();\n        if (iVar2 == 1) {\n          DAT_000190f0 = DAT_000190f0 + 1;\n        }\n        else {\n          DAT_000190f4 = DAT_000190f4 + 1;\n        }\n      }\n      break;\n    case 4:\n      iVar2 = random_in_range(0x2a4,0x2a5);\n      if (iVar2 == 0x2a4) {\n        iVar2 = request_perimeter();\n        if (iVar2 == 1) {\n          DAT_000190e0 = DAT_000190e0 + 1;\n        }\n        else {\n          DAT_000190e4 = DAT_000190e4 + 1;\n        }\n      }\n      else {\n        iVar2 = request_2d_peri_dim();\n        if (iVar2 == 1) {\n          DAT_000190e0 = DAT_000190e0 + 1;\n        }\n        else {\n          DAT_000190e4 = DAT_000190e4 + 1;\n        }\n      }\n      break;\n    case 5:\n      iVar2 = random_in_range(0x2c,0x2d);\n      if (iVar2 == 0x2d) {\n        iVar2 = request_volume();\n        if (iVar2 == 1) {\n          DAT_000190e8 = DAT_000190e8 + 1;\n        }\n        else {\n          DAT_000190ec = DAT_000190ec + 1;\n        }\n      }\n      else {\n        iVar2 = request_3d_dim_vol();\n        if (iVar2 == 1) {\n          DAT_000190e8 = DAT_000190e8 + 1;\n        }\n        else {\n          DAT_000190ec = DAT_000190ec + 1;\n        }\n      }\n      break;\n    case 6:\n      print_statistics();\n      break;\n    case 7:\n      return 0;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "seed_prng",
+                        "print_menu",
+                        "printf",
+                        "generate_equation",
+                        "prompt_for_equation",
+                        "random_in_range",
+                        "request_area",
+                        "request_2d_area_dim",
+                        "request_perimeter",
+                        "request_2d_peri_dim",
+                        "request_volume",
+                        "request_3d_dim_vol",
+                        "print_statistics"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            }
+        ],
+        "shapes.c": [
+            {
+                "func_name": "request_perimeter",
+                "func_c_signature": "undefined4 request_perimeter(void)",
+                "decompiled_code": "undefined4 request_perimeter(void) {\n  int iVar1;\n  int iVar2;\n  int local_48;\n  int local_44;\n  int local_40;\n  int local_3c;\n  int local_38;\n  int local_34;\n  int local_30;\n  int local_2c;\n  int local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = random_in_range(0,2);\n  if (local_10 == 2) {\n    local_14 = random_in_range(0,0x4d2);\n    iVar2 = random_in_range(0,0x8707);\n    local_1c = local_14 * iVar2;\n    iVar1 = local_14;\n    local_18 = iVar2;\n    printf(\"find perimeter of object with @d sides of length @d\\n\",local_14,iVar2);\n    local_48 = 0;\n    local_20 = get_user_answer(&local_48);\n    if (local_20 != 1) {\n      return 0;\n    }\n    if (local_1c == local_48) {\n      printf(\"you got it\\n\",iVar1,iVar2);\n      return 1;\n    }\n    printf(\"incorrect\\n\",iVar1,iVar2);\n    return 0;\n  }\n  if (local_10 < 3) {\n    if (local_10 == 0) {\n      iVar1 = random_in_range(0,0x8707);\n      local_38 = iVar1 * 6;\n      local_34 = iVar1;\n      printf(\"find perimeter of circle with radius @d\\n\",iVar1);\n      local_40 = 0;\n      local_3c = get_user_answer(&local_40);\n      if (local_3c != 1) {\n        return 0;\n      }\n      if (local_38 == local_40) {\n        printf(\"you got it\\n\",iVar1);\n        return 1;\n      }\n      printf(\"incorrect\\n\",iVar1);\n      return 0;\n    }\n    if (local_10 == 1) {\n      local_24 = random_in_range(0,0x8707);\n      iVar2 = random_in_range(0,0x8707);\n      local_2c = (iVar2 + local_24) * 2;\n      iVar1 = local_24;\n      local_28 = iVar2;\n      printf(\"find perimeter of rectangle with a base of @d and sides of @d\\n\",iVar2,local_24);\n      local_44 = 0;\n      local_30 = get_user_answer(&local_44);\n      if (local_30 != 1) {\n        return 0;\n      }\n      if (local_2c == local_44) {\n        printf(\"you got it\\n\",iVar2,iVar1);\n        return 1;\n      }\n      printf(\"incorrect\\n\",iVar2,iVar1);\n      return 0;\n    }\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "request_perimeter",
+                        "random_in_range",
+                        "printf",
+                        "get_user_answer"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "request_perimeter"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "request_2d_peri_dim",
+                "func_c_signature": "undefined4 request_2d_peri_dim(void)",
+                "decompiled_code": "undefined4 request_2d_peri_dim(void) {\n  int iVar1;\n  int iVar2;\n  int local_5c;\n  int local_58;\n  int local_54;\n  int local_50;\n  int local_4c;\n  int local_48;\n  int local_44;\n  int local_40;\n  int local_3c;\n  int local_38;\n  int local_34;\n  int local_30;\n  int local_2c;\n  int local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_1c = random_in_range(0,2);\n  if (local_1c == 2) {\n    local_20 = random_in_range(0,0x4d2);\n    local_24 = random_in_range(0,0x8707);\n    local_28 = local_20 * local_24;\n    local_18 = 0;\n    iVar2 = 2;\n    local_2c = random_in_range(0,2);\n    if (local_2c == 0) {\n      iVar2 = local_20;\n      printf(\"find perimeter of object with @d sides of length @d\\n\",local_20,local_24);\n      local_18 = local_28;\n    }\n    else if (local_2c == 1) {\n      iVar2 = local_28;\n      printf(\"find the number of sides of object with @d perimeter and the sides are of length @d\\n\"\n             ,local_28,local_24);\n      local_18 = local_20;\n    }\n    else if (local_2c == 2) {\n      iVar2 = local_28;\n      printf(\"find length of the sides of object with @d perimeter with @d sides\\n\",local_28,\n             local_20);\n      local_18 = local_24;\n    }\n    local_5c = 0;\n    iVar1 = get_user_answer(&local_5c);\n    if (iVar1 != 1) {\n      return 0;\n    }\n    if (local_18 == local_5c) {\n      printf(\"you got it\\n\",iVar2);\n      return 1;\n    }\n    printf(\"incorrect\\n\",iVar2);\n    return 0;\n  }\n  if (local_1c < 3) {\n    if (local_1c == 0) {\n      local_44 = random_in_range(0,0x8707);\n      local_48 = local_44 * 6;\n      local_10 = 0;\n      iVar2 = 1;\n      local_4c = random_in_range(0,1);\n      if (local_4c == 0) {\n        iVar2 = local_44;\n        printf(\"find perimeter of circle with radius @d\\n\",local_44);\n        local_10 = local_48;\n      }\n      else if (local_4c == 1) {\n        iVar2 = local_48;\n        printf(\"find radius of circle with perimeter @d\\n\",local_48);\n        local_10 = local_44;\n      }\n      local_54 = 0;\n      local_50 = get_user_answer(&local_54);\n      if (local_50 != 1) {\n        return 0;\n      }\n      if (local_10 == local_54) {\n        printf(\"you got it\\n\",iVar2);\n        return 1;\n      }\n      printf(\"incorrect\\n\",iVar2);\n      return 0;\n    }\n    if (local_1c == 1) {\n      local_30 = random_in_range(0,0x8707);\n      local_34 = random_in_range(0,0x8707);\n      local_38 = (local_34 + local_30) * 2;\n      local_14 = 0;\n      iVar2 = 2;\n      local_3c = random_in_range(0,2);\n      if (local_3c == 0) {\n        iVar2 = local_34;\n        printf(\"find perimeter of rectangle with a base of @d and sides of @d\\n\",local_34,local_30);\n        local_14 = local_38;\n      }\n      else if (local_3c == 1) {\n        iVar2 = local_34;\n        printf(\"find side of rectangle with a base of @d and perimeter of @d\\n\",local_34,local_38);\n        local_14 = local_30;\n      }\n      else if (local_3c == 2) {\n        iVar2 = local_30;\n        printf(\"find base of rectangle with a side of @d and perimeter of @d\\n\",local_30,local_38);\n        local_14 = local_34;\n      }\n      local_58 = 0;\n      local_40 = get_user_answer(&local_58);\n      if (local_40 != 1) {\n        return 0;\n      }\n      if (local_14 == local_58) {\n        printf(\"you got it\\n\",iVar2);\n        return 1;\n      }\n      printf(\"incorrect\\n\",iVar2);\n      return 0;\n    }\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "request_2d_peri_dim",
+                        "random_in_range",
+                        "printf",
+                        "get_user_answer"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "request_2d_peri_dim"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "request_area",
+                "func_c_signature": "undefined4 request_area(void)",
+                "decompiled_code": "undefined4 request_area(void) {\n  int iVar1;\n  int iVar2;\n  int iVar3;\n  int local_38;\n  int local_34;\n  int local_30;\n  int local_2c;\n  int local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = random_in_range(0,2);\n  if (local_10 == 2) {\n    iVar1 = random_in_range(0,0x8707);\n    local_18 = iVar1 * iVar1;\n    local_14 = iVar1;\n    printf(\"find area of square with sides of @d\\n\",iVar1);\n    local_38 = 0;\n    iVar2 = get_user_answer(&local_38);\n    if (iVar2 != 1) {\n      return 0;\n    }\n    if (local_18 == local_38) {\n      printf(\"you got it\\n\",iVar1);\n      return 1;\n    }\n    printf(\"incorrect\\n\",iVar1);\n    return 0;\n  }\n  if (local_10 < 3) {\n    if (local_10 == 0) {\n      iVar1 = random_in_range(0,15000);\n      local_2c = iVar1 * iVar1 * 3;\n      local_28 = iVar1;\n      printf(\"find area of circle with radius @d\\n\",iVar1);\n      local_30 = 0;\n      iVar2 = get_user_answer(&local_30);\n      if (iVar2 != 1) {\n        return 0;\n      }\n      if (local_2c == local_30) {\n        printf(\"you got it\\n\",iVar1);\n        return 1;\n      }\n      printf(\"incorrect\\n\",iVar1);\n      return 0;\n    }\n    if (local_10 == 1) {\n      local_1c = random_in_range(0,0x8707);\n      iVar2 = random_in_range(0,0x8707);\n      local_24 = local_1c * iVar2;\n      iVar1 = local_1c;\n      local_20 = iVar2;\n      printf(\"find area of rectangle with a base of @d and sides of @d\\n\",iVar2,local_1c);\n      local_34 = 0;\n      iVar3 = get_user_answer(&local_34);\n      if (iVar3 != 1) {\n        return 0;\n      }\n      if (local_24 == local_34) {\n        printf(\"you got it\\n\",iVar2,iVar1);\n        return 1;\n      }\n      printf(\"incorrect\\n\",iVar2,iVar1);\n      return 0;\n    }\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "request_area",
+                        "random_in_range",
+                        "printf",
+                        "get_user_answer"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "request_area"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "request_2d_area_dim",
+                "func_c_signature": "undefined4 request_2d_area_dim(void)",
+                "decompiled_code": "undefined4 request_2d_area_dim(void) {\n  int iVar1;\n  undefined4 uVar2;\n  int iVar3;\n  int local_3c;\n  int local_38;\n  int local_34;\n  int local_30;\n  int local_2c;\n  int local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_18 = random_in_range(0,1);\n  if (local_18 == 0) {\n    local_2c = random_in_range(0,15000);\n    local_30 = local_2c * local_2c * 3;\n    local_10 = 0;\n    iVar3 = 1;\n    local_34 = random_in_range(0,1);\n    if (local_34 == 0) {\n      iVar3 = local_2c;\n      printf(\"find area of circle with radius @d\\n\",local_2c);\n      local_10 = local_30;\n    }\n    else if (local_34 == 1) {\n      iVar3 = local_30;\n      printf(\"find radius of circle with area @d\\n\",local_30);\n      local_10 = local_2c;\n    }\n    local_38 = 0;\n    iVar1 = get_user_answer(&local_38);\n    if (iVar1 == 1) {\n      if (local_10 == local_38) {\n        printf(\"you got it\\n\",iVar3);\n        uVar2 = 1;\n      }\n      else {\n        printf(\"incorrect\\n\",iVar3);\n        uVar2 = 0;\n      }\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  else if (local_18 == 1) {\n    local_1c = random_in_range(0,0x8707);\n    local_20 = random_in_range(0,0x8707);\n    local_24 = local_1c * local_20;\n    local_14 = 0;\n    iVar3 = 2;\n    local_28 = random_in_range(0,2);\n    if (local_28 == 0) {\n      iVar3 = local_20;\n      printf(\"find area of rectangle with a base of @d and sides of @d\\n\",local_20,local_1c);\n      local_14 = local_24;\n    }\n    else if (local_28 == 1) {\n      iVar3 = local_20;\n      printf(\"find side of rectangle with a base of @d and area of @d\\n\",local_20,local_24);\n      local_14 = local_1c;\n    }\n    else if (local_28 == 2) {\n      iVar3 = local_1c;\n      printf(\"find base of rectangle with a side of @d and area of @d\\n\",local_1c,local_24);\n      local_14 = local_20;\n    }\n    local_3c = 0;\n    iVar1 = get_user_answer(&local_3c);\n    if (iVar1 == 1) {\n      if (local_14 == local_3c) {\n        printf(\"you got it\\n\",iVar3);\n        uVar2 = 1;\n      }\n      else {\n        printf(\"incorrect\\n\",iVar3);\n        uVar2 = 0;\n      }\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  else {\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "request_2d_area_dim",
+                        "random_in_range",
+                        "printf",
+                        "get_user_answer"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "request_2d_area_dim"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "request_volume",
+                "func_c_signature": "undefined4 request_volume(void)",
+                "decompiled_code": "undefined4 request_volume(void) {\n  int iVar1;\n  int iVar2;\n  int iVar3;\n  int iVar4;\n  int local_3c;\n  int local_38;\n  int local_34;\n  int local_30;\n  int local_2c;\n  int local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = random_in_range(0,2);\n  if (local_10 == 2) {\n    iVar1 = random_in_range(0,0x508);\n    local_18 = iVar1 * iVar1 * iVar1;\n    local_14 = iVar1;\n    printf(\"find volume of cube with sides of @d\\n\",iVar1);\n    local_3c = 0;\n    iVar2 = get_user_answer(&local_3c);\n    if (iVar2 != 1) {\n      return 0;\n    }\n    if (local_18 == local_3c) {\n      printf(\"you got it\\n\",iVar1);\n      return 1;\n    }\n    printf(\"incorrect\\n\",iVar1);\n    return 0;\n  }\n  if (local_10 < 3) {\n    if (local_10 == 0) {\n      iVar1 = random_in_range(0,0x1ae);\n      local_30 = ((iVar1 * iVar1 * iVar1) / 3) * 0xc;\n      local_2c = iVar1;\n      printf(\"find volume of sphere with radius @d\\n\",iVar1);\n      local_34 = 0;\n      iVar2 = get_user_answer(&local_34);\n      if (iVar2 != 1) {\n        return 0;\n      }\n      if (local_30 == local_34) {\n        printf(\"you got it\\n\",iVar1);\n        return 1;\n      }\n      printf(\"incorrect\\n\",iVar1);\n      return 0;\n    }\n    if (local_10 == 1) {\n      local_1c = random_in_range(0,0x508);\n      local_20 = random_in_range(0,0x508);\n      iVar3 = random_in_range(0,0x508);\n      local_28 = local_1c * local_20 * iVar3;\n      iVar1 = local_20;\n      iVar2 = local_1c;\n      local_24 = iVar3;\n      printf(\"find volume of rectangular prism with a base of @d, side of @d, and height of @d\\n\",\n             local_20,local_1c,iVar3);\n      local_38 = 0;\n      iVar4 = get_user_answer(&local_38);\n      if (iVar4 != 1) {\n        return 0;\n      }\n      if (local_28 == local_38) {\n        printf(\"you got it\\n\",iVar1,iVar2,iVar3);\n        return 1;\n      }\n      printf(\"incorrect\\n\",iVar1,iVar2,iVar3);\n      return 0;\n    }\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "request_volume",
+                        "random_in_range",
+                        "printf",
+                        "get_user_answer"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "request_volume"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "request_3d_dim_vol",
+                "func_c_signature": "undefined4 request_3d_dim_vol(void)",
+                "decompiled_code": "undefined4 request_3d_dim_vol(void) {\n  int iVar1;\n  int iVar2;\n  int local_54;\n  int local_50;\n  int local_4c;\n  int local_48;\n  int local_44;\n  int local_40;\n  int local_3c;\n  int local_38;\n  int local_34;\n  int local_30;\n  int local_2c;\n  int local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_1c = random_in_range(0,2);\n  if (local_1c == 2) {\n    local_20 = random_in_range(0,0x508);\n    local_24 = local_20 * local_20 * local_20;\n    local_18 = 0;\n    iVar2 = 1;\n    local_28 = random_in_range(0,1);\n    if (local_28 == 0) {\n      iVar2 = local_20;\n      printf(\"find volume of cube with a side of @d\\n\",local_20);\n      local_18 = local_24;\n    }\n    else if (local_28 == 1) {\n      iVar2 = local_24;\n      printf(\"find side of cube with a volume of @d\\n\",local_24);\n      local_18 = local_20;\n    }\n    local_54 = 0;\n    iVar1 = get_user_answer(&local_54);\n    if (iVar1 != 1) {\n      return 0;\n    }\n    if (local_18 == local_54) {\n      printf(\"you got it\\n\",iVar2);\n      return 1;\n    }\n    printf(\"incorrect\\n\",iVar2);\n    return 0;\n  }\n  if (local_1c < 3) {\n    if (local_1c == 0) {\n      local_40 = random_in_range(0,0x1ae);\n      local_44 = ((local_40 * local_40 * local_40) / 3) * 0xc;\n      local_10 = 0;\n      iVar2 = 1;\n      local_48 = random_in_range(0,1);\n      if (local_48 == 0) {\n        iVar2 = local_40;\n        printf(\"find volume of sphere with radius @d\\n\",local_40);\n        local_10 = local_44;\n      }\n      else if (local_48 == 1) {\n        iVar2 = local_44;\n        printf(\"find radius of sphere with volume @d\\n\",local_44);\n        local_10 = local_40;\n      }\n      local_4c = 0;\n      iVar1 = get_user_answer(&local_4c);\n      if (iVar1 != 1) {\n        return 0;\n      }\n      if (local_10 == local_4c) {\n        printf(\"you got it\\n\",iVar2);\n        return 1;\n      }\n      printf(\"incorrect\\n\",iVar2);\n      return 0;\n    }\n    if (local_1c == 1) {\n      local_2c = random_in_range(0,0x508);\n      local_30 = random_in_range(0,0x508);\n      local_34 = random_in_range(0,0x508);\n      local_38 = local_2c * local_30 * local_34;\n      local_14 = 0;\n      iVar2 = 3;\n      local_3c = random_in_range(0,3);\n      if (local_3c == 0) {\n        iVar2 = local_30;\n        printf(\"find volume of rectangular prism with a base of @d, side of @d, and height of @d\\n\",\n               local_30,local_2c,local_34);\n        local_14 = local_38;\n      }\n      else if (local_3c == 1) {\n        iVar2 = local_30;\n        printf(\"find side of rectangular prism with a base of @d, volume of @d, and height of @d\\n\",\n               local_30,local_38,local_34);\n        local_14 = local_2c;\n      }\n      else if (local_3c == 2) {\n        iVar2 = local_38;\n        printf(\"find base of rectangular prism with a volume of @d, side of @d, and height of @d\\n\",\n               local_38,local_2c,local_34);\n        local_14 = local_30;\n      }\n      else if (local_3c == 3) {\n        iVar2 = local_38;\n        printf(\"find height of rectangular prism with a volume of @d, side of @d, and base of @d\\n\",\n               local_38,local_2c,local_30);\n        local_14 = local_34;\n      }\n      local_50 = 0;\n      iVar1 = get_user_answer(&local_50);\n      if (iVar1 != 1) {\n        return 0;\n      }\n      if (local_14 == local_50) {\n        printf(\"you got it\\n\",iVar2);\n        return 1;\n      }\n      printf(\"incorrect\\n\",iVar2);\n      return 0;\n    }\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "request_3d_dim_vol",
+                        "random_in_range",
+                        "printf",
+                        "get_user_answer"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "request_3d_dim_vol"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            }
+        ],
+        "solver.c": [
+            {
+                "func_name": "run_tests",
+                "func_c_signature": "void run_tests(void)",
+                "decompiled_code": "void run_tests(void) {\n  char *__format;\n  undefined4 uVar1;\n  int iVar2;\n  undefined4 uVar3;\n  undefined local_162 [256];\n  undefined local_62 [66];\n  int local_20;\n  undefined4 local_1c;\n  undefined *local_18;\n  int local_14;\n  int local_10;\n  \n  uVar3 = 0x1339b;\n  local_20 = 0;\n  local_18 = local_62;\n  for (local_10 = 0; local_10 < 1000; local_10 = local_10 + 1) {\n    uVar3 = generate_one_equation(local_162);\n    local_1c = uVar3;\n    printf(\"r: @d @s = @d\\n\",local_10,local_162,uVar3);\n  }\n  for (local_14 = 0; local_14 < 0xc; local_14 = local_14 + 1) {\n    solve_equation(*(undefined4 *)(tests + local_14 * 4),&local_20);\n    uVar1 = *(undefined4 *)(tests + local_14 * 4);\n    iVar2 = local_20;\n    printf(\"equation: @s = @d \\n\",uVar1,local_20,uVar3);\n    if (*(int *)(answers + local_14 * 4) == local_20) {\n      __format = \"correct\\n\";\n    }\n    else {\n      __format = \"wrong\\n\";\n    }\n    printf(__format,uVar1,iVar2);\n    printf(\"-----------------\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "run_tests",
+                        "generate_one_equation",
+                        "printf",
+                        "solve_equation"
+                    ],
+                    "calling_functions": [
+                        "run_tests"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_pow",
+                "func_c_signature": "int get_pow(int param_1,int param_2)",
+                "decompiled_code": "int get_pow(int param_1,int param_2) {\n  int local_c;\n  int local_8;\n  \n  local_8 = 0;\n  if (param_2 == 0) {\n    local_8 = 0;\n  }\n  else {\n    for (local_c = 1; local_c <= param_2; local_c = local_c + 1) {\n      local_8 = local_8 + param_1 * param_1;\n    }\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_pow"
+                    ],
+                    "calling_functions": [
+                        "get_pow"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "evaluate",
+                "func_c_signature": "undefined4 evaluate(uint param_1,char param_2,uint param_3,int *param_4)",
+                "decompiled_code": "undefined4 evaluate(uint param_1,char param_2,uint param_3,int *param_4) {\n  int iVar1;\n  uint uVar2;\n  undefined4 uVar3;\n  uint uVar4;\n  \n  if (param_2 == '+') {\n    if ((((int)param_1 < 1) || ((int)param_3 <= (int)(0x7fffffff - param_1))) &&\n       ((-1 < (int)param_1 || ((int)(-0x7fffffff - param_1) <= (int)param_3)))) {\n      *param_4 = param_1 + param_3;\n      uVar3 = 1;\n    }\n    else {\n      uVar3 = 0;\n    }\n  }\n  else if (param_2 == '-') {\n    if ((((int)param_1 < 1) || ((int)(param_1 + 0x80000001) <= (int)param_3)) &&\n       ((-1 < (int)param_1 || ((int)param_3 <= (int)(param_1 + 0x7fffffff))))) {\n      *param_4 = param_1 - param_3;\n      uVar3 = 1;\n    }\n    else {\n      uVar3 = 0;\n    }\n  }\n  else if (param_2 == '*') {\n    uVar4 = (uint)((ulonglong)param_3 * (ulonglong)param_1);\n    iVar1 = ((int)param_3 >> 0x1f) * param_1 + ((int)param_1 >> 0x1f) * param_3 +\n            (int)((ulonglong)param_3 * (ulonglong)param_1 >> 0x20);\n    uVar2 = (uint)(0x7fffffff < uVar4);\n    if (((SBORROW4(-iVar1,uVar2) != false) == (int)(-iVar1 - uVar2) < 0) &&\n       (uVar2 = (uint)(uVar4 < 0x80000001),\n       (SBORROW4(iVar1,-1) != SBORROW4(iVar1 + 1,uVar2)) == (int)((iVar1 + 1) - uVar2) < 0)) {\n      *param_4 = param_1 * param_3;\n      uVar3 = 1;\n    }\n    else {\n      uVar3 = 0;\n    }\n  }\n  else if (param_2 == '/') {\n    if (param_3 == 0) {\n      uVar3 = 0;\n    }\n    else {\n      *param_4 = (int)param_1 / (int)param_3;\n      uVar3 = 1;\n    }\n  }\n  else {\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [
+                    "SBORROW4"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "evaluate",
+                        "SBORROW4"
+                    ],
+                    "calling_functions": [
+                        "evaluate",
+                        "satisfy_paren",
+                        "solve_equation"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "satisfy_paren",
+                "func_c_signature": "int satisfy_paren(void)",
+                "decompiled_code": "int satisfy_paren(void) {\n  int iVar1;\n  undefined4 local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  char local_11;\n  int local_10;\n  \n  local_10 = peek_op(&local_11);\n  while( true ) {\n    if ((local_11 == '(') || (local_10 != 1)) {\n      if (local_11 == '(') {\n        pop_op(&local_11);\n      }\n      return local_10;\n    }\n    iVar1 = pop_num(&local_1c);\n    if (iVar1 != 1) {\n      return 0;\n    }\n    iVar1 = pop_num(&local_18);\n    if (iVar1 != 1) break;\n    iVar1 = pop_op(&local_11);\n    if (iVar1 != 1) {\n      return 0;\n    }\n    iVar1 = evaluate(local_18,(int)local_11,local_1c,&local_20);\n    if (iVar1 != 1) {\n      return 0;\n    }\n    push_num(local_20);\n    local_10 = peek_op(&local_11);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "satisfy_paren",
+                        "peek_op",
+                        "pop_op",
+                        "pop_num",
+                        "evaluate",
+                        "push_num"
+                    ],
+                    "calling_functions": [
+                        "satisfy_paren",
+                        "solve_equation"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "solve_equation",
+                "func_c_signature": "undefined4 solve_equation(int param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 solve_equation(int param_1,undefined4 *param_2) {\n  int iVar1;\n  undefined4 local_54;\n  undefined4 local_50;\n  undefined4 local_4c;\n  char local_45;\n  undefined4 local_44;\n  undefined4 local_40;\n  undefined4 local_3c;\n  char local_36;\n  char local_35;\n  int local_34;\n  char local_2d;\n  undefined4 local_2c;\n  undefined4 local_28;\n  undefined4 local_24;\n  char local_1d;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  curr_num_stack = 0xffffffff;\n  curr_op_stack = -1;\n  do {\n    while( true ) {\n      while( true ) {\n        while( true ) {\n          while( true ) {\n            if (*(char *)(param_1 + local_10) == '\\0') {\n              pop_num(&local_24);\n              while( true ) {\n                if (curr_op_stack == -1) {\n                  *param_2 = local_24;\n                  return 1;\n                }\n                iVar1 = pop_num(&local_28);\n                if (iVar1 != 1) {\n                  return 0;\n                }\n                iVar1 = pop_op(&local_1d);\n                if (iVar1 != 1) {\n                  return 0;\n                }\n                iVar1 = evaluate(local_28,(int)local_1d,local_24,&local_2c);\n                if (iVar1 != 1) break;\n                local_24 = local_2c;\n              }\n              return 0;\n            }\n            local_1d = *(char *)(param_1 + local_10);\n            if (('9' < local_1d) || (local_1d < '0')) break;\n            local_14 = 0;\n            local_1c = peek_op(&local_2d);\n            if ((local_1c == 1) && (local_2d == '-')) {\n              iVar1 = pop_op(&local_2d);\n              if (iVar1 != 1) {\n                return 0;\n              }\n              push_op(0x2b);\n              local_14 = 1;\n            }\n            local_34 = 0;\n            local_18 = stoi(local_10 + param_1,&local_34);\n            if (local_14 != 0) {\n              local_18 = -local_18;\n            }\n            local_14 = 0;\n            push_num(local_18);\n            local_10 = local_10 + local_34;\n          }\n          if (local_1d != '(') break;\n          push_op((int)*(char *)(param_1 + local_10));\n          local_10 = local_10 + 1;\n        }\n        if (local_1d != ')') break;\n        iVar1 = satisfy_paren();\n        if (iVar1 != 1) {\n          return 0;\n        }\n        local_10 = local_10 + 1;\n      }\n      if ((local_1d != '+') && (local_1d != '-')) break;\n      local_1c = peek_op(&local_35);\n      if ((local_1c == 1) &&\n         ((((local_35 == '+' || (local_35 == '-')) || (local_35 == '*')) || (local_35 == '/')))) {\n        local_44 = 0;\n        iVar1 = pop_num(&local_40);\n        if (iVar1 != 1) {\n          return 0;\n        }\n        iVar1 = pop_num(&local_3c);\n        if (iVar1 != 1) {\n          return 0;\n        }\n        iVar1 = pop_op(&local_36);\n        if (iVar1 != 1) {\n          return 0;\n        }\n        iVar1 = evaluate(local_3c,(int)local_36,local_40,&local_44);\n        if (iVar1 != 1) {\n          return 0;\n        }\n        push_num(local_44);\n      }\n      push_op((int)*(char *)(param_1 + local_10));\n      local_10 = local_10 + 1;\n    }\n    if ((local_1d != '*') && (local_1d != '/')) {\n      return 0;\n    }\n    local_1c = peek_op(&local_45);\n    if ((local_1c == 1) && ((local_45 == '*' || (local_45 == '/')))) {\n      local_54 = 0;\n      iVar1 = pop_num(&local_50);\n      if (iVar1 != 1) {\n        return 0;\n      }\n      iVar1 = pop_num(&local_4c);\n      if (iVar1 != 1) {\n        return 0;\n      }\n      iVar1 = pop_op(&local_45);\n      if (iVar1 != 1) {\n        return 0;\n      }\n      iVar1 = evaluate(local_4c,(int)local_45,local_50,&local_54);\n      if (iVar1 != 1) {\n        return 0;\n      }\n      push_num(local_54);\n    }\n    push_op((int)*(char *)(param_1 + local_10));\n    local_10 = local_10 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "solve_equation",
+                        "pop_num",
+                        "pop_op",
+                        "evaluate",
+                        "peek_op",
+                        "push_op",
+                        "stoi",
+                        "push_num",
+                        "satisfy_paren"
+                    ],
+                    "calling_functions": [
+                        "generate_one_equation",
+                        "prompt_for_equation",
+                        "run_tests",
+                        "solve_equation"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            }
+        ],
+        "stack.c": [
+            {
+                "func_name": "push_num",
+                "func_c_signature": "bool push_num(undefined4 param_1)",
+                "decompiled_code": "bool push_num(undefined4 param_1) {\n  bool bVar1;\n  \n  bVar1 = curr_num_stack < 0x40;\n  if (bVar1) {\n    curr_num_stack = curr_num_stack + 1;\n    *(undefined4 *)(num_stack + curr_num_stack * 4) = param_1;\n  }\n  return bVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "push_num"
+                    ],
+                    "calling_functions": [
+                        "satisfy_paren",
+                        "solve_equation",
+                        "push_num"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "pop_num",
+                "func_c_signature": "undefined4 pop_num(undefined4 *param_1)",
+                "decompiled_code": "undefined4 pop_num(undefined4 *param_1) {\n  undefined *puVar1;\n  undefined **ppuVar2;\n  \n  ppuVar2 = &_GLOBAL_OFFSET_TABLE_;\n  if (curr_num_stack < 0) {\n    ppuVar2 = (undefined **)_terminate(0);\n  }\n  puVar1 = ppuVar2[0xa5];\n  ppuVar2[0xa5] = puVar1 + -1;\n  *param_1 = ppuVar2[(int)(puVar1 + 99)];\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "pop_num",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "satisfy_paren",
+                        "solve_equation",
+                        "pop_num"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "peek_op",
+                "func_c_signature": "bool peek_op(undefined *param_1)",
+                "decompiled_code": "bool peek_op(undefined *param_1) {\n  bool bVar1;\n  \n  bVar1 = -1 < curr_op_stack;\n  if (bVar1) {\n    *param_1 = op_stack[curr_op_stack];\n  }\n  return bVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "peek_op"
+                    ],
+                    "calling_functions": [
+                        "satisfy_paren",
+                        "solve_equation",
+                        "peek_op"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "push_op",
+                "func_c_signature": "bool push_op(undefined param_1)",
+                "decompiled_code": "bool push_op(undefined param_1) {\n  bool bVar1;\n  int iVar2;\n  \n  bVar1 = curr_op_stack < 0x40;\n  if (bVar1) {\n    iVar2 = curr_op_stack + 1;\n    curr_op_stack = curr_op_stack + 1;\n    op_stack[iVar2] = param_1;\n  }\n  return bVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "push_op"
+                    ],
+                    "calling_functions": [
+                        "solve_equation",
+                        "push_op"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "pop_op",
+                "func_c_signature": "undefined4 pop_op(undefined *param_1)",
+                "decompiled_code": "undefined4 pop_op(undefined *param_1) {\n  undefined *puVar1;\n  undefined **ppuVar2;\n  \n  ppuVar2 = &_GLOBAL_OFFSET_TABLE_;\n  if (curr_op_stack < 0) {\n    ppuVar2 = (undefined **)_terminate(0);\n  }\n  puVar1 = ppuVar2[0xa6];\n  ppuVar2[0xa6] = puVar1 + -1;\n  *param_1 = *(undefined *)((int)(ppuVar2 + 0x4b) + (int)puVar1);\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "pop_op",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "satisfy_paren",
+                        "solve_equation",
+                        "pop_op"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            }
+        ],
+        "string.c": [
+            {
+                "func_name": "get_str_end",
+                "func_c_signature": "int get_str_end(int param_1)",
+                "decompiled_code": "int get_str_end(int param_1) {\n  int local_8;\n  \n  local_8 = 0;\n  while( true ) {\n    if (*(char *)(param_1 + local_8) == '\\0') {\n      return local_8;\n    }\n    if (*(char *)(param_1 + local_8) == '\\n') break;\n    local_8 = local_8 + 1;\n  }\n  *(undefined *)(param_1 + local_8) = 0;\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_str_end"
+                    ],
+                    "calling_functions": [
+                        "parse_input",
+                        "generate_one_equation",
+                        "get_str_end"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "reverse",
+                "func_c_signature": "void reverse(int param_1,int param_2)",
+                "decompiled_code": "void reverse(int param_1,int param_2) {\n  undefined uVar1;\n  int local_c;\n  int local_8;\n  \n  local_c = param_2 + -1;\n  for (local_8 = 0; local_8 < local_c; local_8 = local_8 + 1) {\n    uVar1 = *(undefined *)(param_1 + local_c);\n    *(undefined *)(param_1 + local_c) = *(undefined *)(param_1 + local_8);\n    *(undefined *)(local_8 + param_1) = uVar1;\n    local_c = local_c + -1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "reverse"
+                    ],
+                    "calling_functions": [
+                        "reverse",
+                        "itos"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "itos",
+                "func_c_signature": "undefined4 itos(int param_1,undefined *param_2)",
+                "decompiled_code": "undefined4 itos(int param_1,undefined *param_2) {\n  char cVar1;\n  bool bVar2;\n  int local_c;\n  \n  if (param_1 == 0) {\n    *param_2 = 0x30;\n    param_2[1] = 0;\n  }\n  else {\n    bVar2 = param_1 < 0;\n    if (bVar2) {\n      param_1 = -param_1;\n    }\n    local_c = 0;\n    for (; param_1 != 0; param_1 = param_1 / 10) {\n      cVar1 = (char)(param_1 % 10);\n      if (param_1 % 10 < 10) {\n        cVar1 = cVar1 + '0';\n      }\n      else {\n        cVar1 = cVar1 + -10;\n      }\n      param_2[local_c] = cVar1;\n      local_c = local_c + 1;\n    }\n    if (bVar2) {\n      param_2[local_c] = 0x2d;\n      local_c = local_c + 1;\n    }\n    reverse(param_2,local_c);\n    param_2[local_c] = 0;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "itos",
+                        "reverse"
+                    ],
+                    "calling_functions": [
+                        "generate_one_equation",
+                        "itos"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "stoi",
+                "func_c_signature": "int stoi(int param_1,int *param_2)",
+                "decompiled_code": "int stoi(int param_1,int *param_2) {\n  int local_10;\n  int local_c;\n  int local_8;\n  \n  local_8 = 0;\n  for (local_10 = 0; (*(char *)(param_1 + local_10) < ':' && ('/' < *(char *)(param_1 + local_10)));\n      local_10 = local_10 + 1) {\n  }\n  *param_2 = local_10;\n  for (local_c = 0; local_c < local_10; local_c = local_c + 1) {\n    local_8 = *(char *)(param_1 + local_c) + -0x30 + local_8 * 10;\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "stoi"
+                    ],
+                    "calling_functions": [
+                        "prompt_for_equation",
+                        "solve_equation",
+                        "stoi"
+                    ],
+                    "defined_in_file": "CROMU_00017_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "file": "KPRCA_00014",
+    "decompiled_code": {
+        "main.c": [
+            {
+                "func_name": "read_fully",
+                "func_c_signature": "undefined4 read_fully(int param_1,int param_2)",
+                "decompiled_code": "undefined4 read_fully(int param_1,int param_2) {\n  int iVar1;\n  int local_14;\n  int local_10;\n  \n  local_10 = param_1;\n  while( true ) {\n    if (param_2 == 0) {\n      return 0;\n    }\n    iVar1 = receive(0,local_10,param_2,&local_14);\n    if (iVar1 != 0) break;\n    param_2 = param_2 - local_14;\n    local_10 = local_10 + local_14;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_fully",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "read_fully",
+                        "process_syscall",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_syscall",
+                "func_c_signature": "undefined4 process_syscall(void)",
+                "decompiled_code": "undefined4 process_syscall(void) {\n  undefined4 uVar1;\n  undefined local_18 [4];\n  undefined2 local_14;\n  undefined2 local_12;\n  undefined2 local_10;\n  undefined2 local_e;\n  \n  local_12 = (undefined2)state._8_4_;\n  local_14 = (undefined2)state._12_4_;\n  if (state._4_4_ == 0) {\n    if ((state._12_4_ & 0xffff) + (state._8_4_ & 0xffff) < 0x10001) {\n      transmit(1,(state._8_4_ & 0xffff) + 0x16100,state._12_4_ & 0xffff,local_18);\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = 1;\n    }\n  }\n  else if (state._4_4_ == 1) {\n    if ((state._12_4_ & 0xffff) + (state._8_4_ & 0xffff) < 0x10001) {\n      local_10 = local_14;\n      local_e = local_12;\n      read_fully((state._8_4_ & 0xffff) + 0x16100,state._12_4_ & 0xffff);\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = 1;\n    }\n  }\n  else {\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_syscall",
+                        "transmit",
+                        "read_fully"
+                    ],
+                    "calling_functions": [
+                        "process_syscall",
+                        "process"
+                    ],
+                    "defined_in_file": "KPRCA_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process",
+                "func_c_signature": "undefined4 process(uint param_1)",
+                "decompiled_code": "undefined4 process(uint param_1) {\n  uint uVar1;\n  uint uVar2;\n  undefined4 uVar3;\n  int iVar4;\n  uint uVar5;\n  undefined uVar6;\n  short sVar7;\n  \n  uVar1 = (int)param_1 >> 0x14 & 0xf;\n  uVar2 = (int)param_1 >> 0x10 & 0xf;\n  sVar7 = (short)param_1;\n  switch((int)param_1 >> 0x18) {\n  default:\n    uVar3 = 1;\n    break;\n  case 1:\n    if (uVar2 == 0) {\n      iVar4 = 0;\n    }\n    else {\n      iVar4 = *(int *)(state + uVar2 * 4);\n    }\n    *(uint *)(state + uVar1 * 4) = (uint)(byte)state[(iVar4 + (param_1 & 0xffff) & 0xffff) + 0x40];\n    uVar3 = 0;\n    break;\n  case 2:\n    if (uVar2 == 0) {\n      uVar6 = 0;\n    }\n    else {\n      uVar6 = (undefined)*(undefined4 *)(state + uVar2 * 4);\n    }\n    if (uVar1 == 0) {\n      iVar4 = 0;\n    }\n    else {\n      iVar4 = *(int *)(state + uVar1 * 4);\n    }\n    state[(iVar4 + (param_1 & 0xffff) & 0xffff) + 0x40] = uVar6;\n    uVar3 = 0;\n    break;\n  case 3:\n    uVar3 = process_syscall();\n    break;\n  case 4:\n    if (uVar2 == 0) {\n      iVar4 = 0;\n    }\n    else {\n      iVar4 = *(int *)(state + uVar2 * 4);\n    }\n    *(int *)(state + uVar1 * 4) = *(int *)(state + uVar1 * 4) + iVar4 + sVar7;\n    uVar3 = 0;\n    break;\n  case 5:\n    if (uVar2 == 0) {\n      iVar4 = 0;\n    }\n    else {\n      iVar4 = *(int *)(state + uVar2 * 4);\n    }\n    *(int *)(state + uVar1 * 4) = *(int *)(state + uVar1 * 4) - (iVar4 + sVar7);\n    uVar3 = 0;\n    break;\n  case 6:\n    if (uVar2 == 0) {\n      iVar4 = 0;\n    }\n    else {\n      iVar4 = *(int *)(state + uVar2 * 4);\n    }\n    *(int *)(state + uVar1 * 4) = (iVar4 + sVar7) * *(int *)(state + uVar1 * 4);\n    uVar3 = 0;\n    break;\n  case 7:\n    if (uVar2 == 0) {\n      iVar4 = 0;\n    }\n    else {\n      iVar4 = *(int *)(state + uVar2 * 4);\n    }\n    if (iVar4 + sVar7 == 0) {\n      uVar3 = 1;\n    }\n    else {\n      if (uVar2 == 0) {\n        iVar4 = 0;\n      }\n      else {\n        iVar4 = *(int *)(state + uVar2 * 4);\n      }\n      *(uint *)(state + uVar1 * 4) = *(uint *)(state + uVar1 * 4) / (uint)(sVar7 + iVar4);\n      uVar3 = 0;\n    }\n    break;\n  case 8:\n    if (uVar2 == 0) {\n      uVar2 = 0;\n    }\n    else {\n      uVar2 = *(uint *)(state + uVar2 * 4);\n    }\n    *(uint *)(state + uVar1 * 4) = *(uint *)(state + uVar1 * 4) | uVar2 | (int)sVar7;\n    uVar3 = 0;\n    break;\n  case 9:\n    if (uVar2 == 0) {\n      uVar2 = 0;\n    }\n    else {\n      uVar2 = *(uint *)(state + uVar2 * 4);\n    }\n    *(uint *)(state + uVar1 * 4) = *(uint *)(state + uVar1 * 4) & (uVar2 | (int)sVar7);\n    uVar3 = 0;\n    break;\n  case 10:\n    if (uVar2 == 0) {\n      uVar2 = 0;\n    }\n    else {\n      uVar2 = *(uint *)(state + uVar2 * 4);\n    }\n    *(uint *)(state + uVar1 * 4) = *(uint *)(state + uVar1 * 4) ^ (uVar2 | (int)sVar7);\n    uVar3 = 0;\n    break;\n  case 0xb:\n    if (uVar2 == 0) {\n      uVar2 = 0;\n    }\n    else {\n      uVar2 = *(uint *)(state + uVar2 * 4);\n    }\n    if ((param_1 & 0xf) == 0) {\n      uVar5 = 0;\n    }\n    else {\n      uVar5 = *(uint *)(state + (param_1 & 0xf) * 4);\n    }\n    *(uint *)(state + uVar1 * 4) = (uint)(uVar2 < uVar5);\n    uVar3 = 0;\n    break;\n  case 0xc:\n    if (uVar2 == 0) {\n      uVar2 = 0;\n    }\n    else {\n      uVar2 = *(uint *)(state + uVar2 * 4);\n    }\n    if ((param_1 & 0xf) == 0) {\n      uVar5 = 0;\n    }\n    else {\n      uVar5 = *(uint *)(state + (param_1 & 0xf) * 4);\n    }\n    *(uint *)(state + uVar1 * 4) = (uint)(uVar2 <= uVar5);\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process",
+                        "process_syscall"
+                    ],
+                    "calling_functions": [
+                        "process",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined4 local_20;\n  uint local_1c;\n  int local_18;\n  undefined local_14 [4];\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  memset(state,0,0x10040);\n  iVar1 = read_fully(&local_18,4);\n  if (((((iVar1 == 0) && (local_18 == 0x69564d00)) && (iVar1 = read_fully(&local_1c,4), iVar1 == 0))\n      && ((-1 < (int)local_1c || (iVar1 = read_fully(state,0x40), iVar1 == 0)))) &&\n     (((local_1c & 0xffff) == 0 || (iVar1 = read_fully(0x16100,local_1c & 0xffff), iVar1 == 0)))) {\n    while ((iVar1 = read_fully(&local_20,4), iVar1 == 0 && (iVar1 = process(local_20), iVar1 == 0)))\n    {\n      transmit(1,state,0x40,local_14);\n    }\n    transmit(1,&DAT_00014000,4,local_14);\n  }\n  else {\n    transmit(1,\"BAD_INIT\",8,local_14);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "memset",
+                        "read_fully",
+                        "process",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "KPRCA_00014_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,1451 @@
+{
+    "file": "NRFIN_00076",
+    "decompiled_code": {
+        "decider.c": [
+            {
+                "func_name": "option_new",
+                "func_c_signature": "void option_new(void **param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void option_new(void **param_1,undefined4 param_2,undefined4 param_3) {\n  undefined4 *puVar1;\n  size_t in_stack_ffffffd8;\n  \n  puVar1 = (undefined4 *)calloc(0xc,in_stack_ffffffd8);\n  if (puVar1 == (undefined4 *)0x0) {\n    _terminate(0xfffffffb);\n  }\n  *puVar1 = param_2;\n  puVar1[1] = param_3;\n  puVar1[2] = 0;\n  *param_1 = puVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "option_new",
+                        "calloc",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "option_new",
+                        "decider_add_option"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "option_append_new",
+                "func_c_signature": "void option_append_new(int *param_1,int param_2)",
+                "decompiled_code": "void option_append_new(int *param_1,int param_2) {\n  int local_8;\n  \n  local_8 = *param_1;\n  if (local_8 == 0) {\n    *param_1 = param_2;\n  }\n  else {\n    for (; *(int *)(local_8 + 8) != 0; local_8 = *(int *)(local_8 + 8)) {\n    }\n    *(int *)(local_8 + 8) = param_2;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "option_append_new"
+                    ],
+                    "calling_functions": [
+                        "option_append_new",
+                        "decider_add_option"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "option_pop",
+                "func_c_signature": "int option_pop(int *param_1)",
+                "decompiled_code": "int option_pop(int *param_1) {\n  int iVar1;\n  \n  if (*param_1 == 0) {\n    iVar1 = 0;\n  }\n  else {\n    iVar1 = *param_1;\n    *param_1 = *(int *)(iVar1 + 8);\n    *(undefined4 *)(iVar1 + 8) = 0;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "option_pop"
+                    ],
+                    "calling_functions": [
+                        "option_pop",
+                        "option_destroy_list"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "option_destroy_single",
+                "func_c_signature": "void option_destroy_single(void **param_1)",
+                "decompiled_code": "void option_destroy_single(void **param_1) {\n  free(*param_1);\n  *param_1 = (void *)0x0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "option_destroy_single",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "option_destroy_single",
+                        "option_destroy_list"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "option_destroy_list",
+                "func_c_signature": "void option_destroy_list(int *param_1)",
+                "decompiled_code": "void option_destroy_list(int *param_1) {\n  undefined4 local_10 [3];\n  \n  local_10[0] = 0;\n  while (*param_1 != 0) {\n    local_10[0] = option_pop(param_1);\n    option_destroy_single(local_10);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "option_destroy_list",
+                        "option_pop",
+                        "option_destroy_single"
+                    ],
+                    "calling_functions": [
+                        "option_destroy_list",
+                        "decider_destroy"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_next_fp_idx",
+                "func_c_signature": "ushort get_next_fp_idx(void)",
+                "decompiled_code": "ushort get_next_fp_idx(void) {\n  ushort uVar1;\n  \n  uVar1 = fp_idx;\n  fp_idx = (short)((fp_idx + 1) % 0x1000);\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_next_fp_idx"
+                    ],
+                    "calling_functions": [
+                        "get_next_fp_idx",
+                        "decider_select_option"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "decider_select_option",
+                "func_c_signature": "int decider_select_option(int param_1)",
+                "decompiled_code": "int decider_select_option(int param_1) {\n  int iVar1;\n  uint uVar2;\n  byte local_d;\n  int local_c;\n  \n  iVar1 = fp;\n  uVar2 = get_next_fp_idx();\n  local_c = *(int *)(param_1 + 0x14);\n  for (local_d = 0;\n      local_d < (byte)((uint)*(byte *)((uVar2 & 0xffff) + iVar1) % *(uint *)(param_1 + 0x10));\n      local_d = local_d + 1) {\n    local_c = *(int *)(local_c + 8);\n  }\n  return local_c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "decider_select_option",
+                        "get_next_fp_idx"
+                    ],
+                    "calling_functions": [
+                        "decider_select_option",
+                        "decider_disembark"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "decider_add_option",
+                "func_c_signature": "void decider_add_option(int param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void decider_add_option(int param_1,undefined4 param_2,undefined4 param_3) {\n  undefined4 local_10 [3];\n  \n  local_10[0] = 0;\n  option_new(local_10,param_2,param_3,0x1121a);\n  option_append_new(param_1 + 0x14,local_10[0]);\n  *(int *)(param_1 + 0x10) = *(int *)(param_1 + 0x10) + 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "decider_add_option",
+                        "option_new",
+                        "option_append_new"
+                    ],
+                    "calling_functions": [
+                        "decider_add_option",
+                        "gen_trails",
+                        "gen_lifts"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "decider_embark",
+                "func_c_signature": "void decider_embark(int param_1,undefined4 param_2)",
+                "decompiled_code": "void decider_embark(int param_1,undefined4 param_2) {\n  rider_append(param_1 + 8,param_2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "decider_embark",
+                        "rider_append"
+                    ],
+                    "calling_functions": [
+                        "decider_embark"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "decider_disembark",
+                "func_c_signature": "int decider_disembark(int param_1)",
+                "decompiled_code": "int decider_disembark(int param_1) {\n  int local_1c;\n  int *local_18;\n  int local_14;\n  int local_10;\n  \n  local_1c = 0;\n  local_14 = 0;\n  local_18 = (int *)0x0;\n  local_10 = 0;\n  if (*(int *)(param_1 + 0x10) == 0) {\n    local_10 = 0;\n  }\n  else {\n    while (local_1c = rider_pop(param_1 + 8), local_1c != 0) {\n      local_18 = (int *)decider_select_option(param_1);\n      if (local_18 == (int *)0x0) {\n        rider_append(param_1 + 8,local_1c);\n        return local_10;\n      }\n      if (*local_18 == 0) {\n        if (*(int *)(local_1c + 8) == 0) {\n          (**(code **)(local_1c + 0x1c))();\n          rider_append(param_1 + 0xc,local_1c);\n        }\n        else {\n          lift_enqueue_riders(local_18[1],&local_1c);\n        }\n        local_10 = local_10 + 1;\n      }\n      else if (*local_18 == 1) {\n        local_14 = local_18[1];\n        if (*(uint *)(local_1c + 8) < *(uint *)(local_14 + 4)) {\n          (**(code **)(local_1c + 0x1c))();\n          rider_append(param_1 + 0xc,local_1c);\n        }\n        else {\n          (**(code **)(local_14 + 0x1c))(local_14,local_1c);\n        }\n        local_10 = local_10 + 1;\n      }\n      else {\n        rider_append(param_1 + 8,local_1c);\n      }\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "decider_disembark",
+                        "rider_pop",
+                        "decider_select_option",
+                        "rider_append",
+                        "lift_enqueue_riders"
+                    ],
+                    "calling_functions": [
+                        "decider_disembark"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "decider_new",
+                "func_c_signature": "undefined4 decider_new(undefined4 *param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 decider_new(undefined4 *param_1,undefined4 *param_2) {\n  undefined4 uVar1;\n  undefined *puVar2;\n  size_t in_stack_ffffffd8;\n  undefined auStack_1c [12];\n  undefined4 *local_10;\n  \n  puVar2 = auStack_1c;\n  local_10 = (undefined4 *)calloc(0x20,in_stack_ffffffd8);\n  if (local_10 == (undefined4 *)0x0) {\n    puVar2 = &stack0xffffffd4;\n    _terminate();\n  }\n  *local_10 = *param_2;\n  local_10[1] = param_2[1];\n  local_10[6] = decider_embark;\n  local_10[7] = decider_disembark;\n  if (local_10[1] == 0) {\n    *(undefined4 **)(puVar2 + -0x10) = local_10;\n    *(undefined4 *)(puVar2 + -0x14) = 0x11475;\n    free(*(void **)(puVar2 + -0x10));\n    uVar1 = 0xffffffff;\n  }\n  else {\n    *param_1 = local_10;\n    uVar1 = *local_10;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "decider_new",
+                        "calloc",
+                        "_terminate",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "decider_new",
+                        "gen_deciders"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "decider_reset",
+                "func_c_signature": "void decider_reset(int param_1,undefined4 param_2)",
+                "decompiled_code": "void decider_reset(int param_1,undefined4 param_2) {\n  rider_append(param_2,*(undefined4 *)(param_1 + 8));\n  *(undefined4 *)(param_1 + 8) = 0;\n  rider_append(param_2,*(undefined4 *)(param_1 + 0xc));\n  *(undefined4 *)(param_1 + 0xc) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "decider_reset",
+                        "rider_append"
+                    ],
+                    "calling_functions": [
+                        "decider_reset",
+                        "reset_simulation_do"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "decider_destroy",
+                "func_c_signature": "void decider_destroy(void **param_1,undefined4 param_2)",
+                "decompiled_code": "void decider_destroy(void **param_1,undefined4 param_2) {\n  undefined4 local_14;\n  void *local_10;\n  \n  local_10 = *param_1;\n  if (*(int *)((int)local_10 + 8) != 0) {\n    rider_append(param_2,*(undefined4 *)((int)local_10 + 8));\n  }\n  if (*(int *)((int)local_10 + 0xc) != 0) {\n    rider_append(param_2,*(undefined4 *)((int)local_10 + 0xc));\n  }\n  local_14 = *(undefined4 *)((int)local_10 + 0x14);\n  option_destroy_list(&local_14);\n  free(*param_1);\n  *param_1 = (void *)0x0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "decider_destroy",
+                        "rider_append",
+                        "option_destroy_list",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "decider_destroy",
+                        "gen_deciders",
+                        "resort_destroy_digraph"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            }
+        ],
+        "lift.c": [
+            {
+                "func_name": "chair_embark_rider",
+                "func_c_signature": "void chair_embark_rider(int param_1,undefined4 param_2)",
+                "decompiled_code": "void chair_embark_rider(int param_1,undefined4 param_2) {\n  rider_append(param_1 + 0xc,param_2);\n  *(int *)(param_1 + 8) = *(int *)(param_1 + 8) + -1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "chair_embark_rider",
+                        "rider_append"
+                    ],
+                    "calling_functions": [
+                        "chair_embark_rider"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "chair_disembark_rider",
+                "func_c_signature": "int chair_disembark_rider(int param_1)",
+                "decompiled_code": "int chair_disembark_rider(int param_1) {\n  int iVar1;\n  \n  iVar1 = rider_pop(param_1 + 0xc);\n  if (iVar1 != 0) {\n    *(int *)(param_1 + 8) = *(int *)(param_1 + 8) + 1;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "chair_disembark_rider",
+                        "rider_pop"
+                    ],
+                    "calling_functions": [
+                        "chair_disembark_rider"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "chair_new",
+                "func_c_signature": "undefined4 chair_new(void **param_1,undefined4 param_2,int param_3)",
+                "decompiled_code": "undefined4 chair_new(void **param_1,undefined4 param_2,int param_3) {\n  undefined4 uVar1;\n  undefined4 *puVar2;\n  size_t in_stack_ffffffd8;\n  \n  if (param_3 == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    puVar2 = (undefined4 *)calloc(0x1c,in_stack_ffffffd8);\n    if (puVar2 == (undefined4 *)0x0) {\n      _terminate(0xfffffffb);\n    }\n    *puVar2 = param_2;\n    puVar2[1] = param_3;\n    puVar2[2] = param_3;\n    puVar2[4] = chair_embark_rider;\n    puVar2[5] = chair_disembark_rider;\n    *param_1 = puVar2;\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "chair_new",
+                        "calloc",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "chair_new",
+                        "lift_new"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "chair_reset",
+                "func_c_signature": "void chair_reset(int param_1,undefined4 param_2)",
+                "decompiled_code": "void chair_reset(int param_1,undefined4 param_2) {\n  int iVar1;\n  \n  while( true ) {\n    iVar1 = (**(code **)(param_1 + 0x14))(param_1);\n    if (iVar1 == 0) break;\n    rider_append(param_2,iVar1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "chair_reset",
+                        "rider_append"
+                    ],
+                    "calling_functions": [
+                        "chair_reset",
+                        "chair_reset_list",
+                        "chair_destroy_single"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "chair_reset_list",
+                "func_c_signature": "void chair_reset_list(int param_1,undefined4 param_2)",
+                "decompiled_code": "void chair_reset_list(int param_1,undefined4 param_2) {\n  int local_10;\n  \n  for (local_10 = param_1; local_10 != 0; local_10 = *(int *)(local_10 + 0x18)) {\n    chair_reset(local_10,param_2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "chair_reset_list",
+                        "chair_reset"
+                    ],
+                    "calling_functions": [
+                        "chair_reset_list",
+                        "lift_reset"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "chair_append_new",
+                "func_c_signature": "int chair_append_new(int *param_1,int param_2)",
+                "decompiled_code": "int chair_append_new(int *param_1,int param_2) {\n  int local_8;\n  \n  local_8 = *param_1;\n  if (local_8 == 0) {\n    *param_1 = param_2;\n  }\n  else {\n    for (; *(int *)(local_8 + 0x18) != 0; local_8 = *(int *)(local_8 + 0x18)) {\n    }\n    *(int *)(local_8 + 0x18) = param_2;\n  }\n  return param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "chair_append_new"
+                    ],
+                    "calling_functions": [
+                        "chair_append_new",
+                        "lift_new"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "chair_pop",
+                "func_c_signature": "int chair_pop(int *param_1)",
+                "decompiled_code": "int chair_pop(int *param_1) {\n  int iVar1;\n  \n  if (*param_1 == 0) {\n    iVar1 = 0;\n  }\n  else {\n    iVar1 = *param_1;\n    *param_1 = *(int *)(iVar1 + 0x18);\n    *(undefined4 *)(iVar1 + 0x18) = 0;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "chair_pop"
+                    ],
+                    "calling_functions": [
+                        "chair_pop",
+                        "chair_destroy_list"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "chair_destroy_single",
+                "func_c_signature": "void chair_destroy_single(void **param_1,undefined4 param_2)",
+                "decompiled_code": "void chair_destroy_single(void **param_1,undefined4 param_2) {\n  chair_reset(*param_1,param_2);\n  free(*param_1);\n  *param_1 = (void *)0x0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "chair_destroy_single",
+                        "chair_reset",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "chair_destroy_single",
+                        "chair_destroy_list"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "chair_destroy_list",
+                "func_c_signature": "void chair_destroy_list(int *param_1,undefined4 param_2)",
+                "decompiled_code": "void chair_destroy_list(int *param_1,undefined4 param_2) {\n  undefined4 local_10 [3];\n  \n  local_10[0] = 0;\n  while (*param_1 != 0) {\n    local_10[0] = chair_pop(param_1);\n    chair_destroy_single(local_10,param_2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "chair_destroy_list",
+                        "chair_pop",
+                        "chair_destroy_single"
+                    ],
+                    "calling_functions": [
+                        "chair_destroy_list",
+                        "lift_destroy"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lift_enqueue_riders",
+                "func_c_signature": "void lift_enqueue_riders(int param_1,undefined4 param_2)",
+                "decompiled_code": "void lift_enqueue_riders(int param_1,undefined4 param_2) {\n  int iVar1;\n  \n  while( true ) {\n    iVar1 = rider_pop(param_2);\n    if (iVar1 == 0) break;\n    rider_append(param_1 + 0x10,iVar1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lift_enqueue_riders",
+                        "rider_pop",
+                        "rider_append"
+                    ],
+                    "calling_functions": [
+                        "decider_disembark",
+                        "lift_enqueue_riders"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lift_embark_riders",
+                "func_c_signature": "int lift_embark_riders(int param_1)",
+                "decompiled_code": "int lift_embark_riders(int param_1) {\n  int iVar1;\n  int iVar2;\n  int local_10;\n  \n  local_10 = 0;\n  iVar1 = *(int *)(param_1 + 0x18);\n  while ((*(int *)(iVar1 + 8) != 0 && (iVar2 = rider_pop(param_1 + 0x10), iVar2 != 0))) {\n    (**(code **)(iVar1 + 0x10))(iVar1,iVar2);\n    *(int *)(param_1 + 0xc) = *(int *)(param_1 + 0xc) + 1;\n    local_10 = local_10 + 1;\n  }\n  if (*(int *)(iVar1 + 0x18) == 0) {\n    *(undefined4 *)(param_1 + 0x18) = *(undefined4 *)(param_1 + 0x14);\n  }\n  else {\n    *(undefined4 *)(param_1 + 0x18) = *(undefined4 *)(iVar1 + 0x18);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lift_embark_riders",
+                        "rider_pop"
+                    ],
+                    "calling_functions": [
+                        "lift_embark_riders"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lift_one_step",
+                "func_c_signature": "void lift_one_step(int param_1)",
+                "decompiled_code": "void lift_one_step(int param_1) {\n  (**(code **)(param_1 + 0x30))(param_1);\n  (**(code **)(param_1 + 0x28))(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lift_one_step"
+                    ],
+                    "calling_functions": [
+                        "lift_one_step"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lift_disembark_riders",
+                "func_c_signature": "int lift_disembark_riders(int param_1)",
+                "decompiled_code": "int lift_disembark_riders(int param_1) {\n  int iVar1;\n  int iVar2;\n  int iVar3;\n  int local_10;\n  \n  local_10 = 0;\n  iVar2 = get_decider_by_id(*(undefined4 *)(param_1 + 0x24));\n  if (iVar2 == 0) {\n    local_10 = 0;\n  }\n  else {\n    iVar1 = *(int *)(param_1 + 0x1c);\n    while ((*(uint *)(iVar1 + 8) < *(uint *)(iVar1 + 4) &&\n           (iVar3 = (**(code **)(iVar1 + 0x14))(iVar1), iVar3 != 0))) {\n      (**(code **)(iVar2 + 0x18))(iVar2,iVar3);\n      local_10 = local_10 + 1;\n    }\n    if (*(int *)(iVar1 + 0x18) == 0) {\n      *(undefined4 *)(param_1 + 0x1c) = *(undefined4 *)(param_1 + 0x14);\n    }\n    else {\n      *(undefined4 *)(param_1 + 0x1c) = *(undefined4 *)(iVar1 + 0x18);\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lift_disembark_riders",
+                        "get_decider_by_id"
+                    ],
+                    "calling_functions": [
+                        "lift_disembark_riders"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lift_new",
+                "func_c_signature": "undefined4 lift_new(undefined4 *param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 lift_new(undefined4 *param_1,undefined4 *param_2) {\n  undefined4 uVar1;\n  undefined *puVar2;\n  size_t in_stack_ffffffd8;\n  undefined auStack_1c [4];\n  undefined4 local_18;\n  undefined4 *local_14;\n  uint local_10;\n  \n  puVar2 = auStack_1c;\n  local_14 = (undefined4 *)calloc(0x34,in_stack_ffffffd8);\n  if (local_14 == (undefined4 *)0x0) {\n    puVar2 = &stack0xffffffd4;\n    _terminate();\n  }\n  *local_14 = *param_2;\n  local_14[8] = param_2[1];\n  local_14[9] = param_2[2];\n  local_14[1] = param_2[3];\n  local_14[2] = param_2[4];\n  local_14[10] = lift_embark_riders;\n  local_14[0xb] = lift_one_step;\n  local_14[0xc] = lift_disembark_riders;\n  if (((local_14[1] == 0) || (local_14[8] == local_14[9])) ||\n     ((local_14[2] != 2 && (local_14[2] != 4)))) {\n    *(undefined4 **)(puVar2 + -0x10) = local_14;\n    *(undefined4 *)(puVar2 + -0x14) = 0x11df6;\n    free(*(void **)(puVar2 + -0x10));\n    uVar1 = 0xffffffff;\n  }\n  else {\n    for (local_10 = 0; local_10 < (uint)local_14[1]; local_10 = local_10 + 1) {\n      *(undefined4 *)(puVar2 + -8) = local_14[2];\n      *(uint *)(puVar2 + -0xc) = local_10;\n      *(undefined4 **)(puVar2 + -0x10) = &local_18;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11e1f;\n      chair_new();\n      *(undefined4 *)(puVar2 + -0xc) = local_18;\n      *(undefined4 **)(puVar2 + -0x10) = local_14 + 5;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11e35;\n      chair_append_new();\n      if (local_10 == 0) {\n        local_14[6] = local_18;\n      }\n      if (local_10 == (uint)local_14[1] >> 1) {\n        local_14[7] = local_18;\n      }\n    }\n    *param_1 = local_14;\n    uVar1 = *local_14;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lift_new",
+                        "calloc",
+                        "_terminate",
+                        "free",
+                        "chair_new",
+                        "chair_append_new"
+                    ],
+                    "calling_functions": [
+                        "lift_new",
+                        "gen_lifts"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lift_reset",
+                "func_c_signature": "void lift_reset(int param_1,undefined4 param_2)",
+                "decompiled_code": "void lift_reset(int param_1,undefined4 param_2) {\n  uint local_10;\n  \n  chair_reset_list(*(undefined4 *)(param_1 + 0x14),param_2);\n  rider_append(param_2,*(undefined4 *)(param_1 + 0x10));\n  *(undefined4 *)(param_1 + 0x10) = 0;\n  *(undefined4 *)(param_1 + 0xc) = 0;\n  *(undefined4 *)(param_1 + 0x18) = *(undefined4 *)(param_1 + 0x14);\n  *(undefined4 *)(param_1 + 0x1c) = *(undefined4 *)(param_1 + 0x14);\n  for (local_10 = 0;\n      (local_10 < *(uint *)(param_1 + 4) && (local_10 != *(uint *)(param_1 + 4) >> 1));\n      local_10 = local_10 + 1) {\n    *(undefined4 *)(param_1 + 0x1c) = *(undefined4 *)(*(int *)(param_1 + 0x1c) + 0x18);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lift_reset",
+                        "chair_reset_list",
+                        "rider_append"
+                    ],
+                    "calling_functions": [
+                        "lift_reset",
+                        "reset_simulation_do"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lift_destroy",
+                "func_c_signature": "void lift_destroy(void **param_1,undefined4 param_2)",
+                "decompiled_code": "void lift_destroy(void **param_1,undefined4 param_2) {\n  void *pvVar1;\n  \n  pvVar1 = *param_1;\n  chair_destroy_list((int)pvVar1 + 0x14,param_2);\n  rider_append(param_2,*(undefined4 *)((int)pvVar1 + 0x10));\n  free(*param_1);\n  *param_1 = (void *)0x0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lift_destroy",
+                        "chair_destroy_list",
+                        "rider_append",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "lift_destroy",
+                        "gen_lifts",
+                        "resort_destroy_digraph"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            }
+        ],
+        "resort.c": [
+            {
+                "func_name": "get_trail_by_id",
+                "func_c_signature": "undefined4 get_trail_by_id(int param_1)",
+                "decompiled_code": "undefined4 get_trail_by_id(int param_1) {\n  uint local_8;\n  \n  for (local_8 = 0; (local_8 < DAT_000180a8 && (*(int *)(DAT_000180b8 + local_8 * 4) != 0));\n      local_8 = local_8 + 1) {\n    if (param_1 == **(int **)(DAT_000180b8 + local_8 * 4)) {\n      return *(undefined4 *)(DAT_000180b8 + local_8 * 4);\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_trail_by_id"
+                    ],
+                    "calling_functions": [
+                        "get_trail_by_id",
+                        "validate_trail"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_lift_by_id",
+                "func_c_signature": "undefined4 get_lift_by_id(int param_1)",
+                "decompiled_code": "undefined4 get_lift_by_id(int param_1) {\n  uint local_8;\n  \n  for (local_8 = 0; (local_8 < DAT_000180a4 && (*(int *)(DAT_000180b4 + local_8 * 4) != 0));\n      local_8 = local_8 + 1) {\n    if (param_1 == **(int **)(DAT_000180b4 + local_8 * 4)) {\n      return *(undefined4 *)(DAT_000180b4 + local_8 * 4);\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_lift_by_id"
+                    ],
+                    "calling_functions": [
+                        "get_lift_by_id",
+                        "validate_lift"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_decider_by_id",
+                "func_c_signature": "undefined4 get_decider_by_id(int param_1)",
+                "decompiled_code": "undefined4 get_decider_by_id(int param_1) {\n  uint local_8;\n  \n  for (local_8 = 0; (local_8 < resort && (*(int *)(DAT_000180b0 + local_8 * 4) != 0));\n      local_8 = local_8 + 1) {\n    if (param_1 == **(int **)(DAT_000180b0 + local_8 * 4)) {\n      return *(undefined4 *)(DAT_000180b0 + local_8 * 4);\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_decider_by_id"
+                    ],
+                    "calling_functions": [
+                        "lift_disembark_riders",
+                        "get_decider_by_id",
+                        "gen_trails",
+                        "gen_lifts",
+                        "validate_decider",
+                        "trail_disembark"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_decider_min",
+                "func_c_signature": "int get_decider_min(void)",
+                "decompiled_code": "int get_decider_min(void) {\n  uint local_c;\n  int local_8;\n  \n  local_8 = 0;\n  if (resort != 0) {\n    local_8 = *DAT_000180b0;\n    for (local_c = 1; local_c < resort; local_c = local_c + 1) {\n      if (*(uint *)(DAT_000180b0[local_c] + 4) < *(uint *)(local_8 + 4)) {\n        local_8 = DAT_000180b0[local_c];\n      }\n    }\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_decider_min"
+                    ],
+                    "calling_functions": [
+                        "get_decider_min",
+                        "start_simulation"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_rider",
+                "func_c_signature": "undefined4 validate_rider(int param_1)",
+                "decompiled_code": "undefined4 validate_rider(int param_1) {\n  undefined4 uVar1;\n  \n  if (*(int *)(param_1 + 8) == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_rider"
+                    ],
+                    "calling_functions": [
+                        "validate_rider",
+                        "gen_riders"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "gen_riders",
+                "func_c_signature": "undefined4 gen_riders(int *param_1,int param_2)",
+                "decompiled_code": "undefined4 gen_riders(int *param_1,int param_2) {\n  int iVar1;\n  undefined4 local_14;\n  int local_10;\n  \n  local_10 = *param_1;\n  while( true ) {\n    if (param_2 == 0) {\n      *param_1 = local_10;\n      return 0;\n    }\n    iVar1 = rider_new(&local_14,local_10);\n    if (iVar1 < 0) break;\n    iVar1 = validate_rider(local_14);\n    if (iVar1 < 0) {\n      rider_destroy(&local_14);\n      return 0xffffffff;\n    }\n    rider_append(&DAT_000180bc,local_14);\n    DAT_000180ac = DAT_000180ac + 1;\n    local_10 = local_10 + 0x10;\n    param_2 = param_2 + -1;\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "gen_riders",
+                        "rider_new",
+                        "validate_rider",
+                        "rider_destroy",
+                        "rider_append"
+                    ],
+                    "calling_functions": [
+                        "gen_riders",
+                        "load_rider_group",
+                        "load_rider_single"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_trail",
+                "func_c_signature": "undefined4 validate_trail(undefined4 *param_1)",
+                "decompiled_code": "undefined4 validate_trail(undefined4 *param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  \n  iVar1 = get_trail_by_id(*param_1);\n  if (iVar1 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_trail",
+                        "get_trail_by_id"
+                    ],
+                    "calling_functions": [
+                        "validate_trail",
+                        "gen_trails"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "gen_trails",
+                "func_c_signature": "undefined4 gen_trails(int *param_1)",
+                "decompiled_code": "undefined4 gen_trails(int *param_1) {\n  int iVar1;\n  int local_1c;\n  undefined4 local_18;\n  int local_14;\n  uint local_10;\n  \n  local_14 = *param_1;\n  local_10 = 0;\n  while( true ) {\n    if (DAT_000180a8 <= local_10) {\n      *param_1 = local_14;\n      return 0;\n    }\n    iVar1 = trail_new(&local_1c,local_14);\n    if (iVar1 < 0) break;\n    iVar1 = validate_trail(local_1c);\n    if (iVar1 < 0) {\n      trail_destroy(&local_1c,&DAT_000180bc);\n      return 0xffffffff;\n    }\n    *(int *)(local_10 * 4 + DAT_000180b8) = local_1c;\n    local_14 = local_14 + 0x14;\n    local_18 = get_decider_by_id(*(undefined4 *)(local_1c + 0x14));\n    decider_add_option(local_18,1,local_1c);\n    local_10 = local_10 + 1;\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "gen_trails",
+                        "trail_new",
+                        "validate_trail",
+                        "trail_destroy",
+                        "get_decider_by_id",
+                        "decider_add_option"
+                    ],
+                    "calling_functions": [
+                        "gen_trails",
+                        "load_resort_digraph"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_lift",
+                "func_c_signature": "undefined4 validate_lift(undefined4 *param_1)",
+                "decompiled_code": "undefined4 validate_lift(undefined4 *param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  \n  iVar1 = get_lift_by_id(*param_1);\n  if (iVar1 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_lift",
+                        "get_lift_by_id"
+                    ],
+                    "calling_functions": [
+                        "validate_lift",
+                        "gen_lifts"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "gen_lifts",
+                "func_c_signature": "undefined4 gen_lifts(int *param_1)",
+                "decompiled_code": "undefined4 gen_lifts(int *param_1) {\n  int iVar1;\n  int local_1c;\n  undefined4 local_18;\n  int local_14;\n  uint local_10;\n  \n  local_14 = *param_1;\n  local_10 = 0;\n  while( true ) {\n    if (DAT_000180a4 <= local_10) {\n      *param_1 = local_14;\n      return 0;\n    }\n    iVar1 = lift_new(&local_1c,local_14);\n    if (iVar1 < 0) break;\n    iVar1 = validate_lift(local_1c);\n    if (iVar1 < 0) {\n      lift_destroy(&local_1c,&DAT_000180bc);\n      return 0xffffffff;\n    }\n    *(int *)(local_10 * 4 + DAT_000180b4) = local_1c;\n    local_14 = local_14 + 0x14;\n    local_18 = get_decider_by_id(*(undefined4 *)(local_1c + 0x20));\n    decider_add_option(local_18,0,local_1c);\n    local_10 = local_10 + 1;\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "gen_lifts",
+                        "lift_new",
+                        "validate_lift",
+                        "lift_destroy",
+                        "get_decider_by_id",
+                        "decider_add_option"
+                    ],
+                    "calling_functions": [
+                        "gen_lifts",
+                        "load_resort_digraph"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_decider",
+                "func_c_signature": "undefined4 validate_decider(undefined4 *param_1)",
+                "decompiled_code": "undefined4 validate_decider(undefined4 *param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  \n  iVar1 = get_decider_by_id(*param_1);\n  if (iVar1 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_decider",
+                        "get_decider_by_id"
+                    ],
+                    "calling_functions": [
+                        "validate_decider",
+                        "gen_deciders"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "gen_deciders",
+                "func_c_signature": "undefined4 gen_deciders(int *param_1)",
+                "decompiled_code": "undefined4 gen_deciders(int *param_1) {\n  int iVar1;\n  undefined4 local_18;\n  int local_14;\n  uint local_10;\n  \n  local_14 = *param_1;\n  local_10 = 0;\n  while( true ) {\n    if (resort <= local_10) {\n      *param_1 = local_14;\n      return 0;\n    }\n    iVar1 = decider_new(&local_18,local_14);\n    if (iVar1 < 0) break;\n    iVar1 = validate_decider(local_18);\n    if (iVar1 < 0) {\n      decider_destroy(&local_18,&DAT_000180bc);\n      return 0xffffffff;\n    }\n    *(undefined4 *)(local_10 * 4 + DAT_000180b0) = local_18;\n    local_14 = local_14 + 8;\n    local_10 = local_10 + 1;\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "gen_deciders",
+                        "decider_new",
+                        "validate_decider",
+                        "decider_destroy"
+                    ],
+                    "calling_functions": [
+                        "gen_deciders",
+                        "load_resort_digraph"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "resort_destroy_digraph",
+                "func_c_signature": "void resort_destroy_digraph(void)",
+                "decompiled_code": "void resort_destroy_digraph(void) {\n  undefined4 local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  uint local_14;\n  int local_10;\n  \n  while (resort != 0) {\n    resort = resort + -1;\n    local_18 = *(undefined4 *)(resort * 4 + (int)DAT_000180b0);\n    decider_destroy(&local_18,&DAT_000180bc);\n  }\n  if (DAT_000180b0 != (void *)0x0) {\n    free(DAT_000180b0);\n  }\n  DAT_000180b0 = (void *)0x0;\n  while (DAT_000180a4 != 0) {\n    DAT_000180a4 = DAT_000180a4 + -1;\n    local_1c = *(undefined4 *)(DAT_000180a4 * 4 + (int)DAT_000180b4);\n    lift_destroy(&local_1c,&DAT_000180bc);\n  }\n  if (DAT_000180b4 != (void *)0x0) {\n    free(DAT_000180b4);\n  }\n  DAT_000180b4 = (void *)0x0;\n  while (DAT_000180a8 != 0) {\n    DAT_000180a8 = DAT_000180a8 + -1;\n    local_20 = *(undefined4 *)(DAT_000180a8 * 4 + (int)DAT_000180b8);\n    trail_destroy(&local_20,&DAT_000180bc);\n  }\n  if (DAT_000180b8 != (void *)0x0) {\n    free(DAT_000180b8);\n  }\n  DAT_000180b8 = (void *)0x0;\n  local_10 = DAT_000180bc;\n  for (local_14 = 0; local_14 < DAT_000180ac; local_14 = local_14 + 1) {\n    rider_reset(local_10);\n    local_10 = *(int *)(local_10 + 0x20);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "resort_destroy_digraph",
+                        "decider_destroy",
+                        "free",
+                        "lift_destroy",
+                        "trail_destroy",
+                        "rider_reset"
+                    ],
+                    "calling_functions": [
+                        "resort_destroy_digraph",
+                        "load_resort_digraph"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "reset_simulation_do",
+                "func_c_signature": "undefined4 reset_simulation_do(void)",
+                "decompiled_code": "undefined4 reset_simulation_do(void) {\n  uint local_18;\n  uint local_14;\n  int local_10;\n  \n  local_14 = 0;\n  while (local_14 < resort) {\n    decider_reset(*(undefined4 *)(local_14 * 4 + DAT_000180b0),&DAT_000180bc);\n    local_14 = local_14 + 1;\n  }\n  local_14 = 0;\n  while (local_14 < DAT_000180a4) {\n    lift_reset(*(undefined4 *)(local_14 * 4 + DAT_000180b4),&DAT_000180bc);\n    local_14 = local_14 + 1;\n  }\n  local_14 = 0;\n  while (local_14 < DAT_000180a8) {\n    trail_reset(*(undefined4 *)(local_14 * 4 + DAT_000180b8),&DAT_000180bc);\n    local_14 = local_14 + 1;\n  }\n  local_10 = DAT_000180bc;\n  local_18 = 0;\n  while( true ) {\n    if (DAT_000180ac <= local_18) {\n      return 0;\n    }\n    if (local_10 == 0) break;\n    rider_reset(local_10);\n    local_10 = *(int *)(local_10 + 0x20);\n    local_18 = local_18 + 1;\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "reset_simulation_do",
+                        "decider_reset",
+                        "lift_reset",
+                        "trail_reset",
+                        "rider_reset"
+                    ],
+                    "calling_functions": [
+                        "reset_simulation_do",
+                        "unload_riders",
+                        "reset_simulation"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "go_simul8",
+                "func_c_signature": "undefined4 go_simul8(int param_1)",
+                "decompiled_code": "undefined4 go_simul8(int param_1) {\n  int iVar1;\n  int iVar2;\n  uint local_10;\n  \n  while (iVar1 = param_1 + -1, param_1 != 0) {\n    local_10 = 0;\n    while (local_10 < resort) {\n      iVar2 = *(int *)(local_10 * 4 + DAT_000180b0);\n      (**(code **)(iVar2 + 0x1c))(iVar2);\n      local_10 = local_10 + 1;\n    }\n    local_10 = 0;\n    while (local_10 < DAT_000180a8) {\n      iVar2 = *(int *)(local_10 * 4 + DAT_000180b8);\n      (**(code **)(iVar2 + 0x20))(iVar2);\n      local_10 = local_10 + 1;\n    }\n    local_10 = 0;\n    while (param_1 = iVar1, local_10 < DAT_000180a4) {\n      iVar2 = *(int *)(local_10 * 4 + DAT_000180b4);\n      (**(code **)(iVar2 + 0x2c))(iVar2);\n      local_10 = local_10 + 1;\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "go_simul8"
+                    ],
+                    "calling_functions": [
+                        "go_simul8",
+                        "start_simulation"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "load_resort_digraph",
+                "func_c_signature": "undefined4 load_resort_digraph(void)",
+                "decompiled_code": "undefined4 load_resort_digraph(void) {\n  void *pvVar1;\n  int iVar2;\n  undefined4 uVar3;\n  void **ppvVar4;\n  undefined *puVar5;\n  undefined *puVar6;\n  void *apvStack_90 [6];\n  int aiStack_78 [19];\n  undefined4 *puStack_2c;\n  undefined4 uStack_28;\n  undefined4 uStack_20;\n  void *local_1c;\n  int local_18;\n  void *local_14;\n  int local_10;\n  \n  ppvVar4 = &local_1c;\n  uStack_20 = 0x129a1;\n  resort_destroy_digraph();\n  uStack_28 = 0xc;\n  puStack_2c = &resort;\n  iVar2 = recv_all();\n  if (iVar2 != 0xc) {\n    ppvVar4 = (void **)(aiStack_78 + 0x13);\n    puStack_2c = (undefined4 *)0xfffffff7;\n    _terminate();\n  }\n  *(int *)((int)ppvVar4 + -0x10) = resort << 2;\n  *(undefined4 *)((int)ppvVar4 + -0x14) = 0x129d8;\n  DAT_000180b0 = calloc(*(size_t *)((int)ppvVar4 + -0x10),*(size_t *)((int)ppvVar4 + -0xc));\n  puVar6 = (undefined *)ppvVar4;\n  if (DAT_000180b0 == (void *)0x0) {\n    puVar6 = (undefined *)((int)ppvVar4 + -0x10);\n    *(undefined4 *)((int)ppvVar4 + -0x10) = 0xfffffffb;\n    *(undefined4 *)((int)ppvVar4 + -0x14) = 0x129fb;\n    _terminate();\n  }\n  *(int *)(puVar6 + -0x10) = DAT_000180a4 << 2;\n  *(undefined4 *)(puVar6 + -0x14) = 0x12a10;\n  DAT_000180b4 = calloc(*(size_t *)(puVar6 + -0x10),*(size_t *)(puVar6 + -0xc));\n  puVar5 = puVar6;\n  if (DAT_000180b4 == (void *)0x0) {\n    puVar5 = puVar6 + -0x10;\n    *(undefined4 *)(puVar6 + -0x10) = 0xfffffffb;\n    *(undefined4 *)(puVar6 + -0x14) = 0x12a33;\n    _terminate();\n  }\n  *(int *)(puVar5 + -0x10) = DAT_000180a8 << 2;\n  *(undefined4 *)(puVar5 + -0x14) = 0x12a48;\n  DAT_000180b8 = calloc(*(size_t *)(puVar5 + -0x10),*(size_t *)(puVar5 + -0xc));\n  puVar6 = puVar5;\n  if (DAT_000180b8 == (void *)0x0) {\n    puVar6 = puVar5 + -0x10;\n    *(undefined4 *)(puVar5 + -0x10) = 0xfffffffb;\n    *(undefined4 *)(puVar5 + -0x14) = 0x12a6b;\n    _terminate();\n  }\n  local_10 = resort * 8 + DAT_000180a4 * 0x14 + DAT_000180a8 * 0x14;\n  *(int *)(puVar6 + -0x10) = local_10;\n  *(undefined4 *)(puVar6 + -0x14) = 0x12ab0;\n  local_1c = calloc(*(size_t *)(puVar6 + -0x10),*(size_t *)(puVar6 + -0xc));\n  puVar5 = puVar6;\n  if (local_1c == (void *)0x0) {\n    puVar5 = puVar6 + -0x10;\n    *(undefined4 *)(puVar6 + -0x10) = 0xfffffffb;\n    *(undefined4 *)(puVar6 + -0x14) = 0x12ac7;\n    _terminate();\n  }\n  pvVar1 = local_1c;\n  local_14 = local_1c;\n  *(int *)(puVar5 + -0xc) = local_10;\n  *(void **)(puVar5 + -0x10) = pvVar1;\n  *(undefined4 *)(puVar5 + -0x14) = 0x12adc;\n  iVar2 = recv_all();\n  puVar6 = puVar5;\n  if (local_10 != iVar2) {\n    puVar6 = puVar5 + -0x10;\n    *(undefined4 *)(puVar5 + -0x10) = 0xfffffff7;\n    *(undefined4 *)(puVar5 + -0x14) = 0x12aee;\n    _terminate();\n  }\n  *(void ***)(puVar6 + -0x10) = &local_1c;\n  *(undefined4 *)(puVar6 + -0x14) = 0x12afa;\n  local_18 = gen_deciders();\n  if (local_18 < 0) {\n    uVar3 = 0xffffffff;\n  }\n  else {\n    *(void ***)(puVar6 + -0x10) = &local_1c;\n    *(undefined4 *)(puVar6 + -0x14) = 0x12b19;\n    local_18 = gen_lifts();\n    if (local_18 < 0) {\n      uVar3 = 0xffffffff;\n    }\n    else {\n      *(void ***)(puVar6 + -0x10) = &local_1c;\n      *(undefined4 *)(puVar6 + -0x14) = 0x12b38;\n      local_18 = gen_trails();\n      if (local_18 < 0) {\n        uVar3 = 0xffffffff;\n      }\n      else {\n        *(void **)(puVar6 + -0x10) = local_14;\n        *(undefined4 *)(puVar6 + -0x14) = 0x12b56;\n        free(*(void **)(puVar6 + -0x10));\n        uVar3 = 0;\n      }\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "load_resort_digraph",
+                        "resort_destroy_digraph",
+                        "recv_all",
+                        "_terminate",
+                        "calloc",
+                        "gen_deciders",
+                        "gen_lifts",
+                        "gen_trails",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "load_resort_digraph",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "load_rider_group",
+                "func_c_signature": "undefined4 load_rider_group(void)",
+                "decompiled_code": "undefined4 load_rider_group(void) {\n  int iVar1;\n  undefined4 uVar2;\n  int **ppiVar3;\n  undefined *puVar4;\n  undefined *puVar5;\n  void *apvStack_70 [2];\n  int aiStack_68 [3];\n  void *pvStack_5c;\n  int aiStack_58 [7];\n  int *piStack_3c;\n  undefined4 uStack_38;\n  undefined4 uStack_30;\n  undefined auStack_2c [12];\n  int local_20;\n  void *local_1c;\n  int local_18;\n  void *local_14;\n  int local_10;\n  \n  ppiVar3 = (int **)auStack_2c;\n  uStack_30 = 0x12b6f;\n  uStack_38 = 4;\n  piStack_3c = &local_20;\n  iVar1 = recv_all();\n  if (iVar1 != 4) {\n    ppiVar3 = &piStack_3c;\n    piStack_3c = (int *)0xfffffff7;\n    _terminate();\n  }\n  local_10 = local_20 << 4;\n  *(int *)((int)ppiVar3 + -0x10) = local_10;\n  *(undefined4 *)((int)ppiVar3 + -0x14) = 0x12ba9;\n  local_1c = calloc(*(size_t *)((int)ppiVar3 + -0x10),*(size_t *)((int)ppiVar3 + -0xc));\n  puVar4 = (undefined *)ppiVar3;\n  if (local_1c == (void *)0x0) {\n    puVar4 = (undefined *)((int)ppiVar3 + -0x10);\n    *(undefined4 *)((int)ppiVar3 + -0x10) = 0xfffffffb;\n    *(undefined4 *)((int)ppiVar3 + -0x14) = 0x12bc0;\n    _terminate();\n  }\n  local_14 = local_1c;\n  *(int *)(puVar4 + -0xc) = local_10;\n  *(void **)(puVar4 + -0x10) = local_1c;\n  *(undefined4 *)(puVar4 + -0x14) = 0x12bd5;\n  iVar1 = recv_all();\n  puVar5 = puVar4;\n  if (local_10 != iVar1) {\n    puVar5 = puVar4 + -0x10;\n    *(undefined4 *)(puVar4 + -0x10) = 0xfffffff7;\n    *(undefined4 *)(puVar4 + -0x14) = 0x12be7;\n    _terminate();\n  }\n  *(int *)(puVar5 + -0xc) = local_20;\n  *(void ***)(puVar5 + -0x10) = &local_1c;\n  *(undefined4 *)(puVar5 + -0x14) = 0x12bf7;\n  local_18 = gen_riders();\n  if (local_18 < 0) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    *(void **)(puVar5 + -0x10) = local_14;\n    *(undefined4 *)(puVar5 + -0x14) = 0x12c15;\n    free(*(void **)(puVar5 + -0x10));\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "load_rider_group",
+                        "recv_all",
+                        "_terminate",
+                        "calloc",
+                        "gen_riders",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "load_rider_group",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "load_rider_single",
+                "func_c_signature": "undefined4 load_rider_single(void)",
+                "decompiled_code": "undefined4 load_rider_single(void) {\n  int iVar1;\n  undefined4 uVar2;\n  int **ppiVar3;\n  undefined *puVar4;\n  undefined *puVar5;\n  void *apvStack_70 [2];\n  int aiStack_68 [3];\n  void *pvStack_5c;\n  int aiStack_58 [7];\n  int *piStack_3c;\n  undefined4 uStack_38;\n  undefined4 uStack_30;\n  undefined auStack_2c [12];\n  int local_20;\n  void *local_1c;\n  int local_18;\n  void *local_14;\n  int local_10;\n  \n  ppiVar3 = (int **)auStack_2c;\n  uStack_30 = 0x12c2e;\n  uStack_38 = 4;\n  piStack_3c = &local_20;\n  iVar1 = recv_all();\n  if (iVar1 != 4) {\n    ppiVar3 = &piStack_3c;\n    piStack_3c = (int *)0xfffffff7;\n    _terminate();\n  }\n  if (local_20 == 1) {\n    local_10 = 0x10;\n    *(undefined4 *)((int)ppiVar3 + -0x10) = 0x10;\n    *(undefined4 *)((int)ppiVar3 + -0x14) = 0x12c7a;\n    local_1c = calloc(*(size_t *)((int)ppiVar3 + -0x10),*(size_t *)((int)ppiVar3 + -0xc));\n    puVar4 = (undefined *)ppiVar3;\n    if (local_1c == (void *)0x0) {\n      puVar4 = (undefined *)((int)ppiVar3 + -0x10);\n      *(undefined4 *)((int)ppiVar3 + -0x10) = 0xfffffffb;\n      *(undefined4 *)((int)ppiVar3 + -0x14) = 0x12c91;\n      _terminate();\n    }\n    local_14 = local_1c;\n    *(int *)(puVar4 + -0xc) = local_10;\n    *(void **)(puVar4 + -0x10) = local_1c;\n    *(undefined4 *)(puVar4 + -0x14) = 0x12ca6;\n    iVar1 = recv_all();\n    puVar5 = puVar4;\n    if (local_10 != iVar1) {\n      puVar5 = puVar4 + -0x10;\n      *(undefined4 *)(puVar4 + -0x10) = 0xfffffff7;\n      *(undefined4 *)(puVar4 + -0x14) = 0x12cb8;\n      _terminate();\n    }\n    *(int *)(puVar5 + -0xc) = local_20;\n    *(void ***)(puVar5 + -0x10) = &local_1c;\n    *(undefined4 *)(puVar5 + -0x14) = 77000;\n    local_18 = gen_riders();\n    if (local_18 < 0) {\n      uVar2 = 0xffffffff;\n    }\n    else {\n      *(void **)(puVar5 + -0x10) = local_14;\n      *(undefined4 *)(puVar5 + -0x14) = 0x12ce6;\n      free(*(void **)(puVar5 + -0x10));\n      uVar2 = 0;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "load_rider_single",
+                        "recv_all",
+                        "_terminate",
+                        "calloc",
+                        "gen_riders",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "load_rider_single",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "unload_riders",
+                "func_c_signature": "undefined4 unload_riders(void)",
+                "decompiled_code": "undefined4 unload_riders(void) {\n  undefined4 uVar1;\n  \n  uVar1 = reset_simulation_do();\n  rider_destroy_list(&DAT_000180bc);\n  DAT_000180ac = 0;\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "unload_riders",
+                        "reset_simulation_do",
+                        "rider_destroy_list"
+                    ],
+                    "calling_functions": [
+                        "unload_riders",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "start_simulation",
+                "func_c_signature": "undefined4 start_simulation(void)",
+                "decompiled_code": "undefined4 start_simulation(void) {\n  code *pcVar1;\n  int iVar2;\n  undefined4 uVar3;\n  int **ppiVar4;\n  int *piStack_2c;\n  undefined4 uStack_28;\n  undefined4 uStack_20;\n  int local_1c;\n  undefined4 local_18;\n  int local_10;\n  \n  ppiVar4 = (int **)&local_1c;\n  uStack_20 = 0x12d43;\n  uStack_28 = 4;\n  piStack_2c = &local_1c;\n  iVar2 = recv_all();\n  if (iVar2 != 4) {\n    ppiVar4 = &piStack_2c;\n    piStack_2c = (int *)0xfffffff7;\n    _terminate();\n  }\n  if (local_1c == 0) {\n    uVar3 = 0xffffffff;\n  }\n  else {\n    *(undefined4 *)((int)ppiVar4 + -4) = 0x12d7c;\n    local_10 = get_decider_min();\n    if (local_10 == 0) {\n      uVar3 = 0xffffffff;\n    }\n    else if (DAT_000180ac == 0) {\n      uVar3 = 0xffffffff;\n    }\n    else {\n      while (DAT_000180bc != 0) {\n        *(int **)((int)ppiVar4 + -0x10) = &DAT_000180bc;\n        *(undefined4 *)((int)ppiVar4 + -0x14) = 0x12db2;\n        local_18 = rider_pop();\n        pcVar1 = *(code **)(local_10 + 0x18);\n        *(undefined4 *)((int)ppiVar4 + -0xc) = local_18;\n        *(int *)((int)ppiVar4 + -0x10) = local_10;\n        *(undefined4 *)((int)ppiVar4 + -0x14) = 0x12dc9;\n        (*pcVar1)();\n      }\n      *(int *)((int)ppiVar4 + -0x10) = local_1c;\n      *(undefined4 *)((int)ppiVar4 + -0x14) = 0x12de5;\n      go_simul8();\n      uVar3 = 0;\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "start_simulation",
+                        "recv_all",
+                        "_terminate",
+                        "get_decider_min",
+                        "rider_pop",
+                        "go_simul8"
+                    ],
+                    "calling_functions": [
+                        "start_simulation",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "reset_simulation",
+                "func_c_signature": "void reset_simulation(void)",
+                "decompiled_code": "void reset_simulation(void) {\n  reset_simulation_do();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "reset_simulation",
+                        "reset_simulation_do"
+                    ],
+                    "calling_functions": [
+                        "reset_simulation",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lift_stats",
+                "func_c_signature": "undefined4 lift_stats(void)",
+                "decompiled_code": "undefined4 lift_stats(void) {\n  undefined4 uVar1;\n  undefined *puVar2;\n  size_t in_stack_ffffffc8;\n  undefined auStack_2c [12];\n  undefined4 *local_20;\n  void *local_1c;\n  size_t local_18;\n  uint local_14;\n  int local_10;\n  \n  puVar2 = auStack_2c;\n  if (DAT_000180a4 == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    local_18 = DAT_000180a4 << 3;\n    local_1c = calloc(local_18,in_stack_ffffffc8);\n    if (local_1c == (void *)0x0) {\n      puVar2 = &stack0xffffffc4;\n      _terminate();\n    }\n    local_10 = 0;\n    for (local_14 = 0; local_14 < DAT_000180a4; local_14 = local_14 + 1) {\n      local_20 = *(undefined4 **)(DAT_000180b4 + local_14 * 4);\n      *(undefined4 *)(local_10 * 4 + (int)local_1c) = *local_20;\n      *(undefined4 *)((local_10 + 1) * 4 + (int)local_1c) = local_20[3];\n      local_10 = local_10 + 2;\n    }\n    *(size_t *)(puVar2 + -0xc) = local_18;\n    *(void **)(puVar2 + -0x10) = local_1c;\n    *(undefined4 *)(puVar2 + -0x14) = 0x12edf;\n    send(*(int *)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),*(size_t *)(puVar2 + -8),\n         *(int *)(puVar2 + -4));\n    *(void **)(puVar2 + -0x10) = local_1c;\n    *(undefined4 *)(puVar2 + -0x14) = 0x12eed;\n    free(*(void **)(puVar2 + -0x10));\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lift_stats",
+                        "calloc",
+                        "_terminate",
+                        "send",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "lift_stats",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "trail_stats",
+                "func_c_signature": "undefined4 trail_stats(void)",
+                "decompiled_code": "undefined4 trail_stats(void) {\n  undefined4 uVar1;\n  undefined *puVar2;\n  size_t in_stack_ffffffc8;\n  undefined auStack_2c [12];\n  undefined4 *local_20;\n  void *local_1c;\n  size_t local_18;\n  uint local_14;\n  int local_10;\n  \n  puVar2 = auStack_2c;\n  if (DAT_000180a8 == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    local_18 = DAT_000180a8 << 3;\n    local_1c = calloc(local_18,in_stack_ffffffc8);\n    if (local_1c == (void *)0x0) {\n      puVar2 = &stack0xffffffc4;\n      _terminate();\n    }\n    local_10 = 0;\n    for (local_14 = 0; local_14 < DAT_000180a8; local_14 = local_14 + 1) {\n      local_20 = *(undefined4 **)(DAT_000180b8 + local_14 * 4);\n      *(undefined4 *)(local_10 * 4 + (int)local_1c) = *local_20;\n      *(undefined4 *)((local_10 + 1) * 4 + (int)local_1c) = local_20[3];\n      local_10 = local_10 + 2;\n    }\n    *(size_t *)(puVar2 + -0xc) = local_18;\n    *(void **)(puVar2 + -0x10) = local_1c;\n    *(undefined4 *)(puVar2 + -0x14) = 0x12fcd;\n    send(*(int *)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),*(size_t *)(puVar2 + -8),\n         *(int *)(puVar2 + -4));\n    *(void **)(puVar2 + -0x10) = local_1c;\n    *(undefined4 *)(puVar2 + -0x14) = 0x12fdb;\n    free(*(void **)(puVar2 + -0x10));\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "trail_stats",
+                        "calloc",
+                        "_terminate",
+                        "send",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "trail_stats",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rider_stats",
+                "func_c_signature": "undefined4 rider_stats(void)",
+                "decompiled_code": "undefined4 rider_stats(void) {\n  uint uVar1;\n  int iVar2;\n  undefined4 uVar3;\n  undefined *puVar4;\n  size_t in_stack_ffffffb8;\n  undefined auStack_3c [12];\n  int local_30;\n  int local_2c;\n  int local_28;\n  void *local_24;\n  size_t local_20;\n  uint local_1c;\n  int local_18;\n  undefined4 *local_14;\n  int local_10;\n  \n  puVar4 = auStack_3c;\n  local_18 = 0;\n  local_1c = 0;\n  if (DAT_000180ac == 0) {\n    uVar3 = 0xffffffff;\n  }\n  else {\n    local_20 = DAT_000180ac << 3;\n    local_24 = calloc(local_20,in_stack_ffffffb8);\n    if (local_24 == (void *)0x0) {\n      puVar4 = &stack0xffffffb4;\n      _terminate();\n    }\n    local_1c = 0;\n    while (local_1c < resort) {\n      uVar1 = local_1c + 1;\n      local_30 = *(int *)(local_1c * 4 + DAT_000180b0);\n      for (local_14 = *(undefined4 **)(local_30 + 8); local_14 != (undefined4 *)0x0;\n          local_14 = (undefined4 *)local_14[8]) {\n        iVar2 = local_18 + 1;\n        *(undefined4 *)(local_18 * 4 + (int)local_24) = *local_14;\n        local_18 = local_18 + 2;\n        *(undefined4 *)(iVar2 * 4 + (int)local_24) = local_14[2];\n      }\n      for (local_14 = *(undefined4 **)(local_30 + 0xc); local_1c = uVar1,\n          local_14 != (undefined4 *)0x0; local_14 = (undefined4 *)local_14[8]) {\n        iVar2 = local_18 + 1;\n        *(undefined4 *)(local_18 * 4 + (int)local_24) = *local_14;\n        local_18 = local_18 + 2;\n        *(undefined4 *)(iVar2 * 4 + (int)local_24) = local_14[2];\n      }\n    }\n    local_1c = 0;\n    while (local_1c < DAT_000180a4) {\n      uVar1 = local_1c + 1;\n      local_2c = *(int *)(local_1c * 4 + DAT_000180b4);\n      for (local_14 = *(undefined4 **)(local_2c + 0x10); local_14 != (undefined4 *)0x0;\n          local_14 = (undefined4 *)local_14[8]) {\n        iVar2 = local_18 + 1;\n        *(undefined4 *)(local_18 * 4 + (int)local_24) = *local_14;\n        local_18 = local_18 + 2;\n        *(undefined4 *)(iVar2 * 4 + (int)local_24) = local_14[2];\n      }\n      for (local_10 = *(int *)(local_2c + 0x14); local_1c = uVar1, local_10 != 0;\n          local_10 = *(int *)(local_10 + 0x18)) {\n        for (local_14 = *(undefined4 **)(local_10 + 0xc); local_14 != (undefined4 *)0x0;\n            local_14 = (undefined4 *)local_14[8]) {\n          iVar2 = local_18 + 1;\n          *(undefined4 *)(local_18 * 4 + (int)local_24) = *local_14;\n          local_18 = local_18 + 2;\n          *(undefined4 *)(iVar2 * 4 + (int)local_24) = local_14[2];\n        }\n      }\n    }\n    local_1c = 0;\n    while (local_1c < DAT_000180a8) {\n      uVar1 = local_1c + 1;\n      local_28 = *(int *)(local_1c * 4 + DAT_000180b8);\n      for (local_14 = *(undefined4 **)(local_28 + 0x10); local_1c = uVar1,\n          local_14 != (undefined4 *)0x0; local_14 = (undefined4 *)local_14[8]) {\n        iVar2 = local_18 + 1;\n        *(undefined4 *)(local_18 * 4 + (int)local_24) = *local_14;\n        local_18 = local_18 + 2;\n        *(undefined4 *)(iVar2 * 4 + (int)local_24) = local_14[2];\n      }\n    }\n    for (local_14 = DAT_000180bc; local_14 != (undefined4 *)0x0;\n        local_14 = (undefined4 *)local_14[8]) {\n      iVar2 = local_18 + 1;\n      *(undefined4 *)(local_18 * 4 + (int)local_24) = *local_14;\n      local_18 = local_18 + 2;\n      *(undefined4 *)(iVar2 * 4 + (int)local_24) = local_14[2];\n    }\n    *(size_t *)(puVar4 + -0xc) = local_20;\n    *(void **)(puVar4 + -0x10) = local_24;\n    *(undefined4 *)(puVar4 + -0x14) = 0x13312;\n    send(*(int *)(puVar4 + -0x10),*(void **)(puVar4 + -0xc),*(size_t *)(puVar4 + -8),\n         *(int *)(puVar4 + -4));\n    *(void **)(puVar4 + -0x10) = local_24;\n    *(undefined4 *)(puVar4 + -0x14) = 0x13320;\n    free(*(void **)(puVar4 + -0x10));\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rider_stats",
+                        "calloc",
+                        "_terminate",
+                        "send",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "rider_stats",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            }
+        ],
+        "rider.c": [
+            {
+                "func_name": "rider_new",
+                "func_c_signature": "undefined4 rider_new(undefined4 *param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 rider_new(undefined4 *param_1,undefined4 *param_2) {\n  undefined4 uVar1;\n  undefined *puVar2;\n  size_t in_stack_ffffffd8;\n  undefined auStack_1c [12];\n  undefined4 *local_10;\n  \n  puVar2 = auStack_1c;\n  local_10 = (undefined4 *)calloc(0x24,in_stack_ffffffd8);\n  if (local_10 == (undefined4 *)0x0) {\n    puVar2 = &stack0xffffffd4;\n    _terminate();\n  }\n  *local_10 = *param_2;\n  local_10[1] = param_2[1];\n  local_10[2] = param_2[2];\n  local_10[3] = local_10[2];\n  local_10[6] = param_2[3];\n  local_10[7] = rider_health_check;\n  if ((local_10[2] == 0) || ((local_10[1] != 0 && (local_10[1] != 1)))) {\n    *(undefined4 **)(puVar2 + -0x10) = local_10;\n    *(undefined4 *)(puVar2 + -0x14) = 0x1341a;\n    free(*(void **)(puVar2 + -0x10));\n    uVar1 = 0xffffffff;\n  }\n  else {\n    *param_1 = local_10;\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rider_new",
+                        "calloc",
+                        "_terminate",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "gen_riders",
+                        "rider_new"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rider_destroy",
+                "func_c_signature": "void rider_destroy(void **param_1)",
+                "decompiled_code": "void rider_destroy(void **param_1) {\n  free(*param_1);\n  *param_1 = (void *)0x0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rider_destroy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "gen_riders",
+                        "rider_destroy",
+                        "rider_destroy_list"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rider_destroy_list",
+                "func_c_signature": "void rider_destroy_list(int *param_1)",
+                "decompiled_code": "void rider_destroy_list(int *param_1) {\n  int local_10 [3];\n  \n  local_10[0] = *param_1;\n  while (local_10[0] != 0) {\n    local_10[0] = rider_pop(param_1);\n    rider_destroy(local_10);\n    local_10[0] = *param_1;\n  }\n  *param_1 = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rider_destroy_list",
+                        "rider_pop",
+                        "rider_destroy"
+                    ],
+                    "calling_functions": [
+                        "unload_riders",
+                        "rider_destroy_list"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rider_append",
+                "func_c_signature": "void rider_append(int *param_1,int param_2)",
+                "decompiled_code": "void rider_append(int *param_1,int param_2) {\n  int local_c;\n  int local_8;\n  \n  local_8 = *param_1;\n  local_c = *param_1;\n  if (local_8 == 0) {\n    *param_1 = param_2;\n  }\n  else {\n    for (; local_8 != 0; local_8 = *(int *)(local_8 + 0x20)) {\n      local_c = local_8;\n    }\n    *(int *)(local_c + 0x20) = param_2;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rider_append"
+                    ],
+                    "calling_functions": [
+                        "decider_embark",
+                        "decider_disembark",
+                        "decider_reset",
+                        "decider_destroy",
+                        "chair_embark_rider",
+                        "chair_reset",
+                        "lift_enqueue_riders",
+                        "lift_reset",
+                        "lift_destroy",
+                        "gen_riders",
+                        "rider_append",
+                        "trail_embark",
+                        "trail_reset",
+                        "trail_destroy"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rider_pop",
+                "func_c_signature": "int rider_pop(int *param_1)",
+                "decompiled_code": "int rider_pop(int *param_1) {\n  int iVar1;\n  \n  iVar1 = *param_1;\n  if (iVar1 != 0) {\n    *param_1 = *(int *)(iVar1 + 0x20);\n    *(undefined4 *)(iVar1 + 0x20) = 0;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rider_pop"
+                    ],
+                    "calling_functions": [
+                        "decider_disembark",
+                        "chair_disembark_rider",
+                        "lift_enqueue_riders",
+                        "lift_embark_riders",
+                        "start_simulation",
+                        "rider_destroy_list",
+                        "rider_pop",
+                        "trail_disembark"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rider_reset",
+                "func_c_signature": "void rider_reset(int param_1)",
+                "decompiled_code": "void rider_reset(int param_1) {\n  *(undefined4 *)(param_1 + 8) = *(undefined4 *)(param_1 + 0xc);\n  *(undefined4 *)(param_1 + 0x10) = 0;\n  *(undefined4 *)(param_1 + 0x14) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rider_reset"
+                    ],
+                    "calling_functions": [
+                        "resort_destroy_digraph",
+                        "reset_simulation_do",
+                        "rider_reset"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "gen_result_bufs",
+                "func_c_signature": "void gen_result_bufs(void)",
+                "decompiled_code": "void gen_result_bufs(void) {\n  uint local_c;\n  \n  for (local_c = 0; local_c < 0xfff; local_c = local_c + 2) {\n    *(byte *)((int)&OK + (local_c & 3)) =\n         *(byte *)(local_c + 0x4347c000) ^ *(byte *)((int)&OK + (local_c & 3));\n    *(byte *)((int)&ERR + (local_c + 1 & 3)) =\n         *(byte *)(local_c + 0x4347c001) ^ *(byte *)((int)&ERR + (local_c + 1 & 3));\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "gen_result_bufs"
+                    ],
+                    "calling_functions": [
+                        "gen_result_bufs",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined *puVar2;\n  int aiStack_34 [5];\n  undefined auStack_20 [8];\n  undefined local_18 [4];\n  int local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  puVar2 = auStack_20;\n  local_14 = 0;\n  gen_result_bufs();\n  while( true ) {\n    *(undefined4 *)(puVar2 + -0xc) = 4;\n    *(undefined **)(puVar2 + -0x10) = local_18;\n    *(undefined4 *)(puVar2 + -0x14) = 0x13640;\n    iVar1 = recv_all();\n    if (iVar1 != 4) {\n      *(undefined4 *)(puVar2 + -0x10) = 0xfffffff7;\n      *(undefined4 *)(puVar2 + -0x14) = 0x13652;\n      _terminate();\n      puVar2 = puVar2 + -0x10;\n    }\n    *(undefined4 *)(puVar2 + -8) = 4;\n    *(undefined **)(puVar2 + -0xc) = local_18;\n    *(undefined4 **)(puVar2 + -0x10) = &LOAD_DIGRAPH;\n    *(undefined4 *)(puVar2 + -0x14) = 0x13667;\n    iVar1 = memcmp(*(void **)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),*(size_t *)(puVar2 + -8));\n    if (iVar1 == 0) {\n      *(undefined4 *)(puVar2 + -4) = 0x13673;\n      local_14 = load_resort_digraph();\n    }\n    else {\n      *(undefined4 *)(puVar2 + -8) = 4;\n      *(undefined **)(puVar2 + -0xc) = local_18;\n      *(undefined4 **)(puVar2 + -0x10) = &LOAD_RIDER_GROUP;\n      *(undefined4 *)(puVar2 + -0x14) = 0x13690;\n      iVar1 = memcmp(*(void **)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),*(size_t *)(puVar2 + -8));\n      if (iVar1 == 0) {\n        *(undefined4 *)(puVar2 + -4) = 0x1369c;\n        local_14 = load_rider_group();\n      }\n      else {\n        *(undefined4 *)(puVar2 + -8) = 4;\n        *(undefined **)(puVar2 + -0xc) = local_18;\n        *(undefined4 **)(puVar2 + -0x10) = &LOAD_RIDER_SINGLE;\n        *(undefined4 *)(puVar2 + -0x14) = 0x136b9;\n        iVar1 = memcmp(*(void **)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),*(size_t *)(puVar2 + -8)\n                      );\n        if (iVar1 == 0) {\n          *(undefined4 *)(puVar2 + -4) = 0x136c5;\n          local_14 = load_rider_single();\n        }\n        else {\n          *(undefined4 *)(puVar2 + -8) = 4;\n          *(undefined **)(puVar2 + -0xc) = local_18;\n          *(undefined4 **)(puVar2 + -0x10) = &UNLOAD_RIDERS;\n          *(undefined4 *)(puVar2 + -0x14) = 0x136e2;\n          iVar1 = memcmp(*(void **)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),\n                         *(size_t *)(puVar2 + -8));\n          if (iVar1 == 0) {\n            *(undefined4 *)(puVar2 + -4) = 0x136ee;\n            local_14 = unload_riders();\n          }\n          else {\n            *(undefined4 *)(puVar2 + -8) = 4;\n            *(undefined **)(puVar2 + -0xc) = local_18;\n            *(undefined4 **)(puVar2 + -0x10) = &START;\n            *(undefined4 *)(puVar2 + -0x14) = 0x1370b;\n            iVar1 = memcmp(*(void **)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),\n                           *(size_t *)(puVar2 + -8));\n            if (iVar1 == 0) {\n              *(undefined4 *)(puVar2 + -4) = 0x13717;\n              local_14 = start_simulation();\n            }\n            else {\n              *(undefined4 *)(puVar2 + -8) = 4;\n              *(undefined **)(puVar2 + -0xc) = local_18;\n              *(undefined4 **)(puVar2 + -0x10) = &RESET;\n              *(undefined4 *)(puVar2 + -0x14) = 0x13734;\n              iVar1 = memcmp(*(void **)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),\n                             *(size_t *)(puVar2 + -8));\n              if (iVar1 == 0) {\n                *(undefined4 *)(puVar2 + -4) = 0x13740;\n                local_14 = reset_simulation();\n              }\n              else {\n                *(undefined4 *)(puVar2 + -8) = 4;\n                *(undefined **)(puVar2 + -0xc) = local_18;\n                *(undefined4 **)(puVar2 + -0x10) = &LIFT_STATS;\n                *(undefined4 *)(puVar2 + -0x14) = 0x1375a;\n                iVar1 = memcmp(*(void **)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),\n                               *(size_t *)(puVar2 + -8));\n                if (iVar1 == 0) {\n                  *(undefined4 *)(puVar2 + -4) = 0x13766;\n                  local_14 = lift_stats();\n                }\n                else {\n                  *(undefined4 *)(puVar2 + -8) = 4;\n                  *(undefined **)(puVar2 + -0xc) = local_18;\n                  *(undefined4 **)(puVar2 + -0x10) = &TRAIL_STATS;\n                  *(undefined4 *)(puVar2 + -0x14) = 0x13780;\n                  iVar1 = memcmp(*(void **)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),\n                                 *(size_t *)(puVar2 + -8));\n                  if (iVar1 == 0) {\n                    *(undefined4 *)(puVar2 + -4) = 0x1378c;\n                    local_14 = trail_stats();\n                  }\n                  else {\n                    *(undefined4 *)(puVar2 + -8) = 4;\n                    *(undefined **)(puVar2 + -0xc) = local_18;\n                    *(undefined4 **)(puVar2 + -0x10) = &RIDER_STATS;\n                    *(undefined4 *)(puVar2 + -0x14) = 0x137a6;\n                    iVar1 = memcmp(*(void **)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),\n                                   *(size_t *)(puVar2 + -8));\n                    if (iVar1 == 0) {\n                      *(undefined4 *)(puVar2 + -4) = 0x137b2;\n                      local_14 = rider_stats();\n                    }\n                    else {\n                      local_14 = -1;\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n    if (local_14 != 0) break;\n    *(undefined4 *)(puVar2 + -0xc) = 4;\n    *(undefined4 **)(puVar2 + -0x10) = &OK;\n    *(undefined4 *)(puVar2 + -0x14) = 0x137d5;\n    send(*(int *)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),*(size_t *)(puVar2 + -8),\n         *(int *)(puVar2 + -4));\n  }\n  *(undefined4 *)(puVar2 + -0xc) = 4;\n  *(undefined4 **)(puVar2 + -0x10) = &ERR;\n  *(undefined4 *)(puVar2 + -0x14) = 0x137ee;\n  send(*(int *)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),*(size_t *)(puVar2 + -8),\n       *(int *)(puVar2 + -4));\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "gen_result_bufs",
+                        "recv_all",
+                        "_terminate",
+                        "memcmp",
+                        "load_resort_digraph",
+                        "load_rider_group",
+                        "load_rider_single",
+                        "unload_riders",
+                        "start_simulation",
+                        "reset_simulation",
+                        "lift_stats",
+                        "trail_stats",
+                        "rider_stats",
+                        "send"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            }
+        ],
+        "trail.c": [
+            {
+                "func_name": "trail_embark",
+                "func_c_signature": "void trail_embark(int param_1,undefined4 param_2)",
+                "decompiled_code": "void trail_embark(int param_1,undefined4 param_2) {\n  rider_append(param_1 + 0x10,param_2);\n  *(int *)(param_1 + 0xc) = *(int *)(param_1 + 0xc) + 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "trail_embark",
+                        "rider_append"
+                    ],
+                    "calling_functions": [
+                        "trail_embark"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "trail_one_step",
+                "func_c_signature": "void trail_one_step(int param_1)",
+                "decompiled_code": "void trail_one_step(int param_1) {\n  int local_10;\n  \n  (**(code **)(param_1 + 0x24))(param_1);\n  for (local_10 = *(int *)(param_1 + 0x10); local_10 != 0; local_10 = *(int *)(local_10 + 0x20)) {\n    *(int *)(local_10 + 0x14) = *(int *)(local_10 + 0x14) + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "trail_one_step"
+                    ],
+                    "calling_functions": [
+                        "trail_one_step"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "trail_disembark",
+                "func_c_signature": "int trail_disembark(int param_1)",
+                "decompiled_code": "int trail_disembark(int param_1) {\n  int iVar1;\n  int iVar2;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  iVar1 = get_decider_by_id(*(undefined4 *)(param_1 + 0x18));\n  if (iVar1 == 0) {\n    local_10 = 0;\n  }\n  else {\n    local_14 = *(int *)(param_1 + 0x10);\n    while ((local_14 != 0 && (*(int *)(param_1 + 8) == *(int *)(local_14 + 0x14)))) {\n      iVar2 = rider_pop(param_1 + 0x10);\n      *(undefined4 *)(iVar2 + 0x14) = 0;\n      *(int *)(iVar2 + 0x10) = *(int *)(iVar2 + 0x10) + 1;\n      *(int *)(iVar2 + 8) = *(int *)(iVar2 + 8) - *(int *)(param_1 + 4);\n      (**(code **)(iVar1 + 0x18))(iVar1,iVar2);\n      local_10 = local_10 + 1;\n      local_14 = *(int *)(param_1 + 0x10);\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "trail_disembark",
+                        "get_decider_by_id",
+                        "rider_pop"
+                    ],
+                    "calling_functions": [
+                        "trail_disembark"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "trail_new",
+                "func_c_signature": "undefined4 trail_new(undefined4 *param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 trail_new(undefined4 *param_1,undefined4 *param_2) {\n  undefined4 uVar1;\n  undefined *puVar2;\n  size_t in_stack_ffffffd8;\n  undefined auStack_1c [12];\n  undefined4 *local_10;\n  \n  puVar2 = auStack_1c;\n  local_10 = (undefined4 *)calloc(0x28,in_stack_ffffffd8);\n  if (local_10 == (undefined4 *)0x0) {\n    puVar2 = &stack0xffffffd4;\n    _terminate();\n  }\n  *local_10 = *param_2;\n  local_10[5] = param_2[1];\n  local_10[6] = param_2[2];\n  local_10[1] = param_2[3];\n  local_10[2] = param_2[4];\n  local_10[7] = trail_embark;\n  local_10[8] = trail_one_step;\n  local_10[9] = trail_disembark;\n  if (((local_10[2] == 0) || (local_10[5] == local_10[6])) || (local_10[1] == 0)) {\n    *(undefined4 **)(puVar2 + -0x10) = local_10;\n    *(undefined4 *)(puVar2 + -0x14) = 0x13a15;\n    free(*(void **)(puVar2 + -0x10));\n    uVar1 = 0xffffffff;\n  }\n  else {\n    *param_1 = local_10;\n    uVar1 = *local_10;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "trail_new",
+                        "calloc",
+                        "_terminate",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "gen_trails",
+                        "trail_new"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "trail_reset",
+                "func_c_signature": "void trail_reset(int param_1,undefined4 param_2)",
+                "decompiled_code": "void trail_reset(int param_1,undefined4 param_2) {\n  rider_append(param_2,*(undefined4 *)(param_1 + 0x10));\n  *(undefined4 *)(param_1 + 0x10) = 0;\n  *(undefined4 *)(param_1 + 0xc) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "trail_reset",
+                        "rider_append"
+                    ],
+                    "calling_functions": [
+                        "reset_simulation_do",
+                        "trail_reset"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "trail_destroy",
+                "func_c_signature": "void trail_destroy(void **param_1,undefined4 param_2)",
+                "decompiled_code": "void trail_destroy(void **param_1,undefined4 param_2) {\n  rider_append(param_2,*(undefined4 *)((int)*param_1 + 0x10));\n  free(*param_1);\n  *param_1 = (void *)0x0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "trail_destroy",
+                        "rider_append",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "gen_trails",
+                        "resort_destroy_digraph",
+                        "trail_destroy"
+                    ],
+                    "defined_in_file": "NRFIN_00076_decompiled.c"
+                }
+            }
+        ]
+    }
+}

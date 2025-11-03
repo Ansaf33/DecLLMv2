@@ -1,0 +1,403 @@
+{
+    "file": "CROMU_00002",
+    "decompiled_code": {
+        "render.c": [
+            {
+                "func_name": "init_render_grid",
+                "func_c_signature": "void init_render_grid(void)",
+                "decompiled_code": "void init_render_grid(void) {\n  double dVar1;\n  double dVar2;\n  int iVar3;\n  int local_48 [11];\n  undefined4 local_1c;\n  undefined4 local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_18 = 400;\n  local_1c = 8000;\n  g_renderGrid = 0;\n  iVar3 = allocate(8000,0,local_48);\n  if (iVar3 != 0) {\n    _terminate(1);\n  }\n  dVar2 = DAT_00014008;\n  g_renderGrid = local_48[0];\n  g_render_delta_x = DAT_00014008;\n  g_render_delta_y = DAT_00014008;\n  for (local_10 = 0; local_10 < 0x14; local_10 = local_10 + 1) {\n    for (local_14 = 0; local_14 < 0x14; local_14 = local_14 + 1) {\n      iVar3 = local_14 + local_10 * 0x14;\n      dVar1 = _DAT_00014010 + (double)(ulonglong)local_14 * dVar2;\n      *(double *)(iVar3 * 0x14 + g_renderGrid) = _DAT_00014010 + (double)(ulonglong)local_10 * dVar2\n      ;\n      *(double *)(iVar3 * 0x14 + g_renderGrid + 8) = dVar1;\n      *(undefined4 *)(iVar3 * 0x14 + g_renderGrid + 0x10) = 0;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_render_grid",
+                        "allocate",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "init_render_grid",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clear_render_grid",
+                "func_c_signature": "void clear_render_grid(void)",
+                "decompiled_code": "void clear_render_grid(void) {\n  uint local_10;\n  uint local_c;\n  \n  for (local_c = 0; local_c < 0x14; local_c = local_c + 1) {\n    for (local_10 = 0; local_10 < 0x14; local_10 = local_10 + 1) {\n      *(undefined4 *)((local_10 + local_c * 0x14) * 0x14 + g_renderGrid + 0x10) = 0;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clear_render_grid"
+                    ],
+                    "calling_functions": [
+                        "clear_render_grid",
+                        "display_simulation_data"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_render_grid",
+                "func_c_signature": "void add_render_grid(double *param_1)",
+                "decompiled_code": "void add_render_grid(double *param_1) {\n  int iVar1;\n  ulonglong local_24;\n  \n  local_24 = (longlong)ROUND(*param_1 - _DAT_00014010) & 0xffffffff;\n  local_24._0_4_ = (int)(longlong)ROUND((double)local_24 / g_render_delta_x);\n  iVar1 = (int)local_24;\n  local_24 = (longlong)ROUND(param_1[1] - _DAT_00014010) & 0xffffffff;\n  local_24._0_4_ = (int)(longlong)ROUND((double)local_24 / g_render_delta_y);\n  iVar1 = (iVar1 * 0x14 + (int)local_24) * 0x14 + g_renderGrid;\n  *(int *)(iVar1 + 0x10) = *(int *)(iVar1 + 0x10) + 1;\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_render_grid",
+                        "ROUND"
+                    ],
+                    "calling_functions": [
+                        "add_render_grid",
+                        "display_simulation_data"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "display_render_grid",
+                "func_c_signature": "void display_render_grid(void)",
+                "decompiled_code": "void display_render_grid(void) {\n  uint local_14;\n  uint local_10;\n  \n  for (local_14 = 0; local_14 < 0x14; local_14 = local_14 + 1) {\n    printf(\"-\");\n  }\n  printf(\"\\n\");\n  for (local_14 = 0x14; local_14 != 0; local_14 = local_14 + -1) {\n    for (local_10 = 0; local_10 < 0x14; local_10 = local_10 + 1) {\n      printf(\"@d\",*(undefined4 *)((local_14 + local_10 * 0x14 + -1) * 0x14 + g_renderGrid + 0x10));\n    }\n    printf(\"\\n\");\n  }\n  for (local_10 = 0; local_10 < 0x14; local_10 = local_10 + 1) {\n    printf(\"-\");\n  }\n  printf(\"\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "display_render_grid",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "display_render_grid",
+                        "display_simulation_data"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "readLine",
+                "func_c_signature": "uint readLine(undefined4 param_1,char *param_2,uint param_3)",
+                "decompiled_code": "uint readLine(undefined4 param_1,char *param_2,uint param_3) {\n  int iVar1;\n  undefined local_1c [6];\n  char local_16 [2];\n  undefined4 local_14;\n  uint local_10;\n  \n  for (local_10 = 1; local_10 < param_3; local_10 = local_10 + 1) {\n    iVar1 = receive(param_1,local_16,1,local_1c);\n    if (iVar1 != 0) {\n      g_lasterror = iVar1;\n      return 0xffffffff;\n    }\n    if (local_16[0] == '\\n') break;\n    *param_2 = local_16[0];\n    param_2 = param_2 + 1;\n    local_14 = 0;\n  }\n  *param_2 = '\\0';\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readLine",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "readLine",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_float_pair",
+                "func_c_signature": "undefined4 parse_float_pair(int param_1,double *param_2,double *param_3)",
+                "decompiled_code": "undefined4 parse_float_pair(int param_1,double *param_2,double *param_3) {\n  char *pcVar1;\n  undefined4 uVar2;\n  double dVar3;\n  char local_814 [1024];\n  char local_414 [1024];\n  int local_14;\n  int local_10;\n  \n  for (local_10 = 0; local_10 < 0x400; local_10 = local_10 + 1) {\n    if (*(char *)(param_1 + local_10) == '\\0') {\n      return 0xffffffff;\n    }\n    if (*(char *)(param_1 + local_10) == ',') break;\n    local_414[local_10] = *(char *)(param_1 + local_10);\n  }\n  if (local_10 == 0x400) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    local_414[local_10] = '\\0';\n    local_14 = 0;\n    while ((local_10 = local_10 + 1, local_10 < 0x400 && (*(char *)(param_1 + local_10) != '\\0'))) {\n      pcVar1 = local_814 + local_14;\n      local_14 = local_14 + 1;\n      *pcVar1 = *(char *)(local_10 + param_1);\n    }\n    if (local_10 == 0x400) {\n      uVar2 = 0xffffffff;\n    }\n    else {\n      local_814[local_14] = '\\0';\n      dVar3 = atof(local_414);\n      *param_2 = dVar3;\n      dVar3 = atof(local_814);\n      *param_3 = dVar3;\n      uVar2 = 0;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_float_pair",
+                        "atof"
+                    ],
+                    "calling_functions": [
+                        "parse_float_pair",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  undefined8 uVar1;\n  int iVar2;\n  undefined4 uVar3;\n  undefined4 uVar4;\n  undefined4 uVar5;\n  int iVar6;\n  undefined *puVar7;\n  undefined *puVar8;\n  undefined4 *puVar9;\n  undefined2 in_FPUControlWord;\n  double dVar10;\n  char *apcStack_4a4 [9];\n  undefined *puStack_47c;\n  undefined4 uStack_478;\n  undefined4 uStack_474;\n  undefined auStack_470 [8];\n  undefined8 local_468;\n  undefined8 local_460;\n  undefined8 local_458;\n  undefined8 local_450;\n  undefined local_444 [1024];\n  int local_44;\n  undefined8 local_40;\n  undefined8 local_38;\n  int local_2c;\n  int local_28;\n  int local_24;\n  undefined *puStack_18;\n  \n  puStack_18 = &stack0x00000004;\n  uStack_474 = 0x118b3;\n  printf(\"2D Particle Simulator\\nEnter the number of particles to simulate (1-10):\\n\");\n  uStack_478 = 0x400;\n  puStack_47c = local_444;\n  local_28 = readLine();\n  puVar7 = auStack_470;\n  if (local_28 == -1) {\n    _terminate();\n    puVar7 = &stack0xfffffb80;\n  }\n  *(undefined **)(puVar7 + -0x10) = local_444;\n  *(undefined4 *)(puVar7 + -0x14) = 0x11906;\n  local_2c = atoi(*(char **)(puVar7 + -0x10));\n  puVar8 = puVar7;\n  if (local_2c == 0) {\n    puVar8 = puVar7 + -0x10;\n    *(char **)(puVar7 + -0x10) = \"Goodbye\\n\";\n    *(undefined4 *)(puVar7 + -0x14) = 0x11921;\n    printf(*(char **)(puVar7 + -0x10));\n    *(undefined4 *)(puVar7 + -0x10) = 0;\n    *(undefined4 *)(puVar7 + -0x14) = 0x1192e;\n    _terminate();\n  }\n  puVar9 = (undefined4 *)puVar8;\n  if (10 < local_2c) {\n    puVar9 = (undefined4 *)(puVar8 + -0x10);\n    *(char **)(puVar8 + -0x10) = \"Goodbye\\n\";\n    *(undefined4 *)(puVar8 + -0x14) = 0x11943;\n    printf(*(char **)(puVar8 + -0x10));\n    *(undefined4 *)(puVar8 + -0x10) = 3;\n    *(undefined4 *)(puVar8 + -0x14) = 0x11950;\n    _terminate();\n  }\n  local_24 = 0;\n  while (local_24 < local_2c) {\n    puVar9[-4] = \"Enter Position (x,y):\\n\";\n    puVar9[-5] = 0x1196b;\n    printf((char *)puVar9[-4]);\n    puVar9[-2] = 0x400;\n    puVar9[-3] = local_444;\n    puVar9[-4] = 0;\n    puVar9[-5] = 0x11984;\n    local_28 = readLine();\n    if (local_28 == -1) {\n      puVar9[-4] = 2;\n      puVar9[-5] = 0x1199a;\n      _terminate();\n      puVar9 = puVar9 + -4;\n    }\n    *(undefined8 **)((int)puVar9 + -8) = &local_458;\n    *(undefined8 **)((int)puVar9 + -0xc) = &local_450;\n    *(undefined **)((int)puVar9 + -0x10) = local_444;\n    *(undefined4 *)((int)puVar9 + -0x14) = 0x119b7;\n    iVar2 = parse_float_pair();\n    if (iVar2 == 0) {\n      *(char **)((int)puVar9 + -0x10) = \"Enter Velocity (x,y):\\n\";\n      *(undefined4 *)((int)puVar9 + -0x14) = 0x119e4;\n      printf(*(char **)((int)puVar9 + -0x10));\n      *(undefined4 *)((int)puVar9 + -8) = 0x400;\n      *(undefined **)((int)puVar9 + -0xc) = local_444;\n      *(undefined4 *)((int)puVar9 + -0x10) = 0;\n      *(undefined4 *)((int)puVar9 + -0x14) = 0x119fd;\n      local_28 = readLine();\n      if (local_28 == -1) {\n        *(undefined4 *)((int)puVar9 + -0x10) = 2;\n        *(undefined4 *)((int)puVar9 + -0x14) = 0x11a13;\n        _terminate();\n        puVar9 = (undefined4 *)((int)puVar9 + -0x10);\n      }\n      *(undefined8 **)((int)puVar9 + -8) = &local_468;\n      *(undefined8 **)((int)puVar9 + -0xc) = &local_460;\n      *(undefined **)((int)puVar9 + -0x10) = local_444;\n      *(undefined4 *)((int)puVar9 + -0x14) = 0x11a30;\n      iVar2 = parse_float_pair();\n      if (iVar2 == 0) {\n        *(char **)((int)puVar9 + -0x10) = \"Enter Mass:\\n\";\n        *(undefined4 *)((int)puVar9 + -0x14) = 0x11a5d;\n        printf(*(char **)((int)puVar9 + -0x10));\n        *(undefined4 *)((int)puVar9 + -8) = 0x400;\n        *(undefined **)((int)puVar9 + -0xc) = local_444;\n        *(undefined4 *)((int)puVar9 + -0x10) = 0;\n        *(undefined4 *)((int)puVar9 + -0x14) = 0x11a76;\n        local_28 = readLine();\n        if (local_28 == -1) {\n          *(undefined4 *)((int)puVar9 + -0x10) = 2;\n          *(undefined4 *)((int)puVar9 + -0x14) = 0x11a8c;\n          _terminate();\n          puVar9 = (undefined4 *)((int)puVar9 + -0x10);\n        }\n        *(undefined **)((int)puVar9 + -0x10) = local_444;\n        *(undefined4 *)((int)puVar9 + -0x14) = 0x11a9b;\n        local_38 = atof(*(char **)((int)puVar9 + -0x10));\n        if (local_38 == 0.0) {\n          *(char **)((int)puVar9 + -0x10) = \"Invalid mass. Try again.\\n\";\n          *(undefined4 *)((int)puVar9 + -0x14) = 0x11ac6;\n          printf(*(char **)((int)puVar9 + -0x10));\n        }\n        else {\n          *(char **)((int)puVar9 + -0x10) = \"Enter Radius:\\n\";\n          *(undefined4 *)((int)puVar9 + -0x14) = 0x11add;\n          printf(*(char **)((int)puVar9 + -0x10));\n          *(undefined4 *)((int)puVar9 + -8) = 0x400;\n          *(undefined **)((int)puVar9 + -0xc) = local_444;\n          *(undefined4 *)((int)puVar9 + -0x10) = 0;\n          *(undefined4 *)((int)puVar9 + -0x14) = 0x11af6;\n          local_28 = readLine();\n          if (local_28 == -1) {\n            *(undefined4 *)((int)puVar9 + -0x10) = 2;\n            *(undefined4 *)((int)puVar9 + -0x14) = 0x11b0c;\n            _terminate();\n            puVar9 = (undefined4 *)((int)puVar9 + -0x10);\n          }\n          *(undefined **)((int)puVar9 + -0x10) = local_444;\n          *(undefined4 *)((int)puVar9 + -0x14) = 0x11b1b;\n          dVar10 = atof(*(char **)((int)puVar9 + -0x10));\n          uVar1 = local_468;\n          local_40 = dVar10;\n          if (dVar10 == 0.0) {\n            *(char **)((int)puVar9 + -0x10) = \"Invalid radius. Try again.\\n\";\n            *(undefined4 *)((int)puVar9 + -0x14) = 0x11b46;\n            printf(*(char **)((int)puVar9 + -0x10));\n          }\n          else {\n            local_40._4_4_ = (undefined4)((ulonglong)dVar10 >> 0x20);\n            *(undefined4 *)((int)puVar9 + -4) = local_40._4_4_;\n            local_40._0_4_ = SUB84(dVar10,0);\n            *(undefined4 *)((int)puVar9 + -8) = (undefined4)local_40;\n            *(undefined4 *)((int)puVar9 + -0xc) = local_38._4_4_;\n            *(undefined4 *)((int)puVar9 + -0x10) = (undefined4)local_38;\n            *(undefined8 *)((int)puVar9 + -0x18) = uVar1;\n            *(undefined8 *)((int)puVar9 + -0x20) = local_460;\n            *(undefined8 *)((int)puVar9 + -0x28) = local_458;\n            *(undefined8 *)((int)puVar9 + -0x30) = local_450;\n            *(undefined4 *)((int)puVar9 + -0x34) = 0x11b97;\n            local_44 = simulation_add_particle();\n            if (local_44 < 0) {\n              *(char **)((int)puVar9 + -0x10) = \"Invalid simulation data. Try again.\\n\";\n              *(undefined4 *)((int)puVar9 + -0x14) = 0x11c11;\n              printf(*(char **)((int)puVar9 + -0x10));\n            }\n            else {\n              local_24 = local_24 + 1;\n              *(undefined4 *)((int)puVar9 + -0xc) = local_40._4_4_;\n              *(undefined4 *)((int)puVar9 + -0x10) = (undefined4)local_40;\n              *(undefined4 *)((int)puVar9 + -0x14) = local_38._4_4_;\n              *(undefined4 *)((int)puVar9 + -0x18) = (undefined4)local_38;\n              *(undefined8 *)((int)puVar9 + -0x20) = local_468;\n              *(undefined8 *)((int)puVar9 + -0x28) = local_460;\n              *(undefined8 *)((int)puVar9 + -0x30) = local_458;\n              *(undefined8 *)((int)puVar9 + -0x38) = local_450;\n              *(int *)((int)puVar9 + -0x3c) = local_44;\n              *(char **)((int)puVar9 + -0x40) =\n                   \"Particle #@d added at (@f,@f) velocity(@f,@f) mass(@f) radius(@f).\\n\";\n              *(undefined4 *)((int)puVar9 + -0x44) = 0x11bfd;\n              printf(*(char **)((int)puVar9 + -0x40));\n            }\n          }\n        }\n      }\n      else {\n        *(char **)((int)puVar9 + -0x10) = \"Invalid velocity. Try again.\\n\";\n        *(undefined4 *)((int)puVar9 + -0x14) = 0x11a46;\n        printf(*(char **)((int)puVar9 + -0x10));\n      }\n    }\n    else {\n      *(char **)((int)puVar9 + -0x10) = \"Invalid position. Try again.\\n\";\n      *(undefined4 *)((int)puVar9 + -0x14) = 0x119cd;\n      printf(*(char **)((int)puVar9 + -0x10));\n    }\n  }\n  puVar9[-4] = \"Running simulation with...\\n\";\n  puVar9[-5] = 0x11c30;\n  printf((char *)puVar9[-4]);\n  puVar9[-1] = 0x11c38;\n  init_render_grid();\n  puVar9[-1] = 0x11c3d;\n  display_simulation_data();\n  puVar9[-4] = 10;\n  puVar9[-5] = 0x11c47;\n  simulation_run();\n  puVar9[-1] = 0x11c4f;\n  uVar3 = get_simulation_frames();\n  puVar9[-1] = 0x11c56;\n  uVar4 = get_simulation_time();\n  puVar9[-1] = 0x11c5d;\n  uVar5 = get_collision_count();\n  puVar9[-1] = uVar3;\n  puVar9[-2] = uVar4;\n  puVar9[-3] = uVar5;\n  puVar9[-4] = \"Simulation complete, @d collisions simulated over @d seconds in @d frames.\\n\";\n  puVar9[-5] = 0x11c6c;\n  printf((char *)puVar9[-4]);\n  puVar9[-1] = 0x11c74;\n  display_simulation_data();\n  puVar9[-4] = \"Goodbye\\n\";\n  puVar9[-5] = 0x11c83;\n  printf((char *)puVar9[-4]);\n  puVar9[-4] = 0;\n  puVar9[-5] = simulation_add_particle;\n  _terminate();\n  puVar9[-5] = &stack0xfffffff8;\n  puVar9[-6] = &_GLOBAL_OFFSET_TABLE_;\n  puVar9[-0x1c] = 0x11c9c;\n  iVar2 = puVar9[-0x1c];\n  puVar9[-0xd] = puVar9[-3];\n  puVar9[-0xc] = puVar9[-2];\n  puVar9[-0xf] = puVar9[-1];\n  puVar9[-0xe] = *puVar9;\n  puVar9[-0x11] = puVar9[1];\n  puVar9[-0x10] = puVar9[2];\n  puVar9[-0x13] = puVar9[3];\n  puVar9[-0x12] = puVar9[4];\n  puVar9[-0x15] = puVar9[5];\n  puVar9[-0x14] = puVar9[6];\n  puVar9[-0x17] = puVar9[7];\n  puVar9[-0x16] = puVar9[8];\n  dVar10 = *(double *)(iVar2 + 0x25bc);\n  *(undefined2 *)((int)puVar9 + -0x5e) = in_FPUControlWord;\n  *(ushort *)(puVar9 + -0x18) = *(ushort *)((int)puVar9 + -0x5e) | 0xc00;\n  puVar9[-0x19] = (int)ROUND(dVar10 * *(double *)(puVar9 + -0xd));\n  *(double *)(puVar9 + -0xd) = (double)puVar9[-0x19] / *(double *)(iVar2 + 0x25bc);\n  puVar9[-0x19] = (int)ROUND(*(double *)(iVar2 + 0x25bc) * *(double *)(puVar9 + -0xf));\n  *(double *)(puVar9 + -0xf) = (double)puVar9[-0x19] / *(double *)(iVar2 + 0x25bc);\n  puVar9[-0x19] = (int)ROUND(*(double *)(iVar2 + 0x25bc) * *(double *)(puVar9 + -0x11));\n  *(double *)(puVar9 + -0x11) = (double)puVar9[-0x19] / *(double *)(iVar2 + 0x25bc);\n  puVar9[-0x19] = (int)ROUND(*(double *)(iVar2 + 0x25bc) * *(double *)(puVar9 + -0x13));\n  *(double *)(puVar9 + -0x13) = (double)puVar9[-0x19] / *(double *)(iVar2 + 0x25bc);\n  puVar9[-0x19] = (int)ROUND(*(double *)(iVar2 + 0x25bc) * *(double *)(puVar9 + -0x15));\n  *(double *)(puVar9 + -0x15) = (double)puVar9[-0x19] / *(double *)(iVar2 + 0x25bc);\n  puVar9[-0x19] = (int)ROUND(*(double *)(iVar2 + 0x25bc) * *(double *)(puVar9 + -0x17));\n  *(double *)(puVar9 + -0x17) = (double)puVar9[-0x19] / *(double *)(iVar2 + 0x25bc);\n  if (*(int *)(iVar2 + 0x4368) < 10) {\n    if ((*(double *)(iVar2 + 0x25c4) <= *(double *)(puVar9 + -0xd)) ||\n       (*(double *)(puVar9 + -0xd) <= *(double *)(iVar2 + 0x25bc))) {\n      uVar3 = 0xffffffff;\n    }\n    else if ((*(double *)(iVar2 + 0x25c4) <= *(double *)(puVar9 + -0xf)) ||\n            (*(double *)(puVar9 + -0xf) <= *(double *)(iVar2 + 0x25bc))) {\n      uVar3 = 0xffffffff;\n    }\n    else if ((*(double *)(iVar2 + 0x25cc) < *(double *)(puVar9 + -0x11)) ||\n            (*(double *)(puVar9 + -0x11) < *(double *)(iVar2 + 0x25d4))) {\n      uVar3 = 0xffffffff;\n    }\n    else if ((*(double *)(iVar2 + 0x25cc) < *(double *)(puVar9 + -0x13)) ||\n            (*(double *)(puVar9 + -0x13) < *(double *)(iVar2 + 0x25d4))) {\n      uVar3 = 0xffffffff;\n    }\n    else if ((*(double *)(iVar2 + 0x25cc) < *(double *)(puVar9 + -0x15)) ||\n            (*(double *)(puVar9 + -0x15) < 1.0)) {\n      uVar3 = 0xffffffff;\n    }\n    else if ((*(double *)(iVar2 + 0x25cc) < *(double *)(puVar9 + -0x17)) ||\n            (*(double *)(puVar9 + -0x17) < 1.0)) {\n      uVar3 = 0xffffffff;\n    }\n    else if ((((*(double *)(iVar2 + 0x25c4) <\n                *(double *)(puVar9 + -0xd) + *(double *)(puVar9 + -0x17)) ||\n              (*(double *)(puVar9 + -0xd) - *(double *)(puVar9 + -0x17) <\n               *(double *)(iVar2 + 0x25bc))) ||\n             (*(double *)(iVar2 + 0x25c4) < *(double *)(puVar9 + -0xf) + *(double *)(puVar9 + -0x17)\n             )) || (*(double *)(puVar9 + -0xf) - *(double *)(puVar9 + -0x17) <\n                    *(double *)(iVar2 + 0x25bc))) {\n      uVar3 = 0xffffffff;\n    }\n    else {\n      *(undefined8 *)(*(int *)(iVar2 + 0x4368) * 0x30 + iVar2 + 0x43a4) =\n           *(undefined8 *)(puVar9 + -0xd);\n      *(undefined8 *)(*(int *)(iVar2 + 0x4368) * 0x30 + iVar2 + 0x43ac) =\n           *(undefined8 *)(puVar9 + -0xf);\n      *(undefined8 *)(*(int *)(iVar2 + 0x4368) * 0x30 + iVar2 + 0x43b4) =\n           *(undefined8 *)(puVar9 + -0x11);\n      *(undefined8 *)(*(int *)(iVar2 + 0x4368) * 0x30 + iVar2 + 0x43bc) =\n           *(undefined8 *)(puVar9 + -0x13);\n      *(undefined8 *)(*(int *)(iVar2 + 0x4368) * 0x30 + iVar2 + 0x43c4) =\n           *(undefined8 *)(puVar9 + -0x15);\n      *(undefined8 *)(*(int *)(iVar2 + 0x4368) * 0x30 + iVar2 + 0x43cc) =\n           *(undefined8 *)(puVar9 + -0x17);\n      puVar9[-8] = 0;\n      while ((uint)puVar9[-8] < *(uint *)(iVar2 + 0x4368)) {\n        puVar9[-0x1e] = *(int *)(iVar2 + 0x4368) * 0x30 + iVar2 + 0x43a4;\n        puVar9[-0x1f] = puVar9[-8] * 0x30 + iVar2 + 0x43a4;\n        puVar9[-0x20] = 0x1206d;\n        iVar6 = is_colliding();\n        if (iVar6 != 0) {\n          return 0xffffffff;\n        }\n        puVar9[-8] = puVar9[-8] + 1;\n      }\n      *(int *)(iVar2 + 0x4368) = *(int *)(iVar2 + 0x4368) + 1;\n      uVar3 = *(undefined4 *)(iVar2 + 0x4368);\n    }\n  }\n  else {\n    uVar3 = 0xffffffff;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [
+                    "simulate",
+                    "Position",
+                    "Velocity",
+                    "SUB84",
+                    "at",
+                    "velocity",
+                    "mass",
+                    "radius",
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "printf",
+                        "simulate",
+                        "readLine",
+                        "_terminate",
+                        "atoi",
+                        "Position",
+                        "parse_float_pair",
+                        "Velocity",
+                        "atof",
+                        "SUB84",
+                        "simulation_add_particle",
+                        "at",
+                        "velocity",
+                        "mass",
+                        "radius",
+                        "init_render_grid",
+                        "display_simulation_data",
+                        "simulation_run",
+                        "get_simulation_frames",
+                        "get_simulation_time",
+                        "get_collision_count",
+                        "ROUND",
+                        "is_colliding"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            }
+        ],
+        "simulation.c": [
+            {
+                "func_name": "simulation_add_particle",
+                "func_c_signature": "uint simulation_add_particle\n               (undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,\n               undefined4 param_5,undefined4 param_6,undefined4 param_7,undefined4 param_8,\n               undefined4 param_9,undefined4 param_10,undefined4 param_11,undefined4 param_12)",
+                "decompiled_code": "uint simulation_add_particle\n               (undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,\n               undefined4 param_5,undefined4 param_6,undefined4 param_7,undefined4 param_8,\n               undefined4 param_9,undefined4 param_10,undefined4 param_11,undefined4 param_12) {\n  double dVar1;\n  double dVar2;\n  double dVar3;\n  double dVar4;\n  double dVar5;\n  double dVar6;\n  uint uVar7;\n  int iVar8;\n  double local_4c;\n  double local_44;\n  double local_3c;\n  double local_34;\n  double local_2c;\n  double local_24;\n  uint local_10;\n  \n  local_24 = (double)CONCAT44(param_2,param_1);\n  local_2c = (double)CONCAT44(param_4,param_3);\n  local_34 = (double)CONCAT44(param_6,param_5);\n  local_3c = (double)CONCAT44(param_8,param_7);\n  local_44 = (double)CONCAT44(param_10,param_9);\n  local_4c = (double)CONCAT44(param_12,param_11);\n  dVar1 = (double)(int)ROUND(DAT_00014258 * local_24) / DAT_00014258;\n  dVar2 = (double)(int)ROUND(DAT_00014258 * local_2c) / DAT_00014258;\n  dVar3 = (double)(int)ROUND(DAT_00014258 * local_34) / DAT_00014258;\n  dVar4 = (double)(int)ROUND(DAT_00014258 * local_3c) / DAT_00014258;\n  dVar5 = (double)(int)ROUND(DAT_00014258 * local_44) / DAT_00014258;\n  dVar6 = (double)(int)ROUND(DAT_00014258 * local_4c) / DAT_00014258;\n  if ((int)g_particleCount < 10) {\n    if ((DAT_00014260 <= dVar1) || (dVar1 <= DAT_00014258)) {\n      uVar7 = 0xffffffff;\n    }\n    else if ((DAT_00014260 <= dVar2) || (dVar2 <= DAT_00014258)) {\n      uVar7 = 0xffffffff;\n    }\n    else if ((DAT_00014268 < dVar3) || (dVar3 < DAT_00014270)) {\n      uVar7 = 0xffffffff;\n    }\n    else if ((DAT_00014268 < dVar4) || (dVar4 < DAT_00014270)) {\n      uVar7 = 0xffffffff;\n    }\n    else if ((DAT_00014268 < dVar5) || (dVar5 < 1.0)) {\n      uVar7 = 0xffffffff;\n    }\n    else if ((DAT_00014268 < dVar6) || (dVar6 < 1.0)) {\n      uVar7 = 0xffffffff;\n    }\n    else if ((((DAT_00014260 < dVar1 + dVar6) || (dVar1 - dVar6 < DAT_00014258)) ||\n             (DAT_00014260 < dVar2 + dVar6)) || (dVar2 - dVar6 < DAT_00014258)) {\n      uVar7 = 0xffffffff;\n    }\n    else {\n      *(double *)(g_particles + g_particleCount * 0x30) = dVar1;\n      *(double *)(g_particles + g_particleCount * 0x30 + 8) = dVar2;\n      *(double *)(g_particles + g_particleCount * 0x30 + 0x10) = dVar3;\n      *(double *)(g_particles + g_particleCount * 0x30 + 0x18) = dVar4;\n      *(double *)(g_particles + g_particleCount * 0x30 + 0x20) = dVar5;\n      *(double *)(g_particles + g_particleCount * 0x30 + 0x28) = dVar6;\n      for (local_10 = 0; local_10 < g_particleCount; local_10 = local_10 + 1) {\n        iVar8 = is_colliding(g_particles + local_10 * 0x30,g_particles + g_particleCount * 0x30);\n        if (iVar8 != 0) {\n          return 0xffffffff;\n        }\n      }\n      uVar7 = g_particleCount + 1;\n      g_particleCount = uVar7;\n    }\n  }\n  else {\n    uVar7 = 0xffffffff;\n  }\n  return uVar7;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT44",
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simulation_add_particle",
+                        "CONCAT44",
+                        "ROUND",
+                        "is_colliding"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "simulation_add_particle"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simulation_reset",
+                "func_c_signature": "void simulation_reset(void)",
+                "decompiled_code": "void simulation_reset(void) {\n  g_particleCount = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simulation_reset"
+                    ],
+                    "calling_functions": [
+                        "simulation_reset"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_colliding",
+                "func_c_signature": "bool is_colliding(double *param_1,double *param_2)",
+                "decompiled_code": "bool is_colliding(double *param_1,double *param_2) {\n  return (param_1[1] - param_2[1]) * (param_1[1] - param_2[1]) +\n         (*param_1 - *param_2) * (*param_1 - *param_2) <\n         (param_2[5] + param_1[5]) * (param_2[5] + param_1[5]);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_colliding"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "simulation_add_particle",
+                        "is_colliding",
+                        "simulation_run"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_collision",
+                "func_c_signature": "void do_collision(double *param_1,double *param_2)",
+                "decompiled_code": "void do_collision(double *param_1,double *param_2) {\n  double dVar1;\n  double dVar2;\n  double dVar3;\n  double dVar4;\n  double dVar5;\n  double dVar6;\n  double dVar7;\n  double dVar8;\n  double dVar9;\n  \n  dVar4 = *param_1 - *param_2;\n  dVar5 = param_1[1] - param_2[1];\n  dVar8 = sqrt(dVar5 * dVar5 + dVar4 * dVar4);\n  dVar8 = (param_2[5] + param_1[5]) / dVar8 - 1.0;\n  dVar4 = dVar4 * dVar8;\n  dVar5 = dVar5 * dVar8;\n  dVar6 = param_1[4] + param_2[4];\n  dVar7 = param_2[4] / dVar6;\n  dVar6 = param_1[4] / dVar6;\n  dVar8 = *param_2;\n  dVar1 = param_2[1];\n  *param_1 = (dVar4 + dVar4) * dVar7 + *param_1;\n  param_1[1] = (dVar5 + dVar5) * dVar7 + param_1[1];\n  *param_2 = dVar8 - (dVar4 + dVar4) * dVar6;\n  param_2[1] = dVar1 - (dVar5 + dVar5) * dVar6;\n  dVar8 = param_1[2];\n  dVar1 = param_2[2];\n  dVar2 = param_1[3];\n  dVar3 = param_2[3];\n  dVar9 = sqrt(dVar5 * dVar5 + dVar4 * dVar4);\n  dVar8 = (dVar2 - dVar3) * (dVar5 / dVar9) + (dVar8 - dVar1) * (dVar4 / dVar9);\n  if (dVar8 < 0.0) {\n    dVar8 = DAT_00014278 * dVar8;\n    dVar3 = (dVar4 / dVar9) * dVar8;\n    dVar8 = (dVar5 / dVar9) * dVar8;\n    dVar1 = param_2[2];\n    dVar2 = param_2[3];\n    param_1[2] = dVar3 * dVar7 + param_1[2];\n    param_1[3] = dVar8 * dVar7 + param_1[3];\n    param_2[2] = dVar1 - dVar3 * dVar6;\n    param_2[3] = dVar2 - dVar8 * dVar6;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_collision",
+                        "sqrt"
+                    ],
+                    "calling_functions": [
+                        "do_collision",
+                        "simulation_run"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_wall_collision",
+                "func_c_signature": "void do_wall_collision(double *param_1)",
+                "decompiled_code": "void do_wall_collision(double *param_1) {\n  double dVar1;\n  double dVar2;\n  double dVar3;\n  \n  dVar1 = *param_1;\n  dVar2 = param_1[1];\n  if ((DAT_00014260 < param_1[5] + *param_1) &&\n     (dVar3 = (param_1[5] + *param_1) - DAT_00014260, *param_1 = *param_1 - (dVar3 + dVar3),\n     0.0 < param_1[2])) {\n    param_1[2] = -param_1[2];\n  }\n  if ((dVar1 - param_1[5] < DAT_00014258) &&\n     (dVar1 = DAT_00014258 - (dVar1 - param_1[5]), *param_1 = dVar1 + dVar1 + *param_1,\n     param_1[2] < 0.0)) {\n    param_1[2] = -param_1[2];\n  }\n  if ((DAT_00014260 < param_1[5] + param_1[1]) &&\n     (dVar1 = (param_1[5] + param_1[1]) - DAT_00014260, param_1[1] = param_1[1] - (dVar1 + dVar1),\n     0.0 < param_1[3])) {\n    param_1[3] = -param_1[3];\n  }\n  if ((dVar2 - param_1[5] < DAT_00014258) &&\n     (dVar1 = DAT_00014258 - (dVar2 - param_1[5]), param_1[1] = dVar1 + dVar1 + param_1[1],\n     param_1[3] < 0.0)) {\n    param_1[3] = -param_1[3];\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_wall_collision"
+                    ],
+                    "calling_functions": [
+                        "do_wall_collision",
+                        "simulation_run"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simulation_run",
+                "func_c_signature": "void simulation_run(uint param_1)",
+                "decompiled_code": "void simulation_run(uint param_1) {\n  int iVar1;\n  double dVar2;\n  ulonglong local_5c;\n  uint local_2c;\n  uint local_28;\n  int local_24;\n  uint local_20;\n  uint local_1c;\n  uint local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_1c = param_1;\n  g_collisionTotal = 0;\n  g_simulationTime = param_1;\n  g_simulationFrames = 0;\n  local_18 = 1;\n  for (local_20 = 0; local_20 < local_1c; local_20 = local_20 + 1) {\n    local_28 = 1;\n    local_2c = 1;\n    for (local_10 = 0; local_10 < g_particleCount; local_10 = local_10 + 1) {\n      dVar2 = fabs(*(double *)(g_particles + local_10 * 0x30 + 0x10));\n      if (*(double *)(g_particles + local_10 * 0x30 + 0x28) < dVar2) {\n        dVar2 = fabs(*(double *)(g_particles + local_10 * 0x30 + 0x10));\n        local_5c._0_4_ =\n             (int)(longlong)ROUND(dVar2 / *(double *)(g_particles + local_10 * 0x30 + 0x28));\n        local_2c = (int)local_5c + 1;\n      }\n      if (local_28 < local_2c) {\n        local_28 = local_2c;\n      }\n      dVar2 = fabs(*(double *)(g_particles + local_10 * 0x30 + 0x18));\n      if (*(double *)(g_particles + local_10 * 0x30 + 0x28) < dVar2) {\n        dVar2 = fabs(*(double *)(g_particles + local_10 * 0x30 + 0x18));\n        local_5c._0_4_ =\n             (int)(longlong)ROUND(dVar2 / *(double *)(g_particles + local_10 * 0x30 + 0x28));\n        local_2c = (int)local_5c + 1;\n      }\n      if (local_28 < local_2c) {\n        local_28 = local_2c;\n      }\n    }\n    for (; local_18 < local_28; local_18 = local_18 << 1) {\n      local_1c = local_1c << 1;\n    }\n    for (local_10 = 0; local_10 < g_particleCount; local_10 = local_10 + 1) {\n      local_5c = (ulonglong)local_18;\n      dVar2 = *(double *)(g_particles + local_10 * 0x30 + 0x18);\n      *(double *)(g_particles + local_10 * 0x30) =\n           *(double *)(g_particles + local_10 * 0x30) +\n           *(double *)(g_particles + local_10 * 0x30 + 0x10) / (double)local_5c;\n      *(double *)(g_particles + local_10 * 0x30 + 8) =\n           *(double *)(g_particles + local_10 * 0x30 + 8) + dVar2 / (double)local_5c;\n    }\n    local_24 = 0;\n    for (local_10 = 0; local_10 < g_particleCount; local_10 = local_10 + 1) {\n      for (local_14 = 0; local_14 < g_particleCount; local_14 = local_14 + 1) {\n        if ((local_10 != local_14) &&\n           (iVar1 = is_colliding(g_particles + local_10 * 0x30,g_particles + local_14 * 0x30),\n           iVar1 != 0)) {\n          do_collision();\n          local_24 = local_24 + 1;\n        }\n      }\n      do_wall_collision();\n    }\n    g_collisionTotal = local_24 + g_collisionTotal;\n  }\n  g_simulationFrames = local_20;\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simulation_run",
+                        "fabs",
+                        "ROUND",
+                        "is_colliding",
+                        "do_collision",
+                        "do_wall_collision"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "simulation_run"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_collision_count",
+                "func_c_signature": "undefined4 get_collision_count(void)",
+                "decompiled_code": "undefined4 get_collision_count(void) {\n  return g_collisionTotal;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_collision_count"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "get_collision_count"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_simulation_time",
+                "func_c_signature": "undefined4 get_simulation_time(void)",
+                "decompiled_code": "undefined4 get_simulation_time(void) {\n  return g_simulationTime;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_simulation_time"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "get_simulation_time"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_simulation_frames",
+                "func_c_signature": "undefined4 get_simulation_frames(void)",
+                "decompiled_code": "undefined4 get_simulation_frames(void) {\n  return g_simulationFrames;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_simulation_frames"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "get_simulation_frames"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            },
+            {
+                "func_name": "display_simulation_data",
+                "func_c_signature": "void display_simulation_data(void)",
+                "decompiled_code": "void display_simulation_data(void) {\n  undefined4 local_44;\n  undefined4 uStack_40;\n  undefined4 local_3c;\n  undefined4 uStack_38;\n  undefined4 local_34;\n  undefined4 uStack_30;\n  undefined4 local_2c;\n  undefined4 uStack_28;\n  undefined4 local_24;\n  undefined4 uStack_20;\n  undefined4 local_1c;\n  undefined4 uStack_18;\n  uint local_10;\n  \n  clear_render_grid();\n  printf(\"@d total particles:\\n\",g_particleCount);\n  for (local_10 = 0; local_10 < g_particleCount; local_10 = local_10 + 1) {\n    uStack_40 = (undefined4)\n                ((ulonglong)*(undefined8 *)(g_particles + local_10 * 0x30 + 0x28) >> 0x20);\n    local_44 = (undefined4)*(undefined8 *)(g_particles + local_10 * 0x30 + 0x28);\n    uStack_38 = (undefined4)\n                ((ulonglong)*(undefined8 *)(g_particles + local_10 * 0x30 + 0x20) >> 0x20);\n    local_3c = (undefined4)*(undefined8 *)(g_particles + local_10 * 0x30 + 0x20);\n    uStack_30 = (undefined4)\n                ((ulonglong)*(undefined8 *)(g_particles + local_10 * 0x30 + 0x18) >> 0x20);\n    local_34 = (undefined4)*(undefined8 *)(g_particles + local_10 * 0x30 + 0x18);\n    uStack_28 = (undefined4)\n                ((ulonglong)*(undefined8 *)(g_particles + local_10 * 0x30 + 0x10) >> 0x20);\n    local_2c = (undefined4)*(undefined8 *)(g_particles + local_10 * 0x30 + 0x10);\n    uStack_20 = (undefined4)((ulonglong)*(undefined8 *)(g_particles + local_10 * 0x30 + 8) >> 0x20);\n    local_24 = (undefined4)*(undefined8 *)(g_particles + local_10 * 0x30 + 8);\n    uStack_18 = (undefined4)((ulonglong)*(undefined8 *)(g_particles + local_10 * 0x30) >> 0x20);\n    local_1c = (undefined4)*(undefined8 *)(g_particles + local_10 * 0x30);\n    printf(\"@d: Position (@f,@f) Velocity (@f,@f) mass (@f) radius (@f).\\n\",local_10,local_1c,\n           uStack_18,local_24,uStack_20,local_2c,uStack_28,local_34,uStack_30,local_3c,uStack_38,\n           local_44,uStack_40);\n    add_render_grid(g_particles + local_10 * 0x30);\n  }\n  display_render_grid();\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "Position",
+                    "Velocity",
+                    "mass",
+                    "radius"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "display_simulation_data",
+                        "clear_render_grid",
+                        "printf",
+                        "Position",
+                        "Velocity",
+                        "mass",
+                        "radius",
+                        "add_render_grid",
+                        "display_render_grid"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "display_simulation_data"
+                    ],
+                    "defined_in_file": "CROMU_00002_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,610 @@
+{
+    "file": "NRFIN_00071",
+    "decompiled_code": {
+        "fs.c": [
+            {
+                "func_name": "ls_dir",
+                "func_c_signature": "void * ls_dir(char *param_1)",
+                "decompiled_code": "void * ls_dir(char *param_1) {\n  int iVar1;\n  char *__src;\n  size_t sVar2;\n  void *pvVar3;\n  int *piVar4;\n  char **ppcVar5;\n  uint uVar6;\n  code *in_stack_ffffffb8;\n  char **local_20;\n  int local_1c;\n  uint local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  sVar2 = strlen(param_1);\n  if (root == 0) {\n    init_fs();\n  }\n  if (sVar2 == 0) {\n    pvVar3 = (void *)0x0;\n  }\n  else {\n    if ((sVar2 == 1) && (*param_1 == '#')) {\n      local_1c = root;\n    }\n    else {\n      in_stack_ffffffb8 = get_dir;\n      piVar4 = (int *)list_find_node_with_data_recurse(root + 0x80,get_dir,param_1);\n      if (piVar4 == (int *)0x0) {\n        return (void *)0x0;\n      }\n      local_1c = *piVar4;\n    }\n    local_1c = local_1c + 0x94;\n    ppcVar5 = (char **)list_head_node(local_1c);\n    local_20 = ppcVar5;\n    for (local_18 = 0; uVar6 = list_length(local_1c), local_18 < uVar6; local_18 = local_18 + 1) {\n      sVar2 = strlen(*local_20);\n      local_10 = local_10 + sVar2 + 1;\n      local_20 = (char **)local_20[1];\n    }\n    pvVar3 = calloc(local_10 + 1,(size_t)in_stack_ffffffb8);\n    if (pvVar3 == (void *)0x0) {\n      pvVar3 = (void *)0x0;\n    }\n    else {\n      local_14 = 0;\n      local_20 = ppcVar5;\n      for (local_18 = 0; uVar6 = list_length(local_1c), local_18 < uVar6; local_18 = local_18 + 1) {\n        __src = *local_20;\n        strcpy((char *)(local_14 + (int)pvVar3),__src);\n        sVar2 = strlen(__src);\n        iVar1 = local_14 + sVar2;\n        local_14 = iVar1 + 1;\n        *(undefined *)(iVar1 + (int)pvVar3) = 0x3a;\n        local_20 = (char **)local_20[1];\n      }\n      *(undefined *)((int)pvVar3 + local_14 + -1) = 0;\n    }\n  }\n  return pvVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ls_dir",
+                        "strlen",
+                        "init_fs",
+                        "list_find_node_with_data_recurse",
+                        "list_head_node",
+                        "list_length",
+                        "calloc",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "ls_dir",
+                        "do_list"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_dir",
+                "func_c_signature": "undefined4 add_dir(char *param_1)",
+                "decompiled_code": "undefined4 add_dir(char *param_1) {\n  size_t sVar1;\n  undefined4 uVar2;\n  int iVar3;\n  char *pcVar4;\n  int *piVar5;\n  code *pcVar6;\n  int local_18;\n  char *local_14;\n  char *local_10;\n  \n  local_10 = (char *)0x0;\n  if (root == 0) {\n    init_fs();\n  }\n  sVar1 = strlen(param_1);\n  if ((int)sVar1 < 2) {\n    uVar2 = 3;\n  }\n  else {\n    sVar1 = strlen(param_1);\n    if ((int)sVar1 < 0x80) {\n      pcVar6 = get_dir;\n      iVar3 = list_find_node_with_data_recurse(root + 0x80,get_dir,param_1);\n      if (iVar3 == 0) {\n        sVar1 = strlen(param_1);\n        pcVar4 = (char *)calloc(sVar1 + 1,(size_t)pcVar6);\n        if (pcVar4 == (char *)0x0) {\n          uVar2 = 2;\n        }\n        else {\n          pcVar6 = (code *)0x23;\n          local_14 = strtok(param_1,(char *)0x23);\n          while (local_14 != (char *)0x0) {\n            if (local_10 != (char *)0x0) {\n              if (*local_10 == '\\0') {\n                strcat(pcVar4,\"#\");\n              }\n              else {\n                strcat(pcVar4,local_10);\n              }\n            }\n            local_10 = local_14;\n            pcVar6 = (code *)0x23;\n            local_14 = strtok((char *)0x0,(char *)0x23);\n          }\n          sVar1 = strlen(local_10);\n          if ((int)sVar1 < 1) {\n            uVar2 = 2;\n          }\n          else {\n            sVar1 = strlen(pcVar4);\n            if ((int)sVar1 < 2) {\n              local_18 = root;\n            }\n            else {\n              pcVar6 = get_dir;\n              piVar5 = (int *)list_find_node_with_data_recurse(root + 0x80,get_dir,param_1);\n              if (piVar5 == (int *)0x0) {\n                return 3;\n              }\n              local_18 = *piVar5;\n            }\n            pcVar4 = (char *)calloc(0xa8,(size_t)pcVar6);\n            if (pcVar4 == (char *)0x0) {\n              uVar2 = 1;\n            }\n            else {\n              strcpy(pcVar4,local_10);\n              list_init(pcVar4 + 0x80,freedir);\n              list_init(pcVar4 + 0x94,freefile);\n              list_insert_at_end(local_18 + 0x80,pcVar4);\n              uVar2 = 0;\n            }\n          }\n        }\n      }\n      else {\n        uVar2 = 1;\n      }\n    }\n    else {\n      uVar2 = 4;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_dir",
+                        "init_fs",
+                        "strlen",
+                        "list_find_node_with_data_recurse",
+                        "calloc",
+                        "strtok",
+                        "strcat",
+                        "strcpy",
+                        "list_init",
+                        "list_insert_at_end"
+                    ],
+                    "calling_functions": [
+                        "add_dir",
+                        "do_mkdir"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rm_dir",
+                "func_c_signature": "undefined4 rm_dir(char *param_1)",
+                "decompiled_code": "undefined4 rm_dir(char *param_1) {\n  undefined4 uVar1;\n  size_t sVar2;\n  int iVar3;\n  uint uVar4;\n  size_t in_stack_ffffffc8;\n  undefined4 *local_2c;\n  int *local_28;\n  char *local_24;\n  size_t local_20;\n  int local_1c;\n  uint local_18;\n  char *local_14;\n  char *local_10;\n  \n  local_10 = (char *)0x0;\n  local_14 = (char *)0x0;\n  if (root == 0) {\n    init_fs();\n  }\n  if (param_1 == (char *)0x0) {\n    uVar1 = 1;\n  }\n  else {\n    local_20 = strlen(param_1);\n    if (local_20 < 0x80) {\n      if (local_20 < 2) {\n        uVar1 = 7;\n      }\n      else {\n        local_24 = (char *)calloc(local_20 + 1,in_stack_ffffffc8);\n        if (local_24 == (char *)0x0) {\n          uVar1 = 3;\n        }\n        else {\n          local_14 = strtok(param_1,(char *)0x23);\n          while (local_14 != (char *)0x0) {\n            if (local_10 != (char *)0x0) {\n              if (*local_10 == '\\0') {\n                strcat(local_24,\"#\");\n              }\n              else {\n                strcat(local_24,local_10);\n              }\n            }\n            local_10 = local_14;\n            local_14 = strtok((char *)0x0,(char *)0x23);\n          }\n          sVar2 = strlen(local_24);\n          if ((sVar2 != 1) || (local_1c = root, *local_24 != '#')) {\n            local_28 = (int *)list_find_node_with_data_recurse(root + 0x80,get_dir,local_24);\n            if (local_28 == (int *)0x0) {\n              return 5;\n            }\n            local_1c = *local_28;\n          }\n          local_1c = local_1c + 0x80;\n          if (local_1c == 0) {\n            uVar1 = 6;\n          }\n          else {\n            local_2c = (undefined4 *)list_head_node(local_1c);\n            local_18 = 0;\n            while (uVar4 = list_length(local_1c), local_18 < uVar4) {\n              iVar3 = streq(local_10,*local_2c);\n              if (iVar3 != 0) {\n                list_remove_node(local_1c,local_2c);\n                list_destroy_node(local_1c,&local_2c);\n                return 0;\n              }\n              local_2c = (undefined4 *)local_2c[1];\n              local_18 = local_18 + 1;\n            }\n            uVar1 = 1;\n          }\n        }\n      }\n    }\n    else {\n      uVar1 = 2;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rm_dir",
+                        "init_fs",
+                        "strlen",
+                        "calloc",
+                        "strtok",
+                        "strcat",
+                        "list_find_node_with_data_recurse",
+                        "list_head_node",
+                        "list_length",
+                        "streq",
+                        "list_remove_node",
+                        "list_destroy_node"
+                    ],
+                    "calling_functions": [
+                        "rm_dir",
+                        "do_rmdir"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_file",
+                "func_c_signature": "undefined4 add_file(char *param_1,char *param_2)",
+                "decompiled_code": "undefined4 add_file(char *param_1,char *param_2) {\n  int *piVar1;\n  size_t sVar2;\n  undefined4 uVar3;\n  int iVar4;\n  char *__dest;\n  code *__size;\n  int local_20;\n  int local_1c;\n  char *local_18;\n  char *local_14;\n  int local_10;\n  \n  local_14 = (char *)0x0;\n  local_1c = 0;\n  local_20 = 0;\n  if (root == 0) {\n    init_fs();\n  }\n  piVar1 = (int *)list_find_node_with_data_recurse(root + 0x80,get_dir,param_1);\n  if (piVar1 == (int *)0x0) {\n    for (; param_1[local_1c] != '\\0'; local_1c = local_1c + 1) {\n      local_20 = local_20 + (uint)(param_1[local_1c] == '#');\n    }\n    if ((*param_1 != '#') && (local_20 != 1)) {\n      return 1;\n    }\n    local_10 = root;\n  }\n  else {\n    local_10 = *piVar1;\n  }\n  local_18 = strtok(param_1,(char *)0x23);\n  while (local_18 != (char *)0x0) {\n    local_14 = local_18;\n    local_18 = strtok((char *)0x0,(char *)0x23);\n  }\n  sVar2 = strlen(local_14);\n  if (sVar2 == 0) {\n    uVar3 = 2;\n  }\n  else if (sVar2 < 0x80) {\n    sVar2 = strlen(param_2);\n    if ((int)sVar2 < 0x3ff) {\n      __size = get_file;\n      iVar4 = list_find_node_with_data(local_10 + 0x94,get_file,local_14);\n      if (iVar4 == 0) {\n        __dest = (char *)calloc(0x480,(size_t)__size);\n        if (__dest == (char *)0x0) {\n          uVar3 = 7;\n        }\n        else {\n          strcpy(__dest + 0x80,param_2);\n          strcpy(__dest,local_14);\n          list_insert_at_end(local_10 + 0x94,__dest);\n          uVar3 = 0;\n        }\n      }\n      else {\n        uVar3 = 1;\n      }\n    }\n    else {\n      uVar3 = 4;\n    }\n  }\n  else {\n    uVar3 = 3;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_file",
+                        "init_fs",
+                        "list_find_node_with_data_recurse",
+                        "strtok",
+                        "strlen",
+                        "list_find_node_with_data",
+                        "calloc",
+                        "strcpy",
+                        "list_insert_at_end"
+                    ],
+                    "calling_functions": [
+                        "add_file",
+                        "init_fs",
+                        "do_put"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rm_file",
+                "func_c_signature": "undefined4 rm_file(char *param_1)",
+                "decompiled_code": "undefined4 rm_file(char *param_1) {\n  undefined4 uVar1;\n  size_t sVar2;\n  int iVar3;\n  uint uVar4;\n  size_t in_stack_ffffffc8;\n  undefined4 *local_2c;\n  int *local_28;\n  char *local_24;\n  size_t local_20;\n  int local_1c;\n  uint local_18;\n  char *local_14;\n  char *local_10;\n  \n  local_10 = (char *)0x0;\n  local_14 = (char *)0x0;\n  if (root == 0) {\n    init_fs();\n  }\n  if (param_1 == (char *)0x0) {\n    uVar1 = 1;\n  }\n  else {\n    local_20 = strlen(param_1);\n    if (local_20 < 0x80) {\n      if (local_20 < 2) {\n        uVar1 = 7;\n      }\n      else {\n        local_24 = (char *)calloc(local_20 + 1,in_stack_ffffffc8);\n        if (local_24 == (char *)0x0) {\n          uVar1 = 3;\n        }\n        else {\n          local_14 = strtok(param_1,(char *)0x23);\n          while (local_14 != (char *)0x0) {\n            if (local_10 != (char *)0x0) {\n              if (*local_10 == '\\0') {\n                strcat(local_24,\"#\");\n              }\n              else {\n                strcat(local_24,local_10);\n              }\n            }\n            local_10 = local_14;\n            local_14 = strtok((char *)0x0,(char *)0x23);\n          }\n          sVar2 = strlen(local_24);\n          if ((sVar2 != 1) || (local_1c = root, *local_24 != '#')) {\n            local_28 = (int *)list_find_node_with_data_recurse(root + 0x80,get_dir,local_24);\n            if (local_28 == (int *)0x0) {\n              return 5;\n            }\n            local_1c = *local_28;\n          }\n          local_1c = local_1c + 0x94;\n          if (local_1c == 0) {\n            uVar1 = 7;\n          }\n          else {\n            local_2c = (undefined4 *)list_head_node(local_1c);\n            local_18 = 0;\n            while (uVar4 = list_length(local_1c), local_18 < uVar4) {\n              iVar3 = streq(local_10,*local_2c);\n              if (iVar3 != 0) {\n                list_remove_node(local_1c,local_2c);\n                list_destroy_node(local_1c,&local_2c);\n                return 0;\n              }\n              local_2c = (undefined4 *)local_2c[1];\n              local_18 = local_18 + 1;\n            }\n            uVar1 = 1;\n          }\n        }\n      }\n    }\n    else {\n      uVar1 = 2;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rm_file",
+                        "init_fs",
+                        "strlen",
+                        "calloc",
+                        "strtok",
+                        "strcat",
+                        "list_find_node_with_data_recurse",
+                        "list_head_node",
+                        "list_length",
+                        "streq",
+                        "list_remove_node",
+                        "list_destroy_node"
+                    ],
+                    "calling_functions": [
+                        "rm_file",
+                        "do_rm"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "readfile",
+                "func_c_signature": "int readfile(char *param_1)",
+                "decompiled_code": "int readfile(char *param_1) {\n  size_t sVar1;\n  int iVar2;\n  char *__dest;\n  int *piVar3;\n  size_t in_stack_ffffffc8;\n  char *local_18;\n  char *local_14;\n  int *local_10;\n  \n  local_14 = (char *)0x0;\n  if (root == 0) {\n    init_fs();\n  }\n  sVar1 = strlen(param_1);\n  if (sVar1 < 0x80) {\n    if (sVar1 < 2) {\n      iVar2 = 0;\n    }\n    else {\n      __dest = (char *)calloc(0x7f,in_stack_ffffffc8);\n      if (__dest == (char *)0x0) {\n        iVar2 = 0;\n      }\n      else {\n        local_18 = strtok(param_1,(char *)0x23);\n        while (local_18 != (char *)0x0) {\n          if (local_14 != (char *)0x0) {\n            if (*local_14 == '\\0') {\n              strcat(__dest,\"#\");\n            }\n            else {\n              strcat(__dest,local_14);\n            }\n          }\n          local_14 = local_18;\n          local_18 = strtok((char *)0x0,(char *)0x23);\n        }\n        sVar1 = strlen(local_14);\n        if ((int)sVar1 < 1) {\n          iVar2 = 0;\n        }\n        else {\n          sVar1 = strlen(__dest);\n          if ((sVar1 == 1) && (*__dest == '#')) {\n            local_10 = (int *)list_find_node_with_data(root + 0x94,get_file,local_14);\n          }\n          else {\n            piVar3 = (int *)list_find_node_with_data_recurse(root + 0x80,get_dir,__dest);\n            if (piVar3 == (int *)0x0) {\n              return 0;\n            }\n            local_10 = (int *)list_find_node_with_data(*piVar3 + 0x94,get_file,local_14);\n          }\n          if (local_10 == (int *)0x0) {\n            iVar2 = 0;\n          }\n          else {\n            iVar2 = *local_10 + 0x80;\n          }\n        }\n      }\n    }\n  }\n  else {\n    iVar2 = 0;\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readfile",
+                        "init_fs",
+                        "strlen",
+                        "calloc",
+                        "strtok",
+                        "strcat",
+                        "list_find_node_with_data",
+                        "list_find_node_with_data_recurse"
+                    ],
+                    "calling_functions": [
+                        "readfile",
+                        "do_get"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_fs",
+                "func_c_signature": "void init_fs(void)",
+                "decompiled_code": "void init_fs(void) {\n  int iVar1;\n  char **ppcVar2;\n  undefined *puVar3;\n  char *apcStack_50 [2];\n  code *apcStack_48 [11];\n  undefined auStack_1c [8];\n  undefined4 local_14;\n  undefined4 local_10;\n  \n  ppcVar2 = (char **)auStack_1c;\n  apcStack_48[10] = (code *)0x11b91;\n  local_14 = 0x41455223;\n  local_10 = 0x454d44;\n  if (root != (void *)0x0) {\n    ppcVar2 = apcStack_50 + 9;\n    apcStack_48[7] = (code *)0x8;\n    _terminate();\n  }\n  *(undefined4 *)((int)ppcVar2 + -0x10) = 0xa8;\n  *(undefined4 *)((int)ppcVar2 + -0x14) = 0x11bc6;\n  root = calloc(*(size_t *)((int)ppcVar2 + -0x10),*(size_t *)((int)ppcVar2 + -0xc));\n  puVar3 = (undefined *)ppcVar2;\n  if (root == (void *)0x0) {\n    puVar3 = (undefined *)((int)ppcVar2 + -0x10);\n    *(undefined4 *)((int)ppcVar2 + -0x10) = 9;\n    *(undefined4 *)((int)ppcVar2 + -0x14) = 0x11be3;\n    _terminate();\n  }\n  *(undefined **)(puVar3 + -0xc) = &DAT_00014000;\n  *(void **)(puVar3 + -0x10) = root;\n  *(undefined4 *)(puVar3 + -0x14) = 0x11bfb;\n  strcpy(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc));\n  *(code **)(puVar3 + -0xc) = freedir;\n  *(int *)(puVar3 + -0x10) = (int)root + 0x80;\n  *(undefined4 *)(puVar3 + -0x14) = 0x11c1a;\n  list_init();\n  *(code **)(puVar3 + -0xc) = freefile;\n  *(int *)(puVar3 + -0x10) = (int)root + 0x94;\n  *(undefined4 *)(puVar3 + -0x14) = 0x11c39;\n  list_init();\n  *(char **)(puVar3 + -0xc) = \"This is a sample file! Feel free to add your own!\";\n  *(undefined4 **)(puVar3 + -0x10) = &local_14;\n  *(undefined4 *)(puVar3 + -0x14) = 0x11c4f;\n  iVar1 = add_file();\n  if (iVar1 != 0) {\n    *(undefined4 *)(puVar3 + -0x10) = 6;\n    *(undefined4 *)(puVar3 + -0x14) = 0x11c60;\n    _terminate();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_fs",
+                        "_terminate",
+                        "calloc",
+                        "strcpy",
+                        "list_init",
+                        "add_file"
+                    ],
+                    "calling_functions": [
+                        "ls_dir",
+                        "add_dir",
+                        "rm_dir",
+                        "add_file",
+                        "rm_file",
+                        "readfile",
+                        "init_fs",
+                        "go"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "freedir",
+                "func_c_signature": "void freedir(void *param_1)",
+                "decompiled_code": "void freedir(void *param_1) {\n  list_destroy((int)param_1 + 0x80);\n  list_destroy((int)param_1 + 0x94);\n  free(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "freedir",
+                        "list_destroy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "freedir"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "freefile",
+                "func_c_signature": "void freefile(void *param_1)",
+                "decompiled_code": "void freefile(void *param_1) {\n  free(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "freefile",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "freefile"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_file",
+                "func_c_signature": "bool get_file(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "bool get_file(undefined4 param_1,undefined4 param_2) {\n  int iVar1;\n  \n  iVar1 = streq(param_1,param_2);\n  return iVar1 != 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_file",
+                        "streq"
+                    ],
+                    "calling_functions": [
+                        "get_file"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_dir",
+                "func_c_signature": "char ** get_dir(char **param_1,char *param_2)",
+                "decompiled_code": "char ** get_dir(char **param_1,char *param_2) {\n  char cVar1;\n  char cVar2;\n  char **ppcVar3;\n  char *local_14;\n  char *local_10;\n  \n  local_14 = *param_1;\n  local_10 = param_2 + 1;\n  if (*param_2 != '#') {\n    return (char **)0x0;\n  }\n  while ((*local_10 != '\\0' && (*local_10 != '#'))) {\n    cVar1 = *local_14;\n    cVar2 = *local_10;\n    local_14 = local_14 + 1;\n    local_10 = local_10 + 1;\n    if (cVar1 != cVar2) {\n      return (char **)0x0;\n    }\n  }\n  if ((*local_14 == '\\0') && (*local_10 == '\\0')) {\n    return param_1;\n  }\n  if (*local_10 == '\\0') {\n    return (char **)0x0;\n  }\n  ppcVar3 = (char **)list_find_node_with_data_recurse(*param_1 + 0x80,get_dir,local_10);\n  if (ppcVar3 != (char **)0x0) {\n    return ppcVar3;\n  }\n  do {\n    local_10 = local_10 + 1;\n    if (*local_10 == '\\0') {\n      return param_1;\n    }\n  } while (*local_10 != '#');\n  return (char **)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_dir",
+                        "list_find_node_with_data_recurse"
+                    ],
+                    "calling_functions": [
+                        "get_dir"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "readall_timeout",
+                "func_c_signature": "uint readall_timeout(uint param_1,int param_2,uint param_3)",
+                "decompiled_code": "uint readall_timeout(uint param_1,int param_2,uint param_3) {\n  int iVar1;\n  undefined *puVar2;\n  undefined *puVar3;\n  int aiStack_d0 [2];\n  uint *apuStack_c8 [2];\n  int iStack_c0;\n  int *piStack_bc;\n  int aiStack_b8 [2];\n  int *piStack_b0;\n  undefined auStack_ac [4];\n  int local_a8;\n  undefined4 local_a4;\n  undefined4 local_a0;\n  int local_9c;\n  uint local_98 [32];\n  int local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_9c = 0;\n  local_a4 = 2;\n  local_a0 = 0;\n  local_a8 = 0;\n  for (local_14 = 0; local_14 < 0x20; local_14 = local_14 + 1) {\n    local_98[local_14] = 0;\n  }\n  local_98[param_1 >> 5] = local_98[param_1 >> 5] | 1 << ((byte)param_1 & 0x1f);\n  local_10 = 0;\n  puVar3 = auStack_ac;\n  while( true ) {\n    if (param_3 <= local_10) {\n      return local_10;\n    }\n    *(int **)(puVar3 + -0x10) = &local_9c;\n    *(undefined4 **)(puVar3 + -0x14) = &local_a4;\n    *(undefined4 *)(puVar3 + -0x18) = 0;\n    *(uint **)(puVar3 + -0x1c) = local_98;\n    *(uint *)(puVar3 + -0x20) = param_1 + 1;\n    *(undefined4 *)(puVar3 + -0x24) = 0x12200;\n    local_18 = fdwait();\n    if (local_18 != 0) break;\n    if (local_9c == 0) {\n      return local_10;\n    }\n    *(int **)(puVar3 + -4) = &local_a8;\n    *(uint *)(puVar3 + -8) = param_3 - local_10;\n    *(uint *)(puVar3 + -0xc) = param_2 + local_10;\n    *(uint *)(puVar3 + -0x10) = param_1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x12235;\n    iVar1 = receive();\n    if ((iVar1 != 0) || (puVar2 = puVar3, local_a8 == 0)) {\n      puVar2 = puVar3 + -0x10;\n      *(undefined4 *)(puVar3 + -0x10) = 0x84;\n      *(undefined4 *)(puVar3 + -0x14) = 0x12253;\n      _terminate();\n    }\n    local_10 = local_10 + local_a8;\n    puVar3 = puVar2;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readall_timeout",
+                        "fdwait",
+                        "receive",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "readall_timeout",
+                        "ereadall",
+                        "go"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ereadall",
+                "func_c_signature": "uint ereadall(undefined4 param_1,int param_2,uint param_3)",
+                "decompiled_code": "uint ereadall(undefined4 param_1,int param_2,uint param_3) {\n  uint uVar1;\n  undefined4 *puVar2;\n  undefined4 auStack_2c [3];\n  undefined4 uStack_20;\n  undefined auStack_1c [4];\n  uint local_18;\n  int local_14;\n  uint local_10;\n  \n  puVar2 = (undefined4 *)auStack_1c;\n  uStack_20 = 0x1227e;\n  local_10 = 0;\n  local_14 = param_2;\n  if ((param_3 & 3) != 0) {\n    puVar2 = auStack_2c;\n    auStack_2c[0] = 0x84;\n    _terminate();\n  }\n  *(uint *)((int)puVar2 + -8) = param_3;\n  *(int *)((int)puVar2 + -0xc) = param_2;\n  *(undefined4 *)((int)puVar2 + -0x10) = param_1;\n  *(undefined4 *)((int)puVar2 + -0x14) = 0x122b9;\n  uVar1 = readall_timeout();\n  if (uVar1 == param_3) {\n    for (local_10 = 0; uVar1 = param_3, local_10 < param_3 >> 2; local_10 = local_10 + 1) {\n      *(undefined4 *)((int)puVar2 + -4) = 0x122da;\n      local_18 = getshifty();\n      *(uint *)(local_14 + local_10 * 4) = *(uint *)(local_14 + local_10 * 4) ^ local_18;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ereadall",
+                        "_terminate",
+                        "readall_timeout",
+                        "getshifty"
+                    ],
+                    "calling_functions": [
+                        "ereadall",
+                        "process_req"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "esendall",
+                "func_c_signature": "uint esendall(undefined4 param_1,int param_2,uint param_3)",
+                "decompiled_code": "uint esendall(undefined4 param_1,int param_2,uint param_3) {\n  uint uVar1;\n  undefined4 *puVar2;\n  undefined4 auStack_2c [3];\n  undefined4 uStack_20;\n  undefined auStack_1c [4];\n  uint local_18;\n  int local_14;\n  uint local_10;\n  \n  puVar2 = (undefined4 *)auStack_1c;\n  uStack_20 = 0x12326;\n  local_14 = param_2;\n  if ((param_3 & 3) != 0) {\n    puVar2 = auStack_2c;\n    auStack_2c[0] = 0x85;\n    _terminate();\n  }\n  for (local_10 = 0; local_10 < param_3 >> 2; local_10 = local_10 + 1) {\n    *(undefined4 *)((int)puVar2 + -4) = 0x12357;\n    uVar1 = getshifty();\n    *(uint *)(local_14 + local_10 * 4) = uVar1 ^ *(uint *)(local_14 + local_10 * 4);\n  }\n  *(uint *)((int)puVar2 + -8) = param_3;\n  *(int *)((int)puVar2 + -0xc) = param_2;\n  *(undefined4 *)((int)puVar2 + -0x10) = param_1;\n  *(undefined4 *)((int)puVar2 + -0x14) = 0x1239d;\n  local_18 = sendall();\n  if (param_3 != local_18) {\n    *(undefined4 *)((int)puVar2 + -0x10) = 0x85;\n    *(undefined4 *)((int)puVar2 + -0x14) = 0x123b8;\n    _terminate();\n  }\n  return param_3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "esendall",
+                        "_terminate",
+                        "getshifty",
+                        "sendall"
+                    ],
+                    "calling_functions": [
+                        "esendall",
+                        "process_req",
+                        "go"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_mkdir",
+                "func_c_signature": "undefined4 * do_mkdir(int param_1)",
+                "decompiled_code": "undefined4 * do_mkdir(int param_1) {\n  undefined4 *puVar1;\n  int iVar2;\n  size_t in_stack_ffffffd8;\n  \n  puVar1 = (undefined4 *)calloc(0x404,in_stack_ffffffd8);\n  if (puVar1 == (undefined4 *)0x0) {\n    puVar1 = (undefined4 *)0x0;\n  }\n  else {\n    iVar2 = add_dir(param_1 + 4);\n    if (iVar2 == 0) {\n      *puVar1 = 0;\n      memset(puVar1 + 1,0,0x400);\n    }\n    else {\n      *puVar1 = 1;\n    }\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_mkdir",
+                        "calloc",
+                        "add_dir",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "do_mkdir",
+                        "process_req"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_list",
+                "func_c_signature": "undefined4 * do_list(int param_1)",
+                "decompiled_code": "undefined4 * do_list(int param_1) {\n  undefined4 *puVar1;\n  char *__s;\n  size_t sVar2;\n  size_t in_stack_ffffffd8;\n  \n  puVar1 = (undefined4 *)calloc(0x404,in_stack_ffffffd8);\n  if (puVar1 == (undefined4 *)0x0) {\n    puVar1 = (undefined4 *)0x0;\n  }\n  else {\n    __s = (char *)ls_dir(param_1 + 4);\n    if (__s == (char *)0x0) {\n      *puVar1 = 3;\n    }\n    else {\n      sVar2 = strlen(__s);\n      if (0x3ff < (int)sVar2) {\n        __s[0x3ff] = '\\0';\n      }\n      strcpy((char *)(puVar1 + 1),__s);\n      *puVar1 = 2;\n      free(__s);\n    }\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_list",
+                        "calloc",
+                        "ls_dir",
+                        "strlen",
+                        "strcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "do_list",
+                        "process_req"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_put",
+                "func_c_signature": "undefined4 * do_put(int param_1)",
+                "decompiled_code": "undefined4 * do_put(int param_1) {\n  undefined4 *puVar1;\n  size_t sVar2;\n  char *__dest;\n  size_t sVar3;\n  char *__dest_00;\n  int iVar4;\n  size_t in_stack_ffffffc8;\n  \n  puVar1 = (undefined4 *)calloc(0x404,in_stack_ffffffc8);\n  if (puVar1 == (undefined4 *)0x0) {\n    puVar1 = (undefined4 *)0x0;\n  }\n  else {\n    sVar2 = strlen((char *)(param_1 + 4));\n    if (sVar2 < 0x80) {\n      __dest = (char *)malloc(sVar2 + 1);\n      strcpy(__dest,(char *)(param_1 + 4));\n      sVar3 = strlen((char *)(sVar2 + param_1 + 5));\n      if (sVar3 < 0x400) {\n        __dest_00 = (char *)malloc(sVar3 + 1);\n        strcpy(__dest_00,(char *)(sVar2 + param_1 + 5));\n        iVar4 = add_file(__dest,__dest_00);\n        if (iVar4 == 0) {\n          *puVar1 = 4;\n        }\n        else {\n          *puVar1 = 5;\n        }\n        free(__dest);\n        free(__dest_00);\n      }\n      else {\n        *puVar1 = 5;\n        free(__dest);\n      }\n    }\n    else {\n      *puVar1 = 5;\n    }\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_put",
+                        "calloc",
+                        "strlen",
+                        "malloc",
+                        "strcpy",
+                        "add_file",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "do_put",
+                        "process_req"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_get",
+                "func_c_signature": "undefined4 * do_get(int param_1)",
+                "decompiled_code": "undefined4 * do_get(int param_1) {\n  undefined4 *puVar1;\n  void *__src;\n  size_t in_stack_ffffffd8;\n  \n  puVar1 = (undefined4 *)calloc(0x404,in_stack_ffffffd8);\n  if (puVar1 == (undefined4 *)0x0) {\n    puVar1 = (undefined4 *)0x0;\n  }\n  else {\n    __src = (void *)readfile(param_1 + 4);\n    if (__src == (void *)0x0) {\n      *puVar1 = 7;\n    }\n    else {\n      *puVar1 = 6;\n      memcpy(puVar1 + 1,__src,0x400);\n    }\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_get",
+                        "calloc",
+                        "readfile",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "do_get",
+                        "process_req"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_rm",
+                "func_c_signature": "undefined4 * do_rm(int param_1)",
+                "decompiled_code": "undefined4 * do_rm(int param_1) {\n  undefined4 *puVar1;\n  int iVar2;\n  size_t in_stack_ffffffd8;\n  \n  puVar1 = (undefined4 *)calloc(0x404,in_stack_ffffffd8);\n  if (puVar1 == (undefined4 *)0x0) {\n    puVar1 = (undefined4 *)0x0;\n  }\n  else {\n    iVar2 = rm_file(param_1 + 4);\n    if (iVar2 == 0) {\n      *puVar1 = 8;\n    }\n    else {\n      *puVar1 = 9;\n    }\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_rm",
+                        "calloc",
+                        "rm_file"
+                    ],
+                    "calling_functions": [
+                        "do_rm",
+                        "process_req"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_rmdir",
+                "func_c_signature": "undefined4 * do_rmdir(int param_1)",
+                "decompiled_code": "undefined4 * do_rmdir(int param_1) {\n  undefined4 *puVar1;\n  int iVar2;\n  size_t in_stack_ffffffd8;\n  \n  puVar1 = (undefined4 *)calloc(0x404,in_stack_ffffffd8);\n  if (puVar1 == (undefined4 *)0x0) {\n    puVar1 = (undefined4 *)0x0;\n  }\n  else {\n    iVar2 = rm_dir(param_1 + 4);\n    if (iVar2 == 0) {\n      *puVar1 = 10;\n    }\n    else {\n      *puVar1 = 0xb;\n    }\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_rmdir",
+                        "calloc",
+                        "rm_dir"
+                    ],
+                    "calling_functions": [
+                        "do_rmdir",
+                        "process_req"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_req",
+                "func_c_signature": "undefined4 process_req(void)",
+                "decompiled_code": "undefined4 process_req(void) {\n  undefined4 *puVar1;\n  int iVar2;\n  undefined4 uVar3;\n  void *local_10;\n  \n  puVar1 = (undefined4 *)malloc(0x404);\n  iVar2 = ereadall(0,puVar1,0x404);\n  if (iVar2 == 0x404) {\n    *(undefined *)((int)puVar1 + 0x403) = 0;\n    switch(*puVar1) {\n    case 0:\n      local_10 = (void *)do_mkdir(puVar1);\n      break;\n    case 1:\n      local_10 = (void *)do_list(puVar1);\n      break;\n    case 2:\n      local_10 = (void *)do_put(puVar1);\n      break;\n    case 3:\n      local_10 = (void *)do_get(puVar1);\n      break;\n    case 4:\n      local_10 = (void *)do_rm(puVar1);\n      break;\n    case 5:\n      local_10 = (void *)do_rmdir(puVar1);\n      break;\n    case 6:\n      return 1;\n    default:\n      return 3;\n    }\n    if (local_10 == (void *)0x0) {\n      uVar3 = 3;\n    }\n    else {\n      esendall(1,local_10,0x404);\n      if (last != (void *)0x0) {\n        free(last);\n      }\n      last = local_10;\n      uVar3 = 0;\n    }\n  }\n  else {\n    uVar3 = 2;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_req",
+                        "malloc",
+                        "ereadall",
+                        "do_mkdir",
+                        "do_list",
+                        "do_put",
+                        "do_get",
+                        "do_rm",
+                        "do_rmdir",
+                        "esendall",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "process_req",
+                        "go"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "go",
+                "func_c_signature": "long go(void)",
+                "decompiled_code": "long go(void) {\n  int iVar1;\n  long lVar2;\n  uint uVar3;\n  void *__size;\n  uint local_2c;\n  uint local_28;\n  int local_24;\n  uint local_20;\n  void *local_1c;\n  void *local_18;\n  void *local_14;\n  int local_10;\n  \n  local_28 = 0;\n  init_fs();\n  iVar1 = readall_timeout(0,&conf,0x14);\n  if (iVar1 == 0x14) {\n    if ((_DAT_00016008 < 0xc0ff34) && (0xc0ff32 < conf)) {\n      local_24 = 1;\n      sendall(1,&local_24,4);\n      local_14 = (void *)0x4347c020;\n      local_18 = malloc(0x20);\n      if (local_18 == (void *)0x0) {\n        lVar2 = 1;\n      }\n      else {\n        __size = local_14;\n        memcpy(local_18,local_14,0x20);\n        if (DAT_0001600c == 0) {\n          local_14 = calloc(0x20,(size_t)__size);\n        }\n        srand((uint)local_14);\n        for (local_10 = 0; local_10 < 8; local_10 = local_10 + 2) {\n          if (DAT_0001600c != 0) {\n            local_28 = *(uint *)((int)local_18 + (local_10 + 1) * 4) ^\n                       *(uint *)((int)local_18 + local_10 * 4);\n          }\n          sendall(1,&local_28,4);\n        }\n        free(local_18);\n        while ((local_24 = process_req(), local_24 != 3 && (local_24 != 1))) {\n          if ((local_24 == 2) && ((DAT_00016010 != 0 && (last != (void *)0x0)))) {\n            iVar1 = readall_timeout(0,&conf,0x14);\n            if (iVar1 != 0x14) {\n              return 3;\n            }\n            if (last != (void *)0x0) {\n              local_1c = malloc(DAT_00016014 + 0x404);\n              iVar1 = readall(0,&local_2c,4);\n              if (iVar1 != 4) {\n                return 4;\n              }\n              local_20 = 0x404 - local_2c;\n              if (0x404 < local_20) {\n                local_20 = 0x404;\n              }\n              if ((DAT_00016014 < local_2c) || (0x404 < local_2c)) {\n                return 1;\n              }\n              memcpy(local_1c,(void *)(local_2c + (int)last),0x404 - local_2c);\n              uVar3 = esendall(1,local_1c,0x404);\n              if (local_20 != uVar3) {\n                return 4;\n              }\n              free(local_1c);\n              free(last);\n              last = (void *)0x0;\n            }\n          }\n        }\n        lVar2 = 0;\n      }\n    }\n    else {\n      local_24 = 0;\n      sendall(1,&local_24,4);\n      lVar2 = 5;\n    }\n  }\n  else {\n    local_24 = 0;\n    sendall(1,&local_24,4);\n    lVar2 = 3;\n  }\n  return lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "go",
+                        "init_fs",
+                        "readall_timeout",
+                        "sendall",
+                        "malloc",
+                        "memcpy",
+                        "calloc",
+                        "srand",
+                        "free",
+                        "process_req",
+                        "readall",
+                        "esendall"
+                    ],
+                    "calling_functions": [
+                        "go",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_text_checksum",
+                "func_c_signature": "uint get_text_checksum(void)",
+                "decompiled_code": "uint get_text_checksum(void) {\n  int iVar1;\n  uint local_14;\n  code *local_10;\n  \n  local_10 = go;\n  local_14 = 0;\n  iVar1 = _terminate(2);\n  do {\n    local_14 = local_14 ^ *(uint *)local_10;\n    local_10 = (code *)((int)local_10 + 4);\n  } while (local_10 < (uint *)(iVar1 - 0x40dfU));\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_text_checksum",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "get_text_checksum",
+                        "verify_integrity"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_integrity",
+                "func_c_signature": "uint verify_integrity(void)",
+                "decompiled_code": "uint verify_integrity(void) {\n  uint uVar1;\n  int iVar2;\n  uint local_10 [2];\n  \n  local_10[0] = 0;\n  local_10[0] = getshifty();\n  uVar1 = get_text_checksum();\n  local_10[0] = uVar1 ^ local_10[0];\n  printf(\"@h\",local_10[0]);\n  iVar2 = readall(0,local_10,4);\n  if (iVar2 != 4) {\n    local_10[0] = 0;\n  }\n  return local_10[0];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_integrity",
+                        "getshifty",
+                        "get_text_checksum",
+                        "printf",
+                        "readall"
+                    ],
+                    "calling_functions": [
+                        "verify_integrity",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "long main(void)",
+                "decompiled_code": "long main(void) {\n  char cVar1;\n  long lVar2;\n  \n  cVar1 = verify_integrity();\n  if (cVar1 == '\\0') {\n    lVar2 = 2;\n  }\n  else {\n    lVar2 = go();\n  }\n  return lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "verify_integrity",
+                        "go"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00071_decompiled.c"
+                }
+            }
+        ]
+    }
+}

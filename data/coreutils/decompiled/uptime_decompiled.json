@@ -1,0 +1,136 @@
+{
+    "file": "uptime",
+    "decompiled_code": {
+        "uptime.c": [
+            {
+                "func_name": "print_uptime",
+                "func_c_signature": "bool print_uptime(long param_1,long param_2)",
+                "decompiled_code": "bool print_uptime(long param_1,long param_2) {\n  ulong uVar1;\n  ulong uVar2;\n  int iVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  char *pcVar6;\n  long in_FS_OFFSET;\n  bool bVar7;\n  bool bVar8;\n  long local_80;\n  long local_78;\n  char *local_70;\n  long local_68;\n  long local_60;\n  tm *local_58;\n  long local_50;\n  char **local_48;\n  undefined8 local_40;\n  double local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_70 = (char *)0x0;\n  local_68 = 0;\n  for (local_60 = 0; local_60 < param_1; local_60 = local_60 + 1) {\n    local_48 = (char **)(param_2 + local_60 * 0x48);\n    if ((**local_48 == '\\0') || (*(short *)(local_48 + 7) != 7)) {\n      iVar3 = 0;\n    }\n    else {\n      iVar3 = 1;\n    }\n    local_68 = local_68 + iVar3;\n    if (*(short *)(local_48 + 7) == 2) {\n      local_70 = local_48[4];\n    }\n  }\n  bVar7 = local_70 == (char *)0x0;\n  if (bVar7) {\n    uVar4 = gettext(0x100c4b);\n    piVar5 = __errno_location();\n    local_40 = uVar4;\n    error(0,*piVar5,uVar4);\n  }\n  local_80 = rpl_time(0);\n  if (local_80 == -1) {\n    local_58 = (tm *)0x0;\n  }\n  else {\n    local_58 = localtime(&local_80);\n  }\n  bVar8 = local_58 == (tm *)0x0;\n  if (bVar8) {\n    pcVar6 = (char *)gettext(&DAT_00100c6e);\n    printf(pcVar6);\n  }\n  else {\n    uVar4 = gettext(\" %H:%M:%S  \");\n    fprintftime(_stdout,uVar4,local_58,0,0);\n  }\n  bVar8 = bVar8 || bVar7;\n  if ((((local_80 == -1) || (local_70 == (char *)0x0)) ||\n      (local_78 = local_80 - (long)local_70, SBORROW8(local_80,(long)local_70))) || (local_78 < 0))\n  {\n    pcVar6 = (char *)gettext(\"up ???? days ??:??,  \");\n    printf(pcVar6);\n    bVar8 = true;\n  }\n  else {\n    local_50 = local_78 / 0x15180;\n    uVar1 = (local_78 % 0x15180) / 0xe10;\n    uVar2 = ((local_78 % 0x15180) % 0xe10) / 0x3c;\n    if (local_50 < 1) {\n      pcVar6 = (char *)gettext(0x100cbe);\n      printf(pcVar6,uVar1 & 0xffffffff,uVar2 & 0xffffffff);\n    }\n    else {\n      uVar4 = select_plural(local_50);\n      pcVar6 = (char *)ngettext(0x100ca7,&DAT_00100c8f,uVar4);\n      printf(pcVar6,local_50,uVar1 & 0xffffffff,uVar2 & 0xffffffff);\n    }\n  }\n  uVar4 = select_plural(local_68);\n  pcVar6 = (char *)ngettext(0x100cd8,0x100cce,uVar4);\n  printf(pcVar6,local_68);\n  iVar3 = getloadavg(&local_38,3);\n  if (iVar3 == -1) {\n    putchar_unlocked(10);\n  }\n  else {\n    if (0 < iVar3) {\n      pcVar6 = (char *)gettext(0x100ce1);\n      printf(pcVar6,local_38);\n    }\n    if (1 < iVar3) {\n      printf(\", %.2f\",local_30);\n    }\n    if (2 < iVar3) {\n      printf(\", %.2f\",local_28);\n    }\n    if (0 < iVar3) {\n      putchar_unlocked(10);\n    }\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return bVar8;\n}",
+                "globals": [],
+                "externs": [
+                    "SBORROW8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_uptime",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "rpl_time",
+                        "localtime",
+                        "printf",
+                        "fprintftime",
+                        "SBORROW8",
+                        "select_plural",
+                        "ngettext",
+                        "getloadavg",
+                        "putchar_unlocked",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_uptime",
+                        "uptime"
+                    ],
+                    "defined_in_file": "uptime_decompiled.c"
+                }
+            },
+            {
+                "func_name": "uptime",
+                "func_c_signature": "void uptime(undefined8 param_1,undefined4 param_2)",
+                "decompiled_code": "void uptime(undefined8 param_1,undefined4 param_2) {\n  int iVar1;\n  int iVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  long in_FS_OFFSET;\n  undefined8 local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  undefined8 local_20;\n  \n  local_20 = *(undefined8 *)(in_FS_OFFSET + 0x28);\n  iVar1 = read_utmp(param_1,&local_38,&local_30,param_2);\n  iVar1 = -(iVar1 >> 0x1f);\n  if (iVar1 != 0) {\n    uVar3 = quotearg_n_style_colon(0,3,param_1);\n    piVar4 = __errno_location();\n    local_28 = 0x100cfe;\n    error(0,*piVar4,0x100cfe,uVar3);\n    local_38 = 0;\n    local_30 = 0;\n  }\n  iVar2 = print_uptime(local_38,local_30);\n  if (iVar1 <= iVar2) {\n    iVar1 = iVar2;\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(iVar1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "uptime",
+                        "read_utmp",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "print_uptime",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "uptime",
+                        "main"
+                    ],
+                    "defined_in_file": "uptime_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(&DAT_00100d2f);\n    printf(pcVar3,uVar2);\n    pcVar3 = (char *)gettext(0x100d50);\n    printf(pcVar3);\n    pcVar3 = (char *)gettext(0x100e10);\n    printf(pcVar3);\n    pcVar3 = (char *)gettext(&DAT_00100e68);\n    printf(pcVar3,&LAB_00100eb1,&DAT_00100ea3);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(0x100ec0);\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(0x100ef0);\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"uptime\");\n  }\n  else {\n    pcVar3 = (char *)gettext(0x100d08);\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "uptime_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "void main(int param_1,undefined8 *param_2) {\n  byte bVar1;\n  undefined4 uVar2;\n  ulong uVar3;\n  char cVar4;\n  byte bVar5;\n  uint uVar6;\n  byte bVar14;\n  undefined8 uVar7;\n  undefined8 uVar8;\n  undefined8 uVar9;\n  long lVar10;\n  char *pcVar11;\n  byte *pbVar12;\n  byte bVar15;\n  byte bVar17;\n  undefined2 uVar16;\n  undefined4 *puVar18;\n  undefined4 *puVar19;\n  long in_GS_OFFSET;\n  bool bVar20;\n  undefined auVar21 [16];\n  undefined8 in_stack_00000068;\n  byte *pbVar13;\n  \n  bVar5 = 0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(0x100b1a,&LAB_00100f30);\n  textdomain(0x100b1a);\n  atexit((__func *)&close_stdout);\n  uVar7 = proper_name_lite(0x100f48,0x100f48);\n  uVar8 = proper_name_lite(0x100f54,0x100f54);\n  uVar9 = proper_name_lite(0x100f64,0x100f64);\n  parse_gnu_standard_options_only\n            (param_1,param_2,\"uptime\",&DAT_00100f75,_Version,1,usage,uVar9,uVar8,uVar7,0);\n  if (param_1 == _optind) {\n    uptime(&LAB_00100eb1,1);\n  }\n  else if (param_1 - _optind != 1) goto LAB_00100a9a;\n  uptime(param_2[_optind],0);\nLAB_00100a9a:\n  lVar10 = quote(param_2[(long)_optind + 1]);\n  uVar7 = gettext(0x100f83);\n  puVar18 = (undefined4 *)0x0;\n  error(0,0,uVar7);\n  puVar19 = (undefined4 *)0x1;\n  auVar21 = usage();\n  pbVar12 = auVar21._8_8_;\n  pcVar11 = auVar21._0_8_;\n  bVar17 = auVar21[9];\n  bVar20 = (byte)(in_stack_00000068._3_1_ + bVar17) == '\\0';\n  cVar4 = auVar21[0];\n  if (!bVar20) {\n    uVar3 = (long)*(int *)((long)puVar19 + 0x6e) * 0x726f6300;\n    uVar16 = auVar21._8_2_;\n    if (!bVar20) {\n      bVar14 = auVar21[1];\n      bVar15 = (byte)((ulong)lVar10 >> 8);\n      if (bVar20) {\n        if ((long)(int)uVar3 == uVar3) {\n          *(byte *)puVar19 = *(byte *)puVar19 & bVar14;\n          pbVar13 = (byte *)((long)param_2 + 0x6f);\n          bVar1 = *pbVar13;\n          *pbVar13 = *pbVar13 - bVar14;\n          if (bVar1 < bVar14) {\n            pbVar12 = (byte *)CONCAT71(auVar21._1_7_,cVar4 - 0x20U);\n            *pbVar12 = *pbVar12 & cVar4 - 0x20U;\n            if (*pbVar12 != 0) {\n              out(*puVar18,uVar16);\n              uVar2 = in(uVar16);\n              *puVar19 = uVar2;\n              out(puVar18[(ulong)bVar5 * -2 + 1],uVar16);\n              *(byte *)(lVar10 + 0x6e) = *(byte *)(lVar10 + 0x6e) & bVar15;\n              out(*(undefined2 *)(puVar18 + (ulong)bVar5 * -2 + 1 + (ulong)bVar5 * -2 + 1),uVar16);\n                    /* WARNING: Bad instruction - Truncating control flow here */\n              halt_baddata();\n            }\n            DAT_64307119 = DAT_64307119 & bVar14;\n                    /* WARNING: Bad instruction - Truncating control flow here */\n            halt_baddata();\n          }\n          if (*pbVar13 == 0) {\n            lVar10 = (long)*(int *)((long)param_2 + (long)puVar18 * 2 + 0x29) * 0x25732520;\n            if ((int)lVar10 == lVar10) {\n                    /* WARNING: Bad instruction - Truncating control flow here */\n              halt_baddata();\n            }\n            bVar5 = in(uVar16);\n            *(byte *)puVar19 = bVar5;\n            out(*(undefined *)puVar18,uVar16);\n                    /* WARNING: Bad instruction - Truncating control flow here */\n            halt_baddata();\n          }\n          bVar14 = bVar14 ^ (pbVar12 + 0x25)[(long)puVar19];\n          *pbVar12 = *pbVar12 ^ bVar17;\n          bVar5 = cVar4 - 0x20;\n          pbVar13 = (byte *)CONCAT71((int7)(CONCAT62(auVar21._2_6_,CONCAT11(bVar14,cVar4)) >> 8),\n                                     bVar5);\n          *pbVar13 = *pbVar13 & bVar5;\n          if (*pbVar13 == 0) {\n            *pbVar13 = *pbVar13 & bVar14;\n            uVar6 = (uint)pbVar13 & 0x253a6432;\n            *pbVar12 = *pbVar12 ^ bVar17;\n            bVar5 = (char)uVar6 - 0x20;\n            pbVar12 = (byte *)(ulong)CONCAT31((int3)(uVar6 >> 8),bVar5);\n            *pbVar12 = *pbVar12 & bVar5;\n                    /* WARNING: Bad instruction - Truncating control flow here */\n            halt_baddata();\n          }\n          if (*pbVar13 == 0) {\n            uRam000000006e797b23 = uRam000000006e797b23 ^ (uint)puVar18;\n            if (uRam000000006e797b23 != 0) {\n              *(byte *)(in_GS_OFFSET + 0x20303cfe) = *(byte *)(in_GS_OFFSET + 0x20303cfe) & bVar14;\n              *(byte *)((long)puVar18 + 0x49) = *(byte *)((long)puVar18 + 0x49) & bVar5 & 0x73;\n                    /* WARNING: Bad instruction - Truncating control flow here */\n              halt_baddata();\n            }\n            uVar2 = in(uVar16);\n            *puVar19 = uVar2;\n                    /* WARNING: Bad instruction - Truncating control flow here */\n            halt_baddata();\n          }\n          pbVar12 = (byte *)((long)puVar18 + in_GS_OFFSET + 0x75);\n          *pbVar12 = *pbVar12 & bVar15;\n          uVar2 = in(uVar16);\n          *puVar19 = uVar2;\n                    /* WARNING: Bad instruction - Truncating control flow here */\n          halt_baddata();\n        }\n        *pcVar11 = *pcVar11 + bVar14;\n      }\n      else {\n        pbVar12 = (byte *)(pcVar11 + (uVar3 & 0xffffffff) * 2);\n        *pbVar12 = *pbVar12 & (byte)((ulong)param_2 >> 8);\n        if (*pbVar12 != 0) {\n                    /* WARNING: Bad instruction - Truncating control flow here */\n          halt_baddata();\n        }\n        if (*pbVar12 == 0) {\n                    /* WARNING: Bad instruction - Truncating control flow here */\n          halt_baddata();\n        }\n        out(*puVar18,uVar16);\n        out(*(undefined *)(puVar18 + (ulong)bVar5 * -2 + 1),uVar16);\n        *pcVar11 = *pcVar11 + cVar4;\n        *pcVar11 = *pcVar11 + cVar4;\n      }\n      *(byte *)((long)puVar19 + 0x72) = *(byte *)((long)puVar19 + 0x72) + bVar15;\n      *(byte *)(lVar10 + 0x76) = *(byte *)(lVar10 + 0x76) & bVar14;\n                    /* WARNING: Bad instruction - Truncating control flow here */\n      halt_baddata();\n    }\n    out(*puVar18,uVar16);\n  }\n  if (cVar4 != 's') {\n                    /* WARNING: Bad instruction - Truncating control flow here */\n    halt_baddata();\n  }\n  *(byte *)(param_2 + 0xd) = *(char *)(param_2 + 0xd) + (bVar17 ^ *pbVar12);\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT71",
+                    "out",
+                    "in",
+                    "halt_baddata",
+                    "CONCAT62",
+                    "CONCAT11",
+                    "CONCAT31"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "proper_name_lite",
+                        "parse_gnu_standard_options_only",
+                        "uptime",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "CONCAT71",
+                        "out",
+                        "in",
+                        "halt_baddata",
+                        "CONCAT62",
+                        "CONCAT11",
+                        "CONCAT31"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "uptime_decompiled.c"
+                }
+            }
+        ]
+    }
+}

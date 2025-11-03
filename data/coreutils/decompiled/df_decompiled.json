@@ -1,0 +1,812 @@
+{
+    "file": "df",
+    "decompiled_code": {
+        "df.c": [
+            {
+                "func_name": "automount_stat_err",
+                "func_c_signature": "int automount_stat_err(char *param_1,stat *param_2)",
+                "decompiled_code": "int automount_stat_err(char *param_1,stat *param_2) {\n  int iVar1;\n  int iVar2;\n  int *piVar3;\n  \n  iVar1 = open(param_1,0x900);\n  if (iVar1 < 0) {\n    piVar3 = __errno_location();\n    if ((*piVar3 != 2) && (piVar3 = __errno_location(), *piVar3 != 0x14)) {\n      iVar1 = stat(param_1,param_2);\n      if (iVar1 != 0) {\n        piVar3 = __errno_location();\n        return *piVar3;\n      }\n      return 0;\n    }\n    piVar3 = __errno_location();\n    iVar2 = *piVar3;\n  }\n  else {\n    iVar2 = fstat(iVar1,param_2);\n    if (iVar2 == 0) {\n      iVar2 = 0;\n    }\n    else {\n      piVar3 = __errno_location();\n      iVar2 = *piVar3;\n    }\n    close(iVar1);\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "automount_stat_err",
+                        "open",
+                        "__errno_location",
+                        "stat",
+                        "fstat",
+                        "close"
+                    ],
+                    "calling_functions": [
+                        "automount_stat_err",
+                        "main"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "replace_control_chars",
+                "func_c_signature": "void replace_control_chars(char *param_1)",
+                "decompiled_code": "void replace_control_chars(char *param_1) {\n  char cVar1;\n  char *local_10;\n  \n  for (local_10 = param_1; *local_10 != '\\0'; local_10 = local_10 + 1) {\n    cVar1 = c_iscntrl((int)*local_10);\n    if (cVar1 != '\\0') {\n      *local_10 = '?';\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "replace_control_chars",
+                        "c_iscntrl"
+                    ],
+                    "calling_functions": [
+                        "replace_control_chars"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "replace_invalid_chars",
+                "func_c_signature": "void replace_invalid_chars(char *param_1)",
+                "decompiled_code": "void replace_invalid_chars(char *param_1) {\n  int iVar1;\n  size_t sVar2;\n  long in_FS_OFFSET;\n  bool bVar3;\n  undefined4 local_44;\n  char *local_40;\n  ulong local_38;\n  char *local_30;\n  char *local_28;\n  ulong local_20;\n  undefined local_18 [8];\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  sVar2 = strlen(param_1);\n  local_28 = param_1 + sVar2;\n  local_40 = param_1;\n  mbszero(local_18);\n  for (local_30 = param_1; local_30 != local_28; local_30 = local_30 + local_38) {\n    local_20 = (long)local_28 - (long)local_30;\n    local_38 = rpl_mbrtoc32(&local_44,local_30,local_20,local_18);\n    bVar3 = local_38 <= local_20;\n    if (bVar3) {\n      iVar1 = c32iscntrl(local_44);\n      bVar3 = iVar1 == 0;\n    }\n    else {\n      local_38 = 1;\n    }\n    if (bVar3) {\n      memmove(local_40,local_30,local_38);\n      local_40 = local_40 + local_38;\n    }\n    else {\n      *local_40 = '?';\n      local_40 = local_40 + 1;\n      mbszero(local_18);\n    }\n  }\n  *local_40 = '\\0';\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "replace_invalid_chars",
+                        "strlen",
+                        "mbszero",
+                        "rpl_mbrtoc32",
+                        "c32iscntrl",
+                        "memmove",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "replace_invalid_chars"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "replace_problematic_chars",
+                "func_c_signature": "void replace_problematic_chars(undefined8 param_1)",
+                "decompiled_code": "void replace_problematic_chars(undefined8 param_1) {\n  code *pcVar1;\n  \n  if (tty_out_3 < 0) {\n    tty_out_3 = isatty(1);\n  }\n  if (tty_out_3 == 0) {\n    pcVar1 = replace_control_chars;\n  }\n  else {\n    pcVar1 = replace_invalid_chars;\n  }\n  (*pcVar1)(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "replace_problematic_chars",
+                        "isatty"
+                    ],
+                    "calling_functions": [
+                        "replace_problematic_chars",
+                        "get_header",
+                        "get_dev"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "alloc_table_row",
+                "func_c_signature": "void alloc_table_row(void)",
+                "decompiled_code": "void alloc_table_row(void) {\n  undefined8 *puVar1;\n  undefined8 uVar2;\n  \n  if (nrows == nrows_alloc) {\n    table = xpalloc(table,&nrows_alloc,1,0xffffffffffffffff,8);\n  }\n  puVar1 = (undefined8 *)(table + nrows * 8);\n  nrows = nrows + 1;\n  uVar2 = xinmalloc(ncolumns,8);\n  *puVar1 = uVar2;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "alloc_table_row",
+                        "xpalloc",
+                        "xinmalloc"
+                    ],
+                    "calling_functions": [
+                        "alloc_table_row",
+                        "get_header",
+                        "get_dev"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_table",
+                "func_c_signature": "void print_table(void)",
+                "decompiled_code": "void print_table(void) {\n  char *__s;\n  int local_28;\n  long local_20;\n  long local_18;\n  \n  for (local_20 = 0; local_20 < nrows; local_20 = local_20 + 1) {\n    for (local_18 = 0; local_18 < ncolumns; local_18 = local_18 + 1) {\n      __s = *(char **)(*(long *)(table + local_20 * 8) + local_18 * 8);\n      if (local_18 != 0) {\n        putchar_unlocked(0x20);\n      }\n      local_28 = gnu_mbswidth(__s,3);\n      if (local_28 < 0) {\n        local_28 = 0;\n      }\n      else {\n        local_28 = *(int *)(*(long *)(columns + local_18 * 8) + 0x20) - local_28;\n      }\n      if (*(char *)(*(long *)(columns + local_18 * 8) + 0x24) != '\\0') {\n        for (; 0 < local_28; local_28 = local_28 + -1) {\n          putchar_unlocked(0x20);\n        }\n      }\n      fputs_unlocked(__s,_stdout);\n      if (local_18 + 1 < ncolumns) {\n        for (; 0 < local_28; local_28 = local_28 + -1) {\n          putchar_unlocked(0x20);\n        }\n      }\n    }\n    putchar_unlocked(10);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_table",
+                        "putchar_unlocked",
+                        "gnu_mbswidth",
+                        "fputs_unlocked"
+                    ],
+                    "calling_functions": [
+                        "print_table",
+                        "main"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "alloc_field",
+                "func_c_signature": "void alloc_field(int param_1,long param_2)",
+                "decompiled_code": "void alloc_field(int param_1,long param_2) {\n  long lVar1;\n  \n  if (ncolumns == ncolumns_alloc) {\n    columns = xpalloc(columns,&ncolumns_alloc,1,0xffffffffffffffff,8);\n  }\n  lVar1 = ncolumns * 8;\n  ncolumns = ncolumns + 1;\n  *(undefined1 **)(columns + lVar1) = field_data + (long)param_1 * 0x28;\n  if (param_2 != 0) {\n    *(long *)(field_data + (long)param_1 * 0x28 + 0x18) = param_2;\n  }\n  if (field_data[(long)param_1 * 0x28 + 0x25] == '\\x01') {\n                    /* WARNING: Subroutine does not return */\n    __assert_fail(\"!field_data[f].used\",\n                  \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/df.c\",\n                  0x1a3,\"alloc_field\");\n  }\n  field_data[(long)param_1 * 0x28 + 0x25] = 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "alloc_field",
+                        "xpalloc",
+                        "__assert_fail"
+                    ],
+                    "calling_functions": [
+                        "alloc_field",
+                        "decode_output_arg"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "decode_output_arg",
+                "func_c_signature": "void decode_output_arg(undefined8 param_1)",
+                "decompiled_code": "void decode_output_arg(undefined8 param_1) {\n  char cVar1;\n  char *__ptr;\n  char *pcVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  uint local_5c;\n  char *local_48;\n  char *local_40;\n  ulong local_38;\n  \n  __ptr = (char *)xstrdup(param_1);\n  local_48 = __ptr;\n  do {\n    pcVar2 = strchr(local_48,0x2c);\n    local_40 = pcVar2;\n    if (pcVar2 != (char *)0x0) {\n      local_40 = pcVar2 + 1;\n      *pcVar2 = '\\0';\n    }\n    local_5c = 0xc;\n    for (local_38 = 0; local_38 < 0xc; local_38 = local_38 + 1) {\n      cVar1 = streq(*(undefined8 *)(field_data + local_38 * 0x28 + 8),local_48);\n      if (cVar1 != '\\0') {\n        local_5c = (uint)local_38;\n        break;\n      }\n    }\n    if (local_5c == 0xc) {\n      uVar3 = quote(local_48);\n      uVar4 = gettext(\"option --output: field %s unknown\");\n      error(0,0,uVar4,uVar3);\n      usage(1);\n    }\n    if (field_data[(ulong)local_5c * 0x28 + 0x25] != '\\0') {\n      uVar3 = quote(*(undefined8 *)(field_data + (ulong)local_5c * 0x28 + 8));\n      uVar4 = gettext(\"option --output: field %s used more than once\");\n      error(0,0,uVar4,uVar3);\n      usage(1);\n    }\n    switch(local_5c) {\n    case 0:\n    case 1:\n    case 3:\n    case 5:\n    case 6:\n    case 7:\n    case 8:\n    case 9:\n    case 10:\n    case 0xb:\n      alloc_field(local_5c,0);\n      break;\n    case 2:\n      alloc_field(local_5c,&DAT_00104946);\n      break;\n    case 4:\n      alloc_field(local_5c,\"Avail\");\n      break;\n    default:\n                    /* WARNING: Subroutine does not return */\n      __assert_fail(\"!\\\"invalid field\\\"\",\n                    \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/df.c\",\n                    0x1eb,\"decode_output_arg\");\n    }\n    local_48 = local_40;\n    if (local_40 == (char *)0x0) {\n      free(__ptr);\n      return;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "decode_output_arg",
+                        "xstrdup",
+                        "strchr",
+                        "streq",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "alloc_field",
+                        "__assert_fail",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "decode_output_arg",
+                        "main"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_field_list",
+                "func_c_signature": "void get_field_list(void)",
+                "decompiled_code": "void get_field_list(void) {\n                    /* WARNING: Could not recover jumptable at 0x00100b02. Too many branches */\n                    /* WARNING: Treating indirect jump as call */\n  (*(code *)(&DAT_001049a0 + *(int *)(&DAT_001049a0 + (ulong)header_mode * 4)))();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_field_list"
+                    ],
+                    "calling_functions": [
+                        "get_field_list",
+                        "main"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_header",
+                "func_c_signature": "void get_header(void)",
+                "decompiled_code": "void get_header(void) {\n  int iVar1;\n  ulong uVar2;\n  int iVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  long in_FS_OFFSET;\n  bool bVar7;\n  bool bVar8;\n  uint local_2f0;\n  long local_2e8;\n  undefined8 local_2e0;\n  ulong local_2d8;\n  ulong local_2d0;\n  undefined local_2b8 [664];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  alloc_table_row();\n  for (local_2e8 = 0; local_2e8 < ncolumns; local_2e8 = local_2e8 + 1) {\n    uVar4 = gettext(*(undefined8 *)(*(long *)(columns + local_2e8 * 8) + 0x18));\n    uVar2 = output_block_size;\n    if ((**(int **)(columns + local_2e8 * 8) == 2) &&\n       ((header_mode == 0 || ((header_mode == 4 && ((human_output_opts & 0x10) == 0)))))) {\n      local_2f0 = human_output_opts & 0x124 | 0x98;\n      local_2d8 = output_block_size;\n      local_2d0 = output_block_size;\n      do {\n        bVar7 = local_2d8 % 1000 == 0;\n        local_2d8 = local_2d8 / 1000;\n        bVar8 = (local_2d0 & 0x3ff) == 0;\n        local_2d0 = local_2d0 >> 10;\n      } while (bVar8 && bVar7);\n      if (bVar7 < bVar8) {\n        local_2f0 = human_output_opts & 0x124 | 0xb8;\n      }\n      if (bVar8 < bVar7) {\n        local_2f0 = local_2f0 & 0xffffffdf;\n      }\n      if ((local_2f0 & 0x20) == 0) {\n        local_2f0 = local_2f0 | 0x100;\n      }\n      uVar4 = human_readable(output_block_size,local_2b8,local_2f0,1,1);\n      uVar5 = gettext(\"blocks\");\n      uVar6 = gettext(\"%s-%s\");\n      local_2e0 = xasprintf(uVar6,uVar4,uVar5);\n    }\n    else if ((header_mode == 3) && (**(int **)(columns + local_2e8 * 8) == 2)) {\n      uVar5 = gettext(\"%ju-%s\");\n      local_2e0 = xasprintf(uVar5,uVar2,uVar4);\n    }\n    else {\n      local_2e0 = xstrdup(uVar4);\n    }\n    replace_problematic_chars(local_2e0);\n    *(undefined8 *)(local_2e8 * 8 + *(long *)(table + nrows * 8 + -8)) = local_2e0;\n    iVar3 = gnu_mbswidth(local_2e0,3);\n    iVar1 = *(int *)(*(long *)(columns + local_2e8 * 8) + 0x20);\n    if (iVar3 <= iVar1) {\n      iVar3 = iVar1;\n    }\n    *(int *)(*(long *)(columns + local_2e8 * 8) + 0x20) = iVar3;\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_header",
+                        "alloc_table_row",
+                        "gettext",
+                        "human_readable",
+                        "xasprintf",
+                        "xstrdup",
+                        "replace_problematic_chars",
+                        "gnu_mbswidth",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "get_header",
+                        "main"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "selected_fstype",
+                "func_c_signature": "undefined8 selected_fstype(long param_1)",
+                "decompiled_code": "undefined8 selected_fstype(long param_1) {\n  char cVar1;\n  undefined8 uVar2;\n  undefined8 *local_10;\n  \n  if ((fs_select_list == (undefined8 *)0x0) || (param_1 == 0)) {\n    uVar2 = 1;\n  }\n  else {\n    for (local_10 = fs_select_list; local_10 != (undefined8 *)0x0;\n        local_10 = (undefined8 *)local_10[1]) {\n      cVar1 = streq(param_1,*local_10);\n      if (cVar1 != '\\0') {\n        return 1;\n      }\n    }\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "selected_fstype",
+                        "streq"
+                    ],
+                    "calling_functions": [
+                        "selected_fstype",
+                        "filter_mount_list",
+                        "get_dev"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "excluded_fstype",
+                "func_c_signature": "undefined8 excluded_fstype(long param_1)",
+                "decompiled_code": "undefined8 excluded_fstype(long param_1) {\n  char cVar1;\n  undefined8 *local_10;\n  \n  if ((fs_exclude_list != (undefined8 *)0x0) && (param_1 != 0)) {\n    for (local_10 = fs_exclude_list; local_10 != (undefined8 *)0x0;\n        local_10 = (undefined8 *)local_10[1]) {\n      cVar1 = streq(param_1,*local_10);\n      if (cVar1 != '\\0') {\n        return 1;\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "excluded_fstype",
+                        "streq"
+                    ],
+                    "calling_functions": [
+                        "excluded_fstype",
+                        "filter_mount_list",
+                        "get_dev"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "devlist_hash",
+                "func_c_signature": "ulong devlist_hash(ulong *param_1,ulong param_2)",
+                "decompiled_code": "ulong devlist_hash(ulong *param_1,ulong param_2) {\n  return *param_1 % param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "devlist_hash"
+                    ],
+                    "calling_functions": [
+                        "devlist_hash"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "devlist_compare",
+                "func_c_signature": "undefined8 devlist_compare(long *param_1,long *param_2)",
+                "decompiled_code": "undefined8 devlist_compare(long *param_1,long *param_2) {\n  return CONCAT71((int7)((ulong)*param_2 >> 8),*param_1 == *param_2);\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT71"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "devlist_compare",
+                        "CONCAT71"
+                    ],
+                    "calling_functions": [
+                        "devlist_compare"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "devlist_for_dev",
+                "func_c_signature": "undefined8 devlist_for_dev(undefined8 param_1)",
+                "decompiled_code": "undefined8 devlist_for_dev(undefined8 param_1) {\n  undefined8 uVar1;\n  long lVar2;\n  long in_FS_OFFSET;\n  undefined8 local_38 [5];\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  if (devlist_table == 0) {\n    uVar1 = 0;\n  }\n  else {\n    local_38[0] = param_1;\n    lVar2 = hash_lookup(devlist_table,local_38);\n    if (lVar2 == 0) {\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = *(undefined8 *)(lVar2 + 0x18);\n    }\n  }\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "devlist_for_dev",
+                        "hash_lookup",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "devlist_for_dev",
+                        "filter_mount_list",
+                        "me_for_dev"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "filter_mount_list",
+                "func_c_signature": "void filter_mount_list(char param_1)",
+                "decompiled_code": "void filter_mount_list(char param_1) {\n  char **ppcVar1;\n  char cVar2;\n  bool bVar3;\n  int iVar4;\n  size_t sVar5;\n  size_t sVar6;\n  size_t sVar7;\n  size_t sVar8;\n  char *pcVar9;\n  char **ppcVar10;\n  long lVar11;\n  long in_FS_OFFSET;\n  int local_f4;\n  char **local_f0;\n  char **local_e8;\n  char **local_e0;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_e8 = (char **)0x0;\n  local_f4 = 0;\n  for (local_f0 = mount_list; local_f0 != (char **)0x0; local_f0 = (char **)local_f0[6]) {\n    local_f4 = local_f4 + 1;\n  }\n  devlist_table = hash_initialize((long)local_f4,0,devlist_hash,devlist_compare,0);\n  if (devlist_table == 0) {\n    xalloc_die();\n  }\n  local_f0 = mount_list;\n  do {\n    if (local_f0 == (char **)0x0) {\n      if (param_1 != '\\x01') {\n        mount_list = (char **)0x0;\n        while (local_e8 != (char **)0x0) {\n          ppcVar10 = (char **)local_e8[1];\n          ppcVar10[6] = (char *)mount_list;\n          ppcVar1 = (char **)local_e8[2];\n          mount_list = ppcVar10;\n          free(local_e8);\n          local_e8 = ppcVar1;\n        }\n        hash_free(devlist_table);\n        devlist_table = 0;\n      }\n      if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n        __stack_chk_fail();\n      }\n      return;\n    }\n    local_e0 = (char **)0x0;\n    if ((((*(byte *)(local_f0 + 5) & 2) == 0) || (show_local_fs == '\\0')) &&\n       (((*(byte *)(local_f0 + 5) & 1) == 0 ||\n        ((show_all_fs == '\\x01' || (show_listed_fs == '\\x01')))))) {\n      cVar2 = selected_fstype(local_f0[3]);\n      if (cVar2 != '\\x01') goto LAB_001013dd;\n      cVar2 = excluded_fstype(local_f0[3]);\n      if (cVar2 != '\\0') goto LAB_001013dd;\n      iVar4 = stat(local_f0[1],&local_b8);\n      if (iVar4 == -1) goto LAB_001013dd;\n      lVar11 = devlist_for_dev(local_b8.st_dev);\n      if (lVar11 != 0) {\n        sVar5 = strlen(*(char **)(*(long *)(lVar11 + 8) + 8));\n        sVar6 = strlen(local_f0[1]);\n        if ((*(long *)(*(long *)(lVar11 + 8) + 0x10) == 0) || (local_f0[2] == (char *)0x0)) {\nLAB_001014ae:\n          bVar3 = false;\n        }\n        else {\n          sVar7 = strlen(*(char **)(*(long *)(lVar11 + 8) + 0x10));\n          sVar8 = strlen(local_f0[2]);\n          if (sVar8 <= sVar7) goto LAB_001014ae;\n          bVar3 = true;\n        }\n        if (((print_grand_total != '\\x01') && ((*(byte *)(local_f0 + 5) & 2) != 0)) &&\n           ((*(byte *)(*(long *)(lVar11 + 8) + 0x28) & 2) != 0)) {\n          cVar2 = streq(**(undefined8 **)(lVar11 + 8),*local_f0);\n          if (cVar2 != '\\x01') goto LAB_001015fe;\n        }\n        pcVar9 = strchr(*local_f0,0x2f);\n        if (pcVar9 == (char *)0x0) {\nLAB_00101560:\n          if ((sVar5 <= sVar6) || (bVar3)) {\n            cVar2 = streq(**(undefined8 **)(lVar11 + 8),*local_f0);\n            if (cVar2 != '\\x01') {\n              cVar2 = streq(local_f0[1],*(undefined8 *)(*(long *)(lVar11 + 8) + 8));\n              if (cVar2 != '\\0') goto LAB_001015ca;\n            }\n            local_e0 = local_f0;\n            goto LAB_001015fe;\n          }\n        }\n        else {\n          pcVar9 = strchr(**(char ***)(lVar11 + 8),0x2f);\n          if (pcVar9 != (char *)0x0) goto LAB_00101560;\n        }\nLAB_001015ca:\n        local_e0 = *(char ***)(lVar11 + 8);\n        *(char ***)(lVar11 + 8) = local_f0;\n      }\n    }\n    else {\nLAB_001013dd:\n      local_b8.st_dev = (__dev_t)local_f0[4];\n    }\nLAB_001015fe:\n    if (local_e0 == (char **)0x0) {\n      ppcVar10 = (char **)xmalloc(0x20);\n      ppcVar10[1] = (char *)local_f0;\n      *ppcVar10 = (char *)local_b8.st_dev;\n      ppcVar10[2] = (char *)local_e8;\n      lVar11 = hash_insert(devlist_table,ppcVar10);\n      if (lVar11 == 0) {\n        xalloc_die();\n      }\n      *(char ***)(lVar11 + 0x18) = ppcVar10;\n      local_f0 = (char **)local_f0[6];\n      local_e8 = ppcVar10;\n    }\n    else {\n      local_f0 = (char **)local_f0[6];\n      if (param_1 != '\\x01') {\n        free_mount_entry(local_e0);\n      }\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "filter_mount_list",
+                        "hash_initialize",
+                        "xalloc_die",
+                        "free",
+                        "hash_free",
+                        "__stack_chk_fail",
+                        "selected_fstype",
+                        "excluded_fstype",
+                        "stat",
+                        "devlist_for_dev",
+                        "strlen",
+                        "streq",
+                        "strchr",
+                        "xmalloc",
+                        "hash_insert",
+                        "free_mount_entry"
+                    ],
+                    "calling_functions": [
+                        "filter_mount_list",
+                        "get_all_entries"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "me_for_dev",
+                "func_c_signature": "undefined8 me_for_dev(undefined8 param_1)",
+                "decompiled_code": "undefined8 me_for_dev(undefined8 param_1) {\n  long lVar1;\n  undefined8 uVar2;\n  \n  lVar1 = devlist_for_dev(param_1);\n  if (lVar1 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = *(undefined8 *)(lVar1 + 8);\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "me_for_dev",
+                        "devlist_for_dev"
+                    ],
+                    "calling_functions": [
+                        "me_for_dev",
+                        "get_dev"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "known_value",
+                "func_c_signature": "bool known_value(ulong param_1)",
+                "decompiled_code": "bool known_value(ulong param_1) {\n  return param_1 < 0xfffffffffffffffe;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "known_value"
+                    ],
+                    "calling_functions": [
+                        "known_value",
+                        "df_readable",
+                        "get_field_values",
+                        "add_to_grand_total",
+                        "get_dev"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "df_readable",
+                "func_c_signature": "undefined *\ndf_readable(byte param_1,long param_2,long param_3,undefined8 param_4,undefined8 param_5)",
+                "decompiled_code": "undefined *\ndf_readable(byte param_1,long param_2,long param_3,undefined8 param_4,undefined8 param_5) {\n  char cVar1;\n  undefined *puVar2;\n  \n  cVar1 = known_value(param_2);\n  if ((cVar1 == '\\x01') || (param_1 == 1)) {\n    if (param_1 != 0) {\n      param_2 = -param_2;\n    }\n    puVar2 = (undefined *)\n             human_readable(param_2,(ulong)param_1 + param_3,human_output_opts,param_4,param_5);\n    if (param_1 != 0) {\n      puVar2 = puVar2 + -1;\n      *puVar2 = 0x2d;\n    }\n  }\n  else {\n    puVar2 = &DAT_001049c1;\n  }\n  return puVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "df_readable",
+                        "known_value",
+                        "human_readable"
+                    ],
+                    "calling_functions": [
+                        "df_readable",
+                        "get_dev"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_uint_with_neg_flag",
+                "func_c_signature": "void add_uint_with_neg_flag(ulong *param_1,char *param_2,ulong param_3,char param_4)",
+                "decompiled_code": "void add_uint_with_neg_flag(ulong *param_1,char *param_2,ulong param_3,char param_4) {\n  ulong local_20;\n  \n  if (param_4 == *param_2) {\n    *param_1 = *param_1 + param_3;\n  }\n  else {\n    if (*param_2 != '\\0') {\n      *param_1 = -*param_1;\n    }\n    local_20 = param_3;\n    if (param_4 != '\\0') {\n      local_20 = -param_3;\n    }\n    if (local_20 < *param_1) {\n      *param_1 = *param_1 - local_20;\n    }\n    else {\n      *param_1 = local_20 - *param_1;\n      *param_2 = param_4;\n    }\n    if (*param_2 != '\\0') {\n      *param_1 = -*param_1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_uint_with_neg_flag"
+                    ],
+                    "calling_functions": [
+                        "add_uint_with_neg_flag",
+                        "add_to_grand_total"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "has_uuid_suffix",
+                "func_c_signature": "undefined4 has_uuid_suffix(char *param_1)",
+                "decompiled_code": "undefined4 has_uuid_suffix(char *param_1) {\n  size_t sVar1;\n  \n  sVar1 = strlen(param_1);\n  if ((0x24 < sVar1) &&\n     (sVar1 = strspn(param_1 + (sVar1 - 0x24),\"-0123456789abcdefABCDEF\"), sVar1 == 0x24)) {\n    return 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "has_uuid_suffix",
+                        "strlen",
+                        "strspn"
+                    ],
+                    "calling_functions": [
+                        "has_uuid_suffix",
+                        "get_dev"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_field_values",
+                "func_c_signature": "void get_field_values(undefined8 *param_1,undefined8 *param_2,undefined8 *param_3)",
+                "decompiled_code": "void get_field_values(undefined8 *param_1,undefined8 *param_2,undefined8 *param_3) {\n  char cVar1;\n  undefined uVar2;\n  \n  param_2[1] = 1;\n  *param_2 = param_2[1];\n  param_2[2] = param_3[5];\n  param_2[5] = param_3[6];\n  param_2[3] = param_2[5];\n  *(undefined *)(param_2 + 4) = 0;\n  param_2[6] = 0xffffffffffffffff;\n  *(undefined *)(param_2 + 7) = 0;\n  cVar1 = known_value(param_2[2]);\n  if (cVar1 != '\\0') {\n    cVar1 = known_value(param_2[5]);\n    if (cVar1 != '\\0') {\n      param_2[6] = param_2[2] - param_2[5];\n      *(bool *)(param_2 + 7) = (ulong)param_2[2] < (ulong)param_2[5];\n    }\n  }\n  *param_1 = *param_3;\n  param_1[1] = output_block_size;\n  param_1[2] = param_3[1];\n  param_1[3] = param_3[3];\n  param_1[5] = param_3[2];\n  if (*(char *)(param_3 + 4) != '\\0') {\n    cVar1 = known_value(param_3[3]);\n    if (cVar1 != '\\0') {\n      uVar2 = 1;\n      goto LAB_00101b21;\n    }\n  }\n  uVar2 = 0;\nLAB_00101b21:\n  *(undefined *)(param_1 + 4) = uVar2;\n  param_1[6] = 0xffffffffffffffff;\n  *(undefined *)(param_1 + 7) = 0;\n  cVar1 = known_value(param_1[2]);\n  if (cVar1 != '\\0') {\n    cVar1 = known_value(param_1[5]);\n    if (cVar1 != '\\0') {\n      param_1[6] = param_1[2] - param_1[5];\n      *(bool *)(param_1 + 7) = (ulong)param_1[2] < (ulong)param_1[5];\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_field_values",
+                        "known_value"
+                    ],
+                    "calling_functions": [
+                        "get_field_values",
+                        "get_dev"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_to_grand_total",
+                "func_c_signature": "void add_to_grand_total(long *param_1,long param_2)",
+                "decompiled_code": "void add_to_grand_total(long *param_1,long param_2) {\n  char cVar1;\n  \n  cVar1 = known_value(*(undefined8 *)(param_2 + 0x10));\n  if (cVar1 != '\\0') {\n    grand_fsu._40_8_ = *(long *)(param_2 + 0x10) + grand_fsu._40_8_;\n  }\n  cVar1 = known_value(*(undefined8 *)(param_2 + 0x18));\n  if (cVar1 != '\\0') {\n    grand_fsu._48_8_ = *(long *)(param_2 + 0x18) + grand_fsu._48_8_;\n  }\n  cVar1 = known_value(param_1[2]);\n  if (cVar1 != '\\0') {\n    grand_fsu._8_8_ = param_1[2] * *param_1 + grand_fsu._8_8_;\n  }\n  cVar1 = known_value(param_1[5]);\n  if (cVar1 != '\\0') {\n    grand_fsu._16_8_ = param_1[5] * *param_1 + grand_fsu._16_8_;\n  }\n  cVar1 = known_value(param_1[3]);\n  if (cVar1 != '\\0') {\n    add_uint_with_neg_flag(0x104378,0x104380,param_1[3] * *param_1,*(undefined *)(param_1 + 4));\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_to_grand_total",
+                        "known_value",
+                        "add_uint_with_neg_flag"
+                    ],
+                    "calling_functions": [
+                        "add_to_grand_total",
+                        "get_dev"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_dev",
+                "func_c_signature": "void get_dev(undefined *param_1,char *param_2,undefined *param_3,char *param_4,undefined *param_5,\n            char param_6,char param_7,undefined8 *param_8,char param_9)",
+                "decompiled_code": "void get_dev(undefined *param_1,char *param_2,undefined *param_3,char *param_4,undefined *param_5,\n            char param_6,char param_7,undefined8 *param_8,char param_9) {\n  uint uVar1;\n  char cVar2;\n  int iVar3;\n  int iVar4;\n  int *piVar5;\n  undefined8 uVar6;\n  undefined8 *puVar7;\n  void *pvVar8;\n  ulong uVar9;\n  long in_FS_OFFSET;\n  double dVar10;\n  double dVar11;\n  undefined *local_4c0;\n  char *local_4b8;\n  undefined *local_4b0;\n  undefined *local_4a0;\n  void *local_480;\n  long local_478;\n  long local_470;\n  undefined8 *local_468;\n  double local_460;\n  undefined8 local_408;\n  long local_400;\n  undefined8 local_3f8;\n  undefined8 local_3f0;\n  ulong local_3e8;\n  undefined8 local_3e0;\n  undefined8 local_3d8;\n  undefined8 local_3c8 [8];\n  undefined8 local_388 [8];\n  stat local_348;\n  undefined local_2b8 [664];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (((((param_7 != '\\0') && (show_local_fs != '\\0')) ||\n       ((param_6 != '\\0' && ((show_all_fs != '\\x01' && (show_listed_fs != '\\x01')))))) ||\n      (cVar2 = selected_fstype(param_5), cVar2 != '\\x01')) ||\n     ((cVar2 = excluded_fstype(param_5), cVar2 != '\\0' ||\n      ((param_8 == (undefined8 *)0x0 && (*param_2 != '/')))))) goto LAB_00102942;\n  local_4b8 = param_4;\n  if (param_4 == (char *)0x0) {\n    local_4b8 = param_2;\n  }\n  local_4c0 = param_5;\n  if (param_8 == (undefined8 *)0x0) {\n    iVar3 = get_fs_usage(local_4b8,param_1,&local_408);\n    if (iVar3 == 0) {\n      if (((((param_9 != '\\0') && (show_all_fs != '\\0')) &&\n           (iVar3 = stat(local_4b8,&local_348), iVar3 == 0)) &&\n          ((puVar7 = (undefined8 *)me_for_dev(local_348.st_dev), puVar7 != (undefined8 *)0x0 &&\n           (cVar2 = streq(*puVar7,param_1), cVar2 != '\\x01')))) &&\n         (((*(byte *)(puVar7 + 5) & 2) == 0 || (param_7 != '\\x01')))) {\n        local_4c0 = &DAT_001049c1;\n        local_3e8 = local_3e8 & 0xffffffffffffff00;\n        local_3d8 = 0xffffffffffffffff;\n        local_3e0 = 0xffffffffffffffff;\n        local_3f0 = 0xffffffffffffffff;\n        local_3f8 = 0xffffffffffffffff;\n        local_400 = -1;\n        local_408 = 0xffffffffffffffff;\n      }\n    }\n    else {\n      if ((param_9 == '\\0') ||\n         ((piVar5 = __errno_location(), *piVar5 != 0xd &&\n          (piVar5 = __errno_location(), *piVar5 != 2)))) {\n        uVar6 = quotearg_n_style_colon(0,3,local_4b8);\n        piVar5 = __errno_location();\n        error(0,*piVar5,&DAT_001049db,uVar6);\n        exit_status = 1;\n        goto LAB_00102942;\n      }\n      if (show_all_fs != '\\x01') goto LAB_00102942;\n      local_4c0 = &DAT_001049c1;\n      local_3e8 = local_3e8 & 0xffffffffffffff00;\n      local_3d8 = 0xffffffffffffffff;\n      local_3e0 = 0xffffffffffffffff;\n      local_3f0 = 0xffffffffffffffff;\n      local_3f8 = 0xffffffffffffffff;\n      local_400 = -1;\n      local_408 = 0xffffffffffffffff;\n    }\n  }\n  else {\n    local_408 = *param_8;\n    local_400 = param_8[1];\n    local_3f8 = param_8[2];\n    local_3f0 = param_8[3];\n    local_3e8 = param_8[4];\n    local_3e0 = param_8[5];\n    local_3d8 = param_8[6];\n  }\n  if (((local_400 != 0) || (show_all_fs == '\\x01')) || (show_listed_fs == '\\x01')) {\n    if (param_8 == (undefined8 *)0x0) {\n      file_systems_processed = 1;\n    }\n    alloc_table_row();\n    local_4a0 = param_1;\n    if (param_1 == (undefined *)0x0) {\n      local_4a0 = &DAT_001049c1;\n    }\n    local_4b0 = param_3;\n    if (param_3 == (undefined *)0x0) {\n      local_4b0 = &DAT_001049c1;\n    }\n    local_480 = (void *)xstrdup(local_4a0);\n    if (((param_9 != '\\0') && (cVar2 = has_uuid_suffix(local_480), cVar2 != '\\0')) &&\n       (pvVar8 = (void *)canonicalize_filename_mode(local_480,0), pvVar8 != (void *)0x0)) {\n      free(local_480);\n      local_480 = pvVar8;\n    }\n    if (local_4c0 == (undefined *)0x0) {\n      local_4c0 = &DAT_001049c1;\n    }\n    get_field_values(local_3c8,local_388,&local_408);\n    if ((print_grand_total != '\\0') && (param_8 == (undefined8 *)0x0)) {\n      add_to_grand_total(local_3c8,local_388);\n    }\n    for (local_478 = 0; local_478 < ncolumns; local_478 = local_478 + 1) {\n      uVar1 = *(uint *)(*(long *)(columns + local_478 * 8) + 0x10);\n      if (uVar1 == 2) {\n        local_468 = (undefined8 *)0x0;\n      }\n      else {\n        if (2 < uVar1) {\nLAB_00102249:\n                    /* WARNING: Subroutine does not return */\n          __assert_fail(\"!\\\"bad field_type\\\"\",\n                        \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/df.c\"\n                        ,0x46b,\"get_dev\");\n        }\n        if (uVar1 == 0) {\n          local_468 = local_3c8;\n        }\n        else {\n          if (uVar1 != 1) goto LAB_00102249;\n          local_468 = local_388;\n        }\n      }\n      switch(**(undefined4 **)(columns + local_478 * 8)) {\n      case 0:\n        local_470 = xstrdup(local_480);\n        break;\n      case 1:\n        local_470 = xstrdup(local_4c0);\n        break;\n      case 2:\n      case 6:\n        uVar6 = df_readable(0,local_468[2],local_2b8,*local_468,local_468[1]);\n        local_470 = xstrdup(uVar6);\n        break;\n      case 3:\n      case 7:\n        uVar6 = df_readable(*(undefined *)(local_468 + 7),local_468[6],local_2b8,*local_468,\n                            local_468[1]);\n        local_470 = xstrdup(uVar6);\n        break;\n      case 4:\n      case 8:\n        uVar6 = df_readable(*(undefined *)(local_468 + 4),local_468[3],local_2b8,*local_468,\n                            local_468[1]);\n        local_470 = xstrdup(uVar6);\n        break;\n      case 5:\n      case 9:\n        local_460 = DAT_00105440;\n        cVar2 = known_value(local_468[6]);\n        if ((cVar2 == '\\x01') && (cVar2 = known_value(local_468[3]), cVar2 == '\\x01')) {\n          if ((*(char *)(local_468 + 7) == '\\x01') ||\n             (((0x28f5c28f5c28f5c < (ulong)local_468[6] || (local_468[3] + local_468[6] == 0)) ||\n              ((ulong)(local_468[6] + local_468[3]) < (ulong)local_468[6] !=\n               (bool)*(char *)(local_468 + 4))))) {\n            if (*(char *)(local_468 + 7) == '\\0') {\n              uVar9 = local_468[6];\n              if ((long)uVar9 < 0) {\n                dVar10 = (double)(uVar9 >> 1 | (ulong)((uint)uVar9 & 1));\n                dVar10 = dVar10 + dVar10;\n              }\n              else {\n                dVar10 = (double)uVar9;\n              }\n            }\n            else {\n              uVar9 = -local_468[6];\n              if ((long)local_468[6] < 1) {\n                dVar10 = (double)uVar9;\n              }\n              else {\n                dVar10 = (double)(uVar9 >> 1 | (ulong)((uint)uVar9 & 1));\n                dVar10 = dVar10 + dVar10;\n              }\n              dVar10 = (double)((ulong)dVar10 ^ DAT_00105450);\n            }\n            if (*(char *)(local_468 + 4) == '\\0') {\n              uVar9 = local_468[3];\n              if ((long)uVar9 < 0) {\n                dVar11 = (double)(uVar9 >> 1 | (ulong)((uint)uVar9 & 1));\n                dVar11 = dVar11 + dVar11;\n              }\n              else {\n                dVar11 = (double)uVar9;\n              }\n            }\n            else {\n              uVar9 = -local_468[3];\n              if ((long)local_468[3] < 1) {\n                dVar11 = (double)uVar9;\n              }\n              else {\n                dVar11 = (double)(uVar9 >> 1 | (ulong)((uint)uVar9 & 1));\n                dVar11 = dVar11 + dVar11;\n              }\n              dVar11 = (double)((ulong)dVar11 ^ DAT_00105450);\n            }\n            if (dVar10 + dVar11 != 0.0) {\n              local_460 = (DAT_00105460 * dVar10) / (dVar10 + dVar11);\n              dVar10 = (double)(long)local_460;\n              if ((dVar10 - DAT_00105468 < local_460) && (local_460 <= DAT_00105468 + dVar10)) {\n                dVar11 = DAT_00105468;\n                if (local_460 <= dVar10) {\n                  dVar11 = 0.0;\n                }\n                local_460 = dVar11 + dVar10;\n              }\n            }\n          }\n          else {\n            uVar9 = (ulong)((ulong)(local_468[6] * 100) % (ulong)(local_468[3] + local_468[6]) != 0)\n                    + (ulong)(local_468[6] * 100) / (ulong)(local_468[3] + local_468[6]);\n            if ((long)uVar9 < 0) {\n              local_460 = (double)(uVar9 >> 1 | (ulong)((uint)uVar9 & 1));\n              local_460 = local_460 + local_460;\n            }\n            else {\n              local_460 = (double)uVar9;\n            }\n          }\n        }\n        if (0.0 <= local_460) {\n          local_470 = xasprintf(local_460,\"%.0f%%\");\n        }\n        else {\n          local_470 = xstrdup(&DAT_001049c1);\n        }\n        break;\n      case 10:\n        local_470 = xstrdup(param_2);\n        break;\n      case 0xb:\n        local_470 = xstrdup(local_4b0);\n        break;\n      default:\n                    /* WARNING: Subroutine does not return */\n        __assert_fail(\"!\\\"unhandled field\\\"\",\n                      \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/df.c\",\n                      0x4c8,\"get_dev\");\n      }\n      if (local_470 == 0) {\n                    /* WARNING: Subroutine does not return */\n        __assert_fail(\"cell\",\n                      \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/df.c\",\n                      0x4cb,\"get_dev\");\n      }\n      replace_problematic_chars(local_470);\n      iVar4 = gnu_mbswidth(local_470,3);\n      iVar3 = *(int *)(*(long *)(columns + local_478 * 8) + 0x20);\n      if (iVar4 <= iVar3) {\n        iVar4 = iVar3;\n      }\n      *(int *)(*(long *)(columns + local_478 * 8) + 0x20) = iVar4;\n      *(long *)(local_478 * 8 + *(long *)(table + nrows * 8 + -8)) = local_470;\n    }\n    free(local_480);\n  }\nLAB_00102942:\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_dev",
+                        "selected_fstype",
+                        "excluded_fstype",
+                        "get_fs_usage",
+                        "stat",
+                        "me_for_dev",
+                        "streq",
+                        "__errno_location",
+                        "quotearg_n_style_colon",
+                        "error",
+                        "alloc_table_row",
+                        "xstrdup",
+                        "has_uuid_suffix",
+                        "canonicalize_filename_mode",
+                        "free",
+                        "get_field_values",
+                        "add_to_grand_total",
+                        "__assert_fail",
+                        "df_readable",
+                        "known_value",
+                        "xasprintf",
+                        "replace_problematic_chars",
+                        "gnu_mbswidth",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "get_dev",
+                        "get_device",
+                        "get_point",
+                        "get_all_entries",
+                        "main"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "last_device_for_mount",
+                "func_c_signature": "char * last_device_for_mount(undefined8 param_1)",
+                "decompiled_code": "char * last_device_for_mount(undefined8 param_1) {\n  char cVar1;\n  char *__ptr;\n  char **local_28;\n  char **local_20;\n  \n  local_20 = (char **)0x0;\n  for (local_28 = mount_list; local_28 != (char **)0x0; local_28 = (char **)local_28[6]) {\n    cVar1 = streq(local_28[1],param_1);\n    if (cVar1 != '\\0') {\n      local_20 = local_28;\n    }\n  }\n  if (local_20 == (char **)0x0) {\n    __ptr = (char *)0x0;\n  }\n  else {\n    __ptr = canonicalize_file_name(*local_20);\n    if ((__ptr == (char *)0x0) || (*__ptr != '/')) {\n      free(__ptr);\n      __ptr = (char *)xstrdup(*local_20);\n    }\n  }\n  return __ptr;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "last_device_for_mount",
+                        "streq",
+                        "canonicalize_file_name",
+                        "free",
+                        "xstrdup"
+                    ],
+                    "calling_functions": [
+                        "last_device_for_mount",
+                        "get_device"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_device",
+                "func_c_signature": "undefined8 get_device(char *param_1)",
+                "decompiled_code": "undefined8 get_device(char *param_1) {\n  bool bVar1;\n  bool bVar2;\n  char cVar3;\n  int iVar4;\n  char *__ptr;\n  char *__ptr_00;\n  void *__ptr_01;\n  size_t sVar5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  long in_FS_OFFSET;\n  char *local_120;\n  char **local_108;\n  char **local_100;\n  ulong local_f8;\n  char *local_f0;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_100 = (char **)0x0;\n  bVar2 = false;\n  bVar1 = false;\n  __ptr = canonicalize_file_name(param_1);\n  local_120 = param_1;\n  if ((__ptr != (char *)0x0) && (local_120 = param_1, *__ptr == '/')) {\n    local_120 = __ptr;\n  }\n  local_f8 = 0xffffffffffffffff;\n  local_108 = mount_list;\n  do {\n    if (local_108 == (char **)0x0) {\nLAB_00102cbf:\n      free(__ptr);\n      if (local_100 == (char **)0x0) {\n        if (bVar1) {\n          uVar6 = quotearg_style(4,param_1);\n          uVar7 = gettext(\"cannot access %s: over-mounted by another device\");\n          error(0,0,uVar7,uVar6);\n          exit_status = 1;\n          uVar6 = 1;\n        }\n        else {\n          uVar6 = 0;\n        }\n      }\n      else {\n        get_dev(*local_100,local_100[1],param_1,0,local_100[3],(*(byte *)(local_100 + 5) & 1) != 0,\n                (*(byte *)(local_100 + 5) & 2) != 0,0,0);\n        uVar6 = 1;\n      }\n      if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n        __stack_chk_fail();\n      }\n      return uVar6;\n    }\n    local_f0 = *local_108;\n    __ptr_00 = canonicalize_file_name(*local_108);\n    if ((__ptr_00 != (char *)0x0) && (*__ptr_00 == '/')) {\n      local_f0 = __ptr_00;\n    }\n    cVar3 = streq(local_120,local_f0);\n    if (cVar3 != '\\0') {\n      __ptr_01 = (void *)last_device_for_mount(local_108[1]);\n      if ((__ptr_01 == (void *)0x0) || (cVar3 = streq(__ptr_01,local_f0), cVar3 == '\\x01')) {\n        bVar1 = false;\n      }\n      else {\n        bVar1 = true;\n      }\n      sVar5 = strlen(local_108[1]);\n      if ((!bVar1) && ((!bVar2 || (sVar5 < local_f8)))) {\n        iVar4 = stat(local_108[1],&local_b8);\n        if (iVar4 == 0) {\n          bVar2 = true;\n        }\n        else if ((bVar2) || (local_f8 <= sVar5)) goto LAB_00102c81;\n        local_100 = local_108;\n        local_f8 = sVar5;\n        if (sVar5 == 1) {\n          free(__ptr_01);\n          free(__ptr_00);\n          goto LAB_00102cbf;\n        }\n      }\nLAB_00102c81:\n      free(__ptr_01);\n    }\n    free(__ptr_00);\n    local_108 = (char **)local_108[6];\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_device",
+                        "canonicalize_file_name",
+                        "free",
+                        "quotearg_style",
+                        "gettext",
+                        "error",
+                        "get_dev",
+                        "__stack_chk_fail",
+                        "streq",
+                        "last_device_for_mount",
+                        "strlen",
+                        "stat"
+                    ],
+                    "calling_functions": [
+                        "get_device",
+                        "get_entry"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_point",
+                "func_c_signature": "void get_point(char *param_1,__dev_t *param_2)",
+                "decompiled_code": "void get_point(char *param_1,__dev_t *param_2) {\n  char cVar1;\n  int iVar2;\n  char *__s;\n  size_t sVar3;\n  size_t __n;\n  int *piVar4;\n  undefined8 uVar5;\n  void *__ptr;\n  long in_FS_OFFSET;\n  undefined8 *local_f8;\n  undefined8 *local_f0;\n  ulong local_e8;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_f0 = (undefined8 *)0x0;\n  __s = canonicalize_file_name(param_1);\n  if ((__s != (char *)0x0) && (*__s == '/')) {\n    sVar3 = strlen(__s);\n    local_e8 = 0;\n    for (local_f8 = mount_list; local_f8 != (undefined8 *)0x0; local_f8 = (undefined8 *)local_f8[6])\n    {\n      cVar1 = streq(local_f8[3],&DAT_00104a71);\n      if ((cVar1 != '\\x01') &&\n         (((local_f0 == (undefined8 *)0x0 || ((*(byte *)(local_f0 + 5) & 1) != 0)) ||\n          ((*(byte *)(local_f8 + 5) & 1) == 0)))) {\n        __n = strlen((char *)local_f8[1]);\n        if ((local_e8 <= __n) && (__n <= sVar3)) {\n          if (__n == 1) {\nLAB_00102f87:\n            local_f0 = local_f8;\n            local_e8 = __n;\n          }\n          else if ((__n == sVar3) || (__s[__n] == '/')) {\n            iVar2 = strncmp((char *)local_f8[1],__s,__n);\n            if (iVar2 == 0) goto LAB_00102f87;\n          }\n        }\n      }\n    }\n  }\n  free(__s);\n  if (local_f0 != (undefined8 *)0x0) {\n    iVar2 = stat((char *)local_f0[1],&local_b8);\n    if ((iVar2 != 0) || (local_b8.st_dev != *param_2)) {\n      local_f0 = (undefined8 *)0x0;\n    }\n  }\n  if (local_f0 == (undefined8 *)0x0) {\n    for (local_f8 = mount_list; local_f8 != (undefined8 *)0x0; local_f8 = (undefined8 *)local_f8[6])\n    {\n      if (local_f8[4] == -1) {\n        iVar2 = stat((char *)local_f8[1],&local_b8);\n        if (iVar2 == 0) {\n          local_f8[4] = local_b8.st_dev;\n        }\n        else {\n          piVar4 = __errno_location();\n          if (*piVar4 == 5) {\n            uVar5 = quotearg_n_style_colon(0,3,local_f8[1]);\n            piVar4 = __errno_location();\n            error(0,*piVar4,&DAT_001049db,uVar5);\n            exit_status = 1;\n          }\n          local_f8[4] = 0xfffffffffffffffe;\n        }\n      }\n      if (*param_2 == local_f8[4]) {\n        cVar1 = streq(local_f8[3],&DAT_00104a71);\n        if ((cVar1 != '\\x01') &&\n           (((local_f0 == (undefined8 *)0x0 || ((*(byte *)(local_f0 + 5) & 1) != 0)) ||\n            ((*(byte *)(local_f8 + 5) & 1) == 0)))) {\n          iVar2 = stat((char *)local_f8[1],&local_b8);\n          if ((iVar2 == 0) && (local_b8.st_dev == local_f8[4])) {\n            local_f0 = local_f8;\n          }\n          else {\n            local_f8[4] = 0xfffffffffffffffe;\n          }\n        }\n      }\n    }\n  }\n  if (local_f0 == (undefined8 *)0x0) {\n    __ptr = (void *)find_mount_point(param_1,param_2);\n    if (__ptr != (void *)0x0) {\n      get_dev(0,__ptr,param_1,0,0,0,0,0,0);\n      free(__ptr);\n    }\n  }\n  else {\n    get_dev(*local_f0,local_f0[1],param_1,param_1,local_f0[3],(*(byte *)(local_f0 + 5) & 1) != 0,\n            (*(byte *)(local_f0 + 5) & 2) != 0,0,0);\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_point",
+                        "canonicalize_file_name",
+                        "strlen",
+                        "streq",
+                        "strncmp",
+                        "free",
+                        "stat",
+                        "__errno_location",
+                        "quotearg_n_style_colon",
+                        "error",
+                        "find_mount_point",
+                        "get_dev",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "get_point",
+                        "get_entry"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_entry",
+                "func_c_signature": "void get_entry(undefined8 param_1,long param_2)",
+                "decompiled_code": "void get_entry(undefined8 param_1,long param_2) {\n  char cVar1;\n  \n  if ((((*(uint *)(param_2 + 0x18) & 0xf000) == 0x6000) ||\n      ((*(uint *)(param_2 + 0x18) & 0xf000) == 0x2000)) &&\n     (cVar1 = get_device(param_1), cVar1 != '\\0')) {\n    return;\n  }\n  get_point(param_1,param_2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_entry",
+                        "get_device",
+                        "get_point"
+                    ],
+                    "calling_functions": [
+                        "get_entry",
+                        "main"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_all_entries",
+                "func_c_signature": "void get_all_entries(void)",
+                "decompiled_code": "void get_all_entries(void) {\n  undefined8 *local_10;\n  \n  filter_mount_list(show_all_fs);\n  for (local_10 = mount_list; local_10 != (undefined8 *)0x0; local_10 = (undefined8 *)local_10[6]) {\n    get_dev(*local_10,local_10[1],0,0,local_10[3],(*(byte *)(local_10 + 5) & 1) != 0,\n            (*(byte *)(local_10 + 5) & 2) != 0,0,1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_all_entries",
+                        "filter_mount_list",
+                        "get_dev"
+                    ],
+                    "calling_functions": [
+                        "get_all_entries",
+                        "main"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_fs_type",
+                "func_c_signature": "void add_fs_type(undefined8 param_1)",
+                "decompiled_code": "void add_fs_type(undefined8 param_1) {\n  undefined8 *puVar1;\n  \n  puVar1 = (undefined8 *)xmalloc(0x10);\n  *puVar1 = param_1;\n  puVar1[1] = fs_select_list;\n  fs_select_list = puVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_fs_type",
+                        "xmalloc"
+                    ],
+                    "calling_functions": [
+                        "add_fs_type",
+                        "main"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_excluded_fs_type",
+                "func_c_signature": "void add_excluded_fs_type(undefined8 param_1)",
+                "decompiled_code": "void add_excluded_fs_type(undefined8 param_1) {\n  undefined8 *puVar1;\n  \n  puVar1 = (undefined8 *)xmalloc(0x10);\n  *puVar1 = param_1;\n  puVar1[1] = fs_exclude_list;\n  fs_exclude_list = puVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_excluded_fs_type",
+                        "xmalloc"
+                    ],
+                    "calling_functions": [
+                        "add_excluded_fs_type",
+                        "main"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [FILE]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Show information about the file system on which each FILE resides,\\nor all file systems by default.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -a, --all             include pseudo, duplicate, inaccessible file systems\\n  -B, --block-size=SIZE  scale sizes by SIZE before printing them; e.g.,\\n                           \\'-BM\\' prints sizes in units of 1,048,576 bytes;\\n                           see SIZE format below\\n  -h, --human-readable  print sizes in powers of 1024 (e.g., 1023M)\\n  -H, --si              print sizes in powers of 1000 (e.g., 1.1G)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -i, --inodes          list inode information instead of block usage\\n  -k                    like --block-size=1K\\n  -l, --local           limit listing to local file systems\\n      --no-sync         do not invoke sync before getting usage info (default)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --output[=FIELD_LIST]  use the output format defined by FIELD_LIST,\\n                               or print all fields if FIELD_LIST is omitted\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  -P, --portability     use the POSIX output format\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --sync            invoke sync before getting usage info\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --total           elide all entries insignificant to available space,\\n                          and produce a grand total\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -t, --type=TYPE       limit listing to file systems of type TYPE\\n  -T, --print-type      print file system type\\n  -x, --exclude-type=TYPE   limit listing to file systems not of type TYPE\\n  -v                    (ignored)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_blocksize_note(&DAT_001050b1);\n    emit_size_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nFIELD_LIST is a comma-separated list of columns to be included.  Valid\\nfield names are: \\'source\\', \\'fstype\\', \\'itotal\\', \\'iused\\', \\'iavail\\', \\'ipcent\\',\\n\\'size\\', \\'used\\', \\'avail\\', \\'pcent\\', \\'file\\' and \\'target\\' (see info page).\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(&DAT_00105194);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "info",
+                    "v"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "info",
+                        "v",
+                        "emit_blocksize_note",
+                        "emit_size_note",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "decode_output_arg",
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined8 main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined8 main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  char cVar2;\n  undefined4 uVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  int *piVar7;\n  char *pcVar8;\n  long in_FS_OFFSET;\n  undefined4 local_108;\n  int local_104;\n  int local_100;\n  int local_fc;\n  int local_f8;\n  int local_f4;\n  int local_f0;\n  int local_ec;\n  undefined4 local_e8;\n  undefined4 local_e4;\n  undefined4 local_e0;\n  undefined4 local_dc;\n  undefined4 local_d8;\n  undefined4 local_d4;\n  undefined4 local_d0;\n  undefined4 local_cc;\n  undefined4 local_c8;\n  undefined4 local_c4;\n  undefined4 local_c0;\n  undefined4 local_bc;\n  undefined4 local_b8;\n  undefined4 local_b4;\n  undefined4 local_b0;\n  int local_ac;\n  int local_a8;\n  int local_a4;\n  undefined4 local_a0;\n  undefined4 local_9c;\n  long local_98;\n  undefined8 *local_90;\n  undefined8 *local_88;\n  undefined8 local_80;\n  undefined *local_78;\n  undefined8 local_70;\n  undefined8 local_68;\n  undefined8 local_60;\n  undefined8 local_58;\n  undefined8 local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  undefined *local_38;\n  undefined *local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_98 = 0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  fs_select_list = (undefined8 *)0x0;\n  fs_exclude_list = (undefined8 *)0x0;\n  show_all_fs = '\\0';\n  show_listed_fs = 0;\n  human_output_opts = 0xffffffff;\n  print_type = '\\0';\n  file_systems_processed = '\\0';\n  exit_status = 0;\n  print_grand_total = '\\0';\n  grand_fsu._0_8_ = 1;\n  bVar1 = false;\n  local_80 = gettext(\"options %s and %s are mutually exclusive\");\nLAB_001037b8:\n  local_108 = 0xffffffff;\n  local_f8 = getopt_long(param_1,param_2,\"aB:iF:hHklmPTt:vx:\",long_options,&local_108);\n  if (local_f8 == -1) {\n    if (human_output_opts == 0xffffffff) {\n      if (bVar1) {\n        human_output_opts = 0;\n        pcVar8 = getenv(\"POSIXLY_CORRECT\");\n        if (pcVar8 == (char *)0x0) {\n          output_block_size = 0x400;\n        }\n        else {\n          output_block_size = 0x200;\n        }\n      }\n      else {\n        pcVar8 = getenv(\"DF_BLOCK_SIZE\");\n        human_options(pcVar8,&human_output_opts,&output_block_size);\n      }\n    }\n    if ((header_mode != 1) && (header_mode != 4)) {\n      if ((human_output_opts & 0x10) == 0) {\n        if (bVar1) {\n          header_mode = 3;\n        }\n      }\n      else {\n        header_mode = 2;\n      }\n    }\n    bVar1 = false;\n    local_90 = fs_select_list;\n    do {\n      if (local_90 == (undefined8 *)0x0) {\n        if (!bVar1) {\n          if (_optind < param_1) {\n            local_98 = xnmalloc((long)(param_1 - _optind),0x90);\n            for (local_104 = _optind; local_104 < param_1; local_104 = local_104 + 1) {\n              local_f0 = automount_stat_err(param_2[local_104],\n                                            (long)(local_104 - _optind) * 0x90 + local_98);\n              if (local_f0 != 0) {\n                uVar6 = quotearg_n_style_colon(0,3,param_2[local_104]);\n                local_b0 = 0;\n                local_ac = local_f0;\n                local_38 = &DAT_001049db;\n                error(0,local_f0,&DAT_001049db,uVar6);\n                exit_status = 1;\n                param_2[local_104] = 0;\n              }\n            }\n          }\n          if ((((fs_select_list == (undefined8 *)0x0) && (fs_exclude_list == (undefined8 *)0x0)) &&\n              (print_type == '\\0')) && ((field_data[77] == '\\0' && (show_local_fs == '\\0')))) {\n            uVar3 = 0;\n          }\n          else {\n            uVar3 = 1;\n          }\n          mount_list = read_file_system_list(uVar3);\n          if (mount_list == 0) {\n            local_100 = 0;\n            if (((param_1 <= _optind) || (show_all_fs != '\\0')) ||\n               ((show_local_fs != '\\0' ||\n                ((fs_select_list != (undefined8 *)0x0 || (fs_exclude_list != (undefined8 *)0x0))))))\n            {\n              local_100 = 1;\n            }\n            if (local_100 == 0) {\n              local_78 = (undefined *)gettext(\"Warning: \");\n            }\n            else {\n              local_78 = &DAT_001046e4;\n            }\n            local_ec = local_100;\n            uVar6 = gettext(\"cannot read table of mounted file systems\");\n            piVar7 = __errno_location();\n            local_a4 = *piVar7;\n            local_a8 = local_ec;\n            local_30 = &DAT_001052da;\n            error(local_ec,local_a4,&DAT_001052da,local_78,uVar6);\n          }\n          if (require_sync != '\\0') {\n            sync();\n          }\n          get_field_list();\n          get_header();\n          if (local_98 == 0) {\n            get_all_entries();\n          }\n          else {\n            show_listed_fs = 1;\n            for (local_fc = _optind; local_fc < param_1; local_fc = local_fc + 1) {\n              if (param_2[local_fc] != 0) {\n                get_entry(param_2[local_fc],(long)(local_fc - _optind) * 0x90 + local_98);\n              }\n            }\n          }\n          if (file_systems_processed == '\\0') {\n            if (exit_status == 0) {\n              local_28 = gettext(\"no file systems processed\");\n              local_a0 = 1;\n              local_9c = 0;\n              error(1,0,local_28);\n            }\n          }\n          else {\n            if (print_grand_total != '\\0') {\n              if (field_data[37] == '\\0') {\n                pcVar8 = \"total\";\n              }\n              else {\n                pcVar8 = \"-\";\n              }\n              get_dev(\"total\",pcVar8,0,0,0,0,0,grand_fsu,0);\n            }\n            print_table();\n          }\n                    /* WARNING: Subroutine does not return */\n          exit(exit_status);\n        }\n        if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n          __stack_chk_fail();\n        }\n        return 1;\n      }\n      for (local_88 = fs_exclude_list; local_88 != (undefined8 *)0x0;\n          local_88 = (undefined8 *)local_88[1]) {\n        cVar2 = streq(*local_90,*local_88);\n        if (cVar2 != '\\0') {\n          uVar6 = quote(*local_90);\n          local_40 = gettext(\"file system type %s both selected and excluded\");\n          local_b8 = 0;\n          local_b4 = 0;\n          error(0,0,local_40,uVar6);\n          bVar1 = true;\n          break;\n        }\n      }\n      local_90 = (undefined8 *)local_90[1];\n    } while( true );\n  }\n  if (local_f8 < 0x84) {\n    if (local_f8 < 0x42) {\n      if (local_f8 == -0x83) {\nLAB_00103c42:\n        uVar6 = proper_name_lite(\"Paul Eggert\",\"Paul Eggert\");\n        uVar4 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n        uVar5 = proper_name_lite(\"Torbjorn Granlund\",&DAT_0010521a);\n        version_etc(_stdout,&DAT_00105194,\"GNU coreutils\",_Version,uVar5,uVar4,uVar6,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (local_f8 == -0x82) {\n        usage(0);\n        goto LAB_00103c42;\n      }\n      goto switchD_00103884_caseD_43;\n    }\n    goto code_r0x00103864;\n  }\n  goto switchD_00103884_caseD_43;\ncode_r0x00103864:\n  switch(local_f8) {\n  case 0x42:\n    local_f4 = human_options(_optarg,&human_output_opts,&output_block_size);\n    if (local_f4 == 0) break;\n    xstrtol_fatal(local_f4,local_108,(int)(char)local_f8,long_options,_optarg);\n  case 0x69:\n    if (header_mode == 4) {\n      local_e8 = 0;\n      local_e4 = 0;\n      local_70 = local_80;\n      error(0,0,local_80,&DAT_001051f5,\"--output\");\n      usage(1);\n    }\n    header_mode = 1;\n    break;\n  default:\nswitchD_00103884_caseD_43:\n    usage(1);\n    break;\n  case 0x46:\n  case 0x74:\n    add_fs_type(_optarg);\n    break;\n  case 0x48:\n    human_output_opts = 0x90;\n    output_block_size = 1;\n    break;\n  case 0x50:\n    if (header_mode == 4) {\n      local_d8 = 0;\n      local_d4 = 0;\n      local_60 = local_80;\n      error(0,0,local_80,&DAT_001051fb,\"--output\");\n      usage(1);\n    }\n    bVar1 = true;\n    break;\n  case 0x54:\n    if (header_mode == 4) {\n      local_e0 = 0;\n      local_dc = 0;\n      local_68 = local_80;\n      error(0,0,local_80,&DAT_001051f8,\"--output\");\n      usage(1);\n    }\n    print_type = '\\x01';\n    break;\n  case 0x61:\n    show_all_fs = '\\x01';\n    break;\n  case 0x68:\n    human_output_opts = 0xb0;\n    output_block_size = 1;\n    break;\n  case 0x6b:\n    human_output_opts = 0;\n    output_block_size = 0x400;\n    break;\n  case 0x6c:\n    show_local_fs = '\\x01';\n    break;\n  case 0x6d:\n    human_output_opts = 0;\n    output_block_size = 0x100000;\n    break;\n  case 0x76:\n    break;\n  case 0x78:\n    add_excluded_fs_type(_optarg);\n    break;\n  case 0x80:\n    require_sync = '\\0';\n    break;\n  case 0x81:\n    require_sync = '\\x01';\n    break;\n  case 0x82:\n    print_grand_total = '\\x01';\n    break;\n  case 0x83:\n    if (header_mode == 1) {\n      local_d0 = 0;\n      local_cc = 0;\n      local_58 = local_80;\n      error(0,0,local_80,&DAT_001051f5,\"--output\");\n      usage(1);\n    }\n    if ((bVar1) && (header_mode == 0)) {\n      local_c8 = 0;\n      local_c4 = 0;\n      local_50 = local_80;\n      error(0,0,local_80,&DAT_001051fb,\"--output\");\n      usage(1);\n    }\n    if (print_type != '\\0') {\n      local_c0 = 0;\n      local_bc = 0;\n      local_48 = local_80;\n      error(0,0,local_80,&DAT_001051f8,\"--output\");\n      usage(1);\n    }\n    header_mode = 4;\n    if (_optarg != 0) {\n      decode_output_arg(_optarg);\n    }\n  }\n  goto LAB_001037b8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "gettext",
+                        "getopt_long",
+                        "getenv",
+                        "human_options",
+                        "xnmalloc",
+                        "automount_stat_err",
+                        "quotearg_n_style_colon",
+                        "error",
+                        "read_file_system_list",
+                        "__errno_location",
+                        "sync",
+                        "get_field_list",
+                        "get_header",
+                        "get_all_entries",
+                        "get_entry",
+                        "get_dev",
+                        "print_table",
+                        "exit",
+                        "__stack_chk_fail",
+                        "streq",
+                        "quote",
+                        "proper_name_lite",
+                        "version_etc",
+                        "usage",
+                        "xstrtol_fatal",
+                        "add_fs_type",
+                        "add_excluded_fs_type",
+                        "decode_output_arg"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "df_decompiled.c"
+                }
+            }
+        ]
+    }
+}

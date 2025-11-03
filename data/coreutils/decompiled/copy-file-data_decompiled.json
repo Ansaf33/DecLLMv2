@@ -1,0 +1,227 @@
+{
+    "file": "copy-file-data",
+    "decompiled_code": {
+        "copy-file-data.c": [
+            {
+                "func_name": "punch_hole",
+                "func_c_signature": "int punch_hole(int param_1,__off_t param_2,__off_t param_3)",
+                "decompiled_code": "int punch_hole(int param_1,__off_t param_2,__off_t param_3) {\n  char cVar1;\n  int *piVar2;\n  int local_c;\n  \n  local_c = fallocate(param_1,3,param_2,param_3);\n  if (local_c < 0) {\n    piVar2 = __errno_location();\n    cVar1 = is_ENOTSUP(*piVar2);\n    if ((cVar1 == '\\0') && (piVar2 = __errno_location(), *piVar2 != 0x26)) {\n      return local_c;\n    }\n    local_c = 0;\n  }\n  return local_c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "punch_hole",
+                        "fallocate",
+                        "__errno_location",
+                        "is_ENOTSUP"
+                    ],
+                    "calling_functions": [
+                        "punch_hole",
+                        "create_hole",
+                        "copy_file_data"
+                    ],
+                    "defined_in_file": "copy-file-data_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_hole",
+                "func_c_signature": "__off_t create_hole(int param_1,undefined8 param_2,long param_3)",
+                "decompiled_code": "__off_t create_hole(int param_1,undefined8 param_2,long param_3) {\n  int iVar1;\n  __off_t _Var2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  \n  _Var2 = lseek(param_1,param_3,1);\n  if (_Var2 < 0) {\n    uVar3 = quotearg_style(4,param_2);\n    uVar4 = gettext(\"cannot lseek %s\");\n    piVar5 = __errno_location();\n    error(0,*piVar5,uVar4,uVar3);\n    _Var2 = -1;\n  }\n  else {\n    iVar1 = punch_hole(param_1,_Var2 - param_3,param_3);\n    if (iVar1 < 0) {\n      uVar3 = quotearg_style(4,param_2);\n      uVar4 = gettext(\"error deallocating %s\");\n      piVar5 = __errno_location();\n      error(0,*piVar5,uVar4,uVar3);\n      _Var2 = -1;\n    }\n  }\n  return _Var2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_hole",
+                        "lseek",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "punch_hole"
+                    ],
+                    "calling_functions": [
+                        "create_hole",
+                        "sparse_copy",
+                        "lseek_copy"
+                    ],
+                    "defined_in_file": "copy-file-data_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_CLONENOTSUP",
+                "func_c_signature": "undefined4 is_CLONENOTSUP(int param_1)",
+                "decompiled_code": "undefined4 is_CLONENOTSUP(int param_1) {\n  char cVar1;\n  \n  if ((((((param_1 != 0x26) && (param_1 != 0x19)) && (cVar1 = is_ENOTSUP(param_1), cVar1 == '\\0'))\n       && ((param_1 != 0x16 && (param_1 != 9)))) &&\n      ((param_1 != 0x12 && ((param_1 != 0x1a && (param_1 != 1)))))) && (param_1 != 0xd)) {\n    return 0;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_CLONENOTSUP",
+                        "is_ENOTSUP"
+                    ],
+                    "calling_functions": [
+                        "is_CLONENOTSUP",
+                        "sparse_copy"
+                    ],
+                    "defined_in_file": "copy-file-data_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sparse_copy",
+                "func_c_signature": "long sparse_copy(int param_1,undefined4 param_2,void **param_3,size_t param_4,char param_5,\n                undefined8 param_6,undefined8 param_7,size_t param_8,size_t *param_9,\n                undefined4 *param_10)",
+                "decompiled_code": "long sparse_copy(int param_1,undefined4 param_2,void **param_3,size_t param_4,char param_5,\n                undefined8 param_6,undefined8 param_7,size_t param_8,size_t *param_9,\n                undefined4 *param_10) {\n  long lVar1;\n  char cVar2;\n  bool bVar3;\n  int iVar4;\n  undefined8 uVar5;\n  void *pvVar6;\n  int *piVar7;\n  undefined8 uVar8;\n  undefined8 uVar9;\n  size_t sVar10;\n  long lVar11;\n  size_t sVar12;\n  undefined4 uVar13;\n  long in_FS_OFFSET;\n  bool bVar14;\n  char local_bc;\n  size_t local_98;\n  long local_90;\n  long local_88;\n  size_t local_80;\n  size_t local_78;\n  void *local_70;\n  void *local_68;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  local_90 = 0;\n  if (param_10[2] == 0) {\n    if (param_9 == (size_t *)0x0) {\n      uVar13 = 1;\n    }\n    else {\n      uVar13 = 2;\n    }\n    param_10[2] = uVar13;\n  }\n  else if ((param_9 != (size_t *)0x0) && (param_10[2] == 3)) {\n    param_10[2] = 4;\n  }\n  if ((param_9 == (size_t *)0x0) && (param_5 != '\\0')) {\n    for (; 0 < (long)param_8; param_8 = param_8 - local_88) {\n      sVar10 = param_8;\n      if (0x7fffffffbfffffff < (long)param_8) {\n        sVar10 = 0x7fffffffc0000000;\n      }\n      local_88 = rpl_copy_file_range(param_1,0,param_2,0,sVar10,0);\n      if (local_88 == 0) {\n        if (local_90 != 0) {\n          *param_10 = 2;\n          goto LAB_00100af1;\n        }\n        break;\n      }\n      if (local_88 < 0) {\n        *param_10 = 6;\n        if (local_90 == 0) {\n          piVar7 = __errno_location();\n          cVar2 = is_CLONENOTSUP(*piVar7);\n          if (cVar2 != '\\0') break;\n        }\n        if ((local_90 == 0) && (piVar7 = __errno_location(), *piVar7 == 2)) break;\n        piVar7 = __errno_location();\n        if (*piVar7 != 4) {\n          uVar8 = quotearg_n_style(1,4,param_7);\n          uVar9 = quotearg_n_style(0,4,param_6);\n          uVar5 = gettext(\"error copying %s to %s\");\n          piVar7 = __errno_location();\n          error(0,*piVar7,uVar5,uVar9,uVar8);\n          local_90 = -1;\n          goto LAB_00100af1;\n        }\n        local_88 = 0;\n      }\n      *param_10 = 2;\n      local_90 = local_90 + local_88;\n    }\n  }\n  else {\n    *param_10 = 5;\n  }\n  if (param_9 == (size_t *)0x0) {\n    local_98 = 0;\n  }\n  else {\n    local_98 = *param_9;\n  }\n  local_bc = local_98 != 0;\nLAB_00100ab1:\n  do {\n    if ((long)param_8 < 1) {\nLAB_00100abf:\n      if (param_9 != (size_t *)0x0) {\n        if (local_bc == '\\0') {\n          local_98 = 0;\n        }\n        *param_9 = local_98;\n      }\n      goto LAB_00100af1;\n    }\n    if (*param_3 == (void *)0x0) {\n      iVar4 = getpagesize();\n      pvVar6 = (void *)xalignalloc((long)iVar4,param_4);\n      *param_3 = pvVar6;\n    }\n    local_70 = *param_3;\n    sVar10 = param_8;\n    if ((long)param_4 <= (long)param_8) {\n      sVar10 = param_4;\n    }\n    local_80 = read(param_1,local_70,sVar10);\n    if ((long)local_80 < 0) break;\n    if (local_80 == 0) goto LAB_00100abf;\n    param_8 = param_8 - local_80;\n    local_90 = local_90 + local_80;\n    local_78 = param_4;\n    local_68 = local_70;\n    if (param_9 != (size_t *)0x0) {\n      local_78 = 0x200;\n    }\n    for (; cVar2 = local_bc, local_80 != 0; local_80 = local_80 - sVar10) {\n      sVar10 = local_80;\n      if ((long)local_78 <= (long)local_80) {\n        sVar10 = local_78;\n      }\n      if (param_9 != (size_t *)0x0) {\n        local_bc = is_nul(local_70,sVar10);\n      }\n      if ((local_bc == cVar2) || (local_98 == 0)) {\n        bVar14 = false;\n      }\n      else {\n        bVar14 = true;\n      }\n      if ((local_80 == sVar10) && (local_bc != '\\x01')) {\n        bVar3 = true;\n      }\n      else {\n        bVar3 = false;\n      }\n      if ((bVar14) || (bVar3)) {\n        if (bVar14) {\n          if (cVar2 != '\\0') {\n            lVar11 = create_hole(param_2,param_7,local_98);\n            if (lVar11 < 0) {\n              local_90 = 0;\n              goto LAB_00100af1;\n            }\n            local_68 = local_70;\n            local_98 = sVar10;\n          }\n        }\n        else {\n          local_98 = sVar10 + local_98;\n        }\n        if ((cVar2 != '\\x01') || ((bVar14 && (bVar3)))) {\n          sVar12 = full_write(param_2,local_68,local_98);\n          if (sVar12 != local_98) {\n            uVar8 = quotearg_style(4,param_7);\n            uVar9 = gettext(\"error writing %s\");\n            piVar7 = __errno_location();\n            error(0,*piVar7,uVar9,uVar8);\n            local_90 = -1;\n            goto LAB_00100af1;\n          }\n          if ((cVar2 == '\\x01') || (local_98 = sVar10, !bVar14)) {\n            local_98 = 0;\n          }\n        }\n      }\n      else {\n        bVar14 = SCARRY8(sVar10,local_98);\n        local_98 = sVar10 + local_98;\n        if (bVar14) {\n          uVar8 = quotearg_style(4,param_6);\n          uVar9 = gettext(\"overflow reading %s\");\n          error(0,0,uVar9,uVar8);\n          local_90 = -1;\n          goto LAB_00100af1;\n        }\n      }\n      local_70 = (void *)((long)local_70 + sVar10);\n      local_78 = sVar10;\n    }\n  } while( true );\n  piVar7 = __errno_location();\n  if (*piVar7 != 4) {\n    uVar8 = quotearg_style(4,param_6);\n    uVar9 = gettext(\"error reading %s\");\n    piVar7 = __errno_location();\n    error(0,*piVar7,uVar9,uVar8);\n    local_90 = -1;\nLAB_00100af1:\n    if (lVar1 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n      __stack_chk_fail();\n    }\n    return local_90;\n  }\n  goto LAB_00100ab1;\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sparse_copy",
+                        "rpl_copy_file_range",
+                        "__errno_location",
+                        "is_CLONENOTSUP",
+                        "quotearg_n_style",
+                        "gettext",
+                        "error",
+                        "getpagesize",
+                        "xalignalloc",
+                        "read",
+                        "is_nul",
+                        "create_hole",
+                        "full_write",
+                        "quotearg_style",
+                        "SCARRY8",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "sparse_copy",
+                        "lseek_copy",
+                        "copy_file_data"
+                    ],
+                    "defined_in_file": "copy-file-data_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write_zeros",
+                "func_c_signature": "undefined8 write_zeros(undefined4 param_1,size_t param_2,void **param_3,size_t param_4)",
+                "decompiled_code": "undefined8 write_zeros(undefined4 param_1,size_t param_2,void **param_3,size_t param_4) {\n  int iVar1;\n  size_t __n;\n  void *pvVar2;\n  size_t sVar3;\n  size_t local_28;\n  void *local_18;\n  \n  local_18 = (void *)0x0;\n  local_28 = param_2;\n  while( true ) {\n    if (local_28 == 0) {\n      return 1;\n    }\n    __n = param_4;\n    if ((long)local_28 <= (long)param_4) {\n      __n = local_28;\n    }\n    if (local_18 == (void *)0x0) {\n      if (*param_3 == (void *)0x0) {\n        iVar1 = getpagesize();\n        pvVar2 = (void *)xalignalloc((long)iVar1,param_4);\n        *param_3 = pvVar2;\n      }\n      local_18 = memset(*param_3,0,__n);\n    }\n    sVar3 = full_write(param_1,local_18,__n);\n    if (__n != sVar3) break;\n    local_28 = local_28 - __n;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_zeros",
+                        "getpagesize",
+                        "xalignalloc",
+                        "memset",
+                        "full_write"
+                    ],
+                    "calling_functions": [
+                        "write_zeros",
+                        "lseek_copy",
+                        "copy_file_data"
+                    ],
+                    "defined_in_file": "copy-file-data_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lseek_copy",
+                "func_c_signature": "long lseek_copy(int param_1,undefined4 param_2,undefined8 param_3,undefined8 param_4,long param_5,\n               long param_6,long *param_7,long param_8,int param_9,undefined param_10,\n               undefined8 param_11,undefined8 param_12,long *param_13,long param_14)",
+                "decompiled_code": "long lseek_copy(int param_1,undefined4 param_2,undefined8 param_3,undefined8 param_4,long param_5,\n               long param_6,long *param_7,long param_8,int param_9,undefined param_10,\n               undefined8 param_11,undefined8 param_12,long *param_13,long param_14) {\n  long lVar1;\n  char cVar2;\n  long lVar3;\n  __off_t _Var4;\n  long lVar5;\n  int *piVar6;\n  long lVar7;\n  undefined8 uVar8;\n  undefined8 uVar9;\n  long *plVar10;\n  long in_FS_OFFSET;\n  long local_78;\n  long local_70;\n  long local_68;\n  long local_60;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  local_70 = 0;\n  lVar3 = param_6 + param_5;\n  if (SCARRY8(param_6,param_5)) {\n    lVar3 = 0x7fffffffffffffff;\n  }\n  lVar7 = lVar3;\n  if (param_8 <= lVar3) {\n    lVar7 = param_8;\n  }\n  *(undefined4 *)(param_14 + 8) = 3;\n  local_68 = *param_7;\n  param_8 = lVar7;\n  local_78 = param_5;\n  do {\n    lVar7 = param_8;\n    if ((local_68 < 0) || (lVar3 <= local_68)) {\nLAB_00100ff2:\n      param_8 = lVar7;\n      *param_13 = *param_13 + (param_8 - (local_70 + local_78));\n      lVar7 = param_8 - param_5;\n      goto LAB_00101092;\n    }\n    if (local_68 == 0) {\n      lVar7 = param_7[1];\n    }\n    else {\n      lVar7 = lseek(param_1,local_68,4);\n    }\n    if (lVar7 < 0) {\n      piVar6 = __errno_location();\n      if (*piVar6 != 6) break;\n      local_60 = param_8;\n      if (param_8 <= local_68) {\n        _Var4 = lseek(param_1,0,2);\n        if (_Var4 < 0) break;\n        param_8 = lVar3;\n        if (_Var4 <= lVar3) {\n          param_8 = _Var4;\n        }\n        lVar7 = param_8;\n        local_60 = param_8;\n        if (param_8 <= local_68) goto LAB_00100ff2;\n      }\n    }\n    else {\n      local_60 = lVar3;\n      if (lVar7 <= lVar3) {\n        local_60 = lVar7;\n      }\n    }\n    if (param_8 < local_60) {\n      param_8 = local_60;\n    }\n    _Var4 = lseek(param_1,local_68,0);\n    if (_Var4 < 0) break;\n    local_70 = (local_68 - local_78) - local_70;\n    if (local_70 != 0) {\n      if (param_9 == 3) {\n        *param_13 = *param_13 + local_70;\n      }\n      else if (param_9 == 1) {\n        cVar2 = write_zeros(param_2,local_70,param_3,param_4);\n        if (cVar2 != '\\x01') {\n          uVar8 = quotearg_n_style_colon(0,3,param_12);\n          uVar9 = gettext(\"%s: write failed\");\n          piVar6 = __errno_location();\n          error(0,*piVar6,uVar9,uVar8);\n          lVar7 = -1;\n          goto LAB_00101092;\n        }\n      }\n      else {\n        lVar7 = create_hole(param_2,param_12,local_70);\n        if (lVar7 < 0) goto LAB_00101092;\n      }\n    }\n    local_70 = local_60 - local_68;\n    local_78 = local_68;\n    plVar10 = param_13;\n    if (param_9 != 3) {\n      plVar10 = (long *)0x0;\n    }\n    lVar5 = sparse_copy(param_1,param_2,param_3,param_4,param_10,param_11,param_12,local_70,plVar10,\n                        param_14);\n    if (lVar5 < 0) {\n      lVar7 = -1;\n      goto LAB_00101092;\n    }\n    lVar7 = lVar5 + local_68;\n    if (lVar5 < local_70) goto LAB_00100ff2;\n    local_68 = lseek(param_1,lVar5 + local_68,3);\n  } while ((-1 < local_68) || (piVar6 = __errno_location(), *piVar6 == 6));\n  uVar8 = quotearg_style(4,param_11);\n  uVar9 = gettext(\"cannot lseek %s\");\n  piVar6 = __errno_location();\n  error(0,*piVar6,uVar9,uVar8);\n  lVar7 = -1;\nLAB_00101092:\n  if (lVar1 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return lVar7;\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lseek_copy",
+                        "SCARRY8",
+                        "lseek",
+                        "__errno_location",
+                        "write_zeros",
+                        "quotearg_n_style_colon",
+                        "gettext",
+                        "error",
+                        "create_hole",
+                        "sparse_copy",
+                        "quotearg_style",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "lseek_copy",
+                        "copy_file_data"
+                    ],
+                    "defined_in_file": "copy-file-data_decompiled.c"
+                }
+            },
+            {
+                "func_name": "infer_scantype",
+                "func_c_signature": "undefined8 infer_scantype(int param_1,long param_2,long param_3,long *param_4)",
+                "decompiled_code": "undefined8 infer_scantype(int param_1,long param_2,long param_3,long *param_4) {\n  char cVar1;\n  long lVar2;\n  __off_t _Var3;\n  int *piVar4;\n  \n  if ((*(uint *)(param_2 + 0x18) & 0xf000) == 0x8000) {\n    lVar2 = *(long *)(param_2 + 0x30);\n    if (lVar2 < 0) {\n      lVar2 = lVar2 + 0x1ff;\n    }\n    if (*(long *)(param_2 + 0x40) < lVar2 >> 9) {\n      _Var3 = lseek(param_1,param_3,3);\n      *param_4 = _Var3;\n      if (param_3 == *param_4) {\n        _Var3 = lseek(param_1,param_3,4);\n        param_4[1] = _Var3;\n        if (-1 < param_4[1]) {\n          if (param_4[1] < *(long *)(param_2 + 0x30)) {\n            return 3;\n          }\n          _Var3 = lseek(param_1,param_3,0);\n          if (_Var3 < 0) {\n            return 0;\n          }\n          return 1;\n        }\n      }\n      else {\n        if ((param_3 < *param_4) || (piVar4 = __errno_location(), *piVar4 == 6)) {\n          param_4[1] = 0;\n          return 3;\n        }\n        piVar4 = __errno_location();\n        if (*piVar4 != 0x16) {\n          piVar4 = __errno_location();\n          cVar1 = is_ENOTSUP(*piVar4);\n          if (cVar1 != '\\x01') {\n            return 0;\n          }\n        }\n      }\n      return 2;\n    }\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "infer_scantype",
+                        "lseek",
+                        "__errno_location",
+                        "is_ENOTSUP"
+                    ],
+                    "calling_functions": [
+                        "infer_scantype",
+                        "copy_file_data"
+                    ],
+                    "defined_in_file": "copy-file-data_decompiled.c"
+                }
+            },
+            {
+                "func_name": "copy_file_data",
+                "func_c_signature": "long copy_file_data(undefined4 param_1,long param_2,long param_3,undefined8 param_4,int param_5,\n                   long param_6,long param_7,undefined8 param_8,long param_9,long param_10,\n                   undefined8 param_11)",
+                "decompiled_code": "long copy_file_data(undefined4 param_1,long param_2,long param_3,undefined8 param_4,int param_5,\n                   long param_6,long param_7,undefined8 param_8,long param_9,long param_10,\n                   undefined8 param_11) {\n  bool bVar1;\n  byte bVar2;\n  int iVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  long lVar7;\n  undefined4 uVar8;\n  long *plVar9;\n  long in_FS_OFFSET;\n  long local_88;\n  undefined8 local_80;\n  long local_78;\n  long local_70;\n  long local_68;\n  undefined8 local_60;\n  long local_58;\n  undefined8 local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  undefined local_38 [24];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_88 = io_blksize(param_6);\n  iVar3 = infer_scantype(param_1,param_2,param_3,local_38);\n  if (iVar3 == 0) {\n    uVar4 = quotearg_style(4,param_4);\n    uVar5 = gettext(\"cannot lseek %s\");\n    piVar6 = __errno_location();\n    local_50 = uVar5;\n    error(0,*piVar6,uVar5,uVar4);\n    lVar7 = -1;\n  }\n  else {\n    if (((*(uint *)(param_6 + 0x18) & 0xf000) == 0x8000) &&\n       ((*(int *)(param_10 + 0xc) == 3 || ((*(int *)(param_10 + 0xc) == 2 && (iVar3 != 1)))))) {\n      bVar1 = true;\n    }\n    else {\n      bVar1 = false;\n    }\n    if (((param_3 == 0) && (param_9 == 0x7fffffffffffffff)) &&\n       ((*(int *)(param_10 + 0x4c) != 1 || (*(int *)(param_10 + 0xc) != 2)))) {\n      fdadvise(param_1,0,0,2);\n    }\n    if (!bVar1) {\n      local_60 = 0x7ffffffffffffffe;\n      uVar4 = io_blksize(param_2);\n      local_58 = buffer_lcm(uVar4,local_88,0x7ffffffffffffffe);\n      if ((((*(uint *)(param_2 + 0x18) & 0xf000) == 0x8000) && (-1 < *(long *)(param_2 + 0x30))) &&\n         (*(long *)(param_2 + 0x30) < local_88)) {\n        local_88 = *(long *)(param_2 + 0x30) + 1;\n      }\n      lVar7 = local_58 + -1 + local_88;\n      if (SCARRY8(local_58 + -1,local_88)) {\n        lVar7 = 0x7fffffffffffffff;\n      }\n      local_88 = lVar7 - lVar7 % local_58;\n    }\n    local_80 = 0;\n    local_78 = 0;\n    if (iVar3 == 3) {\n      if (bVar1) {\n        uVar8 = *(undefined4 *)(param_10 + 0xc);\n      }\n      else {\n        uVar8 = 1;\n      }\n      local_68 = lseek_copy(param_1,param_5,&local_80,local_88,param_3,param_9,local_38,\n                            *(undefined8 *)(param_2 + 0x30),uVar8,*(int *)(param_10 + 0x4c) != 0,\n                            param_4,param_8,&local_78,param_11);\n    }\n    else {\n      if (bVar1) {\n        plVar9 = &local_78;\n      }\n      else {\n        plVar9 = (long *)0x0;\n      }\n      local_68 = sparse_copy(param_1,param_5,&local_80,local_88,*(int *)(param_10 + 0x4c) != 0,\n                             param_4,param_8,param_9,plVar9,param_11);\n    }\n    if ((-1 < local_68) && (0 < local_78)) {\n      local_70 = local_68 + param_7;\n      if (SCARRY8(local_68,param_7)) {\n        piVar6 = __errno_location();\n        *piVar6 = 0x4b;\n        bVar2 = 1;\n      }\n      else if (bVar1) {\n        iVar3 = ftruncate(param_5,local_70);\n        bVar2 = (byte)((uint)iVar3 >> 0x1f);\n      }\n      else {\n        bVar2 = write_zeros(param_5,local_78,&local_80,local_88);\n        bVar2 = bVar2 ^ 1;\n      }\n      if (bVar2 == 0) {\n        if ((bVar1) && (iVar3 = punch_hole(param_5,local_70 - local_78,local_78), iVar3 < 0)) {\n          uVar4 = quotearg_style(4,param_8);\n          uVar5 = gettext(\"error deallocating %s\");\n          piVar6 = __errno_location();\n          local_40 = uVar5;\n          error(0,*piVar6,uVar5,uVar4);\n          local_68 = -1;\n        }\n      }\n      else {\n        uVar4 = quotearg_style(4,param_8);\n        uVar5 = gettext(\"failed to extend %s\");\n        piVar6 = __errno_location();\n        local_48 = uVar5;\n        error(0,*piVar6,uVar5,uVar4);\n        local_68 = -1;\n      }\n    }\n    alignfree(local_80);\n    lVar7 = local_68;\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return lVar7;\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copy_file_data",
+                        "io_blksize",
+                        "infer_scantype",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "fdadvise",
+                        "buffer_lcm",
+                        "SCARRY8",
+                        "lseek_copy",
+                        "sparse_copy",
+                        "ftruncate",
+                        "write_zeros",
+                        "punch_hole",
+                        "alignfree",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "copy_file_data"
+                    ],
+                    "defined_in_file": "copy-file-data_decompiled.c"
+                }
+            }
+        ]
+    }
+}

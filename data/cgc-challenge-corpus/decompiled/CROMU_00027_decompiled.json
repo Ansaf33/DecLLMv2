@@ -1,0 +1,563 @@
+{
+    "file": "CROMU_00027",
+    "decompiled_code": {
+        "command.c": [
+            {
+                "func_name": "DecodeData",
+                "func_c_signature": "undefined4 DecodeData(byte *param_1,int param_2,byte *param_3)",
+                "decompiled_code": "undefined4 DecodeData(byte *param_1,int param_2,byte *param_3) {\n  int local_10;\n  \n  *param_1 = *param_3 >> 1;\n  param_1 = param_1 + 1;\n  for (local_10 = 1; local_10 <= param_2; local_10 = local_10 + 1) {\n    *param_1 = ((byte)((int)(uint)param_3[1] >> ((char)(local_10 % 8) + 1U & 0x1f)) |\n               (byte)((int)(char)*param_3 << (7U - (char)(local_10 % 8) & 0x1f))) & 0x7f;\n    if (local_10 % 8 != 7) {\n      param_3 = param_3 + 1;\n    }\n    param_1 = param_1 + 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DecodeData"
+                    ],
+                    "calling_functions": [
+                        "DecodeData",
+                        "ReceiveCommand"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DestroyCommand",
+                "func_c_signature": "void DestroyCommand(undefined4 *param_1)",
+                "decompiled_code": "void DestroyCommand(undefined4 *param_1) {\n  if (param_1[0x12] != 0) {\n    free((void *)param_1[0x12]);\n    param_1[0x12] = 0;\n  }\n  *param_1 = 0;\n  memset(param_1 + 1,0,0x40);\n  param_1[0x11] = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DestroyCommand",
+                        "free",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "DestroyCommand",
+                        "ReceiveCommand",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReceiveCommand",
+                "func_c_signature": "undefined4 ReceiveCommand(undefined4 *param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 ReceiveCommand(undefined4 *param_1,undefined4 *param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  size_t sVar3;\n  void *pvVar4;\n  uint local_60;\n  char local_5c;\n  char acStack_5b [63];\n  undefined4 local_1c;\n  void *local_18;\n  int local_14;\n  uint local_10;\n  \n  if (param_1[0x12] != 0) {\n    DestroyCommand(param_1);\n  }\n  local_10 = receive_fixed(&local_5c,7);\n  if (local_10 == 7) {\n    iVar2 = strncmp(&local_5c,\"ACS+0.1\",7);\n    if (iVar2 == 0) {\n      *param_2 = 1;\n    }\n    else {\n      iVar2 = strncmp(&local_5c,\"ACS-0.1\",7);\n      if (iVar2 != 0) {\n        return 0xfffffffe;\n      }\n      *param_2 = 0;\n    }\n    local_10 = receive_until(&local_5c,0x3a,0x40);\n    if (local_10 == 0) {\n      uVar1 = 0xffffffff;\n    }\n    else if (local_5c == '[') {\n      sVar3 = strlen(\"REQUEST\");\n      iVar2 = strncmp(acStack_5b,\"REQUEST\",sVar3);\n      if (iVar2 == 0) {\n        *param_1 = 1;\n      }\n      else {\n        sVar3 = strlen(\"QUERY\");\n        iVar2 = strncmp(acStack_5b,\"QUERY\",sVar3);\n        if (iVar2 == 0) {\n          *param_1 = 2;\n        }\n        else {\n          sVar3 = strlen(\"SEND\");\n          iVar2 = strncmp(acStack_5b,\"SEND\",sVar3);\n          if (iVar2 == 0) {\n            *param_1 = 3;\n          }\n          else {\n            sVar3 = strlen(\"REMOVE\");\n            iVar2 = strncmp(acStack_5b,\"REMOVE\",sVar3);\n            if (iVar2 == 0) {\n              *param_1 = 4;\n            }\n            else {\n              sVar3 = strlen(\"VISUALIZE\");\n              iVar2 = strncmp(acStack_5b,\"VISUALIZE\",sVar3);\n              if (iVar2 == 0) {\n                *param_1 = 5;\n              }\n              else {\n                sVar3 = strlen(\"INTERACT\");\n                iVar2 = strncmp(acStack_5b,\"INTERACT\",sVar3);\n                if (iVar2 != 0) {\n                  return 0xfffffffe;\n                }\n                *param_1 = 6;\n              }\n            }\n          }\n        }\n      }\n      local_10 = receive_until(&local_5c,0x3a,0x40);\n      if (local_10 < 0x41) {\n        if (local_10 != 0) {\n          strncpy((char *)(param_1 + 1),&local_5c,local_10);\n        }\n        local_10 = receive_until(&local_5c,0x3a,0x40);\n        if (local_10 < 7) {\n          if (local_10 != 0) {\n            iVar2 = atoi(&local_5c);\n            param_1[0x11] = iVar2;\n          }\n          if ((int)param_1[0x11] < 1) {\n            if (param_1[0x11] == -1) {\n              local_10 = receive_fixed(&local_60,4);\n              if (local_10 != 4) {\n                return 0xffffffff;\n              }\n              local_14 = (int)(local_60 * 8) / 7;\n              pvVar4 = calloc(local_14 + 1,1);\n              param_1[0x12] = pvVar4;\n              VerifyPointerOrTerminate(param_1[0x12],\"command->data during parsing\");\n              local_18 = calloc(local_60 + 1,1);\n              VerifyPointerOrTerminate(local_18,\"encoded_data during parsing\");\n              local_10 = receive_fixed(local_18,local_60);\n              if (local_10 != local_60) {\n                free(local_18);\n                return 0xffffffff;\n              }\n              iVar2 = DecodeData(param_1[0x12],local_14,local_18,local_60);\n              if (iVar2 != 0) {\n                free(local_18);\n                return 0xffffffff;\n              }\n              if (*(char *)(param_1[0x12] + local_14 + -1) == '\\0') {\n                param_1[0x11] = local_14 + -1;\n              }\n              else {\n                param_1[0x11] = local_14;\n              }\n              free(local_18);\n            }\n          }\n          else {\n            pvVar4 = calloc(param_1[0x11] + 1,1);\n            param_1[0x12] = pvVar4;\n            VerifyPointerOrTerminate(param_1[0x12],\"command->data during parsing\");\n            local_1c = param_1[0x12];\n            local_10 = receive_fixed(param_1[0x12],param_1[0x11]);\n            if (param_1[0x11] != local_10) {\n              return 0xffffffff;\n            }\n          }\n          iVar2 = receive_fixed(&local_5c,1);\n          if (iVar2 == 1) {\n            if (local_5c == ']') {\n              uVar1 = 0;\n            }\n            else {\n              uVar1 = 0xfffffffe;\n            }\n          }\n          else {\n            uVar1 = 0xffffffff;\n          }\n        }\n        else {\n          uVar1 = 0xffffffff;\n        }\n      }\n      else {\n        uVar1 = 0xffffffff;\n      }\n    }\n    else {\n      uVar1 = 0xfffffffe;\n    }\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReceiveCommand",
+                        "DestroyCommand",
+                        "receive_fixed",
+                        "strncmp",
+                        "receive_until",
+                        "strlen",
+                        "strncpy",
+                        "atoi",
+                        "calloc",
+                        "VerifyPointerOrTerminate",
+                        "free",
+                        "DecodeData"
+                    ],
+                    "calling_functions": [
+                        "ReceiveCommand",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandleCommand",
+                "func_c_signature": "void HandleCommand(undefined4 *param_1)",
+                "decompiled_code": "void HandleCommand(undefined4 *param_1) {\n  void *__dest;\n  int iVar1;\n  \n  switch(*param_1) {\n  default:\n    printf(\"Unsupported Command\\n\");\n    printf(\"Command type: @x\\n\",*param_1);\n    printf(\"File name: @s\\n\",param_1 + 1);\n    printf(\"Data length: @d\\n\",param_1[0x11]);\n    if (param_1[0x12] != 0) {\n      printf(\"Data: @s\\n\",param_1[0x12]);\n    }\n    break;\n  case 1:\n    iVar1 = LookupNode(param_1 + 1);\n    if (iVar1 == 0) {\n      printf(\"Page not found: @s\\n\",param_1 + 1);\n    }\n    else {\n      ServePage(*(undefined4 *)(iVar1 + 0x4c),*(undefined4 *)(iVar1 + 0x48));\n    }\n    break;\n  case 2:\n    PrintTree(param_1 + 1);\n    break;\n  case 3:\n    __dest = calloc(0x50,1);\n    VerifyPointerOrTerminate(param_1[0x12],\"new_node during SEND\");\n    memcpy(__dest,param_1 + 1,0x40);\n    *(undefined4 *)((int)__dest + 0x4c) = param_1[0x12];\n    *(undefined4 *)((int)__dest + 0x48) = param_1[0x11];\n    iVar1 = InsertNodeInTree(__dest);\n    if (iVar1 == 0) {\n      param_1[0x12] = 0;\n      param_1[0x11] = 0;\n      printf(\"SUCCESS: Page uploaded to server\\n\");\n    }\n    else {\n      free(__dest);\n      printf(\"ERROR: Unable to upload page\\n\");\n    }\n    break;\n  case 4:\n    iVar1 = DeleteNode(param_1 + 1);\n    if (iVar1 == 0) {\n      printf(\"SUCCESS: Page deleted\\n\");\n    }\n    else {\n      printf(\"ERROR: Unable to delete page\\n\");\n    }\n    break;\n  case 5:\n    ServePage(param_1[0x12],param_1[0x11]);\n    break;\n  case 6:\n    iVar1 = LookupNode(param_1 + 1);\n    if (iVar1 == 0) {\n      printf(\"Page not found: @s\\n\",param_1 + 1);\n    }\n    else {\n      InteractWithPage(*(undefined4 *)(iVar1 + 0x4c),*(undefined4 *)(iVar1 + 0x48),param_1[0x12]);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandleCommand",
+                        "printf",
+                        "LookupNode",
+                        "ServePage",
+                        "PrintTree",
+                        "calloc",
+                        "VerifyPointerOrTerminate",
+                        "memcpy",
+                        "InsertNodeInTree",
+                        "free",
+                        "DeleteNode",
+                        "InteractWithPage"
+                    ],
+                    "calling_functions": [
+                        "HandleCommand",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            }
+        ],
+        "error.c": [
+            {
+                "func_name": "PrintErrorAndTerminate",
+                "func_c_signature": "void PrintErrorAndTerminate(int param_1)",
+                "decompiled_code": "void PrintErrorAndTerminate(int param_1) {\n  undefined4 uStack_14;\n  \n  printf(\"ERROR: @s\\n\");\n  _terminate(1);\n  if (param_1 == 0) {\n    printf(\"ERROR: Allocation failed: @s\\n\",uStack_14);\n    _terminate(1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintErrorAndTerminate",
+                        "printf",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "PrintErrorAndTerminate",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "VerifyPointerOrTerminate",
+                "func_c_signature": "void VerifyPointerOrTerminate(int param_1,undefined4 param_2)",
+                "decompiled_code": "void VerifyPointerOrTerminate(int param_1,undefined4 param_2) {\n  if (param_1 == 0) {\n    printf(\"ERROR: Allocation failed: @s\\n\",param_2);\n    _terminate(1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "VerifyPointerOrTerminate",
+                        "printf",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "ReceiveCommand",
+                        "HandleCommand",
+                        "VerifyPointerOrTerminate",
+                        "AddPageVar",
+                        "InteractWithPage",
+                        "ServePageWithOverride",
+                        "InitializeTree",
+                        "InsertNodeInTree"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            }
+        ],
+        "page.c": [
+            {
+                "func_name": "AddPageVar",
+                "func_c_signature": "undefined4 AddPageVar(int param_1,char *param_2)",
+                "decompiled_code": "undefined4 AddPageVar(int param_1,char *param_2) {\n  char *pcVar1;\n  char *pcVar2;\n  char *__src;\n  char *pcVar3;\n  undefined4 uVar4;\n  void *pvVar5;\n  void *local_10;\n  \n  pcVar1 = strchr(param_2,0x3a);\n  pcVar1 = pcVar1 + 1;\n  pcVar2 = strchr(pcVar1,0x3a);\n  __src = pcVar2 + 1;\n  pcVar3 = strchr(param_2,0x5d);\n  if ((uint)((int)__src - (int)pcVar1) < 0x41) {\n    local_10 = (void *)GetPageVar(param_1,pcVar1,pcVar2);\n    if (local_10 == (void *)0x0) {\n      for (local_10 = (void *)param_1; *(int *)((int)local_10 + 0x44) != 0;\n          local_10 = *(void **)((int)local_10 + 0x44)) {\n      }\n      pvVar5 = calloc(0x48,1);\n      *(void **)((int)local_10 + 0x44) = pvVar5;\n      VerifyPointerOrTerminate(*(undefined4 *)((int)local_10 + 0x44),\"New PageVar\");\n      local_10 = *(void **)((int)local_10 + 0x44);\n    }\n    else if (*(int *)((int)local_10 + 0x40) != 0) {\n      free(*(void **)((int)local_10 + 0x40));\n    }\n    memcpy(local_10,pcVar1,(int)pcVar2 - (int)pcVar1);\n    pvVar5 = calloc((size_t)(pcVar3 + (1 - (int)__src)),1);\n    *(void **)((int)local_10 + 0x40) = pvVar5;\n    VerifyPointerOrTerminate(*(undefined4 *)((int)local_10 + 0x40),\"PageVar->value\");\n    memcpy(*(void **)((int)local_10 + 0x40),__src,(int)pcVar3 - (int)__src);\n    uVar4 = 1;\n  }\n  else {\n    uVar4 = 0xffffffff;\n  }\n  return uVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AddPageVar",
+                        "strchr",
+                        "GetPageVar",
+                        "calloc",
+                        "VerifyPointerOrTerminate",
+                        "free",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "AddPageVar",
+                        "InteractWithPage",
+                        "ServePageWithOverride"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GetPageVar",
+                "func_c_signature": "char * GetPageVar(char *param_1,char *param_2,int param_3)",
+                "decompiled_code": "char * GetPageVar(char *param_1,char *param_2,int param_3) {\n  int iVar1;\n  \n  while( true ) {\n    if (param_1 == (char *)0x0) {\n      return (char *)0x0;\n    }\n    iVar1 = strncmp(param_1,param_2,param_3 - (int)param_2);\n    if (iVar1 == 0) break;\n    param_1 = *(char **)(param_1 + 0x44);\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GetPageVar",
+                        "strncmp"
+                    ],
+                    "calling_functions": [
+                        "AddPageVar",
+                        "GetPageVar",
+                        "ServePageWithOverride"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DestroyVarList",
+                "func_c_signature": "void DestroyVarList(void *param_1)",
+                "decompiled_code": "void DestroyVarList(void *param_1) {\n  if (param_1 != (void *)0x0) {\n    if (*(int *)((int)param_1 + 0x44) != 0) {\n      DestroyVarList(*(undefined4 *)((int)param_1 + 0x44));\n      *(undefined4 *)((int)param_1 + 0x44) = 0;\n    }\n    if (*(int *)((int)param_1 + 0x40) != 0) {\n      free(*(void **)((int)param_1 + 0x40));\n      *(undefined4 *)((int)param_1 + 0x40) = 0;\n    }\n    free(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DestroyVarList",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "DestroyVarList",
+                        "ServePageWithOverride"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InteractWithPage",
+                "func_c_signature": "void InteractWithPage(undefined4 param_1,undefined4 param_2,char *param_3)",
+                "decompiled_code": "void InteractWithPage(undefined4 param_1,undefined4 param_2,char *param_3) {\n  void *pvVar1;\n  \n  pvVar1 = calloc(0x48,1);\n  VerifyPointerOrTerminate(pvVar1,\"Override_list initialization\");\n  for (; ((*param_3 != '\\0' && (*param_3 != ']')) && (*param_3 == '[')); param_3 = param_3 + 1) {\n    AddPageVar(pvVar1,param_3);\n    param_3 = strchr(param_3,0x5d);\n    if (param_3 == (char *)0x0) break;\n  }\n  ServePageWithOverride(param_1,param_2,pvVar1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InteractWithPage",
+                        "calloc",
+                        "VerifyPointerOrTerminate",
+                        "AddPageVar",
+                        "strchr",
+                        "ServePageWithOverride"
+                    ],
+                    "calling_functions": [
+                        "HandleCommand",
+                        "InteractWithPage"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ServePage",
+                "func_c_signature": "void ServePage(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "void ServePage(undefined4 param_1,undefined4 param_2) {\n  ServePageWithOverride(param_1,param_2,0,0x11f56);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ServePage",
+                        "ServePageWithOverride"
+                    ],
+                    "calling_functions": [
+                        "HandleCommand",
+                        "ServePage"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FlushOutput",
+                "func_c_signature": "void FlushOutput(void)",
+                "decompiled_code": "void FlushOutput(void) {\n  printf(\"@s\\n\",&line);\n  memset(&line,0,0x51);\n  if (in_a_box == 0) {\n    line_length = 0;\n  }\n  else {\n    memset(&line,0x20,0x50);\n    line = 0x2a;\n    DAT_000195cf = 0x2a;\n    line_length = 2;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FlushOutput",
+                        "printf",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "FlushOutput",
+                        "OutputChar",
+                        "OutputStr",
+                        "ServePageWithOverride"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "OutputChar",
+                "func_c_signature": "void OutputChar(undefined param_1)",
+                "decompiled_code": "void OutputChar(undefined param_1) {\n  undefined1 *puVar1;\n  \n  puVar1 = &line + line_length;\n  line_length = line_length + 1;\n  *puVar1 = param_1;\n  if ((in_a_box == 0) || (line_length != 0x4e)) {\n    if (line_length == 0x50) {\n      FlushOutput();\n    }\n  }\n  else {\n    FlushOutput();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "OutputChar",
+                        "FlushOutput"
+                    ],
+                    "calling_functions": [
+                        "OutputChar",
+                        "ServePageWithOverride"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "OutputStr",
+                "func_c_signature": "void OutputStr(char *param_1)",
+                "decompiled_code": "void OutputStr(char *param_1) {\n  size_t sVar1;\n  \n  sVar1 = strlen(param_1);\n  if (0x50 < sVar1 + line_length) {\n    FlushOutput();\n  }\n  sVar1 = strlen(param_1);\n  if (sVar1 < 0x51) {\n    sVar1 = strlen(param_1);\n    memcpy(&line + line_length,param_1,sVar1);\n    sVar1 = strlen(param_1);\n    line_length = sVar1 + line_length;\n  }\n  else {\n    printf(\"@s\\n\",param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "OutputStr",
+                        "strlen",
+                        "FlushOutput",
+                        "memcpy",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "OutputStr",
+                        "ServePageWithOverride"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ServePageWithOverride",
+                "func_c_signature": "undefined4 ServePageWithOverride(FILE *param_1,int param_2,int param_3)",
+                "decompiled_code": "undefined4 ServePageWithOverride(FILE *param_1,int param_2,int param_3) {\n  char *pcVar1;\n  char cVar2;\n  void *pvVar3;\n  int iVar4;\n  size_t sVar5;\n  FILE *__stream;\n  FILE *__s1;\n  FILE *pFVar6;\n  int local_28;\n  FILE *local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  FILE *local_14;\n  int local_10;\n  \n  pvVar3 = calloc(0x48,1);\n  VerifyPointerOrTerminate(pvVar3,\"VarList initialization\");\n  in_a_box = 0;\n  __stream = (FILE *)0x0;\n  memset(&line,0,0x51);\n  line_length = 0;\n  pFVar6 = param_1;\nLAB_00012543:\n  param_1 = pFVar6;\n  if ((*(char *)&param_1->_flags == '\\0') || (param_2 < 1)) {\n    if (line_length != 0) {\n      FlushOutput();\n    }\n    DestroyVarList(pvVar3);\n    DestroyVarList(param_3);\n    return 0;\n  }\n  if (*(char *)&param_1->_flags == '~') {\n    iVar4 = (int)*(char *)((int)&param_1->_flags + 1);\n    if (iVar4 == 0x23) {\n      OutputChar(0x23);\n      goto LAB_0001225c;\n    }\n    if (((0x22 < iVar4) && (iVar4 < 0x7f)) && (0x5a < iVar4)) {\n      switch(iVar4) {\n      case 0x5b:\n        OutputChar(0x5b);\n        break;\n      default:\n        goto _L47;\n      case 0x5d:\n        OutputChar(0x5d);\n        break;\n      case 0x6e:\n        FlushOutput();\n        break;\n      case 0x74:\n        for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {\n          OutputChar(0x20);\n        }\n        break;\n      case 0x7e:\n        OutputChar(0x7e);\n      }\nLAB_0001225c:\n      pFVar6 = (FILE *)((int)&param_1->_flags + 2);\n      goto LAB_00012543;\n    }\n_L47:\n    printf(\"ERROR: Invalid control code\\n\");\n  }\n  else {\n    if (*(char *)&param_1->_flags != '[') {\n      if (*(char *)&param_1->_flags == ']') {\n        if (in_a_box == 0) goto LAB_00012598;\n        in_a_box = 0;\n        FlushOutput();\n        for (local_20 = 0; local_20 < 0x50; local_20 = local_20 + 1) {\n          putc(0x2a,__stream);\n        }\n        printf(\"\\n\");\n        pFVar6 = (FILE *)((int)&param_1->_flags + 1);\n      }\n      else if (*(char *)&param_1->_flags == '#') {\n        pFVar6 = (FILE *)((int)&param_1->_flags + 1);\n        for (local_24 = pFVar6;\n            (*(char *)&local_24->_flags != '\\0' && (*(char *)&local_24->_flags != '#'));\n            local_24 = (FILE *)((int)&local_24->_flags + 1)) {\n        }\n        if (*(char *)&local_24->_flags != '#') goto LAB_00012598;\n        local_28 = 0;\n        if (param_3 != 0) {\n          __stream = pFVar6;\n          local_28 = GetPageVar(param_3,pFVar6,local_24);\n        }\n        if (local_28 == 0) {\n          local_28 = GetPageVar(pvVar3,pFVar6,local_24);\n          __stream = pFVar6;\n        }\n        if (local_28 != 0) {\n          OutputStr(*(undefined4 *)(local_28 + 0x40));\n        }\n        pFVar6 = (FILE *)((int)&local_24->_flags + 1);\n      }\n      else {\n        OutputChar((int)*(char *)&param_1->_flags);\n        pFVar6 = (FILE *)((int)&param_1->_flags + 1);\n      }\n      goto LAB_00012543;\n    }\n    __s1 = (FILE *)((int)&param_1->_flags + 1);\n    for (local_14 = __s1;\n        (*(char *)&local_14->_flags != ']' && (*(char *)&local_14->_flags != '\\0'));\n        local_14 = (FILE *)((int)&local_14->_flags + 1)) {\n    }\n    if (*(char *)&local_14->_flags != '\\0') {\n      sVar5 = strlen(\"line\");\n      __stream = (FILE *)&DAT_00016220;\n      iVar4 = strncmp((char *)__s1,\"line\",sVar5);\n      if (iVar4 == 0) {\n        sVar5 = strlen(\"line\");\n        pcVar1 = __s1->_shortbuf + (sVar5 - 0x47);\n        if ((*pcVar1 != ':') || (cVar2 = pcVar1[1], pcVar1[2] != ':')) goto LAB_00012598;\n        iVar4 = atoi(pcVar1 + 3);\n        for (local_18 = 0; local_18 < iVar4; local_18 = local_18 + 1) {\n          OutputChar((int)cVar2);\n        }\n        pFVar6 = (FILE *)((int)&local_14->_flags + 1);\n      }\n      else {\n        sVar5 = strlen(\"var\");\n        iVar4 = strncmp((char *)__s1,\"var\",sVar5);\n        if (iVar4 == 0) {\n          AddPageVar(pvVar3);\n          pFVar6 = (FILE *)((int)&local_14->_flags + 1);\n          __stream = __s1;\n        }\n        else {\n          sVar5 = strlen(\"box\");\n          __stream = (FILE *)&DAT_00016229;\n          iVar4 = strncmp((char *)__s1,\"box\",sVar5);\n          pFVar6 = __s1;\n          if (iVar4 == 0) {\n            in_a_box = 1;\n            FlushOutput();\n            for (local_1c = 0; local_1c < 0x50; local_1c = local_1c + 1) {\n              putc(0x2a,__stream);\n            }\n            printf(\"\\n\");\n            pFVar6 = (FILE *)((int)&param_1->_IO_read_ptr + 1);\n          }\n        }\n      }\n      goto LAB_00012543;\n    }\n  }\nLAB_00012598:\n  printf(\"ERROR: Invalid syntax\\n\");\n  DestroyVarList(pvVar3);\n  DestroyVarList(param_3);\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ServePageWithOverride",
+                        "calloc",
+                        "VerifyPointerOrTerminate",
+                        "memset",
+                        "FlushOutput",
+                        "DestroyVarList",
+                        "OutputChar",
+                        "printf",
+                        "putc",
+                        "GetPageVar",
+                        "OutputStr",
+                        "strlen",
+                        "strncmp",
+                        "atoi",
+                        "AddPageVar"
+                    ],
+                    "calling_functions": [
+                        "InteractWithPage",
+                        "ServePage",
+                        "ServePageWithOverride"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  int local_60;\n  undefined local_5c [76];\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  iVar1 = InitializeTree();\n  if (iVar1 != 0) {\n    PrintErrorAndTerminate(\"Initialize server failed\");\n  }\n  local_60 = 0;\n  do {\n    iVar1 = ReceiveCommand(local_5c,&local_60);\n    if (iVar1 != 0) {\n      PrintErrorAndTerminate(\"Receive command failed\");\n    }\n    HandleCommand(local_5c);\n    DestroyCommand(local_5c);\n  } while (local_60 == 1);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "InitializeTree",
+                        "PrintErrorAndTerminate",
+                        "ReceiveCommand",
+                        "HandleCommand",
+                        "DestroyCommand"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            }
+        ],
+        "tree.c": [
+            {
+                "func_name": "InitializeTree",
+                "func_c_signature": "undefined4 InitializeTree(void)",
+                "decompiled_code": "undefined4 InitializeTree(void) {\n  char *__dest;\n  size_t sVar1;\n  void *pvVar2;\n  int iVar3;\n  int local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (0x13 < local_10) {\n      return 0;\n    }\n    __dest = (char *)calloc(0x50,1);\n    VerifyPointerOrTerminate(__dest,\"TreeNode during initialization\");\n    strncpy(__dest,InitialInfo + local_10 * 0x44,0x40);\n    sVar1 = strlen(*(char **)(&DAT_00019040 + local_10 * 0x44));\n    *(size_t *)(__dest + 0x48) = sVar1 + 1;\n    pvVar2 = calloc(*(size_t *)(__dest + 0x48),1);\n    *(void **)(__dest + 0x4c) = pvVar2;\n    VerifyPointerOrTerminate(*(undefined4 *)(__dest + 0x4c),\"node->page during initialization\");\n    memcpy(*(void **)(__dest + 0x4c),*(void **)(&DAT_00019040 + local_10 * 0x44),\n           *(size_t *)(__dest + 0x48));\n    iVar3 = InsertNodeInTree(__dest);\n    if (iVar3 != 0) break;\n    local_10 = local_10 + 1;\n  }\n  free(*(void **)(__dest + 0x4c));\n  free(__dest);\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitializeTree",
+                        "calloc",
+                        "VerifyPointerOrTerminate",
+                        "strncpy",
+                        "strlen",
+                        "memcpy",
+                        "InsertNodeInTree",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "InitializeTree"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "WalkTree",
+                "func_c_signature": "void WalkTree(int param_1)",
+                "decompiled_code": "void WalkTree(int param_1) {\n  int *piVar1;\n  int iVar2;\n  int aiStack_120 [64];\n  int local_20;\n  undefined4 local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_18 = 0;\n  local_10 = 0;\n  local_1c = 0xfe;\n  local_20 = param_1;\n  printf(\"@s\\n\",param_1);\n  if (*(int *)(local_20 + 0x44) != 0) {\n    piVar1 = aiStack_120 + local_10;\n    local_10 = local_10 + 1;\n    *piVar1 = *(int *)(local_20 + 0x44);\n    piVar1 = aiStack_120 + local_10;\n    local_10 = local_10 + 1;\n    *piVar1 = local_18 + 1;\n  }\n  while (iVar2 = local_10, 0 < local_10) {\n    local_10 = local_10 + -1;\n    local_18 = aiStack_120[local_10];\n    local_10 = iVar2 + -2;\n    local_20 = aiStack_120[iVar2 + -2];\n    for (local_14 = 0; local_14 < local_18; local_14 = local_14 + 1) {\n      printf(\"    \",param_1);\n    }\n    param_1 = local_20;\n    printf(\"@s\\n\",local_20);\n    if (*(int *)(local_20 + 0x40) != 0) {\n      piVar1 = aiStack_120 + local_10;\n      local_10 = local_10 + 1;\n      *piVar1 = *(int *)(local_20 + 0x40);\n      piVar1 = aiStack_120 + local_10;\n      local_10 = local_10 + 1;\n      *piVar1 = local_18;\n    }\n    if (*(int *)(local_20 + 0x44) != 0) {\n      piVar1 = aiStack_120 + local_10;\n      local_10 = local_10 + 1;\n      *piVar1 = *(int *)(local_20 + 0x44);\n      piVar1 = aiStack_120 + local_10;\n      local_10 = local_10 + 1;\n      *piVar1 = local_18 + 1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "WalkTree",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "WalkTree",
+                        "PrintTree"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintTree",
+                "func_c_signature": "undefined4 PrintTree(char *param_1)",
+                "decompiled_code": "undefined4 PrintTree(char *param_1) {\n  undefined4 uVar1;\n  int local_10;\n  \n  if ((param_1 == (char *)0x0) || (*param_1 == '\\0')) {\n    local_10 = root;\n  }\n  else {\n    local_10 = LookupNode(param_1);\n  }\n  if (local_10 == 0) {\n    printf(\"ERROR: Tree not found: @s\\n\",param_1);\n    uVar1 = 0xffffffff;\n  }\n  else {\n    WalkTree(local_10);\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintTree",
+                        "LookupNode",
+                        "printf",
+                        "WalkTree"
+                    ],
+                    "calling_functions": [
+                        "HandleCommand",
+                        "PrintTree"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FreeTree",
+                "func_c_signature": "void FreeTree(void *param_1)",
+                "decompiled_code": "void FreeTree(void *param_1) {\n  if (*(int *)((int)param_1 + 0x44) != 0) {\n    FreeTree(*(undefined4 *)((int)param_1 + 0x44));\n  }\n  if (*(int *)((int)param_1 + 0x40) != 0) {\n    FreeTree(*(undefined4 *)((int)param_1 + 0x40));\n  }\n  if (*(int *)((int)param_1 + 0x4c) != 0) {\n    free(*(void **)((int)param_1 + 0x4c));\n  }\n  free(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FreeTree",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "FreeTree",
+                        "DeleteNode"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DeleteNode",
+                "func_c_signature": "undefined4 DeleteNode(void *param_1)",
+                "decompiled_code": "undefined4 DeleteNode(void *param_1) {\n  undefined4 uVar1;\n  char local_5c [64];\n  char *local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_18 = LookupNode(param_1);\n  if (local_18 == 0) {\n    printf(\"ERROR: Could not locate node for deletion\\n\");\n    uVar1 = 0xffffffff;\n  }\n  else {\n    memcpy(local_5c,param_1,0x40);\n    local_1c = strrchr(local_5c,0x2e);\n    if (local_1c == (char *)0x0) {\n      local_10 = root;\n    }\n    else {\n      *local_1c = '\\0';\n      local_10 = LookupNode(local_5c);\n    }\n    if ((local_18 == 0) || (local_10 == 0)) {\n      uVar1 = 0xffffffff;\n    }\n    else if (*(int *)(local_10 + 0x44) == 0) {\n      uVar1 = 0xffffffff;\n    }\n    else {\n      if (local_18 == *(int *)(local_10 + 0x44)) {\n        *(undefined4 *)(local_10 + 0x44) = *(undefined4 *)(local_18 + 0x40);\n        *(undefined4 *)(local_18 + 0x40) = 0;\n      }\n      else {\n        for (local_14 = *(int *)(local_10 + 0x44);\n            (local_18 != *(int *)(local_14 + 0x40) && (local_14 != 0));\n            local_14 = *(int *)(local_14 + 0x40)) {\n        }\n        if (local_14 == 0) {\n          printf(\"ERROR: Could not locate node for deletion\\n\");\n          return 0xffffffff;\n        }\n        *(undefined4 *)(local_14 + 0x40) = *(undefined4 *)(local_18 + 0x40);\n        *(undefined4 *)(local_18 + 0x40) = 0;\n      }\n      FreeTree(local_18);\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DeleteNode",
+                        "LookupNode",
+                        "printf",
+                        "memcpy",
+                        "strrchr",
+                        "FreeTree"
+                    ],
+                    "calling_functions": [
+                        "HandleCommand",
+                        "DeleteNode"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "LookupNode",
+                "func_c_signature": "char * LookupNode(void *param_1)",
+                "decompiled_code": "char * LookupNode(void *param_1) {\n  int iVar1;\n  char local_58 [64];\n  char *local_18;\n  char *local_14;\n  char *local_10;\n  \n  local_10 = *(char **)(root + 0x44);\n  memcpy(local_58,param_1,0x40);\n  local_14 = local_58;\n  local_18 = strchr(local_58,0x2e);\n  if (local_18 != (char *)0x0) {\n    *local_18 = '\\0';\n  }\n  while( true ) {\n    while( true ) {\n      if (local_10 == (char *)0x0) {\n        return (char *)0x0;\n      }\n      iVar1 = strcmp(local_10,local_14);\n      if (iVar1 == 0) break;\n      local_10 = *(char **)(local_10 + 0x40);\n    }\n    if (local_18 == (char *)0x0) break;\n    local_14 = local_18 + 1;\n    local_18 = strchr(local_14,0x2e);\n    if (local_18 != (char *)0x0) {\n      *local_18 = '\\0';\n    }\n    local_10 = *(char **)(local_10 + 0x44);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "LookupNode",
+                        "memcpy",
+                        "strchr",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "HandleCommand",
+                        "PrintTree",
+                        "DeleteNode",
+                        "LookupNode",
+                        "InsertNodeInTree"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InsertNodeInTree",
+                "func_c_signature": "undefined4 InsertNodeInTree(char *param_1)",
+                "decompiled_code": "undefined4 InsertNodeInTree(char *param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  char local_58 [64];\n  char *local_18;\n  undefined *local_14;\n  undefined *local_10;\n  \n  if (root == (undefined *)0x0) {\n    local_14 = (undefined *)calloc(0x50,1);\n    VerifyPointerOrTerminate(local_14,\"root TreeNode during insert\");\n    *local_14 = 0x2e;\n    root = local_14;\n  }\n  iVar1 = LookupNode(param_1);\n  if (iVar1 == 0) {\n    if (*param_1 == '\\0') {\n      printf(\"ERROR: Name cannot be blank\\n\");\n      uVar2 = 0xffffffff;\n    }\n    else {\n      memcpy(local_58,param_1,0x40);\n      local_18 = strrchr(local_58,0x2e);\n      local_10 = root;\n      if (local_18 == (char *)0x0) {\n        if (*(int *)(root + 0x44) == 0) {\n          *(char **)(root + 0x44) = param_1;\n        }\n        else {\n          for (local_10 = *(undefined **)(root + 0x44); *(int *)((int)local_10 + 0x40) != 0;\n              local_10 = *(undefined **)((int)local_10 + 0x40)) {\n          }\n          *(char **)((int)local_10 + 0x40) = param_1;\n        }\n        uVar2 = 0;\n      }\n      else {\n        strncpy(param_1,local_18 + 1,0x40);\n        *local_18 = '\\0';\n        local_10 = (undefined *)LookupNode(local_58);\n        if (local_10 == (undefined *)0x0) {\n          printf(\"ERROR: Parent node doesn\\'t exist: @s\\n\",local_58);\n          uVar2 = 0xffffffff;\n        }\n        else if (*(int *)((int)local_10 + 0x44) == 0) {\n          *(char **)((int)local_10 + 0x44) = param_1;\n          uVar2 = 0;\n        }\n        else {\n          for (local_10 = *(undefined **)((int)local_10 + 0x44); *(int *)((int)local_10 + 0x40) != 0\n              ; local_10 = *(undefined **)((int)local_10 + 0x40)) {\n          }\n          *(char **)((int)local_10 + 0x40) = param_1;\n          uVar2 = 0;\n        }\n      }\n    }\n  }\n  else {\n    printf(\"ERROR: node already exists\\n\");\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InsertNodeInTree",
+                        "calloc",
+                        "VerifyPointerOrTerminate",
+                        "LookupNode",
+                        "printf",
+                        "memcpy",
+                        "strrchr",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "HandleCommand",
+                        "InitializeTree",
+                        "InsertNodeInTree"
+                    ],
+                    "defined_in_file": "CROMU_00027_decompiled.c"
+                }
+            }
+        ]
+    }
+}

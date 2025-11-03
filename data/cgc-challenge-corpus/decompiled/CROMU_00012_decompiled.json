@@ -1,0 +1,295 @@
+{
+    "file": "CROMU_00012",
+    "decompiled_code": {
+        "asan.c": [
+            {
+                "func_name": "validatePtr",
+                "func_c_signature": "int validatePtr(uint param_1)",
+                "decompiled_code": "int validatePtr(uint param_1) {\n  int local_10;\n  \n  local_10 = 0;\n  if ((0xbaa8b000 < param_1) && (param_1 < 0xbaaab000)) {\n    local_10 = 1;\n  }\n  if ((0x8048000 < param_1) && (param_1 < 0x804c000)) {\n    local_10 = 1;\n  }\n  if (local_10 == 0) {\n    puts(\"Invalid pointer detected!\");\n    _terminate(0xffffffff);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validatePtr",
+                        "puts",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "validatePtr",
+                        "recvUntil",
+                        "bookKeeping",
+                        "handleShift",
+                        "updateBTMetadata",
+                        "handleTrunk",
+                        "initCar",
+                        "serviceLoop",
+                        "memcpy"
+                    ],
+                    "defined_in_file": "CROMU_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validateRet",
+                "func_c_signature": "void validateRet(void)",
+                "decompiled_code": "void validateRet(void) {\n  undefined *puVar1;\n  int unaff_EBP;\n  undefined auStack_1c [12];\n  uint *local_10;\n  \n  puVar1 = auStack_1c;\n  local_10 = *(uint **)(unaff_EBP + 4);\n  if ((local_10 < 0x8048000) || (0x804c000 < local_10)) {\n    puVar1 = &stack0xffffffd4;\n    puts(\"***** STACK SMASHING DETECTED! *****\");\n    _terminate();\n  }\n  local_10 = (uint *)((int)local_10 - 5);\n  if ((*local_10 & 0xff) != 0xe8) {\n    *(char **)(puVar1 + -0x10) = \"***** STACK SMASHING DETECTED! *****\";\n    *(undefined4 *)(puVar1 + -0x14) = 0x110ed;\n    puts(*(char **)(puVar1 + -0x10));\n    *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n    *(undefined4 *)(puVar1 + -0x14) = 0x110fa;\n    _terminate();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validateRet",
+                        "puts",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "validateRet",
+                        "recvUntil",
+                        "bookKeeping",
+                        "raiseAlarm",
+                        "handleShift",
+                        "updateBTMetadata",
+                        "handleTrunk",
+                        "initCar",
+                        "main",
+                        "memcpy"
+                    ],
+                    "defined_in_file": "CROMU_00012_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "recvUntil",
+                "func_c_signature": "int recvUntil(undefined4 param_1,char *param_2,undefined4 param_3,char param_4)",
+                "decompiled_code": "int recvUntil(undefined4 param_1,char *param_2,undefined4 param_3,char param_4) {\n  char local_19;\n  int local_18;\n  char *local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_14 = param_2;\n  while( true ) {\n    local_18 = receive(param_1,&local_19,1,0);\n    if (local_18 < 0) {\n      validateRet();\n      return -1;\n    }\n    if (param_4 == local_19) break;\n    local_10 = local_10 + 1;\n    validatePtr(local_14);\n    *local_14 = local_19;\n    local_14 = local_14 + 1;\n  }\n  validateRet();\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recvUntil",
+                        "receive",
+                        "validateRet",
+                        "validatePtr"
+                    ],
+                    "calling_functions": [
+                        "recvUntil",
+                        "serviceLoop"
+                    ],
+                    "defined_in_file": "CROMU_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "bookKeeping",
+                "func_c_signature": "void bookKeeping(byte *param_1)",
+                "decompiled_code": "void bookKeeping(byte *param_1) {\n  byte **ppbVar1;\n  byte *pbStack_2c;\n  undefined *puStack_28;\n  undefined4 uStack_24;\n  undefined4 uStack_20;\n  undefined auStack_1c [12];\n  int local_10;\n  \n  ppbVar1 = (byte **)auStack_1c;\n  uStack_20 = 0x114b1;\n  pbStack_2c = param_1;\n  validatePtr();\n  if (6000 < *(ushort *)(param_1 + 3)) {\n    uStack_24 = 10;\n    puStack_28 = &DAT_00014044;\n    ppbVar1 = &pbStack_2c;\n    pbStack_2c = (byte *)0x1;\n    transmit_all();\n    pbStack_2c = (byte *)0x0;\n    _terminate();\n  }\n  if (param_1[8] != 0x10) {\n    local_10 = (*(ushort *)(param_1 + 3) >> 2) / 0x19 + (uint)*param_1 +\n               *(int *)(param_1 + 0xe) / 100;\n    *(short *)(param_1 + 1) = *(short *)(param_1 + 1) - (short)local_10;\n    if (param_1[10] == 0xf0) {\n      *(short *)(param_1 + 1) = *(short *)(param_1 + 1) + -5;\n    }\n    if (param_1[0xb] == 0xd0) {\n      *(short *)(param_1 + 1) = *(short *)(param_1 + 1) + -2;\n    }\n    if (((param_1[5] != 0xff) || (param_1[5] != 1)) && (0x14 < param_1[6])) {\n      *param_1 = *param_1 + 1;\n      *(short *)(param_1 + 3) = *(short *)(param_1 + 3) + 0x19;\n    }\n  }\n  *(undefined4 *)((int)ppbVar1 + -4) = 0x115dd;\n  validateRet();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bookKeeping",
+                        "validatePtr",
+                        "transmit_all",
+                        "_terminate",
+                        "validateRet"
+                    ],
+                    "calling_functions": [
+                        "bookKeeping",
+                        "serviceLoop"
+                    ],
+                    "defined_in_file": "CROMU_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "raiseAlarm",
+                "func_c_signature": "void raiseAlarm(void)",
+                "decompiled_code": "void raiseAlarm(void) {\n  undefined local_d [5];\n  \n  memcpy(local_d,\"AAAAAAAAAAAAAAAA\",0x10);\n  validateRet();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "raiseAlarm",
+                        "memcpy",
+                        "validateRet"
+                    ],
+                    "calling_functions": [
+                        "raiseAlarm",
+                        "serviceLoop"
+                    ],
+                    "defined_in_file": "CROMU_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handleShift",
+                "func_c_signature": "void handleShift(byte *param_1,char param_2)",
+                "decompiled_code": "void handleShift(byte *param_1,char param_2) {\n  uint uVar1;\n  uint uVar2;\n  \n  validatePtr(param_1);\n  if (param_2 == 'r') {\n    if ((param_1[8] < 0x60) && (500 < *(ushort *)(param_1 + 3))) {\n      if (param_1[8] < 0x11) {\n        param_1[8] = param_1[8] + 0x10;\n      }\n      else {\n        uVar2 = (uint)*param_1;\n        uVar1 = (uint)(param_1[8] >> 4) * 10;\n        if (uVar2 == uVar1 ||\n            SBORROW4(uVar2,uVar1) != (int)(uVar2 + (uint)(param_1[8] >> 4) * -10) < 0) {\n          validateRet();\n          return;\n        }\n        param_1[8] = param_1[8] + 0x10;\n      }\n      if (*(ushort *)(param_1 + 3) < 0x2ee) {\n        *(undefined2 *)(param_1 + 3) = 0;\n      }\n      else {\n        *(short *)(param_1 + 3) = *(short *)(param_1 + 3) + -0x2ee;\n      }\n    }\n  }\n  else if (0x10 < param_1[8]) {\n    param_1[8] = param_1[8] - 0x10;\n    *(short *)(param_1 + 3) = *(short *)(param_1 + 3) + 0x2ee;\n  }\n  validateRet();\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "SBORROW4"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handleShift",
+                        "validatePtr",
+                        "SBORROW4",
+                        "validateRet"
+                    ],
+                    "calling_functions": [
+                        "handleShift",
+                        "serviceLoop"
+                    ],
+                    "defined_in_file": "CROMU_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "updateBTMetadata",
+                "func_c_signature": "void updateBTMetadata(int param_1,int param_2)",
+                "decompiled_code": "void updateBTMetadata(int param_1,int param_2) {\n  validatePtr(param_1);\n  validatePtr(param_2);\n  memcpy((void *)(param_1 + 0x12),(void *)(param_2 + 2),(int)*(char *)(param_2 + 1));\n  validateRet();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "updateBTMetadata",
+                        "validatePtr",
+                        "memcpy",
+                        "validateRet"
+                    ],
+                    "calling_functions": [
+                        "updateBTMetadata",
+                        "serviceLoop"
+                    ],
+                    "defined_in_file": "CROMU_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handleTrunk",
+                "func_c_signature": "void handleTrunk(int param_1,char *param_2)",
+                "decompiled_code": "void handleTrunk(int param_1,char *param_2) {\n  validatePtr(param_1);\n  validatePtr(param_2);\n  if (*param_2 == -0x70) {\n    *(int *)(param_1 + 0xe) = *(int *)(param_1 + 0xe) + (int)param_2[1];\n  }\n  else if (*(int *)(param_1 + 0xe) < (int)param_2[1]) {\n    *(undefined4 *)(param_1 + 0xe) = 0;\n  }\n  else {\n    *(int *)(param_1 + 0xe) = *(int *)(param_1 + 0xe) - (int)param_2[1];\n  }\n  validateRet();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handleTrunk",
+                        "validatePtr",
+                        "validateRet"
+                    ],
+                    "calling_functions": [
+                        "handleTrunk",
+                        "serviceLoop"
+                    ],
+                    "defined_in_file": "CROMU_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initCar",
+                "func_c_signature": "void initCar(int param_1)",
+                "decompiled_code": "void initCar(int param_1) {\n  validatePtr(param_1);\n  *(undefined *)(param_1 + 8) = 0x10;\n  *(undefined *)(param_1 + 7) = 0x10;\n  *(undefined *)(param_1 + 0xc) = 0xa0;\n  *(undefined *)(param_1 + 0xb) = 0xc0;\n  *(undefined *)(param_1 + 10) = 0xe0;\n  *(undefined *)(param_1 + 0xd) = 0xf9;\n  *(undefined *)(param_1 + 9) = 0x75;\n  *(undefined2 *)(param_1 + 1) = 0xffff;\n  validateRet();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initCar",
+                        "validatePtr",
+                        "validateRet"
+                    ],
+                    "calling_functions": [
+                        "initCar",
+                        "serviceLoop"
+                    ],
+                    "defined_in_file": "CROMU_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  serviceLoop();\n  validateRet();\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "serviceLoop",
+                        "validateRet"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "serviceLoop",
+                "func_c_signature": "void serviceLoop(void)",
+                "decompiled_code": "void serviceLoop(void) {\n  char cVar1;\n  int iVar2;\n  undefined *puVar3;\n  undefined auStack_15c [8];\n  char local_154 [256];\n  char local_54 [52];\n  char *local_20;\n  short local_1c;\n  char local_19;\n  int local_18;\n  int local_14;\n  char *local_10;\n  \n  local_20 = local_54;\n  validatePtr(local_20);\n  memset(local_20,0,0x32);\n  validatePtr(local_20);\n  initCar(local_20);\n  puVar3 = auStack_15c;\n  do {\n    *(undefined4 *)(puVar3 + -8) = 0x100;\n    *(undefined4 *)(puVar3 + -0xc) = 0;\n    *(char **)(puVar3 + -0x10) = local_154;\n    *(undefined4 *)(puVar3 + -0x14) = 0x11936;\n    memset(*(void **)(puVar3 + -0x10),*(int *)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n    *(undefined4 *)(puVar3 + -4) = 10;\n    *(undefined4 *)(puVar3 + -8) = 0xff;\n    *(char **)(puVar3 + -0xc) = local_154;\n    *(undefined4 *)(puVar3 + -0x10) = 0;\n    *(undefined4 *)(puVar3 + -0x14) = 0x1194e;\n    local_18 = recvUntil();\n    if (local_18 < 1) {\n      *(undefined4 *)(puVar3 + -0x10) = 0;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11964;\n      _terminate();\n      puVar3 = puVar3 + -0x10;\n    }\n    local_10 = local_154;\n    *(char **)(puVar3 + -0x10) = local_20;\n    *(undefined4 *)(puVar3 + -0x14) = 0x11979;\n    bookKeeping();\n    *(char **)(puVar3 + -0x10) = local_10;\n    *(undefined4 *)(puVar3 + -0x14) = 0x11987;\n    validatePtr();\n    for (; local_10 < local_54; local_10 = local_10 + 1) {\n      cVar1 = *local_10;\n      if (cVar1 == '0') {\n        *(char **)(puVar3 + -0x10) = local_20;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11aca;\n        validatePtr();\n        if ((local_20[7] == '\\x10') || ((local_20[7] == ' ' && (local_20[8] == '\\x10')))) {\n          local_20[7] = '0';\n        }\n      }\n      else {\n        if (cVar1 < '1') {\n          if (cVar1 == ' ') {\n            *(char **)(puVar3 + -0x10) = local_20;\n            *(undefined4 *)(puVar3 + -0x14) = 0x11a95;\n            validatePtr();\n            if ((local_20[7] == '\\x10') || (local_20[7] == '0')) {\n              local_20[7] = ' ';\n            }\n            goto LAB_00011fcc;\n          }\n          if (cVar1 < '!') {\n            if (cVar1 == '\\x10') {\nLAB_00011a55:\n              *(char **)(puVar3 + -0x10) = local_20;\n              *(undefined4 *)(puVar3 + -0x14) = 0x11a61;\n              validatePtr();\n              if (local_20[8] == '\\x10') {\n                local_20[7] = '\\x10';\n              }\n              else {\n                *(undefined2 *)(local_20 + 3) = 9999;\n              }\n              goto LAB_00011fcc;\n            }\n            if ((cVar1 < '\\x11') && (cVar1 < -6)) {\n              if (-9 < cVar1) {\n                *(char **)(puVar3 + -0x10) = local_20;\n                *(undefined4 *)(puVar3 + -0x14) = 0x11b5c;\n                validatePtr();\n                local_20[0xd] = *local_10;\n                goto LAB_00011fcc;\n              }\n              if (cVar1 == -0x23) {\n                *(char **)(puVar3 + -0x10) = local_20;\n                *(undefined4 *)(puVar3 + -0x14) = 0x11a35;\n                validatePtr();\n                *(undefined4 *)(puVar3 + -8) = 0x32;\n                *(char **)(puVar3 + -0xc) = local_20;\n                *(undefined4 *)(puVar3 + -0x10) = 1;\n                *(undefined4 *)(puVar3 + -0x14) = 0x11a48;\n                transmit_all();\n                *(undefined4 *)(puVar3 + -0x10) = 0;\n                *(undefined4 *)(puVar3 + -0x14) = 0x11a55;\n                _terminate();\n                puVar3 = puVar3 + -0x10;\n                goto LAB_00011a55;\n              }\n              if (cVar1 < -0x22) {\n                if (cVar1 == -0x50) {\n                  *(char **)(puVar3 + -0x10) = local_20;\n                  *(undefined4 *)(puVar3 + -0x14) = 0x11b0e;\n                  validatePtr();\n                  if (local_20[0xd] == -8) {\n                    *(undefined4 *)(puVar3 + -4) = 0x11b21;\n                    raiseAlarm();\n                  }\nLAB_00011b21:\n                  *(char **)(puVar3 + -0x10) = local_20;\n                  *(undefined4 *)(puVar3 + -0x14) = 0x11b2d;\n                  validatePtr();\n                  if (local_20[8] == '\\x10') {\n                    local_20[0xc] = *local_10;\n                  }\n                  goto LAB_00011fcc;\n                }\n                if (cVar1 < -0x4f) {\n                  if (cVar1 == -0x60) goto LAB_00011b21;\n                  if ((cVar1 < -0x5f) && ((cVar1 == -0x80 || (cVar1 == -0x70)))) {\n                    *(char **)(puVar3 + -0x10) = local_20;\n                    *(undefined4 *)(puVar3 + -0x14) = 0x11b7c;\n                    validatePtr();\n                    if ((local_20[8] == '\\x10') && (local_20[0xc] == -0x50)) {\n                      *(char **)(puVar3 + -0xc) = local_10;\n                      *(char **)(puVar3 + -0x10) = local_20;\n                      *(undefined4 *)(puVar3 + -0x14) = 0x11ba4;\n                      handleTrunk();\n                    }\n                    local_10 = local_10 + 1;\n                    goto LAB_00011fcc;\n                  }\n                }\n              }\n            }\n          }\n        }\n        *(char **)(puVar3 + -0x10) = local_20;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11bbc;\n        validatePtr();\n        while( true ) {\n          *(char **)(puVar3 + -0x10) = local_20;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11f9d;\n          iVar2 = validatePtr();\n          if (((iVar2 == 0) || (local_20[7] == '\\x10')) || (local_54 <= local_10)) break;\n          *(char **)(puVar3 + -0x10) = local_10;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11bcf;\n          validatePtr();\n          iVar2 = (int)*local_10;\n          if (iVar2 < 0x76) {\n            if (iVar2 < 0x70) {\n              if (iVar2 < 0x11) {\n                if (iVar2 < -0x30) {\n                  if (iVar2 == -0x40) {\n                    *(char **)(puVar3 + -0x10) = local_20;\n                    *(undefined4 *)(puVar3 + -0x14) = 0x11cde;\n                    validatePtr();\n                    if (local_20[0xb] != -0x40) {\n                      local_20[0xb] = -0x40;\n                    }\n                  }\n                  else if ((iVar2 < -0x3f) && ((iVar2 == -0x7f || (iVar2 == -0x6f)))) {\n                    *(char **)(puVar3 + -0x10) = local_20;\n                    *(undefined4 *)(puVar3 + -0x14) = 0x11da6;\n                    validatePtr();\n                    if (local_20[5] != -1) {\n                      local_14 = 1;\n                      *(char **)(puVar3 + -0x10) = local_10;\n                      *(undefined4 *)(puVar3 + -0x14) = 0x11dca;\n                      validatePtr();\n                      if (*local_10 == -0x6f) {\n                        local_14 = -1;\n                      }\n                      cVar1 = local_10[1];\n                      local_1c = (short)cVar1;\n                      local_10 = local_10 + 2;\n                      if (local_14 == -1) {\n                        if ((short)(ushort)(byte)local_20[6] < local_1c) {\n                          local_20[6] = '\\0';\n                        }\n                        else {\n                          local_20[6] = local_20[6] - cVar1;\n                        }\n                      }\n                      else {\n                        local_20[6] = local_20[6] + cVar1;\n                      }\n                    }\n                    local_10 = local_10 + 1;\n                  }\n                }\n                else {\n                  switch(iVar2) {\n                  case 4:\n                    *(char **)(puVar3 + -0x10) = local_20;\n                    *(undefined4 *)(puVar3 + -0x14) = 0x11d4c;\n                    validatePtr();\n                    *(char **)(puVar3 + -0x10) = local_10;\n                    *(undefined4 *)(puVar3 + -0x14) = 0x11d5a;\n                    validatePtr();\n                    if (0x30 < (byte)local_20[8]) {\n                      local_20[5] = '\\x04';\n                      *(char **)(puVar3 + -0xc) = local_10;\n                      *(char **)(puVar3 + -0x10) = local_20;\n                      *(undefined4 *)(puVar3 + -0x14) = 0x11d7e;\n                      updateBTMetadata();\n                    }\n                    local_19 = local_10[1];\n                    local_10 = local_10 + 1 + local_19;\n                    break;\n                  case 0x10:\n                    *(char **)(puVar3 + -0x10) = local_20;\n                    *(undefined4 *)(puVar3 + -0x14) = 0x11e53;\n                    validatePtr();\n                    if (local_20[8] == '\\x10') {\n                      local_20[7] = '\\x10';\n                    }\n                    break;\n                  case -0x30:\n                    *(char **)(puVar3 + -0x10) = local_20;\n                    *(undefined4 *)(puVar3 + -0x14) = 0x11cb4;\n                    validatePtr();\n                    if (local_20[0xb] != -0x30) {\n                      local_20[0xb] = -0x30;\n                    }\n                    break;\n                  case -0x20:\n                    *(char **)(puVar3 + -0x10) = local_20;\n                    *(undefined4 *)(puVar3 + -0x14) = 0x11c8a;\n                    validatePtr();\n                    if (local_20[10] != -0x20) {\n                      local_20[10] = -0x20;\n                    }\n                    break;\n                  case -0x10:\n                    *(char **)(puVar3 + -0x10) = local_20;\n                    *(undefined4 *)(puVar3 + -0x14) = 0x11c60;\n                    validatePtr();\n                    if (local_20[10] != -0x10) {\n                      local_20[10] = -0x10;\n                    }\n                    break;\n                  case -1:\n                    local_20[6] = '\\0';\n                  case 1:\n                  case 2:\n                  case 3:\n                  case 5:\n                    *(char **)(puVar3 + -0x10) = local_20;\n                    *(undefined4 *)(puVar3 + -0x14) = 0x11d0f;\n                    validatePtr();\n                    *(char **)(puVar3 + -0x10) = local_10;\n                    *(undefined4 *)(puVar3 + -0x14) = 0x11d1d;\n                    validatePtr();\n                    if (0x40 < (byte)local_20[8]) {\n                      local_20[5] = *local_10;\n                    }\n                  }\n                }\n              }\n            }\n            else {\n              switch(iVar2) {\n              case 0x70:\n                *(char **)(puVar3 + -0x10) = local_20;\n                *(undefined4 *)(puVar3 + -0x14) = 0x11e7d;\n                validatePtr();\n                if (local_20[9] == 'u') {\n                  *local_20 = *local_20 + '\\x01';\n                  *(short *)(local_20 + 3) = *(short *)(local_20 + 3) + 0x19;\n                }\n                else {\n                  *(short *)(local_20 + 3) = *(short *)(local_20 + 3) + 0x32;\n                }\n                break;\n              case 0x71:\n                *(char **)(puVar3 + -0x10) = local_20;\n                *(undefined4 *)(puVar3 + -0x14) = 0x11ece;\n                validatePtr();\n                *local_20 = *local_20 + -1;\n                *(short *)(local_20 + 3) = *(short *)(local_20 + 3) + -0x19;\n                break;\n              case 0x72:\n                *(char **)(puVar3 + -0x10) = local_20;\n                *(undefined4 *)(puVar3 + -0x14) = 0x11efe;\n                validatePtr();\n                if (local_20[9] == 't') {\n                  *(undefined4 *)(puVar3 + -0xc) = 0x72;\n                  *(char **)(puVar3 + -0x10) = local_20;\n                  *(undefined4 *)(puVar3 + -0x14) = 0x11f1a;\n                  handleShift();\n                }\n                break;\n              case 0x73:\n                *(char **)(puVar3 + -0x10) = local_20;\n                *(undefined4 *)(puVar3 + -0x14) = 0x11f2b;\n                validatePtr();\n                if (local_20[9] == 't') {\n                  *(undefined4 *)(puVar3 + -0xc) = 0x73;\n                  *(char **)(puVar3 + -0x10) = local_20;\n                  *(undefined4 *)(puVar3 + -0x14) = 0x11f47;\n                  handleShift();\n                }\n                break;\n              case 0x74:\n              case 0x75:\n                *(char **)(puVar3 + -0x10) = local_10;\n                *(undefined4 *)(puVar3 + -0x14) = 0x11f57;\n                validatePtr();\n                *(char **)(puVar3 + -0x10) = local_20;\n                *(undefined4 *)(puVar3 + -0x14) = 0x11f66;\n                validatePtr();\n                local_20[9] = *local_10;\n              }\n            }\n          }\n          local_10 = local_10 + 1;\n        }\n      }\nLAB_00011fcc:\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "serviceLoop",
+                        "validatePtr",
+                        "memset",
+                        "initCar",
+                        "recvUntil",
+                        "_terminate",
+                        "bookKeeping",
+                        "transmit_all",
+                        "raiseAlarm",
+                        "handleTrunk",
+                        "updateBTMetadata",
+                        "handleShift"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "serviceLoop"
+                    ],
+                    "defined_in_file": "CROMU_00012_decompiled.c"
+                }
+            }
+        ],
+        "string.c": [
+            {
+                "func_name": "memcpy",
+                "func_c_signature": "void * memcpy(void *__dest,void *__src,size_t __n)",
+                "decompiled_code": "void * memcpy(void *__dest,void *__src,size_t __n) {\n  undefined *local_14;\n  undefined *local_10;\n  \n  local_10 = (undefined *)__dest;\n  local_14 = (undefined *)__src;\n  validatePtr(__dest);\n  validatePtr(__src);\n  validatePtr(__n + (int)__dest);\n  validatePtr(__n + (int)__src);\n  for (; __n != 0; __n = __n - 1) {\n    validatePtr(local_10);\n    validatePtr(local_14);\n    *local_10 = *local_14;\n    local_10 = local_10 + 1;\n    local_14 = local_14 + 1;\n  }\n  *local_10 = *local_14;\n  validateRet();\n  return __dest;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "memcpy",
+                        "validatePtr",
+                        "validateRet"
+                    ],
+                    "calling_functions": [
+                        "raiseAlarm",
+                        "updateBTMetadata",
+                        "memcpy"
+                    ],
+                    "defined_in_file": "CROMU_00012_decompiled.c"
+                }
+            }
+        ]
+    }
+}

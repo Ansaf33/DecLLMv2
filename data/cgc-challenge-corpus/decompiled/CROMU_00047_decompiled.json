@@ -1,0 +1,448 @@
+{
+    "file": "CROMU_00047",
+    "decompiled_code": {
+        "baseband.c": [
+            {
+                "func_name": "init_baseband",
+                "func_c_signature": "void init_baseband(undefined *param_1)",
+                "decompiled_code": "void init_baseband(undefined *param_1) {\n  *param_1 = 0;\n  param_1[1] = 0;\n  *(undefined8 *)(param_1 + 4) = 0;\n  *(undefined4 *)(param_1 + 0x18) = 0;\n  *(undefined4 *)(param_1 + 0x1c) = 0;\n  param_1[0x20] = 0;\n  param_1[0x22] = 0;\n  param_1[0x21] = 0;\n  param_1[0x23] = 0;\n  param_1[0x24] = 0;\n  param_1[0x25] = 0;\n  *(undefined2 *)(param_1 + 0x126) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_baseband"
+                    ],
+                    "calling_functions": [
+                        "init_baseband",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_sample",
+                "func_c_signature": "void process_sample(undefined4 param_1,undefined param_2)",
+                "decompiled_code": "void process_sample(undefined4 param_1,undefined param_2) {\n  run_cdr(param_1,param_2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_sample",
+                        "run_cdr"
+                    ],
+                    "calling_functions": [
+                        "process_sample",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free_run_lock",
+                "func_c_signature": "void free_run_lock(int param_1)",
+                "decompiled_code": "void free_run_lock(int param_1) {\n  double dVar1;\n  \n  dVar1 = (double)(ulonglong)*(uint *)(param_1 + 0x18) /\n          ((double)(ulonglong)*(uint *)(param_1 + 0x14) * *(double *)(param_1 + 4));\n  if (1.0 <= dVar1) {\n    if (1.0 < dVar1) {\n      *(double *)(param_1 + 4) = DAT_00016000 + *(double *)(param_1 + 4);\n    }\n  }\n  else {\n    *(double *)(param_1 + 4) = *(double *)(param_1 + 4) - DAT_00016000;\n  }\n  *(undefined4 *)(param_1 + 0x14) = 0;\n  *(double *)(param_1 + 0xc) = *(double *)(param_1 + 4) / DAT_00016008;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_run_lock"
+                    ],
+                    "calling_functions": [
+                        "free_run_lock",
+                        "run_cdr"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "run_cdr",
+                "func_c_signature": "void run_cdr(char *param_1,char param_2)",
+                "decompiled_code": "void run_cdr(char *param_1,char param_2) {\n  int iVar1;\n  ushort uVar2;\n  double dVar3;\n  int local_2c;\n  \n  *(int *)(param_1 + 0x18) = *(int *)(param_1 + 0x18) + 1;\n  if (param_2 == param_1[1]) {\n    if (*param_1 == '\\x02') {\n      iVar1 = *(int *)(param_1 + 0x18);\n      dVar3 = round(*(double *)(param_1 + 0xc));\n      local_2c = (int)(longlong)ROUND(dVar3);\n      if (iVar1 == local_2c) {\n        *(double *)(param_1 + 0xc) = *(double *)(param_1 + 4) + *(double *)(param_1 + 0xc);\n        *(int *)(param_1 + 0x14) = *(int *)(param_1 + 0x14) + 1;\n        do_sample(param_1,param_2);\n      }\n    }\n  }\n  else {\n    if (*param_1 == '\\0') {\n      *param_1 = '\\x01';\n      *(undefined8 *)(param_1 + 4) = DAT_00016010;\n      *(undefined4 *)(param_1 + 0x18) = 0;\n    }\n    else if (*param_1 == '\\x01') {\n      uVar2 = (ushort)*(undefined4 *)(param_1 + 0x18);\n      if ((uVar2 < 0x24) && (0x1c < uVar2)) {\n        dVar3 = floor(DAT_00016018 + *(double *)(param_1 + 4));\n        if (uVar2 < (ushort)(int)ROUND(dVar3)) {\n          *(double *)(param_1 + 4) = *(double *)(param_1 + 4) - _DAT_00016020;\n        }\n        else if ((ushort)(int)ROUND(dVar3) < uVar2) {\n          *(double *)(param_1 + 4) = _DAT_00016020 + *(double *)(param_1 + 4);\n        }\n        *(int *)(param_1 + 0x1c) = *(int *)(param_1 + 0x1c) + 1;\n        if (0xe < *(uint *)(param_1 + 0x1c)) {\n          param_1[0x20] = '\\x01';\n          param_1[0x22] = '\\0';\n          param_1[0x21] = param_1[1];\n          *param_1 = '\\x02';\n          *(undefined4 *)(param_1 + 0x14) = 0;\n          *(double *)(param_1 + 0xc) = *(double *)(param_1 + 4) / DAT_00016008;\n        }\n      }\n      else {\n        *param_1 = '\\0';\n      }\n    }\n    else if (*param_1 == '\\x02') {\n      free_run_lock(param_1,param_2);\n    }\n    else {\n      _terminate(0xfffffffd);\n    }\n    param_1[1] = param_2;\n    *(undefined4 *)(param_1 + 0x18) = 0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "run_cdr",
+                        "round",
+                        "ROUND",
+                        "do_sample",
+                        "floor",
+                        "free_run_lock",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "process_sample",
+                        "run_cdr"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "reset_baseband_state",
+                "func_c_signature": "void reset_baseband_state(undefined *param_1)",
+                "decompiled_code": "void reset_baseband_state(undefined *param_1) {\n  *param_1 = 0;\n  param_1[0x20] = 0;\n  param_1[1] = 0;\n  *(undefined8 *)(param_1 + 4) = 0;\n  *(undefined4 *)(param_1 + 0x18) = 0;\n  *(undefined4 *)(param_1 + 0x1c) = 0;\n  param_1[0x22] = 0;\n  param_1[0x21] = 0;\n  param_1[0x23] = 0;\n  param_1[0x24] = 0;\n  param_1[0x25] = 0;\n  *(undefined2 *)(param_1 + 0x126) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "reset_baseband_state"
+                    ],
+                    "calling_functions": [
+                        "reset_baseband_state",
+                        "do_sample"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_sample",
+                "func_c_signature": "undefined ** do_sample(undefined **param_1,uint param_2)",
+                "decompiled_code": "undefined ** do_sample(undefined **param_1,uint param_2) {\n  char cVar1;\n  undefined **ppuVar2;\n  char cVar3;\n  \n  ppuVar2 = &_GLOBAL_OFFSET_TABLE_;\n  cVar3 = (char)param_2;\n  cVar1 = *(char *)(param_1 + 8);\n  if (cVar1 != '\\0') {\n    if (cVar1 == '\\x01') {\n      if (*(char *)((int)param_1 + 0x22) == '\\0') {\n        if (cVar3 == '\\x01') {\n          *(undefined *)((int)param_1 + 0x22) = 1;\n          ppuVar2 = param_1;\n        }\n        else if (cVar3 == *(char *)((int)param_1 + 0x21)) {\n          ppuVar2 = (undefined **)reset_baseband_state(param_1);\n        }\n        else {\n          *(char *)((int)param_1 + 0x21) = cVar3;\n          ppuVar2 = param_1;\n        }\n      }\n      else if (*(char *)((int)param_1 + 0x22) == '\\x01') {\n        if (cVar3 == '\\0') {\n          *(undefined *)((int)param_1 + 0x21) = 0;\n          *(undefined *)((int)param_1 + 0x22) = 0;\n          ppuVar2 = param_1;\n        }\n        else {\n          *(undefined *)((int)param_1 + 0x22) = 2;\n          ppuVar2 = param_1;\n        }\n      }\n      else if (((*(char *)((int)param_1 + 0x21) == '\\0') &&\n               (*(char *)((int)param_1 + 0x22) == '\\x02')) && (cVar3 == '\\x01')) {\n        *(undefined *)((int)param_1 + 0x21) = 1;\n        ppuVar2 = param_1;\n      }\n      else {\n        if ((param_2 & 0xff) ==\n            (int)(1 << (0xfU - *(char *)((int)param_1 + 0x22) & 0x1f) & 0xcfa3U) >>\n            (0xfU - *(char *)((int)param_1 + 0x22) & 0x1f)) {\n          *(char *)((int)param_1 + 0x22) = *(char *)((int)param_1 + 0x22) + '\\x01';\n        }\n        else {\n          reset_baseband_state(param_1);\n        }\n        ppuVar2 = (undefined **)(uint)*(byte *)((int)param_1 + 0x22);\n        if (*(byte *)((int)param_1 + 0x22) == 0x10) {\n          *(undefined *)(param_1 + 8) = 2;\n          *(undefined *)((int)param_1 + 0x25) = 0;\n          *(undefined *)(param_1 + 9) = 0;\n          *(undefined *)((int)param_1 + 0x23) = 0;\n          ppuVar2 = param_1;\n        }\n      }\n    }\n    else if (cVar1 == '\\x02') {\n      *(byte *)((int)param_1 + 0x23) =\n           (byte)((param_2 & 1) << (7U - *(char *)((int)param_1 + 0x25) & 0x1f)) |\n           *(byte *)((int)param_1 + 0x23);\n      *(char *)((int)param_1 + 0x25) = *(char *)((int)param_1 + 0x25) + '\\x01';\n      if (*(char *)((int)param_1 + 0x25) == '\\b') {\n        if (*(char *)((int)param_1 + 0x23) == '\\0') {\n          ppuVar2 = (undefined **)reset_baseband_state(param_1);\n        }\n        else {\n          *(undefined *)(param_1 + 8) = 3;\n          *(undefined *)((int)param_1 + 0x25) = 0;\n          ppuVar2 = (undefined **)memset((void *)((int)param_1 + 0x26),0,0xff);\n        }\n      }\n    }\n    else if (cVar1 == '\\x03') {\n      *(byte *)((int)param_1 + *(byte *)(param_1 + 9) + 0x26) =\n           *(byte *)((int)param_1 + *(byte *)(param_1 + 9) + 0x26) |\n           (byte)((param_2 & 1) << (7U - *(char *)((int)param_1 + 0x25) & 0x1f));\n      *(char *)((int)param_1 + 0x25) = *(char *)((int)param_1 + 0x25) + '\\x01';\n      ppuVar2 = (undefined **)(uint)*(byte *)((int)param_1 + 0x25);\n      if (*(byte *)((int)param_1 + 0x25) == 8) {\n        *(undefined *)((int)param_1 + 0x25) = 0;\n        *(char *)(param_1 + 9) = *(char *)(param_1 + 9) + '\\x01';\n        ppuVar2 = (undefined **)(uint)*(byte *)((int)param_1 + 0x23);\n        if (*(byte *)(param_1 + 9) == *(byte *)((int)param_1 + 0x23)) {\n          *(undefined *)(param_1 + 8) = 4;\n          *(undefined2 *)((int)param_1 + 0x126) = 0;\n          ppuVar2 = param_1;\n        }\n      }\n    }\n    else if (cVar1 == '\\x04') {\n      *(ushort *)((int)param_1 + 0x126) =\n           (ushort)((param_2 & 1) << (0xfU - *(char *)((int)param_1 + 0x25) & 0x1f)) |\n           *(ushort *)((int)param_1 + 0x126);\n      *(char *)((int)param_1 + 0x25) = *(char *)((int)param_1 + 0x25) + '\\x01';\n      if (*(char *)((int)param_1 + 0x25) == '\\x10') {\n        receive_packet((int)param_1 + 0x26,*(undefined *)((int)param_1 + 0x23),\n                       *(undefined2 *)((int)param_1 + 0x126));\n        ppuVar2 = (undefined **)reset_baseband_state(param_1);\n      }\n    }\n  }\n  return ppuVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_sample",
+                        "reset_baseband_state",
+                        "memset",
+                        "receive_packet"
+                    ],
+                    "calling_functions": [
+                        "run_cdr",
+                        "do_sample"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            }
+        ],
+        "packet.c": [
+            {
+                "func_name": "init_packet_handler",
+                "func_c_signature": "void init_packet_handler(void)",
+                "decompiled_code": "void init_packet_handler(void) {\n  undefined *puVar1;\n  \n  puVar1 = (undefined *)malloc(0x28);\n  DAT_00019004 = 5;\n  g_packetHandlers = puVar1;\n  *puVar1 = 0;\n  *(code **)(puVar1 + 4) = HandleBroadcastPacket;\n  puVar1[8] = 1;\n  *(code **)(puVar1 + 0xc) = HandleChannelPacket;\n  puVar1[0x10] = 2;\n  *(code **)(puVar1 + 0x14) = HandlePrivatePacket;\n  puVar1[0x18] = 3;\n  *(code **)(puVar1 + 0x1c) = HandleConnectPacket;\n  puVar1[0x20] = 4;\n  *(code **)(puVar1 + 0x24) = HandleDisconnectPacket;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_packet_handler",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "init_packet_handler",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "destroy_packet_handler",
+                "func_c_signature": "void destroy_packet_handler(void)",
+                "decompiled_code": "void destroy_packet_handler(void) {\n  void *pvVar1;\n  void *local_10;\n  \n  if (g_packetHandlers != (void *)0x0) {\n    free(g_packetHandlers);\n  }\n  g_packetHandlers = (void *)0x0;\n  local_10 = g_packetData;\n  while (local_10 != (void *)0x0) {\n    pvVar1 = *(void **)((int)local_10 + 0x34);\n    free(local_10);\n    local_10 = pvVar1;\n  }\n  g_packetData = (void *)0x0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "destroy_packet_handler",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "destroy_packet_handler",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simple_checksum16",
+                "func_c_signature": "short simple_checksum16(byte *param_1,short param_2)",
+                "decompiled_code": "short simple_checksum16(byte *param_1,short param_2) {\n  short local_18;\n  short local_6;\n  \n  local_6 = -0x4053;\n  local_18 = param_2;\n  while (local_18 != 0) {\n    local_6 = local_6 + (ushort)*param_1;\n    param_1 = param_1 + 1;\n    local_18 = local_18 + -1;\n  }\n  return local_6;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simple_checksum16"
+                    ],
+                    "calling_functions": [
+                        "simple_checksum16",
+                        "receive_packet"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "receive_packet",
+                "func_c_signature": "void receive_packet(char *param_1,byte param_2,short param_3)",
+                "decompiled_code": "void receive_packet(char *param_1,byte param_2,short param_3) {\n  char cVar1;\n  bool bVar2;\n  short sVar3;\n  uint local_14;\n  \n  if (((param_1 != (char *)0x0) && (param_2 != 0)) &&\n     (sVar3 = simple_checksum16(param_1,param_2), param_3 == sVar3)) {\n    cVar1 = *param_1;\n    bVar2 = false;\n    for (local_14 = 0; local_14 < DAT_00019004; local_14 = local_14 + 1) {\n      if (cVar1 == *(char *)(g_packetHandlers + local_14 * 8)) {\n        bVar2 = true;\n        add_new_packet(cVar1,*(undefined4 *)(g_packetHandlers + local_14 * 8 + 4),param_1 + 1,\n                       param_2 - 1);\n        DAT_0001900c = DAT_0001900c + 1;\n        DAT_00019010 = (uint)param_2 + DAT_00019010;\n      }\n    }\n    if (!bVar2) {\n      DAT_00019014 = DAT_00019014 + 1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "receive_packet",
+                        "simple_checksum16",
+                        "add_new_packet"
+                    ],
+                    "calling_functions": [
+                        "do_sample",
+                        "receive_packet"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_new_packet",
+                "func_c_signature": "void add_new_packet(undefined param_1,undefined4 param_2,void *param_3,uint param_4)",
+                "decompiled_code": "void add_new_packet(undefined param_1,undefined4 param_2,void *param_3,uint param_4) {\n  void *__dest;\n  \n  __dest = malloc(0x40);\n  *(undefined *)((int)__dest + 0x3c) = param_1;\n  *(undefined4 *)((int)__dest + 0x38) = param_2;\n  *(undefined4 *)((int)__dest + 0x34) = 0;\n  *(uint *)((int)__dest + 0x30) = param_4 & 0xff;\n  memcpy(__dest,param_3,param_4 & 0xff);\n  if (g_packetData != (void *)0x0) {\n    *(void **)((int)__dest + 0x34) = g_packetData;\n  }\n  g_packetData = __dest;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_new_packet",
+                        "malloc",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "receive_packet",
+                        "add_new_packet"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "display_packets",
+                "func_c_signature": "void display_packets(void)",
+                "decompiled_code": "void display_packets(void) {\n  int local_14;\n  int local_10;\n  \n  printf(\"Total $d bytes received and $d invalid packets.\\n\",DAT_00019010,DAT_00019014);\n  printf(\"Displaying $d received packets:\\n\",DAT_0001900c);\n  local_14 = 0;\n  for (local_10 = g_packetData; local_10 != 0; local_10 = *(int *)(local_10 + 0x34)) {\n    printf(\"Displaying packet $d type $d:\\n\",local_14,(uint)*(byte *)(local_10 + 0x3c));\n    (**(code **)(local_10 + 0x38))(local_10,*(undefined4 *)(local_10 + 0x30));\n    local_14 = local_14 + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "display_packets",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "display_packets",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandleBroadcastPacket",
+                "func_c_signature": "void HandleBroadcastPacket(byte *param_1,uint param_2)",
+                "decompiled_code": "void HandleBroadcastPacket(byte *param_1,uint param_2) {\n  undefined local_117 [9];\n  undefined local_10e [256];\n  byte local_e;\n  byte local_d;\n  \n  if (param_1 == (byte *)0x0) {\n    printf(\"[BROADCAST]No data\\n\");\n  }\n  else if (param_2 == 0) {\n    printf(\"[BROADCAST]Missing length\\n\");\n  }\n  else {\n    local_d = *param_1;\n    if (param_2 < local_d + 2) {\n      printf(\"[BROADCAST]Invalid message length\\n\");\n    }\n    else if (local_d < 9) {\n      local_e = param_1[local_d + 1];\n      if (param_2 == (uint)local_e + (uint)local_d + 2) {\n        memcpy(local_117,param_1 + 1,(uint)local_d);\n        local_117[local_d] = 0;\n        memcpy(local_10e,param_1 + local_d + 2,(uint)local_e);\n        local_10e[local_e] = 0;\n        printf(\"[BROADCAST]From $s::$s\\n\",local_117,local_10e);\n      }\n      else {\n        printf(\"[BROADCAST]Message length did not match packet length\\n\");\n      }\n    }\n    else {\n      printf(\"[BROADCAST]Username length was too large\\n\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandleBroadcastPacket",
+                        "printf",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "HandleBroadcastPacket"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandleChannelPacket",
+                "func_c_signature": "void HandleChannelPacket(byte *param_1,uint param_2)",
+                "decompiled_code": "void HandleChannelPacket(byte *param_1,uint param_2) {\n  undefined local_118 [256];\n  undefined local_18 [9];\n  byte local_f;\n  byte local_e;\n  byte local_d;\n  \n  if (param_1 == (byte *)0x0) {\n    printf(\"[CHANNEL]No data\\n\");\n  }\n  else if (param_2 < 2) {\n    printf(\"[CHANNEL]Invalid length\\n\");\n  }\n  else {\n    local_d = *param_1;\n    if (param_2 < local_d + 3) {\n      printf(\"[CHANNEL]Invalid message length\\n\");\n    }\n    else if (local_d < 9) {\n      local_e = param_1[local_d + 1];\n      local_f = param_1[local_d + 2];\n      if (param_2 == (uint)local_f + (uint)local_d + 3) {\n        memcpy(local_18,param_1 + 1,(uint)local_d);\n        local_18[local_d] = 0;\n        memcpy(local_118,param_1 + local_d + 3,(uint)local_f);\n        local_118[local_f] = 0;\n        printf(\"[CHANNEL $d]Message from $s::$s\\n\",(uint)local_e,local_18,local_118);\n      }\n      else {\n        printf(\"[CHANNEL]Message length did not match packet length\\n\");\n      }\n    }\n    else {\n      printf(\"[CHANNEL]Username length was too large\\n\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandleChannelPacket",
+                        "printf",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "HandleChannelPacket"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandlePrivatePacket",
+                "func_c_signature": "void HandlePrivatePacket(byte *param_1,uint param_2)",
+                "decompiled_code": "void HandlePrivatePacket(byte *param_1,uint param_2) {\n  undefined local_121 [9];\n  undefined local_118 [9];\n  undefined local_10f [256];\n  byte local_f;\n  byte local_e;\n  byte local_d;\n  \n  if (param_1 == (byte *)0x0) {\n    printf(\"[PRIVATE MESSAGE]No data\\n\");\n  }\n  else if (param_2 < 2) {\n    printf(\"[PRIVATE MESSAGE]Invalid length\\n\");\n  }\n  else {\n    local_d = *param_1;\n    if (param_2 < local_d + 3) {\n      printf(\"[PRIVATE MESSAGE]Message length did not match packet length\\n\");\n    }\n    else if (local_d < 9) {\n      local_e = param_1[local_d + 1];\n      if (param_2 < (uint)local_e + (uint)local_d + 3) {\n        printf(\"[PRIVATE MESSAGE]Message length did not match packet length\\n\");\n      }\n      else if (local_e < 9) {\n        local_f = param_1[(uint)local_e + (uint)local_d + 2];\n        if (param_2 == (uint)local_f + (uint)local_d + (uint)local_e + 3) {\n          memcpy(local_121,param_1 + 1,(uint)local_d);\n          local_121[local_d] = 0;\n          memcpy(local_118,param_1 + local_d + 2,(uint)local_e);\n          local_118[local_e] = 0;\n          memcpy(local_10f,param_1 + (uint)local_e + (uint)local_d + 3,(uint)local_f);\n          local_10f[local_f] = 0;\n          printf(\"[PRIVATE MESSAGE]$s to $s::$s\\n\",local_121,local_118,local_10f);\n        }\n        else {\n          printf(\"[PRIVATE MESSAGE]Message length did not match packet length\\n\");\n        }\n      }\n      else {\n        printf(\"[PRIVATE MESSAGE]Username length was too large\\n\");\n      }\n    }\n    else {\n      printf(\"[PRIVATE MESSAGE]Username length was too large\\n\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandlePrivatePacket",
+                        "printf",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "HandlePrivatePacket"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandleConnectPacket",
+                "func_c_signature": "void HandleConnectPacket(byte *param_1,int param_2)",
+                "decompiled_code": "void HandleConnectPacket(byte *param_1,int param_2) {\n  undefined local_15 [8];\n  byte local_d;\n  \n  if (param_1 == (byte *)0x0) {\n    printf(\"[CONNECT MESSAGE]No data\\n\");\n  }\n  else if (param_2 == 0) {\n    printf(\"[CONNECT MESSAGE]Invalid length\\n\");\n  }\n  else {\n    local_d = *param_1;\n    if (param_2 == local_d + 1) {\n      if (local_d < 8) {\n        memcpy(local_15,param_1 + 1,(uint)local_d);\n        local_15[local_d] = 0;\n        printf(\"[CONNECT MESSAGE]$s connected\\n\",local_15);\n      }\n      else {\n        printf(\"[CONNECT MESSAGE]Username length was too large\\n\");\n      }\n    }\n    else {\n      printf(\"[CONNECT MESSAGE]Message length did not match packet length\\n\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandleConnectPacket",
+                        "printf",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "HandleConnectPacket"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandleDisconnectPacket",
+                "func_c_signature": "void HandleDisconnectPacket(byte *param_1,int param_2)",
+                "decompiled_code": "void HandleDisconnectPacket(byte *param_1,int param_2) {\n  undefined local_15 [8];\n  byte local_d;\n  \n  if (param_1 == (byte *)0x0) {\n    printf(\"[DISCONNECT MESSAGE]No data\\n\");\n  }\n  else if (param_2 == 0) {\n    printf(\"[DISCONNECT MESSAGE]Invalid length\\n\");\n  }\n  else {\n    local_d = *param_1;\n    if (param_2 == local_d + 1) {\n      if (local_d < 8) {\n        memcpy(local_15,param_1 + 1,(uint)local_d);\n        local_15[local_d] = 0;\n        printf(\"[DISCONNECT MESSAGE]$s disconnected\\n\",local_15);\n      }\n      else {\n        printf(\"[DISCONNECT MESSAGE]Username length was too large\\n\");\n      }\n    }\n    else {\n      printf(\"[DISCONNECT MESSAGE]Message length did not match packet length\\n\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandleDisconnectPacket",
+                        "printf",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "HandleDisconnectPacket"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            }
+        ],
+        "rx.c": [
+            {
+                "func_name": "get_rand_uniform",
+                "func_c_signature": "longdouble get_rand_uniform(void)",
+                "decompiled_code": "longdouble get_rand_uniform(void) {\n  int iVar1;\n  int iVar2;\n  \n  iVar1 = rand();\n  iVar2 = rand();\n  return (longdouble)DAT_000164c8 *\n         ((longdouble)DAT_000164c0 * (longdouble)(iVar1 >> 4) + (longdouble)(iVar2 >> 5));\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_rand_uniform",
+                        "rand"
+                    ],
+                    "calling_functions": [
+                        "get_rand_uniform",
+                        "add_awgn_to_sample"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_awgn_to_sample",
+                "func_c_signature": "char add_awgn_to_sample(char param_1)",
+                "decompiled_code": "char add_awgn_to_sample(char param_1) {\n  double dVar1;\n  short sVar2;\n  longdouble lVar3;\n  longdouble lVar4;\n  double dVar5;\n  double dVar6;\n  double dVar7;\n  char local_50;\n  \n  do {\n    lVar3 = (longdouble)get_rand_uniform();\n    lVar4 = (longdouble)get_rand_uniform();\n    dVar1 = ((double)lVar3 + (double)lVar3) - 1.0;\n    dVar7 = ((double)lVar4 + (double)lVar4) - 1.0;\n    dVar7 = dVar7 * dVar7 + dVar1 * dVar1;\n  } while (1.0 <= dVar7);\n  dVar5 = log(dVar7);\n  dVar5 = sqrt((DAT_000164d0 * dVar5) / dVar7);\n  dVar6 = log(dVar7);\n  sqrt((DAT_000164d0 * dVar6) / dVar7);\n  dVar7 = sqrt(DAT_000164d8);\n  local_50 = (char)(short)ROUND(dVar7 * dVar1 * dVar5);\n  sVar2 = (short)param_1 + (short)local_50;\n  local_50 = param_1 + local_50;\n  if (sVar2 < 0x80) {\n    if (sVar2 < -0x7f) {\n      local_50 = -0x7f;\n    }\n  }\n  else {\n    local_50 = '\\x7f';\n  }\n  return local_50;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_awgn_to_sample",
+                        "get_rand_uniform",
+                        "log",
+                        "sqrt",
+                        "ROUND"
+                    ],
+                    "calling_functions": [
+                        "add_awgn_to_sample",
+                        "receive_sample"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "receive_sample",
+                "func_c_signature": "bool receive_sample(char param_1)",
+                "decompiled_code": "bool receive_sample(char param_1) {\n  double dVar1;\n  double dVar2;\n  double dVar3;\n  double dVar4;\n  double dVar5;\n  double dVar6;\n  double dVar7;\n  double dVar8;\n  double dVar9;\n  double dVar10;\n  double dVar11;\n  double dVar12;\n  double dVar13;\n  double dVar14;\n  double dVar15;\n  double dVar16;\n  double dVar17;\n  double dVar18;\n  double dVar19;\n  double dVar20;\n  double dVar21;\n  double dVar22;\n  double dVar23;\n  double dVar24;\n  double dVar25;\n  double dVar26;\n  char cVar27;\n  \n  cVar27 = add_awgn_to_sample((int)param_1);\n  dVar26 = DAT_00019190;\n  dVar25 = DAT_00019188;\n  dVar24 = DAT_00019178;\n  dVar23 = DAT_00019170;\n  dVar22 = DAT_00019168;\n  dVar21 = DAT_00019150;\n  dVar20 = DAT_00019148;\n  dVar19 = DAT_00019138;\n  dVar18 = DAT_00019130;\n  dVar17 = DAT_00019128;\n  dVar16 = DAT_00019108;\n  dVar15 = DAT_00019100;\n  dVar14 = DAT_000190f8;\n  dVar13 = DAT_000190f0;\n  dVar12 = DAT_000190e8;\n  dVar11 = DAT_000190c8;\n  dVar10 = DAT_000190b8;\n  dVar9 = DAT_000190a8;\n  dVar8 = DAT_00019088;\n  dVar7 = DAT_00019080;\n  dVar6 = DAT_00019078;\n  dVar5 = DAT_00019070;\n  dVar4 = DAT_00019068;\n  dVar3 = DAT_00019048;\n  dVar2 = DAT_00019038;\n  dVar1 = DAT_00019028;\n  xv1200_7 = DAT_00019028;\n  DAT_00019028 = DAT_00019030;\n  DAT_00019030 = DAT_00019038;\n  DAT_00019038 = DAT_00019040;\n  DAT_00019040 = DAT_00019048;\n  DAT_00019048 = DAT_00019050;\n  DAT_00019050 = (double)(short)cVar27 / DAT_000164e0;\n  yv1200_6 = DAT_00019068;\n  DAT_00019068 = DAT_00019070;\n  DAT_00019070 = DAT_00019078;\n  DAT_00019078 = DAT_00019080;\n  DAT_00019080 = DAT_00019088;\n  DAT_00019088 = DAT_00019090;\n  DAT_00019090 = DAT_00016518 * DAT_00019090 +\n                 DAT_00016510 * dVar8 +\n                 DAT_00016508 * dVar7 +\n                 DAT_00016500 * dVar6 +\n                 DAT_000164f8 * dVar5 +\n                 DAT_000164f0 * dVar4 +\n                 DAT_000164e8 * (dVar2 - dVar3) + ((double)(short)cVar27 / DAT_000164e0 - dVar1);\n  xv2400_5 = DAT_000190a8;\n  DAT_000190a8 = DAT_000190b0;\n  DAT_000190b0 = DAT_000190b8;\n  DAT_000190b8 = DAT_000190c0;\n  DAT_000190c0 = DAT_000190c8;\n  DAT_000190c8 = DAT_000190d0;\n  DAT_000190d0 = (double)(short)cVar27 / DAT_00016520;\n  yv2400_4 = DAT_000190e8;\n  DAT_000190e8 = DAT_000190f0;\n  DAT_000190f0 = DAT_000190f8;\n  DAT_000190f8 = DAT_00019100;\n  DAT_00019100 = DAT_00019108;\n  DAT_00019108 = DAT_00019110;\n  DAT_00019110 = DAT_00019110 * 0.0 +\n                 DAT_00016530 * dVar16 +\n                 dVar15 * 0.0 +\n                 DAT_00016528 * dVar14 +\n                 dVar13 * 0.0 +\n                 DAT_000164f0 * dVar12 +\n                 DAT_000164e8 * (dVar10 - dVar11) + ((double)(short)cVar27 / DAT_00016520 - dVar9);\n  xv_env1200_3 = DAT_00019128;\n  DAT_00019128 = DAT_00019130;\n  DAT_00019130 = DAT_00019138;\n  DAT_00019138 = (DAT_00019090 * DAT_00019090) / DAT_00016538;\n  yv_env1200_2 = DAT_00019148;\n  DAT_00019148 = DAT_00019150;\n  DAT_00019150 = DAT_00019158;\n  DAT_00019158 = _DAT_00016550 * DAT_00019158 +\n                 DAT_00016548 * dVar21 +\n                 DAT_00016540 * dVar20 + DAT_000164e8 * (dVar19 + dVar18) + DAT_00019138 + dVar17;\n  xv_env2400_1 = DAT_00019168;\n  DAT_00019168 = DAT_00019170;\n  DAT_00019170 = DAT_00019178;\n  DAT_00019178 = (DAT_00019110 * DAT_00019110) / DAT_00016538;\n  yv_env2400_0 = DAT_00019188;\n  DAT_00019188 = DAT_00019190;\n  DAT_00019190 = DAT_00019198;\n  DAT_00019198 = _DAT_00016550 * DAT_00019198 +\n                 DAT_00016548 * dVar26 +\n                 DAT_00016540 * dVar25 + DAT_000164e8 * (dVar24 + dVar23) + DAT_00019178 + dVar22;\n  return DAT_00019158 < DAT_00019198;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "receive_sample",
+                        "add_awgn_to_sample"
+                    ],
+                    "calling_functions": [
+                        "receive_sample",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "init_prng",
+                "func_c_signature": "void init_prng(void)",
+                "decompiled_code": "void init_prng(void) {\n  long lVar1;\n  undefined *puVar2;\n  undefined auStack_3c [16];\n  undefined local_2c [36];\n  \n  puVar2 = auStack_3c;\n  lVar1 = random();\n  if (lVar1 != 0) {\n    puVar2 = &stack0xffffffb4;\n    printf(\"[[ERROR RANDOM FAILED]]\\n\");\n    _terminate();\n  }\n  *(undefined4 *)(puVar2 + -0xc) = 8;\n  *(undefined **)(puVar2 + -0x10) = local_2c;\n  *(undefined4 *)(puVar2 + -0x14) = 0x12a8a;\n  seed_prng_array();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_prng",
+                        "random",
+                        "printf",
+                        "_terminate",
+                        "seed_prng_array"
+                    ],
+                    "calling_functions": [
+                        "init_prng",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00047_decompiled.c"
+                }
+            }
+        ]
+    }
+}

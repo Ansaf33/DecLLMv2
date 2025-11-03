@@ -1,0 +1,1297 @@
+{
+    "file": "CROMU_00035",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "die",
+                "func_c_signature": "void * die(size_t param_1)",
+                "decompiled_code": "void * die(size_t param_1) {\n  void *__s;\n  undefined4 uStack_14;\n  \n  printf(\"\\n******************\\n@s\\n*****************\\n\");\n  _terminate(1);\n  __s = malloc(param_1);\n  if (__s == (void *)0x0) {\n    die(uStack_14);\n  }\n  bzero(__s,param_1);\n  return __s;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "die",
+                        "printf",
+                        "_terminate",
+                        "malloc",
+                        "bzero"
+                    ],
+                    "calling_functions": [
+                        "die",
+                        "mallocOrDie",
+                        "add_perm",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "mallocOrDie",
+                "func_c_signature": "void * mallocOrDie(size_t param_1,undefined4 param_2)",
+                "decompiled_code": "void * mallocOrDie(size_t param_1,undefined4 param_2) {\n  void *__s;\n  \n  __s = malloc(param_1);\n  if (__s == (void *)0x0) {\n    die(param_2);\n  }\n  bzero(__s,param_1);\n  return __s;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "mallocOrDie",
+                        "malloc",
+                        "die",
+                        "bzero"
+                    ],
+                    "calling_functions": [
+                        "mallocOrDie",
+                        "init_data",
+                        "add_perm",
+                        "_add_node",
+                        "delete_file_bytes",
+                        "add_file_chunk",
+                        "add_file",
+                        "_add_user",
+                        "_add_group",
+                        "add_user_to_group",
+                        "recursive_path",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_data",
+                "func_c_signature": "int * init_data(void)",
+                "decompiled_code": "int * init_data(void) {\n  int *piVar1;\n  int iVar2;\n  undefined4 uVar3;\n  char *__dest;\n  \n  piVar1 = (int *)mallocOrDie(0x1c,\"Failed to malloc workingData\");\n  iVar2 = mallocOrDie(0x2c,\"Failed to malloc root node\");\n  *piVar1 = iVar2;\n  *(undefined4 *)(*piVar1 + 0x20) = 0;\n  *(undefined4 *)(*piVar1 + 4) = 0;\n  *(undefined4 *)(*piVar1 + 0x10) = 0;\n  piVar1[6] = 0;\n  *(undefined *)(*piVar1 + 8) = 0x44;\n  piVar1[1] = *piVar1;\n  iVar2 = _add_user(&DAT_00018062,0);\n  piVar1[4] = iVar2;\n  iVar2 = _add_group(&DAT_00018062,0);\n  piVar1[5] = iVar2;\n  piVar1[2] = piVar1[4];\n  piVar1[3] = piVar1[5];\n  add_user_to_group(piVar1[4],piVar1[5]);\n  iVar2 = *piVar1;\n  uVar3 = add_perm(piVar1[4],0,*piVar1);\n  *(undefined4 *)(iVar2 + 0x14) = uVar3;\n  add_perm(0,piVar1[5],*piVar1);\n  *(undefined4 *)(*piVar1 + 0x1c) = 0;\n  *(undefined4 *)(*piVar1 + 0x20) = 0;\n  *(undefined4 *)(*piVar1 + 0x24) = 0;\n  __dest = (char *)mallocOrDie(5,\"Failed to malloc root name\");\n  *(char **)(*piVar1 + 0x18) = __dest;\n  strcpy(__dest,\"\");\n  return piVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_data",
+                        "mallocOrDie",
+                        "_add_user",
+                        "_add_group",
+                        "add_user_to_group",
+                        "add_perm",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "init_data",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_perm_by_name",
+                "func_c_signature": "int find_perm_by_name(char *param_1,int param_2,undefined4 param_3)",
+                "decompiled_code": "int find_perm_by_name(char *param_1,int param_2,undefined4 param_3) {\n  int iVar1;\n  int local_10;\n  \n  validate_current_perms(param_2,param_3);\n  local_10 = *(int *)(param_2 + 0x14);\n  while( true ) {\n    if (local_10 == 0) {\n      return 0;\n    }\n    if ((*(int *)(local_10 + 8) != 0) &&\n       (iVar1 = strcmp(*(char **)(*(int *)(local_10 + 8) + 8),param_1), iVar1 == 0)) break;\n    if ((*(int *)(local_10 + 0xc) != 0) &&\n       (iVar1 = strcmp(*(char **)(*(int *)(local_10 + 0xc) + 0x10),param_1), iVar1 == 0)) {\n      return local_10;\n    }\n    local_10 = *(int *)(local_10 + 4);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_perm_by_name",
+                        "validate_current_perms",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "find_perm_by_name",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_perm",
+                "func_c_signature": "int * add_perm(int param_1,int param_2,int param_3)",
+                "decompiled_code": "int * add_perm(int param_1,int param_2,int param_3) {\n  int *piVar1;\n  int local_14;\n  int local_10;\n  \n  if (((param_1 == 0) && (param_2 == 0)) || ((param_1 != 0 && (param_2 != 0)))) {\n    die(\"Bad call to _add_perm\");\n  }\n  piVar1 = (int *)mallocOrDie(0x10,\"Failed to malloc pPerms\");\n  if (param_1 != 0) {\n    piVar1[2] = param_1;\n  }\n  if (param_2 != 0) {\n    piVar1[3] = param_2;\n  }\n  if (*(int *)(param_3 + 0x14) == 0) {\n    *(int **)(param_3 + 0x14) = piVar1;\n  }\n  else {\n    local_14 = *(int *)(param_3 + 0x14);\n    local_10 = local_14;\n    for (; local_14 != 0; local_14 = *(int *)(local_14 + 4)) {\n      if ((*(int *)(local_10 + 8) != 0) && (param_1 == *(int *)(local_10 + 8))) {\n        return (int *)0x0;\n      }\n      if ((*(int *)(local_10 + 0xc) != 0) && (param_2 == *(int *)(local_10 + 0xc))) {\n        return (int *)0x0;\n      }\n      local_10 = local_14;\n    }\n    *(int **)(local_10 + 4) = piVar1;\n    *piVar1 = local_10;\n    piVar1[1] = 0;\n  }\n  return piVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_perm",
+                        "die",
+                        "mallocOrDie"
+                    ],
+                    "calling_functions": [
+                        "init_data",
+                        "add_perm",
+                        "_add_node",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "delete_perms",
+                "func_c_signature": "int delete_perms(int param_1,int *param_2)",
+                "decompiled_code": "int delete_perms(int param_1,int *param_2) {\n  int iVar1;\n  \n  if (param_2 == (int *)0x0) {\n    iVar1 = 0;\n  }\n  else {\n    iVar1 = param_2[1];\n    if (*param_2 != 0) {\n      *(int *)(*param_2 + 4) = param_2[1];\n    }\n    if ((param_2[1] != 0) && (*(int *)param_2[1] = *param_2, *param_2 == 0)) {\n      *(int *)(param_1 + 0x14) = param_2[1];\n    }\n    free(param_2);\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "delete_perms",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "delete_perms",
+                        "validate_current_perms",
+                        "delete_node",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_current_perms",
+                "func_c_signature": "void validate_current_perms(int param_1,undefined4 param_2)",
+                "decompiled_code": "void validate_current_perms(int param_1,undefined4 param_2) {\n  int iVar1;\n  int local_14;\n  int local_10;\n  \n  local_10 = *(int *)(param_1 + 0x14);\n  local_14 = 0;\n  if (local_10 != 0) {\n    if ((*(int *)(local_10 + 8) == 0) && (*(int *)(local_10 + 0xc) == 0)) {\n      printf(\"Bad perm @s\\n\",*(undefined4 *)(param_1 + 0x18));\n    }\n    else {\n      while (local_10 != 0) {\n        if (*(int *)(local_10 + 8) != 0) {\n          iVar1 = is_user_valid(*(undefined4 *)(local_10 + 8),param_2);\n          if (iVar1 == 0) {\n            local_14 = delete_perms(param_1,local_10);\n          }\n          else {\n            local_14 = *(int *)(local_10 + 4);\n          }\n        }\n        if (*(int *)(local_10 + 0xc) != 0) {\n          iVar1 = is_group_valid(*(undefined4 *)(local_10 + 0xc),param_2);\n          if (iVar1 == 0) {\n            local_14 = delete_perms(param_1,local_10);\n          }\n          else {\n            local_14 = *(int *)(local_10 + 4);\n          }\n        }\n        local_10 = local_14;\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_current_perms",
+                        "printf",
+                        "is_user_valid",
+                        "delete_perms",
+                        "is_group_valid"
+                    ],
+                    "calling_functions": [
+                        "find_perm_by_name",
+                        "validate_current_perms",
+                        "print_perms",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_add_node",
+                "func_c_signature": "undefined4 *\n_add_node(undefined param_1,undefined4 param_2,char *param_3,int param_4,undefined4 param_5)",
+                "decompiled_code": "undefined4 *\n_add_node(undefined param_1,undefined4 param_2,char *param_3,int param_4,undefined4 param_5) {\n  undefined4 *puVar1;\n  undefined4 uVar2;\n  size_t sVar3;\n  char *__dest;\n  \n  puVar1 = (undefined4 *)mallocOrDie(0x2c,\"Failed to mallod node\");\n  puVar1[8] = param_4;\n  *puVar1 = 0;\n  puVar1[10] = 0;\n  puVar1[9] = 0;\n  *(undefined *)(puVar1 + 2) = param_1;\n  puVar1[4] = param_2;\n  uVar2 = add_perm(param_5,0,puVar1);\n  puVar1[5] = uVar2;\n  sVar3 = strlen(param_3);\n  __dest = (char *)mallocOrDie(sVar3 + 1,\"Failed to malloc name\");\n  strcpy(__dest,param_3);\n  puVar1[6] = __dest;\n  puVar1[7] = 0;\n  puVar1[8] = param_4;\n  if (*(int *)(param_4 + 0x24) == 0) {\n    *(undefined4 **)(param_4 + 0x24) = puVar1;\n    *(undefined4 **)(param_4 + 0x28) = puVar1;\n    puVar1[1] = 0;\n  }\n  else {\n    **(undefined4 **)(param_4 + 0x28) = puVar1;\n    puVar1[1] = *(undefined4 *)(param_4 + 0x28);\n    *(undefined4 **)(param_4 + 0x28) = puVar1;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_add_node",
+                        "mallocOrDie",
+                        "add_perm",
+                        "strlen",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "_add_node",
+                        "add_file",
+                        "add_directory"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_file_size",
+                "func_c_signature": "int get_file_size(int param_1)",
+                "decompiled_code": "int get_file_size(int param_1) {\n  int local_c;\n  int local_8;\n  \n  local_8 = *(int *)(param_1 + 4);\n  local_c = 0;\n  for (; local_8 != 0; local_8 = *(int *)(local_8 + 0xc)) {\n    local_c = local_c + *(int *)(local_8 + 4);\n  }\n  return local_c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_file_size"
+                    ],
+                    "calling_functions": [
+                        "get_file_size",
+                        "print_working_dir",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "delete_file_bytes",
+                "func_c_signature": "void delete_file_bytes(int param_1,uint param_2)",
+                "decompiled_code": "void delete_file_bytes(int param_1,uint param_2) {\n  bool bVar1;\n  void *__n;\n  void *__dest;\n  uint local_1c;\n  int local_18;\n  void **local_14;\n  void **local_10;\n  \n  local_10 = *(void ***)(param_1 + 4);\n  local_14 = *(void ***)(param_1 + 4);\n  local_18 = 0;\n  local_1c = 0;\n  bVar1 = false;\n  while (local_10 != (void **)0x0) {\n    local_1c = local_1c + (int)local_10[1];\n    if (bVar1) {\n      local_10 = (void **)delete_chunk(param_1,local_10);\n    }\n    else {\n      if (param_2 <= local_1c) {\n        local_14 = local_10;\n        bVar1 = true;\n        local_18 = local_1c - param_2;\n      }\n      local_10 = (void **)local_10[3];\n    }\n  }\n  __n = (void *)((int)local_14[1] - local_18);\n  __dest = (void *)mallocOrDie(__n,\"Failed to malloc filechunk\");\n  memcpy(__dest,*local_14,(size_t)__n);\n  free(*local_14);\n  local_14[1] = __n;\n  *local_14 = __dest;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "delete_file_bytes",
+                        "delete_chunk",
+                        "mallocOrDie",
+                        "memcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "delete_file_bytes",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_file_chunk",
+                "func_c_signature": "void ** add_file_chunk(void *param_1,int *param_2,void *param_3)",
+                "decompiled_code": "void ** add_file_chunk(void *param_1,int *param_2,void *param_3) {\n  void **ppvVar1;\n  void *pvVar2;\n  \n  ppvVar1 = (void **)mallocOrDie(0x10,\"Failed to malloc filechunk\");\n  pvVar2 = (void *)mallocOrDie(param_3,\"Failed to malloc chunk\");\n  *ppvVar1 = pvVar2;\n  memcpy(*ppvVar1,param_1,(size_t)param_3);\n  ppvVar1[1] = param_3;\n  if (param_2[2] == 0) {\n    param_2[1] = (int)ppvVar1;\n    param_2[2] = (int)ppvVar1;\n    ppvVar1[2] = (void *)0x0;\n    *param_2 = 1;\n  }\n  else {\n    *param_2 = *param_2 + 1;\n    *(void ***)(param_2[2] + 0xc) = ppvVar1;\n    ppvVar1[2] = (void *)param_2[2];\n    param_2[2] = (int)ppvVar1;\n  }\n  ppvVar1[3] = (void *)0x0;\n  return ppvVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_file_chunk",
+                        "mallocOrDie",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "add_file_chunk",
+                        "add_file",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_file",
+                "func_c_signature": "int add_file(undefined4 param_1,undefined4 param_2,int param_3,undefined4 param_4,undefined4 param_5\n            ,undefined4 param_6)",
+                "decompiled_code": "int add_file(undefined4 param_1,undefined4 param_2,int param_3,undefined4 param_4,undefined4 param_5\n            ,undefined4 param_6) {\n  undefined4 uVar1;\n  int iVar2;\n  \n  uVar1 = mallocOrDie(0xc,\"Failed to malloc file\");\n  if (param_3 != 0) {\n    add_file_chunk(param_5,uVar1,param_3);\n  }\n  iVar2 = _add_node(0x46,param_2,param_4,param_1,param_6);\n  *(undefined4 *)(iVar2 + 0x1c) = uVar1;\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_file",
+                        "mallocOrDie",
+                        "add_file_chunk",
+                        "_add_node"
+                    ],
+                    "calling_functions": [
+                        "add_file",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "delete_chunk",
+                "func_c_signature": "void * delete_chunk(int *param_1,void **param_2)",
+                "decompiled_code": "void * delete_chunk(int *param_1,void **param_2) {\n  void *pvVar1;\n  \n  pvVar1 = param_2[3];\n  if (param_2 == (void **)0x0) {\n    puts(\"delete_chunk called with NULL\");\n    pvVar1 = (void *)0x0;\n  }\n  else {\n    if (param_2[2] == (void *)0x0) {\n      param_1[1] = (int)param_2[3];\n      if (param_2[3] == (void *)0x0) {\n        param_1[2] = 0;\n        *param_1 = 0;\n      }\n      else {\n        *(undefined4 *)((int)param_2[3] + 8) = 0;\n        *param_1 = *param_1 + -1;\n      }\n    }\n    else {\n      *(void **)((int)param_2[2] + 0xc) = param_2[3];\n      if (param_2[3] == (void *)0x0) {\n        param_1[2] = 0;\n      }\n      else {\n        *(void **)((int)param_2[3] + 8) = param_2[2];\n      }\n      *param_1 = *param_1 + -1;\n    }\n    free(*param_2);\n    free(param_2);\n  }\n  return pvVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "delete_chunk",
+                        "puts",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "delete_file_bytes",
+                        "delete_chunk",
+                        "delete_file"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "delete_file",
+                "func_c_signature": "void delete_file(void *param_1)",
+                "decompiled_code": "void delete_file(void *param_1) {\n  int local_10;\n  \n  for (local_10 = *(int *)((int)param_1 + 4); local_10 != 0;\n      local_10 = delete_chunk(param_1,local_10)) {\n  }\n  free(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "delete_file",
+                        "delete_chunk",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "delete_file",
+                        "delete_node"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "delete_node",
+                "func_c_signature": "int delete_node(int *param_1,int **param_2)",
+                "decompiled_code": "int delete_node(int *param_1,int **param_2) {\n  int iVar1;\n  int local_14;\n  int local_10;\n  \n  iVar1 = *param_1;\n  if (param_1 == *param_2) {\n    puts(\"can not delete root directory\");\n  }\n  if (*(char *)(param_1 + 2) == 'F') {\n    delete_file(param_1[7]);\n  }\n  if (*(char *)(param_1 + 2) == 'D') {\n    for (local_10 = param_1[9]; local_10 != 0; local_10 = delete_node(local_10,param_2)) {\n    }\n  }\n  if (param_1[1] == 0) {\n    *(int *)(param_1[8] + 0x24) = *param_1;\n    if (*param_1 == 0) {\n      *(undefined4 *)(param_1[8] + 0x24) = 0;\n      *(undefined4 *)(param_1[8] + 0x28) = 0;\n    }\n    else {\n      *(undefined4 *)(*param_1 + 4) = 0;\n    }\n  }\n  else {\n    *(int *)param_1[1] = *param_1;\n    if (*param_1 == 0) {\n      *(int *)(param_1[8] + 0x28) = param_1[1];\n    }\n    else {\n      *(int *)(*param_1 + 4) = param_1[1];\n    }\n  }\n  for (local_14 = param_1[5]; local_14 != 0; local_14 = delete_perms(param_1,local_14)) {\n  }\n  free((void *)param_1[6]);\n  free(param_1);\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "delete_node",
+                        "puts",
+                        "delete_file",
+                        "delete_perms",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "delete_node",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_directory",
+                "func_c_signature": "int add_directory(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)",
+                "decompiled_code": "int add_directory(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4) {\n  int iVar1;\n  \n  iVar1 = _add_node(0x44,param_1,param_2,param_3,param_4);\n  *(undefined4 *)(iVar1 + 0x24) = 0;\n  *(undefined4 *)(iVar1 + 0x28) = 0;\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_directory",
+                        "_add_node"
+                    ],
+                    "calling_functions": [
+                        "add_directory",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_add_user",
+                "func_c_signature": "int * _add_user(char *param_1,int param_2)",
+                "decompiled_code": "int * _add_user(char *param_1,int param_2) {\n  int *piVar1;\n  size_t sVar2;\n  char *__dest;\n  int local_14;\n  int local_10;\n  \n  piVar1 = (int *)mallocOrDie(0xc,\"Failed to allocate user\");\n  sVar2 = strlen(param_1);\n  __dest = (char *)mallocOrDie(sVar2 + 1,\"Failed to allocate username\");\n  strcpy(__dest,param_1);\n  piVar1[2] = (int)__dest;\n  if (param_2 == 0) {\n    *piVar1 = 0;\n    piVar1[1] = 0;\n  }\n  else {\n    local_10 = param_2;\n    for (local_14 = *(int *)(param_2 + 4); local_14 != 0; local_14 = *(int *)(local_14 + 4)) {\n      local_10 = local_14;\n    }\n    *(int **)(local_10 + 4) = piVar1;\n    *piVar1 = local_10;\n    piVar1[1] = 0;\n  }\n  return piVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_add_user",
+                        "mallocOrDie",
+                        "strlen",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "init_data",
+                        "_add_user",
+                        "add_user"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_user",
+                "func_c_signature": "void add_user(undefined4 param_1,int param_2)",
+                "decompiled_code": "void add_user(undefined4 param_1,int param_2) {\n  _add_user(param_1,*(undefined4 *)(param_2 + 0x10));\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_user",
+                        "_add_user"
+                    ],
+                    "calling_functions": [
+                        "add_user",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_user_in_group",
+                "func_c_signature": "int is_user_in_group(int param_1,int param_2)",
+                "decompiled_code": "int is_user_in_group(int param_1,int param_2) {\n  int local_8;\n  \n  local_8 = *(int *)(param_2 + 0xc);\n  while( true ) {\n    if (local_8 == 0) {\n      return 0;\n    }\n    if (param_1 == *(int *)(local_8 + 8)) break;\n    local_8 = *(int *)(local_8 + 4);\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_user_in_group"
+                    ],
+                    "calling_functions": [
+                        "is_user_in_group",
+                        "remove_user_from_group",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_user_valid",
+                "func_c_signature": "undefined4 is_user_valid(int param_1,int param_2)",
+                "decompiled_code": "undefined4 is_user_valid(int param_1,int param_2) {\n  int local_8;\n  \n  local_8 = *(int *)(param_2 + 0x10);\n  while( true ) {\n    if (local_8 == 0) {\n      return 0;\n    }\n    if (local_8 == param_1) break;\n    local_8 = *(int *)(local_8 + 4);\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_user_valid"
+                    ],
+                    "calling_functions": [
+                        "validate_current_perms",
+                        "is_user_valid"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_group_valid",
+                "func_c_signature": "undefined4 is_group_valid(int param_1,int param_2)",
+                "decompiled_code": "undefined4 is_group_valid(int param_1,int param_2) {\n  int local_8;\n  \n  local_8 = *(int *)(param_2 + 0x14);\n  while( true ) {\n    if (local_8 == 0) {\n      return 0;\n    }\n    if (local_8 == param_1) break;\n    local_8 = *(int *)(local_8 + 8);\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_group_valid"
+                    ],
+                    "calling_functions": [
+                        "validate_current_perms",
+                        "is_group_valid"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove_user_from_group",
+                "func_c_signature": "int remove_user_from_group(undefined4 param_1,int *param_2)",
+                "decompiled_code": "int remove_user_from_group(undefined4 param_1,int *param_2) {\n  int *__ptr;\n  int iVar1;\n  \n  __ptr = (int *)is_user_in_group(param_1,param_2);\n  if (__ptr == (int *)0x0) {\n    iVar1 = 0;\n  }\n  else {\n    if (*__ptr == 0) {\n      if (__ptr[1] == 0) {\n        param_2[3] = 0;\n        *param_2 = 0;\n      }\n      else {\n        param_2[3] = __ptr[1];\n        *(undefined4 *)__ptr[1] = 0;\n        *param_2 = *param_2 + -1;\n      }\n    }\n    else if (__ptr[1] == 0) {\n      *(undefined4 *)(*__ptr + 4) = 0;\n      *param_2 = *param_2 + -1;\n    }\n    else {\n      *(int *)(*__ptr + 4) = __ptr[1];\n      *(int *)__ptr[1] = *__ptr;\n      *param_2 = *param_2 + -1;\n    }\n    iVar1 = *__ptr;\n    free(__ptr);\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_user_from_group",
+                        "is_user_in_group",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "remove_user_from_group",
+                        "remove_user",
+                        "remove_group",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove_user",
+                "func_c_signature": "int remove_user(int *param_1,int param_2)",
+                "decompiled_code": "int remove_user(int *param_1,int param_2) {\n  int iVar1;\n  int local_10;\n  \n  local_10 = *(int *)(param_2 + 0x14);\n  if (param_1 == (int *)0x0) {\n    puts(\"Bad call:remove_user\");\n    iVar1 = 0;\n  }\n  else if (*param_1 == 0) {\n    puts(\"Can not delete root\");\n    iVar1 = 0;\n  }\n  else if (param_1 == *(int **)(param_2 + 0x10)) {\n    iVar1 = 0;\n  }\n  else {\n    for (; local_10 != 0; local_10 = *(int *)(local_10 + 8)) {\n      remove_user_from_group(param_1,local_10);\n    }\n    *(int *)(*param_1 + 4) = param_1[1];\n    if (param_1[1] != 0) {\n      *(int *)param_1[1] = *param_1;\n    }\n    iVar1 = *param_1;\n    free((void *)param_1[2]);\n    free(param_1);\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_user",
+                        "puts",
+                        "remove_user_from_group",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "remove_user",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove_group",
+                "func_c_signature": "undefined4 remove_group(void *param_1,int param_2)",
+                "decompiled_code": "undefined4 remove_group(void *param_1,int param_2) {\n  undefined4 uVar1;\n  int local_14;\n  int local_10;\n  \n  if (param_1 == (void *)0x0) {\n    puts(\"bad call to remove_group\");\n    uVar1 = 0;\n  }\n  else if (param_1 == *(void **)(param_2 + 0x14)) {\n    puts(\"Unable to delete group root\");\n    uVar1 = 0;\n  }\n  else {\n    local_14 = *(int *)((int)param_1 + 0xc);\n    for (local_10 = local_14; local_10 != 0; local_10 = *(int *)(local_10 + 4)) {\n      local_14 = local_10;\n    }\n    for (; local_14 != 0; local_14 = remove_user_from_group(*(undefined4 *)(local_14 + 8),param_1))\n    {\n    }\n    if (*(int *)((int)param_1 + 4) != 0) {\n      *(undefined4 *)(*(int *)((int)param_1 + 4) + 8) = *(undefined4 *)((int)param_1 + 8);\n    }\n    if (*(int *)((int)param_1 + 8) != 0) {\n      *(undefined4 *)(*(int *)((int)param_1 + 8) + 4) = *(undefined4 *)((int)param_1 + 4);\n    }\n    uVar1 = *(undefined4 *)((int)param_1 + 4);\n    free(*(void **)((int)param_1 + 0x10));\n    free(param_1);\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_group",
+                        "puts",
+                        "remove_user_from_group",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "remove_group",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_user_by_name",
+                "func_c_signature": "int find_user_by_name(char *param_1,int param_2)",
+                "decompiled_code": "int find_user_by_name(char *param_1,int param_2) {\n  int iVar1;\n  int local_10;\n  \n  local_10 = *(int *)(param_2 + 0x10);\n  while( true ) {\n    if (local_10 == 0) {\n      return 0;\n    }\n    iVar1 = strcmp(param_1,*(char **)(local_10 + 8));\n    if (iVar1 == 0) break;\n    local_10 = *(int *)(local_10 + 4);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_user_by_name",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "find_user_by_name",
+                        "find_user"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_user_by_number",
+                "func_c_signature": "int find_user_by_number(int param_1,int param_2)",
+                "decompiled_code": "int find_user_by_number(int param_1,int param_2) {\n  int local_c;\n  int local_8;\n  \n  local_8 = *(int *)(param_2 + 0x10);\n  local_c = 0;\n  while( true ) {\n    if (local_8 == 0) {\n      return 0;\n    }\n    if (local_c == param_1) break;\n    local_c = local_c + 1;\n    local_8 = *(int *)(local_8 + 4);\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_user_by_number"
+                    ],
+                    "calling_functions": [
+                        "find_user_by_number",
+                        "find_user"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_add_group",
+                "func_c_signature": "undefined4 * _add_group(char *param_1,int param_2)",
+                "decompiled_code": "undefined4 * _add_group(char *param_1,int param_2) {\n  undefined4 *puVar1;\n  size_t sVar2;\n  char *__dest;\n  int local_14;\n  int local_10;\n  \n  puVar1 = (undefined4 *)mallocOrDie(0x14,\"Failed to allocate group\");\n  sVar2 = strlen(param_1);\n  __dest = (char *)mallocOrDie(sVar2 + 1,\"Failed to allocate groupName\");\n  strcpy(__dest,param_1);\n  puVar1[4] = __dest;\n  *puVar1 = 0;\n  puVar1[3] = 0;\n  puVar1[2] = 0;\n  if (param_2 != 0) {\n    local_10 = param_2;\n    for (local_14 = param_2; local_14 != 0; local_14 = *(int *)(local_14 + 8)) {\n      local_10 = local_14;\n    }\n    puVar1[1] = local_10;\n    *(undefined4 **)(local_10 + 8) = puVar1;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_add_group",
+                        "mallocOrDie",
+                        "strlen",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "init_data",
+                        "_add_group",
+                        "add_group"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_group",
+                "func_c_signature": "void add_group(undefined4 param_1,int param_2)",
+                "decompiled_code": "void add_group(undefined4 param_1,int param_2) {\n  _add_group(param_1,*(undefined4 *)(param_2 + 0x14));\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_group",
+                        "_add_group"
+                    ],
+                    "calling_functions": [
+                        "add_group",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_user_to_group",
+                "func_c_signature": "int * add_user_to_group(int param_1,int *param_2)",
+                "decompiled_code": "int * add_user_to_group(int param_1,int *param_2) {\n  int *piVar1;\n  int local_14;\n  int local_10;\n  \n  piVar1 = (int *)mallocOrDie(0xc,\"Failed to allocate newUser\");\n  piVar1[2] = param_1;\n  piVar1[1] = 0;\n  if (param_2[3] == 0) {\n    param_2[3] = (int)piVar1;\n    *piVar1 = 0;\n    *param_2 = 1;\n  }\n  else {\n    local_14 = param_2[3];\n    local_10 = local_14;\n    for (; local_14 != 0; local_14 = *(int *)(local_14 + 4)) {\n      local_10 = local_14;\n    }\n    *(int **)(local_10 + 4) = piVar1;\n    *piVar1 = local_10;\n    *param_2 = *param_2 + 1;\n  }\n  return piVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_user_to_group",
+                        "mallocOrDie"
+                    ],
+                    "calling_functions": [
+                        "init_data",
+                        "add_user_to_group",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_group_by_number",
+                "func_c_signature": "int find_group_by_number(int param_1,int param_2)",
+                "decompiled_code": "int find_group_by_number(int param_1,int param_2) {\n  int local_10;\n  int local_c;\n  int local_8;\n  \n  local_8 = 0;\n  local_c = *(int *)(param_2 + 0x14);\n  local_10 = 0;\n  while (local_c != 0) {\n    if (local_10 == param_1) {\n      local_8 = local_c;\n      local_c = 0;\n    }\n    else {\n      local_10 = local_10 + 1;\n      local_c = *(int *)(local_c + 8);\n    }\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_group_by_number"
+                    ],
+                    "calling_functions": [
+                        "find_group_by_number",
+                        "find_group"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_group_by_name",
+                "func_c_signature": "int find_group_by_name(char *param_1,int param_2)",
+                "decompiled_code": "int find_group_by_name(char *param_1,int param_2) {\n  int iVar1;\n  int iVar2;\n  int local_14;\n  int local_10;\n  \n  local_14 = 0;\n  iVar2 = local_14;\n  if (*(int *)(param_2 + 0x14) != 0) {\n    local_10 = *(int *)(param_2 + 0x14);\n    while ((iVar2 = local_14, local_10 != 0 &&\n           (iVar1 = strcmp(param_1,*(char **)(local_10 + 0x10)), iVar2 = local_10, iVar1 != 0))) {\n      local_10 = *(int *)(local_10 + 8);\n    }\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_group_by_name",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "find_group_by_name",
+                        "find_group"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "recursive_path",
+                "func_c_signature": "char * recursive_path(int param_1,int param_2)",
+                "decompiled_code": "char * recursive_path(int param_1,int param_2) {\n  size_t sVar1;\n  char *__dest;\n  char *__s;\n  size_t sVar2;\n  \n  if (param_2 == param_1) {\n    sVar1 = strlen(*(char **)(param_2 + 0x18));\n    __dest = (char *)mallocOrDie(sVar1 + 2,\"Failed to allocate endName\");\n    strcpy(__dest,*(char **)(param_2 + 0x18));\n  }\n  else if (*(int *)(param_2 + 0x20) == 0) {\n    __dest = (char *)0x0;\n  }\n  else {\n    __s = (char *)recursive_path(param_1,*(undefined4 *)(param_2 + 0x20));\n    if (__s == (char *)0x0) {\n      __dest = (char *)0x0;\n    }\n    else {\n      sVar1 = strlen(__s);\n      sVar2 = strlen(*(char **)(param_2 + 0x18));\n      __dest = (char *)mallocOrDie(sVar2 + sVar1 + 2,\"Failed to allocate retpath\");\n      strcpy(__dest,__s);\n      strcat(__dest,\"/\");\n      strcat(__dest,*(char **)(param_2 + 0x18));\n      free(__s);\n    }\n  }\n  return __dest;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recursive_path",
+                        "strlen",
+                        "mallocOrDie",
+                        "strcpy",
+                        "strcat",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "recursive_path",
+                        "str_of_path"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "str_of_path",
+                "func_c_signature": "void str_of_path(char *param_1,undefined4 *param_2,undefined4 param_3)",
+                "decompiled_code": "void str_of_path(char *param_1,undefined4 *param_2,undefined4 param_3) {\n  char *__src;\n  \n  __src = (char *)recursive_path(*param_2,param_3);\n  strcpy(param_1,__src);\n  free(__src);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "str_of_path",
+                        "recursive_path",
+                        "strcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "str_of_path",
+                        "print_prompt",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_node_by_name",
+                "func_c_signature": "undefined4 * find_node_by_name(char *param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 * find_node_by_name(char *param_1,undefined4 *param_2) {\n  int iVar1;\n  undefined4 *local_10;\n  \n  local_10 = param_2;\n  while( true ) {\n    if (local_10 == (undefined4 *)0x0) {\n      return (undefined4 *)0x0;\n    }\n    iVar1 = strcmp(param_1,(char *)local_10[6]);\n    if (iVar1 == 0) break;\n    local_10 = (undefined4 *)*local_10;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_node_by_name",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "find_node_by_name",
+                        "find_directory_by_name",
+                        "find_file_by_name",
+                        "find_file_node_by_name",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_directory_by_name",
+                "func_c_signature": "undefined4 * find_directory_by_name(undefined4 param_1,int param_2)",
+                "decompiled_code": "undefined4 * find_directory_by_name(undefined4 param_1,int param_2) {\n  undefined4 *local_10;\n  \n  local_10 = (undefined4 *)find_node_by_name(param_1,*(undefined4 *)(param_2 + 0x24));\n  while( true ) {\n    if (local_10 == (undefined4 *)0x0) {\n      return (undefined4 *)0x0;\n    }\n    if (*(char *)(local_10 + 2) == 'D') break;\n    local_10 = (undefined4 *)find_node_by_name(param_1,*local_10);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_directory_by_name",
+                        "find_node_by_name"
+                    ],
+                    "calling_functions": [
+                        "find_directory_by_name",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_file_by_name",
+                "func_c_signature": "undefined4 find_file_by_name(undefined4 param_1,int param_2)",
+                "decompiled_code": "undefined4 find_file_by_name(undefined4 param_1,int param_2) {\n  undefined4 *local_10;\n  \n  local_10 = (undefined4 *)find_node_by_name(param_1,*(undefined4 *)(param_2 + 0x24));\n  while( true ) {\n    if (local_10 == (undefined4 *)0x0) {\n      return 0;\n    }\n    if (*(char *)(local_10 + 2) == 'F') break;\n    local_10 = (undefined4 *)find_node_by_name(param_1,*local_10);\n  }\n  return local_10[7];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_file_by_name",
+                        "find_node_by_name"
+                    ],
+                    "calling_functions": [
+                        "find_file_by_name",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_file_node_by_name",
+                "func_c_signature": "undefined4 * find_file_node_by_name(undefined4 param_1,int param_2)",
+                "decompiled_code": "undefined4 * find_file_node_by_name(undefined4 param_1,int param_2) {\n  undefined4 *local_10;\n  \n  local_10 = (undefined4 *)find_node_by_name(param_1,*(undefined4 *)(param_2 + 0x24));\n  while( true ) {\n    if (local_10 == (undefined4 *)0x0) {\n      return (undefined4 *)0x0;\n    }\n    if (*(char *)(local_10 + 2) == 'F') break;\n    local_10 = (undefined4 *)find_node_by_name(param_1,*local_10);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_file_node_by_name",
+                        "find_node_by_name"
+                    ],
+                    "calling_functions": [
+                        "find_file_node_by_name",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  undefined4 uVar1;\n  \n  uVar1 = init_data();\n  start_UI(uVar1);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "init_data",
+                        "start_UI"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            }
+        ],
+        "ui.c": [
+            {
+                "func_name": "strict_atoi",
+                "func_c_signature": "int strict_atoi(char *param_1)",
+                "decompiled_code": "int strict_atoi(char *param_1) {\n  size_t sVar1;\n  int iVar2;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    sVar1 = strlen(param_1);\n    if (sVar1 <= local_10) {\n      iVar2 = atoi(param_1);\n      return iVar2;\n    }\n    if (('9' < param_1[local_10]) || (param_1[local_10] < '0')) break;\n    local_10 = local_10 + 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strict_atoi",
+                        "strlen",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "strict_atoi",
+                        "find_group",
+                        "find_user",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_int",
+                "func_c_signature": "int get_int(undefined4 param_1)",
+                "decompiled_code": "int get_int(undefined4 param_1) {\n  int iVar1;\n  char local_1e [10];\n  int local_14;\n  int local_10;\n  \n  printf(\"@s :\",param_1);\n  local_14 = receive_until(local_1e,10,9);\n  local_1e[local_14] = '\\0';\n  for (local_10 = 0; local_10 < local_14; local_10 = local_10 + 1) {\n    if (('9' < local_1e[local_10]) || (local_1e[local_10] < '0')) {\n      local_1e[local_10] = '0';\n    }\n  }\n  iVar1 = atoi(local_1e);\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_int",
+                        "printf",
+                        "receive_until",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "get_int",
+                        "get_time"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_string",
+                "func_c_signature": "int get_string(int param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "int get_string(int param_1,undefined4 param_2,undefined4 param_3) {\n  int iVar1;\n  \n  printf(\"@s >\",param_3);\n  iVar1 = receive_until(param_1,10,param_2);\n  *(undefined *)(param_1 + iVar1) = 0;\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_string",
+                        "printf",
+                        "receive_until"
+                    ],
+                    "calling_functions": [
+                        "get_string",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_prompt",
+                "func_c_signature": "void print_prompt(int param_1)",
+                "decompiled_code": "void print_prompt(int param_1) {\n  undefined local_fac [4004];\n  \n  bzero(local_fac,4000);\n  str_of_path(local_fac,param_1,*(undefined4 *)(param_1 + 4));\n  printf(\"@s@@SPIFF:@s/\",*(undefined4 *)(*(int *)(param_1 + 8) + 8),local_fac);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_prompt",
+                        "bzero",
+                        "str_of_path",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_prompt",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_help",
+                "func_c_signature": "void print_help(int param_1,int param_2)",
+                "decompiled_code": "void print_help(int param_1,int param_2) {\n  int local_10;\n  \n  printf(\"< \");\n  for (local_10 = 0; local_10 < param_2 + -1; local_10 = local_10 + 1) {\n    printf(\"@s, \",*(undefined4 *)(param_1 + local_10 * 4));\n  }\n  printf(\"@s >\\n\",*(undefined4 *)(param_1 + (param_2 + 0x3fffffff) * 4));\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_help",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_help",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_arg",
+                "func_c_signature": "int parse_arg(int param_1,char *param_2)",
+                "decompiled_code": "int parse_arg(int param_1,char *param_2) {\n  bool bVar1;\n  size_t sVar2;\n  int local_1c;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  bVar1 = true;\n  sVar2 = strlen(param_2);\n  for (local_1c = 0; local_1c < (int)sVar2; local_1c = local_1c + 1) {\n    if (param_2[local_1c] == ' ') {\n      if (!bVar1) {\n        bzero((void *)(param_1 + local_10 * 0x100),0x100);\n        strncpy((char *)(param_1 + local_10 * 0x100),param_2 + local_14,local_1c - local_14);\n        if (local_10 == 0xf) break;\n        local_10 = local_10 + 1;\n      }\n      bVar1 = true;\n      local_14 = local_1c;\n    }\n    else {\n      if (bVar1) {\n        local_14 = local_1c;\n      }\n      bVar1 = false;\n    }\n  }\n  if (local_14 < local_1c) {\n    bzero((void *)(param_1 + local_10 * 0x100),0x100);\n    strncpy((char *)(param_1 + local_10 * 0x100),param_2 + local_14,local_1c - local_14);\n    local_10 = local_10 + 1;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_arg",
+                        "strlen",
+                        "bzero",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "parse_arg",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_perms",
+                "func_c_signature": "void print_perms(int param_1,undefined4 param_2)",
+                "decompiled_code": "void print_perms(int param_1,undefined4 param_2) {\n  int local_10;\n  \n  local_10 = *(int *)(param_1 + 0x14);\n  validate_current_perms(param_1,param_2);\n  for (; local_10 != 0; local_10 = *(int *)(local_10 + 4)) {\n    if (*(int *)(local_10 + 8) != 0) {\n      printf(\" @s\",*(undefined4 *)(*(int *)(local_10 + 8) + 8));\n    }\n    if (*(int *)(local_10 + 0xc) != 0) {\n      printf(\" @s\",*(undefined4 *)(*(int *)(local_10 + 0xc) + 0x10));\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_perms",
+                        "validate_current_perms",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_perms",
+                        "print_working_dir"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_user_list",
+                "func_c_signature": "void print_user_list(int param_1)",
+                "decompiled_code": "void print_user_list(int param_1) {\n  int local_14;\n  int local_10;\n  \n  local_10 = *(int *)(param_1 + 0x10);\n  local_14 = 0;\n  printf(\"UID    NAME\\n__________\\n\");\n  for (; local_10 != 0; local_10 = *(int *)(local_10 + 4)) {\n    printf(\"@d @s\\n\",local_14,*(undefined4 *)(local_10 + 8));\n    local_14 = local_14 + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_user_list",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_user_list",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_group_list",
+                "func_c_signature": "void print_group_list(int param_1)",
+                "decompiled_code": "void print_group_list(int param_1) {\n  int local_14;\n  int local_10;\n  \n  local_10 = *(int *)(param_1 + 0x14);\n  local_14 = 0;\n  printf(\"GUID     NAME\\n____________________\\n\");\n  for (; local_10 != 0; local_10 = *(int *)(local_10 + 8)) {\n    printf(\"@d @s\\n\",local_14,*(undefined4 *)(local_10 + 0x10));\n    local_14 = local_14 + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_group_list",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_group_list",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_users_in_group",
+                "func_c_signature": "void print_users_in_group(int param_1)",
+                "decompiled_code": "void print_users_in_group(int param_1) {\n  int local_14;\n  int local_10;\n  \n  local_10 = *(int *)(param_1 + 0xc);\n  local_14 = 0;\n  printf(\"Count Name\\n____________________\\n\");\n  for (; local_10 != 0; local_10 = *(int *)(local_10 + 4)) {\n    printf(\"@d @s\\n\",local_14,*(undefined4 *)(*(int *)(local_10 + 8) + 8));\n    local_14 = local_14 + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_users_in_group",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_users_in_group",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_group",
+                "func_c_signature": "int find_group(char *param_1,int param_2)",
+                "decompiled_code": "int find_group(char *param_1,int param_2) {\n  int iVar1;\n  int iVar2;\n  \n  iVar1 = strict_atoi(param_1);\n  iVar2 = strcmp(param_1,\"root\");\n  if ((iVar2 == 0) || (iVar2 = strcmp(param_1,\"0\"), iVar2 == 0)) {\n    iVar1 = *(int *)(param_2 + 0x14);\n  }\n  else if ((iVar1 == 0) || (iVar1 = find_group_by_number(iVar1,param_2), iVar1 == 0)) {\n    iVar1 = find_group_by_name(param_1,param_2);\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_group",
+                        "strict_atoi",
+                        "strcmp",
+                        "find_group_by_number",
+                        "find_group_by_name"
+                    ],
+                    "calling_functions": [
+                        "find_group",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_user",
+                "func_c_signature": "int find_user(char *param_1,int param_2)",
+                "decompiled_code": "int find_user(char *param_1,int param_2) {\n  bool bVar1;\n  int iVar2;\n  int iVar3;\n  \n  iVar2 = strict_atoi(param_1);\n  iVar3 = strcmp(param_1,\"root\");\n  if ((iVar3 == 0) || (iVar3 = strcmp(param_1,\"0\"), iVar3 == 0)) {\n    bVar1 = false;\n  }\n  else {\n    bVar1 = true;\n  }\n  if (bVar1) {\n    if ((iVar2 == 0) || (iVar2 = find_user_by_number(iVar2,param_2), iVar2 == 0)) {\n      iVar2 = find_user_by_name(param_1,param_2);\n    }\n  }\n  else {\n    iVar2 = *(int *)(param_2 + 0x10);\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_user",
+                        "strict_atoi",
+                        "strcmp",
+                        "find_user_by_number",
+                        "find_user_by_name"
+                    ],
+                    "calling_functions": [
+                        "find_user",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_working_dir",
+                "func_c_signature": "void print_working_dir(int param_1)",
+                "decompiled_code": "void print_working_dir(int param_1) {\n  undefined4 uVar1;\n  undefined4 uVar2;\n  undefined4 uVar3;\n  undefined4 *local_20;\n  \n  local_20 = *(undefined4 **)(*(int *)(param_1 + 4) + 0x24);\n  printf(\"Type  Size     Date     Name       Perms\\n_______________________________________\\n\");\n  for (; local_20 != (undefined4 *)0x0; local_20 = (undefined4 *)*local_20) {\n    if (*(char *)(local_20 + 2) == 'F') {\n      uVar1 = local_20[6];\n      uVar2 = local_20[4];\n      uVar3 = get_file_size(local_20[7]);\n      printf(\"FILE @d  @x   @s  \",uVar3,uVar2,uVar1);\n      print_perms(local_20,param_1);\n      printf(\"\\n\");\n    }\n    if (*(char *)(local_20 + 2) == 'D') {\n      printf(\"DIR  @d  @x   @s \",0x2c,local_20[4],local_20[6]);\n      print_perms(local_20,param_1);\n      printf(\"\\n\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_working_dir",
+                        "printf",
+                        "get_file_size",
+                        "print_perms"
+                    ],
+                    "calling_functions": [
+                        "print_working_dir",
+                        "main_loop"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main_loop",
+                "func_c_signature": "void main_loop(int param_1)",
+                "decompiled_code": "void main_loop(int param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  int iVar3;\n  ssize_t sVar4;\n  undefined *__n;\n  char local_2180 [4000];\n  undefined local_11e0 [256];\n  char local_10e0 [256];\n  char acStack_fe0 [256];\n  char acStack_ee0 [256];\n  char acStack_de0 [256];\n  char acStack_ce0 [3072];\n  char *local_e0 [8];\n  char *local_c0 [8];\n  char *local_a0 [8];\n  char *local_80 [4];\n  char *local_70 [9];\n  int local_4c;\n  undefined4 local_48;\n  undefined4 local_44;\n  undefined4 local_40;\n  int local_3c;\n  int local_38;\n  int local_34;\n  int local_30;\n  int local_2c;\n  int local_28;\n  int local_24;\n  int local_20;\n  undefined4 local_1c;\n  uint local_18;\n  int local_14;\n  uint local_10;\n  \n  local_70[0] = \"set\";\n  local_70[1] = &DAT_000183a1;\n  local_70[2] = &DAT_000183a5;\n  local_70[3] = \"delete\";\n  local_70[4] = &DAT_000183b0;\n  local_70[5] = &DAT_000183b5;\n  local_70[6] = &DAT_000183ba;\n  local_70[7] = &DAT_000183bd;\n  local_70[8] = &DAT_000183c1;\n  local_80[0] = \"date\";\n  local_80[1] = &DAT_000183c9;\n  local_80[2] = \"group\";\n  local_80[3] = &DAT_000183b5;\n  local_a0[0] = \"date\";\n  local_a0[1] = &DAT_000183c9;\n  local_a0[2] = \"group\";\n  local_a0[3] = \"workingDir\";\n  local_a0[4] = &DAT_000183b5;\n  local_a0[5] = \"userlist\";\n  local_a0[6] = \"grouplist\";\n  local_a0[7] = \"usersingroup\";\n  local_c0[0] = \"user\";\n  local_c0[1] = \"group\";\n  local_c0[2] = &DAT_000183ff;\n  local_c0[3] = \"directory\";\n  local_c0[4] = \"usertogroup\";\n  local_c0[5] = &DAT_0001841a;\n  local_c0[6] = \"appendfile\";\n  local_c0[7] = &DAT_000183b5;\n  local_e0[0] = \"user\";\n  local_e0[1] = \"group\";\n  local_e0[2] = &DAT_000183ff;\n  local_e0[3] = \"directory\";\n  local_e0[4] = \"usertogroup\";\n  local_e0[5] = &DAT_0001841a;\n  local_e0[6] = \"filebytes\";\n  local_e0[7] = &DAT_000183b5;\n  local_2c = 0;\n  local_20 = 0;\n  local_24 = 0;\n  local_30 = 0;\n  local_34 = 0;\n  local_28 = 0;\n  local_38 = 0;\n  do {\n    local_18 = 0;\n    local_3c = 0;\n    local_14 = 0;\n    local_10 = 0;\n    local_40 = 0;\n    local_44 = 0;\n    bzero(local_2180,4000);\n    local_48 = 0;\n    local_2c = 0;\n    local_20 = 0;\n    local_24 = 0;\n    local_30 = 0;\n    local_34 = 0;\n    local_28 = 0;\n    local_38 = 0;\n    bzero(local_11e0,0x100);\n    print_prompt(param_1);\n    __n = &DAT_00018434;\n    get_string(local_11e0,0xff);\n    for (local_14 = 0; local_14 < 0x10; local_14 = local_14 + 1) {\n      bzero(local_10e0 + local_14 * 0x100,0x100);\n    }\n    local_40 = parse_arg(local_10e0,local_11e0);\n    local_3c = 0;\n    local_18 = 100;\n    for (local_10 = 0; local_10 < 9; local_10 = local_10 + 1) {\n      iVar1 = strcmp(local_70[local_10],local_10e0);\n      if (iVar1 == 0) {\n        local_18 = local_10;\n      }\n    }\n    switch(local_18) {\n    case 0:\n      local_18 = 100;\n      for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {\n        iVar1 = strcmp(local_80[local_10],acStack_fe0);\n        if (iVar1 == 0) {\n          local_18 = local_10;\n        }\n      }\n      if (local_18 == 3) {\n        print_help(local_80,4);\n        break;\n      }\n      if ((int)local_18 < 4) {\n        if (local_18 == 2) {\n          iVar1 = strcmp(acStack_ee0,\"\");\n          if (iVar1 == 0) {\n            puts(\"missing group name or number\");\n          }\n          else {\n            local_24 = find_group(acStack_ee0,param_1);\n            if (local_24 == 0) {\n              printf(\"unknown group: @s\\n\",acStack_ee0);\n            }\n            else {\n              *(int *)(param_1 + 0xc) = local_24;\n            }\n          }\n          break;\n        }\n        if ((int)local_18 < 3) {\n          if (local_18 == 0) {\n            uVar2 = get_time();\n            *(undefined4 *)(param_1 + 0x18) = uVar2;\n            break;\n          }\n          if (local_18 == 1) {\n            iVar1 = strcmp(acStack_ee0,\"\");\n            if (iVar1 == 0) {\n              puts(\"missing user name or number\");\n            }\n            else {\n              local_20 = find_user(acStack_ee0,param_1);\n              if (local_20 == 0) {\n                printf(\"unknown user: @s\\n\",acStack_ee0);\n              }\n              else {\n                *(int *)(param_1 + 8) = local_20;\n              }\n            }\n            break;\n          }\n        }\n      }\n      printf(\"Invalid command: @s\\n\",acStack_fe0);\n      break;\n    case 1:\n      local_18 = 100;\n      for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {\n        iVar1 = strcmp(local_a0[local_10],acStack_fe0);\n        if (iVar1 == 0) {\n          local_18 = local_10;\n        }\n      }\n      switch(local_18) {\n      case 0:\n        strofdate(*(undefined4 *)(param_1 + 0x18));\n        break;\n      case 1:\n        printf(\"@s\\n\",*(undefined4 *)(*(int *)(param_1 + 8) + 8));\n        break;\n      case 2:\n        printf(\"@s\\n\",*(undefined4 *)(*(int *)(param_1 + 0xc) + 0x10));\n        break;\n      case 3:\n        bzero(local_2180,4000);\n        str_of_path(local_2180,param_1,*(undefined4 *)(param_1 + 4));\n        printf(\"@s/\\n\",local_2180);\n        break;\n      case 4:\n        print_help(local_a0,8);\n        break;\n      case 5:\n        print_user_list(param_1);\n        break;\n      case 6:\n        print_group_list(param_1);\n        break;\n      case 7:\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if (iVar1 == 0) {\n          puts(\"missing group name or number\");\n        }\n        else {\n          local_24 = find_group(acStack_ee0,param_1);\n          if (local_24 == 0) {\n            printf(\"unknown group: @s\\n\",acStack_ee0);\n          }\n          else {\n            print_users_in_group(local_24);\n          }\n        }\n        break;\n      default:\n        printf(\"Invalid command: @s\\n\",acStack_fe0);\n      }\n      break;\n    case 2:\n      local_18 = 100;\n      for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {\n        iVar1 = strcmp(local_c0[local_10],acStack_fe0);\n        if (iVar1 == 0) {\n          local_18 = local_10;\n        }\n      }\n      switch(local_18) {\n      case 0:\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if (iVar1 == 0) {\n          bzero(local_2180,4000);\n          get_string(local_2180,0x80,\"UserName\");\n          strcpy(acStack_ee0,local_2180);\n        }\n        local_20 = find_user(acStack_ee0,param_1);\n        if (local_20 == 0) {\n          add_user(acStack_ee0,param_1);\n        }\n        else {\n          puts(\"Username already in use\");\n        }\n        break;\n      case 1:\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if (iVar1 == 0) {\n          bzero(local_2180,4000);\n          get_string(local_2180,0x80,\"GroupName\");\n          strcpy(acStack_ee0,local_2180);\n        }\n        local_24 = find_group(acStack_ee0,param_1);\n        if (local_24 == 0) {\n          add_group(acStack_ee0,param_1);\n        }\n        else {\n          puts(\"Groupname already in use\");\n        }\n        break;\n      case 2:\n        local_3c = atoi(acStack_de0);\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if (iVar1 == 0) {\n          puts(\"Filename required\");\n        }\n        else if (local_3c < 0xf4241) {\n          iVar1 = find_node_by_name(acStack_ee0,*(undefined4 *)(*(int *)(param_1 + 4) + 0x24));\n          if (iVar1 == 0) {\n            if (local_3c < 1) {\n              local_1c = 0;\n            }\n            else {\n              local_1c = mallocOrDie(local_3c,\"Failed to allocate tempBuf\");\n              puts(\"-----Begin File-----\");\n              iVar1 = receive_bytes(local_1c,local_3c);\n              if (local_3c != iVar1) {\n                die(\"Failed to reveive file\");\n                break;\n              }\n            }\n            local_2c = add_file(*(undefined4 *)(param_1 + 4),*(undefined4 *)(param_1 + 0x18),\n                                local_3c,acStack_ee0,local_1c,*(undefined4 *)(param_1 + 8));\n            break;\n          }\n          puts(\"There is another file or directory with that name\");\n        }\n        else {\n          puts(\"Too big\");\n        }\n        break;\n      case 3:\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if (iVar1 == 0) {\n          puts(\"Directory name required\");\n        }\n        else {\n          iVar1 = find_node_by_name(acStack_ee0,*(undefined4 *)(*(int *)(param_1 + 4) + 0x24));\n          if (iVar1 == 0) {\n            local_2c = add_directory(*(undefined4 *)(param_1 + 0x18),acStack_ee0,\n                                     *(undefined4 *)(param_1 + 4),*(undefined4 *)(param_1 + 8));\n          }\n          else {\n            puts(\"There is another file or directory with that name\");\n          }\n        }\n        break;\n      case 4:\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if (iVar1 == 0) {\n          puts(\"username or number required\");\n        }\n        else {\n          local_20 = find_user(acStack_ee0,param_1);\n          if (local_20 == 0) {\n            puts(\"User does not exist, add user first\");\n          }\n          else {\n            local_38 = is_user_in_group(local_20,*(undefined4 *)(param_1 + 0xc));\n            if (local_38 == 0) {\n              add_user_to_group(local_20,*(undefined4 *)(param_1 + 0xc));\n            }\n            else {\n              printf(\"@s is already in @s\\n\",acStack_ee0,\n                     *(undefined4 *)(*(int *)(param_1 + 0xc) + 0x10));\n            }\n          }\n        }\n        break;\n      case 5:\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if ((iVar1 == 0) || (iVar1 = strcmp(acStack_ee0,\" \"), iVar1 == 0)) {\n          puts(\"name of file or directory required\");\n        }\n        else {\n          iVar1 = strcmp(acStack_de0,\"user\");\n          iVar3 = strcmp(acStack_de0,\"group\");\n          if ((iVar3 == 0) == (iVar1 != 0)) {\n            iVar1 = strcmp(acStack_ce0,\"\");\n            if (iVar1 == 0) {\n              puts(\"user name, group name, or number required\");\n            }\n            else {\n              local_2c = find_node_by_name(acStack_ee0,*(undefined4 *)(*(int *)(param_1 + 4) + 0x24)\n                                          );\n              if (local_2c == 0) {\n                puts(\"Invalid file or directory\");\n              }\n              else {\n                if (*(char *)(local_2c + 8) != 'L') {\n                  iVar1 = strcmp(acStack_de0,\"user\");\n                  if (iVar1 == 0) {\n                    local_20 = find_user(acStack_ce0,param_1);\n                    local_24 = 0;\n                    if (local_20 == 0) {\n                      printf(\"user @s not found\\n\",acStack_ce0);\n                      break;\n                    }\n                  }\n                  else {\n                    local_24 = find_group(acStack_ce0,param_1);\n                    local_20 = 0;\n                    if (local_24 == 0) {\n                      printf(\"group @s not found\\n\",acStack_ce0);\n                      break;\n                    }\n                  }\n                  validate_current_perms(local_2c,param_1);\n                  local_34 = add_perm(local_20,local_24,local_2c);\n                  break;\n                }\n                local_2c = *(int *)(local_2c + 0x24);\n              }\n            }\n          }\n          else {\n            puts(\"\\'user\\' or \\'group\\'\");\n          }\n        }\n        break;\n      case 6:\n        local_3c = atoi(acStack_de0);\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if (iVar1 == 0) {\n          puts(\"Filename required\");\n        }\n        else if (local_3c < 0xf4241) {\n          local_30 = find_file_by_name(acStack_ee0,*(undefined4 *)(param_1 + 4));\n          if (local_30 == 0) {\n            puts(\"No file in working directory by that name\");\n          }\n          else if (local_3c < 1) {\n            local_48 = 0;\n            puts(\"Can not add 0 bytes to file\");\n          }\n          else {\n            local_48 = mallocOrDie(local_3c,\"Failed to allocate tempBuf\");\n            puts(\"-----Begin File-----\");\n            iVar1 = receive_bytes(local_48,local_3c);\n            if (local_3c == iVar1) {\n              local_28 = add_file_chunk(local_48,local_30,local_3c);\n            }\n            else {\n              die(\"Failed to reveive file\");\n            }\n          }\n        }\n        else {\n          puts(\"Too big\");\n        }\n        break;\n      case 7:\n        print_help(local_c0,8);\n        break;\n      default:\n        printf(\"Invalid command: @s\\n\",acStack_fe0);\n      }\n      break;\n    case 3:\n      local_18 = 100;\n      for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {\n        iVar1 = strcmp(local_e0[local_10],acStack_fe0);\n        if (iVar1 == 0) {\n          local_18 = local_10;\n        }\n      }\n      switch(local_18) {\n      case 0:\n        bzero(local_2180,4000);\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if (iVar1 == 0) {\n          get_string(local_2180,0x80,\"User Name or number\");\n          strcpy(acStack_ee0,local_2180);\n        }\n        local_20 = find_user(acStack_ee0,param_1);\n        if (local_20 == 0) {\n          puts(\"No such user found\");\n        }\n        else {\n          remove_user(local_20,param_1);\n        }\n        break;\n      case 1:\n        bzero(local_2180,4000);\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if (iVar1 == 0) {\n          get_string(local_2180,0x80,\"Group Name or number\");\n          strcpy(acStack_ee0,local_2180);\n        }\n        local_24 = find_group(acStack_ee0,param_1);\n        if (local_24 == 0) {\n          puts(\"no such group found\");\n        }\n        else {\n          remove_group(local_24,param_1);\n        }\n        break;\n      case 2:\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if (iVar1 == 0) {\n          puts(\"Filename required\");\n        }\n        else {\n          local_2c = find_file_node_by_name(acStack_ee0,*(undefined4 *)(param_1 + 4));\n          if (local_2c == 0) {\n            puts(\"No such file\");\n          }\n          else {\n            delete_node(local_2c,param_1);\n          }\n        }\n        break;\n      case 3:\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if (iVar1 == 0) {\n          puts(\"Directory name required\");\n        }\n        else {\n          local_2c = find_directory_by_name(acStack_ee0,*(undefined4 *)(param_1 + 4));\n          if (local_2c == 0) {\n            puts(\"No such directory\");\n          }\n          else {\n            delete_node(local_2c,param_1);\n          }\n        }\n        break;\n      case 4:\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if (iVar1 == 0) {\n          puts(\"User name required\");\n        }\n        else {\n          iVar1 = strcmp(acStack_de0,\"\");\n          if (iVar1 == 0) {\n            puts(\"group name required\");\n          }\n          else {\n            local_20 = find_user(acStack_ee0,param_1);\n            if (local_20 == 0) {\n              puts(\"No such user\");\n            }\n            else {\n              local_24 = find_group(acStack_de0,param_1);\n              if (local_24 == 0) {\n                puts(\"No such group\");\n              }\n              else {\n                local_38 = is_user_in_group(local_20,local_24);\n                if (local_38 == 0) {\n                  puts(\"User is not in group\");\n                }\n                else {\n                  remove_user_from_group(local_20,local_24);\n                }\n              }\n            }\n          }\n        }\n        break;\n      case 5:\n        iVar1 = strcmp(acStack_de0,\"\");\n        if (iVar1 == 0) {\n          puts(\"User or group name required\");\n        }\n        else {\n          iVar1 = strcmp(acStack_ee0,\"\");\n          if (iVar1 == 0) {\n            puts(\"file name required\");\n          }\n          else {\n            local_2c = find_node_by_name(acStack_ee0,*(undefined4 *)(*(int *)(param_1 + 4) + 0x24));\n            if (local_2c == 0) {\n              puts(\"No such file\");\n            }\n            else {\n              local_34 = find_perm_by_name(acStack_de0,local_2c,param_1);\n              if (local_34 == 0) {\n                puts(\"No such user permission on file\");\n              }\n              else {\n                delete_perms(local_2c,local_34);\n              }\n            }\n          }\n        }\n        break;\n      case 6:\n        iVar1 = strcmp(acStack_ee0,\"\");\n        if (iVar1 == 0) {\n          puts(\"Filename required\");\n        }\n        else {\n          local_4c = strict_atoi(acStack_de0);\n          if (local_4c == 0) {\n            puts(\"zero bytes deleted\");\n          }\n          else {\n            local_2c = find_file_node_by_name(acStack_ee0,*(undefined4 *)(param_1 + 4));\n            local_30 = *(int *)(local_2c + 0x1c);\n            if (local_2c == 0) {\n              puts(\"No such file\");\n              printf(\"@s\\n\",acStack_ee0);\n            }\n            else {\n              local_3c = get_file_size(local_30);\n              if (local_3c < local_4c) {\n                puts(\"Too many bytes\");\n              }\n              local_3c = local_3c - local_4c;\n              delete_file_bytes(local_30,local_3c);\n            }\n          }\n        }\n        break;\n      case 7:\n        print_help(local_e0,8);\n        break;\n      default:\n        print_help(local_e0,8);\n      }\n      break;\n    case 4:\n      puts(\"exiting\");\n      return;\n    case 5:\n      print_help(local_70,9);\n      break;\n    case 6:\n      print_working_dir(param_1);\n      break;\n    case 7:\n      iVar1 = strcmp(acStack_fe0,\"\");\n      if (iVar1 == 0) {\n        puts(\"Filename required\");\n      }\n      else {\n        local_30 = find_file_by_name(acStack_fe0,*(undefined4 *)(param_1 + 4));\n        if (local_30 != 0) {\n          local_28 = *(int *)(local_30 + 4);\n          puts(\"-----Begin File-----\");\n          for (; local_28 != 0; local_28 = *(int *)(local_28 + 0xc)) {\n            iVar1 = *(int *)(local_28 + 4);\n            sVar4 = write(local_28,*(void **)(local_28 + 4),(size_t)__n);\n            if (iVar1 != sVar4) {\n              puts(\"file write failed\");\n            }\n          }\n          puts(\"-----END File-----\");\n        }\n      }\n      break;\n    case 8:\n      iVar1 = strcmp(acStack_fe0,\"\");\n      if (iVar1 == 0) {\n        puts(\"directory required\");\n      }\n      else {\n        iVar1 = strcmp(acStack_fe0,\"..\");\n        if (iVar1 == 0) {\n          if (*(int *)(*(int *)(param_1 + 4) + 0x20) != 0) {\n            *(undefined4 *)(param_1 + 4) = *(undefined4 *)(*(int *)(param_1 + 4) + 0x20);\n          }\n        }\n        else {\n          local_2c = find_directory_by_name(acStack_fe0,*(undefined4 *)(param_1 + 4));\n          if (local_2c == 0) {\n            puts(\"No such directory in working directory\");\n          }\n          else {\n            *(int *)(param_1 + 4) = local_2c;\n          }\n        }\n      }\n      break;\n    default:\n      printf(\"Invalid command @s\\n\",local_10e0);\n      print_help(local_70,9);\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main_loop",
+                        "bzero",
+                        "print_prompt",
+                        "get_string",
+                        "parse_arg",
+                        "strcmp",
+                        "print_help",
+                        "puts",
+                        "find_group",
+                        "printf",
+                        "get_time",
+                        "find_user",
+                        "strofdate",
+                        "str_of_path",
+                        "print_user_list",
+                        "print_group_list",
+                        "print_users_in_group",
+                        "strcpy",
+                        "add_user",
+                        "add_group",
+                        "atoi",
+                        "find_node_by_name",
+                        "mallocOrDie",
+                        "receive_bytes",
+                        "die",
+                        "add_file",
+                        "add_directory",
+                        "is_user_in_group",
+                        "add_user_to_group",
+                        "validate_current_perms",
+                        "add_perm",
+                        "find_file_by_name",
+                        "add_file_chunk",
+                        "remove_user",
+                        "remove_group",
+                        "find_file_node_by_name",
+                        "delete_node",
+                        "find_directory_by_name",
+                        "remove_user_from_group",
+                        "find_perm_by_name",
+                        "delete_perms",
+                        "strict_atoi",
+                        "get_file_size",
+                        "delete_file_bytes",
+                        "print_working_dir",
+                        "write"
+                    ],
+                    "calling_functions": [
+                        "main_loop",
+                        "start_UI"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "date_from_epoch",
+                "func_c_signature": "void date_from_epoch(uint param_1,uint *param_2)",
+                "decompiled_code": "void date_from_epoch(uint param_1,uint *param_2) {\n  bool bVar1;\n  int local_58 [4];\n  undefined4 local_48;\n  undefined4 local_44;\n  undefined4 local_40;\n  undefined4 local_3c;\n  undefined4 local_38;\n  undefined4 local_34;\n  undefined4 local_30;\n  undefined4 local_2c;\n  undefined4 local_28;\n  uint local_24;\n  int local_20;\n  uint local_1c;\n  uint local_18;\n  uint local_14;\n  uint local_10;\n  uint local_c;\n  uint local_8;\n  \n  local_8 = 0x7b2;\n  local_c = 1;\n  local_10 = 1;\n  local_14 = 0;\n  local_18 = 0;\n  local_28 = 0;\n  local_1c = param_1;\n  bVar1 = true;\n  while (bVar1) {\n    local_24 = 0x1e28500;\n    if (((local_8 & 3) != 0) || (local_8 == 0x834)) {\n      local_24 = 0x1e13380;\n    }\n    if (local_24 < local_1c) {\n      local_1c = local_1c - local_24;\n      local_8 = local_8 + 1;\n    }\n    else {\n      bVar1 = false;\n    }\n  }\n  local_58[0] = 0x1f;\n  local_58[1] = 0x1d;\n  local_58[2] = 0x1f;\n  local_58[3] = 0x1e;\n  local_48 = 0x1f;\n  local_44 = 0x1e;\n  local_40 = 0x1f;\n  local_3c = 0x1f;\n  local_38 = 0x1e;\n  local_34 = 0x1f;\n  local_30 = 0x1e;\n  local_2c = 0x1f;\n  if (((local_8 & 3) != 0) || (local_8 == 0x834)) {\n    local_58[1] = 0x1c;\n  }\n  local_20 = 1;\n  while (local_20 != 0) {\n    if ((uint)(local_58[local_c - 1] * 0x15180) < local_1c) {\n      local_1c = local_1c + local_58[local_c - 1] * -0x15180;\n      local_c = local_c + 1;\n    }\n    else {\n      local_20 = 0;\n    }\n  }\n  for (; 0x1517f < local_1c; local_1c = local_1c - 0x15180) {\n    local_10 = local_10 + 1;\n  }\n  for (; 0xe0f < local_1c; local_1c = local_1c - 0xe10) {\n    local_14 = local_14 + 1;\n  }\n  for (; 0x3b < local_1c; local_1c = local_1c - 0x3c) {\n    local_18 = local_18 + 1;\n  }\n  *param_2 = local_8;\n  param_2[1] = local_c;\n  param_2[2] = local_10;\n  param_2[3] = local_14;\n  param_2[4] = local_18;\n  param_2[5] = local_1c;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "date_from_epoch"
+                    ],
+                    "calling_functions": [
+                        "date_from_epoch",
+                        "strofdate"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "strofdate",
+                "func_c_signature": "void strofdate(uint param_1)",
+                "decompiled_code": "void strofdate(uint param_1) {\n  undefined4 local_8c;\n  int local_88;\n  undefined4 local_84;\n  undefined4 local_80;\n  undefined4 local_7c;\n  undefined4 local_78;\n  char *local_74 [4];\n  undefined *local_64;\n  undefined *local_60;\n  undefined *local_5c;\n  char *local_58;\n  char *local_54;\n  char *local_50;\n  char *local_4c;\n  char *local_48;\n  char *local_44 [4];\n  char *local_34;\n  char *local_30;\n  char *local_2c;\n  char *local_28;\n  char *local_24;\n  uint local_20;\n  \n  local_44[0] = \"Thursday\";\n  local_44[1] = \"Friday\";\n  local_44[2] = \"Saturday\";\n  local_44[3] = \"Sunday\";\n  local_34 = \"Monday\";\n  local_30 = \"Tuesday\";\n  local_2c = \"Wednesday\";\n  local_74[0] = \"January\";\n  local_74[1] = \"February\";\n  local_74[2] = \"March\";\n  local_74[3] = \"April\";\n  local_64 = &DAT_0001897a;\n  local_60 = &DAT_0001897e;\n  local_5c = &DAT_00018983;\n  local_58 = \"August\";\n  local_54 = \"September\";\n  local_50 = \"October\";\n  local_4c = \"November\";\n  local_48 = \"December\";\n  date_from_epoch(param_1,&local_8c);\n  local_20 = (param_1 / 0x15180) % 7;\n  local_24 = local_44[local_20];\n  local_28 = local_74[local_88 + -1];\n  printf(\"@s, @s @d @d @d:@d:@d GMT\\n\",local_44[local_20],local_28,local_8c,local_84,local_80,\n         local_7c,local_78);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strofdate",
+                        "date_from_epoch",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "main_loop",
+                        "strofdate"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "make_epoch",
+                "func_c_signature": "int make_epoch(uint param_1,int param_2,int param_3,int param_4,int param_5,int param_6)",
+                "decompiled_code": "int make_epoch(uint param_1,int param_2,int param_3,int param_4,int param_5,int param_6) {\n  int local_40 [4];\n  undefined4 local_30;\n  undefined4 local_2c;\n  undefined4 local_28;\n  undefined4 local_24;\n  undefined4 local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  undefined4 local_14;\n  int local_10;\n  uint local_c;\n  int local_8;\n  \n  local_8 = 0;\n  local_40[0] = 0x1f;\n  local_40[1] = 0x1d;\n  local_40[2] = 0x1f;\n  local_40[3] = 0x1e;\n  local_30 = 0x1f;\n  local_2c = 0x1e;\n  local_28 = 0x1f;\n  local_24 = 0x1f;\n  local_20 = 0x1e;\n  local_1c = 0x1f;\n  local_18 = 0x1e;\n  local_14 = 0x1f;\n  if (((param_1 & 3) != 0) || (param_1 == 0x834)) {\n    local_40[1] = 0x1c;\n  }\n  for (local_c = 0x7b2; (int)local_c < (int)param_1; local_c = local_c + 1) {\n    if (((local_c & 3) == 0) && (local_c != 0x834)) {\n      local_8 = local_8 + 0x1e28500;\n    }\n    else {\n      local_8 = local_8 + 0x1e13380;\n    }\n  }\n  for (local_10 = 1; local_10 < param_2; local_10 = local_10 + 1) {\n    local_8 = local_8 + local_40[local_10 + -1] * 0x15180;\n  }\n  return local_8 + (param_3 + -1) * 0x15180 + param_4 * 0xe10 + param_5 * 0x3c + param_6;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "make_epoch"
+                    ],
+                    "calling_functions": [
+                        "make_epoch",
+                        "get_time"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_time",
+                "func_c_signature": "void get_time(void)",
+                "decompiled_code": "void get_time(void) {\n  int local_54 [4];\n  undefined4 local_44;\n  undefined4 local_40;\n  undefined4 local_3c;\n  undefined4 local_38;\n  undefined4 local_34;\n  undefined4 local_30;\n  undefined4 local_2c;\n  undefined4 local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  local_18 = 0;\n  local_1c = 100;\n  local_20 = 100;\n  local_24 = 100;\n  puts(\"Please enter the date as prompted\");\n  while (local_10 == 0) {\n    local_10 = get_int(\"Enter year between 1970 and 2105\");\n    if (((int)local_10 < 0x7b2) || (0x839 < (int)local_10)) {\n      puts(\"Bad value for year\");\n      local_10 = 0;\n    }\n  }\n  while (local_14 == 0) {\n    local_14 = get_int(\"Enter month\");\n    if ((local_14 < 1) || (0xc < local_14)) {\n      puts(\"Bad value for month\");\n      local_14 = 0;\n    }\n  }\n  while (local_18 == 0) {\n    local_54[0] = 0x1f;\n    local_54[1] = 0x1d;\n    local_54[2] = 0x1f;\n    local_54[3] = 0x1e;\n    local_44 = 0x1f;\n    local_40 = 0x1e;\n    local_3c = 0x1f;\n    local_38 = 0x1f;\n    local_34 = 0x1e;\n    local_30 = 0x1f;\n    local_2c = 0x1e;\n    local_28 = 0x1f;\n    if (((local_10 & 3) != 0) || (local_10 == 0x834)) {\n      local_54[1] = 0x1c;\n    }\n    local_18 = get_int(\"Enter day\");\n    if ((local_18 < 1) || (local_54[local_14 + -1] < local_18)) {\n      local_18 = 0;\n    }\n  }\n  while (local_1c == 100) {\n    local_1c = get_int(\"Enter hour (00-23)\");\n    if (0x17 < local_1c) {\n      local_1c = 100;\n    }\n  }\n  while (local_20 == 100) {\n    local_20 = get_int(\"Enter Minute (00-59)\");\n    if (0x3b < local_20) {\n      local_20 = 100;\n    }\n  }\n  while (local_24 == 100) {\n    local_24 = get_int(\"Enter second (00-59)\");\n    if (0x3b < local_24) {\n      local_24 = 100;\n    }\n  }\n  make_epoch(local_10,local_14,local_18,local_1c,local_20,local_24);\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "hour",
+                    "Minute",
+                    "second"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_time",
+                        "puts",
+                        "get_int",
+                        "hour",
+                        "Minute",
+                        "second",
+                        "make_epoch"
+                    ],
+                    "calling_functions": [
+                        "main_loop",
+                        "get_time",
+                        "start_UI"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "start_UI",
+                "func_c_signature": "void start_UI(int param_1)",
+                "decompiled_code": "void start_UI(int param_1) {\n  undefined4 uVar1;\n  \n  puts(\"Welcome to SPIFFS (Somewhat Poorly Implemented Fast File System)\");\n  uVar1 = get_time();\n  *(undefined4 *)(param_1 + 0x18) = uVar1;\n  main_loop(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "SPIFFS"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "start_UI",
+                        "puts",
+                        "SPIFFS",
+                        "get_time",
+                        "main_loop"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "start_UI"
+                    ],
+                    "defined_in_file": "CROMU_00035_decompiled.c"
+                }
+            }
+        ]
+    }
+}

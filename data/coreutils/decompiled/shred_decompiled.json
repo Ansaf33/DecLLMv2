@@ -1,0 +1,476 @@
+{
+    "file": "shred",
+    "decompiled_code": {
+        "shred.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... FILE...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Overwrite the specified FILE(s) repeatedly, in order to make it harder\\nfor even very expensive hardware probing to recover the data.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"\\nIf FILE is -, shred standard output.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_mandatory_arg_note();\n    pcVar3 = (char *)gettext(\n                            \"  -f, --force    change permissions to allow writing if necessary\\n  -n, --iterations=N  overwrite N times instead of the default (%d)\\n      --random-source=FILE  get random bytes from FILE\\n  -s, --size=N   shred this many bytes (suffixes like K, M, G accepted)\\n\"\n                            );\n    printf(pcVar3,3);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -u             deallocate and remove file after overwriting\\n      --remove[=HOW]  like -u but give control on HOW to delete;  See below\\n  -v, --verbose  show progress\\n  -x, --exact    do not round file sizes up to the next full block;\\n                   this is the default for non-regular files\\n  -z, --zero     add a final overwrite with zeros to hide shredding\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nDelete FILE(s) if --remove (-u) is specified.  The default is not to remove\\nthe files because it is common to operate on device files like /dev/hda,\\nand those files usually should not be removed.\\nThe optional HOW parameter indicates how to remove a directory entry:\\n\\'unlink\\' => use a standard unlink call.\\n\\'wipe\\' => also first obfuscate bytes in the name.\\n\\'wipesync\\' => also sync each obfuscated byte to the device.\\nThe default mode is \\'wipesync\\', but note it can be expensive.\\n\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"CAUTION: shred assumes the file system and hardware overwrite data in place.\\nAlthough this is common, many platforms operate otherwise.  Also, backups\\nand mirrors may contain unremovable copies that will let a shredded file\\nbe recovered later.  See the GNU coreutils manual for details.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"shred\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "FILE",
+                    "default",
+                    "bytes",
+                    "remove"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "FILE",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "default",
+                        "bytes",
+                        "remove",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "periodic_pattern",
+                "func_c_signature": "undefined4 periodic_pattern(uint param_1)",
+                "decompiled_code": "undefined4 periodic_pattern(uint param_1) {\n  uint uVar1;\n  char cVar2;\n  undefined4 uVar3;\n  long in_FS_OFFSET;\n  \n  if ((int)param_1 < 1) {\n    uVar3 = 0;\n  }\n  else {\n    param_1 = param_1 & 0xfff;\n    uVar1 = param_1 | param_1 << 0xc;\n    cVar2 = (char)(uVar1 >> 4);\n    if ((cVar2 == (char)(uVar1 >> 8)) && (cVar2 == (char)param_1)) {\n      uVar3 = 0;\n    }\n    else {\n      uVar3 = 1;\n    }\n  }\n  if (*(long *)(in_FS_OFFSET + 0x28) == *(long *)(in_FS_OFFSET + 0x28)) {\n    return uVar3;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "periodic_pattern",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "periodic_pattern",
+                        "dopass"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fillpattern",
+                "func_c_signature": "void fillpattern(uint param_1,undefined *param_2,ulong param_3)",
+                "decompiled_code": "void fillpattern(uint param_1,undefined *param_2,ulong param_3) {\n  uint uVar1;\n  uint uVar2;\n  ulong local_10;\n  \n  uVar2 = param_1 & 0xfff;\n  uVar1 = uVar2 | uVar2 << 0xc;\n  *param_2 = (char)(uVar1 >> 4);\n  param_2[1] = (char)(uVar1 >> 8);\n  param_2[2] = (char)uVar2;\n  for (local_10 = 3; local_10 <= param_3 >> 1; local_10 = local_10 << 1) {\n    memcpy(param_2 + local_10,param_2,local_10);\n  }\n  if (local_10 < param_3) {\n    memcpy(param_2 + local_10,param_2,param_3 - local_10);\n  }\n  if ((param_1 & 0x1000) != 0) {\n    for (local_10 = 0; local_10 < param_3; local_10 = local_10 + 0x200) {\n      param_2[local_10] = param_2[local_10] ^ 0x80;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fillpattern",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "fillpattern",
+                        "dopass"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "passname",
+                "func_c_signature": "void passname(byte *param_1,char *param_2)",
+                "decompiled_code": "void passname(byte *param_1,char *param_2) {\n  if (param_1 == (byte *)0x0) {\n    memcpy(param_2,\"random\",7);\n  }\n  else {\n    sprintf(param_2,\"%02x%02x%02x\",(ulong)*param_1,(ulong)param_1[1],(ulong)param_1[2]);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "passname",
+                        "memcpy",
+                        "sprintf"
+                    ],
+                    "calling_functions": [
+                        "passname",
+                        "dopass"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ignorable_sync_errno",
+                "func_c_signature": "undefined4 ignorable_sync_errno(int param_1)",
+                "decompiled_code": "undefined4 ignorable_sync_errno(int param_1) {\n  undefined4 uVar1;\n  \n  if (((param_1 == 0x16) || (param_1 == 9)) || (param_1 == 0x15)) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ignorable_sync_errno"
+                    ],
+                    "calling_functions": [
+                        "ignorable_sync_errno",
+                        "dosync"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dosync",
+                "func_c_signature": "undefined8 dosync(int param_1,undefined8 param_2)",
+                "decompiled_code": "undefined8 dosync(int param_1,undefined8 param_2) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  \n  iVar2 = fdatasync(param_1);\n  if (iVar2 == 0) {\n    uVar3 = 0;\n  }\n  else {\n    piVar4 = __errno_location();\n    iVar2 = *piVar4;\n    cVar1 = ignorable_sync_errno(iVar2);\n    if (cVar1 == '\\x01') {\n      iVar2 = fsync(param_1);\n      if (iVar2 == 0) {\n        uVar3 = 0;\n      }\n      else {\n        piVar4 = __errno_location();\n        iVar2 = *piVar4;\n        cVar1 = ignorable_sync_errno(iVar2);\n        if (cVar1 == '\\x01') {\n          sync();\n          uVar3 = 0;\n        }\n        else {\n          uVar3 = gettext(\"%s: fsync failed\");\n          error(0,iVar2,uVar3,param_2);\n          piVar4 = __errno_location();\n          *piVar4 = iVar2;\n          uVar3 = 0xffffffff;\n        }\n      }\n    }\n    else {\n      uVar3 = gettext(\"%s: fdatasync failed\");\n      error(0,iVar2,uVar3,param_2);\n      piVar4 = __errno_location();\n      *piVar4 = iVar2;\n      uVar3 = 0xffffffff;\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dosync",
+                        "fdatasync",
+                        "__errno_location",
+                        "ignorable_sync_errno",
+                        "fsync",
+                        "sync",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "dosync",
+                        "dopass",
+                        "wipename"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "direct_mode",
+                "func_c_signature": "void direct_mode(undefined4 param_1,char param_2)",
+                "decompiled_code": "void direct_mode(undefined4 param_1,char param_2) {\n  uint uVar1;\n  uint uVar2;\n  \n  uVar1 = rpl_fcntl(param_1,3);\n  if (0 < (int)uVar1) {\n    if (param_2 == '\\0') {\n      uVar2 = uVar1 & 0xffffbfff;\n    }\n    else {\n      uVar2 = uVar1 | 0x4000;\n    }\n    if (uVar2 != uVar1) {\n      rpl_fcntl(param_1,4,uVar2);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "direct_mode",
+                        "rpl_fcntl"
+                    ],
+                    "calling_functions": [
+                        "direct_mode",
+                        "dopass"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dorewind",
+                "func_c_signature": "bool dorewind(int param_1,long param_2)",
+                "decompiled_code": "bool dorewind(int param_1,long param_2) {\n  int iVar1;\n  __off_t _Var2;\n  int *piVar3;\n  long in_FS_OFFSET;\n  bool bVar4;\n  undefined2 local_18 [2];\n  undefined4 local_14;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  if ((*(uint *)(param_2 + 0x18) & 0xf000) == 0x2000) {\n    local_18[0] = 6;\n    local_14 = 1;\n    iVar1 = ioctl(param_1,0x40086d01,local_18);\n    if (iVar1 == 0) {\n      bVar4 = true;\n      goto LAB_001008c6;\n    }\n  }\n  _Var2 = lseek(param_1,0,0);\n  if (0 < _Var2) {\n    piVar3 = __errno_location();\n    *piVar3 = 0x16;\n  }\n  bVar4 = _Var2 == 0;\nLAB_001008c6:\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return bVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dorewind",
+                        "ioctl",
+                        "lseek",
+                        "__errno_location",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "dorewind",
+                        "dopass"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "known",
+                "func_c_signature": "ulong known(ulong param_1)",
+                "decompiled_code": "ulong known(ulong param_1) {\n  return ~param_1 >> 0x3f;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "known"
+                    ],
+                    "calling_functions": [
+                        "known",
+                        "dopass"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dopass",
+                "func_c_signature": "ulong dopass(int param_1,undefined8 param_2,undefined8 param_3,ulong *param_4,int param_5,\n            undefined8 param_6,undefined8 param_7,long param_8)",
+                "decompiled_code": "ulong dopass(int param_1,undefined8 param_2,undefined8 param_3,ulong *param_4,int param_5,\n            undefined8 param_6,undefined8 param_7,long param_8) {\n  bool bVar1;\n  bool bVar2;\n  char cVar3;\n  int iVar4;\n  undefined4 uVar5;\n  ulong uVar6;\n  long lVar7;\n  undefined8 uVar8;\n  int *piVar9;\n  ulong uVar10;\n  long lVar11;\n  __off_t _Var12;\n  char *pcVar13;\n  long in_FS_OFFSET;\n  bool bVar14;\n  byte local_8e0;\n  ulong local_898;\n  ulong local_890;\n  long local_888;\n  long local_880;\n  ulong local_878;\n  ulong local_870;\n  ssize_t local_868;\n  char *local_860;\n  char *local_858;\n  undefined local_7df [7];\n  char local_7d8 [656];\n  undefined local_548 [656];\n  undefined local_2b8 [664];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_890 = *param_4;\n  local_888 = 0;\n  local_880 = 0;\n  iVar4 = getpagesize();\n  cVar3 = periodic_pattern(param_5);\n  if (cVar3 == '\\0') {\n    uVar6 = 0x10000;\n  }\n  else {\n    uVar6 = 0xf000;\n  }\n  lVar7 = xalignalloc((long)iVar4,((uVar6 + 2) / 3) * 3);\n  local_8e0 = 0;\n  bVar2 = false;\n  if (((long)local_890 < 1) || (uVar6 <= local_890)) {\n    bVar1 = false;\n  }\n  else {\n    bVar1 = true;\n  }\n  if (!bVar1) {\n    direct_mode(param_1,1);\n  }\n  cVar3 = dorewind(param_1,param_2);\n  if (cVar3 == '\\x01') {\n    if (param_5 < 0) {\n      passname(0,local_7df);\n    }\n    else {\n      cVar3 = known(local_890);\n      if ((cVar3 == '\\0') || (uVar10 = local_890, ((uVar6 + 2) / 3) * 3 <= local_890)) {\n        uVar10 = ((uVar6 + 2) / 3) * 3;\n      }\n      fillpattern(param_5,lVar7,uVar10);\n      passname(lVar7,local_7df);\n    }\n    if (param_8 != 0) {\n      uVar8 = gettext(\"%s: pass %lu/%lu (%s)...\");\n      error(0,0,uVar8,param_3,param_7,param_8,local_7df);\n      local_888 = rpl_time(0);\n      local_888 = local_888 + 5;\n      local_860 = \"\";\n    }\n    local_898 = 0;\nLAB_00100c2b:\n    cVar3 = known(local_890);\n    local_878 = uVar6;\n    if (((cVar3 != '\\0') && (local_890 - local_898 < uVar6)) &&\n       (((long)local_890 < (long)local_898 || (local_878 = local_890 - local_898, local_878 == 0))))\n    {\n      iVar4 = dosync(param_1,param_3);\n      if (iVar4 != 0) {\n        piVar9 = __errno_location();\n        if (*piVar9 == 5) {\n          local_8e0 = 1;\n        }\n        else {\n          bVar2 = true;\n        }\n      }\n      goto LAB_001013a8;\n    }\n    if (param_5 < 0) {\n      randread(param_6,lVar7,local_878);\n    }\n    for (local_870 = 0; local_870 < local_878; local_870 = local_870 + local_868) {\n      local_868 = write(param_1,(void *)(lVar7 + local_870),local_878 - local_870);\n      if (local_868 < 1) {\n        cVar3 = known(local_890);\n        if ((cVar3 != '\\x01') &&\n           ((local_868 == 0 || (piVar9 = __errno_location(), *piVar9 == 0x1c)))) {\n          if (local_870 <= 0x7fffffffffffffff - local_898) {\n            local_890 = local_870 + local_898;\n            *param_4 = local_890;\n          }\n          break;\n        }\n        piVar9 = __errno_location();\n        iVar4 = *piVar9;\n        if ((bVar1) || (piVar9 = __errno_location(), *piVar9 != 0x16)) {\n          uVar8 = gettext(\"%s: error writing at offset %ju\");\n          error(0,iVar4,uVar8,param_3,local_870 + local_898);\n          if ((iVar4 == 5) &&\n             ((cVar3 = known(local_890), cVar3 != '\\0' && ((local_870 | 0x1ff) < local_878)))) {\n            lVar11 = (local_870 | 0x1ff) + 1;\n            _Var12 = lseek(param_1,lVar11 + local_898,0);\n            if (_Var12 != -1) {\n              local_868 = lVar11 - local_870;\n              local_8e0 = 1;\n              goto LAB_00100f75;\n            }\n            uVar8 = gettext(\"%s: lseek failed\");\n            piVar9 = __errno_location();\n            error(0,*piVar9,uVar8,param_3);\n          }\n          bVar2 = true;\n          goto LAB_001013a8;\n        }\n        direct_mode(param_1,0);\n        local_868 = 0;\n        bVar1 = true;\n      }\nLAB_00100f75:\n    }\n    local_898 = local_870 + local_898;\n    if (local_870 <= local_898 + 0x8000000000000000) {\n      bVar14 = local_890 == local_898;\n      if (((param_8 != 0) &&\n          (((bVar14 && (*local_860 != '\\0')) || (local_880 = rpl_time(0), local_888 <= local_880))))\n         && ((local_858 = (char *)human_readable(local_898,local_548,0x1b2,1,1), bVar14 ||\n             (cVar3 = streq(local_860,local_858), cVar3 != '\\x01')))) {\n        cVar3 = known(local_890);\n        if (cVar3 == '\\x01') {\n          if (local_890 == 0) {\n            uVar5 = 100;\n          }\n          else if (local_898 < 0x28f5c28f5c28f5d) {\n            uVar5 = (undefined4)((local_898 * 100) / local_890);\n          }\n          else {\n            uVar5 = (undefined4)(local_898 / (ulong)((long)local_890 / 100));\n          }\n          pcVar13 = (char *)human_readable(local_890,local_2b8,0x1b0,1,1);\n          if (bVar14) {\n            local_858 = pcVar13;\n          }\n          uVar8 = gettext(\"%s: pass %lu/%lu (%s)...%s/%s %d%%\");\n          error(0,0,uVar8,param_3,param_7,param_8,local_7df,local_858,pcVar13,uVar5);\n        }\n        else {\n          uVar8 = gettext(\"%s: pass %lu/%lu (%s)...%s\");\n          error(0,0,uVar8,param_3,param_7,param_8,local_7df,local_858);\n        }\n        strcpy(local_7d8,local_858);\n        local_860 = local_7d8;\n        local_888 = local_880 + 5;\n        iVar4 = dosync(param_1,param_3);\n        if (iVar4 != 0) {\n          piVar9 = __errno_location();\n          if (*piVar9 != 5) {\n            bVar2 = true;\n            goto LAB_001013a8;\n          }\n          local_8e0 = 1;\n        }\n      }\n      goto LAB_00100c2b;\n    }\n    uVar8 = gettext(\"%s: file too large\");\n    error(0,0,uVar8,param_3);\n    bVar2 = true;\n  }\n  else {\n    uVar8 = gettext(\"%s: cannot rewind\");\n    piVar9 = __errno_location();\n    error(0,*piVar9,uVar8,param_3);\n    bVar2 = true;\n  }\nLAB_001013a8:\n  alignfree(lVar7);\n  if (bVar2) {\n    uVar6 = 0xffffffff;\n  }\n  else {\n    uVar6 = (ulong)local_8e0;\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return uVar6;\n}",
+                "globals": [],
+                "externs": [
+                    "lu"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dopass",
+                        "getpagesize",
+                        "periodic_pattern",
+                        "xalignalloc",
+                        "direct_mode",
+                        "dorewind",
+                        "passname",
+                        "known",
+                        "fillpattern",
+                        "gettext",
+                        "lu",
+                        "error",
+                        "rpl_time",
+                        "dosync",
+                        "__errno_location",
+                        "randread",
+                        "write",
+                        "lseek",
+                        "human_readable",
+                        "streq",
+                        "strcpy",
+                        "alignfree",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "dopass",
+                        "do_wipefd"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "genpattern",
+                "func_c_signature": "void genpattern(int *param_1,ulong param_2,undefined8 param_3)",
+                "decompiled_code": "void genpattern(int *param_1,ulong param_2,undefined8 param_3) {\n  int *__src;\n  int iVar1;\n  ulong uVar2;\n  long lVar3;\n  int local_44;\n  long local_40;\n  int *local_38;\n  int *local_30;\n  ulong local_28;\n  ulong local_20;\n  long local_18;\n  \n  if (param_2 != 0) {\n    local_38 = &patterns;\n    local_40 = 0;\n    local_30 = param_1;\n    local_28 = param_2;\n    while( true ) {\n      while( true ) {\n        while( true ) {\n          __src = local_38 + 1;\n          local_44 = *local_38;\n          if (local_44 != 0) break;\n          local_38 = &patterns;\n        }\n        local_38 = __src;\n        if (-1 < local_44) break;\n        local_44 = -local_44;\n        if (local_28 <= (ulong)(long)local_44) {\n          local_40 = local_40 + local_28;\n          goto LAB_00101551;\n        }\n        local_40 = local_40 + local_44;\n        local_28 = local_28 - (long)local_44;\n      }\n      if (local_28 < (ulong)(long)local_44) break;\n      memcpy(local_30,__src,(long)local_44 * 4);\n      local_38 = __src + local_44;\n      local_30 = local_30 + local_44;\n      local_28 = local_28 - (long)local_44;\n    }\n    if ((local_28 < 2) || (local_28 * 3 < (ulong)(long)local_44)) {\n      local_40 = local_40 + local_28;\n    }\n    else {\n      do {\n        if ((local_28 == (long)local_44) ||\n           (uVar2 = randint_choose(param_3,(long)local_44), uVar2 < local_28)) {\n          *local_30 = *local_38;\n          local_28 = local_28 - 1;\n          local_30 = local_30 + 1;\n        }\n        local_38 = local_38 + 1;\n        local_44 = local_44 + -1;\n      } while (local_28 != 0);\n    }\nLAB_00101551:\n    local_18 = param_2 - local_40;\n    uVar2 = local_40 - 1;\n    local_20 = uVar2;\n    for (local_28 = 0; local_28 < param_2; local_28 = local_28 + 1) {\n      if (uVar2 < local_20) {\n        lVar3 = randint_choose(param_3,local_18 - local_28);\n        iVar1 = param_1[local_28];\n        param_1[local_28] = param_1[lVar3 + local_28];\n        param_1[lVar3 + local_28] = iVar1;\n      }\n      else {\n        local_20 = (local_20 + param_2) - 1;\n        param_1[local_18] = param_1[local_28];\n        param_1[local_28] = -1;\n        local_18 = local_18 + 1;\n      }\n      local_20 = local_20 - uVar2;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "genpattern",
+                        "memcpy",
+                        "randint_choose"
+                    ],
+                    "calling_functions": [
+                        "genpattern",
+                        "do_wipefd"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_wipefd",
+                "func_c_signature": "undefined do_wipefd(int param_1,undefined8 param_2,undefined8 param_3,long param_4)",
+                "decompiled_code": "undefined do_wipefd(int param_1,undefined8 param_2,undefined8 param_3,long param_4) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  ulong uVar5;\n  long lVar6;\n  long in_FS_OFFSET;\n  undefined local_151;\n  ulong local_128;\n  ulong local_120;\n  ulong local_118;\n  ulong local_110;\n  long local_108;\n  long local_100;\n  void *local_f8;\n  long local_f0;\n  long local_e8;\n  undefined8 local_e0;\n  undefined8 local_d8;\n  undefined8 local_d0;\n  undefined8 local_c8;\n  undefined8 local_c0;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_110 = 0;\n  local_151 = 1;\n  local_108 = 0;\n  if (*(char *)(param_4 + 0x1c) != '\\0') {\n    local_108 = (ulong)*(byte *)(param_4 + 0x1e) + *(long *)(param_4 + 8);\n  }\n  iVar1 = fstat(param_1,&local_b8);\n  if (iVar1 == 0) {\n    if (((((local_b8.st_mode & 0xf000) == 0x2000) && (iVar1 = isatty(param_1), iVar1 != 0)) ||\n        ((local_b8.st_mode & 0xf000) == 0x1000)) || ((local_b8.st_mode & 0xf000) == 0xc000)) {\n      local_d0 = gettext(\"%s: invalid file type\");\n      error(0,0,local_d0,param_2);\n      local_151 = 0;\n    }\n    else {\n      if (((local_b8.st_mode & 0xf000) != 0x8000) || (-1 < local_b8.st_size)) {\n        local_f8 = (void *)xnmalloc(*(undefined8 *)(param_4 + 8),4);\n        local_118 = *(ulong *)(param_4 + 0x10);\n        if (local_118 == 0xffffffffffffffff) {\n          if ((local_b8.st_mode & 0xf000) == 0x8000) {\n            local_118 = local_b8.st_size;\n            if (*(char *)(param_4 + 0x1d) != '\\x01') {\n              if ((local_b8.st_blksize < 1) ||\n                 (uVar5 = local_b8.st_blksize, 0x2000000000000000 < (ulong)local_b8.st_blksize)) {\n                uVar5 = 0x200;\n              }\n              local_f0 = local_b8.st_size % (long)uVar5;\n              if (local_b8.st_size != 0) {\n                if ((local_b8.st_blksize < 1) ||\n                   (uVar5 = local_b8.st_blksize, 0x2000000000000000 < (ulong)local_b8.st_blksize)) {\n                  uVar5 = 0x200;\n                }\n                if (local_b8.st_size < (long)uVar5) {\n                  local_110 = local_b8.st_size;\n                }\n              }\n              if (local_f0 != 0) {\n                if ((local_b8.st_blksize < 1) || (0x2000000000000000 < (ulong)local_b8.st_blksize))\n                {\n                  local_b8.st_blksize = 0x200;\n                }\n                local_e8 = local_b8.st_blksize - local_f0;\n                lVar6 = local_e8;\n                if (0x7fffffffffffffff - local_b8.st_size <= local_e8) {\n                  lVar6 = 0x7fffffffffffffff - local_b8.st_size;\n                }\n                local_118 = local_b8.st_size + lVar6;\n              }\n            }\n          }\n          else {\n            local_118 = lseek(param_1,0,2);\n            if ((long)local_118 < 1) {\n              local_118 = 0xffffffffffffffff;\n            }\n          }\n        }\n        else if ((local_b8.st_mode & 0xf000) == 0x8000) {\n          if ((local_b8.st_blksize < 1) || (0x2000000000000000 < (ulong)local_b8.st_blksize)) {\n            local_b8.st_blksize = 0x200;\n          }\n          if ((long)local_118 < local_b8.st_blksize) {\n            local_b8.st_blksize = local_118;\n          }\n          if (local_b8.st_size < local_b8.st_blksize) {\n            local_110 = local_b8.st_size;\n          }\n        }\n        genpattern(local_f8,*(undefined8 *)(param_4 + 8),param_3);\n        local_e0 = randint_get_source(param_3);\n        do {\n          local_100 = local_108;\n          if (local_110 == 0) {\n            if (local_118 == 0) {\n              if (((*(int *)(param_4 + 0x18) != 0) && (iVar1 = ftruncate(param_1,0), iVar1 != 0)) &&\n                 ((local_b8.st_mode & 0xf000) == 0x8000)) {\n                uVar3 = gettext(\"%s: error truncating\");\n                piVar4 = __errno_location();\n                local_c0 = uVar3;\n                error(0,*piVar4,uVar3,param_2);\n                local_151 = 0;\n              }\nLAB_00101cdb:\n              free(local_f8);\n              goto LAB_00101cf1;\n            }\n            local_128 = local_118;\n            local_118 = 0;\n          }\n          else {\n            local_128 = local_110;\n            local_110 = 0;\n            local_100 = 0;\n          }\n          for (local_120 = 0; local_120 < (ulong)*(byte *)(param_4 + 0x1e) + *(long *)(param_4 + 8);\n              local_120 = local_120 + 1) {\n            if (local_120 < *(ulong *)(param_4 + 8)) {\n              uVar2 = *(undefined4 *)((long)local_f8 + local_120 * 4);\n            }\n            else {\n              uVar2 = 0;\n            }\n            iVar1 = dopass(param_1,&local_b8,param_2,&local_128,uVar2,local_e0,local_120 + 1,\n                           local_100);\n            if ((iVar1 != 0) && (local_151 = 0, iVar1 < 0)) goto LAB_00101cdb;\n          }\n        } while( true );\n      }\n      local_c8 = gettext(\"%s: file has negative size\");\n      error(0,0,local_c8,param_2);\n      local_151 = 0;\n    }\n  }\n  else {\n    uVar3 = gettext(\"%s: fstat failed\");\n    piVar4 = __errno_location();\n    local_d8 = uVar3;\n    error(0,*piVar4,uVar3,param_2);\n    local_151 = 0;\n  }\nLAB_00101cf1:\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return local_151;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_wipefd",
+                        "fstat",
+                        "isatty",
+                        "gettext",
+                        "error",
+                        "xnmalloc",
+                        "lseek",
+                        "genpattern",
+                        "randint_get_source",
+                        "ftruncate",
+                        "__errno_location",
+                        "free",
+                        "dopass",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "do_wipefd",
+                        "wipefd",
+                        "wipefile"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "wipefd",
+                "func_c_signature": "undefined8 wipefd(undefined4 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4)",
+                "decompiled_code": "undefined8 wipefd(undefined4 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4) {\n  uint uVar1;\n  undefined8 uVar2;\n  int *piVar3;\n  \n  uVar1 = rpl_fcntl(param_1,3);\n  if ((int)uVar1 < 0) {\n    uVar2 = gettext(\"%s: fcntl failed\");\n    piVar3 = __errno_location();\n    error(0,*piVar3,uVar2,param_2);\n    uVar2 = 0;\n  }\n  else if ((uVar1 & 0x400) == 0) {\n    uVar2 = do_wipefd(param_1,param_2,param_3,param_4);\n  }\n  else {\n    uVar2 = gettext(\"%s: cannot shred append-only file descriptor\");\n    error(0,0,uVar2,param_2);\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "wipefd",
+                        "rpl_fcntl",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "do_wipefd"
+                    ],
+                    "calling_functions": [
+                        "wipefd",
+                        "main"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "incname",
+                "func_c_signature": "undefined8 incname(long param_1,long param_2)",
+                "decompiled_code": "undefined8 incname(long param_1,long param_2) {\n  long lVar1;\n  char *pcVar2;\n  long local_28;\n  \n  local_28 = param_2;\n  while( true ) {\n    lVar1 = local_28 + -1;\n    if (local_28 == 0) {\n      return 0;\n    }\n    pcVar2 = strchr(\"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.\",\n                    (int)*(char *)(lVar1 + param_1));\n    if (pcVar2[1] != '\\0') break;\n    *(undefined *)(lVar1 + param_1) = 0x30;\n    local_28 = lVar1;\n  }\n  *(char *)(lVar1 + param_1) = pcVar2[1];\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "incname",
+                        "strchr"
+                    ],
+                    "calling_functions": [
+                        "incname",
+                        "wipename"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "wipename",
+                "func_c_signature": "undefined wipename(char *param_1,char *param_2,long param_3)",
+                "decompiled_code": "undefined wipename(char *param_1,char *param_2,long param_3) {\n  bool bVar1;\n  char cVar2;\n  int iVar3;\n  void *__ptr;\n  void *__s;\n  void *__ptr_00;\n  undefined8 uVar4;\n  void *__ptr_01;\n  char *pcVar5;\n  int *piVar6;\n  undefined local_9e;\n  int local_9c;\n  size_t local_70;\n  \n  __ptr = (void *)xstrdup(param_1);\n  __s = (void *)last_component(__ptr);\n  __ptr_00 = (void *)dir_name(__ptr);\n  uVar4 = quotearg_n_style_colon(0,3,__ptr_00);\n  __ptr_01 = (void *)xstrdup(uVar4);\n  bVar1 = true;\n  local_9e = 1;\n  local_9c = -1;\n  if (*(int *)(param_3 + 0x18) == 3) {\n    local_9c = open_safer(__ptr_00,0x10900);\n  }\n  if (*(char *)(param_3 + 0x1c) != '\\0') {\n    uVar4 = gettext(\"%s: removing\");\n    error(0,0,uVar4,param_2);\n  }\n  if (*(int *)(param_3 + 0x18) != 1) {\n    for (local_70 = base_len(__s); local_70 != 0; local_70 = local_70 - 1) {\n      memset(__s,0x30,local_70);\n      *(undefined *)(local_70 + (long)__s) = 0;\n      do {\n        iVar3 = renameatu(0xffffff9c,param_1,0xffffff9c,__ptr,1);\n        if ((iVar3 == 0) || (piVar6 = __errno_location(), *piVar6 != 0x11)) break;\n        cVar2 = incname(__s,local_70);\n      } while (cVar2 != '\\0');\n      if (iVar3 == 0) {\n        if ((-1 < local_9c) && (iVar3 = dosync(local_9c,__ptr_01), iVar3 != 0)) {\n          local_9e = 0;\n        }\n        if (*(char *)(param_3 + 0x1c) != '\\0') {\n          pcVar5 = param_1;\n          if (bVar1) {\n            pcVar5 = param_2;\n          }\n          uVar4 = gettext(\"%s: renamed to %s\");\n          error(0,0,uVar4,pcVar5,__ptr);\n          bVar1 = false;\n        }\n        memcpy(param_1 + ((long)__s - (long)__ptr),__s,local_70 + 1);\n      }\n    }\n  }\n  iVar3 = unlink(param_1);\n  if (iVar3 == 0) {\n    if (*(char *)(param_3 + 0x1c) != '\\0') {\n      uVar4 = gettext(\"%s: removed\");\n      error(0,0,uVar4,param_2);\n    }\n  }\n  else {\n    uVar4 = gettext(\"%s: failed to remove\");\n    piVar6 = __errno_location();\n    error(0,*piVar6,uVar4,param_2);\n    local_9e = 0;\n  }\n  if (-1 < local_9c) {\n    iVar3 = dosync(local_9c,__ptr_01);\n    if (iVar3 != 0) {\n      local_9e = 0;\n    }\n    iVar3 = close(local_9c);\n    if (iVar3 != 0) {\n      uVar4 = gettext(\"%s: failed to close\");\n      piVar6 = __errno_location();\n      error(0,*piVar6,uVar4,__ptr_01);\n      local_9e = 0;\n    }\n  }\n  free(__ptr);\n  free(__ptr_00);\n  free(__ptr_01);\n  return local_9e;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "wipename",
+                        "xstrdup",
+                        "last_component",
+                        "dir_name",
+                        "quotearg_n_style_colon",
+                        "open_safer",
+                        "gettext",
+                        "error",
+                        "base_len",
+                        "memset",
+                        "renameatu",
+                        "__errno_location",
+                        "incname",
+                        "dosync",
+                        "memcpy",
+                        "unlink",
+                        "close",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "wipename",
+                        "wipefile"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "wipefile",
+                "func_c_signature": "char wipefile(char *param_1,undefined8 param_2,undefined8 param_3,char *param_4)",
+                "decompiled_code": "char wipefile(char *param_1,undefined8 param_2,undefined8 param_3,char *param_4) {\n  int iVar1;\n  int *piVar2;\n  undefined8 uVar3;\n  char local_3d;\n  int local_3c;\n  \n  local_3c = open_safer(param_1,0x101);\n  if ((((local_3c < 0) && (piVar2 = __errno_location(), *piVar2 == 0xd)) && (*param_4 != '\\0')) &&\n     (iVar1 = chmod(param_1,0x80), iVar1 == 0)) {\n    local_3c = open_safer(param_1,0x101);\n  }\n  if (local_3c < 0) {\n    uVar3 = gettext(\"%s: failed to open for writing\");\n    piVar2 = __errno_location();\n    error(0,*piVar2,uVar3,param_2);\n    local_3d = '\\0';\n  }\n  else {\n    local_3d = do_wipefd(local_3c,param_2,param_3,param_4);\n    iVar1 = close(local_3c);\n    if (iVar1 != 0) {\n      uVar3 = gettext(\"%s: failed to close\");\n      piVar2 = __errno_location();\n      error(0,*piVar2,uVar3,param_2);\n      local_3d = '\\0';\n    }\n    if ((local_3d != '\\0') && (*(int *)(param_4 + 0x18) != 0)) {\n      local_3d = wipename(param_1,param_2,param_4);\n    }\n  }\n  return local_3d;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "wipefile",
+                        "open_safer",
+                        "__errno_location",
+                        "chmod",
+                        "gettext",
+                        "error",
+                        "do_wipefd",
+                        "close",
+                        "wipename"
+                    ],
+                    "calling_functions": [
+                        "wipefile",
+                        "main"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clear_random_data",
+                "func_c_signature": "void clear_random_data(void)",
+                "decompiled_code": "void clear_random_data(void) {\n  randint_all_free(randint_source);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clear_random_data",
+                        "randint_all_free"
+                    ],
+                    "calling_functions": [
+                        "clear_random_data"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  int iVar1;\n  char cVar2;\n  byte bVar3;\n  int iVar4;\n  long lVar5;\n  undefined8 uVar6;\n  int *piVar7;\n  void *__ptr;\n  long in_FS_OFFSET;\n  bool local_9d;\n  int local_9c;\n  char *local_78;\n  undefined local_48 [8];\n  undefined8 uStack_40;\n  undefined local_38 [8];\n  undefined8 uStack_30;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_9d = true;\n  _local_48 = (undefined  [16])0x0;\n  _local_38 = (undefined  [16])0x0;\n  local_78 = (char *)0x0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  uStack_40 = 3;\n  local_38 = (undefined  [8])0xffffffffffffffff;\n  do {\n    while( true ) {\n      iVar4 = getopt_long(param_1,param_2,\"fn:s:uvxz\",long_opts,0);\n      iVar1 = _optind;\n      if (iVar4 == -1) {\n        iVar4 = param_1 - _optind;\n        if (param_1 == _optind) {\n          uVar6 = gettext(\"missing file operand\");\n          error(0,0,uVar6);\n          usage(1);\n        }\n        randint_source = randint_all_new(local_78,0xffffffffffffffff);\n        if (randint_source == 0) {\n          if (local_78 == (char *)0x0) {\n            local_78 = \"getrandom\";\n          }\n          uVar6 = quotearg_n_style_colon(0,3,local_78);\n          piVar7 = __errno_location();\n          error(1,*piVar7,&DAT_001036f8,uVar6);\n        }\n        atexit(clear_random_data);\n        for (local_9c = 0; local_9c < iVar4; local_9c = local_9c + 1) {\n          uVar6 = quotearg_n_style_colon(0,3,param_2[(long)iVar1 + (long)local_9c]);\n          __ptr = (void *)xstrdup(uVar6);\n          cVar2 = streq(param_2[(long)iVar1 + (long)local_9c],&DAT_001036fb);\n          if (cVar2 == '\\0') {\n            bVar3 = wipefile(param_2[(long)iVar1 + (long)local_9c],__ptr,randint_source,local_48);\n          }\n          else {\n            bVar3 = wipefd(1,__ptr,randint_source,local_48);\n          }\n          local_9d = (bVar3 & local_9d) != 0;\n          free(__ptr);\n        }\n        if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n          __stack_chk_fail();\n        }\n        return local_9d ^ 1;\n      }\n      if (iVar4 < 0x81) break;\nswitchD_00102565_caseD_67:\n      usage(1);\n    }\n    if (iVar4 < 0x66) {\n      if (iVar4 == -0x83) {\nLAB_0010271c:\n        uVar6 = proper_name_lite(\"Colin Plumb\",\"Colin Plumb\");\n        version_etc(_stdout,\"shred\",\"GNU coreutils\",_Version,uVar6,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar4 == -0x82) {\n        usage(0);\n        goto LAB_0010271c;\n      }\n      goto switchD_00102565_caseD_67;\n    }\n    switch(iVar4) {\n    case 0x66:\n      local_48[0] = 1;\n      break;\n    default:\n      goto switchD_00102565_caseD_67;\n    case 0x6e:\n      uVar6 = gettext(\"invalid number of passes\");\n      uVar6 = xdectoumax(_optarg,0,0x3fffffffffffffff,&DAT_00102b74,uVar6,0);\n      uStack_40 = uVar6;\n      break;\n    case 0x73:\n      uVar6 = gettext(\"invalid file size\");\n      uVar6 = xnumtoumax(_optarg,0,0,0x7fffffffffffffff,\"cbBkKMGTPEZYRQ0\",uVar6,0,0);\n      local_38 = (undefined  [8])uVar6;\n      break;\n    case 0x75:\n      if (_optarg == (char *)0x0) {\n        uStack_30._0_4_ = 3;\n      }\n      else {\n        lVar5 = __xargmatch_internal\n                          (\"--remove\",_optarg,remove_args,remove_methods,4,_argmatch_die,1);\n        uStack_30._0_4_ = *(undefined4 *)(remove_methods + lVar5 * 4);\n      }\n      break;\n    case 0x76:\n      uStack_30._4_1_ = 1;\n      break;\n    case 0x78:\n      uStack_30._5_1_ = 1;\n      break;\n    case 0x7a:\n      uStack_30._6_1_ = 1;\n      break;\n    case 0x80:\n      if ((local_78 != (char *)0x0) && (cVar2 = streq(local_78,_optarg), cVar2 != '\\x01')) {\n        uVar6 = gettext(\"multiple random sources specified\");\n        error(1,0,uVar6);\n      }\n      local_78 = _optarg;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "randint_all_new",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "xstrdup",
+                        "streq",
+                        "wipefile",
+                        "wipefd",
+                        "free",
+                        "__stack_chk_fail",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "xdectoumax",
+                        "xnumtoumax",
+                        "__xargmatch_internal"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "shred_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,346 @@
+{
+    "file": "KPRCA_00003",
+    "decompiled_code": {
+        "bitwriter.c": [
+            {
+                "func_name": "bitwriter_output",
+                "func_c_signature": "void bitwriter_output(code **param_1,uint param_2,char param_3)",
+                "decompiled_code": "void bitwriter_output(code **param_1,uint param_2,char param_3) {\n  uint local_10;\n  \n  if (('\\0' < param_3) && (param_3 < '!')) {\n    for (local_10 = 1 << (param_3 - 1U & 0x1f); local_10 != 0; local_10 = local_10 >> 1) {\n      *(char *)((int)param_1 + 5) = *(char *)((int)param_1 + 5) * '\\x02' | (param_2 & local_10) != 0\n      ;\n      *(char *)(param_1 + 1) = *(char *)(param_1 + 1) + '\\x01';\n      if (*(char *)(param_1 + 1) == '\\b') {\n        (**param_1)(*(undefined *)((int)param_1 + 5));\n        *(undefined *)(param_1 + 1) = 0;\n        *(undefined *)((int)param_1 + 5) = 0;\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bitwriter_output"
+                    ],
+                    "calling_functions": [
+                        "bitwriter_output",
+                        "encode_code"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "bitwriter_flush",
+                "func_c_signature": "void bitwriter_flush(code **param_1,byte param_2)",
+                "decompiled_code": "void bitwriter_flush(code **param_1,byte param_2) {\n  while (*(char *)(param_1 + 1) != '\\0') {\n    *(byte *)((int)param_1 + 5) = param_2 | *(char *)((int)param_1 + 5) * '\\x02';\n    *(char *)(param_1 + 1) = *(char *)(param_1 + 1) + '\\x01';\n    if (*(char *)(param_1 + 1) == '\\b') {\n      (**param_1)(*(undefined *)((int)param_1 + 5));\n      *(undefined *)(param_1 + 1) = 0;\n      *(undefined *)((int)param_1 + 5) = 0;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bitwriter_flush"
+                    ],
+                    "calling_functions": [
+                        "bitwriter_flush",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            }
+        ],
+        "dct.c": [
+            {
+                "func_name": "idct",
+                "func_c_signature": "void idct(int param_1,int param_2,int param_3)",
+                "decompiled_code": "void idct(int param_1,int param_2,int param_3) {\n  int iVar1;\n  int iVar2;\n  int iVar3;\n  int iVar4;\n  int iVar5;\n  int iVar6;\n  int iVar7;\n  int iVar8;\n  int iVar9;\n  int iVar10;\n  int local_1b4 [104];\n  int local_14;\n  int local_10;\n  \n  for (local_14 = 0; local_14 < 8; local_14 = local_14 + 1) {\n    for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {\n      local_1b4[local_10 + local_14 * 8] =\n           (uint)*(byte *)(param_3 + local_10 + local_14 * 8) *\n           (int)*(short *)(param_1 + (local_10 + local_14 * 8) * 2) *\n           *(int *)(S + (local_10 + local_14 * 8) * 4);\n    }\n  }\n  local_1b4[0] = local_1b4[0] + 0x800;\n  for (local_14 = 0; local_14 < 8; local_14 = local_14 + 1) {\n    iVar1 = local_1b4[local_14 * 8 + 2];\n    iVar2 = local_1b4[local_14 * 8 + 6];\n    iVar7 = local_1b4[local_14 * 8 + 7] + local_1b4[local_14 * 8 + 1];\n    iVar3 = local_1b4[local_14 * 8 + 1] - local_1b4[local_14 * 8 + 7];\n    iVar5 = iVar3 + local_1b4[local_14 * 8 + 5];\n    iVar6 = iVar7 + local_1b4[local_14 * 8 + 3];\n    iVar7 = iVar7 - local_1b4[local_14 * 8 + 3];\n    iVar3 = iVar3 - local_1b4[local_14 * 8 + 5];\n    iVar4 = (iVar6 >> 9) - iVar6;\n    iVar8 = (iVar5 >> 9) - iVar5;\n    iVar5 = ((iVar4 >> 2) - iVar4) + (iVar5 >> 1);\n    iVar6 = ((iVar8 >> 2) - iVar8) - (iVar6 >> 1);\n    iVar4 = (iVar7 >> 3) - (iVar7 >> 7);\n    local_1b4[70] = iVar4 - (iVar7 >> 0xb);\n    local_1b4[69] = (iVar3 >> 3) - (iVar3 >> 7);\n    local_1b4[68] = local_1b4[69] - (iVar3 >> 0xb);\n    iVar7 = (iVar7 - iVar4) - (local_1b4[69] + (local_1b4[68] >> 1));\n    iVar3 = (iVar3 - local_1b4[69]) + iVar4 + (local_1b4[70] >> 1);\n    local_1b4[67] = iVar1 + (iVar1 >> 5);\n    local_1b4[66] = local_1b4[67] >> 2;\n    local_1b4[65] = iVar2 + (iVar2 >> 5);\n    local_1b4[64] = local_1b4[65] >> 2;\n    iVar1 = (local_1b4[66] + (iVar1 >> 4)) - (local_1b4[65] - local_1b4[64]);\n    iVar2 = local_1b4[64] + (iVar2 >> 4) + (local_1b4[67] - local_1b4[66]);\n    iVar10 = local_1b4[local_14 * 8 + 4] + local_1b4[local_14 * 8];\n    iVar9 = local_1b4[local_14 * 8] - local_1b4[local_14 * 8 + 4];\n    iVar4 = iVar2 + iVar10;\n    iVar8 = iVar1 + iVar9;\n    iVar9 = iVar9 - iVar1;\n    iVar10 = iVar10 - iVar2;\n    local_1b4[local_14 * 8] = iVar5 + iVar4;\n    local_1b4[local_14 * 8 + 1] = iVar8 + iVar3;\n    local_1b4[local_14 * 8 + 2] = iVar7 + iVar9;\n    local_1b4[local_14 * 8 + 3] = iVar6 + iVar10;\n    local_1b4[local_14 * 8 + 4] = iVar10 - iVar6;\n    local_1b4[local_14 * 8 + 5] = iVar9 - iVar7;\n    local_1b4[local_14 * 8 + 6] = iVar8 - iVar3;\n    local_1b4[local_14 * 8 + 7] = iVar4 - iVar5;\n  }\n  for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {\n    iVar1 = local_1b4[local_10 + 0x10];\n    iVar2 = local_1b4[local_10 + 0x30];\n    iVar3 = local_1b4[local_10 + 0x38] + local_1b4[local_10 + 8];\n    iVar4 = local_1b4[local_10 + 8] - local_1b4[local_10 + 0x38];\n    iVar5 = iVar4 + local_1b4[local_10 + 0x28];\n    iVar6 = iVar3 + local_1b4[local_10 + 0x18];\n    iVar3 = iVar3 - local_1b4[local_10 + 0x18];\n    iVar4 = iVar4 - local_1b4[local_10 + 0x28];\n    iVar7 = (iVar6 >> 9) - iVar6;\n    iVar8 = (iVar5 >> 9) - iVar5;\n    iVar5 = ((iVar7 >> 2) - iVar7) + (iVar5 >> 1);\n    iVar6 = ((iVar8 >> 2) - iVar8) - (iVar6 >> 1);\n    iVar8 = (iVar3 >> 3) - (iVar3 >> 7);\n    iVar9 = (iVar4 >> 3) - (iVar4 >> 7);\n    iVar7 = (iVar3 - iVar8) - (iVar9 + (iVar9 - (iVar4 >> 0xb) >> 1));\n    iVar3 = (iVar4 - iVar9) + iVar8 + (iVar8 - (iVar3 >> 0xb) >> 1);\n    iVar4 = iVar1 + (iVar1 >> 5);\n    iVar8 = iVar4 >> 2;\n    iVar9 = iVar2 + (iVar2 >> 5);\n    iVar10 = iVar9 >> 2;\n    iVar1 = (iVar8 + (iVar1 >> 4)) - (iVar9 - iVar10);\n    iVar2 = iVar10 + (iVar2 >> 4) + (iVar4 - iVar8);\n    iVar10 = local_1b4[local_10 + 0x20] + local_1b4[local_10];\n    iVar9 = local_1b4[local_10] - local_1b4[local_10 + 0x20];\n    iVar4 = iVar2 + iVar10;\n    iVar8 = iVar1 + iVar9;\n    iVar9 = iVar9 - iVar1;\n    iVar10 = iVar10 - iVar2;\n    local_1b4[local_10] = iVar4 + iVar5;\n    local_1b4[local_10 + 8] = iVar8 + iVar3;\n    local_1b4[local_10 + 0x10] = iVar7 + iVar9;\n    local_1b4[local_10 + 0x18] = iVar6 + iVar10;\n    local_1b4[local_10 + 0x20] = iVar10 - iVar6;\n    local_1b4[local_10 + 0x28] = iVar9 - iVar7;\n    local_1b4[local_10 + 0x30] = iVar8 - iVar3;\n    local_1b4[local_10 + 0x38] = iVar4 - iVar5;\n  }\n  for (local_14 = 0; local_14 < 8; local_14 = local_14 + 1) {\n    for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {\n      *(char *)(param_2 + local_10 + local_14 * 8) =\n           (char)(local_1b4[local_10 + local_14 * 8] >> 0xd);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "idct"
+                    ],
+                    "calling_functions": [
+                        "idct"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dct",
+                "func_c_signature": "void dct(int param_1,int param_2,int param_3)",
+                "decompiled_code": "void dct(int param_1,int param_2,int param_3) {\n  int iVar1;\n  int iVar2;\n  int iVar3;\n  int iVar4;\n  int iVar5;\n  int iVar6;\n  int iVar7;\n  int iVar8;\n  int iVar9;\n  int iVar10;\n  int iVar11;\n  int aiStack_1c0 [108];\n  int local_10;\n  int local_c;\n  \n  for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {\n    for (local_c = 0; local_c < 8; local_c = local_c + 1) {\n      aiStack_1c0[local_c + local_10 * 8] = (int)*(char *)(param_1 + local_c + local_10 * 8) << 7;\n    }\n  }\n  for (local_c = 0; local_c < 8; local_c = local_c + 1) {\n    iVar1 = aiStack_1c0[local_c + 0x18] - aiStack_1c0[local_c + 0x20];\n    iVar5 = aiStack_1c0[local_c + 0x10] - aiStack_1c0[local_c + 0x28];\n    iVar2 = aiStack_1c0[local_c + 8] - aiStack_1c0[local_c + 0x30];\n    iVar4 = aiStack_1c0[local_c] - aiStack_1c0[local_c + 0x38];\n    iVar9 = aiStack_1c0[local_c] + aiStack_1c0[local_c + 0x38];\n    iVar8 = aiStack_1c0[local_c + 8] + aiStack_1c0[local_c + 0x30];\n    iVar10 = aiStack_1c0[local_c + 0x10] + aiStack_1c0[local_c + 0x28];\n    iVar11 = aiStack_1c0[local_c + 0x18] + aiStack_1c0[local_c + 0x20];\n    iVar3 = (iVar1 >> 9) - iVar1;\n    iVar6 = (iVar4 >> 9) - iVar4;\n    iVar4 = ((iVar3 >> 2) - iVar3) + (iVar4 >> 1);\n    iVar1 = ((iVar6 >> 2) - iVar6) - (iVar1 >> 1);\n    iVar3 = (iVar5 >> 3) - (iVar5 >> 7);\n    aiStack_1c0[70] = iVar3 - (iVar5 >> 0xb);\n    aiStack_1c0[69] = (iVar2 >> 3) - (iVar2 >> 7);\n    aiStack_1c0[68] = aiStack_1c0[69] - (iVar2 >> 0xb);\n    iVar5 = (iVar5 - iVar3) + aiStack_1c0[69] + (aiStack_1c0[68] >> 1);\n    iVar2 = (iVar2 - aiStack_1c0[69]) - (iVar3 + (aiStack_1c0[70] >> 1));\n    iVar3 = iVar2 + iVar4;\n    iVar6 = iVar1 + iVar5;\n    aiStack_1c0[local_c + 0x18] = iVar1 - iVar5;\n    aiStack_1c0[local_c + 0x28] = iVar4 - iVar2;\n    aiStack_1c0[local_c + 0x38] = iVar6 - iVar3;\n    aiStack_1c0[local_c + 8] = iVar6 + iVar3;\n    iVar4 = iVar11 + iVar9;\n    iVar1 = iVar10 + iVar8;\n    iVar8 = iVar8 - iVar10;\n    iVar9 = iVar9 - iVar11;\n    aiStack_1c0[local_c] = iVar4 + iVar1;\n    aiStack_1c0[local_c + 0x20] = iVar4 - iVar1;\n    aiStack_1c0[67] = iVar8 + (iVar8 >> 5);\n    aiStack_1c0[66] = aiStack_1c0[67] >> 2;\n    aiStack_1c0[65] = iVar9 + (iVar9 >> 5);\n    aiStack_1c0[64] = aiStack_1c0[65] >> 2;\n    aiStack_1c0[local_c + 0x10] =\n         (aiStack_1c0[65] - aiStack_1c0[64]) + aiStack_1c0[66] + (iVar8 >> 4);\n    aiStack_1c0[local_c + 0x30] =\n         (aiStack_1c0[64] + (iVar9 >> 4)) - (aiStack_1c0[67] - aiStack_1c0[66]);\n  }\n  for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {\n    iVar1 = aiStack_1c0[local_10 * 8 + 3] - aiStack_1c0[local_10 * 8 + 4];\n    iVar2 = aiStack_1c0[local_10 * 8 + 2] - aiStack_1c0[local_10 * 8 + 5];\n    iVar3 = aiStack_1c0[local_10 * 8 + 1] - aiStack_1c0[local_10 * 8 + 6];\n    iVar4 = aiStack_1c0[local_10 * 8] - aiStack_1c0[local_10 * 8 + 7];\n    iVar9 = aiStack_1c0[local_10 * 8] + aiStack_1c0[local_10 * 8 + 7];\n    iVar8 = aiStack_1c0[local_10 * 8 + 1] + aiStack_1c0[local_10 * 8 + 6];\n    iVar10 = aiStack_1c0[local_10 * 8 + 2] + aiStack_1c0[local_10 * 8 + 5];\n    iVar11 = aiStack_1c0[local_10 * 8 + 3] + aiStack_1c0[local_10 * 8 + 4];\n    iVar5 = (iVar1 >> 9) - iVar1;\n    iVar6 = (iVar4 >> 9) - iVar4;\n    iVar4 = ((iVar5 >> 2) - iVar5) + (iVar4 >> 1);\n    iVar1 = ((iVar6 >> 2) - iVar6) - (iVar1 >> 1);\n    iVar6 = (iVar2 >> 3) - (iVar2 >> 7);\n    iVar7 = (iVar3 >> 3) - (iVar3 >> 7);\n    iVar5 = (iVar2 - iVar6) + iVar7 + (iVar7 - (iVar3 >> 0xb) >> 1);\n    iVar2 = (iVar3 - iVar7) - (iVar6 + (iVar6 - (iVar2 >> 0xb) >> 1));\n    iVar3 = iVar2 + iVar4;\n    iVar6 = iVar1 + iVar5;\n    aiStack_1c0[local_10 * 8 + 3] = iVar1 - iVar5;\n    aiStack_1c0[local_10 * 8 + 5] = iVar4 - iVar2;\n    aiStack_1c0[local_10 * 8 + 7] = iVar6 - iVar3;\n    aiStack_1c0[local_10 * 8 + 1] = iVar6 + iVar3;\n    iVar4 = iVar11 + iVar9;\n    iVar1 = iVar10 + iVar8;\n    iVar8 = iVar8 - iVar10;\n    iVar9 = iVar9 - iVar11;\n    aiStack_1c0[local_10 * 8] = iVar1 + iVar4;\n    aiStack_1c0[local_10 * 8 + 4] = iVar4 - iVar1;\n    iVar10 = iVar8 + (iVar8 >> 5);\n    iVar11 = iVar10 >> 2;\n    iVar4 = iVar9 + (iVar9 >> 5);\n    iVar1 = iVar4 >> 2;\n    aiStack_1c0[local_10 * 8 + 2] = (iVar4 - iVar1) + iVar11 + (iVar8 >> 4);\n    aiStack_1c0[local_10 * 8 + 6] = (iVar1 + (iVar9 >> 4)) - (iVar10 - iVar11);\n  }\n  for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {\n    for (local_c = 0; local_c < 8; local_c = local_c + 1) {\n      *(short *)(param_2 + (local_c + local_10 * 8) * 2) =\n           (short)((aiStack_1c0[local_c + local_10 * 8] >> 0x1f) +\n                   (*(int *)(S + (local_c + local_10 * 8) * 4) * aiStack_1c0[local_c + local_10 * 8]\n                   ) / (int)(uint)*(byte *)(param_3 + local_c + local_10 * 8) + 0x80000 >> 0x14);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dct"
+                    ],
+                    "calling_functions": [
+                        "dct",
+                        "encode_comp"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            }
+        ],
+        "huffman.c": [
+            {
+                "func_name": "huffman_decode_table",
+                "func_c_signature": "void huffman_decode_table(int param_1,int param_2)",
+                "decompiled_code": "void huffman_decode_table(int param_1,int param_2) {\n  undefined2 auStack_31c [256];\n  byte local_11c [256];\n  int local_1c;\n  uint local_18;\n  int local_14;\n  int local_10;\n  int local_c;\n  uint local_8;\n  \n  local_10 = 0;\n  for (local_8 = 0; (int)local_8 < 0x10; local_8 = local_8 + 1) {\n    for (local_c = 1; local_c <= (int)(uint)*(byte *)(param_2 + local_8); local_c = local_c + 1) {\n      local_11c[local_10] = (char)local_8 + 1;\n      local_10 = local_10 + 1;\n    }\n  }\n  local_11c[local_10] = 0;\n  local_1c = local_10;\n  local_18 = (uint)local_11c[0];\n  local_10 = 0;\n  local_14 = 0;\n  while (local_11c[local_10] != 0) {\n    for (; local_18 != local_11c[local_10]; local_18 = local_18 + 1) {\n      local_14 = local_14 << 1;\n    }\n    for (; local_18 == local_11c[local_10]; local_10 = local_10 + 1) {\n      auStack_31c[local_10] = (short)local_14;\n      local_14 = local_14 + 1;\n    }\n  }\n  for (local_10 = 0; local_10 < local_1c; local_10 = local_10 + 1) {\n    local_8 = (uint)*(byte *)(param_2 + 0x10 + local_10);\n    *(byte *)(local_8 + param_1) = local_11c[local_10];\n    *(undefined2 *)(param_1 + (local_8 + 0x80) * 2) = auStack_31c[local_10];\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "huffman_decode_table"
+                    ],
+                    "calling_functions": [
+                        "huffman_decode_table",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "recvall",
+                "func_c_signature": "undefined4 recvall(undefined4 param_1,int param_2,uint param_3,uint *param_4)",
+                "decompiled_code": "undefined4 recvall(undefined4 param_1,int param_2,uint param_3,uint *param_4) {\n  int iVar1;\n  int local_10 [2];\n  \n  *param_4 = 0;\n  while ((iVar1 = receive(0,param_2,param_3 - *param_4,local_10), iVar1 == 0 && (local_10[0] != 0)))\n  {\n    param_2 = param_2 + local_10[0];\n    *param_4 = *param_4 + local_10[0];\n    if (param_3 <= *param_4) {\n      return 0;\n    }\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recvall",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "recvall",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "encode_code",
+                "func_c_signature": "void encode_code(undefined4 param_1,int param_2,int param_3,int param_4)",
+                "decompiled_code": "void encode_code(undefined4 param_1,int param_2,int param_3,int param_4) {\n  int iVar1;\n  uint uVar2;\n  undefined4 uVar3;\n  uint local_10;\n  \n  uVar3 = 0x12688;\n  iVar1 = param_3;\n  if (param_3 < 1) {\n    iVar1 = -param_3;\n  }\n  for (local_10 = 0; 1 << ((byte)local_10 & 0x1f) <= iVar1; local_10 = local_10 + 1) {\n  }\n  uVar2 = param_4 << 4 | local_10;\n  bitwriter_output(param_1,*(undefined2 *)(param_2 + (uVar2 + 0x80) * 2),\n                   (int)*(char *)(uVar2 + param_2),0x12688);\n  if (param_3 < 0) {\n    param_3 = param_3 + -1;\n  }\n  bitwriter_output(param_1,param_3,(int)(char)(byte)local_10,uVar3);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "encode_code",
+                        "bitwriter_output"
+                    ],
+                    "calling_functions": [
+                        "encode_code",
+                        "encode_comp"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "encode_comp",
+                "func_c_signature": "void encode_comp(int param_1,undefined4 param_2)",
+                "decompiled_code": "void encode_comp(int param_1,undefined4 param_2) {\n  short local_a0 [64];\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_1c = (uint)(param_1 != 0) * 0x300 + 0x18180;\n  local_20 = (uint)(param_1 != 0) * 0x300 + 0x18780;\n  dct(param_2,local_a0,encoder + (uint)(param_1 != 0) * 0x40);\n  encode_code(0x38d90,local_1c,(int)local_a0[0] - *(int *)(encoder + (param_1 + 800) * 4),0);\n  *(int *)(encoder + (param_1 + 800) * 4) = (int)local_a0[0];\n  local_10 = 0;\n  local_18 = 0;\n  for (local_14 = 1; local_14 < 0x40; local_14 = local_14 + 1) {\n    if (local_a0[\"8ccccc/Bcccccccccccccccccccccccccccccccccccccc\"[local_14 + 0x2e]] == 0) {\n      local_10 = local_10 + 1;\n    }\n    else {\n      for (; 0xf < local_10; local_10 = local_10 + -0x10) {\n        encode_code(0x38d90,local_20,0,0xf);\n      }\n      encode_code(0x38d90,local_20,\n                  (int)local_a0[\"8ccccc/Bcccccccccccccccccccccccccccccccccccccc\"[local_14 + 0x2e]],\n                  local_10);\n      local_18 = local_14;\n      local_10 = 0;\n    }\n  }\n  if (local_18 != 0x3f) {\n    encode_code(0x38d90,local_20,0,0);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "encode_comp",
+                        "dct",
+                        "encode_code"
+                    ],
+                    "calling_functions": [
+                        "encode_comp",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clamp",
+                "func_c_signature": "int clamp(int param_1)",
+                "decompiled_code": "int clamp(int param_1) {\n  if (param_1 < 1) {\n    param_1 = 1;\n  }\n  else if (0xff < param_1) {\n    param_1 = 0xff;\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clamp"
+                    ],
+                    "calling_functions": [
+                        "clamp",
+                        "set_quality"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_quality",
+                "func_c_signature": "undefined ** set_quality(int param_1,int param_2)",
+                "decompiled_code": "undefined ** set_quality(int param_1,int param_2) {\n  undefined uVar1;\n  undefined **ppuVar2;\n  undefined **ppuVar3;\n  int local_c;\n  \n  ppuVar2 = &_GLOBAL_OFFSET_TABLE_;\n  if ((-1 < param_2) && (param_2 < 0x65)) {\n    if (param_2 < 0x32) {\n      ppuVar3 = (undefined **)(5000 / (longlong)param_2);\n    }\n    else {\n      ppuVar3 = (undefined **)((100 - param_2) * 2);\n    }\n    ppuVar2 = ppuVar3;\n    for (local_c = 0; local_c < 0x40; local_c = local_c + 1) {\n      uVar1 = clamp((int)((uint)*(byte *)(param_1 + local_c) * (int)ppuVar3 + 0x32) / 100);\n      ppuVar2 = (undefined **)(param_1 + local_c);\n      *(undefined *)ppuVar2 = uVar1;\n    }\n  }\n  return ppuVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_quality",
+                        "clamp"
+                    ],
+                    "calling_functions": [
+                        "set_quality",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "output_byte",
+                "func_c_signature": "void output_byte(undefined param_1)",
+                "decompiled_code": "void output_byte(undefined param_1) {\n  int iVar1;\n  \n  iVar1 = encoder._134284_4_ + 0xc8c;\n  encoder._134284_4_ = encoder._134284_4_ + 1;\n  encoder[iVar1] = param_1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "output_byte"
+                    ],
+                    "calling_functions": [
+                        "output_byte",
+                        "output_byte_stuffed",
+                        "output_word",
+                        "output_bytes",
+                        "output_dqt",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "output_byte_stuffed",
+                "func_c_signature": "void output_byte_stuffed(char param_1)",
+                "decompiled_code": "void output_byte_stuffed(char param_1) {\n  output_byte(param_1);\n  if (param_1 == -1) {\n    output_byte(0);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "output_byte_stuffed",
+                        "output_byte"
+                    ],
+                    "calling_functions": [
+                        "output_byte_stuffed"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "output_word",
+                "func_c_signature": "void output_word(uint param_1)",
+                "decompiled_code": "void output_word(uint param_1) {\n  output_byte(param_1 >> 8 & 0xff);\n  output_byte(param_1 & 0xff);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "output_word",
+                        "output_byte"
+                    ],
+                    "calling_functions": [
+                        "output_word",
+                        "output_dqt",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "output_bytes",
+                "func_c_signature": "void output_bytes(int param_1,int param_2)",
+                "decompiled_code": "void output_bytes(int param_1,int param_2) {\n  int local_8;\n  \n  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {\n    output_byte(*(undefined *)(param_1 + local_8));\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "output_bytes",
+                        "output_byte"
+                    ],
+                    "calling_functions": [
+                        "output_bytes",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "output_dqt",
+                "func_c_signature": "void output_dqt(int param_1,undefined param_2)",
+                "decompiled_code": "void output_dqt(int param_1,undefined param_2) {\n  int local_c;\n  \n  output_word(0xff05);\n  output_word(0x43);\n  output_byte(param_2);\n  for (local_c = 0; local_c < 0x40; local_c = local_c + 1) {\n    output_byte(*(undefined *)\n                 (param_1 + \"8ccccc/Bcccccccccccccccccccccccccccccccccccccc\"[local_c + 0x2e]));\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "output_dqt",
+                        "output_word",
+                        "output_byte"
+                    ],
+                    "calling_functions": [
+                        "output_dqt",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined local_90;\n  size_t local_7c;\n  int local_76;\n  uint local_72;\n  uint local_6e;\n  short local_6a;\n  ushort local_68;\n  int local_66;\n  size_t local_62;\n  short local_4e;\n  uint local_4c;\n  ushort local_48;\n  int local_44;\n  byte *local_40;\n  void *local_3c;\n  size_t local_38;\n  int local_34;\n  int local_30;\n  int local_2c;\n  uint local_28;\n  uint local_24;\n  undefined *local_18;\n  \n  local_18 = &stack0x00000004;\n  iVar1 = recvall(0,&local_4e,0xe,&local_7c);\n  if ((((((iVar1 == 0) && (local_7c == 0xe)) && (local_4e == 0x4743)) &&\n       ((0x35 < local_4c && (local_44 == 0x36)))) &&\n      ((((iVar1 = recvall(0,&local_76,0x28,&local_7c), iVar1 == 0 &&\n         ((local_7c == 0x28 && (local_76 == 0x28)))) && ((local_72 & 7) == 0)) &&\n       (((((local_6e & 7) == 0 && (local_66 == 0)) && (local_6a == 1)) &&\n        (((local_68 == 0x18 || (local_68 == 0x20)) &&\n         ((local_38 = local_4c - local_44, local_38 == local_62 &&\n          ((local_72 * local_6e * (uint)(local_68 >> 3) - local_38 == 0 &&\n           (iVar1 = ((int)local_6e >> 0x1f) * local_72 + ((int)local_72 >> 0x1f) * local_6e +\n                    (int)((ulonglong)local_6e * (ulonglong)local_72 >> 0x20),\n           iVar1 == 0 &&\n           (uint)(0x10000 < (uint)((ulonglong)local_6e * (ulonglong)local_72)) <= (uint)-iVar1))))))\n        )))))) &&\n     ((local_3c = malloc(local_38), local_3c != (void *)0x0 &&\n      ((iVar1 = recvall(0,local_3c,local_38,&local_7c), iVar1 == 0 && (local_38 == local_7c)))))) {\n    local_24 = 0x14;\n    if ((local_48 != 0) && (local_48 < 0x65)) {\n      local_24 = (uint)local_48;\n    }\n    encoder._134284_4_ = 0;\n    bitwriter_init(0x38d90,output_byte_stuffed);\n    huffman_decode_table(0x18180,HT_DC_L);\n    huffman_decode_table(0x18480,HT_DC_C);\n    huffman_decode_table(0x18780,HT_AC_L);\n    huffman_decode_table(0x18a80,HT_AC_C);\n    memcpy(encoder,Q50_L,0x40);\n    memcpy(encoder + 0x40,&Q50_C,0x40);\n    set_quality(encoder,local_24);\n    set_quality(0x18140,local_24);\n    output_word(0xff02);\n    output_word(0xff06);\n    output_word(0x10);\n    output_bytes(&DAT_00015372,5);\n    output_word(0xaacc);\n    output_byte(1);\n    output_word(0x48);\n    output_word(0x48);\n    output_byte(0);\n    output_byte(0);\n    output_dqt(encoder,0);\n    output_dqt(0x18140,1);\n    output_word(0xff00);\n    output_word(0x11);\n    output_byte(8);\n    output_word(local_72 & 0xffff);\n    output_word(local_6e & 0xffff);\n    output_byte(3);\n    output_byte(1);\n    output_byte(0x11);\n    output_byte(0);\n    output_byte(2);\n    output_byte(0x11);\n    output_byte(1);\n    output_byte(3);\n    output_byte(0x11);\n    output_byte(1);\n    output_word(0xff01);\n    output_word(0x1f);\n    output_byte(0);\n    output_bytes(HT_DC_L,0x1c);\n    output_word(0xff01);\n    output_word(0x1f);\n    output_byte(1);\n    output_bytes(HT_DC_C,0x1c);\n    output_word(0xff01);\n    output_word(0xb5);\n    output_byte(0x10);\n    output_bytes(HT_AC_L,0xb2);\n    output_word(0xff01);\n    output_word(0xb5);\n    output_byte(0x11);\n    output_bytes(HT_AC_C,0xb2);\n    output_word(0xff04);\n    output_word(0xc);\n    output_byte(3);\n    output_byte(1);\n    output_byte(0);\n    output_byte(2);\n    output_byte(0x11);\n    output_byte(3);\n    output_byte(0x11);\n    output_byte(0);\n    output_byte(0x3f);\n    output_byte(0);\n    encoder._3200_4_ = 0;\n    encoder._3204_4_ = 0;\n    encoder._3208_4_ = 0;\n    while (local_28 = local_6e - 8, -1 < (int)local_28) {\n      for (local_2c = 0; local_6e = local_28, local_2c < (int)local_72; local_2c = local_2c + 8) {\n        for (local_34 = 0; local_34 < 8; local_34 = local_34 + 1) {\n          for (local_30 = 0; local_30 < 8; local_30 = local_30 + 1) {\n            local_40 = (byte *)((int)local_3c +\n                               (uint)(local_68 >> 3) *\n                               (local_30 + local_2c + local_72 * ((local_28 + 7) - local_34)));\n            local_90 = (undefined)\n                       (short)ROUND(DAT_00015390 * (double)(uint)*local_40 +\n                                    DAT_00015388 * (double)(uint)local_40[1] +\n                                    (DAT_00015378 * (double)(uint)local_40[2] - DAT_00015380));\n            *(undefined *)(local_34 * 8 + local_30 + 0x18000) = local_90;\n            local_90 = (undefined)\n                       (short)ROUND(DAT_000153a8 * (double)(uint)*local_40 +\n                                    ((0.0 - DAT_00015398 * (double)(uint)local_40[2]) -\n                                    DAT_000153a0 * (double)(uint)local_40[1]));\n            tmp_u[local_30 + local_34 * 8] = local_90;\n            local_90 = (undefined)\n                       (short)ROUND(((DAT_000153a8 * (double)(uint)local_40[2] + 0.0) -\n                                    DAT_000153b0 * (double)(uint)local_40[1]) -\n                                    DAT_000153b8 * (double)(uint)*local_40);\n            tmp_v[local_30 + local_34 * 8] = local_90;\n          }\n        }\n        encode_comp(0,0x18000);\n        encode_comp(1,tmp_u);\n        encode_comp(2,tmp_v);\n      }\n    }\n    bitwriter_flush(0x38d90,1);\n    output_word(0xff03);\n    iVar1 = writeall(1,0x18d8c,encoder._134284_4_);\n    if (iVar1 == encoder._134284_4_) {\n      return 0;\n    }\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "recvall",
+                        "malloc",
+                        "bitwriter_init",
+                        "huffman_decode_table",
+                        "memcpy",
+                        "set_quality",
+                        "output_word",
+                        "output_bytes",
+                        "output_byte",
+                        "output_dqt",
+                        "ROUND",
+                        "encode_comp",
+                        "bitwriter_flush",
+                        "writeall"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00003_decompiled.c"
+                }
+            }
+        ]
+    }
+}

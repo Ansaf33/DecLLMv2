@@ -1,0 +1,960 @@
+{
+    "file": "CROMU_00048",
+    "decompiled_code": {
+        "menu.c": [
+            {
+                "func_name": "read_until",
+                "func_c_signature": "uint read_until(int param_1,char param_2,int param_3)",
+                "decompiled_code": "uint read_until(int param_1,char param_2,int param_3) {\n  int iVar1;\n  int local_18;\n  char local_11;\n  uint local_10;\n  \n  local_10 = 0;\n  if (param_1 == 0) {\n    local_10 = 0xffffffff;\n  }\n  else {\n    while (local_10 < param_3 - 1U) {\n      iVar1 = receive(0,&local_11,1,&local_18);\n      if (iVar1 != 0) {\n        return 0xffffffff;\n      }\n      if (local_18 == 0) {\n        return 0xffffffff;\n      }\n      if (param_2 == local_11) break;\n      *(char *)(param_1 + local_10) = local_11;\n      local_10 = local_10 + 1;\n    }\n    *(undefined *)(local_10 + param_1) = 0;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_until",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "read_until",
+                        "PrintAspMenu",
+                        "PrintFilterMenu",
+                        "PrintDisinfectionMenu",
+                        "PrintRenameMenu",
+                        "PrintValveMenu",
+                        "PrintMenu"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintAspMenu",
+                "func_c_signature": "void PrintAspMenu(void)",
+                "decompiled_code": "void PrintAspMenu(void) {\n  undefined *puVar1;\n  longdouble lVar2;\n  undefined auStack_3c [15];\n  char local_2d [9];\n  double local_24;\n  double local_1c;\n  byte local_11;\n  int local_10;\n  \n  puVar1 = auStack_3c;\n  while( true ) {\n    do {\n      *(undefined4 *)(puVar1 + -0x10) = 0x18000;\n      *(undefined4 *)(puVar1 + -0x14) = 0x110b8;\n      cromu_puts();\n      *(char **)(puVar1 + -0x10) = \"2. Change glycerin rate\";\n      *(undefined4 *)(puVar1 + -0x14) = 0x110ca;\n      cromu_puts();\n      *(char **)(puVar1 + -0x10) = \"3. Change alum rate\";\n      *(undefined4 *)(puVar1 + -0x14) = 0x110dc;\n      cromu_puts();\n      *(char **)(puVar1 + -0x10) = \"4. Return to previous menu\";\n      *(undefined4 *)(puVar1 + -0x14) = 0x110ee;\n      cromu_puts();\n      *(char **)(puVar1 + -0x10) = \"Selection: \";\n      *(undefined4 *)(puVar1 + -0x14) = 0x11100;\n      cromu_printf();\n      *(undefined4 *)(puVar1 + -8) = 3;\n      *(undefined4 *)(puVar1 + -0xc) = 10;\n      *(char **)(puVar1 + -0x10) = local_2d;\n      *(undefined4 *)(puVar1 + -0x14) = 0x11113;\n      local_10 = read_until();\n      if (local_10 == -1) {\n        *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar1 + -0x14) = 0x11129;\n        _terminate();\n        puVar1 = puVar1 + -0x10;\n      }\n    } while (local_10 != 1);\n    if (local_2d[0] == '4') break;\n    if (local_2d[0] < '5') {\n      if (local_2d[0] == '3') {\n        *(uint *)(puVar1 + -0xc) = NumAsp - 1;\n        *(char **)(puVar1 + -0x10) = \"Which ASP 0-$d: \";\n        *(undefined4 *)(puVar1 + -0x14) = 0x113a6;\n        cromu_printf();\n        *(undefined4 *)(puVar1 + -8) = 3;\n        *(undefined4 *)(puVar1 + -0xc) = 10;\n        *(char **)(puVar1 + -0x10) = local_2d;\n        *(undefined4 *)(puVar1 + -0x14) = 0x113b9;\n        local_10 = read_until();\n        if (local_10 == -1) {\n          *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n          *(undefined4 *)(puVar1 + -0x14) = 0x113cf;\n          _terminate();\n          puVar1 = puVar1 + -0x10;\n        }\n        if (local_10 == 1) {\n          *(char **)(puVar1 + -0x10) = local_2d;\n          *(undefined4 *)(puVar1 + -0x14) = 0x113e5;\n          local_11 = cromu_atoi();\n          if (local_11 < NumAsp) {\n            *(char **)(puVar1 + -0x10) = \"New alum rate (0-100 gallons/hr): \";\n            *(undefined4 *)(puVar1 + -0x14) = 0x1140c;\n            cromu_printf();\n            *(undefined4 *)(puVar1 + -8) = 8;\n            *(undefined4 *)(puVar1 + -0xc) = 10;\n            *(char **)(puVar1 + -0x10) = local_2d;\n            *(undefined4 *)(puVar1 + -0x14) = 0x1141f;\n            local_10 = read_until();\n            if (local_10 == -1) {\n              *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n              *(undefined4 *)(puVar1 + -0x14) = 0x11435;\n              _terminate();\n              puVar1 = puVar1 + -0x10;\n            }\n            *(char **)(puVar1 + -0x10) = local_2d;\n            *(undefined4 *)(puVar1 + -0x14) = 0x11441;\n            lVar2 = (longdouble)cromu_atof();\n            local_1c = (double)lVar2;\n            if ((0.0 <= local_1c) && (local_1c <= _DAT_00018610)) {\n              *(double *)(puVar1 + -0xc) = local_1c;\n              *(undefined1 **)(puVar1 + -0x10) = &Asp + (uint)local_11 * 0xe4;\n              *(undefined4 *)(puVar1 + -0x14) = 0x11482;\n              ChangeAlumRate();\n            }\n          }\n        }\n      }\n      else if (local_2d[0] < '4') {\n        if (local_2d[0] == '1') {\n          *(uint *)(puVar1 + -0xc) = NumAsp - 1;\n          *(char **)(puVar1 + -0x10) = \"Which ASP 0-$d: \";\n          *(undefined4 *)(puVar1 + -0x14) = 0x11190;\n          cromu_printf();\n          *(undefined4 *)(puVar1 + -8) = 3;\n          *(undefined4 *)(puVar1 + -0xc) = 10;\n          *(char **)(puVar1 + -0x10) = local_2d;\n          *(undefined4 *)(puVar1 + -0x14) = 0x111a3;\n          local_10 = read_until();\n          if (local_10 == -1) {\n            *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n            *(undefined4 *)(puVar1 + -0x14) = 0x111b9;\n            _terminate();\n            puVar1 = puVar1 + -0x10;\n          }\n          if (local_10 == 1) {\n            *(char **)(puVar1 + -0x10) = local_2d;\n            *(undefined4 *)(puVar1 + -0x14) = 0x111cf;\n            local_11 = cromu_atoi();\n            if (local_11 < NumAsp) {\n              *(char **)(puVar1 + -0x10) = \"New aeration percent: \";\n              *(undefined4 *)(puVar1 + -0x14) = 0x111f6;\n              cromu_printf();\n              *(undefined4 *)(puVar1 + -8) = 8;\n              *(undefined4 *)(puVar1 + -0xc) = 10;\n              *(char **)(puVar1 + -0x10) = local_2d;\n              *(undefined4 *)(puVar1 + -0x14) = 0x11209;\n              local_10 = read_until();\n              if (local_10 == -1) {\n                *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n                *(undefined4 *)(puVar1 + -0x14) = 0x1121f;\n                _terminate();\n                puVar1 = puVar1 + -0x10;\n              }\n              *(char **)(puVar1 + -0x10) = local_2d;\n              *(undefined4 *)(puVar1 + -0x14) = 0x1122b;\n              lVar2 = (longdouble)cromu_atof();\n              local_24 = (double)lVar2;\n              if ((0.0 <= local_24) && (local_24 <= _DAT_00018610)) {\n                *(double *)(puVar1 + -0xc) = local_24;\n                *(undefined1 **)(puVar1 + -0x10) = &Asp + (uint)local_11 * 0xe4;\n                *(undefined4 *)(puVar1 + -0x14) = 0x11274;\n                ChangeAerationPercent();\n              }\n            }\n          }\n        }\n        else if (local_2d[0] == '2') {\n          *(uint *)(puVar1 + -0xc) = NumAsp - 1;\n          *(char **)(puVar1 + -0x10) = \"Which ASP 0-$d: \";\n          *(undefined4 *)(puVar1 + -0x14) = 0x1129b;\n          cromu_printf();\n          *(undefined4 *)(puVar1 + -8) = 3;\n          *(undefined4 *)(puVar1 + -0xc) = 10;\n          *(char **)(puVar1 + -0x10) = local_2d;\n          *(undefined4 *)(puVar1 + -0x14) = 0x112ae;\n          local_10 = read_until();\n          if (local_10 == -1) {\n            *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n            *(undefined4 *)(puVar1 + -0x14) = 0x112c4;\n            _terminate();\n            puVar1 = puVar1 + -0x10;\n          }\n          if (local_10 == 1) {\n            *(char **)(puVar1 + -0x10) = local_2d;\n            *(undefined4 *)(puVar1 + -0x14) = 0x112da;\n            local_11 = cromu_atoi();\n            if (local_11 < NumAsp) {\n              *(char **)(puVar1 + -0x10) = \"New glycerin rate (0-100 gallons/hr): \";\n              *(undefined4 *)(puVar1 + -0x14) = 0x11301;\n              cromu_printf();\n              *(undefined4 *)(puVar1 + -8) = 8;\n              *(undefined4 *)(puVar1 + -0xc) = 10;\n              *(char **)(puVar1 + -0x10) = local_2d;\n              *(undefined4 *)(puVar1 + -0x14) = 0x11314;\n              local_10 = read_until();\n              if (local_10 == -1) {\n                *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n                *(undefined4 *)(puVar1 + -0x14) = 0x1132a;\n                _terminate();\n                puVar1 = puVar1 + -0x10;\n              }\n              *(char **)(puVar1 + -0x10) = local_2d;\n              *(undefined4 *)(puVar1 + -0x14) = 0x11336;\n              lVar2 = (longdouble)cromu_atof();\n              local_1c = (double)lVar2;\n              if ((0.0 <= local_1c) && (local_1c <= _DAT_00018610)) {\n                *(double *)(puVar1 + -0xc) = local_1c;\n                *(undefined1 **)(puVar1 + -0x10) = &Asp + (uint)local_11 * 0xe4;\n                *(undefined4 *)(puVar1 + -0x14) = 0x1137f;\n                ChangeGlycerinRate();\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "rate"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintAspMenu",
+                        "cromu_puts",
+                        "cromu_printf",
+                        "read_until",
+                        "_terminate",
+                        "cromu_atoi",
+                        "rate",
+                        "cromu_atof",
+                        "ChangeAlumRate",
+                        "ChangeAerationPercent",
+                        "ChangeGlycerinRate"
+                    ],
+                    "calling_functions": [
+                        "PrintAspMenu",
+                        "PrintMenu"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintFilterMenu",
+                "func_c_signature": "void PrintFilterMenu(void)",
+                "decompiled_code": "void PrintFilterMenu(void) {\n  undefined *puVar1;\n  undefined auStack_1c [6];\n  char local_16 [4];\n  byte local_12;\n  byte local_11;\n  int local_10;\n  \n  puVar1 = auStack_1c;\n  do {\n    while( true ) {\n      do {\n        *(char **)(puVar1 + -0x10) = \"1. Change active filter count\";\n        *(undefined4 *)(puVar1 + -0x14) = 0x114ea;\n        cromu_puts();\n        *(char **)(puVar1 + -0x10) = \"2. Return to previous menu\";\n        *(undefined4 *)(puVar1 + -0x14) = 0x114fc;\n        cromu_puts();\n        *(char **)(puVar1 + -0x10) = \"Selection: \";\n        *(undefined4 *)(puVar1 + -0x14) = 0x1150e;\n        cromu_printf();\n        *(undefined4 *)(puVar1 + -8) = 3;\n        *(undefined4 *)(puVar1 + -0xc) = 10;\n        *(char **)(puVar1 + -0x10) = local_16;\n        *(undefined4 *)(puVar1 + -0x14) = 0x11521;\n        local_10 = read_until();\n        if (local_10 == -1) {\n          *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n          *(undefined4 *)(puVar1 + -0x14) = 0x11537;\n          _terminate();\n          puVar1 = puVar1 + -0x10;\n        }\n      } while (local_10 != 1);\n      if (local_16[0] != '1') break;\n      *(uint *)(puVar1 + -0xc) = NumFilters - 1;\n      *(char **)(puVar1 + -0x10) = \"Which Filter 0-$d: \";\n      *(undefined4 *)(puVar1 + -0x14) = 0x1157a;\n      cromu_printf();\n      *(undefined4 *)(puVar1 + -8) = 3;\n      *(undefined4 *)(puVar1 + -0xc) = 10;\n      *(char **)(puVar1 + -0x10) = local_16;\n      *(undefined4 *)(puVar1 + -0x14) = 0x1158d;\n      local_10 = read_until();\n      if (local_10 == -1) {\n        *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar1 + -0x14) = 0x115a3;\n        _terminate();\n        puVar1 = puVar1 + -0x10;\n      }\n      if (local_10 == 1) {\n        *(char **)(puVar1 + -0x10) = local_16;\n        *(undefined4 *)(puVar1 + -0x14) = 0x115b9;\n        local_11 = cromu_atoi();\n        if (local_11 < NumAsp) {\n          *(uint *)(puVar1 + -0xc) = (uint)(byte)Filter[(uint)local_11 * 0xe4 + 0x55];\n          *(char **)(puVar1 + -0x10) = \"How many filters (0-$d): \";\n          *(undefined4 *)(puVar1 + -0x14) = 0x115fc;\n          cromu_printf();\n          *(undefined4 *)(puVar1 + -8) = 7;\n          *(undefined4 *)(puVar1 + -0xc) = 10;\n          *(char **)(puVar1 + -0x10) = local_16;\n          *(undefined4 *)(puVar1 + -0x14) = 0x1160f;\n          local_10 = read_until();\n          if (local_10 == -1) {\n            *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n            *(undefined4 *)(puVar1 + -0x14) = 0x11625;\n            _terminate();\n            puVar1 = puVar1 + -0x10;\n          }\n          *(char **)(puVar1 + -0x10) = local_16;\n          *(undefined4 *)(puVar1 + -0x14) = 0x11631;\n          local_12 = cromu_atoi();\n          if (local_12 <= (byte)Filter[(uint)local_11 * 0xe4 + 0x55]) {\n            *(uint *)(puVar1 + -0xc) = (uint)local_12;\n            *(undefined1 **)(puVar1 + -0x10) = Filter + (uint)local_11 * 0xe4;\n            *(undefined4 *)(puVar1 + -0x14) = 0x11674;\n            ChangeNumActiveFilters();\n          }\n        }\n      }\n    }\n  } while (local_16[0] != '2');\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "filters"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintFilterMenu",
+                        "cromu_puts",
+                        "cromu_printf",
+                        "read_until",
+                        "_terminate",
+                        "cromu_atoi",
+                        "filters",
+                        "ChangeNumActiveFilters"
+                    ],
+                    "calling_functions": [
+                        "PrintFilterMenu",
+                        "PrintMenu"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintDisinfectionMenu",
+                "func_c_signature": "void PrintDisinfectionMenu(void)",
+                "decompiled_code": "void PrintDisinfectionMenu(void) {\n  undefined *puVar1;\n  longdouble lVar2;\n  undefined auStack_2c [7];\n  char local_25 [9];\n  double local_1c;\n  byte local_11;\n  int local_10;\n  \n  puVar1 = auStack_2c;\n  do {\n    while( true ) {\n      do {\n        *(char **)(puVar1 + -0x10) = \"1. Change chlorine rate\";\n        *(undefined4 *)(puVar1 + -0x14) = 0x116b8;\n        cromu_puts();\n        *(char **)(puVar1 + -0x10) = \"2. Return to previous menu\";\n        *(undefined4 *)(puVar1 + -0x14) = 0x116ca;\n        cromu_puts();\n        *(char **)(puVar1 + -0x10) = \"Selection: \";\n        *(undefined4 *)(puVar1 + -0x14) = 0x116dc;\n        cromu_printf();\n        *(undefined4 *)(puVar1 + -8) = 3;\n        *(undefined4 *)(puVar1 + -0xc) = 10;\n        *(char **)(puVar1 + -0x10) = local_25;\n        *(undefined4 *)(puVar1 + -0x14) = 0x116ef;\n        local_10 = read_until();\n        if (local_10 == -1) {\n          *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n          *(undefined4 *)(puVar1 + -0x14) = 0x11705;\n          _terminate();\n          puVar1 = puVar1 + -0x10;\n        }\n      } while (local_10 != 1);\n      if (local_25[0] != '1') break;\n      *(uint *)(puVar1 + -0xc) = NumDisinfection - 1;\n      *(char **)(puVar1 + -0x10) = \"Which Disinfection system 0-$d: \";\n      *(undefined4 *)(puVar1 + -0x14) = 0x11748;\n      cromu_printf();\n      *(undefined4 *)(puVar1 + -8) = 3;\n      *(undefined4 *)(puVar1 + -0xc) = 10;\n      *(char **)(puVar1 + -0x10) = local_25;\n      *(undefined4 *)(puVar1 + -0x14) = 0x1175b;\n      local_10 = read_until();\n      if (local_10 == -1) {\n        *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar1 + -0x14) = 0x11771;\n        _terminate();\n        puVar1 = puVar1 + -0x10;\n      }\n      if (local_10 == 1) {\n        *(char **)(puVar1 + -0x10) = local_25;\n        *(undefined4 *)(puVar1 + -0x14) = 0x11787;\n        local_11 = cromu_atoi();\n        if (local_11 < NumDisinfection) {\n          *(char **)(puVar1 + -0x10) = \"New chlorine rate (0-100): \";\n          *(undefined4 *)(puVar1 + -0x14) = 0x117ae;\n          cromu_printf();\n          *(undefined4 *)(puVar1 + -8) = 8;\n          *(undefined4 *)(puVar1 + -0xc) = 10;\n          *(char **)(puVar1 + -0x10) = local_25;\n          *(undefined4 *)(puVar1 + -0x14) = 0x117c1;\n          local_10 = read_until();\n          if (local_10 == -1) {\n            *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n            *(undefined4 *)(puVar1 + -0x14) = 0x117d7;\n            _terminate();\n            puVar1 = puVar1 + -0x10;\n          }\n          *(char **)(puVar1 + -0x10) = local_25;\n          *(undefined4 *)(puVar1 + -0x14) = 0x117e3;\n          lVar2 = (longdouble)cromu_atof();\n          local_1c = (double)lVar2;\n          if ((0.0 <= local_1c) && (local_1c <= _DAT_00018610)) {\n            *(double *)(puVar1 + -0xc) = local_1c;\n            *(undefined1 **)(puVar1 + -0x10) = Disinfection + (uint)local_11 * 0xe4;\n            *(undefined4 *)(puVar1 + -0x14) = 0x11824;\n            ChangeChlorineRate();\n          }\n        }\n      }\n    }\n  } while (local_25[0] != '2');\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "rate"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintDisinfectionMenu",
+                        "cromu_puts",
+                        "cromu_printf",
+                        "read_until",
+                        "_terminate",
+                        "cromu_atoi",
+                        "rate",
+                        "cromu_atof",
+                        "ChangeChlorineRate"
+                    ],
+                    "calling_functions": [
+                        "PrintDisinfectionMenu",
+                        "PrintMenu"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintRenameMenu",
+                "func_c_signature": "void PrintRenameMenu(void)",
+                "decompiled_code": "void PrintRenameMenu(void) {\n  int iVar1;\n  size_t sVar2;\n  undefined *puVar3;\n  undefined auStack_11c [14];\n  char local_10e [256];\n  byte local_e;\n  char local_d;\n  \n  puVar3 = auStack_11c;\n  do {\n    do {\n      *(char **)(puVar3 + -0x10) = \"1. Influent\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x1186b;\n      cromu_puts();\n      *(char **)(puVar3 + -0x10) = \"2. Headworks\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x1187d;\n      cromu_puts();\n      *(char **)(puVar3 + -0x10) = \"3. ASPs\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x1188f;\n      cromu_puts();\n      *(char **)(puVar3 + -0x10) = \"4. Filters\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x118a1;\n      cromu_puts();\n      *(char **)(puVar3 + -0x10) = \"5. Disinfections\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x118b3;\n      cromu_puts();\n      *(char **)(puVar3 + -0x10) = \"6. Effluent\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x118c5;\n      cromu_puts();\n      *(char **)(puVar3 + -0x10) = \"7. Valves\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x118d7;\n      cromu_puts();\n      *(char **)(puVar3 + -0x10) = \"8. Return to previous menu\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x118e9;\n      cromu_puts();\n      *(char **)(puVar3 + -0x10) = \"Selection: \";\n      *(undefined4 *)(puVar3 + -0x14) = 0x118fb;\n      cromu_printf();\n      *(undefined4 *)(puVar3 + -8) = 3;\n      *(undefined4 *)(puVar3 + -0xc) = 10;\n      *(char **)(puVar3 + -0x10) = local_10e;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11911;\n      local_d = read_until();\n      if (local_d == -1) {\n        *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11927;\n        _terminate();\n        puVar3 = puVar3 + -0x10;\n      }\n    } while (local_d != '\\x01');\n    switch(local_10e[0]) {\n    case '1':\n      *(char **)(puVar3 + -0x10) = \"New Influent name: \";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11964;\n      cromu_printf();\n      *(undefined4 *)(puVar3 + -8) = 0x1f;\n      *(undefined4 *)(puVar3 + -0xc) = 10;\n      *(char **)(puVar3 + -0x10) = local_10e;\n      *(undefined4 *)(puVar3 + -0x14) = 0x1197a;\n      local_d = read_until();\n      if (local_d == -1) {\n        *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11990;\n        _terminate();\n        puVar3 = puVar3 + -0x10;\n      }\n      *(int *)(puVar3 + -8) = local_d + 1;\n      *(char **)(puVar3 + -0xc) = local_10e;\n      *(undefined **)(puVar3 + -0x10) = &DAT_0001ed41;\n      *(undefined4 *)(puVar3 + -0x14) = 0x119b1;\n      strncpy(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n      break;\n    case '2':\n      *(char **)(puVar3 + -0x10) = \"New Headworks name: \";\n      *(undefined4 *)(puVar3 + -0x14) = 0x119c8;\n      cromu_printf();\n      *(undefined4 *)(puVar3 + -8) = 0x1f;\n      *(undefined4 *)(puVar3 + -0xc) = 10;\n      *(char **)(puVar3 + -0x10) = local_10e;\n      *(undefined4 *)(puVar3 + -0x14) = 0x119de;\n      local_d = read_until();\n      if (local_d == -1) {\n        *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar3 + -0x14) = 0x119f4;\n        _terminate();\n        puVar3 = puVar3 + -0x10;\n      }\n      *(int *)(puVar3 + -8) = local_d + 1;\n      *(char **)(puVar3 + -0xc) = local_10e;\n      *(undefined **)(puVar3 + -0x10) = &DAT_0001e241;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11a15;\n      strncpy(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n      break;\n    case '3':\n      *(uint *)(puVar3 + -0xc) = NumAsp - 1;\n      *(char **)(puVar3 + -0x10) = \"Which ASP 0-$d: \";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11a3c;\n      cromu_printf();\n      *(undefined4 *)(puVar3 + -8) = 3;\n      *(undefined4 *)(puVar3 + -0xc) = 10;\n      *(char **)(puVar3 + -0x10) = local_10e;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11a52;\n      local_d = read_until();\n      if (local_d == -1) {\n        *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11a68;\n        _terminate();\n        puVar3 = puVar3 + -0x10;\n      }\n      if (local_d == '\\x01') {\n        *(char **)(puVar3 + -0x10) = local_10e;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11a81;\n        local_e = cromu_atoi();\n        if (local_e < NumAsp) {\n          *(uint *)(puVar3 + -0xc) = (uint)local_e;\n          *(char **)(puVar3 + -0x10) = \"New ASP$d name: \";\n          *(undefined4 *)(puVar3 + -0x14) = 0x11aad;\n          cromu_printf();\n          *(undefined4 *)(puVar3 + -8) = 0x1f;\n          *(undefined4 *)(puVar3 + -0xc) = 10;\n          *(char **)(puVar3 + -0x10) = local_10e;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11ac3;\n          local_d = read_until();\n          if (local_d == -1) {\n            *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n            *(undefined4 *)(puVar3 + -0x14) = 0x11ad9;\n            _terminate();\n            puVar3 = puVar3 + -0x10;\n          }\n          *(int *)(puVar3 + -8) = local_d + 1;\n          *(char **)(puVar3 + -0xc) = local_10e;\n          *(undefined **)(puVar3 + -0x10) = &DAT_0001ef41 + (uint)local_e * 0xe4;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11b08;\n          strncpy(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n        }\n      }\n      break;\n    case '4':\n      *(uint *)(puVar3 + -0xc) = NumFilters - 1;\n      *(char **)(puVar3 + -0x10) = \"Which Filter 0-$d: \";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11b2f;\n      cromu_printf();\n      *(undefined4 *)(puVar3 + -8) = 3;\n      *(undefined4 *)(puVar3 + -0xc) = 10;\n      *(char **)(puVar3 + -0x10) = local_10e;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11b45;\n      local_d = read_until();\n      if (local_d == -1) {\n        *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11b5b;\n        _terminate();\n        puVar3 = puVar3 + -0x10;\n      }\n      if (local_d == '\\x01') {\n        *(char **)(puVar3 + -0x10) = local_10e;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11b74;\n        local_e = cromu_atoi();\n        if (local_e < NumAsp) {\n          *(uint *)(puVar3 + -0xc) = (uint)local_e;\n          *(char **)(puVar3 + -0x10) = \"New Filter$d name: \";\n          *(undefined4 *)(puVar3 + -0x14) = 0x11ba0;\n          cromu_printf();\n          *(undefined4 *)(puVar3 + -8) = 0x1f;\n          *(undefined4 *)(puVar3 + -0xc) = 10;\n          *(char **)(puVar3 + -0x10) = local_10e;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11bb6;\n          local_d = read_until();\n          if (local_d == -1) {\n            *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n            *(undefined4 *)(puVar3 + -0x14) = 0x11bcc;\n            _terminate();\n            puVar3 = puVar3 + -0x10;\n          }\n          *(int *)(puVar3 + -8) = local_d + 1;\n          *(char **)(puVar3 + -0xc) = local_10e;\n          *(uint *)(puVar3 + -0x10) = (uint)local_e * 0xe4 + 0x1e341;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11bfb;\n          strncpy(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n        }\n      }\n      break;\n    case '5':\n      *(uint *)(puVar3 + -0xc) = NumAsp - 1;\n      *(char **)(puVar3 + -0x10) = \"Which Disinfection system 0-$d: \";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11c22;\n      cromu_printf();\n      *(undefined4 *)(puVar3 + -8) = 3;\n      *(undefined4 *)(puVar3 + -0xc) = 10;\n      *(char **)(puVar3 + -0x10) = local_10e;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11c38;\n      local_d = read_until();\n      if (local_d == -1) {\n        *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11c4e;\n        _terminate();\n        puVar3 = puVar3 + -0x10;\n      }\n      if (local_d == '\\x01') {\n        *(char **)(puVar3 + -0x10) = local_10e;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11c67;\n        local_e = cromu_atoi();\n        if (local_e < NumAsp) {\n          *(uint *)(puVar3 + -0xc) = (uint)local_e;\n          *(char **)(puVar3 + -0x10) = \"New Disinfection$d name: \";\n          *(undefined4 *)(puVar3 + -0x14) = 0x11c93;\n          cromu_printf();\n          *(undefined4 *)(puVar3 + -8) = 0x1f;\n          *(undefined4 *)(puVar3 + -0xc) = 10;\n          *(char **)(puVar3 + -0x10) = local_10e;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11ca9;\n          local_d = read_until();\n          if (local_d == -1) {\n            *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n            *(undefined4 *)(puVar3 + -0x14) = 0x11cbf;\n            _terminate();\n            puVar3 = puVar3 + -0x10;\n          }\n          *(int *)(puVar3 + -8) = local_d + 1;\n          *(char **)(puVar3 + -0xc) = local_10e;\n          *(uint *)(puVar3 + -0x10) = (uint)local_e * 0xe4 + 0x1e8c1;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11cee;\n          strncpy(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n        }\n      }\n      break;\n    case '6':\n      *(char **)(puVar3 + -0x10) = \"New Effluent name: \";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11d05;\n      cromu_printf();\n      *(undefined4 *)(puVar3 + -8) = 0x1f;\n      *(undefined4 *)(puVar3 + -0xc) = 10;\n      *(char **)(puVar3 + -0x10) = local_10e;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11d1b;\n      local_d = read_until();\n      if (local_d == -1) {\n        *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11d31;\n        _terminate();\n        puVar3 = puVar3 + -0x10;\n      }\n      *(int *)(puVar3 + -8) = local_d + 1;\n      *(char **)(puVar3 + -0xc) = local_10e;\n      *(undefined **)(puVar3 + -0x10) = &DAT_0001f3c1;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11d52;\n      strncpy(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n      break;\n    case '7':\n      *(char **)(puVar3 + -0x10) = \"1. V1\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11d69;\n      cromu_puts();\n      *(char **)(puVar3 + -0x10) = \"2. V2\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11d7b;\n      cromu_puts();\n      *(char **)(puVar3 + -0x10) = \"3. V3\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11d8d;\n      cromu_puts();\n      *(char **)(puVar3 + -0x10) = \"4. V4\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11d9f;\n      cromu_puts();\n      *(char **)(puVar3 + -0x10) = \"Which valve: \";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11db1;\n      cromu_printf();\n      *(undefined4 *)(puVar3 + -8) = 3;\n      *(undefined4 *)(puVar3 + -0xc) = 10;\n      *(char **)(puVar3 + -0x10) = local_10e;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11dc7;\n      local_d = read_until();\n      if (local_d == -1) {\n        *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11ddd;\n        _terminate();\n        puVar3 = puVar3 + -0x10;\n      }\n      if (local_d == '\\x01') {\n        *(char **)(puVar3 + -0x10) = local_10e;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11df6;\n        local_e = cromu_atoi();\n        if (local_e == 1) {\n          *(char **)(puVar3 + -0x10) = \"New V1 name: \";\n          *(undefined4 *)(puVar3 + -0x14) = 0x11e11;\n          cromu_printf();\n          *(undefined4 *)(puVar3 + -8) = 0x1f;\n          *(undefined4 *)(puVar3 + -0xc) = 10;\n          *(char **)(puVar3 + -0x10) = local_10e;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11e27;\n          local_d = read_until();\n          if (local_d == -1) {\n            *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n            *(undefined4 *)(puVar3 + -0x14) = 0x11e3d;\n            _terminate();\n            puVar3 = puVar3 + -0x10;\n          }\n          *(int *)(puVar3 + -8) = local_d + 1;\n          *(char **)(puVar3 + -0xc) = local_10e;\n          *(undefined **)(puVar3 + -0x10) = &DAT_0001ee41;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11e5e;\n          strncpy(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n        }\n        else if (local_e == 2) {\n          *(char **)(puVar3 + -0x10) = \"New V2 name: \";\n          *(undefined4 *)(puVar3 + -0x14) = 0x11e7b;\n          cromu_printf();\n          *(undefined4 *)(puVar3 + -8) = 0x1f;\n          *(undefined4 *)(puVar3 + -0xc) = 10;\n          *(char **)(puVar3 + -0x10) = local_10e;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11e91;\n          local_d = read_until();\n          if (local_d == -1) {\n            *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n            *(undefined4 *)(puVar3 + -0x14) = 0x11ea7;\n            _terminate();\n            puVar3 = puVar3 + -0x10;\n          }\n          *(int *)(puVar3 + -8) = local_d + 1;\n          *(char **)(puVar3 + -0xc) = local_10e;\n          *(undefined **)(puVar3 + -0x10) = &DAT_0001e041;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11ec8;\n          strncpy(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n        }\n        else if (local_e == 3) {\n          *(char **)(puVar3 + -0x10) = \"New V3 name: \";\n          *(undefined4 *)(puVar3 + -0x14) = 0x11ee5;\n          cromu_printf();\n          *(undefined4 *)(puVar3 + -8) = 0x1f;\n          *(undefined4 *)(puVar3 + -0xc) = 10;\n          *(char **)(puVar3 + -0x10) = local_10e;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11efb;\n          local_d = read_until();\n          if (local_d == -1) {\n            *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n            *(undefined4 *)(puVar3 + -0x14) = 0x11f11;\n            _terminate();\n            puVar3 = puVar3 + -0x10;\n          }\n          *(int *)(puVar3 + -8) = local_d + 1;\n          *(char **)(puVar3 + -0xc) = local_10e;\n          *(undefined **)(puVar3 + -0x10) = &DAT_0001e7c1;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11f32;\n          strncpy(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n        }\n        else if (local_e == 4) {\n          *(char **)(puVar3 + -0x10) = \"New V4 name: \";\n          *(undefined4 *)(puVar3 + -0x14) = 0x11f53;\n          cromu_printf();\n          *(undefined4 *)(puVar3 + -8) = 0xff;\n          *(undefined4 *)(puVar3 + -0xc) = 10;\n          *(char **)(puVar3 + -0x10) = local_10e;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11f6c;\n          iVar1 = read_until();\n          if (iVar1 == -1) {\n            *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n            *(undefined4 *)(puVar3 + -0x14) = 0x11f7e;\n            _terminate();\n            puVar3 = puVar3 + -0x10;\n          }\n          *(char **)(puVar3 + -0x10) = local_10e;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11f8d;\n          sVar2 = strlen(*(char **)(puVar3 + -0x10));\n          local_d = (char)sVar2;\n          if (local_d < '\\x1f') {\n            *(char **)(puVar3 + -0xc) = local_10e;\n            *(undefined **)(puVar3 + -0x10) = &DAT_0001e141;\n            *(undefined4 *)(puVar3 + -0x14) = 0x11fb2;\n            strcpy(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc));\n          }\n        }\n      }\n      break;\n    case '8':\n      return;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintRenameMenu",
+                        "cromu_puts",
+                        "cromu_printf",
+                        "read_until",
+                        "_terminate",
+                        "strncpy",
+                        "cromu_atoi",
+                        "strlen",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "PrintRenameMenu",
+                        "PrintMenu"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintValveMenu",
+                "func_c_signature": "void PrintValveMenu(void)",
+                "decompiled_code": "void PrintValveMenu(void) {\n  double dVar1;\n  undefined *puVar2;\n  longdouble lVar3;\n  undefined auStack_2c [6];\n  char local_26 [10];\n  undefined8 local_1c;\n  byte local_12;\n  char local_11;\n  int local_10;\n  \n  puVar2 = auStack_2c;\n  dVar1 = local_1c;\n  while( true ) {\n    do {\n      local_1c = dVar1;\n      *(char **)(puVar2 + -0x10) = \"1. Change valve V1 output percentage\";\n      *(undefined4 *)(puVar2 + -0x14) = 0x1201a;\n      cromu_puts();\n      *(char **)(puVar2 + -0x10) = \"2. Change valve V2 output percentage\";\n      *(undefined4 *)(puVar2 + -0x14) = 0x1202c;\n      cromu_puts();\n      *(char **)(puVar2 + -0x10) = \"3. Change valve V3 output percentage\";\n      *(undefined4 *)(puVar2 + -0x14) = 0x1203e;\n      cromu_puts();\n      *(char **)(puVar2 + -0x10) = \"4. Change valve V4 output percentage\";\n      *(undefined4 *)(puVar2 + -0x14) = 0x12050;\n      cromu_puts();\n      *(char **)(puVar2 + -0x10) = \"5. Return to previous menu\";\n      *(undefined4 *)(puVar2 + -0x14) = 0x12062;\n      cromu_puts();\n      *(char **)(puVar2 + -0x10) = \"Selection: \";\n      *(undefined4 *)(puVar2 + -0x14) = 0x12074;\n      cromu_printf();\n      *(undefined4 *)(puVar2 + -8) = 3;\n      *(undefined4 *)(puVar2 + -0xc) = 10;\n      *(char **)(puVar2 + -0x10) = local_26;\n      *(undefined4 *)(puVar2 + -0x14) = 0x12087;\n      local_10 = read_until();\n      if (local_10 == -1) {\n        *(undefined4 *)(puVar2 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar2 + -0x14) = 0x1209d;\n        _terminate();\n        puVar2 = puVar2 + -0x10;\n      }\n      dVar1 = local_1c;\n    } while (local_10 != 1);\n    local_11 = local_26[0];\n    if (local_26[0] == '5') break;\n    *(char **)(puVar2 + -0x10) = \"Valve Output: \";\n    *(undefined4 *)(puVar2 + -0x14) = 0x120c7;\n    cromu_printf();\n    *(undefined4 *)(puVar2 + -8) = 3;\n    *(undefined4 *)(puVar2 + -0xc) = 10;\n    *(char **)(puVar2 + -0x10) = local_26;\n    *(undefined4 *)(puVar2 + -0x14) = 0x120da;\n    local_10 = read_until();\n    if (local_10 == -1) {\n      *(undefined4 *)(puVar2 + -0x10) = 0xffffffff;\n      *(undefined4 *)(puVar2 + -0x14) = 0x120f0;\n      _terminate();\n      puVar2 = puVar2 + -0x10;\n    }\n    dVar1 = local_1c;\n    if (local_10 == 1) {\n      local_12 = local_26[0] - 0x30;\n      *(char **)(puVar2 + -0x10) = \"Percent Open (0.00-100.00): \";\n      *(undefined4 *)(puVar2 + -0x14) = 0x12113;\n      cromu_printf();\n      *(undefined4 *)(puVar2 + -8) = 8;\n      *(undefined4 *)(puVar2 + -0xc) = 10;\n      *(char **)(puVar2 + -0x10) = local_26;\n      *(undefined4 *)(puVar2 + -0x14) = 0x12126;\n      local_10 = read_until();\n      if (local_10 == -1) {\n        *(undefined4 *)(puVar2 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar2 + -0x14) = 0x1213c;\n        _terminate();\n        puVar2 = puVar2 + -0x10;\n      }\n      dVar1 = local_1c;\n      if (local_10 < 7) {\n        *(char **)(puVar2 + -0x10) = local_26;\n        *(undefined4 *)(puVar2 + -0x14) = 0x12152;\n        lVar3 = (longdouble)cromu_atof();\n        dVar1 = (double)lVar3;\n        local_1c._4_4_ = (undefined4)((ulonglong)dVar1 >> 0x20);\n        local_1c._0_4_ = SUB84(dVar1,0);\n        local_1c = dVar1;\n        if (local_11 == '4') {\n          *(undefined4 *)(puVar2 + -4) = local_1c._4_4_;\n          *(undefined4 *)(puVar2 + -8) = (undefined4)local_1c;\n          *(uint *)(puVar2 + -0xc) = (uint)local_12;\n          *(undefined1 **)(puVar2 + -0x10) = &DisinfectionOutputValve;\n          *(undefined4 *)(puVar2 + -0x14) = 0x121ef;\n          SetValveOutput();\n          dVar1 = local_1c;\n        }\n        else if (local_11 < '5') {\n          if (local_11 == '3') {\n            *(undefined4 *)(puVar2 + -4) = local_1c._4_4_;\n            *(undefined4 *)(puVar2 + -8) = (undefined4)local_1c;\n            *(uint *)(puVar2 + -0xc) = (uint)local_12;\n            *(undefined1 **)(puVar2 + -0x10) = &FilterOutputValve;\n            *(undefined4 *)(puVar2 + -0x14) = 0x121d3;\n            SetValveOutput();\n            dVar1 = local_1c;\n          }\n          else if (local_11 < '4') {\n            if (local_11 == '1') {\n              *(double *)(puVar2 + -8) = dVar1;\n              *(uint *)(puVar2 + -0xc) = (uint)local_12;\n              *(undefined1 **)(puVar2 + -0x10) = &HeadworksOutputValve;\n              *(undefined4 *)(puVar2 + -0x14) = 0x1219b;\n              SetValveOutput();\n              dVar1 = local_1c;\n            }\n            else if (local_11 == '2') {\n              *(undefined4 *)(puVar2 + -4) = local_1c._4_4_;\n              *(undefined4 *)(puVar2 + -8) = (undefined4)local_1c;\n              *(uint *)(puVar2 + -0xc) = (uint)local_12;\n              *(undefined1 **)(puVar2 + -0x10) = &AspOutputValve;\n              *(undefined4 *)(puVar2 + -0x14) = 0x121b7;\n              SetValveOutput();\n              dVar1 = local_1c;\n            }\n          }\n        }\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "Open",
+                    "SUB84"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintValveMenu",
+                        "cromu_puts",
+                        "cromu_printf",
+                        "read_until",
+                        "_terminate",
+                        "Open",
+                        "cromu_atof",
+                        "SUB84",
+                        "SetValveOutput"
+                    ],
+                    "calling_functions": [
+                        "PrintValveMenu",
+                        "PrintMenu"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintSystemBanner",
+                "func_c_signature": "void PrintSystemBanner(void)",
+                "decompiled_code": "void PrintSystemBanner(void) {\n  cromu_puts(\"Welcome to the Wastewater Treatement Plant Simulator\");\n  cromu_puts(\"###################################################\");\n  cromu_puts(\n            \"Your job is to take the plant described in the schematic above and make potable water.\"\n            );\n  cromu_puts(\"The simulation starts with a random plant status.\");\n  cromu_puts(&DAT_000184e2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintSystemBanner",
+                        "cromu_puts"
+                    ],
+                    "calling_functions": [
+                        "PrintSystemBanner",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintMenu",
+                "func_c_signature": "undefined4 PrintMenu(void)",
+                "decompiled_code": "undefined4 PrintMenu(void) {\n  undefined *puVar1;\n  char *apcStack_30 [2];\n  uint auStack_28 [3];\n  undefined auStack_1c [8];\n  char local_14 [4];\n  int local_10;\n  \n  puVar1 = auStack_1c;\n  do {\n    *(char **)(puVar1 + -0x10) = \"Wastewater Treatment Plant Simulation\";\n    *(undefined4 *)(puVar1 + -0x14) = 0x1229f;\n    cromu_puts();\n    *(uint *)(puVar1 + -0xc) = (uint)SimStepCount;\n    *(char **)(puVar1 + -0x10) = \"Simulation Hour $d\\n\";\n    *(undefined4 *)(puVar1 + -0x14) = 0x122be;\n    cromu_printf();\n    *(char **)(puVar1 + -0x10) = \"1. Print plant schematic\";\n    *(undefined4 *)(puVar1 + -0x14) = 0x122d0;\n    cromu_puts();\n    *(char **)(puVar1 + -0x10) = \"2. Print plant status\";\n    *(undefined4 *)(puVar1 + -0x14) = 0x122e2;\n    cromu_puts();\n    *(char **)(puVar1 + -0x10) = \"3. Control Activated Sludge Process (ASP)\";\n    *(undefined4 *)(puVar1 + -0x14) = 0x122f4;\n    cromu_puts();\n    *(char **)(puVar1 + -0x10) = \"4. Control Filters\";\n    *(undefined4 *)(puVar1 + -0x14) = 0x12306;\n    cromu_puts();\n    *(char **)(puVar1 + -0x10) = \"5. Control Disinfection\";\n    *(undefined4 *)(puVar1 + -0x14) = 0x12318;\n    cromu_puts();\n    *(char **)(puVar1 + -0x10) = \"6. Control Valves\";\n    *(undefined4 *)(puVar1 + -0x14) = 0x1232a;\n    cromu_puts();\n    *(char **)(puVar1 + -0x10) = \"7. Rename System\";\n    *(undefined4 *)(puVar1 + -0x14) = 0x1233c;\n    cromu_puts();\n    *(char **)(puVar1 + -0x10) = \"8. Run Simulation Step\";\n    *(undefined4 *)(puVar1 + -0x14) = 0x1234e;\n    cromu_puts();\n    *(char **)(puVar1 + -0x10) = \"9. Exit\";\n    *(undefined4 *)(puVar1 + -0x14) = 0x12360;\n    cromu_puts();\n    *(char **)(puVar1 + -0x10) = \"Selection: \";\n    *(undefined4 *)(puVar1 + -0x14) = 0x12372;\n    cromu_printf();\n    *(undefined4 *)(puVar1 + -8) = 4;\n    *(undefined4 *)(puVar1 + -0xc) = 10;\n    *(char **)(puVar1 + -0x10) = local_14;\n    *(undefined4 *)(puVar1 + -0x14) = 0x12385;\n    local_10 = read_until();\n    if (local_10 == -1) {\n      *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n      *(undefined4 *)(puVar1 + -0x14) = 0x1239b;\n      _terminate();\n      puVar1 = puVar1 + -0x10;\n    }\n    if (local_10 == 1) {\n      switch(local_14[0]) {\n      case '1':\n        *(undefined4 *)(puVar1 + -4) = 0x123c3;\n        PrintPlantSchematic();\n        break;\n      case '2':\n        *(undefined4 *)(puVar1 + -4) = 0x123ca;\n        PrintPlantStatus();\n        break;\n      case '3':\n        *(undefined4 *)(puVar1 + -4) = 0x123d1;\n        PrintAspMenu();\n        break;\n      case '4':\n        *(undefined4 *)(puVar1 + -4) = 0x123d8;\n        PrintFilterMenu();\n        break;\n      case '5':\n        *(undefined4 *)(puVar1 + -4) = 0x123df;\n        PrintDisinfectionMenu();\n        break;\n      case '6':\n        *(undefined4 *)(puVar1 + -4) = 0x123e6;\n        PrintValveMenu();\n        break;\n      case '7':\n        *(undefined4 *)(puVar1 + -4) = 0x123ed;\n        PrintRenameMenu();\n        break;\n      case '8':\n        return 1;\n      case '9':\n        return 0;\n      }\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [
+                    "Process"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintMenu",
+                        "cromu_puts",
+                        "cromu_printf",
+                        "Process",
+                        "read_until",
+                        "_terminate",
+                        "PrintPlantSchematic",
+                        "PrintPlantStatus",
+                        "PrintAspMenu",
+                        "PrintFilterMenu",
+                        "PrintDisinfectionMenu",
+                        "PrintValveMenu",
+                        "PrintRenameMenu"
+                    ],
+                    "calling_functions": [
+                        "PrintMenu",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            }
+        ],
+        "plant.c": [
+            {
+                "func_name": "RandomInfluent",
+                "func_c_signature": "void RandomInfluent(void)",
+                "decompiled_code": "void RandomInfluent(void) {\n  uint uVar1;\n  \n  uVar1 = random_in_range(9,0x1e);\n  DAT_0001edc0 = (double)(ulonglong)uVar1 / DAT_000192c8;\n  uVar1 = random_in_range(0x76c,4000);\n  DAT_0001edc8 = (double)(ulonglong)uVar1;\n  uVar1 = random_in_range(2000,5000);\n  DAT_0001edd0 = (double)(ulonglong)uVar1;\n  uVar1 = random_in_range(0x1ea,0x2ee);\n  DAT_0001edd8 = (double)(ulonglong)uVar1;\n  uVar1 = random_in_range(0x4b,0x96);\n  DAT_0001ede0 = (double)(ulonglong)uVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "RandomInfluent",
+                        "random_in_range"
+                    ],
+                    "calling_functions": [
+                        "RandomInfluent",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitInfluent",
+                "func_c_signature": "void InitInfluent(void)",
+                "decompiled_code": "void InitInfluent(void) {\n  bzero(&Influent,0xe4);\n  Influent = 0;\n  strncpy(&DAT_0001ed41,\"Influent\",0x1f);\n  DAT_0001edc0 = DAT_000192d0;\n  DAT_0001edc8 = DAT_000192d8;\n  DAT_0001edd0 = DAT_000192e0;\n  DAT_0001edd8 = DAT_000192e8;\n  DAT_0001ede0 = DAT_000192f0;\n  DAT_0001edac = &Headworks;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitInfluent",
+                        "bzero",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "InitInfluent",
+                        "InitPlant"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GetValvePctFlow",
+                "func_c_signature": "undefined ** GetValvePctFlow(undefined **param_1,byte param_2)",
+                "decompiled_code": "undefined ** GetValvePctFlow(undefined **param_1,byte param_2) {\n  undefined **ppuVar1;\n  double local_14;\n  byte local_5;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  if ((((param_1 != (undefined **)0x0) && (param_2 < 6)) && (*(char *)param_1 == '\\x05')) &&\n     (param_1[param_2 + 0x1b] != (undefined *)0x0)) {\n    local_14 = 0.0;\n    for (local_5 = 0; local_5 < 5; local_5 = local_5 + 1) {\n      if (param_1[local_5 + 0x1b] != (undefined *)0x0) {\n        local_14 = local_14 + *(double *)(param_1 + (local_5 + 0x16) * 2 + 3);\n      }\n    }\n    ppuVar1 = param_1;\n    if (local_14 == 0.0) {\n      ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n    }\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GetValvePctFlow"
+                    ],
+                    "calling_functions": [
+                        "GetValvePctFlow",
+                        "SimulateAsp",
+                        "SimulateFilter",
+                        "SimulateDisinfection",
+                        "SimulateEffluent"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SetValveOutput",
+                "func_c_signature": "void SetValveOutput(char *param_1,byte param_2,undefined4 param_3,undefined4 param_4)",
+                "decompiled_code": "void SetValveOutput(char *param_1,byte param_2,undefined4 param_3,undefined4 param_4) {\n  if ((((param_1 != (char *)0x0) && (param_2 < 6)) &&\n      ((double)CONCAT44(param_4,param_3) <= DAT_000192f8)) &&\n     ((*param_1 == '\\x05' && (*(int *)(param_1 + (param_2 + 0x18) * 4 + 0xc) != 0)))) {\n    *(ulonglong *)(param_1 + (param_2 + 0x16) * 8 + 0xc) = CONCAT44(param_4,param_3);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT44"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SetValveOutput",
+                        "CONCAT44"
+                    ],
+                    "calling_functions": [
+                        "PrintValveMenu",
+                        "SetValveOutput"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SetSystemName",
+                "func_c_signature": "undefined ** SetSystemName(int param_1,char *param_2)",
+                "decompiled_code": "undefined ** SetSystemName(int param_1,char *param_2) {\n  undefined **ppuVar1;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  if (param_1 != 0) {\n    ppuVar1 = (undefined **)strncpy((char *)(param_1 + 1),param_2,0x1f);\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SetSystemName",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "SetSystemName"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ChangeAerationPercent",
+                "func_c_signature": "void ChangeAerationPercent(int param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void ChangeAerationPercent(int param_1,undefined4 param_2,undefined4 param_3) {\n  if (((Asp == '\\x02') && (0.0 <= (double)CONCAT44(param_3,param_2))) &&\n     ((double)CONCAT44(param_3,param_2) <= DAT_000192f8)) {\n    *(ulonglong *)(param_1 + 0x2c) = CONCAT44(param_3,param_2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT44"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ChangeAerationPercent",
+                        "CONCAT44"
+                    ],
+                    "calling_functions": [
+                        "PrintAspMenu",
+                        "ChangeAerationPercent"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ChangeGlycerinRate",
+                "func_c_signature": "void ChangeGlycerinRate(int param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void ChangeGlycerinRate(int param_1,undefined4 param_2,undefined4 param_3) {\n  if (((Asp == '\\x02') && (0.0 <= (double)CONCAT44(param_3,param_2))) &&\n     ((double)CONCAT44(param_3,param_2) <= DAT_000192f8)) {\n    *(ulonglong *)(param_1 + 0x3c) = CONCAT44(param_3,param_2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT44"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ChangeGlycerinRate",
+                        "CONCAT44"
+                    ],
+                    "calling_functions": [
+                        "PrintAspMenu",
+                        "ChangeGlycerinRate"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ChangeAlumRate",
+                "func_c_signature": "void ChangeAlumRate(int param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void ChangeAlumRate(int param_1,undefined4 param_2,undefined4 param_3) {\n  if (((Asp == '\\x02') && (0.0 <= (double)CONCAT44(param_3,param_2))) &&\n     ((double)CONCAT44(param_3,param_2) <= DAT_000192f8)) {\n    *(ulonglong *)(param_1 + 0x44) = CONCAT44(param_3,param_2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT44"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ChangeAlumRate",
+                        "CONCAT44"
+                    ],
+                    "calling_functions": [
+                        "PrintAspMenu",
+                        "ChangeAlumRate"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ChangeChlorineRate",
+                "func_c_signature": "void ChangeChlorineRate(char *param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void ChangeChlorineRate(char *param_1,undefined4 param_2,undefined4 param_3) {\n  if ((((param_1 != (char *)0x0) && (*param_1 == '\\x04')) &&\n      (0.0 <= (double)CONCAT44(param_3,param_2))) &&\n     ((double)CONCAT44(param_3,param_2) <= DAT_000192f8)) {\n    *(ulonglong *)(param_1 + 0x58) = CONCAT44(param_3,param_2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT44"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ChangeChlorineRate",
+                        "CONCAT44"
+                    ],
+                    "calling_functions": [
+                        "PrintDisinfectionMenu",
+                        "ChangeChlorineRate"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ChangeNumActiveFilters",
+                "func_c_signature": "void ChangeNumActiveFilters(char *param_1,byte param_2)",
+                "decompiled_code": "void ChangeNumActiveFilters(char *param_1,byte param_2) {\n  if (((param_1 != (char *)0x0) && (*param_1 == '\\x03')) && (param_2 <= (byte)param_1[0x55])) {\n    param_1[0x54] = param_2;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ChangeNumActiveFilters"
+                    ],
+                    "calling_functions": [
+                        "PrintFilterMenu",
+                        "ChangeNumActiveFilters"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitHeadworks",
+                "func_c_signature": "void InitHeadworks(void)",
+                "decompiled_code": "void InitHeadworks(void) {\n  bzero(&Headworks,0xe4);\n  Headworks = 1;\n  strncpy(&DAT_0001e241,\"Headworks\",0x1f);\n  DAT_0001e2e8 = &Influent;\n  DAT_0001e2ac = &HeadworksOutputValve;\n  DAT_0001e264 = DAT_00019300;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitHeadworks",
+                        "bzero",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "InitHeadworks",
+                        "InitPlant"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitHeadworksOutputValve",
+                "func_c_signature": "void InitHeadworksOutputValve(void)",
+                "decompiled_code": "void InitHeadworksOutputValve(void) {\n  byte local_d;\n  \n  bzero(&HeadworksOutputValve,0xe4);\n  HeadworksOutputValve = 5;\n  strncpy(&DAT_0001ee41,\"V1\",0x1f);\n  DAT_0001eee8 = &Headworks;\n  for (local_d = 0; local_d < NumAsp; local_d = local_d + 1) {\n    *(undefined1 **)(&DAT_0001ee4c + (local_d + 0x18) * 4) = &Asp + (uint)local_d * 0xe4;\n    *(double *)(&DAT_0001ee4c + (local_d + 0x16) * 8) = DAT_000192f8 / (double)(uint)NumAsp;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitHeadworksOutputValve",
+                        "bzero",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "InitHeadworksOutputValve",
+                        "InitPlant"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitAsp",
+                "func_c_signature": "void InitAsp(void)",
+                "decompiled_code": "void InitAsp(void) {\n  byte local_d;\n  \n  bzero(&Asp,0x474);\n  for (local_d = 0; local_d < NumAsp; local_d = local_d + 1) {\n    (&Asp)[(uint)local_d * 0xe4] = 2;\n    cromu_sprintf(&DAT_0001ef41 + (uint)local_d * 0xe4,\"Asp$d\",local_d);\n    *(undefined1 **)(&DAT_0001efe8 + (uint)local_d * 0xe4) = &HeadworksOutputValve;\n    *(undefined1 **)(&DAT_0001efac + (uint)local_d * 0xe4) = &AspOutputValve;\n    *(undefined8 *)(&DAT_0001ef6c + (uint)local_d * 0xe4) = DAT_00019308;\n    *(undefined8 *)(&DAT_0001ef74 + (uint)local_d * 0xe4) = DAT_00019310;\n    *(undefined8 *)(&DAT_0001ef7c + (uint)local_d * 0xe4) = DAT_00019318;\n    *(undefined8 *)(&DAT_0001ef84 + (uint)local_d * 0xe4) = DAT_00019320;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitAsp",
+                        "bzero",
+                        "cromu_sprintf"
+                    ],
+                    "calling_functions": [
+                        "InitAsp",
+                        "InitPlant"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitAspOutputValve",
+                "func_c_signature": "void InitAspOutputValve(void)",
+                "decompiled_code": "void InitAspOutputValve(void) {\n  byte local_d;\n  \n  bzero(&AspOutputValve,0xe4);\n  AspOutputValve = 5;\n  strncpy(&DAT_0001e041,\"V2\",0x1f);\n  for (local_d = 0; local_d < NumAsp; local_d = local_d + 1) {\n    *(undefined1 **)(&DAT_0001e048 + (local_d + 0x28) * 4) = &Asp + (uint)local_d * 0xe4;\n  }\n  for (local_d = 0; local_d < NumFilters; local_d = local_d + 1) {\n    *(undefined1 **)(&DAT_0001e04c + (local_d + 0x18) * 4) = Filter + (uint)local_d * 0xe4;\n    *(double *)(&DAT_0001e04c + (local_d + 0x16) * 8) = DAT_000192f8 / (double)(uint)NumFilters;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitAspOutputValve",
+                        "bzero",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "InitAspOutputValve",
+                        "InitPlant"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitFilters",
+                "func_c_signature": "void InitFilters(void)",
+                "decompiled_code": "void InitFilters(void) {\n  byte local_d;\n  \n  bzero(Filter,0x474);\n  for (local_d = 0; local_d < NumFilters; local_d = local_d + 1) {\n    Filter[(uint)local_d * 0xe4] = 3;\n    cromu_sprintf((uint)local_d * 0xe4 + 0x1e341,\"Filter$d\",local_d);\n    *(undefined1 **)(Filter + (uint)local_d * 0xe4 + 0xa8) = &AspOutputValve;\n    *(undefined1 **)(Filter + (uint)local_d * 0xe4 + 0x6c) = &FilterOutputValve;\n  }\n  Filter[85] = 2;\n  Filter[84] = 1;\n  Filter[313] = 4;\n  Filter[312] = 2;\n  Filter[541] = 4;\n  Filter[540] = 2;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitFilters",
+                        "bzero",
+                        "cromu_sprintf"
+                    ],
+                    "calling_functions": [
+                        "InitFilters",
+                        "InitPlant"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitFilterOutputValve",
+                "func_c_signature": "void InitFilterOutputValve(void)",
+                "decompiled_code": "void InitFilterOutputValve(void) {\n  byte local_d;\n  \n  bzero(&FilterOutputValve,0xe4);\n  FilterOutputValve = 5;\n  strncpy(&DAT_0001e7c1,\"V3\",0x1f);\n  for (local_d = 0; local_d < NumFilters; local_d = local_d + 1) {\n    *(undefined1 **)(&DAT_0001e7c8 + (local_d + 0x28) * 4) = Filter + (uint)local_d * 0xe4;\n  }\n  for (local_d = 0; local_d < NumDisinfection; local_d = local_d + 1) {\n    *(undefined1 **)(&DAT_0001e7cc + (local_d + 0x18) * 4) = Disinfection + (uint)local_d * 0xe4;\n    *(double *)(&DAT_0001e7cc + (local_d + 0x16) * 8) = DAT_000192f8 / (double)(uint)NumDisinfection\n    ;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitFilterOutputValve",
+                        "bzero",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "InitFilterOutputValve",
+                        "InitPlant"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitDisinfection",
+                "func_c_signature": "void InitDisinfection(void)",
+                "decompiled_code": "void InitDisinfection(void) {\n  byte local_d;\n  \n  bzero(Disinfection,0x474);\n  for (local_d = 0; local_d < NumDisinfection; local_d = local_d + 1) {\n    Disinfection[(uint)local_d * 0xe4] = 4;\n    cromu_sprintf((uint)local_d * 0xe4 + 0x1e8c1,\"Disinfection$d\",local_d);\n    *(undefined1 **)(Disinfection + (uint)local_d * 0xe4 + 0xa8) = &FilterOutputValve;\n    *(undefined1 **)(Disinfection + (uint)local_d * 0xe4 + 0x6c) = &DisinfectionOutputValve;\n    *(undefined8 *)(Disinfection + (uint)local_d * 0xe4 + 0x58) = 0x3ff0000000000000;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitDisinfection",
+                        "bzero",
+                        "cromu_sprintf"
+                    ],
+                    "calling_functions": [
+                        "InitDisinfection",
+                        "InitPlant"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitDisinfectionOutputValve",
+                "func_c_signature": "void InitDisinfectionOutputValve(void)",
+                "decompiled_code": "void InitDisinfectionOutputValve(void) {\n  byte local_d;\n  \n  bzero(&DisinfectionOutputValve,0xe4);\n  DisinfectionOutputValve = 5;\n  strncpy(&DAT_0001e141,\"V4\",0x1f);\n  for (local_d = 0; local_d < NumDisinfection; local_d = local_d + 1) {\n    *(undefined1 **)(&DAT_0001e148 + (local_d + 0x28) * 4) = Disinfection + (uint)local_d * 0xe4;\n  }\n  DAT_0001e1ac = &Effluent;\n  DAT_0001e1fc = DAT_000192f8;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitDisinfectionOutputValve",
+                        "bzero",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "InitDisinfectionOutputValve",
+                        "InitPlant"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitEffluent",
+                "func_c_signature": "void InitEffluent(void)",
+                "decompiled_code": "void InitEffluent(void) {\n  bzero(&Effluent,0xe4);\n  Effluent = 6;\n  strncpy(&DAT_0001f3c1,\"Effluent\",0x1f);\n  DAT_0001f468 = &DisinfectionOutputValve;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitEffluent",
+                        "bzero",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "InitEffluent",
+                        "InitPlant"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CheckEffluentQuality",
+                "func_c_signature": "void CheckEffluentQuality(void)",
+                "decompiled_code": "void CheckEffluentQuality(void) {\n  if ((((DAT_00019330 < DAT_0001f448 / (DAT_00019328 * DAT_0001f440)) ||\n       (DAT_00019330 < DAT_0001f450 / (DAT_00019328 * DAT_0001f440))) ||\n      (_DAT_00019338 < DAT_0001f458 / (DAT_00019328 * DAT_0001f440))) ||\n     ((1.0 < DAT_0001f460 / (DAT_00019328 * DAT_0001f440) || (DAT_0001f416 == '\\0')))) {\n    DAT_0001f428 = DAT_0001f428 + '\\x01';\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CheckEffluentQuality"
+                    ],
+                    "calling_functions": [
+                        "CheckEffluentQuality",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintPlantSchematic",
+                "func_c_signature": "void PrintPlantSchematic(void)",
+                "decompiled_code": "void PrintPlantSchematic(void) {\n  cromu_puts(\"Plant Schematic\");\n  cromu_puts(\n            \"#####################################################################################################################################\"\n            );\n  cromu_puts(\n            \"                                         --------                -----------               -----------------                         \"\n            );\n  cromu_puts(\n            \"                                -------> | ASP1 | ------  -----> | Filter1 | -----  -----> | Disinfection1 | -----                   \"\n            );\n  cromu_puts(\n            \"                                |        --------      |  |      -----------     |  |      -----------------     |                   \"\n            );\n  cromu_puts(\n            \"                                |                      |  |                      |  |                            |                   \"\n            );\n  cromu_puts(\n            \"                                |                      |  |                      |  |                            |                   \"\n            );\n  cromu_puts(\n            \"                                0                      v  0                      v  0                            v                   \"\n            );\n  cromu_puts(\n            \"            -------------     ------     --------     ------     -----------    ------     -----------------    ------               \"\n            );\n  cromu_puts(\n            \"Influent -> | Headworks | --> | V1 | 1-> | ASP2 | --> | V2 | 1-> | Filter2 | -> | V3 | 1-> | Disinfection2 | -> | V4 | 0-> Effluent  \"\n            );\n  cromu_puts(\n            \"            -------------     ------     --------     ------     -----------    ------     -----------------    ------               \"\n            );\n  cromu_puts(\n            \"                                2                      ^  2                      ^  2                            ^                   \"\n            );\n  cromu_puts(\n            \"                                |                      |  |                      |  |                            |                   \"\n            );\n  cromu_puts(\n            \"                                |                      |  |                      |  |                            |                   \"\n            );\n  cromu_puts(\n            \"                                |        --------      |  |      -----------     |  |      -----------------     |                   \"\n            );\n  cromu_puts(\n            \"                                -------> | ASP3 | ------  -----> | Filter3 | -----  -----> | Disinfection3 | -----                   \"\n            );\n  cromu_puts(\n            \"                                         --------                -----------               -----------------                         \"\n            );\n  cromu_puts(\n            \"#####################################################################################################################################\"\n            );\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintPlantSchematic",
+                        "cromu_puts"
+                    ],
+                    "calling_functions": [
+                        "PrintMenu",
+                        "PrintPlantSchematic",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintPlantStatus",
+                "func_c_signature": "void PrintPlantStatus(void)",
+                "decompiled_code": "void PrintPlantStatus(void) {\n  undefined4 uVar1;\n  \n  uVar1 = PrintPlantStatusBuf();\n  cromu_puts(uVar1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintPlantStatus",
+                        "PrintPlantStatusBuf",
+                        "cromu_puts"
+                    ],
+                    "calling_functions": [
+                        "PrintMenu",
+                        "PrintPlantStatus",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintPlantStatusBuf",
+                "func_c_signature": "undefined1 * PrintPlantStatusBuf(void)",
+                "decompiled_code": "undefined1 * PrintPlantStatusBuf(void) {\n  int iVar1;\n  int iVar2;\n  int iVar3;\n  int iVar4;\n  int iVar5;\n  int iVar6;\n  int iVar7;\n  int iVar8;\n  int iVar9;\n  int iVar10;\n  int iVar11;\n  int iVar12;\n  int iVar13;\n  int iVar14;\n  int iVar15;\n  int iVar16;\n  int iVar17;\n  \n  iVar1 = cromu_sprintf();\n  iVar2 = cromu_sprintf();\n  iVar3 = cromu_sprintf();\n  iVar4 = cromu_sprintf();\n  iVar5 = cromu_sprintf();\n  iVar6 = cromu_sprintf();\n  iVar7 = cromu_sprintf();\n  iVar8 = cromu_sprintf();\n  iVar9 = cromu_sprintf();\n  iVar10 = cromu_sprintf();\n  iVar11 = cromu_sprintf();\n  iVar12 = cromu_sprintf();\n  iVar13 = cromu_sprintf();\n  iVar14 = cromu_sprintf();\n  iVar15 = cromu_sprintf();\n  iVar16 = cromu_sprintf();\n  iVar17 = cromu_sprintf();\n  iVar17 = iVar1 + iVar2 + iVar3 + iVar4 + iVar5 + iVar6 + iVar7 + iVar8 + iVar9 + iVar10 + iVar11 +\n           iVar12 + iVar13 + iVar14 + iVar15 + iVar16 + iVar17;\n  iVar1 = cromu_sprintf(StatusBuf + iVar17,\n                        \"$-14s |  $8.2f   $8.2f   $8.2f   $8.2f   $8.2f     $8.2f          $8.2f     $8.2f\\n\"\n                        ,&DAT_0001ef41,_DAT_0001efc0,_DAT_0001efc8,_DAT_0001efd0,_DAT_0001efd8,\n                        _DAT_0001efe0,_DAT_0001ef6c,_DAT_0001ef7c,_DAT_0001ef84);\n  iVar17 = iVar17 + iVar1;\n  iVar1 = cromu_sprintf(StatusBuf + iVar17,\n                        \"$-14s |  $8.2f   $8.2f   $8.2f   $8.2f   $8.2f     $8.2f          $8.2f     $8.2f\\n\"\n                        ,&DAT_0001f025,_DAT_0001f0a4,_DAT_0001f0ac,_DAT_0001f0b4,_DAT_0001f0bc,\n                        _DAT_0001f0c4,_DAT_0001f050,_DAT_0001f060,_DAT_0001f068);\n  cromu_sprintf(StatusBuf + iVar17 + iVar1,\n                \"$-14s |  $8.2f   $8.2f   $8.2f   $8.2f   $8.2f     $8.2f          $8.2f     $8.2f\\n\"\n                ,&DAT_0001f109,_DAT_0001f188,_DAT_0001f190,_DAT_0001f198,_DAT_0001f1a0,_DAT_0001f1a8\n                ,_DAT_0001f134,_DAT_0001f144,_DAT_0001f14c);\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  cromu_sprintf();\n  return StatusBuf;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintPlantStatusBuf",
+                        "cromu_sprintf"
+                    ],
+                    "calling_functions": [
+                        "PrintPlantStatus",
+                        "PrintPlantStatusBuf"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitPlant",
+                "func_c_signature": "void InitPlant(void)",
+                "decompiled_code": "void InitPlant(void) {\n  InitInfluent();\n  InitHeadworks();\n  InitHeadworksOutputValve();\n  InitAsp();\n  InitAspOutputValve();\n  InitFilters();\n  InitFilterOutputValve();\n  InitDisinfection();\n  InitDisinfectionOutputValve();\n  InitEffluent();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitPlant",
+                        "InitInfluent",
+                        "InitHeadworks",
+                        "InitHeadworksOutputValve",
+                        "InitAsp",
+                        "InitAspOutputValve",
+                        "InitFilters",
+                        "InitFilterOutputValve",
+                        "InitDisinfection",
+                        "InitDisinfectionOutputValve",
+                        "InitEffluent"
+                    ],
+                    "calling_functions": [
+                        "InitPlant",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  char cVar1;\n  \n  seed_prng(*rand_page);\n  InitPlant();\n  RunSimStep();\n  PrintPlantSchematic();\n  PrintPlantStatus();\n  PrintSystemBanner();\n  while ((SimStepCount < 0xfe && (cVar1 = PrintMenu(), cVar1 != '\\0'))) {\n    cVar1 = RunSimStep();\n    if (cVar1 == '\\0') {\n      cromu_puts(\n                \"A valve\\'s output percentages don\\'t total to at least 100%.  Can\\'t run the simulation.\"\n                );\n    }\n    else {\n      SimStepCount = SimStepCount + 1;\n      CheckEffluentQuality();\n      RandomInfluent();\n    }\n  }\n  if (SimStepCount < 0x18) {\n    cromu_puts(\"Ending simulation at less than 24 hours.\");\n  }\n  else if (DAT_0001f428 < 6) {\n    SimulateEffluent();\n    cromu_puts(\"Congratulations!  You\\'ve successfully operated the plant for 24 hours.  You Win!\");\n  }\n  else {\n    cromu_printf(\"There were $d hours with sub-standard water quality levels. You Failed!\\n\",\n                 DAT_0001f428);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "seed_prng",
+                        "InitPlant",
+                        "RunSimStep",
+                        "PrintPlantSchematic",
+                        "PrintPlantStatus",
+                        "PrintSystemBanner",
+                        "PrintMenu",
+                        "cromu_puts",
+                        "CheckEffluentQuality",
+                        "RandomInfluent",
+                        "SimulateEffluent",
+                        "cromu_printf"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            }
+        ],
+        "sim.c": [
+            {
+                "func_name": "FindValveOutput",
+                "func_c_signature": "uint FindValveOutput(char *param_1,int param_2)",
+                "decompiled_code": "uint FindValveOutput(char *param_1,int param_2) {\n  byte local_5;\n  \n  if (((param_1 != (char *)0x0) && (*param_1 == '\\x05')) && (param_2 != 0)) {\n    for (local_5 = 0; (char)local_5 < '\\x05'; local_5 = local_5 + 1) {\n      if (param_2 == *(int *)(param_1 + ((char)local_5 + 0x18) * 4 + 0xc)) {\n        return (uint)local_5;\n      }\n    }\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindValveOutput"
+                    ],
+                    "calling_functions": [
+                        "FindValveOutput"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SimulateValve",
+                "func_c_signature": "void SimulateValve(int param_1)",
+                "decompiled_code": "void SimulateValve(int param_1) {\n  int iVar1;\n  byte local_5;\n  \n  *(undefined8 *)(param_1 + 0x80) = 0;\n  *(undefined8 *)(param_1 + 0x88) = 0;\n  *(undefined8 *)(param_1 + 0x90) = 0;\n  *(undefined8 *)(param_1 + 0x98) = 0;\n  *(undefined8 *)(param_1 + 0xa0) = 0;\n  *(undefined8 *)(param_1 + 0x60) = 0;\n  *(undefined *)(param_1 + 0x56) = 1;\n  for (local_5 = 0; local_5 < 5; local_5 = local_5 + 1) {\n    iVar1 = *(int *)(param_1 + 8 + (local_5 + 0x28) * 4);\n    if (iVar1 != 0) {\n      *(double *)(param_1 + 0x80) = *(double *)(iVar1 + 0x80) + *(double *)(param_1 + 0x80);\n      *(double *)(param_1 + 0x88) = *(double *)(iVar1 + 0x88) + *(double *)(param_1 + 0x88);\n      *(double *)(param_1 + 0x90) = *(double *)(iVar1 + 0x90) + *(double *)(param_1 + 0x90);\n      *(double *)(param_1 + 0x98) = *(double *)(iVar1 + 0x98) + *(double *)(param_1 + 0x98);\n      *(double *)(param_1 + 0xa0) = *(double *)(iVar1 + 0xa0) + *(double *)(param_1 + 0xa0);\n      *(double *)(param_1 + 0x60) = *(double *)(iVar1 + 0x60) + *(double *)(param_1 + 0x60);\n      if (*(char *)(iVar1 + 0x56) == '\\0') {\n        *(undefined *)(param_1 + 0x56) = 0;\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SimulateValve"
+                    ],
+                    "calling_functions": [
+                        "SimulateValve",
+                        "RunSimStep"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CheckValveOutputs",
+                "func_c_signature": "undefined4 CheckValveOutputs(void)",
+                "decompiled_code": "undefined4 CheckValveOutputs(void) {\n  undefined4 uVar1;\n  byte local_d;\n  double local_c;\n  \n  local_c = 0.0;\n  for (local_d = 0; local_d < 5; local_d = local_d + 1) {\n    if (*(int *)(&DAT_0001ee4c + (local_d + 0x18) * 4) != 0) {\n      local_c = local_c + *(double *)(&DAT_0001ee4c + (local_d + 0x16) * 8);\n    }\n  }\n  if (DAT_00019468 <= local_c) {\n    local_c = 0.0;\n    for (local_d = 0; local_d < 5; local_d = local_d + 1) {\n      if (*(int *)(&DAT_0001e04c + (local_d + 0x18) * 4) != 0) {\n        local_c = local_c + *(double *)(&DAT_0001e04c + (local_d + 0x16) * 8);\n      }\n    }\n    if (DAT_00019468 <= local_c) {\n      local_c = 0.0;\n      for (local_d = 0; local_d < 5; local_d = local_d + 1) {\n        if (*(int *)(&DAT_0001e7cc + (local_d + 0x18) * 4) != 0) {\n          local_c = local_c + *(double *)(&DAT_0001e7cc + (local_d + 0x16) * 8);\n        }\n      }\n      if (DAT_00019468 <= local_c) {\n        local_c = 0.0;\n        for (local_d = 0; local_d < 5; local_d = local_d + 1) {\n          if (*(int *)(&DAT_0001e14c + (local_d + 0x18) * 4) != 0) {\n            local_c = local_c + *(double *)(&DAT_0001e14c + (local_d + 0x16) * 8);\n          }\n        }\n        if (DAT_00019468 <= local_c) {\n          uVar1 = 1;\n        }\n        else {\n          uVar1 = 0;\n        }\n      }\n      else {\n        uVar1 = 0;\n      }\n    }\n    else {\n      uVar1 = 0;\n    }\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CheckValveOutputs"
+                    ],
+                    "calling_functions": [
+                        "CheckValveOutputs",
+                        "RunSimStep"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SimulateAsp",
+                "func_c_signature": "void SimulateAsp(void)",
+                "decompiled_code": "void SimulateAsp(void) {\n  double dVar1;\n  char *pcVar2;\n  double dVar3;\n  longdouble lVar4;\n  byte local_d;\n  \n  local_d = 0;\n  while (((local_d < NumAsp &&\n          (pcVar2 = *(char **)(&DAT_0001efe8 + (uint)local_d * 0xe4), pcVar2 != (char *)0x0)) &&\n         (*pcVar2 == '\\x05'))) {\n    dVar1 = *(double *)(pcVar2 + 0x80);\n    lVar4 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(&DAT_0001efc0 + (uint)local_d * 0xe4) = (double)(lVar4 * (longdouble)dVar1);\n    dVar1 = *(double *)(pcVar2 + 0x88);\n    lVar4 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(&DAT_0001efc8 + (uint)local_d * 0xe4) = (double)(lVar4 * (longdouble)dVar1);\n    dVar1 = *(double *)(pcVar2 + 0x90);\n    lVar4 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(&DAT_0001efd0 + (uint)local_d * 0xe4) = (double)(lVar4 * (longdouble)dVar1);\n    dVar1 = *(double *)(pcVar2 + 0x98);\n    lVar4 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(&DAT_0001efd8 + (uint)local_d * 0xe4) = (double)(lVar4 * (longdouble)dVar1);\n    dVar1 = *(double *)(pcVar2 + 0xa0);\n    lVar4 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(&DAT_0001efe0 + (uint)local_d * 0xe4) = (double)(lVar4 * (longdouble)dVar1);\n    *(double *)(&DAT_0001efd0 + (uint)local_d * 0xe4) =\n         DAT_00019470 * *(double *)(&DAT_0001efd0 + (uint)local_d * 0xe4);\n    dVar1 = DAT_00019478 *\n            *(double *)(&DAT_0001ef74 + (uint)local_d * 0xe4) *\n            (*(double *)(&DAT_0001ef6c + (uint)local_d * 0xe4) / DAT_00019468);\n    dVar3 = (*(double *)(&DAT_0001efc8 + (uint)local_d * 0xe4) +\n            *(double *)(&DAT_0001efc8 + (uint)local_d * 0xe4)) / DAT_00019480;\n    if (dVar1 < dVar3) {\n      *(double *)(&DAT_0001efc8 + (uint)local_d * 0xe4) =\n           DAT_00019480 * ((dVar3 - dVar1) / DAT_00019488);\n    }\n    else {\n      dVar1 = dVar1 - dVar3;\n      *(undefined8 *)(&DAT_0001efc8 + (uint)local_d * 0xe4) = 0;\n      dVar3 = dVar1 / DAT_00019490;\n      if (DAT_00019490 * (*(double *)(&DAT_0001efd8 + (uint)local_d * 0xe4) / DAT_00019480) <= dVar1\n         ) {\n        *(undefined8 *)(&DAT_0001efd8 + (uint)local_d * 0xe4) = 0;\n      }\n      else {\n        *(double *)(&DAT_0001efd8 + (uint)local_d * 0xe4) =\n             *(double *)(&DAT_0001efd8 + (uint)local_d * 0xe4) -\n             (DAT_00019480 * dVar1) / DAT_00019490;\n      }\n      dVar1 = DAT_00019498 * *(double *)(&DAT_0001ef7c + (uint)local_d * 0xe4);\n      dVar3 = DAT_000194a0 * dVar3;\n      if (dVar1 < dVar3) {\n        *(double *)(&DAT_0001efd8 + (uint)local_d * 0xe4) =\n             (dVar3 - dVar1) + *(double *)(&DAT_0001efd8 + (uint)local_d * 0xe4);\n      }\n      else {\n        *(double *)(&DAT_0001efc8 + (uint)local_d * 0xe4) =\n             DAT_00019480 * (dVar1 - dVar3) + *(double *)(&DAT_0001efc8 + (uint)local_d * 0xe4);\n      }\n      dVar1 = DAT_000194a8 * *(double *)(&DAT_0001ef84 + (uint)local_d * 0xe4);\n      dVar3 = DAT_000194b0 * (*(double *)(&DAT_0001efe0 + (uint)local_d * 0xe4) / DAT_00019480);\n      if (dVar1 < dVar3) {\n        *(double *)(&DAT_0001efe0 + (uint)local_d * 0xe4) =\n             DAT_00019480 * ((dVar3 - dVar1) / DAT_000194b0);\n      }\n      else {\n        *(undefined8 *)(&DAT_0001efe0 + (uint)local_d * 0xe4) = 0;\n        *(double *)(&DAT_0001efc8 + (uint)local_d * 0xe4) =\n             DAT_00019480 * (dVar1 - dVar3) + *(double *)(&DAT_0001efc8 + (uint)local_d * 0xe4);\n      }\n    }\n    local_d = local_d + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SimulateAsp",
+                        "GetValvePctFlow"
+                    ],
+                    "calling_functions": [
+                        "SimulateAsp",
+                        "RunSimStep"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SimulateFilter",
+                "func_c_signature": "void SimulateFilter(void)",
+                "decompiled_code": "void SimulateFilter(void) {\n  double dVar1;\n  char *pcVar2;\n  longdouble lVar3;\n  byte local_d;\n  \n  local_d = 0;\n  while (((local_d < NumFilters &&\n          (pcVar2 = *(char **)(Filter + (uint)local_d * 0xe4 + 0xa8), pcVar2 != (char *)0x0)) &&\n         (*pcVar2 == '\\x05'))) {\n    dVar1 = *(double *)(pcVar2 + 0x80);\n    lVar3 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(Filter + (uint)local_d * 0xe4 + 0x80) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = *(double *)(pcVar2 + 0x88);\n    lVar3 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(Filter + (uint)local_d * 0xe4 + 0x88) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = *(double *)(pcVar2 + 0x90);\n    lVar3 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(Filter + (uint)local_d * 0xe4 + 0x90) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = *(double *)(pcVar2 + 0x98);\n    lVar3 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(Filter + (uint)local_d * 0xe4 + 0x98) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = *(double *)(pcVar2 + 0xa0);\n    lVar3 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(Filter + (uint)local_d * 0xe4 + 0xa0) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = ((DAT_000194b8 * *(double *)(Filter + (uint)local_d * 0xe4 + 0x80)) / DAT_000194c0) /\n            (DAT_000194c8 * (double)(uint)(byte)Filter[(uint)local_d * 0xe4 + 0x54]);\n    if (dVar1 <= DAT_000194d0) {\n      if (dVar1 < DAT_000194d8) {\n        if (dVar1 < DAT_000194e8) {\n          if (dVar1 < DAT_000194f8) {\n            if (dVar1 < DAT_00019508) {\n              if (dVar1 < DAT_00019518) {\n                if (dVar1 < DAT_00019520) {\n                  if (dVar1 < 1.0) {\n                    *(undefined8 *)(Filter + (uint)local_d * 0xe4 + 0x90) = 0;\n                  }\n                  else {\n                    *(double *)(Filter + (uint)local_d * 0xe4 + 0x90) =\n                         DAT_00019530 * *(double *)(Filter + (uint)local_d * 0xe4 + 0x90);\n                  }\n                }\n                else {\n                  *(double *)(Filter + (uint)local_d * 0xe4 + 0x90) =\n                       DAT_00019528 * *(double *)(Filter + (uint)local_d * 0xe4 + 0x90);\n                }\n              }\n              else {\n                *(double *)(Filter + (uint)local_d * 0xe4 + 0x90) =\n                     DAT_00019470 * *(double *)(Filter + (uint)local_d * 0xe4 + 0x90);\n              }\n            }\n            else {\n              *(double *)(Filter + (uint)local_d * 0xe4 + 0x90) =\n                   DAT_00019510 * *(double *)(Filter + (uint)local_d * 0xe4 + 0x90);\n            }\n          }\n          else {\n            *(double *)(Filter + (uint)local_d * 0xe4 + 0x90) =\n                 DAT_00019500 * *(double *)(Filter + (uint)local_d * 0xe4 + 0x90);\n          }\n        }\n        else {\n          *(double *)(Filter + (uint)local_d * 0xe4 + 0x90) =\n               DAT_000194f0 * *(double *)(Filter + (uint)local_d * 0xe4 + 0x90);\n        }\n      }\n      else {\n        *(double *)(Filter + (uint)local_d * 0xe4 + 0x90) =\n             DAT_000194e0 * *(double *)(Filter + (uint)local_d * 0xe4 + 0x90);\n      }\n    }\n    local_d = local_d + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SimulateFilter",
+                        "GetValvePctFlow"
+                    ],
+                    "calling_functions": [
+                        "SimulateFilter",
+                        "RunSimStep"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SimulateDisinfection",
+                "func_c_signature": "void SimulateDisinfection(void)",
+                "decompiled_code": "void SimulateDisinfection(void) {\n  double dVar1;\n  char *pcVar2;\n  longdouble lVar3;\n  double local_1c;\n  byte local_d;\n  \n  local_d = 0;\n  while (((local_d < NumDisinfection &&\n          (pcVar2 = *(char **)(Disinfection + (uint)local_d * 0xe4 + 0xa8), pcVar2 != (char *)0x0))\n         && (*pcVar2 == '\\x05'))) {\n    dVar1 = *(double *)(pcVar2 + 0x80);\n    lVar3 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x80) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = *(double *)(pcVar2 + 0x88);\n    lVar3 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x88) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = *(double *)(pcVar2 + 0x90);\n    lVar3 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x90) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = *(double *)(pcVar2 + 0x98);\n    lVar3 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x98) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = *(double *)(pcVar2 + 0xa0);\n    lVar3 = (longdouble)GetValvePctFlow(pcVar2,local_d);\n    *(double *)(Disinfection + (uint)local_d * 0xe4 + 0xa0) = (double)(lVar3 * (longdouble)dVar1);\n    if (DAT_00019540 <=\n        DAT_00019538 /\n        ((DAT_000194b8 * *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x80)) / DAT_000194c0)) {\n      Disinfection[(uint)local_d * 0xe4 + 0x56] = 1;\n    }\n    else {\n      Disinfection[(uint)local_d * 0xe4 + 0x56] = 0;\n    }\n    local_1c = DAT_00019480 *\n               DAT_00019550 *\n               DAT_00019548 *\n               ((DAT_00019518 * *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x58)) /\n               DAT_00019468);\n    if (0.0 < *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x98)) {\n      if (DAT_00019558 * *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x98) < local_1c) {\n        local_1c = local_1c - DAT_00019558 * *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x98)\n        ;\n        *(undefined8 *)(Disinfection + (uint)local_d * 0xe4 + 0x98) = 0;\n      }\n      else {\n        *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x98) =\n             *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x98) - local_1c / DAT_00019558;\n        local_1c = 0.0;\n      }\n    }\n    local_1c = local_1c / (DAT_00019560 * *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x80));\n    if (local_1c - DAT_000194e8 < 0.0) {\n      *(undefined8 *)(Disinfection + (uint)local_d * 0xe4 + 0x60) = 0;\n    }\n    else {\n      *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x60) = local_1c - DAT_000194e8;\n    }\n    if ((*(double *)(Disinfection + (uint)local_d * 0xe4 + 0x60) < 1.0) ||\n       (DAT_000194f8 < *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x60))) {\n      Disinfection[(uint)local_d * 0xe4 + 0x56] = 0;\n    }\n    *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x60) =\n         DAT_00019560 *\n         *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x80) *\n         *(double *)(Disinfection + (uint)local_d * 0xe4 + 0x60);\n    local_d = local_d + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SimulateDisinfection",
+                        "GetValvePctFlow"
+                    ],
+                    "calling_functions": [
+                        "SimulateDisinfection",
+                        "RunSimStep"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SimulateEffluent",
+                "func_c_signature": "void SimulateEffluent(void)",
+                "decompiled_code": "void SimulateEffluent(void) {\n  double dVar1;\n  int iVar2;\n  longdouble lVar3;\n  \n  dVar1 = DAT_0001e1c0;\n  iVar2 = DAT_0001e1ac;\n  if (DAT_0001e1ac != 0) {\n    lVar3 = (longdouble)GetValvePctFlow(&DisinfectionOutputValve,0);\n    *(double *)(iVar2 + 0x80) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = DAT_0001e1c8;\n    lVar3 = (longdouble)GetValvePctFlow(&DisinfectionOutputValve,0);\n    *(double *)(iVar2 + 0x88) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = DAT_0001e1d0;\n    lVar3 = (longdouble)GetValvePctFlow(&DisinfectionOutputValve,0);\n    *(double *)(iVar2 + 0x90) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = DAT_0001e1d8;\n    lVar3 = (longdouble)GetValvePctFlow(&DisinfectionOutputValve,0);\n    *(double *)(iVar2 + 0x98) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = DAT_0001e1e0;\n    lVar3 = (longdouble)GetValvePctFlow(&DisinfectionOutputValve,0);\n    *(double *)(iVar2 + 0xa0) = (double)(lVar3 * (longdouble)dVar1);\n    dVar1 = DAT_0001e1a0;\n    lVar3 = (longdouble)GetValvePctFlow(&DisinfectionOutputValve,0);\n    *(double *)(iVar2 + 0x60) = (double)(lVar3 * (longdouble)dVar1);\n    *(undefined *)(iVar2 + 0x56) = DAT_0001e196;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SimulateEffluent",
+                        "GetValvePctFlow"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "SimulateEffluent",
+                        "RunSimStep"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SimulateHeadworks",
+                "func_c_signature": "void SimulateHeadworks(void)",
+                "decompiled_code": "void SimulateHeadworks(void) {\n  if (DAT_0001e2e8 != 0) {\n    _DAT_0001e2c0 = *(undefined8 *)(DAT_0001e2e8 + 0x80);\n    _DAT_0001e2c8 = *(undefined8 *)(DAT_0001e2e8 + 0x88);\n    _DAT_0001e2d0 = DAT_00019568 * *(double *)(DAT_0001e2e8 + 0x90);\n    _DAT_0001e2d8 = *(undefined8 *)(DAT_0001e2e8 + 0x98);\n    _DAT_0001e2e0 = *(undefined8 *)(DAT_0001e2e8 + 0xa0);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SimulateHeadworks"
+                    ],
+                    "calling_functions": [
+                        "SimulateHeadworks",
+                        "RunSimStep"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            },
+            {
+                "func_name": "RunSimStep",
+                "func_c_signature": "bool RunSimStep(void)",
+                "decompiled_code": "bool RunSimStep(void) {\n  char cVar1;\n  \n  cVar1 = CheckValveOutputs();\n  if (cVar1 != '\\0') {\n    SimulateHeadworks();\n    SimulateValve(&HeadworksOutputValve);\n    SimulateAsp();\n    SimulateValve(&AspOutputValve);\n    SimulateFilter();\n    SimulateValve(&FilterOutputValve);\n    SimulateDisinfection();\n    SimulateValve(&DisinfectionOutputValve);\n    SimulateEffluent();\n  }\n  return cVar1 != '\\0';\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "RunSimStep",
+                        "CheckValveOutputs",
+                        "SimulateHeadworks",
+                        "SimulateValve",
+                        "SimulateAsp",
+                        "SimulateFilter",
+                        "SimulateDisinfection",
+                        "SimulateEffluent"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "RunSimStep"
+                    ],
+                    "defined_in_file": "CROMU_00048_decompiled.c"
+                }
+            }
+        ]
+    }
+}

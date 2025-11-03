@@ -1,0 +1,688 @@
+{
+    "file": "CROMU_00029",
+    "decompiled_code": {
+        "input.c": [
+            {
+                "func_name": "read_until",
+                "func_c_signature": "uint read_until(int param_1,char *param_2,int param_3)",
+                "decompiled_code": "uint read_until(int param_1,char *param_2,int param_3) {\n  int iVar1;\n  char *pcVar2;\n  char local_15;\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  while (local_10 < param_3 - 1U) {\n    iVar1 = receive(0,&local_15,1,&local_14);\n    if (iVar1 != 0) {\n      return 0xffffffff;\n    }\n    if (local_14 == 0) {\n      return 0xffffffff;\n    }\n    pcVar2 = strchr(param_2,(int)local_15);\n    if (pcVar2 != (char *)0x0) break;\n    *(char *)(param_1 + local_10) = local_15;\n    local_10 = local_10 + 1;\n  }\n  *(undefined *)(local_10 + param_1) = 0;\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_until",
+                        "receive",
+                        "strchr"
+                    ],
+                    "calling_functions": [
+                        "read_until",
+                        "read_temps",
+                        "InitCustom",
+                        "InitMaterial",
+                        "GetSimLength"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "StoreTemp",
+                "func_c_signature": "undefined4 StoreTemp(int param_1,int param_2,int param_3,int param_4,undefined4 param_5)",
+                "decompiled_code": "undefined4 StoreTemp(int param_1,int param_2,int param_3,int param_4,undefined4 param_5) {\n  double dVar1;\n  undefined4 uVar2;\n  longdouble lVar3;\n  \n  lVar3 = (longdouble)cgcatof(param_5);\n  dVar1 = (double)lVar3;\n  if ((dVar1 < DAT_00016018) || (DAT_00016020 < dVar1)) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    *(double *)(param_1 + (param_2 + X * param_3 + Y * X * param_4) * 8) = _DAT_00016028 + dVar1;\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "StoreTemp",
+                        "cgcatof"
+                    ],
+                    "calling_functions": [
+                        "StoreTemp",
+                        "read_temps"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_temps",
+                "func_c_signature": "undefined4 read_temps(undefined4 param_1)",
+                "decompiled_code": "undefined4 read_temps(undefined4 param_1) {\n  int iVar1;\n  undefined local_7c [100];\n  uint local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_18 = 0;\n  do {\n    if (Z <= local_18) {\n      flush_stdin();\n      return 0;\n    }\n    for (local_14 = 0; local_14 < Y; local_14 = local_14 + 1) {\n      for (local_10 = 0; local_10 < X; local_10 = local_10 + 1) {\n        iVar1 = read_until(local_7c,&DAT_00016000,99);\n        if (iVar1 == -1) {\n          return 0xffffffff;\n        }\n        iVar1 = StoreTemp(param_1,local_10,local_14,local_18,local_7c);\n        if (iVar1 != 0) {\n          puts(\"Invalid temperature\");\n          return 0xffffffff;\n        }\n      }\n    }\n    local_18 = local_18 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_temps",
+                        "flush_stdin",
+                        "read_until",
+                        "StoreTemp",
+                        "puts"
+                    ],
+                    "calling_functions": [
+                        "read_temps",
+                        "InitMaterial"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "flush_stdin",
+                "func_c_signature": "undefined4 flush_stdin(void)",
+                "decompiled_code": "undefined4 flush_stdin(void) {\n  int iVar1;\n  undefined local_a0 [7];\n  undefined local_99;\n  undefined4 local_98;\n  undefined4 local_94;\n  uint local_90 [32];\n  uint local_10;\n  \n  do {\n    for (local_10 = 0; local_10 < 0x20; local_10 = local_10 + 1) {\n      local_90[local_10] = 0;\n    }\n    local_90[0] = local_90[0] | 1;\n    local_98 = 0;\n    local_94 = 0;\n    iVar1 = fdwait(1,local_90,0,&local_98,0);\n    if (iVar1 != 0) {\n      return 0xffffffff;\n    }\n    if ((local_90[0] & 1) == 0) {\n      return 0;\n    }\n    iVar1 = receive(0,&local_99,1,local_a0);\n  } while (iVar1 == 0);\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "flush_stdin",
+                        "fdwait",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "read_temps",
+                        "flush_stdin",
+                        "InitMaterial"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "kbhit",
+                "func_c_signature": "undefined4 kbhit(void)",
+                "decompiled_code": "undefined4 kbhit(void) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined local_a0 [7];\n  undefined local_99;\n  undefined4 local_98;\n  undefined4 local_94;\n  uint local_90 [32];\n  uint local_10;\n  \n  while( true ) {\n    for (local_10 = 0; local_10 < 0x20; local_10 = local_10 + 1) {\n      local_90[local_10] = 0;\n    }\n    local_90[0] = local_90[0] | 1;\n    local_98 = 1;\n    local_94 = 0;\n    iVar1 = fdwait(1,local_90,0,&local_98,0);\n    if (iVar1 != 0) break;\n    if ((local_90[0] & 1) != 0) {\n      iVar1 = receive(0,&local_99,1,local_a0);\n      if (iVar1 == 0) {\n        uVar2 = 0;\n      }\n      else {\n        uVar2 = 0xffffffff;\n      }\n      return uVar2;\n    }\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "kbhit",
+                        "fdwait",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "kbhit",
+                        "main",
+                        "RunSim"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            }
+        ],
+        "room.c": [
+            {
+                "func_name": "ValidStr",
+                "func_c_signature": "undefined4 ValidStr(char *param_1,char *param_2)",
+                "decompiled_code": "undefined4 ValidStr(char *param_1,char *param_2) {\n  char *pcVar1;\n  \n  while( true ) {\n    if (*param_1 == '\\0') {\n      return 1;\n    }\n    pcVar1 = strchr(param_2,(int)*param_1);\n    if (pcVar1 == (char *)0x0) break;\n    param_1 = param_1 + 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ValidStr",
+                        "strchr"
+                    ],
+                    "calling_functions": [
+                        "ValidStr",
+                        "ParseDimensions"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ParseDimensions",
+                "func_c_signature": "undefined4 ParseDimensions(char *param_1)",
+                "decompiled_code": "undefined4 ParseDimensions(char *param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined4 local_26;\n  undefined4 local_22;\n  undefined4 local_1e;\n  undefined2 local_1a;\n  char *local_18;\n  char *local_14;\n  char *local_10;\n  \n  local_26 = 0x33323130;\n  local_22 = 0x37363534;\n  local_1e = 0x2e2c3938;\n  local_1a = 0x20;\n  local_10 = param_1;\n  iVar1 = ValidStr(param_1,&local_26);\n  if (iVar1 == 0) {\n    puts(\"Invalid characters in dimensions\");\n    uVar2 = 0xffffffff;\n  }\n  else {\n    local_10 = strtok(param_1,\",\");\n    if (local_10 == (char *)0x0) {\n      puts(\"Invalid X dimension\\n\");\n      uVar2 = 0xffffffff;\n    }\n    else {\n      X = atoi(local_10);\n      local_14 = strtok((char *)0x0,\",\");\n      if (local_14 == (char *)0x0) {\n        puts(\"Invalid Y dimension\\n\");\n        uVar2 = 0xffffffff;\n      }\n      else {\n        Y = atoi(local_14);\n        local_18 = strtok((char *)0x0,\",\");\n        if (local_18 == (char *)0x0) {\n          puts(\"Invalid Z dimension\\n\");\n          uVar2 = 0xffffffff;\n        }\n        else {\n          Z = atoi(local_18);\n          uVar2 = 0;\n        }\n      }\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ParseDimensions",
+                        "ValidStr",
+                        "puts",
+                        "strtok",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "ParseDimensions",
+                        "InitMaterial"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitAir",
+                "func_c_signature": "void InitAir(void)",
+                "decompiled_code": "void InitAir(void) {\n  TC = 0;\n  DAT_000190a8 = DAT_00016468;\n  DAT_000190b0 = DAT_00016470;\n  DAT_000190b8 = DAT_00016478;\n  DAT_000190c0 = DAT_00016480;\n  DAT_000190c8 = DAT_00016488;\n  DAT_000190d0 = DAT_00016490;\n  DAT_000190d8 = DAT_00016498;\n  HC = DAT_000164a0;\n  DAT_00019048 = DAT_000164a8;\n  DAT_00019050 = DAT_000164b0;\n  DAT_00019058 = DAT_000164b8;\n  DAT_00019060 = DAT_000164c0;\n  DAT_00019068 = DAT_000164c8;\n  DAT_00019070 = DAT_000164d0;\n  DAT_00019078 = DAT_000164d8;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitAir"
+                    ],
+                    "calling_functions": [
+                        "InitAir",
+                        "InitMaterial"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitAluminum",
+                "func_c_signature": "void InitAluminum(void)",
+                "decompiled_code": "void InitAluminum(void) {\n  TC = DAT_000164e0;\n  DAT_000190a8 = DAT_000164e8;\n  DAT_000190b0 = DAT_000164f0;\n  DAT_000190b8 = DAT_000164f8;\n  DAT_000190c0 = DAT_00016500;\n  DAT_000190c8 = DAT_00016508;\n  DAT_000190d0 = DAT_00016510;\n  DAT_000190d8 = DAT_00016518;\n  HC = DAT_00016520;\n  DAT_00019048 = DAT_00016528;\n  DAT_00019050 = DAT_00016530;\n  DAT_00019058 = DAT_00016538;\n  DAT_00019060 = DAT_00016540;\n  DAT_00019068 = DAT_00016548;\n  DAT_00019070 = DAT_00016550;\n  DAT_00019078 = DAT_00016558;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitAluminum"
+                    ],
+                    "calling_functions": [
+                        "InitAluminum",
+                        "InitMaterial"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitCopper",
+                "func_c_signature": "void InitCopper(void)",
+                "decompiled_code": "void InitCopper(void) {\n  TC = DAT_00016560;\n  DAT_000190a8 = DAT_00016568;\n  DAT_000190b0 = DAT_00016570;\n  DAT_000190b8 = DAT_00016578;\n  DAT_000190c0 = DAT_00016580;\n  DAT_000190c8 = DAT_00016588;\n  DAT_000190d0 = DAT_00016590;\n  DAT_000190d8 = DAT_00016598;\n  HC = DAT_000165a0;\n  DAT_00019048 = DAT_000165a8;\n  DAT_00019050 = DAT_000165b0;\n  DAT_00019058 = DAT_000165b8;\n  DAT_00019060 = DAT_000165c0;\n  DAT_00019068 = DAT_000165c8;\n  DAT_00019070 = DAT_000165d0;\n  DAT_00019078 = DAT_000165d8;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitCopper"
+                    ],
+                    "calling_functions": [
+                        "InitCopper",
+                        "InitMaterial"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SetTC",
+                "func_c_signature": "void SetTC(int param_1,undefined4 param_2)",
+                "decompiled_code": "void SetTC(int param_1,undefined4 param_2) {\n  longdouble lVar1;\n  \n  lVar1 = (longdouble)cgcatof(param_2);\n  (&TC)[param_1] = (double)lVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SetTC",
+                        "cgcatof"
+                    ],
+                    "calling_functions": [
+                        "SetTC",
+                        "InitCustom"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SetHC",
+                "func_c_signature": "void SetHC(int param_1,undefined4 param_2)",
+                "decompiled_code": "void SetHC(int param_1,undefined4 param_2) {\n  longdouble lVar1;\n  \n  lVar1 = (longdouble)cgcatof(param_2);\n  (&HC)[param_1] = (double)lVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SetHC",
+                        "cgcatof"
+                    ],
+                    "calling_functions": [
+                        "SetHC",
+                        "InitCustom"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitCustom",
+                "func_c_signature": "void InitCustom(void)",
+                "decompiled_code": "void InitCustom(void) {\n  int iVar1;\n  undefined *puVar2;\n  longdouble lVar3;\n  char *apcStack_e0 [8];\n  char *pcStack_c0;\n  undefined4 uStack_b0;\n  undefined auStack_ac [12];\n  undefined local_a0 [100];\n  char *local_3c [4];\n  char *local_2c;\n  char *local_28;\n  char *local_24;\n  char *local_20;\n  double local_1c;\n  int local_14;\n  uint local_10;\n  \n  puVar2 = auStack_ac;\n  uStack_b0 = 0x11bd4;\n  local_3c[0] = \"-264.15\";\n  local_3c[1] = \"-193.15\";\n  local_3c[2] = \"-112.15\";\n  local_3c[3] = \" -31.15\";\n  local_2c = \"  49.85\";\n  local_28 = \" 129.85\";\n  local_24 = \" 210.85\";\n  local_20 = \" 291.85\";\n  puts(\n      \"Enter the thermal conductivities in W/(m*K) for your material at the following temperatures (Celcius):\"\n      );\n  for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {\n    local_14 = 0;\n    while (local_14 == 0) {\n      local_14 = 1;\n      *(char **)(puVar2 + -0xc) = local_3c[local_10];\n      *(undefined **)(puVar2 + -0x10) = &DAT_0001613b;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11c6a;\n      printf(*(char **)(puVar2 + -0x10));\n      *(undefined4 *)(puVar2 + -8) = 99;\n      *(undefined **)(puVar2 + -0xc) = &DAT_00016140;\n      *(undefined **)(puVar2 + -0x10) = local_a0;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11c85;\n      iVar1 = read_until();\n      if (iVar1 == -1) {\n        *(undefined4 *)(puVar2 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar2 + -0x14) = 0x11c97;\n        _terminate();\n        puVar2 = puVar2 + -0x10;\n      }\n      *(undefined **)(puVar2 + -0x10) = local_a0;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11ca6;\n      lVar3 = (longdouble)cgcatof();\n      local_1c = (double)lVar3;\n      if (local_10 != 0) {\n        if ((double)(&TC)[local_10 - 1] <= 0.0) {\n          if ((double)(&TC)[local_10 - 1] < 0.0) {\n            if (local_1c <= (double)(&TC)[local_10 - 1]) {\n              if ((local_1c < (double)(&TC)[local_10 - 1]) &&\n                 (local_1c < DAT_000165e0 * (double)(&TC)[local_10 - 1])) {\n                local_14 = 0;\n              }\n            }\n            else if (DAT_000165e8 * (double)(&TC)[local_10 - 1] < local_1c) {\n              local_14 = 0;\n            }\n          }\n        }\n        else if (local_1c <= (double)(&TC)[local_10 - 1]) {\n          if ((local_1c < (double)(&TC)[local_10 - 1]) &&\n             (local_1c < DAT_000165e8 * (double)(&TC)[local_10 - 1])) {\n            local_14 = 0;\n          }\n        }\n        else if (DAT_000165e0 * (double)(&TC)[local_10 - 1] < local_1c) {\n          local_14 = 0;\n        }\n        if (local_14 == 0) {\n          *(undefined4 *)(puVar2 + -0xc) = 0x19;\n          *(char **)(puVar2 + -0x10) = \"Invalid value...must be within @d% of the previous value\\n\";\n          *(undefined4 *)(puVar2 + -0x14) = 0x11e1b;\n          printf(*(char **)(puVar2 + -0x10));\n        }\n      }\n    }\n    *(undefined **)(puVar2 + -0xc) = local_a0;\n    *(uint *)(puVar2 + -0x10) = local_10;\n    *(undefined4 *)(puVar2 + -0x14) = 0x11e3a;\n    SetTC();\n  }\n  *(char **)(puVar2 + -0x10) =\n       \"Enter the heat capacity in J/(m^3*K) for your material when it is at the following temperatures (Celcius):\"\n  ;\n  *(undefined4 *)(puVar2 + -0x14) = 0x11e5a;\n  puts(*(char **)(puVar2 + -0x10));\n  for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {\n    local_14 = 0;\n    while (local_14 == 0) {\n      local_14 = 1;\n      *(char **)(puVar2 + -0xc) = local_3c[local_10];\n      *(undefined **)(puVar2 + -0x10) = &DAT_0001613b;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11e93;\n      printf(*(char **)(puVar2 + -0x10));\n      *(undefined4 *)(puVar2 + -8) = 99;\n      *(undefined **)(puVar2 + -0xc) = &DAT_00016140;\n      *(undefined **)(puVar2 + -0x10) = local_a0;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11eae;\n      iVar1 = read_until();\n      if (iVar1 == -1) {\n        *(undefined4 *)(puVar2 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar2 + -0x14) = 0x11ec0;\n        _terminate();\n        puVar2 = puVar2 + -0x10;\n      }\n      *(undefined **)(puVar2 + -0x10) = local_a0;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11ecf;\n      lVar3 = (longdouble)cgcatof();\n      local_1c = (double)lVar3;\n      if (local_10 != 0) {\n        if ((double)(&HC)[local_10 - 1] <= 0.0) {\n          if ((double)(&HC)[local_10 - 1] < 0.0) {\n            if (local_1c <= (double)(&HC)[local_10 - 1]) {\n              if ((local_1c < (double)(&HC)[local_10 - 1]) &&\n                 (local_1c < DAT_000165e0 * (double)(&HC)[local_10 - 1])) {\n                local_14 = 0;\n              }\n            }\n            else if (DAT_000165e8 * (double)(&HC)[local_10 - 1] < local_1c) {\n              local_14 = 0;\n            }\n          }\n        }\n        else if (local_1c <= (double)(&HC)[local_10 - 1]) {\n          if ((local_1c < (double)(&HC)[local_10 - 1]) &&\n             (local_1c < DAT_000165e8 * (double)(&HC)[local_10 - 1])) {\n            local_14 = 0;\n          }\n        }\n        else if (DAT_000165e0 * (double)(&HC)[local_10 - 1] < local_1c) {\n          local_14 = 0;\n        }\n        if (local_14 == 0) {\n          *(undefined4 *)(puVar2 + -0xc) = 0x19;\n          *(char **)(puVar2 + -0x10) = \"Invalid value...must be within @d% of the previous value\\n\";\n          *(undefined4 *)(puVar2 + -0x14) = 0x12044;\n          printf(*(char **)(puVar2 + -0x10));\n        }\n      }\n    }\n    *(undefined **)(puVar2 + -0xc) = local_a0;\n    *(uint *)(puVar2 + -0x10) = local_10;\n    *(undefined4 *)(puVar2 + -0x14) = 0x12063;\n    SetHC();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "temperatures"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitCustom",
+                        "puts",
+                        "temperatures",
+                        "printf",
+                        "read_until",
+                        "_terminate",
+                        "cgcatof",
+                        "SetTC",
+                        "SetHC"
+                    ],
+                    "calling_functions": [
+                        "InitCustom",
+                        "InitMaterial"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AllocateGrid",
+                "func_c_signature": "undefined4 AllocateGrid(void **param_1,int param_2,int param_3,int param_4)",
+                "decompiled_code": "undefined4 AllocateGrid(void **param_1,int param_2,int param_3,int param_4) {\n  void *pvVar1;\n  undefined4 uVar2;\n  \n  pvVar1 = calloc(param_2 * param_3 * param_4 * 8,1);\n  *param_1 = pvVar1;\n  if (*param_1 == (void *)0x0) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AllocateGrid",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "AllocateGrid",
+                        "InitMaterial"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitMaterial",
+                "func_c_signature": "undefined4 InitMaterial(void)",
+                "decompiled_code": "undefined4 InitMaterial(void) {\n  char cVar1;\n  int iVar2;\n  undefined4 uVar3;\n  longdouble lVar4;\n  undefined8 uVar5;\n  uint uVar6;\n  char local_8d [100];\n  char local_29;\n  uint local_28;\n  double local_24;\n  char local_1a;\n  char local_19;\n  uint local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_29 = '\\0';\n  puts(\"For what material would you like to run this simulation?\");\n  puts(\"  1. Air\");\n  puts(\"  2. Aluminum\");\n  puts(\"  3. Copper\");\n  puts(\"  4. Custom\");\n  while ((local_29 < '\\x01' || ('\\x04' < local_29))) {\n    printf(\"Selection: \");\n    iVar2 = read_until();\n    if (iVar2 == -1) {\n      return 0xffffffff;\n    }\n    iVar2 = atoi(local_8d);\n    local_29 = (char)iVar2;\n  }\n  if (local_29 == '\\x04') {\n    InitCustom();\n  }\n  else {\n    if ('\\x04' < local_29) {\n      return 0xffffffff;\n    }\n    if (local_29 == '\\x03') {\n      InitCopper();\n    }\n    else {\n      if ('\\x03' < local_29) {\n        return 0xffffffff;\n      }\n      if (local_29 == '\\x01') {\n        InitAir();\n      }\n      else {\n        if (local_29 != '\\x02') {\n          return 0xffffffff;\n        }\n        InitAluminum();\n      }\n    }\n  }\n  flush_stdin();\n  iVar2 = Z * X * Y;\n  while ((((local_28 = iVar2 * 8, X == 0 || (Y == 0)) || (Z == 0)) || (27000 < local_28))) {\n    printf(\"How large is the material (X,Y,Z meters): \");\n    iVar2 = read_until();\n    if (iVar2 == -1) {\n      return 0xffffffff;\n    }\n    iVar2 = ParseDimensions();\n    if (iVar2 != 0) {\n      return 0xffffffff;\n    }\n    iVar2 = Z * X * Y;\n  }\n  flush_stdin();\n  uVar5 = CONCAT44(Y,X);\n  uVar6 = Z;\n  iVar2 = AllocateGrid();\n  if (iVar2 != 0) {\n    return 0xffffffff;\n  }\n  local_19 = -1;\n  while (local_19 < '\\0') {\n    printf(\"Should the material be isothermic? (y,n): \",uVar5,uVar6);\n    uVar5 = 0x300016140;\n    iVar2 = read_until();\n    if (iVar2 == -1) {\n      free(TGrid);\n      return 0xffffffff;\n    }\n    if ((local_8d[0] == 'y') || (local_8d[0] == 'Y')) {\n      local_19 = '\\x01';\n    }\n    else if ((local_8d[0] == 'n') || (local_8d[0] == 'N')) {\n      local_19 = '\\0';\n    }\n  }\n  flush_stdin();\n  if (local_19 == '\\0') {\n    printf(\"  Send the grid temperatures as a comma separated list of Celcius decimal values.\\n\",\n           uVar5);\n    printf(\"  The program will populate the X, then Y, then Z dimensions of the room.\\n\");\n    cVar1 = read_temps();\n    if (cVar1 == '\\0') {\nLAB_00012569:\n      local_1a = -1;\n      while (local_1a < '\\0') {\n        printf(\"Are there any constant energy sources in the room? (y,n): \");\n        iVar2 = read_until();\n        if (iVar2 == -1) {\n          free(TGrid);\n          return 0xffffffff;\n        }\n        if ((local_8d[0] == 'y') || (local_8d[0] == 'Y')) {\n          local_1a = '\\x01';\n        }\n        else if ((local_8d[0] == 'n') || (local_8d[0] == 'N')) {\n          local_1a = '\\0';\n        }\n      }\n      flush_stdin();\n      if (local_1a != '\\0') {\n        uVar5 = CONCAT44(Y,X);\n        uVar6 = Z;\n        iVar2 = AllocateGrid();\n        if (iVar2 != 0) {\n          free(TGrid);\n          return 0xffffffff;\n        }\n        printf(\"  Send the heat sources as temperatures in a comma separated list of Celcius decimal values.\\n\"\n               ,uVar5,uVar6);\n        printf(\"  The program will populate the X, then Y, then Z dimensions of the room.\\n\");\n        printf(\"  Send @f for any grid location which doesn\\'t have a heat source.\\n\",DAT_00016610);\n        cVar1 = read_temps();\n        if (cVar1 != '\\0') {\n          free(TGrid);\n          free(HGrid);\n          return 0xffffffff;\n        }\n      }\n      uVar3 = 0;\n    }\n    else {\n      free(TGrid);\n      uVar3 = 0xffffffff;\n    }\n  }\n  else {\n    local_24 = DAT_000165f0;\n    while( true ) {\n      if ((DAT_00016600 <= local_24) && (local_24 <= DAT_000165f8)) {\n        flush_stdin();\n        for (local_10 = 0; local_10 < X; local_10 = local_10 + 1) {\n          for (local_14 = 0; local_14 < Y; local_14 = local_14 + 1) {\n            for (local_18 = 0; local_18 < Z; local_18 = local_18 + 1) {\n              *(double *)((local_10 + X * local_14 + Y * X * local_18) * 8 + (int)TGrid) =\n                   DAT_00016608 + local_24;\n            }\n          }\n        }\n        goto LAB_00012569;\n      }\n      printf(\"  What temperature? (@f - @f degrees C): \",DAT_00016600,DAT_000165f8);\n      iVar2 = read_until();\n      if (iVar2 == -1) break;\n      lVar4 = (longdouble)cgcatof();\n      local_24 = (double)lVar4;\n    }\n    free(TGrid);\n    uVar3 = 0xffffffff;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [
+                    "material",
+                    "CONCAT44"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitMaterial",
+                        "puts",
+                        "printf",
+                        "read_until",
+                        "atoi",
+                        "InitCustom",
+                        "InitCopper",
+                        "InitAir",
+                        "InitAluminum",
+                        "flush_stdin",
+                        "material",
+                        "ParseDimensions",
+                        "CONCAT44",
+                        "AllocateGrid",
+                        "free",
+                        "read_temps",
+                        "cgcatof"
+                    ],
+                    "calling_functions": [
+                        "InitMaterial",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  char **ppcVar2;\n  undefined *puVar3;\n  char *apcStack_44 [14];\n  \n  apcStack_44[13] = &stack0x00000004;\n  ppcVar2 = apcStack_44 + 0xd;\n  TGrid = 0;\n  HGrid = 0;\n  X = 0;\n  Y = 0;\n  Z = 0;\n  apcStack_44[12] = (char *)0x12752;\n  iVar1 = InitMaterial();\n  if (iVar1 != 0) {\n    ppcVar2 = apcStack_44 + 9;\n    apcStack_44[9] = (char *)0xffffffff;\n    _terminate();\n  }\n  *(undefined4 *)((int)ppcVar2 + -4) = 0x12765;\n  iVar1 = GetSimLength();\n  puVar3 = (undefined *)ppcVar2;\n  if (iVar1 != 0) {\n    puVar3 = (undefined *)((int)ppcVar2 + -0x10);\n    *(undefined4 *)((int)ppcVar2 + -0x10) = 0xffffffff;\n    *(undefined4 *)((int)ppcVar2 + -0x14) = 0x12773;\n    _terminate();\n  }\n  *(undefined4 *)(puVar3 + -0x10) = TGrid;\n  *(undefined4 *)(puVar3 + -0x14) = 0x12784;\n  GraphTemps();\n  *(char **)(puVar3 + -0x10) = \"At 0.00000 seconds\\n\";\n  *(undefined4 *)(puVar3 + -0x14) = 0x12796;\n  printf(*(char **)(puVar3 + -0x10));\n  *(undefined4 *)(puVar3 + -4) = 0x1279e;\n  kbhit();\n  *(undefined4 *)(puVar3 + -4) = 0x127a3;\n  RunSim();\n  *(undefined4 *)(puVar3 + -0x10) = TGrid;\n  *(undefined4 *)(puVar3 + -0x14) = 0x127b4;\n  GraphTemps();\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "InitMaterial",
+                        "_terminate",
+                        "GetSimLength",
+                        "GraphTemps",
+                        "printf",
+                        "kbhit",
+                        "RunSim"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            }
+        ],
+        "tsim.c": [
+            {
+                "func_name": "pGRID",
+                "func_c_signature": "int pGRID(int param_1,int param_2,int param_3,int param_4)",
+                "decompiled_code": "int pGRID(int param_1,int param_2,int param_3,int param_4) {\n  return param_1 + (param_2 + X * param_3 + Y * X * param_4) * 8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "pGRID"
+                    ],
+                    "calling_functions": [
+                        "pGRID",
+                        "L",
+                        "C",
+                        "H",
+                        "Tnew",
+                        "SimStep"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GetSimLength",
+                "func_c_signature": "undefined4 GetSimLength(void)",
+                "decompiled_code": "undefined4 GetSimLength(void) {\n  int iVar1;\n  longdouble lVar2;\n  undefined local_70 [104];\n  \n  SIM_TIME = 0.0;\n  while( true ) {\n    if (0.0 < SIM_TIME) {\n      return 0;\n    }\n    printf(\"For how long would you like to run the simulation? (s): \");\n    iVar1 = read_until(local_70,&DAT_00016669,99);\n    if (iVar1 == -1) break;\n    lVar2 = (longdouble)cgcatof(local_70);\n    SIM_TIME = (double)lVar2;\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GetSimLength",
+                        "printf",
+                        "read_until",
+                        "cgcatof"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "GetSimLength"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "L",
+                "func_c_signature": "longdouble L(uint param_1,uint param_2,uint param_3)",
+                "decompiled_code": "longdouble L(uint param_1,uint param_2,uint param_3) {\n  double *pdVar1;\n  longdouble lVar2;\n  \n  if (((param_1 < X) && (param_2 < Y)) && (param_3 < Z)) {\n    pdVar1 = (double *)pGRID(TGrid,param_1,param_2,param_3);\n    lVar2 = (longdouble)(double)(&TC)[(int)ROUND(*pdVar1 / DAT_00016680)];\n  }\n  else {\n    lVar2 = -(longdouble)1;\n  }\n  return lVar2;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "L",
+                        "pGRID",
+                        "ROUND"
+                    ],
+                    "calling_functions": [
+                        "L",
+                        "K"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "C",
+                "func_c_signature": "longdouble C(uint param_1,uint param_2,uint param_3)",
+                "decompiled_code": "longdouble C(uint param_1,uint param_2,uint param_3) {\n  double *pdVar1;\n  longdouble lVar2;\n  \n  if (((param_1 < X) && (param_2 < Y)) && (param_3 < Z)) {\n    pdVar1 = (double *)pGRID(TGrid,param_1,param_2,param_3);\n    lVar2 = (longdouble)(double)(&HC)[(int)ROUND(*pdVar1 / DAT_00016680)];\n  }\n  else {\n    lVar2 = -(longdouble)1;\n  }\n  return lVar2;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "C",
+                        "pGRID",
+                        "ROUND"
+                    ],
+                    "calling_functions": [
+                        "C",
+                        "Tnew",
+                        "CalcTimeStep"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "K",
+                "func_c_signature": "longdouble K(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6)",
+                "decompiled_code": "longdouble K(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6) {\n  longdouble lVar1;\n  longdouble lVar2;\n  double local_14;\n  \n  if ((((param_4 == -1) && (param_1 == 0)) || ((param_4 == 1 && (param_1 == X + -1)))) ||\n     ((((param_5 == -1 && (param_2 == 0)) || ((param_5 == 1 && (param_2 == Y + -1)))) ||\n      (((param_6 == -1 && (param_3 == 0)) || ((param_6 == 1 && (param_3 == Z + -1)))))))) {\n    lVar1 = (longdouble)L(param_1,param_2,param_3);\n    lVar1 = (longdouble)1 / ((longdouble)1 / (lVar1 + lVar1));\n  }\n  else {\n    lVar1 = (longdouble)L(param_1,param_2,param_3);\n    lVar2 = (longdouble)L(param_1 + param_4,param_5 + param_2,param_6 + param_3);\n    lVar1 = (longdouble)1 /\n            ((longdouble)1 / (lVar2 + lVar2) + (longdouble)(double)((longdouble)1 / (lVar1 + lVar1))\n            );\n  }\n  local_14 = (double)lVar1;\n  return (longdouble)local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "K",
+                        "L"
+                    ],
+                    "calling_functions": [
+                        "K",
+                        "H",
+                        "CalcTimeStep"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "H",
+                "func_c_signature": "longdouble H(int param_1,int param_2,int param_3)",
+                "decompiled_code": "longdouble H(int param_1,int param_2,int param_3) {\n  double dVar1;\n  double *pdVar2;\n  longdouble lVar3;\n  double local_14;\n  \n  local_14 = 0.0;\n  pdVar2 = (double *)pGRID(TGrid,param_1,param_2,param_3);\n  dVar1 = *pdVar2;\n  if (param_1 != 0) {\n    lVar3 = (longdouble)K(param_1,param_2,param_3,0xffffffff,0,0);\n    pdVar2 = (double *)pGRID(TGrid,param_1 + -1,param_2,param_3);\n    local_14 = (*pdVar2 - dVar1) * (double)lVar3 + 0.0;\n  }\n  if (param_1 != X + -1) {\n    lVar3 = (longdouble)K(param_1,param_2,param_3,1,0,0);\n    pdVar2 = (double *)pGRID(TGrid,param_1 + 1,param_2,param_3);\n    local_14 = local_14 + (*pdVar2 - dVar1) * (double)lVar3;\n  }\n  if (param_2 != 0) {\n    lVar3 = (longdouble)K(param_1,param_2,param_3,0,0xffffffff,0);\n    pdVar2 = (double *)pGRID(TGrid,param_1,param_2 + -1,param_3);\n    local_14 = local_14 + (*pdVar2 - dVar1) * (double)lVar3;\n  }\n  if (param_2 != Y + -1) {\n    lVar3 = (longdouble)K(param_1,param_2,param_3,0,1,0);\n    pdVar2 = (double *)pGRID(TGrid,param_1,param_2 + 1,param_3);\n    local_14 = local_14 + (*pdVar2 - dVar1) * (double)lVar3;\n  }\n  if (param_3 != 0) {\n    lVar3 = (longdouble)K(param_1,param_2,param_3,0,0,0xffffffff);\n    pdVar2 = (double *)pGRID(TGrid,param_1,param_2,param_3 + -1);\n    local_14 = local_14 + (*pdVar2 - dVar1) * (double)lVar3;\n  }\n  if (param_3 != Z + -1) {\n    lVar3 = (longdouble)K(param_1,param_2,param_3,0,0,1);\n    pdVar2 = (double *)pGRID(TGrid,param_1,param_2,param_3 + 1);\n    local_14 = local_14 + (*pdVar2 - dVar1) * (double)lVar3;\n  }\n  return (longdouble)local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "H",
+                        "pGRID",
+                        "K"
+                    ],
+                    "calling_functions": [
+                        "H",
+                        "Tnew"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "Tnew",
+                "func_c_signature": "longdouble Tnew(undefined4 param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "longdouble Tnew(undefined4 param_1,undefined4 param_2,undefined4 param_3) {\n  double dVar1;\n  double dVar2;\n  double *pdVar3;\n  longdouble lVar4;\n  longdouble lVar5;\n  double local_14;\n  \n  if (HGrid != 0) {\n    pdVar3 = (double *)pGRID(HGrid,param_1,param_2,param_3);\n    if (DAT_00016688 < *pdVar3) {\n      pdVar3 = (double *)pGRID(HGrid,param_1,param_2,param_3);\n      local_14 = *pdVar3;\n      goto LAB_00012dff;\n    }\n  }\n  pdVar3 = (double *)pGRID(TGrid,param_1,param_2,param_3);\n  dVar2 = TimeStep;\n  dVar1 = *pdVar3;\n  lVar4 = (longdouble)C(param_1,param_2,param_3);\n  lVar5 = (longdouble)H(param_1,param_2,param_3);\n  local_14 = (double)(lVar5 * (longdouble)(double)((longdouble)dVar2 / lVar4) + (longdouble)dVar1);\nLAB_00012dff:\n  return (longdouble)local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "Tnew",
+                        "pGRID",
+                        "C",
+                        "H"
+                    ],
+                    "calling_functions": [
+                        "Tnew",
+                        "SimStep"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CalcTimeStep",
+                "func_c_signature": "void CalcTimeStep(void)",
+                "decompiled_code": "void CalcTimeStep(void) {\n  double dVar1;\n  longdouble lVar2;\n  longdouble lVar3;\n  longdouble lVar4;\n  longdouble lVar5;\n  longdouble lVar6;\n  longdouble lVar7;\n  longdouble lVar8;\n  double local_24;\n  uint local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_24 = DAT_00016690;\n  for (local_18 = 0; local_18 < Z; local_18 = local_18 + 1) {\n    for (local_14 = 0; local_14 < Y; local_14 = local_14 + 1) {\n      for (local_10 = 0; local_10 < X; local_10 = local_10 + 1) {\n        lVar2 = (longdouble)K(local_10,local_14,local_18,0xffffffff,0,0);\n        lVar3 = (longdouble)K(local_10,local_14,local_18,1,0,0);\n        lVar4 = (longdouble)K(local_10,local_14,local_18,0,0xffffffff,0);\n        lVar5 = (longdouble)K(local_10,local_14,local_18,0,1,0);\n        lVar6 = (longdouble)K(local_10,local_14,local_18,0,0,0xffffffff);\n        lVar7 = (longdouble)K(local_10,local_14,local_18,0,0,1);\n        lVar8 = (longdouble)C(local_10,local_14,local_18);\n        dVar1 = (double)(lVar8 / (longdouble)\n                                 (double)((longdouble)\n                                          (double)((longdouble)\n                                                   (double)((longdouble)\n                                                            (double)((longdouble)\n                                                                     (double)((longdouble)\n                                                                              (double)((longdouble)\n                                                                                       0.0 + lVar2)\n                                                                             + lVar3) + lVar4) +\n                                                           lVar5) + lVar6) + lVar7));\n        if ((dVar1 < local_24) && (0.0 < dVar1)) {\n          local_24 = dVar1;\n        }\n      }\n    }\n  }\n  TimeStep = local_24;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CalcTimeStep",
+                        "K",
+                        "C"
+                    ],
+                    "calling_functions": [
+                        "CalcTimeStep",
+                        "RunSim"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SimStep",
+                "func_c_signature": "undefined4 SimStep(void)",
+                "decompiled_code": "undefined4 SimStep(void) {\n  void *pvVar1;\n  undefined4 uVar2;\n  double *pdVar3;\n  longdouble lVar4;\n  uint local_18;\n  uint local_14;\n  uint local_10;\n  \n  pvVar1 = calloc(Z * X * Y * 8,1);\n  if (pvVar1 == (void *)0x0) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    for (local_18 = 0; local_18 < Z; local_18 = local_18 + 1) {\n      for (local_14 = 0; local_14 < Y; local_14 = local_14 + 1) {\n        for (local_10 = 0; local_10 < X; local_10 = local_10 + 1) {\n          pdVar3 = (double *)pGRID(pvVar1,local_10,local_14,local_18);\n          lVar4 = (longdouble)Tnew(local_10,local_14,local_18);\n          *pdVar3 = (double)lVar4;\n        }\n      }\n    }\n    free(TGrid);\n    uVar2 = 0;\n    TGrid = pvVar1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SimStep",
+                        "calloc",
+                        "pGRID",
+                        "Tnew",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "SimStep",
+                        "RunSim"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "IncrementTimestep",
+                "func_c_signature": "void IncrementTimestep(double *param_1)",
+                "decompiled_code": "void IncrementTimestep(double *param_1) {\n  *param_1 = TimeStep + *param_1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "IncrementTimestep"
+                    ],
+                    "calling_functions": [
+                        "IncrementTimestep",
+                        "RunSim"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "RunSim",
+                "func_c_signature": "undefined4 RunSim(void)",
+                "decompiled_code": "undefined4 RunSim(void) {\n  int iVar1;\n  double local_14;\n  \n  local_14 = 0.0;\n  CalcTimeStep();\n  while( true ) {\n    if (SIM_TIME <= local_14) {\n      return 0;\n    }\n    iVar1 = SimStep();\n    if (iVar1 != 0) break;\n    IncrementTimestep(&local_14);\n    GraphTemps(TGrid);\n    printf(\"At @f seconds\\n\",local_14);\n    kbhit();\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "RunSim",
+                        "CalcTimeStep",
+                        "SimStep",
+                        "IncrementTimestep",
+                        "GraphTemps",
+                        "printf",
+                        "kbhit"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "RunSim"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            }
+        ],
+        "tvis.c": [
+            {
+                "func_name": "output_str",
+                "func_c_signature": "void output_str(int param_1,int param_2,undefined4 param_3)",
+                "decompiled_code": "void output_str(int param_1,int param_2,undefined4 param_3) {\n  float_to_str(*(double *)(output + (param_1 * 10 + param_2) * 8) - DAT_000166c0,param_3);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "output_str",
+                        "float_to_str"
+                    ],
+                    "calling_functions": [
+                        "output_str"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "TGridAverage",
+                "func_c_signature": "longdouble\nTGridAverage(int param_1,int param_2,uint param_3,uint param_4,int param_5,int param_6,int param_7)",
+                "decompiled_code": "longdouble\nTGridAverage(int param_1,int param_2,uint param_3,uint param_4,int param_5,int param_6,int param_7) {\n  uint local_24;\n  uint local_20;\n  double local_1c;\n  double local_14;\n  \n  local_14 = 0.0;\n  local_1c = 0.0;\n  if (X < param_3 + param_5) {\n    param_5 = X - param_3;\n  }\n  if (Y < param_4 + param_6) {\n    param_6 = Y - param_4;\n  }\n  for (local_20 = param_3; local_20 < param_5 + param_3; local_20 = local_20 + 1) {\n    for (local_24 = param_4; local_24 < param_6 + param_4; local_24 = local_24 + 1) {\n      local_14 = local_14 + *(double *)((local_20 + X * local_24 + Y * X * param_7) * 8 + TGrid);\n      local_1c = local_1c + 1.0;\n    }\n  }\n  *(double *)(output + (param_1 * 10 + param_2) * 8) = local_14 / local_1c;\n  return (longdouble)local_14 / (longdouble)local_1c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "TGridAverage"
+                    ],
+                    "calling_functions": [
+                        "TGridAverage",
+                        "GraphTemps"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GraphTemps",
+                "func_c_signature": "undefined4 GraphTemps(void)",
+                "decompiled_code": "undefined4 GraphTemps(void) {\n  int iVar1;\n  uint uVar2;\n  double dVar3;\n  ulonglong local_5c;\n  undefined4 local_44;\n  undefined4 uStack_40;\n  double local_34;\n  uint local_28;\n  uint local_24;\n  uint local_20;\n  uint local_1c;\n  uint local_18;\n  uint local_14;\n  uint local_10;\n  \n  printf(\"\\x1b[2J\\x1b[H\");\n  local_5c = (ulonglong)X;\n  local_5c._0_4_ = (uint)(longlong)ROUND((double)local_5c / DAT_000166c8 + 1.0);\n  iVar1 = (uint)local_5c;\n  local_5c = (ulonglong)Y;\n  local_5c._0_4_ = (uint)(longlong)ROUND((double)local_5c / DAT_000166c8 + 1.0);\n  for (local_18 = 0; local_18 < Z; local_18 = local_18 + 1) {\n    uVar2 = local_18;\n    printf(\"z: @d\\n\",local_18);\n    local_14 = 0;\n    for (local_28 = 0; dVar3 = (double)(ulonglong)uVar2, local_28 < Y;\n        local_28 = local_28 + (uint)local_5c) {\n      local_10 = 0;\n      for (local_24 = 0; local_24 < X; local_24 = local_24 + iVar1) {\n        uVar2 = (uint)local_5c;\n        TGridAverage(local_10,local_14,local_24,local_28,iVar1,(uint)local_5c,local_18);\n        local_10 = local_10 + 1;\n      }\n      local_14 = local_14 + 1;\n    }\n    for (local_1c = 0; local_1c < local_10; local_1c = local_1c + 1) {\n      for (local_20 = 0; local_20 < local_14; local_20 = local_20 + 1) {\n        dVar3 = *(double *)(output + (local_1c * 10 + local_20) * 8) - DAT_000166c0;\n        local_34 = 0.0;\n        if (0.0 <= dVar3) {\n          if (0.0 < dVar3) {\n            local_34 = DAT_000166d8;\n          }\n        }\n        else {\n          local_34 = DAT_000166d0;\n        }\n        local_44 = SUB84(dVar3,0);\n        uStack_40 = (undefined4)((ulonglong)dVar3 >> 0x20);\n        if (DAT_000166e0 < dVar3 + local_34) {\n          if (DAT_000166e8 < dVar3 + local_34) {\n            if (0.0 <= dVar3 + local_34) {\n              if (DAT_000166c8 <= dVar3 + local_34) {\n                if (_DAT_000166f0 <= dVar3 + local_34) {\n                  printf(\" @f \",local_44,uStack_40);\n                }\n                else {\n                  printf(\"  @f \",local_44,uStack_40);\n                }\n              }\n              else {\n                printf(\"   @f \",local_44,uStack_40);\n              }\n            }\n            else {\n              printf(\"  @f \",local_44,uStack_40);\n            }\n          }\n          else {\n            printf(\" @f \",local_44,uStack_40);\n          }\n        }\n        else {\n          printf(\"@f \",local_44,uStack_40);\n        }\n      }\n      printf(\"\\n\",SUB84(dVar3,0));\n    }\n    printf(\"\\n\",SUB84(dVar3,0));\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND",
+                    "SUB84"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GraphTemps",
+                        "printf",
+                        "ROUND",
+                        "TGridAverage",
+                        "SUB84"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "RunSim",
+                        "GraphTemps"
+                    ],
+                    "defined_in_file": "CROMU_00029_decompiled.c"
+                }
+            }
+        ]
+    }
+}

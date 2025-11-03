@@ -1,0 +1,772 @@
+{
+    "file": "KPRCA_00022",
+    "decompiled_code": {
+        "main.c": [
+            {
+                "func_name": "get_response",
+                "func_c_signature": "undefined4 get_response(void)",
+                "decompiled_code": "undefined4 get_response(void) {\n  undefined4 uVar1;\n  size_t sVar2;\n  int iVar3;\n  int local_24;\n  char *local_20;\n  uint local_1c;\n  undefined4 local_18;\n  char *local_14;\n  uint local_10;\n  \n  local_18 = 0;\n  local_1c = 0x400;\n  local_14 = &g_user_resp;\n  local_20 = &g_user_resp;\n  local_10 = 0;\n  while ((((local_10 < local_1c && (iVar3 = receive(local_18,local_14,1,&local_24), iVar3 == 0)) &&\n          (local_24 != 0)) && (*local_14 != '\\n'))) {\n    local_14 = local_14 + 1;\n    local_10 = local_10 + 1;\n  }\n  if ((local_10 == local_1c) && (*local_14 != '\\n')) {\n    uVar1 = 0xffffffff;\n  }\n  else if (*local_14 == '\\n') {\n    *local_14 = '\\0';\n    if (((2 < local_10) && (*local_20 == '*')) && (local_20[1] == '*')) {\n      sVar2 = strlen(\"prev\");\n      iVar3 = memcmp(local_20 + 2,&DAT_000152d3,sVar2);\n      if (iVar3 == 0) {\n        return 2;\n      }\n      sVar2 = strlen(\"next\");\n      iVar3 = memcmp(local_20 + 2,&DAT_000152d8,sVar2);\n      if (iVar3 == 0) {\n        return 3;\n      }\n      sVar2 = strlen(\"update \");\n      iVar3 = memcmp(local_20 + 2,\"update \",sVar2);\n      if (iVar3 == 0) {\n        return 4;\n      }\n      sVar2 = strlen(\"help\");\n      iVar3 = memcmp(local_20 + 2,&DAT_000152e5,sVar2);\n      if (iVar3 == 0) {\n        return 5;\n      }\n      sVar2 = strlen(\"exit\");\n      iVar3 = memcmp(local_20 + 2,&DAT_000152ea,sVar2);\n      if (iVar3 == 0) {\n        return 6;\n      }\n    }\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0xfffffffe;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_response",
+                        "receive",
+                        "strlen",
+                        "memcmp"
+                    ],
+                    "calling_functions": [
+                        "get_response",
+                        "fill_out_form",
+                        "update_field",
+                        "form",
+                        "finished"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_menu",
+                "func_c_signature": "void print_menu(void)",
+                "decompiled_code": "void print_menu(void) {\n  fdprintf(1,\"All commands begin with \\'**\\' and may be entered at any time\\n\");\n  fdprintf(1,\"**prev <Return to the previous page>\\n\");\n  fdprintf(1,\"**next <Move to the next page>\\n\");\n  fdprintf(1,\"**update [id] <Update field, ex: \\\"Update First Name\\\">\\n\");\n  fdprintf(1,\"**help <Print this dialogue>\\n\");\n  fdprintf(1,\"**exit <Exit application>\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_menu",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "print_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  uint local_14;\n  \n  local_14 = 0;\n  fdprintf(1,&DAT_000153e8);\n  fdprintf(1,\"Thanks for your interest in the Sea Eye Association.\\n\");\n  fdprintf(1,\n           \"In order to be considered for the job complete the preliminary online background check\\n\"\n          );\n  fdprintf(1,\"Due to the secure nature of the position you are applying for you may be asked to\\n\");\n  fdprintf(1,\n           \"submit additional paperwork after your preliminary background check has been approved.\\n\"\n          );\n  fdprintf(1,\"Thank you for your cooperation\\n\");\n  g_page_idx = '\\0';\n  while (local_14 != 6) {\n    local_14 = (*(code *)(&job_application_page)[g_page_idx])();\n    if (local_14 == 5) {\n      print_menu();\n    }\n    else if (local_14 < 6) {\n      if (local_14 == 2) {\n        if (g_page_idx != '\\0') {\n          g_page_idx = g_page_idx + -1;\n        }\n      }\n      else if ((local_14 == 3) && (g_page_idx != '\\x06')) {\n        g_page_idx = g_page_idx + '\\x01';\n      }\n    }\n  }\n  fdprintf(1,\"Thank you!\\n\");\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "fdprintf",
+                        "print_menu"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fill_out_form",
+                "func_c_signature": "int fill_out_form(int param_1,int param_2)",
+                "decompiled_code": "int fill_out_form(int param_1,int param_2) {\n  undefined4 *puVar1;\n  int iVar2;\n  void *pvVar3;\n  int local_10;\n  \n  local_10 = 0;\n  do {\n    if (param_2 <= local_10) {\n      return 0;\n    }\n    puVar1 = (undefined4 *)(param_1 + local_10 * 0x18);\n    while (puVar1[4] == 0) {\n      fdprintf(1,\"%s%s: \",*puVar1,puVar1[1]);\n      iVar2 = get_response();\n      if (iVar2 != 1) {\n        return iVar2;\n      }\n      if ((*(char *)(puVar1 + 2) == '\\0') &&\n         (iVar2 = memcmp(&g_user_resp,&DAT_0001500a,1), iVar2 == 0)) {\n        pvVar3 = calloc(1,puVar1[3]);\n        puVar1[4] = pvVar3;\n        break;\n      }\n      iVar2 = (*(code *)puVar1[5])(&g_user_resp,puVar1[3]);\n      if (iVar2 == 0) {\n        pvVar3 = calloc(1,puVar1[3]);\n        puVar1[4] = pvVar3;\n        strcpy((char *)puVar1[4],&g_user_resp);\n      }\n    }\n    local_10 = local_10 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fill_out_form",
+                        "fdprintf",
+                        "get_response",
+                        "memcmp",
+                        "calloc",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "fill_out_form",
+                        "form"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "update_field",
+                "func_c_signature": "undefined4 update_field(char *param_1,int param_2,int param_3)",
+                "decompiled_code": "undefined4 update_field(char *param_1,int param_2,int param_3) {\n  size_t sVar1;\n  char **ppcVar2;\n  size_t sVar3;\n  int iVar4;\n  char *pcVar5;\n  int local_10;\n  \n  if ((param_1 == (char *)0x0) || (sVar1 = strlen(param_1), sVar1 == 0)) {\n    fdprintf(1,\"Bad field\\n\");\n    return 0xffffffff;\n  }\n  local_10 = 0;\n  do {\n    if (param_3 <= local_10) {\n      fdprintf(1,\"Could not find specified field\\n\");\n      return 0xffffffff;\n    }\n    ppcVar2 = (char **)(param_2 + local_10 * 0x18);\n    sVar1 = strlen(param_1);\n    sVar3 = strlen(*ppcVar2);\n    if (sVar1 == sVar3) {\n      sVar1 = strlen(*ppcVar2);\n      iVar4 = memcmp(param_1,*ppcVar2,sVar1);\n      if (iVar4 == 0) {\n        pcVar5 = *ppcVar2;\n        fdprintf(1,\"%s%s: \",pcVar5,ppcVar2[1]);\n        iVar4 = get_response();\n        if (iVar4 != 1) {\n          fdprintf(1,\"Bad command\\n\",pcVar5);\n          return 0xfffffffe;\n        }\n        if (*(char *)(ppcVar2 + 2) == '\\0') {\n          pcVar5 = (char *)0x1;\n          iVar4 = memcmp(&g_user_resp,&DAT_0001500a,1);\n          if (iVar4 == 0) {\n            memset(ppcVar2[4],0,(size_t)ppcVar2[3]);\n            return 0;\n          }\n        }\n        iVar4 = (*(code *)ppcVar2[5])(&g_user_resp,ppcVar2[3]);\n        if (iVar4 != 0) {\n          fdprintf(1,\"Bad input.\\n\",pcVar5);\n          return 0xfffffffc;\n        }\n        memset(ppcVar2[4],0,(size_t)ppcVar2[3]);\n        strcpy(ppcVar2[4],&g_user_resp);\n        return 0;\n      }\n    }\n    local_10 = local_10 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "update_field",
+                        "strlen",
+                        "fdprintf",
+                        "memcmp",
+                        "get_response",
+                        "memset",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "update_field",
+                        "form"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_page",
+                "func_c_signature": "void print_page(int param_1,int param_2,int param_3)",
+                "decompiled_code": "void print_page(int param_1,int param_2,int param_3) {\n  undefined4 *puVar1;\n  int local_10;\n  \n  if (param_1 != 0) {\n    fdprintf(1,&DAT_000155a0,param_1);\n  }\n  for (local_10 = 0; local_10 < param_3; local_10 = local_10 + 1) {\n    puVar1 = (undefined4 *)(param_2 + local_10 * 0x18);\n    fdprintf(1,\"%s=%s\\n\",*puVar1,puVar1[4]);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_page",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "print_page",
+                        "form"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "form",
+                "func_c_signature": "int form(undefined4 param_1,int param_2,uint param_3)",
+                "decompiled_code": "int form(undefined4 param_1,int param_2,uint param_3) {\n  int iVar1;\n  char *local_1c;\n  int local_18;\n  int local_14;\n  uint local_10;\n  \n  if (g_last_page_completed + 1 < (int)g_page_idx) {\n    fdprintf(1,\"You must complete the previous page before proceeding to this page\\n\");\n    g_page_idx = g_last_page_completed + '\\x01';\n    local_18 = -1;\n  }\n  else {\n    local_14 = 0;\n    for (local_10 = 0; local_10 < param_3; local_10 = local_10 + 1) {\n      if (*(int *)(param_2 + local_10 * 0x18 + 0x10) == 0) {\n        local_14 = 1;\n        g_last_page_completed = g_page_idx + -1;\n        break;\n      }\n    }\n    if (((int)g_page_idx == g_last_page_completed + 1) || (local_14 != 0)) {\n      local_18 = fill_out_form(param_2,param_3);\n      if (local_18 != 0) {\n        if (local_18 != 4) {\n          return local_18;\n        }\n        fdprintf(1,\"Cannot update field until all fields are inputted\\n\");\n        return local_18;\n      }\n      g_last_page_completed = g_last_page_completed + '\\x01';\n      local_18 = 0;\n    }\n    print_page(param_1,param_2,param_3);\n    fdprintf(1,\"\\nType **next to continue\\n\");\n    local_18 = get_response();\n    if (local_18 == 4) {\n      local_1c = &g_user_resp;\n      strsep(&local_1c,\" \");\n      iVar1 = update_field(local_1c,param_2,param_3);\n      if (iVar1 != 0) {\n        fdprintf(1,\"Update Unsuccessful\\n\");\n      }\n    }\n  }\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "form",
+                        "fdprintf",
+                        "fill_out_form",
+                        "print_page",
+                        "get_response",
+                        "strsep",
+                        "update_field"
+                    ],
+                    "calling_functions": [
+                        "form",
+                        "candidate_info",
+                        "contact",
+                        "address",
+                        "education",
+                        "employment_history",
+                        "final_screening"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "candidate_info",
+                "func_c_signature": "void candidate_info(void)",
+                "decompiled_code": "void candidate_info(void) {\n  fdprintf(1,\"\\nCandidate Info Form\\n\");\n  form(\"\\n*********Candidate Info:*********\\n\",applicant_id,0xd);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "candidate_info",
+                        "fdprintf",
+                        "form"
+                    ],
+                    "calling_functions": [
+                        "candidate_info"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "contact",
+                "func_c_signature": "void contact(void)",
+                "decompiled_code": "void contact(void) {\n  fdprintf(1,\"\\nContact Info Form\\n\");\n  form(\"\\n*********Contact Info:*********\\n\",contact_info,4);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "contact",
+                        "fdprintf",
+                        "form"
+                    ],
+                    "calling_functions": [
+                        "contact"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "address",
+                "func_c_signature": "void address(void)",
+                "decompiled_code": "void address(void) {\n  fdprintf(1,\"\\nAddress Form\\n\");\n  form(\"\\n*********Address:*********\\n\",current_address,7);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "address",
+                        "fdprintf",
+                        "form"
+                    ],
+                    "calling_functions": [
+                        "address"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "education",
+                "func_c_signature": "void education(void)",
+                "decompiled_code": "void education(void) {\n  fdprintf(1,\"\\nEducation Form\\n\");\n  form(\"\\n*********Highest Education:*********\\n\",highest_education,0xc);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "education",
+                        "fdprintf",
+                        "form"
+                    ],
+                    "calling_functions": [
+                        "education"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "employment_history",
+                "func_c_signature": "void employment_history(void)",
+                "decompiled_code": "void employment_history(void) {\n  fdprintf(1,\"\\nEmployment Form\\n\");\n  form(\"\\n*********Most Recent Employer:*********\\n\",last_employer,0xe);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "employment_history",
+                        "fdprintf",
+                        "form"
+                    ],
+                    "calling_functions": [
+                        "employment_history"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "final_screening",
+                "func_c_signature": "void final_screening(void)",
+                "decompiled_code": "void final_screening(void) {\n  fdprintf(1,\"\\nFinal Questions\\n\");\n  form(\"\\n*********Final Screening:*********\\n\",screening_questions,2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "final_screening",
+                        "fdprintf",
+                        "form"
+                    ],
+                    "calling_functions": [
+                        "final_screening"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "finished",
+                "func_c_signature": "undefined4 finished(void)",
+                "decompiled_code": "undefined4 finished(void) {\n  undefined4 uVar1;\n  \n  fdprintf(1,\"\\n\\nYou have completed your application with the Sea Eye Association.\\n\");\n  fdprintf(1,\"You may review the form. Navigate through the application with **prev and **next.\\n\");\n  fdprintf(1,\"Once your are satisfied type **exit to exit and submit the form\\n\");\n  fdprintf(1,\"If you wish to discard your application, please use Control-C\\n\");\n  if (g_last_page_completed + 1 < (int)g_page_idx) {\n    fdprintf(1,\"You must complete the previous page before proceeding to this page\\n\");\n    g_page_idx = g_last_page_completed + '\\x01';\n    uVar1 = 0xffffffff;\n  }\n  else {\n    uVar1 = get_response();\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "finished",
+                        "fdprintf",
+                        "get_response"
+                    ],
+                    "calling_functions": [
+                        "finished"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            }
+        ],
+        "utils.c": [
+            {
+                "func_name": "verify_choice",
+                "func_c_signature": "undefined4 verify_choice(int param_1,void *param_2,uint param_3)",
+                "decompiled_code": "undefined4 verify_choice(int param_1,void *param_2,uint param_3) {\n  size_t __n;\n  int iVar1;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (param_3 <= local_10) {\n      return 0xffffffff;\n    }\n    __n = strlen(*(char **)(param_1 + local_10 * 4));\n    iVar1 = memcmp(*(void **)(param_1 + local_10 * 4),param_2,__n);\n    if (iVar1 == 0) break;\n    local_10 = local_10 + 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_choice",
+                        "strlen",
+                        "memcmp"
+                    ],
+                    "calling_functions": [
+                        "verify_choice",
+                        "verify_hair",
+                        "verify_eye",
+                        "verify_suffix",
+                        "verify_state",
+                        "verify_education"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_hair",
+                "func_c_signature": "void verify_hair(undefined4 param_1)",
+                "decompiled_code": "void verify_hair(undefined4 param_1) {\n  verify_choice(valid_hair_colors,param_1,0xe);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_hair",
+                        "verify_choice"
+                    ],
+                    "calling_functions": [
+                        "verify_hair"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_eye",
+                "func_c_signature": "void verify_eye(undefined4 param_1)",
+                "decompiled_code": "void verify_eye(undefined4 param_1) {\n  verify_choice(valid_eye_colors,param_1,10);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_eye",
+                        "verify_choice"
+                    ],
+                    "calling_functions": [
+                        "verify_eye"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_suffix",
+                "func_c_signature": "void verify_suffix(undefined4 param_1)",
+                "decompiled_code": "void verify_suffix(undefined4 param_1) {\n  verify_choice(valid_suffixes,param_1,0xc);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_suffix",
+                        "verify_choice"
+                    ],
+                    "calling_functions": [
+                        "verify_suffix"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_state",
+                "func_c_signature": "void verify_state(undefined4 param_1)",
+                "decompiled_code": "void verify_state(undefined4 param_1) {\n  verify_choice(valid_states,param_1,0x33);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_state",
+                        "verify_choice"
+                    ],
+                    "calling_functions": [
+                        "verify_state"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_education",
+                "func_c_signature": "void verify_education(undefined4 param_1)",
+                "decompiled_code": "void verify_education(undefined4 param_1) {\n  verify_choice(education_levels,param_1,3);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_education",
+                        "verify_choice"
+                    ],
+                    "calling_functions": [
+                        "verify_education"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_month",
+                "func_c_signature": "undefined4 verify_month(char *param_1,int param_2)",
+                "decompiled_code": "undefined4 verify_month(char *param_1,int param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  long lVar3;\n  \n  sVar1 = strlen(param_1);\n  if (sVar1 + 1 == param_2) {\n    lVar3 = strtol(param_1,(char **)0x0,10);\n    if ((lVar3 < 1) || (0xc < lVar3)) {\n      uVar2 = 0xffffffff;\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_month",
+                        "strlen",
+                        "strtol"
+                    ],
+                    "calling_functions": [
+                        "verify_month"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_day",
+                "func_c_signature": "undefined4 verify_day(char *param_1,int param_2)",
+                "decompiled_code": "undefined4 verify_day(char *param_1,int param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  long lVar3;\n  \n  sVar1 = strlen(param_1);\n  if (sVar1 + 1 == param_2) {\n    lVar3 = strtol(param_1,(char **)0x0,10);\n    if ((lVar3 < 1) || (0x1f < lVar3)) {\n      uVar2 = 0xffffffff;\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_day",
+                        "strlen",
+                        "strtol"
+                    ],
+                    "calling_functions": [
+                        "verify_day"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_year",
+                "func_c_signature": "undefined4 verify_year(char *param_1,int param_2)",
+                "decompiled_code": "undefined4 verify_year(char *param_1,int param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  long lVar3;\n  \n  sVar1 = strlen(param_1);\n  if (sVar1 + 1 == param_2) {\n    lVar3 = strtol(param_1,(char **)0x0,10);\n    if ((lVar3 < 0x76c) || (0x7de < lVar3)) {\n      uVar2 = 0xffffffff;\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_year",
+                        "strlen",
+                        "strtol"
+                    ],
+                    "calling_functions": [
+                        "verify_year"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_height_feet",
+                "func_c_signature": "undefined4 verify_height_feet(char *param_1,uint param_2)",
+                "decompiled_code": "undefined4 verify_height_feet(char *param_1,uint param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  long lVar3;\n  \n  sVar1 = strlen(param_1);\n  if (param_2 < sVar1 + 1) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    lVar3 = strtol(param_1,(char **)0x0,10);\n    if ((lVar3 < 1) || (9 < lVar3)) {\n      uVar2 = 0xffffffff;\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_height_feet",
+                        "strlen",
+                        "strtol"
+                    ],
+                    "calling_functions": [
+                        "verify_height_feet"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_height_inches",
+                "func_c_signature": "undefined4 verify_height_inches(char *param_1,uint param_2)",
+                "decompiled_code": "undefined4 verify_height_inches(char *param_1,uint param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  long lVar3;\n  \n  sVar1 = strlen(param_1);\n  if (param_2 < sVar1 + 1) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    lVar3 = strtol(param_1,(char **)0x0,10);\n    if ((lVar3 < 0) || (0xb < lVar3)) {\n      uVar2 = 0xffffffff;\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_height_inches",
+                        "strlen",
+                        "strtol"
+                    ],
+                    "calling_functions": [
+                        "verify_height_inches"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_weight",
+                "func_c_signature": "undefined4 verify_weight(char *param_1,uint param_2)",
+                "decompiled_code": "undefined4 verify_weight(char *param_1,uint param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  long lVar3;\n  \n  sVar1 = strlen(param_1);\n  if (param_2 < sVar1 + 1) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    lVar3 = strtol(param_1,(char **)0x0,10);\n    if ((lVar3 < 0x32) || (500 < lVar3)) {\n      uVar2 = 0xffffffff;\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_weight",
+                        "strlen",
+                        "strtol"
+                    ],
+                    "calling_functions": [
+                        "verify_weight"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_sex",
+                "func_c_signature": "undefined4 verify_sex(char *param_1,int param_2)",
+                "decompiled_code": "undefined4 verify_sex(char *param_1,int param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  \n  sVar1 = strlen(param_1);\n  if (sVar1 + 1 == param_2) {\n    if ((*param_1 == 'M') || (*param_1 == 'F')) {\n      uVar2 = 0;\n    }\n    else {\n      uVar2 = 0xffffffff;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_sex",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "verify_sex"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_yes_no",
+                "func_c_signature": "undefined4 verify_yes_no(char *param_1,int param_2)",
+                "decompiled_code": "undefined4 verify_yes_no(char *param_1,int param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  \n  sVar1 = strlen(param_1);\n  if (sVar1 + 1 == param_2) {\n    if ((*param_1 == 'Y') || (*param_1 == 'N')) {\n      uVar2 = 0;\n    }\n    else {\n      uVar2 = 0xffffffff;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_yes_no",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "verify_yes_no"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_name",
+                "func_c_signature": "undefined4 verify_name(char *param_1,uint param_2)",
+                "decompiled_code": "undefined4 verify_name(char *param_1,uint param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  int iVar3;\n  int local_10;\n  \n  sVar1 = strlen(param_1);\n  if ((param_2 < sVar1 + 1) || ((int)(sVar1 + 1) < 2)) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    for (local_10 = 0; local_10 < (int)sVar1; local_10 = local_10 + 1) {\n      iVar3 = isalpha((int)param_1[local_10]);\n      if ((iVar3 == 0) && (param_1[local_10] != '\\'')) {\n        return 0xffffffff;\n      }\n    }\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_name",
+                        "strlen",
+                        "isalpha"
+                    ],
+                    "calling_functions": [
+                        "verify_name"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_street",
+                "func_c_signature": "undefined4 verify_street(char *param_1,uint param_2)",
+                "decompiled_code": "undefined4 verify_street(char *param_1,uint param_2) {\n  char cVar1;\n  size_t sVar2;\n  undefined4 uVar3;\n  int iVar4;\n  int local_10;\n  \n  sVar2 = strlen(param_1);\n  if ((param_2 < sVar2 + 1) || ((int)(sVar2 + 1) < 5)) {\n    uVar3 = 0xffffffff;\n  }\n  else {\n    for (local_10 = 0; local_10 < (int)sVar2; local_10 = local_10 + 1) {\n      cVar1 = param_1[local_10];\n      iVar4 = isalnum((int)cVar1);\n      if ((((iVar4 == 0) && (cVar1 != '\\'')) && (cVar1 != ' ')) && (cVar1 != ',')) {\n        return 0xffffffff;\n      }\n    }\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_street",
+                        "strlen",
+                        "isalnum"
+                    ],
+                    "calling_functions": [
+                        "verify_street"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_city",
+                "func_c_signature": "undefined4 verify_city(char *param_1,uint param_2)",
+                "decompiled_code": "undefined4 verify_city(char *param_1,uint param_2) {\n  char cVar1;\n  size_t sVar2;\n  undefined4 uVar3;\n  int iVar4;\n  int local_10;\n  \n  sVar2 = strlen(param_1);\n  if ((param_2 < sVar2 + 1) || ((int)(sVar2 + 1) < 5)) {\n    uVar3 = 0xffffffff;\n  }\n  else {\n    for (local_10 = 0; local_10 < (int)sVar2; local_10 = local_10 + 1) {\n      cVar1 = param_1[local_10];\n      iVar4 = isalpha((int)cVar1);\n      if (((iVar4 == 0) && (cVar1 != '\\'')) && (cVar1 != ' ')) {\n        return 0xffffffff;\n      }\n    }\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_city",
+                        "strlen",
+                        "isalpha"
+                    ],
+                    "calling_functions": [
+                        "verify_city"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_zip_code",
+                "func_c_signature": "undefined4 verify_zip_code(char *param_1,int param_2)",
+                "decompiled_code": "undefined4 verify_zip_code(char *param_1,int param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  int iVar3;\n  int local_10;\n  \n  sVar1 = strlen(param_1);\n  if (sVar1 + 1 == param_2) {\n    if (*param_1 == '0') {\n      uVar2 = 0xffffffff;\n    }\n    else {\n      for (local_10 = 0; local_10 < (int)sVar1; local_10 = local_10 + 1) {\n        iVar3 = isdigit((int)param_1[local_10]);\n        if (iVar3 == 0) {\n          return 0xffffffff;\n        }\n      }\n      uVar2 = 0;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_zip_code",
+                        "strlen",
+                        "isdigit"
+                    ],
+                    "calling_functions": [
+                        "verify_zip_code"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_gpa",
+                "func_c_signature": "undefined4 verify_gpa(char *param_1,uint param_2)",
+                "decompiled_code": "undefined4 verify_gpa(char *param_1,uint param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  int iVar3;\n  int local_10;\n  \n  sVar1 = strlen(param_1);\n  if (param_2 < sVar1 + 1) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    for (local_10 = 0; local_10 < (int)sVar1; local_10 = local_10 + 1) {\n      if (local_10 == 1) {\n        if (param_1[local_10] != '.') {\n          return 0xffffffff;\n        }\n      }\n      else {\n        iVar3 = isdigit((int)param_1[local_10]);\n        if (iVar3 == 0) {\n          return 0xffffffff;\n        }\n      }\n    }\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_gpa",
+                        "strlen",
+                        "isdigit"
+                    ],
+                    "calling_functions": [
+                        "verify_gpa"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_email",
+                "func_c_signature": "undefined4 verify_email(char *param_1,uint param_2)",
+                "decompiled_code": "undefined4 verify_email(char *param_1,uint param_2) {\n  char cVar1;\n  size_t sVar2;\n  undefined4 uVar3;\n  int iVar4;\n  int local_14;\n  int local_10;\n  \n  sVar2 = strlen(param_1);\n  local_14 = 0;\n  if ((param_2 < sVar2 + 1) || ((int)(sVar2 + 1) < 3)) {\n    uVar3 = 0xffffffff;\n  }\n  else {\n    for (local_10 = 0; local_10 < (int)sVar2; local_10 = local_10 + 1) {\n      cVar1 = param_1[local_10];\n      iVar4 = isalnum((int)cVar1);\n      if ((((iVar4 == 0) && (cVar1 != '@')) && (cVar1 != '-')) && ((cVar1 != '.' && (cVar1 != '_')))\n         ) {\n        return 0xffffffff;\n      }\n      if ((cVar1 == '@') && (local_14 = local_14 + 1, local_14 == 2)) {\n        return 0xffffffff;\n      }\n    }\n    if (local_14 == 1) {\n      uVar3 = 0;\n    }\n    else {\n      uVar3 = 0xffffffff;\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_email",
+                        "strlen",
+                        "isalnum"
+                    ],
+                    "calling_functions": [
+                        "verify_email"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_phone",
+                "func_c_signature": "undefined4 verify_phone(char *param_1,int param_2)",
+                "decompiled_code": "undefined4 verify_phone(char *param_1,int param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  int iVar3;\n  int local_10;\n  \n  sVar1 = strlen(param_1);\n  if (sVar1 + 1 == param_2) {\n    for (local_10 = 0; local_10 < (int)sVar1; local_10 = local_10 + 1) {\n      if ((local_10 == 3) || (local_10 == 7)) {\n        if (param_1[local_10] != '-') {\n          return 0xffffffff;\n        }\n      }\n      else {\n        iVar3 = isdigit((int)param_1[local_10]);\n        if (iVar3 == 0) {\n          return 0xffffffff;\n        }\n      }\n    }\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_phone",
+                        "strlen",
+                        "isdigit"
+                    ],
+                    "calling_functions": [
+                        "verify_phone"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_number",
+                "func_c_signature": "undefined4 verify_number(char *param_1,uint param_2)",
+                "decompiled_code": "undefined4 verify_number(char *param_1,uint param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  int iVar3;\n  int local_10;\n  \n  sVar1 = strlen(param_1);\n  if (param_2 < sVar1 + 1) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    for (local_10 = 0; local_10 < (int)sVar1; local_10 = local_10 + 1) {\n      iVar3 = isdigit((int)param_1[local_10]);\n      if (iVar3 == 0) {\n        return 0xffffffff;\n      }\n    }\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_number",
+                        "strlen",
+                        "isdigit"
+                    ],
+                    "calling_functions": [
+                        "verify_number"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_text",
+                "func_c_signature": "undefined4 verify_text(char *param_1,uint param_2)",
+                "decompiled_code": "undefined4 verify_text(char *param_1,uint param_2) {\n  size_t sVar1;\n  undefined4 uVar2;\n  int iVar3;\n  int local_10;\n  \n  sVar1 = strlen(param_1);\n  if (param_2 < sVar1 + 1) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    for (local_10 = 0; local_10 < (int)sVar1; local_10 = local_10 + 1) {\n      iVar3 = isprint((int)param_1[local_10]);\n      if (iVar3 == 0) {\n        return 0xffffffff;\n      }\n    }\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_text",
+                        "strlen",
+                        "isprint"
+                    ],
+                    "calling_functions": [
+                        "verify_text"
+                    ],
+                    "defined_in_file": "KPRCA_00022_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,196 @@
+{
+    "file": "chmod",
+    "decompiled_code": {
+        "chmod.c": [
+            {
+                "func_name": "mode_changed",
+                "func_c_signature": "undefined4 mode_changed(int param_1,char *param_2,undefined8 param_3,uint param_4,uint param_5)",
+                "decompiled_code": "undefined4 mode_changed(int param_1,char *param_2,undefined8 param_3,uint param_4,uint param_5) {\n  int iVar1;\n  uint uVar2;\n  undefined4 uVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  long in_FS_OFFSET;\n  uint local_e4;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_e4 = param_5;\n  if ((param_5 & 0xe00) != 0) {\n    iVar1 = fstatat(param_1,param_2,&local_b8,0);\n    if (iVar1 != 0) {\n      if (force_silent != '\\x01') {\n        uVar4 = quotearg_style(4,param_3);\n        uVar5 = gettext(\"getting new attributes of %s\");\n        piVar6 = __errno_location();\n        error(0,*piVar6,uVar5,uVar4);\n      }\n      uVar3 = 0;\n      goto LAB_001003cb;\n    }\n    local_e4 = local_b8.st_mode;\n  }\n  uVar2 = (param_4 ^ local_e4) & 0xfff;\n  uVar3 = CONCAT31((int3)(uVar2 >> 8),uVar2 != 0);\nLAB_001003cb:\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT31"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "mode_changed",
+                        "fstatat",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "CONCAT31",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "mode_changed",
+                        "process_file"
+                    ],
+                    "defined_in_file": "chmod_decompiled.c"
+                }
+            },
+            {
+                "func_name": "describe_change",
+                "func_c_signature": "void describe_change(undefined8 param_1,uint *param_2)",
+                "decompiled_code": "void describe_change(undefined8 param_1,uint *param_2) {\n  uint uVar1;\n  uint uVar2;\n  uint uVar3;\n  undefined8 uVar4;\n  char *pcVar5;\n  long in_FS_OFFSET;\n  char *local_48;\n  undefined local_28;\n  undefined local_27 [9];\n  undefined local_1e;\n  undefined local_1c;\n  undefined local_1b [9];\n  undefined local_12;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  uVar4 = quotearg_style(4,param_1);\n  uVar1 = *param_2;\n  if ((uVar1 < 5) && (uVar1 < 3)) {\n    if (uVar1 == 2) {\n      pcVar5 = (char *)gettext(\"neither symbolic link %s nor referent has been changed\\n\");\n      printf(pcVar5,uVar4);\n      goto LAB_001005ca;\n    }\n    if ((uVar1 < 3) && (uVar1 == 0)) {\n      pcVar5 = (char *)gettext(\"%s could not be accessed\\n\");\n      printf(pcVar5,uVar4);\n      goto LAB_001005ca;\n    }\n  }\n  uVar1 = param_2[1];\n  uVar2 = param_2[2];\n  strmode(param_2[2],&local_28);\n  local_1e = 0;\n  strmode(param_2[1],&local_1c);\n  local_12 = 0;\n  uVar3 = *param_2;\n  if (uVar3 == 4) {\n    local_48 = (char *)gettext(\"mode of %s changed from %04lo (%s) to %04lo (%s)\\n\");\n  }\n  else {\n    if (4 < uVar3) {\nLAB_0010056f:\n                    /* WARNING: Subroutine does not return */\n      __assert_fail(\"0\",\n                    \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/chmod.c\"\n                    ,200,\"describe_change\");\n    }\n    if (uVar3 != 1) {\n      if (uVar3 != 3) goto LAB_0010056f;\n      pcVar5 = (char *)gettext(\"mode of %s retained as %04lo (%s)\\n\");\n      printf(pcVar5,uVar4,(ulong)(uVar2 & 0xfff),local_27);\n      goto LAB_001005ca;\n    }\n    local_48 = (char *)gettext(\"failed to change mode of %s from %04lo (%s) to %04lo (%s)\\n\");\n  }\n  printf(local_48,uVar4,(ulong)(uVar1 & 0xfff),local_1b,(ulong)(uVar2 & 0xfff),local_27);\nLAB_001005ca:\n  if (local_10 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "describe_change",
+                        "quotearg_style",
+                        "gettext",
+                        "printf",
+                        "strmode",
+                        "__assert_fail",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "describe_change",
+                        "process_file"
+                    ],
+                    "defined_in_file": "chmod_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_file",
+                "func_c_signature": "bool process_file(long param_1,long param_2)",
+                "decompiled_code": "bool process_file(long param_1,long param_2) {\n  char *__file;\n  char cVar1;\n  int iVar2;\n  uint uVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  int *piVar7;\n  long in_FS_OFFSET;\n  bool bVar8;\n  stat *local_160;\n  uint local_e4;\n  uint uStack_e0;\n  __mode_t local_dc;\n  stat local_d8;\n  undefined local_48;\n  undefined auStack_47 [9];\n  undefined local_3e;\n  undefined local_3c;\n  undefined auStack_3b [9];\n  undefined local_32;\n  long local_30;\n  \n  local_30 = *(long *)(in_FS_OFFSET + 0x28);\n  uVar4 = *(undefined8 *)(param_2 + 0x38);\n  __file = *(char **)(param_2 + 0x30);\n  local_160 = (stat *)(param_2 + 0x70);\n  local_dc = 0;\n  uStack_e0 = 0;\n  uVar3 = uStack_e0;\n  local_e4 = 0;\n  uStack_e0 = 0;\n  switch(*(undefined2 *)(param_2 + 0x68)) {\n  case 2:\n    cVar1 = cycle_warning_required(param_1,param_2);\n    if (cVar1 != '\\0') {\n      uVar4 = quotearg_n_style_colon(0,3,uVar4);\n      uVar5 = gettext(\n                     \"WARNING: Circular directory structure.\\nThis almost certainly means that you have a corrupted file system.\\nNOTIFY YOUR SYSTEM MANAGER.\\nThe following directory is part of the cycle:\\n  %s\\n\"\n                     );\n      error(0,0,uVar5,uVar4);\n      bVar8 = false;\n      goto LAB_00100fe3;\n    }\n  default:\n    local_e4 = 2;\n    break;\n  case 4:\n    if (force_silent != '\\x01') {\n      uVar5 = quotearg_style(4,uVar4);\n      uVar6 = gettext(\"cannot read directory %s\");\n      error(0,*(undefined4 *)(param_2 + 0x40),uVar6,uVar5);\n    }\n    break;\n  case 6:\n    bVar8 = true;\n    uStack_e0 = uVar3;\n    goto LAB_00100fe3;\n  case 7:\n    if (force_silent != '\\x01') {\n      uVar5 = quotearg_n_style_colon(0,3,uVar4);\n      error(0,*(undefined4 *)(param_2 + 0x40),&DAT_001020ba,uVar5);\n    }\n    break;\n  case 10:\n    if ((*(long *)(param_2 + 0x58) == 0) && (*(long *)(param_2 + 0x20) == 0)) {\n      *(undefined8 *)(param_2 + 0x20) = 1;\n      rpl_fts_set(param_1,param_2,1);\n      bVar8 = true;\n      goto LAB_00100fe3;\n    }\n    if (force_silent != '\\x01') {\n      uVar5 = quotearg_style(4,uVar4);\n      uVar6 = gettext(\"cannot access %s\");\n      error(0,*(undefined4 *)(param_2 + 0x40),uVar6,uVar5);\n    }\n    break;\n  case 0xc:\n    if (dereference == 1) {\n      iVar2 = fstatat(*(int *)(param_1 + 0x2c),__file,&local_d8,0);\n      if (iVar2 != 0) {\n        if (force_silent != '\\x01') {\n          uVar5 = quotearg_style(4,uVar4);\n          uVar6 = gettext(\"cannot dereference %s\");\n          piVar7 = __errno_location();\n          error(0,*piVar7,uVar6,uVar5);\n        }\n        break;\n      }\n      local_160 = &local_d8;\n    }\n    local_e4 = 2;\n    break;\n  case 0xd:\n    if (dereference == 0) {\n      uStack_e0 = 0;\n      local_e4 = 2;\n    }\n    else if (force_silent != '\\x01') {\n      uVar5 = quotearg_style(4,uVar4);\n      uVar6 = gettext(\"cannot operate on dangling symlink %s\");\n      error(0,0,uVar6,uVar5);\n    }\n  }\n  if (((local_e4 == 2) && (root_dev_ino != (ulong *)0x0)) &&\n     ((*root_dev_ino ^ local_160->st_ino | local_160->st_dev ^ root_dev_ino[1]) == 0)) {\n    cVar1 = streq(uVar4,&DAT_001021d2);\n    if (cVar1 == '\\0') {\n      uVar5 = quotearg_n_style(1,4,&DAT_001021d2);\n      uVar4 = quotearg_n_style(0,4,uVar4);\n      uVar6 = gettext(\"it is dangerous to operate recursively on %s (same as %s)\");\n      error(0,0,uVar6,uVar4,uVar5);\n    }\n    else {\n      uVar4 = quotearg_style(4,uVar4);\n      uVar5 = gettext(\"it is dangerous to operate recursively on %s\");\n      error(0,0,uVar5,uVar4);\n    }\n    uVar4 = gettext(\"use --no-preserve-root to override this failsafe\");\n    error(0,0,uVar4);\n    rpl_fts_set(param_1,param_2,4);\n    rpl_fts_read(param_1);\n    bVar8 = false;\n  }\n  else {\n    if (local_e4 == 2) {\n      uStack_e0 = local_160->st_mode;\n      local_dc = mode_adjust(uStack_e0,(uStack_e0 & 0xf000) == 0x4000,umask_value,change,0);\n      bVar8 = dereference != 0;\n      if (dereference == -1) {\n        bVar8 = *(long *)(param_2 + 0x58) == 0;\n      }\n      if (bVar8) {\n        iVar2 = 0;\n      }\n      else {\n        iVar2 = 0x100;\n      }\n      iVar2 = fchmodat(*(int *)(param_1 + 0x2c),__file,local_dc,iVar2);\n      if (iVar2 == 0) {\n        local_e4 = 4;\n      }\n      else {\n        piVar7 = __errno_location();\n        cVar1 = is_ENOTSUP(*piVar7);\n        if (cVar1 != '\\x01') {\n          if (force_silent != '\\x01') {\n            uVar5 = quotearg_style(4,uVar4);\n            uVar6 = gettext(\"changing permissions of %s\");\n            piVar7 = __errno_location();\n            error(0,*piVar7,uVar6,uVar5);\n          }\n          local_e4 = 1;\n        }\n      }\n    }\n    if (verbosity != 2) {\n      if ((local_e4 == 4) &&\n         (cVar1 = mode_changed(*(undefined4 *)(param_1 + 0x2c),__file,uVar4,uStack_e0,local_dc),\n         cVar1 != '\\x01')) {\n        local_e4 = 3;\n      }\n      if ((local_e4 == 4) || (verbosity == 0)) {\n        describe_change(uVar4,&local_e4);\n      }\n    }\n    if (((2 < local_e4) && (diagnose_surprises != '\\0')) &&\n       (uVar3 = mode_adjust(uStack_e0,(uStack_e0 & 0xf000) == 0x4000,0,change,0),\n       (local_dc & ~uVar3) != 0)) {\n      strmode(local_dc,&local_48);\n      strmode(uVar3,&local_3c);\n      local_32 = 0;\n      local_3e = 0;\n      uVar4 = quotearg_n_style_colon(0,3,uVar4);\n      uVar5 = gettext(\"%s: new permissions are %s, not %s\");\n      error(0,0,uVar5,uVar4,auStack_47,auStack_3b);\n      local_e4 = 1;\n    }\n    if (recurse != '\\x01') {\n      rpl_fts_set(param_1,param_2,4);\n    }\n    bVar8 = 1 < local_e4;\n  }\nLAB_00100fe3:\n  if (local_30 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return bVar8;\n}",
+                "globals": [],
+                "externs": [
+                    "s"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_file",
+                        "cycle_warning_required",
+                        "quotearg_n_style_colon",
+                        "gettext",
+                        "error",
+                        "quotearg_style",
+                        "rpl_fts_set",
+                        "fstatat",
+                        "__errno_location",
+                        "streq",
+                        "quotearg_n_style",
+                        "s",
+                        "rpl_fts_read",
+                        "mode_adjust",
+                        "fchmodat",
+                        "is_ENOTSUP",
+                        "mode_changed",
+                        "describe_change",
+                        "strmode",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "process_file",
+                        "process_files"
+                    ],
+                    "defined_in_file": "chmod_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_files",
+                "func_c_signature": "bool process_files(undefined8 param_1,undefined4 param_2)",
+                "decompiled_code": "bool process_files(undefined8 param_1,undefined4 param_2) {\n  byte bVar1;\n  int iVar2;\n  undefined8 uVar3;\n  long lVar4;\n  int *piVar5;\n  undefined8 uVar6;\n  bool local_49;\n  \n  local_49 = true;\n  uVar3 = xfts_open(param_1,param_2,0);\n  while( true ) {\n    lVar4 = rpl_fts_read(uVar3);\n    if (lVar4 == 0) break;\n    bVar1 = process_file(uVar3,lVar4);\n    local_49 = (bVar1 & local_49) != 0;\n  }\n  piVar5 = __errno_location();\n  if (*piVar5 != 0) {\n    if (force_silent != '\\x01') {\n      uVar6 = gettext(\"fts_read failed\");\n      piVar5 = __errno_location();\n      error(0,*piVar5,uVar6);\n    }\n    local_49 = false;\n  }\n  iVar2 = rpl_fts_close(uVar3);\n  if (iVar2 != 0) {\n    uVar3 = gettext(\"fts_close failed\");\n    piVar5 = __errno_location();\n    error(0,*piVar5,uVar3);\n    local_49 = false;\n  }\n  return local_49;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_files",
+                        "xfts_open",
+                        "rpl_fts_read",
+                        "process_file",
+                        "__errno_location",
+                        "gettext",
+                        "error",
+                        "rpl_fts_close"
+                    ],
+                    "calling_functions": [
+                        "process_files",
+                        "main"
+                    ],
+                    "defined_in_file": "chmod_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\n                            \"Usage: %s [OPTION]... MODE[,MODE]... FILE...\\n  or:  %s [OPTION]... OCTAL-MODE FILE...\\n  or:  %s [OPTION]... --reference=RFILE FILE...\\n\"\n                            );\n    printf(pcVar3,uVar2,uVar2,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Change the mode of each FILE to MODE.\\nWith --reference, change the mode of each FILE to that of RFILE.\\n\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -c, --changes          like verbose but report only when a change is made\\n  -f, --silent, --quiet  suppress most error messages\\n  -v, --verbose          output a diagnostic for every file processed\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --dereference      affect the referent of each symbolic link,\\n                           rather than the symbolic link itself\\n  -h, --no-dereference   affect each symbolic link, rather than the referent\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --no-preserve-root  do not treat \\'/\\' specially (the default)\\n      --preserve-root    fail to operate recursively on \\'/\\'\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --reference=RFILE  use RFILE\\'s mode instead of specifying MODE values.\\n                         RFILE is always dereferenced if a symbolic link.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  -R, --recursive        change files and directories recursively\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_symlink_recurse_options(&DAT_0010273b);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nEach MODE is of the form \\'[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=][0-7]+\\'.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"chmod\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "specially"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "specially",
+                        "emit_symlink_recurse_options",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "chmod_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "void main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  byte bVar2;\n  int iVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  long in_FS_OFFSET;\n  uint local_d8;\n  long local_98;\n  long local_90;\n  long local_88;\n  long local_80;\n  char *local_78;\n  size_t local_70;\n  long local_68;\n  long local_60;\n  undefined8 local_58;\n  undefined8 local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  undefined8 local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  undefined8 local_20;\n  \n  local_20 = *(undefined8 *)(in_FS_OFFSET + 0x28);\n  local_90 = 0;\n  local_88 = 0;\n  local_98 = 0;\n  bVar1 = false;\n  local_80 = 0;\n  local_d8 = 0x11;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  diagnose_surprises = 0;\n  force_silent = 0;\n  recurse = '\\0';\n  while (iVar3 = getopt_long(param_1,param_2,\n                             \"HLPRcfhvr::w::x::X::s::t::u::g::o::a::,::+::=::0::1::2::3::4::5::6::7::\"\n                             ,long_options,0), iVar3 != -1) {\n    if (iVar3 < 0x84) {\n      if (iVar3 < 0x48) {\n        if (iVar3 < 0x3e) {\n          if (iVar3 < 0x2b) {\n            if (iVar3 == -0x83) {\nLAB_00101655:\n              uVar4 = proper_name_lite(\"Jim Meyering\",\"Jim Meyering\");\n              uVar5 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n              version_etc(_stdout,\"chmod\",\"GNU coreutils\",_Version,uVar5,uVar4,0);\n                    /* WARNING: Subroutine does not return */\n              exit(0);\n            }\n            if (iVar3 == -0x82) {\n              usage(0);\n              goto LAB_00101655;\n            }\n          }\n          else if ((0x20ff180000000000U >> ((byte)iVar3 & 0x3f) & 1) != 0)\n          goto switchD_00101480_caseD_58;\n        }\n        goto switchD_00101480_caseD_49;\n      }\n      switch(iVar3) {\n      case 0x48:\n        local_d8 = 0x11;\n        break;\n      default:\n        goto switchD_00101480_caseD_49;\n      case 0x4c:\n        local_d8 = 2;\n        break;\n      case 0x50:\n        local_d8 = 0x10;\n        break;\n      case 0x52:\n        recurse = '\\x01';\n        break;\n      case 0x58:\n      case 0x61:\n      case 0x67:\n      case 0x6f:\n      case 0x72:\n      case 0x73:\n      case 0x74:\n      case 0x75:\n      case 0x77:\n      case 0x78:\nswitchD_00101480_caseD_58:\n        local_78 = (char *)param_2[(long)_optind + -1];\n        local_70 = strlen(local_78);\n        local_68 = local_88 + (ulong)(local_88 != 0);\n        local_60 = local_70 + local_68;\n        if (local_98 <= local_60) {\n          local_90 = xpalloc(local_90,&local_98,(local_60 + 1) - local_98,0xffffffffffffffff,1);\n        }\n        *(undefined *)(local_90 + local_88) = 0x2c;\n        memcpy((void *)(local_68 + local_90),local_78,local_70 + 1);\n        local_88 = local_60;\n        diagnose_surprises = 1;\n        break;\n      case 99:\n        verbosity = 1;\n        break;\n      case 0x66:\n        force_silent = 1;\n        break;\n      case 0x68:\n        dereference = 0;\n        break;\n      case 0x76:\n        verbosity = 0;\n        break;\n      case 0x80:\n        dereference = 1;\n        break;\n      case 0x81:\n        bVar1 = false;\n        break;\n      case 0x82:\n        bVar1 = true;\n        break;\n      case 0x83:\n        local_80 = _optarg;\n      }\n    }\n    else {\nswitchD_00101480_caseD_49:\n      usage(1);\n    }\n  }\n  if ((recurse != '\\0') && (local_d8 == 0x10)) {\n    if (dereference == 1) {\n      local_58 = gettext(\"-R --dereference requires either -H or -L\");\n      error(1,0,local_58);\n    }\n    dereference = 0;\n  }\n  if ((dereference == -1) && (local_d8 == 2)) {\n    dereference = 1;\n  }\n  if (local_80 == 0) {\nLAB_0010180d:\n    if (local_90 == 0) {\n      local_90 = param_2[_optind];\n      _optind = _optind + 1;\n    }\n  }\n  else if (local_90 != 0) {\n    local_50 = gettext(\"cannot combine mode and --reference options\");\n    error(0,0,local_50);\n    usage(1);\n    goto LAB_0010180d;\n  }\n  if (param_1 <= _optind) {\n    if ((local_90 == 0) || (local_90 != param_2[(long)_optind + -1])) {\n      local_48 = gettext(\"missing operand\");\n      error(0,0,local_48);\n    }\n    else {\n      uVar4 = quote(param_2[(long)param_1 + -1]);\n      local_40 = gettext(\"missing operand after %s\");\n      error(0,0,local_40,uVar4);\n    }\n    usage(1);\n  }\n  if (local_80 == 0) {\nLAB_001019d6:\n    change = mode_compile(local_90);\n    if (change == 0) {\n      uVar4 = quote(local_90);\n      local_30 = gettext(\"invalid mode: %s\");\n      error(0,0,local_30,uVar4);\n      usage(1);\n    }\n    umask_value = umask(0);\n  }\n  else {\n    change = mode_create_from_ref(local_80);\n    if (change == 0) {\n      uVar4 = quotearg_style(4,local_80);\n      uVar5 = gettext(\"failed to get attributes of %s\");\n      piVar6 = __errno_location();\n      local_38 = uVar5;\n      error(1,*piVar6,uVar5,uVar4);\n      goto LAB_001019d6;\n    }\n  }\n  if ((recurse != '\\0') && (bVar1)) {\n    root_dev_ino = get_root_dev_ino(dev_ino_buf_0);\n    if (root_dev_ino != 0) goto LAB_00101b1b;\n    uVar4 = quotearg_style(4,&DAT_001021d2);\n    uVar5 = gettext(\"failed to get attributes of %s\");\n    piVar6 = __errno_location();\n    local_28 = uVar5;\n    error(1,*piVar6,uVar5,uVar4);\n  }\n  root_dev_ino = 0;\nLAB_00101b1b:\n  bVar2 = process_files(param_2 + _optind,local_d8 | 0x400);\n                    /* WARNING: Subroutine does not return */\n  exit((uint)(bVar2 ^ 1));\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage",
+                        "strlen",
+                        "xpalloc",
+                        "memcpy",
+                        "gettext",
+                        "error",
+                        "quote",
+                        "mode_compile",
+                        "umask",
+                        "mode_create_from_ref",
+                        "quotearg_style",
+                        "__errno_location",
+                        "get_root_dev_ino",
+                        "process_files"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "chmod_decompiled.c"
+                }
+            }
+        ]
+    }
+}

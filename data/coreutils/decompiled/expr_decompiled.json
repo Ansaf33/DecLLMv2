@@ -1,0 +1,673 @@
+{
+    "file": "expr",
+    "decompiled_code": {
+        "expr.c": [
+            {
+                "func_name": "mbs_logical_cspn",
+                "func_c_signature": "long mbs_logical_cspn(char *param_1,char *param_2)",
+                "decompiled_code": "long mbs_logical_cspn(char *param_1,char *param_2) {\n  int iVar1;\n  size_t sVar2;\n  ulong uVar3;\n  long lVar4;\n  ulong uVar5;\n  long local_38;\n  char *local_30;\n  char *local_28;\n  char cStack_13;\n  \n  local_38 = 0;\n  if (*param_2 != '\\0') {\n    sVar2 = __ctype_get_mb_cur_max();\n    local_30 = param_1;\n    if (sVar2 < 2) {\n      sVar2 = strcspn(param_1,param_2);\n      if (param_1[sVar2] != '\\0') {\n        return sVar2 + 1;\n      }\n    }\n    else {\n      for (; *local_30 != '\\0'; local_30 = local_30 + (uVar3 >> 0x28 & 0xff)) {\n        local_38 = local_38 + 1;\n        uVar3 = mcel_scanz(local_30);\n        cStack_13 = (char)(uVar3 >> 0x28);\n        local_28 = param_2;\n        if (cStack_13 == '\\x01') {\n          lVar4 = mbschr(param_2,(int)*local_30);\n          if (lVar4 != 0) {\n            return local_38;\n          }\n        }\n        else {\n          for (; *local_28 != '\\0'; local_28 = local_28 + (uVar5 >> 0x28 & 0xff)) {\n            uVar5 = mcel_scanz(local_28);\n            iVar1 = mcel_cmp(uVar3,uVar5);\n            if (iVar1 == 0) {\n              return local_38;\n            }\n          }\n        }\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "mbs_logical_cspn",
+                        "__ctype_get_mb_cur_max",
+                        "strcspn",
+                        "mcel_scanz",
+                        "mbschr",
+                        "mcel_cmp"
+                    ],
+                    "calling_functions": [
+                        "mbs_logical_cspn",
+                        "eval6"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "mbs_logical_substr",
+                "func_c_signature": "void mbs_logical_substr(char *param_1,ulong param_2,ulong param_3)",
+                "decompiled_code": "void mbs_logical_substr(char *param_1,ulong param_2,ulong param_3) {\n  size_t sVar1;\n  ulong uVar2;\n  char *local_50;\n  ulong local_40;\n  char *local_38;\n  ulong local_30;\n  ulong local_28;\n  \n  sVar1 = __ctype_get_mb_cur_max();\n  if (sVar1 < 2) {\n    uVar2 = strlen(param_1);\n  }\n  else {\n    uVar2 = mbslen(param_1);\n  }\n  if (uVar2 < param_2) {\n    local_40 = 0;\n  }\n  else {\n    local_40 = (uVar2 - param_2) + 1;\n  }\n  if (param_3 < local_40) {\n    local_40 = param_3;\n  }\n  local_30 = 0;\n  local_38 = param_1;\n  if ((param_2 != 0) && (param_3 != 0xffffffffffffffff)) {\n    if (sVar1 < 2) {\n      local_38 = param_1 + (param_2 - 1);\n      local_30 = local_40;\n    }\n    else {\n      local_28 = 1;\n      local_50 = param_1;\n      while ((*local_50 != '\\0' && (local_40 != 0))) {\n        uVar2 = mcel_scanz(local_50);\n        uVar2 = uVar2 >> 0x28 & 0xff;\n        if (param_2 <= local_28) {\n          if (param_2 == local_28) {\n            local_38 = local_50;\n          }\n          local_40 = local_40 - 1;\n          local_30 = local_30 + uVar2;\n        }\n        local_50 = local_50 + uVar2;\n        local_28 = local_28 + 1;\n      }\n    }\n  }\n  ximemdup0(local_38,local_30);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "mbs_logical_substr",
+                        "__ctype_get_mb_cur_max",
+                        "strlen",
+                        "mbslen",
+                        "mcel_scanz",
+                        "ximemdup0"
+                    ],
+                    "calling_functions": [
+                        "mbs_logical_substr",
+                        "eval6"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "mbs_offset_to_chars",
+                "func_c_signature": "long mbs_offset_to_chars(long param_1,ulong param_2)",
+                "decompiled_code": "long mbs_offset_to_chars(long param_1,ulong param_2) {\n  ulong uVar1;\n  long local_18;\n  ulong local_10;\n  \n  local_18 = 0;\n  for (local_10 = 0; (local_10 < param_2 && (*(char *)(local_10 + param_1) != '\\0'));\n      local_10 = local_10 + (uVar1 >> 0x28 & 0xff)) {\n    local_18 = local_18 + 1;\n    uVar1 = mcel_scanz(local_10 + param_1);\n  }\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "mbs_offset_to_chars",
+                        "mcel_scanz"
+                    ],
+                    "calling_functions": [
+                        "mbs_offset_to_chars",
+                        "docolon"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s EXPRESSION\\n  or:  %s OPTION\\n\");\n    printf(pcVar3,uVar2,uVar2);\n    putchar_unlocked(10);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nPrint the value of EXPRESSION to standard output.  A blank line below\\nseparates increasing precedence groups.  EXPRESSION may be:\\n\\n  ARG1 | ARG2       ARG1 if it is neither null nor 0, otherwise ARG2\\n\\n  ARG1 & ARG2       ARG1 if neither argument is null or 0, otherwise 0\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\n  ARG1 < ARG2       ARG1 is less than ARG2\\n  ARG1 <= ARG2      ARG1 is less than or equal to ARG2\\n  ARG1 = ARG2       ARG1 is equal to ARG2\\n  ARG1 != ARG2      ARG1 is unequal to ARG2\\n  ARG1 >= ARG2      ARG1 is greater than or equal to ARG2\\n  ARG1 > ARG2       ARG1 is greater than ARG2\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\n  ARG1 + ARG2       arithmetic sum of ARG1 and ARG2\\n  ARG1 - ARG2       arithmetic difference of ARG1 and ARG2\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\n  ARG1 * ARG2       arithmetic product of ARG1 and ARG2\\n  ARG1 / ARG2       arithmetic quotient of ARG1 divided by ARG2\\n  ARG1 % ARG2       arithmetic remainder of ARG1 divided by ARG2\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\n  STRING : REGEXP   anchored pattern match of REGEXP in STRING\\n\\n  match STRING REGEXP        same as STRING : REGEXP\\n  substr STRING POS LENGTH   substring of STRING, POS counted from 1\\n  index STRING CHARS         index in STRING where any CHARS is found, or 0\\n  length STRING              length of STRING\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  + TOKEN                    interpret TOKEN as a string, even if it is a\\n                               keyword like \\'match\\' or an operator like \\'/\\'\\n\\n  ( EXPRESSION )             value of EXPRESSION\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nBeware that many operators need to be escaped or quoted for shells.\\nComparisons are arithmetic if both ARGs are numbers, else lexicographical.\\nPattern matches return the string matched between \\\\( and \\\\) or null; if\\n\\\\( and \\\\) are not used, they return the number of characters matched or 0.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nExit status is 0 if EXPRESSION is neither null nor 0, 1 if EXPRESSION is null\\nor 0, 2 if EXPRESSION is syntactically invalid, and 3 if an error occurred.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(&DAT_00102774);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "n"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "putchar_unlocked",
+                        "fputs_unlocked",
+                        "n",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "void main(int param_1,undefined8 *param_2) {\n  char cVar1;\n  byte bVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  undefined8 *local_58;\n  int local_4c;\n  \n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  initialize_exit_failure(3);\n  atexit((__func *)&close_stdout);\n  uVar3 = proper_name_lite(\"Paul Eggert\",\"Paul Eggert\");\n  uVar4 = proper_name_lite(\"James Youngman\",\"James Youngman\");\n  uVar5 = proper_name_lite(\"Mike Parker\",\"Mike Parker\");\n  parse_long_options(param_1,param_2,&DAT_00102774,\"GNU coreutils\",\"9.8.77-8db63\",usage,uVar5,uVar4,\n                     uVar3,0);\n  local_58 = param_2;\n  local_4c = param_1;\n  if (1 < param_1) {\n    cVar1 = streq(param_2[1],&DAT_001027d3);\n    if (cVar1 != '\\0') {\n      local_4c = param_1 + -1;\n      local_58 = param_2 + 1;\n    }\n  }\n  if (local_4c < 2) {\n    uVar3 = gettext(\"missing operand\");\n    error(0,0,uVar3);\n    usage(2);\n  }\n  args = local_58 + 1;\n  uVar3 = eval(1);\n  cVar1 = nomoreargs();\n  if (cVar1 != '\\x01') {\n    uVar4 = quotearg_n_style(0,8,*args);\n    uVar5 = gettext(\"syntax error: unexpected argument %s\");\n    error(2,0,uVar5,uVar4);\n  }\n  printv(uVar3);\n  bVar2 = null(uVar3);\n                    /* WARNING: Subroutine does not return */\n  exit((uint)bVar2);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "initialize_exit_failure",
+                        "atexit",
+                        "proper_name_lite",
+                        "parse_long_options",
+                        "streq",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "eval",
+                        "nomoreargs",
+                        "quotearg_n_style",
+                        "printv",
+                        "null",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "int_value",
+                "func_c_signature": "undefined4 * int_value(undefined8 param_1)",
+                "decompiled_code": "undefined4 * int_value(undefined8 param_1) {\n  undefined4 *puVar1;\n  \n  puVar1 = (undefined4 *)xmalloc(0x18);\n  *puVar1 = 0;\n  mpz_init_set_ui(puVar1 + 2,param_1);\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "int_value",
+                        "xmalloc",
+                        "mpz_init_set_ui"
+                    ],
+                    "calling_functions": [
+                        "int_value",
+                        "docolon",
+                        "eval6",
+                        "eval2",
+                        "eval1",
+                        "eval"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "str_value",
+                "func_c_signature": "undefined4 * str_value(undefined8 param_1)",
+                "decompiled_code": "undefined4 * str_value(undefined8 param_1) {\n  undefined4 *puVar1;\n  undefined8 uVar2;\n  \n  puVar1 = (undefined4 *)xmalloc(0x18);\n  *puVar1 = 1;\n  uVar2 = xstrdup(param_1);\n  *(undefined8 *)(puVar1 + 2) = uVar2;\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "str_value",
+                        "xmalloc",
+                        "xstrdup"
+                    ],
+                    "calling_functions": [
+                        "str_value",
+                        "docolon",
+                        "eval7",
+                        "eval6"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "freev",
+                "func_c_signature": "void freev(int *param_1)",
+                "decompiled_code": "void freev(int *param_1) {\n  if (*param_1 == 1) {\n    free(*(void **)(param_1 + 2));\n  }\n  else {\n    mpz_clear(param_1 + 2);\n  }\n  free(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "freev",
+                        "free",
+                        "mpz_clear"
+                    ],
+                    "calling_functions": [
+                        "freev",
+                        "eval6",
+                        "eval5",
+                        "eval4",
+                        "eval3",
+                        "eval2",
+                        "eval1",
+                        "eval"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "printv",
+                "func_c_signature": "void printv(int *param_1)",
+                "decompiled_code": "void printv(int *param_1) {\n  if (*param_1 == 0) {\n    mpz_out_str(_stdout,10,param_1 + 2);\n    putchar_unlocked(10);\n  }\n  else {\n    puts(*(char **)(param_1 + 2));\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "printv",
+                        "mpz_out_str",
+                        "putchar_unlocked",
+                        "puts"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "printv"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "null",
+                "func_c_signature": "bool null(int *param_1)",
+                "decompiled_code": "bool null(int *param_1) {\n  int iVar1;\n  bool bVar2;\n  char *local_10;\n  \n  if (*param_1 == 0) {\n    iVar1 = mpz_sgn(param_1 + 2);\n    bVar2 = iVar1 == 0;\n  }\n  else {\n    local_10 = *(char **)(param_1 + 2);\n    if (*local_10 == '\\0') {\n      bVar2 = true;\n    }\n    else {\n      local_10 = local_10 + (*local_10 == '-');\n      do {\n        if (*local_10 != '0') {\n          return false;\n        }\n        local_10 = local_10 + 1;\n      } while (*local_10 != '\\0');\n      bVar2 = true;\n    }\n  }\n  return bVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "null",
+                        "mpz_sgn"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "null",
+                        "eval1",
+                        "eval"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "looks_like_integer",
+                "func_c_signature": "undefined8 looks_like_integer(char *param_1)",
+                "decompiled_code": "undefined8 looks_like_integer(char *param_1) {\n  char cVar1;\n  char *local_10;\n  \n  local_10 = param_1 + (*param_1 == '-');\n  do {\n    cVar1 = c_isdigit((int)*local_10);\n    if (cVar1 != '\\x01') {\n      return 0;\n    }\n    local_10 = local_10 + 1;\n  } while (*local_10 != '\\0');\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "looks_like_integer",
+                        "c_isdigit"
+                    ],
+                    "calling_functions": [
+                        "looks_like_integer",
+                        "toarith",
+                        "eval2"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "tostring",
+                "func_c_signature": "void tostring(int *param_1)",
+                "decompiled_code": "void tostring(int *param_1) {\n  undefined8 uVar1;\n  \n  if (*param_1 == 0) {\n    uVar1 = mpz_get_str(0,10,param_1 + 2);\n    mpz_clear(param_1 + 2);\n    *(undefined8 *)(param_1 + 2) = uVar1;\n    *param_1 = 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "tostring",
+                        "mpz_get_str",
+                        "mpz_clear"
+                    ],
+                    "calling_functions": [
+                        "tostring",
+                        "docolon",
+                        "eval6",
+                        "eval2"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "toarith",
+                "func_c_signature": "undefined8 toarith(int *param_1)",
+                "decompiled_code": "undefined8 toarith(int *param_1) {\n  void *__ptr;\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  \n  if (*param_1 == 0) {\n    uVar3 = 1;\n  }\n  else {\n    __ptr = *(void **)(param_1 + 2);\n    cVar1 = looks_like_integer(__ptr);\n    if (cVar1 == '\\x01') {\n      iVar2 = mpz_init_set_str(param_1 + 2,__ptr,10);\n      if (iVar2 != 0) {\n        error(3,0x22,&DAT_0010280d,__ptr);\n      }\n      free(__ptr);\n      *param_1 = 0;\n      uVar3 = 1;\n    }\n    else {\n      uVar3 = 0;\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "toarith",
+                        "looks_like_integer",
+                        "mpz_init_set_str",
+                        "error",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "toarith",
+                        "eval6",
+                        "eval4",
+                        "eval3"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getsize",
+                "func_c_signature": "long getsize(undefined8 param_1)",
+                "decompiled_code": "long getsize(undefined8 param_1) {\n  int iVar1;\n  long lVar2;\n  \n  iVar1 = mpz_sgn(param_1);\n  if (iVar1 < 0) {\n    lVar2 = -1;\n  }\n  else {\n    iVar1 = mpz_fits_ulong_p(param_1);\n    if ((iVar1 == 0) || (lVar2 = mpz_get_ui(param_1), lVar2 == -1)) {\n      lVar2 = -2;\n    }\n  }\n  return lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getsize",
+                        "mpz_sgn",
+                        "mpz_fits_ulong_p",
+                        "mpz_get_ui"
+                    ],
+                    "calling_functions": [
+                        "getsize",
+                        "eval6"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "nextarg",
+                "func_c_signature": "byte nextarg(undefined8 param_1)",
+                "decompiled_code": "byte nextarg(undefined8 param_1) {\n  byte bVar1;\n  \n  if (*args == 0) {\n    bVar1 = 0;\n  }\n  else {\n    bVar1 = streq(*args,param_1);\n    args = args + bVar1;\n  }\n  return bVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "nextarg",
+                        "streq"
+                    ],
+                    "calling_functions": [
+                        "nextarg",
+                        "eval7",
+                        "eval6",
+                        "eval5",
+                        "eval4",
+                        "eval3",
+                        "eval2",
+                        "eval1",
+                        "eval"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "nomoreargs",
+                "func_c_signature": "undefined8 nomoreargs(void)",
+                "decompiled_code": "undefined8 nomoreargs(void) {\n  return CONCAT71((int7)((ulong)*args >> 8),*args == 0);\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT71"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "nomoreargs",
+                        "CONCAT71"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "nomoreargs",
+                        "require_more_args",
+                        "eval7"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "require_more_args",
+                "func_c_signature": "void require_more_args(void)",
+                "decompiled_code": "void require_more_args(void) {\n  char cVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  \n  cVar1 = nomoreargs();\n  if (cVar1 != '\\0') {\n    uVar2 = quotearg_n_style(0,8,*(undefined8 *)(args + -8));\n    uVar3 = gettext(\"syntax error: missing argument after %s\");\n    error(2,0,uVar3,uVar2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "require_more_args",
+                        "nomoreargs",
+                        "quotearg_n_style",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "require_more_args",
+                        "eval7",
+                        "eval6"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "docolon",
+                "func_c_signature": "undefined8 docolon(long param_1,long param_2)",
+                "decompiled_code": "undefined8 docolon(long param_1,long param_2) {\n  int iVar1;\n  size_t sVar2;\n  char *pcVar3;\n  long lVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  long in_FS_OFFSET;\n  undefined8 local_1b0;\n  re_registers local_188;\n  undefined local_168 [64];\n  char local_128 [264];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  tostring(param_1);\n  tostring(param_2);\n  local_188.num_regs = 0;\n  local_188.start = (regoff_t *)0x0;\n  local_188.end = (regoff_t *)0x0;\n  local_168._0_8_ = (uchar *)0x0;\n  local_168._8_8_ = 0;\n  local_168._32_8_ = local_128;\n  local_168._40_8_ = (uchar *)0x0;\n  _re_syntax_options = 0x2c6;\n  sVar2 = strlen(*(char **)(param_2 + 8));\n  pcVar3 = re_compile_pattern(*(char **)(param_2 + 8),sVar2,(re_pattern_buffer *)local_168);\n  if (pcVar3 != (char *)0x0) {\n    error(2,0,&DAT_0010280d,pcVar3);\n  }\n  local_168[56] = local_168[56] & 0x7f;\n  sVar2 = strlen(*(char **)(param_1 + 8));\n  iVar1 = re_match((re_pattern_buffer *)local_168,*(char **)(param_1 + 8),(int)sVar2,0,&local_188);\n  if (iVar1 < 0) {\n    if (iVar1 == -1) {\n      if (local_168._48_8_ == 0) {\n        local_1b0 = int_value(0);\n      }\n      else {\n        local_1b0 = str_value(&DAT_00101f34);\n      }\n    }\n    else {\n      uVar5 = gettext(\"error in regular expression matcher\");\n      if (iVar1 == -2) {\n        piVar6 = __errno_location();\n        iVar1 = *piVar6;\n      }\n      else {\n        iVar1 = 0x4b;\n      }\n      error(3,iVar1,uVar5);\n    }\n  }\n  else if (local_168._48_8_ == 0) {\n    sVar2 = __ctype_get_mb_cur_max();\n    if (sVar2 == 1) {\n      lVar4 = (long)iVar1;\n    }\n    else {\n      lVar4 = mbs_offset_to_chars(*(undefined8 *)(param_1 + 8),(long)iVar1);\n    }\n    local_1b0 = int_value(lVar4);\n  }\n  else if (local_188.end[1] < 0) {\n    local_1b0 = str_value(&DAT_00101f34);\n  }\n  else {\n    *(undefined *)((long)local_188.end[1] + *(long *)(param_1 + 8)) = 0;\n    local_1b0 = str_value((long)local_188.start[1] + *(long *)(param_1 + 8));\n  }\n  if (local_188.num_regs != 0) {\n    free(local_188.start);\n    free(local_188.end);\n  }\n  local_168._32_8_ = (char *)0x0;\n  regfree((regex_t *)local_168);\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return local_1b0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "docolon",
+                        "tostring",
+                        "strlen",
+                        "re_compile_pattern",
+                        "error",
+                        "re_match",
+                        "int_value",
+                        "str_value",
+                        "gettext",
+                        "__errno_location",
+                        "__ctype_get_mb_cur_max",
+                        "mbs_offset_to_chars",
+                        "free",
+                        "regfree",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "docolon",
+                        "eval6",
+                        "eval5"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "eval7",
+                "func_c_signature": "undefined8 eval7(undefined param_1)",
+                "decompiled_code": "undefined8 eval7(undefined param_1) {\n  char cVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  \n  require_more_args();\n  cVar1 = nextarg(&DAT_0010285c);\n  if (cVar1 == '\\0') {\n    cVar1 = nextarg(&DAT_00102885);\n    if (cVar1 != '\\0') {\n      uVar2 = gettext(\"syntax error: unexpected \\')\\'\");\n      error(2,0,uVar2);\n    }\n    uVar2 = *args;\n    args = args + 1;\n    uVar2 = str_value(uVar2);\n  }\n  else {\n    uVar2 = eval(param_1);\n    cVar1 = nomoreargs();\n    if (cVar1 != '\\0') {\n      uVar3 = quotearg_n_style(0,8,args[-1]);\n      uVar4 = gettext(\"syntax error: expecting \\')\\' after %s\");\n      error(2,0,uVar4,uVar3);\n    }\n    cVar1 = nextarg(&DAT_00102885);\n    if (cVar1 != '\\x01') {\n      uVar3 = quotearg_n_style(0,8,*args);\n      uVar4 = gettext(\"syntax error: expecting \\')\\' instead of %s\");\n      error(2,0,uVar4,uVar3);\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "eval7",
+                        "require_more_args",
+                        "nextarg",
+                        "gettext",
+                        "error",
+                        "str_value",
+                        "eval",
+                        "nomoreargs",
+                        "quotearg_n_style"
+                    ],
+                    "calling_functions": [
+                        "eval7",
+                        "eval6"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "eval6",
+                "func_c_signature": "undefined8 eval6(char param_1)",
+                "decompiled_code": "undefined8 eval6(char param_1) {\n  char cVar1;\n  long lVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  long lVar5;\n  long lVar6;\n  void *__ptr;\n  undefined8 local_50;\n  \n  cVar1 = nextarg(&DAT_001028cf);\n  if (cVar1 == '\\0') {\n    cVar1 = nextarg(\"length\");\n    if (cVar1 == '\\0') {\n      cVar1 = nextarg(\"match\");\n      if (cVar1 == '\\0') {\n        cVar1 = nextarg(\"index\");\n        if (cVar1 == '\\0') {\n          cVar1 = nextarg(\"substr\");\n          if (cVar1 == '\\0') {\n            local_50 = eval7(param_1);\n          }\n          else {\n            lVar2 = eval6(param_1);\n            lVar5 = eval6(param_1);\n            lVar6 = eval6(param_1);\n            tostring(lVar2);\n            cVar1 = toarith(lVar5);\n            if ((cVar1 == '\\x01') && (cVar1 = toarith(lVar6), cVar1 == '\\x01')) {\n              uVar3 = getsize(lVar5 + 8);\n              uVar4 = getsize(lVar6 + 8);\n              __ptr = (void *)mbs_logical_substr(*(undefined8 *)(lVar2 + 8),uVar3,uVar4);\n              local_50 = str_value(__ptr);\n              free(__ptr);\n            }\n            else {\n              local_50 = str_value(&DAT_00101f34);\n            }\n            freev(lVar2);\n            freev(lVar5);\n            freev(lVar6);\n          }\n        }\n        else {\n          lVar2 = eval6(param_1);\n          lVar5 = eval6(param_1);\n          tostring(lVar2);\n          tostring(lVar5);\n          uVar3 = mbs_logical_cspn(*(undefined8 *)(lVar2 + 8),*(undefined8 *)(lVar5 + 8));\n          local_50 = int_value(uVar3);\n          freev(lVar2);\n          freev(lVar5);\n        }\n      }\n      else {\n        local_50 = eval6(param_1);\n        uVar3 = eval6(param_1);\n        if (param_1 != '\\0') {\n          uVar4 = docolon(local_50,uVar3);\n          freev(local_50);\n          local_50 = uVar4;\n        }\n        freev(uVar3);\n      }\n    }\n    else {\n      lVar2 = eval6(param_1);\n      tostring(lVar2);\n      uVar3 = mbslen(*(undefined8 *)(lVar2 + 8));\n      local_50 = int_value(uVar3);\n      freev(lVar2);\n    }\n  }\n  else {\n    require_more_args();\n    uVar3 = *args;\n    args = args + 1;\n    local_50 = str_value(uVar3);\n  }\n  return local_50;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "eval6",
+                        "nextarg",
+                        "eval7",
+                        "tostring",
+                        "toarith",
+                        "getsize",
+                        "mbs_logical_substr",
+                        "str_value",
+                        "free",
+                        "freev",
+                        "mbs_logical_cspn",
+                        "int_value",
+                        "docolon",
+                        "mbslen",
+                        "require_more_args"
+                    ],
+                    "calling_functions": [
+                        "eval6",
+                        "eval5"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "eval5",
+                "func_c_signature": "undefined8 eval5(char param_1)",
+                "decompiled_code": "undefined8 eval5(char param_1) {\n  char cVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  undefined8 local_20;\n  \n  local_20 = eval6(param_1);\n  while( true ) {\n    cVar1 = nextarg(&DAT_001028eb);\n    if (cVar1 == '\\0') break;\n    uVar2 = eval6(param_1);\n    if (param_1 != '\\0') {\n      uVar3 = docolon(local_20,uVar2);\n      freev(local_20);\n      local_20 = uVar3;\n    }\n    freev(uVar2);\n  }\n  return local_20;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "eval5",
+                        "eval6",
+                        "nextarg",
+                        "docolon",
+                        "freev"
+                    ],
+                    "calling_functions": [
+                        "eval5",
+                        "eval4"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "eval4",
+                "func_c_signature": "long eval4(char param_1)",
+                "decompiled_code": "long eval4(char param_1) {\n  char cVar1;\n  int iVar2;\n  long lVar3;\n  long lVar4;\n  undefined8 uVar5;\n  code *pcVar6;\n  int local_3c;\n  \n  lVar3 = eval5(param_1);\n  do {\n    cVar1 = nextarg(&DAT_001028ed);\n    if (cVar1 == '\\0') {\n      cVar1 = nextarg(&DAT_001028ef);\n      if (cVar1 == '\\0') {\n        cVar1 = nextarg(&DAT_001028f1);\n        if (cVar1 == '\\0') {\n          return lVar3;\n        }\n        local_3c = 2;\n      }\n      else {\n        local_3c = 1;\n      }\n    }\n    else {\n      local_3c = 0;\n    }\n    lVar4 = eval5(param_1);\n    if (param_1 != '\\0') {\n      cVar1 = toarith(lVar3);\n      if (cVar1 == '\\x01') {\n        cVar1 = toarith(lVar4);\n        if (cVar1 != '\\x01') goto LAB_0010172e;\n      }\n      else {\nLAB_0010172e:\n        uVar5 = gettext(\"non-integer argument\");\n        error(2,0,uVar5);\n      }\n      if (local_3c != 0) {\n        iVar2 = mpz_sgn(lVar4 + 8);\n        if (iVar2 == 0) {\n          uVar5 = gettext(\"division by zero\");\n          error(2,0,uVar5);\n        }\n      }\n      if (local_3c == 0) {\n        pcVar6 = mpz_mul;\n      }\n      else if (local_3c == 1) {\n        pcVar6 = mpz_tdiv_q;\n      }\n      else {\n        pcVar6 = mpz_tdiv_r;\n      }\n      (*pcVar6)(lVar3 + 8,lVar3 + 8,lVar4 + 8);\n    }\n    freev(lVar4);\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "eval4",
+                        "eval5",
+                        "nextarg",
+                        "toarith",
+                        "gettext",
+                        "error",
+                        "mpz_sgn",
+                        "freev"
+                    ],
+                    "calling_functions": [
+                        "eval4",
+                        "eval3"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "eval3",
+                "func_c_signature": "long eval3(char param_1)",
+                "decompiled_code": "long eval3(char param_1) {\n  bool bVar1;\n  char cVar2;\n  long lVar3;\n  long lVar4;\n  undefined8 uVar5;\n  code *pcVar6;\n  \n  lVar3 = eval4(param_1);\n  do {\n    cVar2 = nextarg(&DAT_001028cf);\n    if (cVar2 == '\\0') {\n      cVar2 = nextarg(&DAT_00102919);\n      if (cVar2 == '\\0') {\n        return lVar3;\n      }\n      bVar1 = true;\n    }\n    else {\n      bVar1 = false;\n    }\n    lVar4 = eval4(param_1);\n    if (param_1 != '\\0') {\n      cVar2 = toarith(lVar3);\n      if (cVar2 == '\\x01') {\n        cVar2 = toarith(lVar4);\n        if (cVar2 != '\\x01') goto LAB_001018b1;\n      }\n      else {\nLAB_001018b1:\n        uVar5 = gettext(\"non-integer argument\");\n        error(2,0,uVar5);\n      }\n      if (bVar1) {\n        pcVar6 = mpz_sub;\n      }\n      else {\n        pcVar6 = mpz_add;\n      }\n      (*pcVar6)(lVar3 + 8,lVar3 + 8,lVar4 + 8);\n    }\n    freev(lVar4);\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "eval3",
+                        "eval4",
+                        "nextarg",
+                        "toarith",
+                        "gettext",
+                        "error",
+                        "freev"
+                    ],
+                    "calling_functions": [
+                        "eval3",
+                        "eval2"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "eval2",
+                "func_c_signature": "long eval2(char param_1)",
+                "decompiled_code": "long eval2(char param_1) {\n  char cVar1;\n  long lVar2;\n  int *piVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  uint local_60;\n  long local_40;\n  \n  local_40 = eval3(param_1);\n  do {\n    cVar1 = nextarg(&DAT_0010291b);\n    if (cVar1 == '\\0') {\n      cVar1 = nextarg(&DAT_0010291d);\n      if (cVar1 == '\\0') {\n        cVar1 = nextarg(&DAT_00102920);\n        if (cVar1 == '\\0') {\n          cVar1 = nextarg(&DAT_00102922);\n          if (cVar1 == '\\0') {\n            cVar1 = nextarg(&DAT_00102925);\n            if (cVar1 == '\\0') {\n              cVar1 = nextarg(&DAT_00102928);\n              if (cVar1 == '\\0') {\n                cVar1 = nextarg(&DAT_0010292b);\n                if (cVar1 == '\\0') {\n                  return local_40;\n                }\n                local_60 = 5;\n              }\n              else {\n                local_60 = 4;\n              }\n            }\n            else {\n              local_60 = 3;\n            }\n            goto LAB_00101a2c;\n          }\n        }\n        local_60 = 2;\n      }\n      else {\n        local_60 = 1;\n      }\n    }\n    else {\n      local_60 = 0;\n    }\nLAB_00101a2c:\n    lVar2 = eval3(param_1);\n    if (param_1 != '\\0') break;\n    freev(local_40);\n    freev(lVar2);\n    local_40 = int_value(0);\n  } while( true );\n  tostring(local_40);\n  tostring(lVar2);\n  cVar1 = looks_like_integer(*(undefined8 *)(local_40 + 8));\n  if (cVar1 != '\\0') {\n    cVar1 = looks_like_integer(*(undefined8 *)(lVar2 + 8));\n    if (cVar1 != '\\0') {\n      strintcmp(*(undefined8 *)(local_40 + 8),*(undefined8 *)(lVar2 + 8));\n      goto LAB_00101bd2;\n    }\n  }\n  piVar3 = __errno_location();\n  *piVar3 = 0;\n  strcoll(*(char **)(local_40 + 8),*(char **)(lVar2 + 8));\n  piVar3 = __errno_location();\n  if (*piVar3 != 0) {\n    uVar4 = gettext(\"string comparison failed\");\n    piVar3 = __errno_location();\n    error(0,*piVar3,uVar4);\n    uVar4 = gettext(\"set LC_ALL=\\'C\\' to work around the problem\");\n    error(0,0,uVar4);\n    uVar4 = quotearg_n_style(1,8,*(undefined8 *)(lVar2 + 8));\n    uVar5 = quotearg_n_style(0,8,*(undefined8 *)(local_40 + 8));\n    uVar6 = gettext(\"the strings compared were %s and %s\");\n    error(2,0,uVar6,uVar5,uVar4);\n  }\nLAB_00101bd2:\n                    /* WARNING: Could not recover jumptable at 0x00101bf3. Too many branches */\n                    /* WARNING: Treating indirect jump as call */\n  lVar2 = (*(code *)(&DAT_0010299c + *(int *)(&DAT_0010299c + (ulong)local_60 * 4)))();\n  return lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "eval2",
+                        "eval3",
+                        "nextarg",
+                        "freev",
+                        "int_value",
+                        "tostring",
+                        "looks_like_integer",
+                        "strintcmp",
+                        "__errno_location",
+                        "strcoll",
+                        "gettext",
+                        "error",
+                        "quotearg_n_style"
+                    ],
+                    "calling_functions": [
+                        "eval2",
+                        "eval1"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "eval1",
+                "func_c_signature": "undefined8 eval1(char param_1)",
+                "decompiled_code": "undefined8 eval1(char param_1) {\n  char cVar1;\n  undefined4 uVar2;\n  undefined8 uVar3;\n  undefined8 local_18;\n  \n  local_18 = eval2(param_1);\nLAB_00101c93:\n  do {\n    cVar1 = nextarg(&DAT_001029b4);\n    if (cVar1 == '\\0') {\n      return local_18;\n    }\n    if (param_1 == '\\0') {\nLAB_00101cca:\n      uVar2 = 0;\n    }\n    else {\n      cVar1 = null(local_18);\n      if (cVar1 == '\\x01') goto LAB_00101cca;\n      uVar2 = 1;\n    }\n    uVar3 = eval2(uVar2);\n    cVar1 = null(local_18);\n    if (cVar1 != '\\0') {\nLAB_00101d00:\n      freev(local_18);\n      freev(uVar3);\n      local_18 = int_value(0);\n      goto LAB_00101c93;\n    }\n    cVar1 = null(uVar3);\n    if (cVar1 != '\\0') goto LAB_00101d00;\n    freev(uVar3);\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "eval1",
+                        "eval2",
+                        "nextarg",
+                        "null",
+                        "freev",
+                        "int_value"
+                    ],
+                    "calling_functions": [
+                        "eval1",
+                        "eval"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "eval",
+                "func_c_signature": "undefined8 eval(char param_1)",
+                "decompiled_code": "undefined8 eval(char param_1) {\n  char cVar1;\n  undefined4 uVar2;\n  undefined8 uVar3;\n  undefined8 local_18;\n  \n  local_18 = eval1(param_1);\n  do {\n    cVar1 = nextarg(&DAT_001029b6);\n    if (cVar1 == '\\0') {\n      return local_18;\n    }\n    if (param_1 == '\\0') {\nLAB_00101d9a:\n      uVar2 = 0;\n    }\n    else {\n      cVar1 = null(local_18);\n      if (cVar1 == '\\0') goto LAB_00101d9a;\n      uVar2 = 1;\n    }\n    uVar3 = eval1(uVar2);\n    cVar1 = null(local_18);\n    if (cVar1 == '\\0') {\n      freev(uVar3);\n    }\n    else {\n      freev(local_18);\n      cVar1 = null(uVar3);\n      local_18 = uVar3;\n      if (cVar1 != '\\0') {\n        freev(uVar3);\n        local_18 = int_value(0);\n      }\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "eval",
+                        "eval1",
+                        "nextarg",
+                        "null",
+                        "freev",
+                        "int_value"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "eval7",
+                        "eval"
+                    ],
+                    "defined_in_file": "expr_decompiled.c"
+                }
+            }
+        ]
+    }
+}

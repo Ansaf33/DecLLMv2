@@ -1,0 +1,629 @@
+{
+    "file": "split",
+    "decompiled_code": {
+        "split.c": [
+            {
+                "func_name": "ignorable",
+                "func_c_signature": "undefined4 ignorable(int param_1)",
+                "decompiled_code": "undefined4 ignorable(int param_1) {\n  undefined4 uVar1;\n  \n  if ((filter_command == 0) || (param_1 != 0x20)) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ignorable"
+                    ],
+                    "calling_functions": [
+                        "ignorable",
+                        "closeout",
+                        "cwrite",
+                        "bytes_chunk_extract",
+                        "lines_rr"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_suffix_length",
+                "func_c_signature": "void set_suffix_length(long param_1,int param_2)",
+                "decompiled_code": "void set_suffix_length(long param_1,int param_2) {\n  int iVar1;\n  long in_FS_OFFSET;\n  bool bVar2;\n  int local_40;\n  long local_30;\n  long local_28;\n  size_t local_20;\n  undefined8 local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_40 = 0;\n  if (numeric_suffix_start != 0) {\n    suffix_auto = 0;\n  }\n  if (((param_2 == 5) || (param_2 == 6)) || (param_2 == 7)) {\n    local_30 = param_1 + -1;\n    if (((numeric_suffix_start != 0) &&\n        (iVar1 = xstrtoimax(numeric_suffix_start,0,10,&local_28,&DAT_001051ac), iVar1 == 0)) &&\n       ((local_28 < param_1 &&\n        (bVar2 = SCARRY8(local_28,local_30), local_30 = local_28 + local_30, bVar2)))) {\n      local_30 = 0x7fffffffffffffff;\n    }\n    local_20 = strlen(suffix_alphabet);\n    do {\n      local_40 = local_40 + 1;\n      local_30 = local_30 / (long)local_20;\n    } while (local_30 != 0);\n    suffix_auto = 0;\n  }\n  if (suffix_length == 0) {\n    if (local_40 < 2) {\n      local_40 = 2;\n    }\n    suffix_length = (long)local_40;\n  }\n  else {\n    if (suffix_length < local_40) {\n      local_18 = gettext(\"the suffix length needs to be at least %d\");\n      error(1,0,local_18,local_40);\n    }\n    suffix_auto = 0;\n  }\n  if (local_10 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_suffix_length",
+                        "xstrtoimax",
+                        "SCARRY8",
+                        "strlen",
+                        "gettext",
+                        "error",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "set_suffix_length",
+                        "main"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [FILE [PREFIX]]\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Output pieces of FILE to PREFIXaa, PREFIXab, ...;\\ndefault size is 1000 lines, and default PREFIX is \\'x\\'.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_stdin_note();\n    emit_mandatory_arg_note();\n    pcVar3 = (char *)gettext(\n                            \"  -a, --suffix-length=N   generate suffixes of length N (default %d)\\n      --additional-suffix=SUFFIX  append an additional SUFFIX to file names\\n  -b, --bytes=SIZE        put SIZE bytes per output file\\n  -C, --line-bytes=SIZE   put at most SIZE bytes of records per output file\\n  -d                      use numeric suffixes starting at 0, not alphabetic\\n      --numeric-suffixes[=FROM]  same as -d, but allow setting the start value\\n  -x                      use hex suffixes starting at 0, not alphabetic\\n      --hex-suffixes[=FROM]  same as -x, but allow setting the start value\\n  -e, --elide-empty-files  do not generate empty output files with \\'-n\\'\\n      --filter=COMMAND    write to shell COMMAND; file name is $FILE\\n  -l, --lines=NUMBER      put NUMBER lines/records per output file\\n  -n, --number=CHUNKS     generate CHUNKS output files; see explanation below\\n  -t, --separator=SEP     use SEP instead of newline as the record separator;\\n                            \\'\\\\0\\' (zero) specifies the NUL character\\n  -u, --unbuffered        immediately copy input to output with \\'-n r/...\\'\\n\"\n                            );\n    fprintf(_stdout,pcVar3,2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --verbose           print a diagnostic just before each\\n                            output file is opened\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_size_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nCHUNKS may be:\\n  N       split into N files based on size of input\\n  K/N     output Kth of N to standard output\\n  l/N     split into N files without splitting lines/records\\n  l/K/N   output Kth of N to standard output without splitting lines/records\\n  r/N     like \\'l\\' but use round robin distribution\\n  r/K/N   likewise but only output Kth of N to standard output\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"split\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "N"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_stdin_note",
+                        "emit_mandatory_arg_note",
+                        "N",
+                        "fprintf",
+                        "emit_size_note",
+                        "emit_ancillary_info",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "copy_to_tmpfile",
+                "func_c_signature": "size_t copy_to_tmpfile(int param_1,void *param_2,size_t param_3)",
+                "decompiled_code": "size_t copy_to_tmpfile(int param_1,void *param_2,size_t param_3) {\n  char cVar1;\n  int iVar2;\n  int *piVar3;\n  size_t sVar4;\n  long in_FS_OFFSET;\n  bool bVar5;\n  FILE *local_28;\n  size_t local_20;\n  size_t local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  cVar1 = temp_stream(&local_28,0);\n  if (cVar1 == '\\x01') {\n    local_20 = 0;\n    do {\n      sVar4 = read(param_1,param_2,param_3);\n      local_18 = sVar4;\n      if ((long)sVar4 < 1) {\n        if (-1 < (long)sVar4) {\n          iVar2 = fileno_unlocked(local_28);\n          iVar2 = dup2(iVar2,param_1);\n          sVar4 = (size_t)iVar2;\n          local_18 = sVar4;\n          if ((-1 < (long)sVar4) && (iVar2 = rpl_fclose(local_28), sVar4 = local_20, iVar2 < 0)) {\n            sVar4 = 0xffffffffffffffff;\n          }\n        }\n        goto LAB_00100947;\n      }\n      sVar4 = fwrite_unlocked(param_2,1,sVar4,local_28);\n      if (sVar4 != local_18) {\n        sVar4 = 0xffffffffffffffff;\n        goto LAB_00100947;\n      }\n      bVar5 = SCARRY8(local_18,local_20);\n      local_20 = local_18 + local_20;\n    } while (!bVar5);\n    piVar3 = __errno_location();\n    *piVar3 = 0x4b;\n    sVar4 = 0xffffffffffffffff;\n  }\n  else {\n    sVar4 = 0xffffffffffffffff;\n  }\nLAB_00100947:\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return sVar4;\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copy_to_tmpfile",
+                        "temp_stream",
+                        "read",
+                        "fileno_unlocked",
+                        "dup2",
+                        "rpl_fclose",
+                        "fwrite_unlocked",
+                        "SCARRY8",
+                        "__errno_location",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "copy_to_tmpfile",
+                        "input_file_size"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "input_file_size",
+                "func_c_signature": "ssize_t input_file_size(int param_1,long param_2,long param_3,long param_4)",
+                "decompiled_code": "ssize_t input_file_size(int param_1,long param_2,long param_3,long param_4) {\n  long lVar1;\n  char cVar2;\n  ssize_t sVar3;\n  long lVar4;\n  void *__ptr;\n  int *piVar5;\n  __off_t _Var6;\n  long in_FS_OFFSET;\n  ssize_t local_40;\n  __off_t local_38;\n  long local_30;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  local_40 = 0;\n  do {\n    sVar3 = read(param_1,(void *)(local_40 + param_3),param_4 - local_40);\n    if (sVar3 < 1) {\n      if (sVar3 < 0) {\n        local_40 = sVar3;\n      }\n      goto LAB_00100b34;\n    }\n    lVar4 = sVar3 + local_40;\n    local_40 = lVar4;\n  } while (lVar4 < param_4);\n  cVar2 = usable_st_size(param_2);\n  if ((((cVar2 != '\\0') && (*(long *)(param_2 + 0x30) < lVar4)) ||\n      (local_38 = lseek(param_1,0,1), local_38 < 0)) ||\n     ((local_38 < lVar4 || (local_30 = lseek(param_1,0,2), local_30 < 0)))) {\n    __ptr = (void *)xmalloc(param_4);\n    local_40 = copy_to_tmpfile(param_1,__ptr,param_4);\n    free(__ptr);\n    if (local_40 < 0) goto LAB_00100b34;\n    local_38 = 0;\n    local_30 = local_40;\n  }\n  if ((local_30 == 0x7fffffffffffffff) ||\n     ((local_40 = lVar4, local_38 < local_30 &&\n      (local_40 = (local_30 - local_38) + lVar4, SCARRY8(local_30 - local_38,lVar4))))) {\n    piVar5 = __errno_location();\n    *piVar5 = 0x4b;\n    local_40 = -1;\n  }\n  else if ((local_38 < local_30) && (_Var6 = lseek(param_1,local_38,0), _Var6 < 0)) {\n    local_40 = _Var6;\n  }\nLAB_00100b34:\n  if (lVar1 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return local_40;\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "input_file_size",
+                        "read",
+                        "usable_st_size",
+                        "lseek",
+                        "xmalloc",
+                        "copy_to_tmpfile",
+                        "free",
+                        "SCARRY8",
+                        "__errno_location",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "input_file_size",
+                        "main"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "next_file_name",
+                "func_c_signature": "void next_file_name(void)",
+                "decompiled_code": "void next_file_name(void) {\n  size_t sVar1;\n  long lVar2;\n  long lVar3;\n  undefined8 uVar4;\n  long in_FS_OFFSET;\n  bool bVar5;\n  bool local_42;\n  size_t local_30;\n  long *local_28;\n  size_t local_20;\n  \n  lVar2 = *(long *)(in_FS_OFFSET + 0x28);\n  if (outfile == (void *)0x0) {\nLAB_00100b79:\n    bVar5 = outfile_length_8 != 0;\n    if (bVar5) {\n      local_42 = SCARRY8(outfile_length_8,2);\n      outfile_length_8 = outfile_length_8 + 2;\n      suffix_length = suffix_length + 1;\n    }\n    else {\n      outbase_length_7 = strlen(outbase);\n      if (additional_suffix == (char *)0x0) {\n        addsuf_length_6 = 0;\n      }\n      else {\n        addsuf_length_6 = strlen(additional_suffix);\n      }\n      local_42 = SCARRY8(suffix_length,outbase_length_7 + addsuf_length_6);\n      outfile_length_8 = suffix_length + outbase_length_7 + addsuf_length_6;\n    }\n    lVar3 = outfile_length_8 + 1;\n    if ((byte)(SCARRY8(outfile_length_8,1) | local_42) != 0) {\n      xalloc_die();\n    }\n    outfile = (void *)xirealloc(outfile,lVar3);\n    if (bVar5) {\n      *(undefined *)((long)outfile + outbase_length_7) = suffix_alphabet[*sufindex_5];\n      outbase_length_7 = outbase_length_7 + 1;\n    }\n    else {\n      memcpy(outfile,outbase,outbase_length_7);\n    }\n    outfile_mid = (void *)((long)outfile + outbase_length_7);\n    memset(outfile_mid,(int)(char)*suffix_alphabet,suffix_length);\n    if (additional_suffix != (char *)0x0) {\n      memcpy((void *)(suffix_length + (long)outfile_mid),additional_suffix,addsuf_length_6);\n    }\n    *(undefined *)((long)outfile + outfile_length_8) = 0;\n    free(sufindex_5);\n    sufindex_5 = (long *)xicalloc(suffix_length,8);\n    if (numeric_suffix_start != (char *)0x0) {\n      if (bVar5) {\n                    /* WARNING: Subroutine does not return */\n        __assert_fail(\"! widen\",\n                      \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/split.c\"\n                      ,0x1a8,\"next_file_name\");\n      }\n      local_30 = strlen(numeric_suffix_start);\n      memcpy((void *)((long)outfile_mid + (suffix_length - local_30)),numeric_suffix_start,local_30)\n      ;\n      local_28 = sufindex_5 + suffix_length;\n      while (local_30 != 0) {\n        local_28 = local_28 + -1;\n        *local_28 = (long)(numeric_suffix_start[local_30 - 1] + -0x30);\n        local_30 = local_30 - 1;\n      }\n    }\n  }\n  else {\n    local_20 = suffix_length;\n    while (sVar1 = local_20 - 1, local_20 != 0) {\n      sufindex_5[sVar1] = sufindex_5[sVar1] + 1;\n      if (((suffix_auto != '\\0') && (sVar1 == 0)) && (suffix_alphabet[*sufindex_5 + 1] == '\\0'))\n      goto LAB_00100b79;\n      *(undefined *)(sVar1 + (long)outfile_mid) = suffix_alphabet[sufindex_5[sVar1]];\n      if (*(char *)(sVar1 + (long)outfile_mid) != '\\0') goto LAB_00100fea;\n      sufindex_5[sVar1] = 0;\n      *(undefined *)(sVar1 + (long)outfile_mid) = suffix_alphabet[sufindex_5[sVar1]];\n      local_20 = sVar1;\n    }\n    uVar4 = gettext(\"output file suffixes exhausted\");\n    error(1,0,uVar4);\n  }\nLAB_00100fea:\n  if (lVar2 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "next_file_name",
+                        "SCARRY8",
+                        "strlen",
+                        "xalloc_die",
+                        "xirealloc",
+                        "memcpy",
+                        "memset",
+                        "free",
+                        "xicalloc",
+                        "__assert_fail",
+                        "gettext",
+                        "error",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "next_file_name",
+                        "cwrite",
+                        "lines_rr"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create",
+                "func_c_signature": "int create(char *param_1)",
+                "decompiled_code": "int create(char *param_1) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  char *pcVar4;\n  int *piVar5;\n  undefined8 uVar6;\n  long lVar7;\n  long in_FS_OFFSET;\n  pid_t local_31c;\n  int local_318;\n  int local_314;\n  undefined4 local_310;\n  int local_30c;\n  undefined4 local_308;\n  int local_304;\n  undefined4 local_300;\n  undefined4 local_2fc;\n  undefined4 local_2f8;\n  int local_2f4;\n  undefined4 local_2f0;\n  int local_2ec;\n  undefined4 local_2e8;\n  int local_2e4;\n  undefined4 local_2e0;\n  int local_2dc;\n  undefined4 local_2d8;\n  int local_2d4;\n  undefined4 local_2d0;\n  int local_2cc;\n  undefined4 local_2c8;\n  int local_2c4;\n  char *local_2c0;\n  undefined8 local_2b8;\n  undefined8 local_2b0;\n  undefined8 local_2a8;\n  undefined8 local_2a0;\n  undefined8 local_298;\n  undefined8 local_290;\n  undefined8 local_288;\n  undefined8 local_280;\n  undefined8 local_278;\n  int local_270;\n  int local_26c;\n  char *local_268;\n  undefined *local_260;\n  long local_258;\n  undefined8 local_250;\n  posix_spawn_file_actions_t local_248;\n  sigset_t local_1f8;\n  undefined local_178 [344];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (filter_command == 0) {\n    if (verbose != '\\0') {\n      uVar3 = quotearg_style(4,param_1);\n      pcVar4 = (char *)gettext(\"creating file %s\\n\");\n      fprintf(_stdout,pcVar4,uVar3);\n    }\n    local_310 = 0x41;\n    local_30c = open_safer(param_1,0xc1,0x1b6);\n    local_26c = local_30c;\n    if (((local_30c < 0) && (piVar5 = __errno_location(), local_26c = local_30c, *piVar5 == 0x11))\n       && (local_30c = open_safer(param_1,local_310,0x1b6), local_26c = local_30c, -1 < local_30c))\n    {\n      iVar2 = fstat(local_30c,(stat *)local_178);\n      if (iVar2 != 0) {\n        uVar3 = quotearg_style(4,param_1);\n        uVar6 = gettext(\"failed to stat %s\");\n        piVar5 = __errno_location();\n        local_304 = *piVar5;\n        local_308 = 1;\n        local_2b8 = uVar6;\n        error(1,local_304,uVar6,uVar3);\n      }\n      cVar1 = psame_inode(in_stat_buf,local_178);\n      if (cVar1 != '\\0') {\n        uVar3 = quotearg_style(4,param_1);\n        local_2b0 = gettext(\"%s would overwrite input; aborting\");\n        local_300 = 1;\n        local_2fc = 0;\n        error(1,0,local_2b0,uVar3);\n      }\n      iVar2 = ftruncate(local_30c,0);\n      local_26c = local_30c;\n      if ((iVar2 < 0) && ((local_178._24_4_ & 0xf000) == 0x8000)) {\n        uVar3 = quotearg_n_style_colon(0,3,param_1);\n        uVar6 = gettext(\"%s: error truncating\");\n        piVar5 = __errno_location();\n        local_2f4 = *piVar5;\n        local_2f8 = 1;\n        local_2a8 = uVar6;\n        error(1,local_2f4,uVar6,uVar3);\n        local_26c = local_30c;\n      }\n    }\n  }\n  else {\n    iVar2 = setenv(\"FILE\",param_1,1);\n    if (iVar2 != 0) {\n      uVar3 = gettext(\"failed to set FILE environment variable\");\n      piVar5 = __errno_location();\n      local_2ec = *piVar5;\n      local_2f0 = 1;\n      local_2a0 = uVar3;\n      error(1,local_2ec,uVar3);\n    }\n    if (verbose != '\\0') {\n      uVar3 = quotearg_n_style_colon(0,3,param_1);\n      pcVar4 = (char *)gettext(\"executing with FILE=%s\\n\");\n      fprintf(_stdout,pcVar4,uVar3);\n    }\n    sigemptyset(&local_1f8);\n    if (default_SIGPIPE != '\\0') {\n      sigaddset(&local_1f8,0xd);\n    }\n    local_318 = posix_spawnattr_init((posix_spawnattr_t *)local_178);\n    if (((local_318 != 0) ||\n        (local_318 = posix_spawnattr_setflags((posix_spawnattr_t *)local_178,0x44), local_318 != 0))\n       || ((local_318 = posix_spawnattr_setsigdefault((posix_spawnattr_t *)local_178,&local_1f8),\n           local_318 != 0 || (local_318 = posix_spawn_file_actions_init(&local_248), local_318 != 0)\n           ))) {\n      local_298 = gettext(\"posix_spawn initialization failed\");\n      local_2e8 = 1;\n      local_2e4 = local_318;\n      error(1,local_318,local_298);\n    }\n    iVar2 = pipe(&local_270);\n    if (iVar2 != 0) {\n      uVar3 = gettext(\"failed to create pipe\");\n      piVar5 = __errno_location();\n      local_2dc = *piVar5;\n      local_2e0 = 1;\n      local_290 = uVar3;\n      error(1,local_2dc,uVar3);\n    }\n    local_314 = 0;\n    while ((local_314 < n_open_pipes &&\n           (local_318 = posix_spawn_file_actions_addclose\n                                  (&local_248,*(int *)(open_pipes + (long)local_314 * 4)),\n           local_318 == 0))) {\n      local_314 = local_314 + 1;\n    }\n    if (((local_318 != 0) ||\n        (local_318 = posix_spawn_file_actions_addclose(&local_248,local_26c), local_318 != 0)) ||\n       ((local_270 != 0 &&\n        ((local_318 = posix_spawn_file_actions_adddup2(&local_248,local_270,0), local_318 != 0 ||\n         (local_318 = posix_spawn_file_actions_addclose(&local_248,local_270), local_318 != 0))))))\n    {\n      local_288 = gettext(\"posix_spawn setup failed\");\n      local_2d8 = 1;\n      local_2d4 = local_318;\n      error(1,local_318,local_288);\n    }\n    local_2c0 = getenv(\"SHELL\");\n    if (local_2c0 == (char *)0x0) {\n      local_2c0 = \"/bin/sh\";\n    }\n    local_268 = (char *)last_component(local_2c0);\n    local_260 = &DAT_00105bcf;\n    local_258 = filter_command;\n    local_250 = 0;\n    local_318 = posix_spawn(&local_31c,local_2c0,&local_248,(posix_spawnattr_t *)local_178,\n                            &local_268,_environ);\n    lVar7 = filter_command;\n    if (local_318 != 0) {\n      uVar3 = gettext(\"failed to run command: \\\"%s -c %s\\\"\");\n      piVar5 = __errno_location();\n      local_2cc = *piVar5;\n      local_2d0 = 1;\n      local_280 = uVar3;\n      error(1,local_2cc,uVar3,local_2c0,lVar7);\n    }\n    posix_spawnattr_destroy((posix_spawnattr_t *)local_178);\n    posix_spawn_file_actions_destroy(&local_248);\n    iVar2 = close(local_270);\n    if (iVar2 != 0) {\n      uVar3 = gettext(\"failed to close input pipe\");\n      piVar5 = __errno_location();\n      local_2c4 = *piVar5;\n      local_2c8 = 1;\n      local_278 = uVar3;\n      error(1,local_2c4,uVar3);\n    }\n    filter_pid = local_31c;\n    if (n_open_pipes == open_pipes_alloc) {\n      open_pipes = xpalloc(open_pipes,&open_pipes_alloc,1,0x7fffffff,4);\n    }\n    lVar7 = (long)n_open_pipes;\n    n_open_pipes = n_open_pipes + 1;\n    *(int *)(open_pipes + lVar7 * 4) = local_26c;\n  }\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return local_26c;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create",
+                        "quotearg_style",
+                        "gettext",
+                        "fprintf",
+                        "open_safer",
+                        "__errno_location",
+                        "fstat",
+                        "error",
+                        "psame_inode",
+                        "ftruncate",
+                        "quotearg_n_style_colon",
+                        "setenv",
+                        "sigemptyset",
+                        "sigaddset",
+                        "posix_spawnattr_init",
+                        "posix_spawnattr_setflags",
+                        "posix_spawnattr_setsigdefault",
+                        "posix_spawn_file_actions_init",
+                        "pipe",
+                        "posix_spawn_file_actions_addclose",
+                        "posix_spawn_file_actions_adddup2",
+                        "getenv",
+                        "last_component",
+                        "posix_spawn",
+                        "posix_spawnattr_destroy",
+                        "posix_spawn_file_actions_destroy",
+                        "close",
+                        "xpalloc",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "create",
+                        "cwrite",
+                        "ofile_open"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "closeout",
+                "func_c_signature": "void closeout(long param_1,int param_2,int param_3,undefined8 param_4)",
+                "decompiled_code": "void closeout(long param_1,int param_2,int param_3,undefined8 param_4) {\n  char cVar1;\n  int iVar2;\n  __pid_t _Var3;\n  int *piVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  long in_FS_OFFSET;\n  uint local_b0;\n  int local_ac;\n  uint local_a8;\n  uint local_a4;\n  uint local_a0;\n  int local_9c;\n  undefined4 local_98;\n  int local_94;\n  undefined4 local_90;\n  int local_8c;\n  undefined4 local_88;\n  int local_84;\n  int local_80;\n  undefined4 local_7c;\n  uint local_78;\n  undefined4 local_74;\n  undefined4 local_70;\n  undefined4 local_6c;\n  undefined *local_68;\n  undefined *local_60;\n  undefined8 local_58;\n  undefined8 local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  char local_38 [24];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (param_1 != 0) {\n    iVar2 = rpl_fclose(param_1);\n    if (iVar2 != 0) {\n      piVar4 = __errno_location();\n      cVar1 = ignorable(*piVar4);\n      if (cVar1 != '\\x01') {\n        uVar5 = quotearg_n_style_colon(0,3,param_4);\n        piVar4 = __errno_location();\n        local_94 = *piVar4;\n        local_98 = 1;\n        local_68 = &DAT_00105c15;\n        error(1,local_94,&DAT_00105c15,uVar5);\n      }\n    }\n  }\n  if (-1 < param_2) {\n    if (param_1 == 0) {\n      iVar2 = close(param_2);\n      if (iVar2 < 0) {\n        uVar5 = quotearg_n_style_colon(0,3,param_4);\n        piVar4 = __errno_location();\n        local_8c = *piVar4;\n        local_90 = 1;\n        local_60 = &DAT_00105c15;\n        error(1,local_8c,&DAT_00105c15,uVar5);\n      }\n    }\n    for (local_ac = 0; local_ac < n_open_pipes; local_ac = local_ac + 1) {\n      if (param_2 == *(int *)(open_pipes + (long)local_ac * 4)) {\n        n_open_pipes = n_open_pipes + -1;\n        *(undefined4 *)(open_pipes + (long)local_ac * 4) =\n             *(undefined4 *)(open_pipes + (long)n_open_pipes * 4);\n        break;\n      }\n    }\n  }\n  if (0 < param_3) {\n    _Var3 = waitpid(param_3,(int *)&local_b0,0);\n    if (_Var3 < 0) {\n      uVar5 = gettext(\"waiting for child process\");\n      piVar4 = __errno_location();\n      local_84 = *piVar4;\n      local_88 = 1;\n      local_58 = uVar5;\n      error(1,local_84,uVar5);\n    }\n    uVar5 = filter_command;\n    if ((char)(((byte)local_b0 & 0x7f) + 1) >> 1 < '\\x01') {\n      if ((local_b0 & 0x7f) == 0) {\n        local_a8 = (int)local_b0 >> 8 & 0xff;\n        if (local_a8 != 0) {\n          local_a4 = local_a8;\n          uVar6 = quotearg_n_style_colon(0,3,param_4);\n          local_48 = gettext(\"with FILE=%s, exit %d from command: %s\");\n          local_78 = local_a4;\n          local_74 = 0;\n          error(local_a4,0,local_48,uVar6,local_a8,uVar5);\n        }\n      }\n      else {\n        local_40 = gettext(\"unknown status from command (0x%X)\");\n        local_70 = 1;\n        local_6c = 0;\n        error(1,0,local_40,local_b0);\n      }\n    }\n    else {\n      local_a0 = local_b0 & 0x7f;\n      if (local_a0 != 0xd) {\n        iVar2 = sig2str(local_a0,local_38);\n        if (iVar2 != 0) {\n          sprintf(local_38,\"%d\",(ulong)local_a0);\n        }\n        uVar5 = filter_command;\n        local_9c = local_a0 + 0x80;\n        uVar6 = quotearg_n_style_colon(0,3,param_4);\n        local_50 = gettext(\"with FILE=%s, signal %s from command: %s\");\n        local_80 = local_9c;\n        local_7c = 0;\n        error(local_9c,0,local_50,uVar6,local_38,uVar5);\n      }\n    }\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "command"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "closeout",
+                        "rpl_fclose",
+                        "__errno_location",
+                        "ignorable",
+                        "quotearg_n_style_colon",
+                        "error",
+                        "close",
+                        "waitpid",
+                        "gettext",
+                        "command",
+                        "sig2str",
+                        "sprintf",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "closeout",
+                        "cwrite",
+                        "lines_rr",
+                        "main"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cwrite",
+                "func_c_signature": "undefined8 cwrite(char param_1,long param_2,long param_3)",
+                "decompiled_code": "undefined8 cwrite(char param_1,long param_2,long param_3) {\n  char cVar1;\n  undefined8 uVar2;\n  int *piVar3;\n  long lVar4;\n  \n  if (param_1 != '\\0') {\n    if (((param_2 == 0) && (param_3 == 0)) && (elide_empty_files != '\\0')) {\n      return 1;\n    }\n    closeout(0,output_desc,filter_pid,outfile);\n    next_file_name();\n    output_desc = create(outfile);\n    if (output_desc < 0) {\n      uVar2 = quotearg_n_style_colon(0,3,outfile);\n      piVar3 = __errno_location();\n      error(1,*piVar3,&DAT_00105c15,uVar2);\n    }\n  }\n  lVar4 = full_write(output_desc,param_2,param_3);\n  if (param_3 == lVar4) {\n    uVar2 = 1;\n  }\n  else {\n    piVar3 = __errno_location();\n    cVar1 = ignorable(*piVar3);\n    if (cVar1 != '\\x01') {\n      uVar2 = quotearg_n_style_colon(0,3,outfile);\n      piVar3 = __errno_location();\n      error(1,*piVar3,&DAT_00105c15,uVar2);\n    }\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cwrite",
+                        "closeout",
+                        "next_file_name",
+                        "create",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "full_write",
+                        "ignorable"
+                    ],
+                    "calling_functions": [
+                        "cwrite",
+                        "bytes_split",
+                        "lines_split",
+                        "line_bytes_split",
+                        "lines_chunk_split"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "bytes_split",
+                "func_c_signature": "void bytes_split(long param_1,long param_2,void *param_3,size_t param_4,long param_5,long param_6)",
+                "decompiled_code": "void bytes_split(long param_1,long param_2,void *param_3,size_t param_4,long param_5,long param_6) {\n  long lVar1;\n  __off_t _Var2;\n  undefined8 uVar3;\n  int *piVar4;\n  bool bVar5;\n  long local_80;\n  byte local_4b;\n  char local_4a;\n  long local_40;\n  long local_38;\n  long local_30;\n  void *local_28;\n  \n  local_4b = 1;\n  local_4a = '\\x01';\n  local_40 = 0;\n  local_38 = param_1 + (ulong)(0 < param_2);\n  bVar5 = local_38 == 0;\n  local_80 = param_5;\n  while (lVar1 = local_80, !bVar5) {\n    local_28 = param_3;\n    if (local_80 < 0) {\n      if ((local_4a != '\\x01') && (_Var2 = lseek(0,local_38,1), -1 < _Var2)) {\n        local_38 = param_1 + (ulong)(local_40 + 1 < param_2);\n        local_4b = 1;\n      }\n      local_30 = read(0,param_3,param_4);\n      if (local_30 < 0) {\n        uVar3 = quotearg_n_style_colon(0,3,infile);\n        piVar4 = __errno_location();\n        error(1,*piVar4,&DAT_00105c15,uVar3);\n      }\n      bVar5 = local_30 == 0;\n    }\n    else {\n      local_30 = local_80;\n      local_80 = -1;\n      bVar5 = lVar1 < (long)param_4;\n    }\n    while( true ) {\n      if ((local_38 < 1) || (local_30 < local_38)) goto LAB_00102027;\n      if ((local_4a != '\\0') || (local_4b != 0)) {\n        local_4a = cwrite(local_4b,local_28,local_38);\n      }\n      local_40 = local_40 + (ulong)local_4b;\n      if ((param_6 == 0) || (local_40 < param_6)) {\n        local_4b = 1;\n      }\n      else {\n        local_4b = 0;\n      }\n      if ((local_4a != '\\x01') && (local_4b != 1)) break;\n      local_28 = (void *)((long)local_28 + local_38);\n      local_30 = local_30 - local_38;\n      local_38 = param_1 + (ulong)(local_40 < param_2);\n    }\n    local_30 = 0;\n    bVar5 = true;\nLAB_00102027:\n    if (0 < local_30) {\n      if ((local_4a != '\\0') || (local_4b != 0)) {\n        local_4a = cwrite(local_4b,local_28,local_30);\n      }\n      local_40 = local_40 + (ulong)local_4b;\n      local_4b = 0;\n      if ((local_4a != '\\x01') && (local_40 == param_6)) break;\n      local_38 = local_38 - local_30;\n    }\n  }\n  while (local_40 < param_6) {\n    cwrite(1,0,0);\n    local_40 = local_40 + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bytes_split",
+                        "lseek",
+                        "read",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "cwrite"
+                    ],
+                    "calling_functions": [
+                        "bytes_split",
+                        "main"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lines_split",
+                "func_c_signature": "void lines_split(long param_1,undefined *param_2,size_t param_3)",
+                "decompiled_code": "void lines_split(long param_1,undefined *param_2,size_t param_3) {\n  ssize_t sVar1;\n  undefined8 uVar2;\n  int *piVar3;\n  undefined *puVar4;\n  undefined local_59;\n  undefined *local_50;\n  undefined *local_48;\n  long local_40;\n  \n  local_59 = 1;\n  local_40 = 0;\n  do {\n    sVar1 = read(0,param_2,param_3);\n    if (sVar1 < 0) {\n      uVar2 = quotearg_n_style_colon(0,3,infile);\n      piVar3 = __errno_location();\n      error(1,*piVar3,&DAT_00105c15,uVar2);\n    }\n    puVar4 = param_2 + sVar1;\n    *puVar4 = (char)eolchar;\n    local_50 = param_2;\n    local_48 = param_2;\n    while( true ) {\n      local_50 = (undefined *)rawmemchr(local_50,eolchar);\n      if (local_50 == puVar4) break;\n      local_50 = local_50 + 1;\n      local_40 = local_40 + 1;\n      if (param_1 <= local_40) {\n        cwrite(local_59,local_48,(long)local_50 - (long)local_48);\n        local_59 = 1;\n        local_40 = 0;\n        local_48 = local_50;\n      }\n    }\n    if (puVar4 != local_48) {\n      cwrite(local_59,local_48,(long)puVar4 - (long)local_48);\n      local_59 = 0;\n    }\n  } while (sVar1 != 0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lines_split",
+                        "read",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "rawmemchr",
+                        "cwrite"
+                    ],
+                    "calling_functions": [
+                        "lines_split",
+                        "main"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "line_bytes_split",
+                "func_c_signature": "void line_bytes_split(long param_1,void *param_2,size_t param_3)",
+                "decompiled_code": "void line_bytes_split(long param_1,void *param_2,size_t param_3) {\n  bool bVar1;\n  undefined8 uVar2;\n  int *piVar3;\n  long in_FS_OFFSET;\n  long local_90;\n  long local_88;\n  long local_80;\n  void *local_78;\n  size_t local_70;\n  void *local_68;\n  size_t local_60;\n  long local_58;\n  void *local_50;\n  size_t local_48;\n  long local_40;\n  size_t local_38;\n  size_t local_30;\n  undefined *local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_88 = 0;\n  local_80 = 0;\n  local_78 = (void *)0x0;\n  local_90 = 0;\n  bVar1 = false;\n  do {\n    local_48 = read(0,param_2,param_3);\n    if ((long)local_48 < 0) {\n      uVar2 = quotearg_n_style_colon(0,3,infile);\n      piVar3 = __errno_location();\n      local_28 = &DAT_00105c15;\n      error(1,*piVar3,&DAT_00105c15,uVar2);\n    }\n    local_70 = local_48;\n    local_68 = param_2;\n    while (local_70 != 0) {\n      local_60 = 0;\n      local_58 = 0;\n      if ((long)local_70 < (param_1 - local_88) - local_80) {\n        local_50 = memrchr(local_68,eolchar,local_70);\n      }\n      else {\n        local_60 = (param_1 - local_88) - local_80;\n        local_58 = (long)local_68 + (local_60 - 1);\n        local_50 = memrchr(local_68,eolchar,local_60);\n      }\n      if ((local_80 != 0) && ((local_50 != (void *)0x0 || (local_88 == 0)))) {\n        cwrite(local_88 == 0,local_78,local_80);\n        local_88 = local_88 + local_80;\n        local_80 = 0;\n      }\n      if (local_50 != (void *)0x0) {\n        bVar1 = true;\n        local_40 = (long)local_50 + (1 - (long)local_68);\n        cwrite(local_88 == 0,local_68,local_40);\n        local_88 = local_88 + local_40;\n        local_70 = local_70 - local_40;\n        local_68 = (void *)((long)local_68 + local_40);\n        if (local_58 != 0) {\n          local_60 = local_60 - local_40;\n        }\n      }\n      if ((local_70 != 0) && (!bVar1)) {\n        local_38 = local_70;\n        if (local_58 != 0) {\n          local_38 = local_60;\n        }\n        cwrite(local_88 == 0,local_68,local_38);\n        local_88 = local_88 + local_38;\n        local_70 = local_70 - local_38;\n        local_68 = (void *)((long)local_68 + local_38);\n        if (local_58 != 0) {\n          local_60 = local_60 - local_38;\n        }\n      }\n      if (((local_58 != 0) && (local_60 != 0)) || ((local_58 == 0 && (local_70 != 0)))) {\n        local_30 = local_70;\n        if (local_58 != 0) {\n          local_30 = local_60;\n        }\n        if (local_90 - local_80 < (long)local_30) {\n          local_78 = (void *)xpalloc(local_78,&local_90,local_30 - (local_90 - local_80),\n                                     0xffffffffffffffff,1);\n        }\n        memcpy((void *)(local_80 + (long)local_78),local_68,local_30);\n        local_80 = local_80 + local_30;\n        local_70 = local_70 - local_30;\n        local_68 = (void *)((long)local_68 + local_30);\n      }\n      if (local_58 != 0) {\n        local_88 = 0;\n        bVar1 = false;\n      }\n    }\n  } while (local_48 != 0);\n  if (local_80 != 0) {\n    cwrite(local_88 == 0,local_78,local_80);\n  }\n  free(local_78);\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "line_bytes_split",
+                        "read",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "memrchr",
+                        "cwrite",
+                        "xpalloc",
+                        "memcpy",
+                        "free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "line_bytes_split",
+                        "main"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lines_chunk_split",
+                "func_c_signature": "void lines_chunk_split(long param_1,long param_2,void *param_3,size_t param_4,long param_5,\n                      long param_6)",
+                "decompiled_code": "void lines_chunk_split(long param_1,long param_2,void *param_3,size_t param_4,long param_5,\n                      long param_6) {\n  bool bVar1;\n  bool bVar2;\n  long lVar3;\n  __off_t _Var4;\n  size_t __nbytes;\n  undefined8 uVar5;\n  int *piVar6;\n  void *pvVar7;\n  long lVar8;\n  void *pvVar9;\n  long lVar10;\n  long lVar11;\n  bool bVar12;\n  long local_d0;\n  bool local_9b;\n  long local_88;\n  long local_80;\n  long local_78;\n  void *local_70;\n  long local_68;\n  void *local_60;\n  \n  if ((param_2 == 0) || (param_2 < param_1)) {\n                    /* WARNING: Subroutine does not return */\n    __assert_fail(\"n && k <= n\",\n                  \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/split.c\",\n                  0x387,\"lines_chunk_split\");\n  }\n  lVar11 = param_6 % param_2;\n  lVar3 = param_6 / param_2;\n  local_88 = 1;\n  local_80 = lVar3 + (ulong)(0 < lVar11);\n  local_78 = 0;\n  local_9b = true;\n  bVar2 = false;\n  local_d0 = param_5;\n  if ((1 < param_1) && (0 < param_6)) {\n    local_80 = lVar11;\n    if (param_1 <= lVar11) {\n      local_80 = param_1 + -1;\n    }\n    local_80 = local_80 + (param_1 + -1) * lVar3;\n    local_78 = local_80 + -1;\n    if (local_78 < param_5) {\n      memmove(param_3,(void *)(local_78 + (long)param_3),param_5 - local_78);\n      local_d0 = param_5 - local_78;\n    }\n    else {\n      if ((param_5 < local_78) && (_Var4 = lseek(0,local_78 - param_5,1), _Var4 < 0)) {\n        uVar5 = quotearg_n_style_colon(0,3,infile);\n        piVar6 = __errno_location();\n        error(1,*piVar6,&DAT_00105c15,uVar5);\n      }\n      local_d0 = -1;\n    }\n    local_88 = param_1 + -1;\n  }\n  while (local_78 < param_6) {\n    if (local_d0 < 0) {\n      __nbytes = param_4;\n      if (param_6 - local_78 <= (long)param_4) {\n        __nbytes = param_6 - local_78;\n      }\n      local_68 = read(0,param_3,__nbytes);\n      if (local_68 < 0) {\n        uVar5 = quotearg_n_style_colon(0,3,infile);\n        piVar6 = __errno_location();\n        error(1,*piVar6,&DAT_00105c15,uVar5);\n      }\n    }\n    else {\n      local_68 = local_d0;\n      local_d0 = -1;\n    }\n    if (local_68 == 0) break;\n    bVar2 = false;\n    pvVar7 = (void *)((long)param_3 + local_68);\n    local_70 = param_3;\nLAB_00102ac6:\n    if (local_70 != pvVar7) {\n      lVar8 = (local_80 + -1) - local_78;\n      if (lVar8 < 0) {\n        lVar8 = 0;\n      }\n      if (local_68 <= lVar8) {\n        lVar8 = local_68;\n      }\n      pvVar9 = memchr((void *)(lVar8 + (long)local_70),eolchar,local_68 - lVar8);\n      bVar12 = pvVar9 != (void *)0x0;\n      local_60 = pvVar7;\n      if (bVar12) {\n        local_60 = (void *)((long)pvVar9 + 1);\n      }\n      lVar8 = (long)local_60 - (long)local_70;\n      if (param_1 == local_88) {\n        lVar10 = full_write(1,local_70,lVar8);\n        if (lVar8 != lVar10) {\n          write_error();\n        }\n      }\n      else if (param_1 == 0) {\n        cwrite(local_9b,local_70,lVar8);\n      }\n      local_78 = local_78 + lVar8;\n      local_70 = (void *)((long)local_70 + lVar8);\n      local_68 = local_68 - lVar8;\n      bVar1 = bVar12;\n      while( true ) {\n        local_9b = bVar12;\n        if ((!bVar1) && (local_78 < local_80)) goto LAB_00102ac6;\n        if ((!bVar1) && (local_70 == pvVar7)) break;\n        if (param_1 == local_88) {\n          return;\n        }\n        local_80 = local_80 + lVar3 + (ulong)(local_88 < lVar11);\n        local_88 = local_88 + 1;\n        if (local_78 < local_80) {\n          bVar1 = false;\n        }\n        else if (param_1 == 0) {\n          cwrite(1,0,0);\n        }\n      }\n      bVar2 = true;\n      goto LAB_00102ac6;\n    }\n  }\n  if (bVar2) {\n    local_88 = local_88 + 1;\n  }\n  if (param_1 == 0) {\n    while (local_88 <= param_2) {\n      cwrite(1,0,0);\n      local_88 = local_88 + 1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lines_chunk_split",
+                        "__assert_fail",
+                        "memmove",
+                        "lseek",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "read",
+                        "memchr",
+                        "full_write",
+                        "write_error",
+                        "cwrite"
+                    ],
+                    "calling_functions": [
+                        "lines_chunk_split"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "bytes_chunk_extract",
+                "func_c_signature": "void bytes_chunk_extract(long param_1,long param_2,void *param_3,size_t param_4,long param_5,\n                        long param_6)",
+                "decompiled_code": "void bytes_chunk_extract(long param_1,long param_2,void *param_3,size_t param_4,long param_5,\n                        long param_6) {\n  char cVar1;\n  __off_t _Var2;\n  long lVar3;\n  long lVar4;\n  int *piVar5;\n  undefined8 uVar6;\n  long local_90;\n  long local_48;\n  ssize_t local_40;\n  \n  if ((0 < param_1) && (param_1 <= param_2)) {\n    if (param_6 % param_2 < param_1) {\n      local_48 = param_6 % param_2;\n    }\n    else {\n      local_48 = param_1 + -1;\n    }\n    local_48 = local_48 + (param_1 + -1) * (param_6 / param_2);\n    if (param_1 != param_2) {\n      lVar3 = param_1;\n      if (param_6 % param_2 <= param_1) {\n        lVar3 = param_6 % param_2;\n      }\n      param_6 = lVar3 + (param_6 / param_2) * param_1;\n    }\n    if (local_48 < param_5) {\n      memmove(param_3,(void *)(local_48 + (long)param_3),param_5 - local_48);\n      local_90 = param_5 - local_48;\n    }\n    else {\n      if ((param_5 < local_48) && (_Var2 = lseek(0,local_48 - param_5,1), _Var2 < 0)) {\n        uVar6 = quotearg_n_style_colon(0,3,infile);\n        piVar5 = __errno_location();\n        error(1,*piVar5,&DAT_00105c15,uVar6);\n      }\n      local_90 = -1;\n    }\n    while( true ) {\n      if (param_6 <= local_48) {\n        return;\n      }\n      if (local_90 < 0) {\n        local_40 = read(0,param_3,param_4);\n        if (local_40 < 0) {\n          uVar6 = quotearg_n_style_colon(0,3,infile);\n          piVar5 = __errno_location();\n          error(1,*piVar5,&DAT_00105c15,uVar6);\n        }\n      }\n      else {\n        local_40 = local_90;\n        local_90 = -1;\n      }\n      if (local_40 == 0) break;\n      lVar3 = param_6 - local_48;\n      if (local_40 <= param_6 - local_48) {\n        lVar3 = local_40;\n      }\n      lVar4 = full_write(1,param_3,lVar3);\n      if (lVar3 != lVar4) {\n        piVar5 = __errno_location();\n        cVar1 = ignorable(*piVar5);\n        if (cVar1 != '\\x01') {\n          uVar6 = quotearg_n_style_colon(0,3,&DAT_00105ccf);\n          piVar5 = __errno_location();\n          error(1,*piVar5,&DAT_00105c15,uVar6);\n        }\n      }\n      local_48 = local_48 + lVar3;\n    }\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __assert_fail(\"0 < k && k <= n\",\n                \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/split.c\",\n                0x408,\"bytes_chunk_extract\");\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bytes_chunk_extract",
+                        "memmove",
+                        "lseek",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "read",
+                        "full_write",
+                        "ignorable",
+                        "__assert_fail"
+                    ],
+                    "calling_functions": [
+                        "bytes_chunk_extract"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ofile_open",
+                "func_c_signature": "undefined ofile_open(long param_1,long param_2,long param_3)",
+                "decompiled_code": "undefined ofile_open(long param_1,long param_2,long param_3) {\n  long lVar1;\n  int iVar2;\n  int *piVar3;\n  undefined8 uVar4;\n  FILE *pFVar5;\n  undefined local_6d;\n  int local_6c;\n  long local_48;\n  \n  local_6d = 0;\n  if (*(int *)(param_1 + param_2 * 0x20 + 8) < 0) {\n    local_48 = param_3;\n    if (param_2 != 0) {\n      local_48 = param_2;\n    }\n    local_48 = local_48 + -1;\n    while( true ) {\n      if (*(int *)(param_1 + param_2 * 0x20 + 8) == -1) {\n        local_6c = create(*(undefined8 *)(param_1 + param_2 * 0x20));\n      }\n      else {\n        local_6c = open_safer(*(undefined8 *)(param_1 + param_2 * 0x20),0xc01);\n      }\n      if (-1 < local_6c) break;\n      piVar3 = __errno_location();\n      if ((*piVar3 != 0x18) && (piVar3 = __errno_location(), *piVar3 != 0x17)) {\n        uVar4 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_1 + param_2 * 0x20));\n        piVar3 = __errno_location();\n        error(1,*piVar3,&DAT_00105c15,uVar4);\n      }\n      local_6d = 1;\n      while (*(int *)(param_1 + local_48 * 0x20 + 8) < 0) {\n        lVar1 = param_3;\n        if (local_48 != 0) {\n          lVar1 = local_48;\n        }\n        local_48 = lVar1 + -1;\n        if (local_48 == param_2) {\n          uVar4 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_1 + param_2 * 0x20));\n          piVar3 = __errno_location();\n          error(1,*piVar3,&DAT_00105c15,uVar4);\n        }\n      }\n      iVar2 = rpl_fclose(*(undefined8 *)(param_1 + local_48 * 0x20 + 0x10));\n      if (iVar2 != 0) {\n        uVar4 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_1 + local_48 * 0x20));\n        piVar3 = __errno_location();\n        error(1,*piVar3,&DAT_00105c15,uVar4);\n      }\n      *(undefined8 *)(param_1 + local_48 * 0x20 + 0x10) = 0;\n      *(undefined4 *)(param_1 + local_48 * 0x20 + 8) = 0xfffffffe;\n    }\n    *(int *)(param_2 * 0x20 + param_1 + 8) = local_6c;\n    pFVar5 = fdopen(local_6c,\"a\");\n    if (pFVar5 == (FILE *)0x0) {\n      uVar4 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_1 + param_2 * 0x20));\n      piVar3 = __errno_location();\n      error(1,*piVar3,&DAT_00105c15,uVar4);\n    }\n    *(FILE **)(param_2 * 0x20 + param_1 + 0x10) = pFVar5;\n    *(undefined4 *)(param_2 * 0x20 + param_1 + 0x18) = filter_pid;\n    filter_pid = 0;\n  }\n  return local_6d;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ofile_open",
+                        "create",
+                        "open_safer",
+                        "__errno_location",
+                        "quotearg_n_style_colon",
+                        "error",
+                        "rpl_fclose",
+                        "fdopen"
+                    ],
+                    "calling_functions": [
+                        "ofile_open",
+                        "lines_rr"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lines_rr",
+                "func_c_signature": "void lines_rr(long param_1,long param_2,void *param_3,size_t param_4,long *param_5)",
+                "decompiled_code": "void lines_rr(long param_1,long param_2,void *param_3,size_t param_4,long *param_5) {\n  bool bVar1;\n  bool bVar2;\n  byte bVar3;\n  char cVar4;\n  int iVar5;\n  long lVar6;\n  ssize_t sVar7;\n  undefined8 uVar8;\n  int *piVar9;\n  void *pvVar10;\n  void *pvVar11;\n  size_t sVar12;\n  size_t sVar13;\n  bool bVar14;\n  byte local_a2;\n  long local_80;\n  long local_78;\n  long local_70;\n  void *local_68;\n  void *local_60;\n  \n  bVar2 = false;\n  bVar1 = false;\n  local_78 = 0;\n  if (param_1 == 0) {\n    lVar6 = xinmalloc(param_2,0x20);\n    *param_5 = lVar6;\n    local_78 = *param_5;\n    for (local_80 = 0; local_80 < param_2; local_80 = local_80 + 1) {\n      next_file_name();\n      uVar8 = xstrdup(outfile);\n      *(undefined8 *)(local_80 * 0x20 + local_78) = uVar8;\n      *(undefined4 *)(local_78 + local_80 * 0x20 + 8) = 0xffffffff;\n      *(undefined8 *)(local_78 + local_80 * 0x20 + 0x10) = 0;\n      *(undefined4 *)(local_78 + local_80 * 0x20 + 0x18) = 0;\n    }\n    local_80 = 0;\n    local_a2 = 0;\n  }\n  else {\n    local_70 = 1;\n  }\n  while( true ) {\n    sVar7 = read(0,param_3,param_4);\n    if (sVar7 < 0) {\n      uVar8 = quotearg_n_style_colon(0,3,infile);\n      piVar9 = __errno_location();\n      error(1,*piVar9,&DAT_00105c15,uVar8);\n    }\n    if (sVar7 == 0) break;\n    pvVar10 = (void *)((long)param_3 + sVar7);\n    local_68 = param_3;\n    while (local_68 != pvVar10) {\n      pvVar11 = memchr(local_68,eolchar,(long)pvVar10 - (long)local_68);\n      bVar14 = pvVar11 != (void *)0x0;\n      local_60 = pvVar10;\n      if (bVar14) {\n        local_60 = (void *)((long)pvVar11 + 1);\n      }\n      sVar12 = (long)local_60 - (long)local_68;\n      if (param_1 == 0) {\n        bVar3 = ofile_open(local_78,local_80,param_2);\n        local_a2 = (bVar3 | local_a2) != 0;\n        if (unbuffered == '\\0') {\nLAB_001035d3:\n          sVar12 = fwrite_unlocked(local_68,sVar12,1,*(FILE **)(local_78 + local_80 * 0x20 + 0x10));\n          if (sVar12 != 1) {\n            piVar9 = __errno_location();\n            cVar4 = ignorable(*piVar9);\n            if (cVar4 != '\\x01') {\n              uVar8 = quotearg_n_style_colon(0,3,*(undefined8 *)(local_78 + local_80 * 0x20));\n              piVar9 = __errno_location();\n              error(1,*piVar9,&DAT_00105c15,uVar8);\n            }\n          }\n        }\n        else {\n          sVar13 = full_write(*(undefined4 *)(local_78 + local_80 * 0x20 + 8),local_68,sVar12);\n          if (sVar12 != sVar13) {\n            piVar9 = __errno_location();\n            cVar4 = ignorable(*piVar9);\n            if (cVar4 != '\\x01') {\n              uVar8 = quotearg_n_style_colon(0,3,*(undefined8 *)(local_78 + local_80 * 0x20));\n              piVar9 = __errno_location();\n              error(1,*piVar9,&DAT_00105c15,uVar8);\n              goto LAB_001035d3;\n            }\n          }\n        }\n        piVar9 = __errno_location();\n        cVar4 = ignorable(*piVar9);\n        if (cVar4 != '\\x01') {\n          bVar1 = true;\n        }\n        if ((bool)local_a2) {\n          iVar5 = rpl_fclose(*(undefined8 *)(local_78 + local_80 * 0x20 + 0x10));\n          if (iVar5 != 0) {\n            uVar8 = quotearg_n_style_colon(0,3,*(undefined8 *)(local_78 + local_80 * 0x20));\n            piVar9 = __errno_location();\n            error(1,*piVar9,&DAT_00105c15,uVar8);\n          }\n          *(undefined8 *)(local_78 + local_80 * 0x20 + 0x10) = 0;\n          *(undefined4 *)(local_78 + local_80 * 0x20 + 8) = 0xfffffffe;\n        }\n        if ((bVar14) && (local_80 = local_80 + 1, local_80 == param_2)) {\n          bVar2 = true;\n          if (!bVar1) goto LAB_001037c8;\n          bVar1 = false;\n          local_80 = 0;\n        }\n      }\n      else {\n        if ((local_70 == param_1) && (unbuffered != '\\0')) {\n          sVar13 = full_write(1,local_68,sVar12);\n          if (sVar12 != sVar13) {\n            write_error();\n          }\n        }\n        else if ((local_70 == param_1) &&\n                (sVar12 = fwrite_unlocked(local_68,sVar12,1,_stdout), sVar12 != 1)) {\n          write_error();\n        }\n        if (bVar14) {\n          if (local_70 == param_2) {\n            local_70 = 1;\n          }\n          else {\n            local_70 = local_70 + 1;\n          }\n        }\n      }\n      local_68 = local_60;\n    }\n  }\nLAB_001037c8:\n  if (param_1 == 0) {\n    lVar6 = local_80;\n    if (bVar2) {\n      lVar6 = param_2;\n    }\n    for (local_80 = 0; local_80 < param_2; local_80 = local_80 + 1) {\n      if ((lVar6 <= local_80) && (elide_empty_files != '\\x01')) {\n        ofile_open(local_78,local_80,param_2);\n      }\n      if (-1 < *(int *)(local_78 + local_80 * 0x20 + 8)) {\n        closeout(*(undefined8 *)(local_78 + local_80 * 0x20 + 0x10),\n                 *(undefined4 *)(local_78 + local_80 * 0x20 + 8),\n                 *(undefined4 *)(local_78 + local_80 * 0x20 + 0x18),\n                 *(undefined8 *)(local_78 + local_80 * 0x20));\n      }\n      *(undefined4 *)(local_78 + local_80 * 0x20 + 8) = 0xfffffffe;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lines_rr",
+                        "xinmalloc",
+                        "next_file_name",
+                        "xstrdup",
+                        "read",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "memchr",
+                        "ofile_open",
+                        "fwrite_unlocked",
+                        "ignorable",
+                        "full_write",
+                        "rpl_fclose",
+                        "write_error",
+                        "closeout"
+                    ],
+                    "calling_functions": [
+                        "lines_rr"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "strtoint_die",
+                "func_c_signature": "long strtoint_die(undefined8 param_1,undefined8 param_2)",
+                "decompiled_code": "long strtoint_die(undefined8 param_1,undefined8 param_2) {\n  uint uVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  uint *puVar5;\n  undefined8 extraout_RDX;\n  ulong uVar6;\n  undefined8 uVar7;\n  long in_FS_OFFSET;\n  long lStack_50;\n  long lStack_48;\n  undefined *puStack_40;\n  undefined8 local_38;\n  undefined8 local_30;\n  undefined4 local_28;\n  uint local_24;\n  char *local_20;\n  \n  puStack_40 = (undefined *)0x103912;\n  local_38 = param_2;\n  local_30 = param_1;\n  uVar2 = quote(param_2);\n  puStack_40 = (undefined *)0x103921;\n  uVar3 = gettext(local_30);\n  puStack_40 = (undefined *)0x103929;\n  piVar4 = __errno_location();\n  if (*piVar4 == 0x16) {\n    local_24 = 0;\n  }\n  else {\n    puStack_40 = (undefined *)0x103935;\n    puVar5 = (uint *)__errno_location();\n    local_24 = *puVar5;\n  }\n  local_28 = 1;\n  local_20 = \"%s: %s\";\n  uVar6 = (ulong)local_24;\n  uVar7 = 1;\n  puStack_40 = (undefined *)0x10396f;\n  error(1,uVar6,\"%s: %s\",uVar3,uVar2);\n  lStack_48 = *(long *)(in_FS_OFFSET + 0x28);\n  puStack_40 = &stack0xfffffffffffffff8;\n  uVar1 = xstrtoimax(uVar7,0,10,&lStack_50,uVar6);\n  if ((1 < uVar1) || (lStack_50 < 1)) {\n    strtoint_die(extraout_RDX,uVar7);\n  }\n  if (lStack_48 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return lStack_50;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strtoint_die",
+                        "quote",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "xstrtoimax",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "strtoint_die",
+                        "parse_n_units",
+                        "parse_chunk"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_n_units",
+                "func_c_signature": "long parse_n_units(undefined8 param_1,undefined8 param_2,undefined8 param_3)",
+                "decompiled_code": "long parse_n_units(undefined8 param_1,undefined8 param_2,undefined8 param_3) {\n  uint uVar1;\n  long in_FS_OFFSET;\n  long local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  uVar1 = xstrtoimax(param_1,0,10,&local_18,param_2);\n  if ((1 < uVar1) || (local_18 < 1)) {\n    strtoint_die(param_3,param_1);\n  }\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_n_units",
+                        "xstrtoimax",
+                        "strtoint_die",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "parse_n_units",
+                        "parse_chunk",
+                        "main"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_chunk",
+                "func_c_signature": "void parse_chunk(long *param_1,long *param_2,long param_3)",
+                "decompiled_code": "void parse_chunk(long *param_1,long *param_2,long param_3) {\n  uint uVar1;\n  long lVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  long in_FS_OFFSET;\n  char *local_30;\n  char *local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  uVar1 = xstrtoimax(param_3,&local_30,10,param_2,&DAT_001051ac);\n  if ((uVar1 == 2) && (*local_30 == '/')) {\n    *param_1 = *param_2;\n    lVar2 = parse_n_units(local_30 + 1,&DAT_001051ac,\"invalid number of chunks\");\n    *param_2 = lVar2;\n    if ((0 < *param_1) && (*param_1 <= *param_2)) goto code_r0x00103b42;\n    uVar3 = quote_mem(param_3,(long)local_30 - param_3);\n    uVar4 = gettext(\"invalid chunk number\");\n    local_28 = \"%s: %s\";\n    error(1,0,\"%s: %s\",uVar4,uVar3);\n  }\n  if ((1 < uVar1) || (*param_2 < 1)) {\n    strtoint_die(\"invalid number of chunks\",param_3);\n  }\ncode_r0x00103b42:\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_chunk",
+                        "xstrtoimax",
+                        "parse_n_units",
+                        "quote_mem",
+                        "gettext",
+                        "error",
+                        "strtoint_die",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "parse_chunk",
+                        "main"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "void main(int param_1,undefined8 *param_2) {\n  ushort *puVar1;\n  byte bVar2;\n  char cVar3;\n  int iVar4;\n  int iVar5;\n  char *pcVar6;\n  ushort **ppuVar7;\n  long lVar8;\n  size_t sVar9;\n  undefined8 uVar10;\n  undefined8 uVar11;\n  size_t sVar12;\n  int *piVar13;\n  __sighandler_t p_Var14;\n  long in_FS_OFFSET;\n  char local_195;\n  int local_194;\n  int local_190;\n  long local_f0;\n  long local_e8 [2];\n  long local_d8;\n  long local_d0;\n  long local_c8;\n  long local_c0;\n  undefined8 local_b8;\n  undefined8 local_b0;\n  undefined8 local_a8;\n  undefined8 local_a0;\n  undefined8 local_98;\n  undefined8 local_90;\n  undefined8 local_88;\n  undefined8 local_80;\n  undefined8 local_78;\n  undefined8 local_70;\n  undefined8 local_68;\n  undefined8 local_60;\n  undefined8 local_58;\n  undefined8 local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  undefined *local_38;\n  undefined8 local_30;\n  undefined *local_28;\n  undefined8 local_20;\n  \n  local_20 = *(undefined8 *)(in_FS_OFFSET + 0x28);\n  local_194 = 0;\n  local_d8 = 0;\n  iVar4 = getpagesize();\n  local_c0 = (long)iVar4;\n  local_f0 = 0;\n  local_e8[0] = 0;\n  local_190 = 0;\n  local_d0 = 0x7fffffffffffffff;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  infile = &DAT_00105ccf;\n  outbase = &DAT_00105d20;\n  do {\n    while( true ) {\n      iVar4 = _optind;\n      if (_optind == 0) {\n        iVar4 = 1;\n      }\n      iVar5 = getopt_long(param_1,param_2,\"0123456789C:a:b:del:n:t:ux\",longopts,0);\n      if (iVar5 == -1) {\n        if ((local_f0 != 0) && (filter_command != (char *)0x0)) {\n          local_60 = gettext(\"--filter does not process a chunk extracted to standard output\");\n          error(0,0,local_60);\n          usage(1);\n        }\n        if (local_194 == 0) {\n          local_194 = 3;\n          local_e8[0] = 1000;\n        }\n        if (local_e8[0] == 0) {\n          uVar10 = quote(&DAT_00105f5f);\n          local_58 = gettext(\"invalid number of lines: %s\");\n          error(0,0,local_58,uVar10);\n          usage(1);\n        }\n        if (eolchar < 0) {\n          eolchar = 10;\n        }\n        set_suffix_length(local_e8[0],local_194);\n        if (_optind < param_1) {\n          infile = (undefined *)param_2[_optind];\n          _optind = _optind + 1;\n        }\n        if (_optind < param_1) {\n          outbase = (undefined *)param_2[_optind];\n          _optind = _optind + 1;\n        }\n        if (_optind < param_1) {\n          uVar10 = quote(param_2[_optind]);\n          local_50 = gettext(\"extra operand %s\");\n          error(0,0,local_50,uVar10);\n          usage(1);\n        }\n        if ((numeric_suffix_start != (char *)0x0) &&\n           (sVar12 = strlen(numeric_suffix_start), suffix_length < sVar12)) {\n          local_48 = gettext(\"numerical suffix start value is too large for the suffix length\");\n          error(0,0,local_48);\n          usage(1);\n        }\n        cVar3 = streq(infile,&DAT_00105ccf);\n        if ((cVar3 != '\\x01') && (iVar4 = fd_reopen(0,infile,0,0), iVar4 < 0)) {\n          uVar10 = quotearg_style(4,infile);\n          uVar11 = gettext(\"cannot open %s for reading\");\n          piVar13 = __errno_location();\n          local_40 = uVar11;\n          error(1,*piVar13,uVar11,uVar10);\n        }\n        xset_binary_mode(0,0);\n        fdadvise(0,0,0,2);\n        iVar4 = fstat(0,(stat *)in_stat_buf);\n        if (iVar4 != 0) {\n          uVar10 = quotearg_n_style_colon(0,3,infile);\n          piVar13 = __errno_location();\n          local_38 = &DAT_00105c15;\n          error(1,*piVar13,&DAT_00105c15,uVar10);\n        }\n        if ((local_d8 == 0) && (local_d8 = io_blksize(in_stat_buf), 0x7ff00000 < local_d8)) {\n          local_d8 = 0x7ff00000;\n        }\n        local_b8 = xalignalloc(local_c0,local_d8 + 1);\n        local_c8 = -1;\n        if ((local_194 == 5) || (local_194 == 6)) {\n          local_d0 = input_file_size(0,in_stat_buf,local_b8,local_d8);\n          if (local_d0 < 0) {\n            uVar10 = quotearg_n_style_colon(0,3,infile);\n            uVar11 = gettext(\"%s: cannot determine file size\");\n            piVar13 = __errno_location();\n            local_30 = uVar11;\n            error(1,*piVar13,uVar11,uVar10);\n          }\n          local_c8 = local_d0;\n          if (local_d8 <= local_d0) {\n            local_c8 = local_d8;\n          }\n        }\n        if (filter_command != (char *)0x0) {\n          p_Var14 = signal(0xd,(__sighandler_t)0x1);\n          default_SIGPIPE = p_Var14 == (__sighandler_t)0x0;\n        }\n                    /* WARNING: Could not find normalized switch variable to match jumptable */\n        switch(local_194) {\n        default:\n                    /* WARNING: Subroutine does not return */\n          __assert_fail(\"0\",\n                        \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/split.c\"\n                        ,0x6af,(char *)&__PRETTY_FUNCTION___0);\n        case 1:\n          bytes_split(local_e8[0],0,local_b8,local_d8,0xffffffffffffffff,0);\n          break;\n        case 2:\n          line_bytes_split(local_e8[0],local_b8,local_d8);\n          break;\n        case 3:\n          lines_split(local_e8[0],local_b8,local_d8);\n        }\n        iVar4 = close(0);\n        if (iVar4 != 0) {\n          uVar10 = quotearg_n_style_colon(0,3,infile);\n          piVar13 = __errno_location();\n          local_28 = &DAT_00105c15;\n          error(1,*piVar13,&DAT_00105c15,uVar10);\n        }\n        closeout(0,output_desc,filter_pid,outfile);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar5 < 0x84) break;\nswitchD_00103d22_caseD_3a:\n      usage(1);\n    }\n    if (iVar5 < 0x30) {\n      if (iVar5 != -0x83) {\n        if (iVar5 != -0x82) goto switchD_00103d22_caseD_3a;\n        usage(0);\n      }\n      uVar10 = proper_name_lite(\"Richard M. Stallman\",\"Richard M. Stallman\");\n      uVar11 = proper_name_lite(\"Torbjorn Granlund\",&DAT_00105ee9);\n      version_etc(_stdout,\"split\",\"GNU coreutils\",_Version,uVar11,uVar10,0);\n                    /* WARNING: Subroutine does not return */\n      exit(0);\n    }\n    switch(iVar5) {\n    case 0x30:\n    case 0x31:\n    case 0x32:\n    case 0x33:\n    case 0x34:\n    case 0x35:\n    case 0x36:\n    case 0x37:\n    case 0x38:\n    case 0x39:\n      if (local_194 == 0) {\n        local_194 = 4;\n        local_e8[0] = 0;\n      }\n      if ((local_194 != 0) && (local_194 != 4)) {\n        local_70 = gettext(\"cannot split in more than one way\");\n        error(0,0,local_70);\n        usage(1);\n      }\n      if ((local_190 != 0) && (local_190 != iVar4)) {\n        local_e8[0] = 0;\n      }\n      lVar8 = local_e8[0] * 10;\n      local_190 = iVar4;\n      if ((SEXT816(lVar8) != SEXT816(local_e8[0]) * SEXT816(10)) ||\n         (local_e8[0] = (iVar5 + -0x30) + lVar8, SCARRY8((long)(iVar5 + -0x30),lVar8))) {\n        local_e8[0] = 0x7fffffffffffffff;\n      }\n      break;\n    default:\n      goto switchD_00103d22_caseD_3a;\n    case 0x43:\n      if (local_194 != 0) {\n        local_98 = gettext(\"cannot split in more than one way\");\n        error(0,0,local_98);\n        usage(1);\n      }\n      local_194 = 2;\n      local_e8[0] = parse_n_units(_optarg,multipliers_1,\"invalid number of lines\");\n      break;\n    case 0x61:\n      uVar10 = gettext(\"invalid suffix length\");\n      suffix_length = xdectoimax(_optarg,0,0x7fffffffffffffff,&DAT_001051ac,uVar10,0);\n      break;\n    case 0x62:\n      if (local_194 != 0) {\n        local_a8 = gettext(\"cannot split in more than one way\");\n        error(0,0,local_a8);\n        usage(1);\n      }\n      local_194 = 1;\n      local_e8[0] = parse_n_units(_optarg,multipliers_1,\"invalid number of bytes\");\n      break;\n    case 100:\n    case 0x78:\n      if (iVar5 == 100) {\n        suffix_alphabet = s_0123456789_00105e40;\n      }\n      else {\n        suffix_alphabet = s_0123456789abcdef_00105e4b;\n      }\n      if (_optarg != (char *)0x0) {\n        sVar12 = strlen(_optarg);\n        sVar9 = strspn(_optarg,suffix_alphabet);\n        if (sVar12 == sVar9) goto LAB_001044ec;\n        uVar10 = quote(_optarg);\n        if (iVar5 == 100) {\n          local_68 = gettext(\"%s: invalid start value for numerical suffix\");\n        }\n        else {\n          local_68 = gettext(\"%s: invalid start value for hexadecimal suffix\");\n        }\n        error(0,0,local_68,uVar10);\n        usage(1);\n        do {\n          _optarg = _optarg + 1;\nLAB_001044ec:\n        } while ((*_optarg == '0') && (_optarg[1] != '\\0'));\n        numeric_suffix_start = _optarg;\n      }\n      break;\n    case 0x65:\n      elide_empty_files = 1;\n      break;\n    case 0x6c:\n      if (local_194 != 0) {\n        local_a0 = gettext(\"cannot split in more than one way\");\n        error(0,0,local_a0);\n        usage(1);\n      }\n      local_194 = 3;\n      local_e8[0] = parse_n_units(_optarg,&DAT_001051ac,\"invalid number of lines\");\n      break;\n    case 0x6e:\n      if (local_194 == 0) goto LAB_0010407e;\n      local_90 = gettext(\"cannot split in more than one way\");\n      error(0,0,local_90);\n      usage(1);\n      do {\n        _optarg = _optarg + 1;\nLAB_0010407e:\n        ppuVar7 = __ctype_b_loc();\n        puVar1 = *ppuVar7;\n        bVar2 = to_uchar((int)*_optarg);\n      } while ((puVar1[bVar2] & 0x2000) != 0);\n      iVar4 = strncmp(_optarg,\"r/\",2);\n      if (iVar4 == 0) {\n        local_194 = 7;\n        _optarg = _optarg + 2;\n      }\n      else {\n        iVar4 = strncmp(_optarg,\"l/\",2);\n        if (iVar4 == 0) {\n          local_194 = 6;\n          _optarg = _optarg + 2;\n        }\n        else {\n          local_194 = 5;\n        }\n      }\n      parse_chunk(&local_f0,local_e8,_optarg);\n      break;\n    case 0x74:\n      local_195 = *_optarg;\n      if (local_195 == '\\0') {\n        local_88 = gettext(\"empty record separator\");\n        error(1,0,local_88);\n      }\n      if (_optarg[1] != '\\0') {\n        cVar3 = streq(_optarg,&DAT_00105df7);\n        if (cVar3 == '\\0') {\n          uVar10 = quote(_optarg);\n          local_80 = gettext(\"multi-character separator %s\");\n          error(1,0,local_80,uVar10);\n        }\n        else {\n          local_195 = '\\0';\n        }\n      }\n      if ((-1 < eolchar) && (local_195 != eolchar)) {\n        local_78 = gettext(\"multiple separator characters specified\");\n        error(1,0,local_78);\n      }\n      eolchar = (int)local_195;\n      break;\n    case 0x75:\n      unbuffered = 1;\n      break;\n    case 0x80:\n      verbose = 1;\n      break;\n    case 0x81:\n      filter_command = _optarg;\n      break;\n    case 0x82:\n      uVar10 = gettext(\"invalid IO block size\");\n      local_d8 = xnumtoumax(_optarg,10,1,0x7ff00000,multipliers_1,uVar10,0,4);\n      break;\n    case 0x83:\n      sVar12 = strlen(_optarg);\n      pcVar6 = (char *)last_component(_optarg);\n      if ((pcVar6 != _optarg) || (((int)sVar12 != 0 && (_optarg[(long)(int)sVar12 + -1] == '/')))) {\n        uVar10 = quote(_optarg);\n        local_b0 = gettext(\"invalid suffix %s, contains directory separator\");\n        error(0,0,local_b0,uVar10);\n        usage(1);\n      }\n      additional_suffix = _optarg;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [
+                    "SEXT816",
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "getpagesize",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "quote",
+                        "set_suffix_length",
+                        "strlen",
+                        "streq",
+                        "fd_reopen",
+                        "quotearg_style",
+                        "__errno_location",
+                        "xset_binary_mode",
+                        "fdadvise",
+                        "fstat",
+                        "quotearg_n_style_colon",
+                        "io_blksize",
+                        "xalignalloc",
+                        "input_file_size",
+                        "signal",
+                        "__assert_fail",
+                        "bytes_split",
+                        "line_bytes_split",
+                        "lines_split",
+                        "close",
+                        "closeout",
+                        "exit",
+                        "proper_name_lite",
+                        "version_etc",
+                        "SEXT816",
+                        "SCARRY8",
+                        "parse_n_units",
+                        "xdectoimax",
+                        "strspn",
+                        "__ctype_b_loc",
+                        "to_uchar",
+                        "strncmp",
+                        "parse_chunk",
+                        "xnumtoumax",
+                        "last_component"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "split_decompiled.c"
+                }
+            }
+        ]
+    }
+}

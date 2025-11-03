@@ -1,0 +1,78 @@
+{
+    "file": "mkfifo",
+    "decompiled_code": {
+        "mkfifo.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... NAME...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"Create named pipes (FIFOs) with the given NAMEs.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -m, --mode=MODE    set file permission bits to MODE, not a=rw - umask\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -Z                   set the SELinux security context to default type\\n      --context[=CTX]  like -Z, or if CTX is specified then set the SELinux\\n                         or SMACK security context to CTX\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"mkfifo\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "pipes"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "pipes",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "mkfifo_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined4 main(int param_1,undefined8 *param_2) {\n  char cVar1;\n  int iVar2;\n  __mode_t __mask;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  void *__ptr;\n  undefined4 local_bc;\n  uint local_b8;\n  int local_b4;\n  long local_70;\n  long local_68;\n  \n  local_70 = 0;\n  local_bc = 0;\n  local_68 = 0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  do {\n    while( true ) {\n      while( true ) {\n        iVar2 = getopt_long(param_1,param_2,&DAT_00100e4f,longopts,0);\n        if (iVar2 == -1) {\n          if (param_1 == _optind) {\n            uVar3 = gettext(\"missing operand\");\n            error(0,0,uVar3);\n            usage(1);\n          }\n          if (local_68 != 0) {\n            cVar1 = is_smack_enabled();\n            if (cVar1 == '\\0') {\n              local_b4 = setfscreatecon(local_68);\n            }\n            else {\n              local_b4 = smack_set_label_for_self(local_68);\n            }\n            if (local_b4 < 0) {\n              uVar3 = quote(local_68);\n              uVar4 = gettext(\"failed to set default file creation context to %s\");\n              piVar5 = __errno_location();\n              error(1,*piVar5,uVar4,uVar3);\n            }\n          }\n          local_b8 = 0x1b6;\n          if (local_70 == 0) goto LAB_001009f3;\n          __ptr = (void *)mode_compile(local_70);\n          if (__ptr == (void *)0x0) {\n            uVar3 = gettext(\"invalid mode\");\n            error(1,0,uVar3);\n          }\n          __mask = umask(0);\n          umask(__mask);\n          local_b8 = mode_adjust(0x1b6,0,__mask,__ptr,0);\n          free(__ptr);\n          if (local_b8 < 0x200) goto LAB_001009f3;\n          uVar3 = gettext(\"mode must specify only file permission bits\");\n          error(1,0,uVar3);\n          do {\n            iVar2 = mkfifo((char *)param_2[_optind],local_b8);\n            if (iVar2 == 0) {\n              if ((local_70 != 0) && (iVar2 = lchmod((char *)param_2[_optind],local_b8), iVar2 != 0)\n                 ) {\n                uVar3 = quotearg_style(4,param_2[_optind]);\n                uVar4 = gettext(\"cannot set permissions of %s\");\n                piVar5 = __errno_location();\n                error(0,*piVar5,uVar4,uVar3);\n                local_bc = 1;\n              }\n            }\n            else {\n              uVar3 = quotearg_style(4,param_2[_optind]);\n              uVar4 = gettext(\"cannot create fifo %s\");\n              piVar5 = __errno_location();\n              error(0,*piVar5,uVar4,uVar3);\n              local_bc = 1;\n            }\n            _optind = _optind + 1;\nLAB_001009f3:\n          } while (_optind < param_1);\n          return local_bc;\n        }\n        if (iVar2 != 0x6d) break;\n        local_70 = _optarg;\n      }\n      if (iVar2 < 0x6e) break;\nLAB_001005ed:\n      usage(1);\n    }\n    if (iVar2 != 0x5a) {\n      if (iVar2 < 0x5b) {\n        if (iVar2 == -0x83) {\nLAB_00100592:\n          uVar3 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n          version_etc(_stdout,\"mkfifo\",\"GNU coreutils\",_Version,uVar3,0);\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (iVar2 == -0x82) {\n          usage(0);\n          goto LAB_00100592;\n        }\n      }\n      goto LAB_001005ed;\n    }\n    cVar1 = is_smack_enabled();\n    if (cVar1 == '\\0') {\n      if (_optarg != 0) {\n        uVar3 = gettext(\"warning: ignoring --context; it requires an SELinux/SMACK-enabled kernel\");\n        error(0,0,uVar3);\n      }\n    }\n    else {\n      local_68 = _optarg;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "is_smack_enabled",
+                        "setfscreatecon",
+                        "smack_set_label_for_self",
+                        "quote",
+                        "__errno_location",
+                        "mode_compile",
+                        "umask",
+                        "mode_adjust",
+                        "free",
+                        "mkfifo",
+                        "lchmod",
+                        "quotearg_style",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "mkfifo_decompiled.c"
+                }
+            }
+        ]
+    }
+}

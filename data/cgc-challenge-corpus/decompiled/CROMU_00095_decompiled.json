@@ -1,0 +1,1057 @@
+{
+    "file": "CROMU_00095",
+    "decompiled_code": {
+        "cgcmb.c": [
+            {
+                "func_name": "AddToData",
+                "func_c_signature": "void AddToData(ushort *param_1,void *param_2,size_t param_3)",
+                "decompiled_code": "void AddToData(ushort *param_1,void *param_2,size_t param_3) {\n  void *pvVar1;\n  size_t in_stack_ffffffd8;\n  \n  if (param_1 != (ushort *)0x0) {\n    if (*(int *)(param_1 + 2) == 0) {\n      pvVar1 = calloc(param_3,in_stack_ffffffd8);\n      *(void **)(param_1 + 2) = pvVar1;\n      *param_1 = (ushort)param_3;\n      memcpy(*(void **)(param_1 + 2),param_2,param_3);\n    }\n    else {\n      pvVar1 = calloc(param_3 + *param_1,in_stack_ffffffd8);\n      memcpy(pvVar1,*(void **)(param_1 + 2),(uint)*param_1);\n      memcpy((void *)((int)pvVar1 + (uint)*param_1),param_2,param_3);\n      *param_1 = (ushort)param_3 + *param_1;\n      free(*(void **)(param_1 + 2));\n      *(void **)(param_1 + 2) = pvVar1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AddToData",
+                        "calloc",
+                        "memcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "AddToData",
+                        "SendErrorResponse",
+                        "HandleCGCMBMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReceiveCGCMBMessage",
+                "func_c_signature": "undefined4 ReceiveCGCMBMessage(int param_1,int **param_2)",
+                "decompiled_code": "undefined4 ReceiveCGCMBMessage(int param_1,int **param_2) {\n  int iVar1;\n  void *pvVar2;\n  ushort *puVar3;\n  int *local_1c;\n  ushort *local_18;\n  ushort *local_14;\n  int local_10;\n  \n  if (param_1 == 0) {\n    return 0xffffffff;\n  }\n  local_1c = (int *)CreateBlankCGCMBMessage();\n  local_10 = *local_1c;\n  iVar1 = ReadFromTransportMessage(param_1,local_10,4);\n  if ((((iVar1 == 0) && (iVar1 = ReadFromTransportMessage(param_1,local_10 + 4,1), iVar1 == 0)) &&\n      (iVar1 = ReadFromTransportMessage(param_1,local_10 + 5,1), iVar1 == 0)) &&\n     ((iVar1 = ReadFromTransportMessage(param_1,local_10 + 6,1), iVar1 == 0 &&\n      (iVar1 = ReadFromTransportMessage(param_1,local_10 + 7,8), iVar1 == 0)))) {\n    puVar3 = (ushort *)local_1c[1];\n    local_14 = puVar3;\n    iVar1 = ReadFromTransportMessage(param_1,puVar3,2);\n    if (iVar1 == 0) {\n      if (*local_14 != 0) {\n        pvVar2 = calloc((uint)*local_14,(size_t)puVar3);\n        *(void **)(local_14 + 2) = pvVar2;\n        iVar1 = ReadFromTransportMessage(param_1,*(undefined4 *)(local_14 + 2),*local_14);\n        if (iVar1 != 0) goto LAB_000112c0;\n      }\n      puVar3 = (ushort *)local_1c[2];\n      local_18 = puVar3;\n      iVar1 = ReadFromTransportMessage(param_1,puVar3,2);\n      if (iVar1 == 0) {\n        if (*local_18 != 0) {\n          pvVar2 = calloc((uint)*local_18,(size_t)puVar3);\n          *(void **)(local_18 + 2) = pvVar2;\n          iVar1 = ReadFromTransportMessage(param_1,*(undefined4 *)(local_18 + 2),*local_18);\n          if (iVar1 != 0) goto LAB_000112c0;\n        }\n        *param_2 = local_1c;\n        return 0;\n      }\n    }\n  }\nLAB_000112c0:\n  DestroyCGCMBMessage(&local_1c);\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReceiveCGCMBMessage",
+                        "CreateBlankCGCMBMessage",
+                        "ReadFromTransportMessage",
+                        "calloc",
+                        "DestroyCGCMBMessage"
+                    ],
+                    "calling_functions": [
+                        "ReceiveCGCMBMessage",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SendErrorResponse",
+                "func_c_signature": "void SendErrorResponse(void)",
+                "decompiled_code": "void SendErrorResponse(void) {\n  int *local_10 [3];\n  \n  local_10[0] = (int *)CreateBlankCGCMBMessage();\n  *(undefined *)(*local_10[0] + 4) = 0xff;\n  AddToData(local_10[0][2],&stack0x00000004,4);\n  TransmitCGCMBMessage(local_10[0]);\n  DestroyCGCMBMessage(local_10);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SendErrorResponse",
+                        "CreateBlankCGCMBMessage",
+                        "AddToData",
+                        "TransmitCGCMBMessage",
+                        "DestroyCGCMBMessage"
+                    ],
+                    "calling_functions": [
+                        "SendErrorResponse",
+                        "HandleCGCMBMessage",
+                        "TransmitCGCMBMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReadFromData",
+                "func_c_signature": "undefined4 ReadFromData(void *param_1,ushort *param_2,size_t param_3)",
+                "decompiled_code": "undefined4 ReadFromData(void *param_1,ushort *param_2,size_t param_3) {\n  undefined4 uVar1;\n  \n  if (((param_1 == (void *)0x0) || (param_2 == (ushort *)0x0)) || (*(int *)(param_2 + 2) == 0)) {\n    uVar1 = 0xffffffff;\n  }\n  else if (param_3 == 0) {\n    uVar1 = 0;\n  }\n  else if ((int)(uint)*param_2 < (int)(param_2[4] + param_3)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    memcpy(param_1,(void *)((uint)param_2[4] + *(int *)(param_2 + 2)),param_3);\n    param_2[4] = (short)param_3 + param_2[4];\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReadFromData",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "ReadFromData",
+                        "ParseCGCMBMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ParseCGCMBMessage",
+                "func_c_signature": "undefined4 ParseCGCMBMessage(int *param_1)",
+                "decompiled_code": "undefined4 ParseCGCMBMessage(int *param_1) {\n  undefined4 uVar1;\n  void *pvVar2;\n  int iVar3;\n  size_t in_stack_ffffffb8;\n  size_t sVar4;\n  ushort local_38;\n  ushort local_36;\n  ushort local_34;\n  ushort local_32;\n  uint *local_30;\n  void *local_2c;\n  void *local_28;\n  void *local_24;\n  void *local_20;\n  void *local_1c;\n  void *local_18;\n  void *local_14;\n  void *local_10;\n  \n  if ((param_1 == (int *)0x0) || (*param_1 == 0)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    switch(*(undefined *)(*param_1 + 4)) {\n    default:\n      return 0xffffffff;\n    case 1:\n      pvVar2 = calloc(8,in_stack_ffffffb8);\n      param_1[3] = (int)pvVar2;\n      local_30 = (uint *)param_1[3];\n      *local_30 = (uint)(*(ushort *)param_1[2] >> 1);\n      if (*local_30 != 0) {\n        pvVar2 = calloc(4,in_stack_ffffffb8);\n        local_30[1] = (uint)pvVar2;\n        ReadFromData(local_30[1],param_1[2],*local_30 * 2);\n      }\n      break;\n    case 2:\n      local_2c = calloc(0x10,in_stack_ffffffb8);\n      param_1[3] = (int)local_2c;\n      iVar3 = ReadFromData(local_2c,param_1[1],4);\n      if ((iVar3 == 0) && (iVar3 = ReadFromData(&local_32,param_1[1],2), iVar3 == 0)) {\n        sVar4 = param_1[1];\n        iVar3 = ReadFromData((int)local_2c + 4,sVar4,4);\n        if ((iVar3 == 0) && ((local_32 != 0 && (local_32 < 0x41)))) {\n          pvVar2 = calloc(local_32 + 1,sVar4);\n          *(void **)((int)local_2c + 8) = pvVar2;\n          iVar3 = ReadFromData(*(undefined4 *)((int)local_2c + 8),param_1[2],local_32);\n          if ((iVar3 == 0) && ((local_34 != 0 && (local_34 < 0x81)))) {\n            sVar4 = param_1[2];\n            iVar3 = ReadFromData(&local_34,sVar4,2);\n            if (iVar3 == 0) {\n              pvVar2 = calloc(local_34 + 1,sVar4);\n              *(void **)((int)local_2c + 0xc) = pvVar2;\n              ReadFromData(*(undefined4 *)((int)local_2c + 0xc),param_1[2],local_34);\n            }\n          }\n        }\n      }\n      break;\n    case 3:\n      local_28 = calloc(0x14,in_stack_ffffffb8);\n      param_1[3] = (int)local_28;\n      iVar3 = ReadFromData(local_28,param_1[1],4);\n      if ((iVar3 == 0) && (iVar3 = ReadFromData((int)local_28 + 4,param_1[1],2), iVar3 == 0)) {\n        sVar4 = param_1[2];\n        iVar3 = ReadFromData(&local_36,sVar4,2);\n        if ((iVar3 == 0) && ((local_36 != 0 && (local_36 < 0x41)))) {\n          pvVar2 = calloc(local_36 + 1,sVar4);\n          *(void **)((int)local_28 + 8) = pvVar2;\n          iVar3 = ReadFromData(*(undefined4 *)((int)local_28 + 8),param_1[2],local_36);\n          if (iVar3 == 0) {\n            sVar4 = param_1[2];\n            iVar3 = ReadFromData(&local_36,sVar4,2);\n            if (((iVar3 == 0) && (local_36 != 0)) && (local_36 < 0x81)) {\n              pvVar2 = calloc(local_36 + 1,sVar4);\n              *(void **)((int)local_28 + 0xc) = pvVar2;\n              iVar3 = ReadFromData(*(undefined4 *)((int)local_28 + 0xc),param_1[2],local_36);\n              if (iVar3 == 0) {\n                sVar4 = param_1[2];\n                iVar3 = ReadFromData(&local_36,sVar4,2);\n                if (((iVar3 == 0) && (local_36 != 0)) && (local_36 < 0x81)) {\n                  pvVar2 = calloc(local_36 + 1,sVar4);\n                  *(void **)((int)local_28 + 0x10) = pvVar2;\n                  ReadFromData(*(undefined4 *)((int)local_28 + 0x10),param_1[2],local_36);\n                }\n              }\n            }\n          }\n        }\n      }\n      break;\n    case 4:\n      local_24 = calloc(0xc,in_stack_ffffffb8);\n      param_1[3] = (int)local_24;\n      iVar3 = ReadFromData(local_24,param_1[1],4);\n      if ((iVar3 == 0) && (iVar3 = ReadFromData((int)local_24 + 4,param_1[1],2), iVar3 == 0)) {\n        ReadFromData((int)local_24 + 8,param_1[1],4);\n      }\n      break;\n    case 5:\n      local_20 = calloc(0x14,in_stack_ffffffb8);\n      param_1[3] = (int)local_20;\n      iVar3 = ReadFromData(local_20,param_1[1],4);\n      if (((iVar3 == 0) && (iVar3 = ReadFromData((int)local_20 + 4,param_1[1],2), iVar3 == 0)) &&\n         ((iVar3 = ReadFromData((int)local_20 + 8,param_1[1],4), iVar3 == 0 &&\n          (iVar3 = ReadFromData((int)local_20 + 0xc,param_1[1],4), iVar3 == 0)))) {\n        sVar4 = param_1[2];\n        iVar3 = ReadFromData(&local_38,sVar4,2);\n        if (((iVar3 == 0) && (local_38 != 0)) && (local_38 < 0x81)) {\n          pvVar2 = calloc(local_38 + 1,sVar4);\n          *(void **)((int)local_20 + 0x10) = pvVar2;\n          ReadFromData(*(undefined4 *)((int)local_20 + 0x10),param_1[2],local_38);\n        }\n      }\n      break;\n    case 6:\n      local_1c = calloc(0x10,in_stack_ffffffb8);\n      param_1[3] = (int)local_1c;\n      iVar3 = ReadFromData(local_1c,param_1[1],4);\n      if (((iVar3 == 0) && (iVar3 = ReadFromData((int)local_1c + 4,param_1[1],2), iVar3 == 0)) &&\n         (iVar3 = ReadFromData((int)local_1c + 8,param_1[1],4), iVar3 == 0)) {\n        ReadFromData((int)local_1c + 0xc,param_1[1],2);\n      }\n      break;\n    case 7:\n      local_18 = calloc(0x14,in_stack_ffffffb8);\n      param_1[3] = (int)local_18;\n      iVar3 = ReadFromData(local_18,param_1[1],4);\n      if (((iVar3 == 0) && (iVar3 = ReadFromData((int)local_18 + 4,param_1[1],2), iVar3 == 0)) &&\n         ((iVar3 = ReadFromData((int)local_18 + 8,param_1[1],4), iVar3 == 0 &&\n          ((iVar3 = ReadFromData((int)local_18 + 0xc,param_1[1],2), iVar3 == 0 &&\n           (iVar3 = ReadFromData((int)local_18 + 0xe,param_1[2],2), iVar3 == 0)))))) {\n        ReadFromData((int)local_18 + 0x10,param_1[2],4);\n      }\n      break;\n    case 8:\n      local_14 = calloc(0x1c,in_stack_ffffffb8);\n      param_1[3] = (int)local_14;\n      iVar3 = ReadFromData(local_14,param_1[1],4);\n      if ((((iVar3 == 0) && (iVar3 = ReadFromData((int)local_14 + 4,param_1[1],2), iVar3 == 0)) &&\n          ((iVar3 = ReadFromData((int)local_14 + 8,param_1[1],4), iVar3 == 0 &&\n           ((iVar3 = ReadFromData((int)local_14 + 0xc,param_1[1],2), iVar3 == 0 &&\n            (iVar3 = ReadFromData((int)local_14 + 0xe,param_1[1],1), iVar3 == 0)))))) &&\n         (iVar3 = ReadFromData((int)local_14 + 0x10,param_1[2],2), iVar3 == 0)) {\n        sVar4 = param_1[2];\n        iVar3 = ReadFromData((int)local_14 + 0x14,sVar4,4);\n        if (((iVar3 == 0) && (*(short *)((int)local_14 + 0x10) != 0)) &&\n           (*(ushort *)((int)local_14 + 0x10) < 0x801)) {\n          pvVar2 = calloc((uint)*(ushort *)((int)local_14 + 0x10),sVar4);\n          *(void **)((int)local_14 + 0x18) = pvVar2;\n          ReadFromData(*(undefined4 *)((int)local_14 + 0x18),param_1[2],\n                       *(undefined2 *)((int)local_14 + 0x10));\n        }\n      }\n      break;\n    case 10:\n      local_10 = calloc(0x10,in_stack_ffffffb8);\n      param_1[3] = (int)local_10;\n      iVar3 = ReadFromData(local_10,param_1[1],4);\n      if (((iVar3 == 0) && (iVar3 = ReadFromData((int)local_10 + 4,param_1[1],2), iVar3 == 0)) &&\n         (iVar3 = ReadFromData((int)local_10 + 8,param_1[1],4), iVar3 == 0)) {\n        ReadFromData((int)local_10 + 0xc,param_1[1],2);\n      }\n      break;\n    case 0xb:\n    case 0xc:\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ParseCGCMBMessage",
+                        "calloc",
+                        "ReadFromData"
+                    ],
+                    "calling_functions": [
+                        "ParseCGCMBMessage",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FindConnectionByID",
+                "func_c_signature": "undefined4 FindConnectionByID(int param_1)",
+                "decompiled_code": "undefined4 FindConnectionByID(int param_1) {\n  int local_8;\n  \n  local_8 = 0;\n  while( true ) {\n    if (0x1f < local_8) {\n      return 0;\n    }\n    if ((*(int *)(mbServerState + (local_8 + 4) * 4) != 0) &&\n       (param_1 == **(int **)(mbServerState + (local_8 + 4) * 4))) break;\n    local_8 = local_8 + 1;\n  }\n  return *(undefined4 *)(mbServerState + (local_8 + 4) * 4);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindConnectionByID"
+                    ],
+                    "calling_functions": [
+                        "FindConnectionByID",
+                        "HandleCGCMBMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FindFileByID",
+                "func_c_signature": "undefined4 FindFileByID(int param_1,uint param_2)",
+                "decompiled_code": "undefined4 FindFileByID(int param_1,uint param_2) {\n  int local_8;\n  \n  local_8 = 0;\n  while( true ) {\n    if (0xf < local_8) {\n      return 0;\n    }\n    if ((*(int *)(param_1 + 0xc + local_8 * 4) != 0) &&\n       (param_2 == **(ushort **)(param_1 + 0xc + local_8 * 4))) break;\n    local_8 = local_8 + 1;\n  }\n  return *(undefined4 *)(param_1 + 0xc + local_8 * 4);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindFileByID"
+                    ],
+                    "calling_functions": [
+                        "FindFileByID",
+                        "HandleCGCMBMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandleCGCMBMessage",
+                "func_c_signature": "undefined4 HandleCGCMBMessage(int *param_1)",
+                "decompiled_code": "undefined4 HandleCGCMBMessage(int *param_1) {\n  int *piVar1;\n  undefined2 uVar2;\n  undefined4 uVar3;\n  int iVar4;\n  void *pvVar5;\n  uint __size;\n  size_t __size_00;\n  int *local_a8;\n  undefined local_a1;\n  int local_a0;\n  void *local_9c;\n  int *local_98;\n  int *local_94;\n  int *local_90;\n  int *local_8c;\n  int *local_88;\n  int *local_84;\n  undefined local_7d;\n  int *local_7c;\n  int *local_78;\n  undefined4 *local_74;\n  int *local_70;\n  int local_6c;\n  int *local_68;\n  int *local_64;\n  int local_60;\n  int *local_5c;\n  int local_58;\n  int local_54;\n  int *local_50;\n  void *local_4c;\n  int local_48;\n  int local_44;\n  int *local_40;\n  int local_3c;\n  int local_38;\n  int *local_34;\n  short *local_30;\n  int local_2c;\n  int *local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int *local_18;\n  short *local_14;\n  short local_e;\n  \n  if (param_1 == (int *)0x0) {\n    uVar3 = 0xffffffff;\n  }\n  else {\n    iVar4 = VerifyCGCMBMessage(param_1);\n    if (iVar4 == 0) {\n      switch(*(undefined *)(*param_1 + 4)) {\n      default:\n        SendErrorResponse(0xe6);\n        break;\n      case 1:\n        if (*mbServerState != 0) {\n          SendErrorResponse(0xe3);\n          return 0xffffffff;\n        }\n        local_74 = (undefined4 *)param_1[3];\n        if (local_74 == (undefined4 *)0x0) {\n          SendErrorResponse(0xe1);\n          return 0xffffffff;\n        }\n        local_e = (short)*local_74;\n        local_14 = (short *)local_74[1];\n        if (local_14 == (short *)0x0) {\n          SendErrorResponse(0xe1);\n        }\n        else {\n          local_78 = (int *)CreateBlankCGCMBMessage();\n          *(undefined *)(*local_78 + 4) = 0xf1;\n          *mbServerState = 1;\n          for (; local_e != 0; local_e = local_e + -1) {\n            if (((*local_14 == 0x313e) || (*local_14 == 0x4155)) || (*local_14 == 0x2671)) {\n              *(short *)(mbServerState + 1) = *local_14;\n              piVar1 = mbServerState;\n              iVar4 = rand();\n              piVar1[2] = iVar4;\n              AddToData(local_78[2],mbServerState + 2,4);\n              AddToData(local_78[2],mbServerState + 1,2);\n              break;\n            }\n            local_14 = local_14 + 1;\n          }\n          if (*(short *)(mbServerState + 1) == 0) {\n            *mbServerState = 3;\n          }\n          TransmitCGCMBMessage(local_78);\n          DestroyCGCMBMessage(&local_78);\n        }\n        break;\n      case 2:\n        if (*mbServerState != 1) {\n          SendErrorResponse(0xe3);\n          return 0xffffffff;\n        }\n        local_70 = (int *)param_1[3];\n        if (local_70 == (int *)0x0) {\n          SendErrorResponse(0xe1);\n          return 0xffffffff;\n        }\n        if (mbServerState[2] != *local_70) {\n          SendErrorResponse(0xe5);\n          return 0xffffffff;\n        }\n        if (local_70[1] != 0) {\n          SendErrorResponse(0xe1);\n          return 0xffffffff;\n        }\n        *mbServerState = 2;\n        uVar2 = LookupUser(local_70[3],local_70[2]);\n        *(undefined2 *)(mbServerState + 3) = uVar2;\n        local_7c = (int *)CreateBlankCGCMBMessage();\n        *(undefined *)(*local_7c + 4) = 0xf2;\n        AddToData(local_7c[2],mbServerState + 3,2);\n        local_7d = *(short *)(mbServerState + 3) == -1;\n        AddToData(local_7c[2],&local_7d,1);\n        TransmitCGCMBMessage(local_7c);\n        DestroyCGCMBMessage(&local_7c);\n        break;\n      case 3:\n        if (*mbServerState != 2) {\n          SendErrorResponse(0xe3);\n          return 0xffffffff;\n        }\n        local_68 = (int *)param_1[3];\n        if (local_68 == (int *)0x0) {\n          SendErrorResponse(0xe1);\n          return 0xffffffff;\n        }\n        if (mbServerState[2] != *local_68) {\n          SendErrorResponse(0xe5);\n          return 0xffffffff;\n        }\n        if (*(short *)(mbServerState + 3) != *(short *)(local_68 + 1)) {\n          SendErrorResponse(0xe7);\n          return 0xffffffff;\n        }\n        __size_00 = local_68[3];\n        local_6c = FindTreeByPath(*(undefined2 *)(local_68 + 1),__size_00,local_68[4]);\n        piVar1 = mbServerState;\n        if (local_6c == 0) {\n          SendErrorResponse(0xe4);\n          return 0xffffffff;\n        }\n        local_18 = (int *)0x0;\n        for (local_1c = 0; local_1c < 0x20; local_1c = local_1c + 1) {\n          if (mbServerState[local_1c + 4] == 0) {\n            pvVar5 = calloc(0x4c,__size_00);\n            piVar1[local_1c + 4] = (int)pvVar5;\n            local_18 = (int *)mbServerState[local_1c + 4];\n            break;\n          }\n        }\n        if (local_18 == (int *)0x0) {\n          SendErrorResponse(0xe8);\n          return 0xffffffff;\n        }\n        iVar4 = rand();\n        *local_18 = iVar4;\n        local_18[1] = 0;\n        local_18[2] = local_6c;\n        local_84 = (int *)CreateBlankCGCMBMessage();\n        *(undefined *)(*local_84 + 4) = 0xf3;\n        AddToData(local_84[1],local_68,4);\n        AddToData(local_84[1],local_68 + 1,2);\n        AddToData(local_84[2],local_18,4);\n        TransmitCGCMBMessage(local_84);\n        DestroyCGCMBMessage(&local_84);\n        break;\n      case 4:\n        if (*mbServerState != 2) {\n          SendErrorResponse(0xe3);\n          return 0xffffffff;\n        }\n        local_64 = (int *)param_1[3];\n        if (local_64 == (int *)0x0) {\n          SendErrorResponse(0xe1);\n          return 0xffffffff;\n        }\n        if (mbServerState[2] != *local_64) {\n          SendErrorResponse(0xe5);\n          return 0xffffffff;\n        }\n        if (*(short *)(mbServerState + 3) != *(short *)(local_64 + 1)) {\n          SendErrorResponse(0xe7);\n          return 0xffffffff;\n        }\n        for (local_20 = 0; local_20 < 0x20; local_20 = local_20 + 1) {\n          if ((mbServerState[local_20 + 4] != 0) &&\n             (*(int *)mbServerState[local_20 + 4] == local_64[2])) {\n            free((void *)mbServerState[local_20 + 4]);\n            mbServerState[local_20 + 4] = 0;\n            local_88 = (int *)CreateBlankCGCMBMessage();\n            *(undefined *)(*local_88 + 4) = 0xf4;\n            AddToData(local_88[1],local_64,4);\n            AddToData(local_88[1],local_64 + 1,2);\n            AddToData(local_88[1],local_64 + 2,4);\n            TransmitCGCMBMessage(local_88);\n            DestroyCGCMBMessage(&local_88);\n            return 0;\n          }\n        }\n        SendErrorResponse(0xe9);\n        break;\n      case 5:\n        if (*mbServerState != 2) {\n          SendErrorResponse(0xe3);\n          return 0xffffffff;\n        }\n        local_5c = (int *)param_1[3];\n        if (local_5c == (int *)0x0) {\n          SendErrorResponse(0xe1);\n          return 0xffffffff;\n        }\n        if (mbServerState[2] != *local_5c) {\n          SendErrorResponse(0xe5);\n          return 0xffffffff;\n        }\n        if (*(short *)(mbServerState + 3) != *(short *)(local_5c + 1)) {\n          SendErrorResponse(0xe7);\n          return 0xffffffff;\n        }\n        local_60 = FindConnectionByID(local_5c[2]);\n        if (local_60 == 0) {\n          SendErrorResponse(0xe9);\n        }\n        else {\n          for (local_24 = 0; local_24 < 0x10; local_24 = local_24 + 1) {\n            if (*(int *)(local_60 + 0xc + local_24 * 4) == 0) {\n              uVar3 = CreateFile(*(undefined4 *)(local_60 + 8),local_5c[4],\n                                 *(undefined2 *)(local_5c + 1),local_5c[3]);\n              *(undefined4 *)(local_60 + 0xc + local_24 * 4) = uVar3;\n              if (*(int *)(local_60 + 0xc + local_24 * 4) != 0) {\n                local_8c = (int *)CreateBlankCGCMBMessage();\n                *(undefined *)(*local_8c + 4) = 0xf5;\n                AddToData(local_8c[1],local_5c,4);\n                AddToData(local_8c[1],local_5c + 1,2);\n                AddToData(local_8c[1],local_5c + 2,4);\n                AddToData(local_8c[1],*(undefined4 *)(local_60 + 0xc + local_24 * 4),2);\n                TransmitCGCMBMessage(local_8c);\n                DestroyCGCMBMessage(&local_8c);\n                return 0;\n              }\n              SendErrorResponse(0xea);\n              break;\n            }\n          }\n          SendErrorResponse(0xe8);\n        }\n        break;\n      case 6:\n        if (*mbServerState != 2) {\n          SendErrorResponse(0xe3);\n          return 0xffffffff;\n        }\n        local_50 = (int *)param_1[3];\n        if (local_50 == (int *)0x0) {\n          SendErrorResponse(0xe1);\n          return 0xffffffff;\n        }\n        if (mbServerState[2] != *local_50) {\n          SendErrorResponse(0xe5);\n          return 0xffffffff;\n        }\n        if (*(short *)(mbServerState + 3) != *(short *)(local_50 + 1)) {\n          SendErrorResponse(0xe7);\n          return 0xffffffff;\n        }\n        local_54 = FindConnectionByID(local_50[2]);\n        if (local_54 == 0) {\n          SendErrorResponse(0xe9);\n        }\n        else {\n          local_58 = FindFileByID(local_54,*(undefined2 *)(local_50 + 3));\n          if (local_58 == 0) {\n            SendErrorResponse(0xe9);\n          }\n          else {\n            CloseFile(local_58);\n            local_90 = (int *)CreateBlankCGCMBMessage();\n            *(undefined *)(*local_90 + 4) = 0xf6;\n            AddToData(local_90[1],local_50,4);\n            AddToData(local_90[1],local_50 + 1,2);\n            AddToData(local_90[1],local_50 + 2,4);\n            AddToData(local_90[1],local_50 + 3,2);\n            TransmitCGCMBMessage(local_90);\n            DestroyCGCMBMessage(&local_90);\n          }\n        }\n        break;\n      case 7:\n        if (*mbServerState != 2) {\n          SendErrorResponse(0xe3);\n          return 0xffffffff;\n        }\n        local_40 = (int *)param_1[3];\n        if (local_40 == (int *)0x0) {\n          SendErrorResponse(0xe1);\n          return 0xffffffff;\n        }\n        if (mbServerState[2] != *local_40) {\n          SendErrorResponse(0xe5);\n          return 0xffffffff;\n        }\n        if (*(short *)(mbServerState + 3) != *(short *)(local_40 + 1)) {\n          SendErrorResponse(0xe7);\n          return 0xffffffff;\n        }\n        local_44 = FindConnectionByID(local_40[2]);\n        if (local_44 == 0) {\n          SendErrorResponse(0xe9);\n        }\n        else {\n          __size = (uint)*(ushort *)(local_40 + 3);\n          local_48 = FindFileByID(local_44);\n          if (local_48 == 0) {\n            SendErrorResponse(0xe9);\n          }\n          else if ((*(short *)((int)local_40 + 0xe) == 0) ||\n                  (0x800 < *(ushort *)((int)local_40 + 0xe))) {\n            SendErrorResponse(0xe1);\n          }\n          else {\n            local_4c = calloc((uint)*(ushort *)((int)local_40 + 0xe),__size);\n            iVar4 = ReadFile(local_4c,local_48,local_40[4] & 0xffff,\n                             *(undefined2 *)((int)local_40 + 0xe));\n            if (iVar4 == 0) {\n              local_94 = (int *)CreateBlankCGCMBMessage();\n              *(undefined *)(*local_94 + 4) = 0xf7;\n              AddToData(local_94[1],local_40,4);\n              AddToData(local_94[1],local_40 + 1,2);\n              AddToData(local_94[1],local_40 + 2,4);\n              AddToData(local_94[1],(int)local_40 + 0xe,2);\n              AddToData(local_94[2],local_4c,*(undefined2 *)((int)local_40 + 0xe));\n              TransmitCGCMBMessage(local_94);\n              free(local_4c);\n              DestroyCGCMBMessage(&local_94);\n            }\n            else {\n              SendErrorResponse(0xea);\n              free(local_4c);\n            }\n          }\n        }\n        break;\n      case 8:\n        if (*mbServerState != 2) {\n          SendErrorResponse(0xe3);\n          return 0xffffffff;\n        }\n        local_34 = (int *)param_1[3];\n        if (local_34 == (int *)0x0) {\n          SendErrorResponse(0xe1);\n          return 0xffffffff;\n        }\n        if (mbServerState[2] != *local_34) {\n          SendErrorResponse(0xe5);\n          return 0xffffffff;\n        }\n        if (*(short *)(mbServerState + 3) != *(short *)(local_34 + 1)) {\n          SendErrorResponse(0xe7);\n          return 0xffffffff;\n        }\n        local_38 = FindConnectionByID(local_34[2]);\n        if (local_38 == 0) {\n          SendErrorResponse(0xe9);\n        }\n        else {\n          local_3c = FindFileByID(local_38,*(undefined2 *)(local_34 + 3));\n          if (local_3c == 0) {\n            SendErrorResponse(0xe9);\n          }\n          else if ((*(short *)(local_34 + 4) == 0) || (0x800 < *(ushort *)(local_34 + 4))) {\n            SendErrorResponse(0xe1);\n          }\n          else {\n            iVar4 = WriteFile(local_3c,local_34[6],local_34[5] & 0xffff,\n                              *(undefined2 *)(local_34 + 4));\n            if (iVar4 == 0) {\n              local_98 = (int *)CreateBlankCGCMBMessage();\n              *(undefined *)(*local_98 + 4) = 0xf8;\n              AddToData(local_98[1],local_34,4);\n              AddToData(local_98[1],local_34 + 1,2);\n              AddToData(local_98[1],local_34 + 2,4);\n              AddToData(local_98[1],local_34 + 3,2);\n              TransmitCGCMBMessage(local_98);\n              DestroyCGCMBMessage(&local_98);\n            }\n            else {\n              SendErrorResponse(0xea);\n            }\n          }\n        }\n        break;\n      case 10:\n        if (*mbServerState != 2) {\n          SendErrorResponse(0xe3);\n          return 0xffffffff;\n        }\n        local_28 = (int *)param_1[3];\n        if (local_28 == (int *)0x0) {\n          SendErrorResponse(0xe1);\n          return 0xffffffff;\n        }\n        if (mbServerState[2] != *local_28) {\n          SendErrorResponse(0xe5);\n          return 0xffffffff;\n        }\n        if (*(short *)(mbServerState + 3) != *(short *)(local_28 + 1)) {\n          SendErrorResponse(0xe7);\n          return 0xffffffff;\n        }\n        local_2c = FindConnectionByID(local_28[2]);\n        if (local_2c == 0) {\n          SendErrorResponse(0xe9);\n        }\n        else if (*(int *)(local_2c + 8) == 0) {\n          SendErrorResponse(0xe9);\n        }\n        else {\n          iVar4 = strcmp((char *)(*(int *)(local_2c + 8) + 0x84),\"EYEPSEE\");\n          if (iVar4 == 0) {\n            local_30 = (short *)FindFileByID(local_2c,*(undefined2 *)(local_28 + 3));\n            if (local_30 == (short *)0x0) {\n              SendErrorResponse(0xe9);\n            }\n            else if (*local_30 == **(short **)(*(int *)(local_2c + 8) + 0xc4)) {\n              local_a1 = HandleCGCRPCMessage(*(undefined4 *)(param_1[2] + 4),\n                                             *(undefined2 *)param_1[2],&local_9c,&local_a0);\n              local_a8 = (int *)CreateBlankCGCMBMessage();\n              *(undefined *)(*local_a8 + 4) = 0xfa;\n              AddToData(local_a8[1],local_28,4);\n              AddToData(local_a8[1],local_28 + 1,2);\n              AddToData(local_a8[1],local_28 + 2,4);\n              AddToData(local_a8[1],&local_a1,1);\n              if ((local_a0 != 0) && (local_9c != (void *)0x0)) {\n                AddToData(local_a8[2],local_9c,local_a0);\n                free(local_9c);\n              }\n              TransmitCGCMBMessage(local_a8);\n              DestroyCGCMBMessage(&local_a8);\n            }\n            else {\n              SendErrorResponse(0xe9);\n            }\n          }\n          else {\n            SendErrorResponse(0xeb);\n          }\n        }\n        break;\n      case 0xb:\n        *(undefined *)(*param_1 + 4) = 0xfb;\n        TransmitCGCMBMessage(param_1);\n        break;\n      case 0xc:\n        *mbServerState = 3;\n        *(undefined *)(*param_1 + 4) = 0xfc;\n        TransmitCGCMBMessage(param_1);\n        return 1;\n      }\n      uVar3 = 0;\n    }\n    else {\n      SendErrorResponse(0xe1);\n      uVar3 = 0;\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandleCGCMBMessage",
+                        "VerifyCGCMBMessage",
+                        "SendErrorResponse",
+                        "CreateBlankCGCMBMessage",
+                        "rand",
+                        "AddToData",
+                        "TransmitCGCMBMessage",
+                        "DestroyCGCMBMessage",
+                        "LookupUser",
+                        "FindTreeByPath",
+                        "calloc",
+                        "free",
+                        "FindConnectionByID",
+                        "CreateFile",
+                        "FindFileByID",
+                        "CloseFile",
+                        "ReadFile",
+                        "WriteFile",
+                        "strcmp",
+                        "HandleCGCRPCMessage"
+                    ],
+                    "calling_functions": [
+                        "HandleCGCMBMessage",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DestroyCGCMBMessage",
+                "func_c_signature": "void DestroyCGCMBMessage(int **param_1)",
+                "decompiled_code": "void DestroyCGCMBMessage(int **param_1) {\n  int **ppiVar1;\n  undefined *puVar2;\n  int *apiStack_60 [13];\n  undefined auStack_2c [8];\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int *local_10;\n  \n  ppiVar1 = (int **)auStack_2c;\n  puVar2 = auStack_2c;\n  apiStack_60[12] = (int *)0x131c3;\n  if ((param_1 != (int **)0x0) && (local_10 = *param_1, local_10 != (int *)0x0)) {\n    if (local_10[3] != 0) {\n      if (*local_10 == 0) {\n        ppiVar1 = apiStack_60 + 9;\n        apiStack_60[9] = (int *)0xffffffff;\n        _terminate();\n      }\n      puVar2 = (undefined *)ppiVar1;\n      switch(*(undefined *)(*local_10 + 4)) {\n      default:\n        puVar2 = (undefined *)((int)ppiVar1 + -0x10);\n        *(undefined4 *)((int)ppiVar1 + -0x10) = 0xffffffff;\n        *(undefined4 *)((int)ppiVar1 + -0x14) = 0x13320;\n        _terminate();\n        break;\n      case 1:\n        local_24 = local_10[3];\n        *(undefined4 *)((int)ppiVar1 + -0x10) = *(undefined4 *)(local_24 + 4);\n        *(undefined4 *)((int)ppiVar1 + -0x14) = 0x13241;\n        free(*(void **)((int)ppiVar1 + -0x10));\n        break;\n      case 2:\n        local_20 = local_10[3];\n        if (local_20 != 0) {\n          *(undefined4 *)((int)ppiVar1 + -0x10) = *(undefined4 *)(local_20 + 8);\n          *(undefined4 *)((int)ppiVar1 + -0x14) = 0x1326b;\n          free(*(void **)((int)ppiVar1 + -0x10));\n          *(undefined4 *)((int)ppiVar1 + -0x10) = *(undefined4 *)(local_20 + 0xc);\n          *(undefined4 *)((int)ppiVar1 + -0x14) = 0x1327d;\n          free(*(void **)((int)ppiVar1 + -0x10));\n        }\n        break;\n      case 3:\n        local_1c = local_10[3];\n        if (local_1c != 0) {\n          *(undefined4 *)((int)ppiVar1 + -0x10) = *(undefined4 *)(local_1c + 8);\n          *(undefined4 *)((int)ppiVar1 + -0x14) = 0x132a7;\n          free(*(void **)((int)ppiVar1 + -0x10));\n          *(undefined4 *)((int)ppiVar1 + -0x10) = *(undefined4 *)(local_1c + 0xc);\n          *(undefined4 *)((int)ppiVar1 + -0x14) = 0x132b9;\n          free(*(void **)((int)ppiVar1 + -0x10));\n          *(undefined4 *)((int)ppiVar1 + -0x10) = *(undefined4 *)(local_1c + 0x10);\n          *(undefined4 *)((int)ppiVar1 + -0x14) = 0x132cb;\n          free(*(void **)((int)ppiVar1 + -0x10));\n        }\n        break;\n      case 4:\n      case 6:\n      case 7:\n      case 10:\n      case 0xb:\n      case 0xc:\n        break;\n      case 5:\n        local_18 = local_10[3];\n        if (local_18 != 0) {\n          *(undefined4 *)((int)ppiVar1 + -0x10) = *(undefined4 *)(local_18 + 0x10);\n          *(undefined4 *)((int)ppiVar1 + -0x14) = 0x132ee;\n          free(*(void **)((int)ppiVar1 + -0x10));\n        }\n        break;\n      case 8:\n        local_14 = local_10[3];\n        if (local_14 != 0) {\n          *(undefined4 *)((int)ppiVar1 + -0x10) = *(undefined4 *)(local_14 + 0x18);\n          *(undefined4 *)((int)ppiVar1 + -0x14) = 0x13311;\n          free(*(void **)((int)ppiVar1 + -0x10));\n        }\n      }\n      *(int *)(puVar2 + -0x10) = local_10[3];\n      *(undefined4 *)(puVar2 + -0x14) = 0x1333c;\n      free(*(void **)(puVar2 + -0x10));\n    }\n    if (local_10[2] != 0) {\n      *(undefined4 *)(puVar2 + -0x10) = *(undefined4 *)(local_10[2] + 4);\n      *(undefined4 *)(puVar2 + -0x14) = 0x1335b;\n      free(*(void **)(puVar2 + -0x10));\n      *(int *)(puVar2 + -0x10) = local_10[2];\n      *(undefined4 *)(puVar2 + -0x14) = 0x1336d;\n      free(*(void **)(puVar2 + -0x10));\n    }\n    if (local_10[1] != 0) {\n      *(undefined4 *)(puVar2 + -0x10) = *(undefined4 *)(local_10[1] + 4);\n      *(undefined4 *)(puVar2 + -0x14) = 0x1338c;\n      free(*(void **)(puVar2 + -0x10));\n      *(int *)(puVar2 + -0x10) = local_10[1];\n      *(undefined4 *)(puVar2 + -0x14) = 0x1339e;\n      free(*(void **)(puVar2 + -0x10));\n    }\n    *(int *)(puVar2 + -0x10) = *local_10;\n    *(undefined4 *)(puVar2 + -0x14) = 0x133af;\n    free(*(void **)(puVar2 + -0x10));\n    *(int **)(puVar2 + -0x10) = local_10;\n    *(undefined4 *)(puVar2 + -0x14) = 0x133bd;\n    free(*(void **)(puVar2 + -0x10));\n    *param_1 = (int *)0x0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DestroyCGCMBMessage",
+                        "_terminate",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "ReceiveCGCMBMessage",
+                        "SendErrorResponse",
+                        "HandleCGCMBMessage",
+                        "DestroyCGCMBMessage",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CreateBlankCGCMBMessage",
+                "func_c_signature": "void ** CreateBlankCGCMBMessage(void)",
+                "decompiled_code": "void ** CreateBlankCGCMBMessage(void) {\n  void **ppvVar1;\n  void *pvVar2;\n  size_t in_stack_ffffffd8;\n  \n  ppvVar1 = (void **)calloc(0x10,in_stack_ffffffd8);\n  pvVar2 = calloc(0xc,in_stack_ffffffd8);\n  ppvVar1[2] = pvVar2;\n  pvVar2 = calloc(0xc,in_stack_ffffffd8);\n  ppvVar1[1] = pvVar2;\n  pvVar2 = calloc(0x10,in_stack_ffffffd8);\n  *ppvVar1 = pvVar2;\n  *(undefined4 *)*ppvVar1 = 0xc47c4d42;\n  return ppvVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CreateBlankCGCMBMessage",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "ReceiveCGCMBMessage",
+                        "SendErrorResponse",
+                        "HandleCGCMBMessage",
+                        "CreateBlankCGCMBMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "VerifyCGCMBMessage",
+                "func_c_signature": "undefined4 VerifyCGCMBMessage(int **param_1)",
+                "decompiled_code": "undefined4 VerifyCGCMBMessage(int **param_1) {\n  undefined4 uVar1;\n  \n  if ((param_1 == (int **)0x0) || (*param_1 == (int *)0x0)) {\n    uVar1 = 0xffffffff;\n  }\n  else if (**param_1 == -0x3b83b2be) {\n    if (((param_1[2] == (int *)0x0) || (*(short *)param_1[2] == 0)) || (param_1[2][1] != 0)) {\n      if (((param_1[1] == (int *)0x0) || (*(short *)param_1[1] == 0)) || (param_1[1][1] != 0)) {\n        uVar1 = 0;\n      }\n      else {\n        uVar1 = 0xffffffff;\n      }\n    }\n    else {\n      uVar1 = 0xffffffff;\n    }\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "VerifyCGCMBMessage"
+                    ],
+                    "calling_functions": [
+                        "HandleCGCMBMessage",
+                        "VerifyCGCMBMessage",
+                        "TransmitCGCMBMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "TransmitCGCMBMessage",
+                "func_c_signature": "void TransmitCGCMBMessage(void **param_1)",
+                "decompiled_code": "void TransmitCGCMBMessage(void **param_1) {\n  int iVar1;\n  void *pvVar2;\n  void *pvVar3;\n  size_t in_stack_ffffffd8;\n  void *local_14;\n  void *local_10;\n  \n  iVar1 = VerifyCGCMBMessage(param_1);\n  if (iVar1 == 0) {\n    pvVar2 = calloc(0x10,in_stack_ffffffd8);\n                    /* WARNING: Load size is inaccurate */\n    *(uint *)((int)pvVar2 + 4) = *param_1[2] + 2;\n                    /* WARNING: Load size is inaccurate */\n    *(uint *)((int)pvVar2 + 4) = *(int *)((int)pvVar2 + 4) + (uint)*param_1[1] + 2;\n    *(int *)((int)pvVar2 + 4) = *(int *)((int)pvVar2 + 4) + 0xf;\n    local_14 = pvVar2;\n    if (*(uint *)((int)pvVar2 + 4) < 0x1001) {\n      pvVar3 = calloc(*(size_t *)((int)pvVar2 + 4),in_stack_ffffffd8);\n      *(void **)((int)pvVar2 + 8) = pvVar3;\n      local_10 = *(void **)((int)local_14 + 8);\n      memcpy(local_10,*param_1,4);\n      local_10 = (void *)((int)local_10 + 4);\n      memcpy(local_10,(void *)((int)*param_1 + 4),1);\n      local_10 = (void *)((int)local_10 + 1);\n      memcpy(local_10,(void *)((int)*param_1 + 5),1);\n      local_10 = (void *)((int)local_10 + 1);\n      memcpy(local_10,(void *)((int)*param_1 + 6),1);\n      local_10 = (void *)((int)local_10 + 1);\n      memcpy(local_10,(void *)((int)*param_1 + 7),8);\n      local_10 = (void *)((int)local_10 + 8);\n      memcpy(local_10,param_1[1],2);\n      local_10 = (void *)((int)local_10 + 2);\n                    /* WARNING: Load size is inaccurate */\n      if (*param_1[1] != 0) {\n                    /* WARNING: Load size is inaccurate */\n        memcpy(local_10,*(void **)((int)param_1[1] + 4),(uint)*param_1[1]);\n                    /* WARNING: Load size is inaccurate */\n        local_10 = (void *)((int)local_10 + (uint)*param_1[1]);\n      }\n      memcpy(local_10,param_1[2],2);\n      local_10 = (void *)((int)local_10 + 2);\n                    /* WARNING: Load size is inaccurate */\n      if (*param_1[2] != 0) {\n                    /* WARNING: Load size is inaccurate */\n        memcpy(local_10,*(void **)((int)param_1[2] + 4),(uint)*param_1[2]);\n                    /* WARNING: Load size is inaccurate */\n        local_10 = (void *)((int)local_10 + (uint)*param_1[2]);\n      }\n      SendTransportMessage(local_14);\n      DestroyTransportMessage(&local_14);\n    }\n    else {\n      SendErrorResponse(0xe2);\n      DestroyTransportMessage(&local_14);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "TransmitCGCMBMessage",
+                        "VerifyCGCMBMessage",
+                        "calloc",
+                        "memcpy",
+                        "SendTransportMessage",
+                        "DestroyTransportMessage",
+                        "SendErrorResponse"
+                    ],
+                    "calling_functions": [
+                        "SendErrorResponse",
+                        "HandleCGCMBMessage",
+                        "TransmitCGCMBMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            }
+        ],
+        "cgcrpc.c": [
+            {
+                "func_name": "InitializeCGCRPC",
+                "func_c_signature": "void InitializeCGCRPC(void)",
+                "decompiled_code": "void InitializeCGCRPC(void) {\n  strcpy(endpoints,\"NETSTUFF\");\n  endpoints._64_2_ = 0xdc;\n  endpoints._68_4_ = NETSTUFF_Handler;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitializeCGCRPC",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "InitializeCGCRPC",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AddConnection",
+                "func_c_signature": "undefined4 AddConnection(undefined4 param_1)",
+                "decompiled_code": "undefined4 AddConnection(undefined4 param_1) {\n  undefined4 uVar1;\n  int local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (9 < local_10) {\n      return 0;\n    }\n    if (*(int *)(connections + local_10 * 8) == 0) break;\n    local_10 = local_10 + 1;\n  }\n  uVar1 = random_in_range(1,0xffffffff);\n  *(undefined4 *)(connections + local_10 * 8) = uVar1;\n  *(undefined4 *)(connections + local_10 * 8 + 4) = param_1;\n  return *(undefined4 *)(connections + local_10 * 8);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AddConnection",
+                        "random_in_range"
+                    ],
+                    "calling_functions": [
+                        "AddConnection",
+                        "BindEndpoint"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "BindEndpoint",
+                "func_c_signature": "undefined4 BindEndpoint(char *param_1,short param_2)",
+                "decompiled_code": "undefined4 BindEndpoint(char *param_1,short param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  int local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (9 < local_10) {\n      return 0;\n    }\n    if (((endpoints[local_10 * 0x48] != '\\0') &&\n        (iVar1 = strcmp(endpoints + local_10 * 0x48,param_1), iVar1 == 0)) &&\n       (param_2 == *(short *)(endpoints + local_10 * 0x48 + 0x40))) break;\n    local_10 = local_10 + 1;\n  }\n  uVar2 = AddConnection(endpoints + local_10 * 0x48);\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "BindEndpoint",
+                        "strcmp",
+                        "AddConnection"
+                    ],
+                    "calling_functions": [
+                        "BindEndpoint",
+                        "HandleCGCRPCMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "LookupBindID",
+                "func_c_signature": "undefined4 LookupBindID(int param_1)",
+                "decompiled_code": "undefined4 LookupBindID(int param_1) {\n  int local_8;\n  \n  if (param_1 != 0) {\n    for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {\n      if (param_1 == *(int *)(connections + local_8 * 8)) {\n        return *(undefined4 *)(connections + local_8 * 8 + 4);\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "LookupBindID"
+                    ],
+                    "calling_functions": [
+                        "LookupBindID",
+                        "HandleCGCRPCMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandleCGCRPCMessage",
+                "func_c_signature": "undefined4 HandleCGCRPCMessage(short *param_1,uint param_2,undefined4 *param_3,int *param_4)",
+                "decompiled_code": "undefined4 HandleCGCRPCMessage(short *param_1,uint param_2,undefined4 *param_3,int *param_4) {\n  undefined4 uVar1;\n  uint __size;\n  undefined2 *puVar2;\n  size_t in_stack_ffffffb8;\n  ushort local_3a;\n  void *local_38 [2];\n  int local_30;\n  ushort local_2a;\n  void *local_28;\n  ushort local_22;\n  undefined2 *local_20;\n  int local_1c;\n  ushort local_18;\n  short local_16;\n  undefined4 local_14;\n  short local_e;\n  \n  if (param_1 == (short *)0x0) {\n    uVar1 = 0xffffffff;\n  }\n  else if (param_2 < 2) {\n    uVar1 = 2;\n  }\n  else {\n    local_e = *param_1;\n    if (local_e == 0xa0) {\n      if (param_2 - 2 < 2) {\n        return 2;\n      }\n      local_22 = param_1[1];\n      if (((uint)local_22 != param_2 - 6) || (local_22 == 0)) {\n        return 2;\n      }\n      local_28 = calloc(local_22 + 1,in_stack_ffffffb8);\n      memcpy(local_28,param_1 + 2,(uint)local_22);\n      local_2a = *(ushort *)((int)(param_1 + 2) + (uint)local_22);\n      __size = (uint)local_2a;\n      local_30 = BindEndpoint(local_28);\n      free(local_28);\n      if (local_30 == 0) {\n        return 8;\n      }\n      puVar2 = (undefined2 *)calloc(7,__size);\n      *param_3 = puVar2;\n      *puVar2 = 10;\n      *(undefined *)(puVar2 + 1) = 0;\n      *(int *)((int)puVar2 + 3) = local_30;\n      *param_4 = 7;\n    }\n    else {\n      if (local_e != 0xa1) {\n        return 4;\n      }\n      if (param_2 - 2 < 8) {\n        return 2;\n      }\n      local_14 = *(undefined4 *)(param_1 + 1);\n      local_16 = param_1[3];\n      local_18 = param_1[4];\n      param_1 = param_1 + 5;\n      if ((uint)local_18 != param_2 - 10) {\n        return 2;\n      }\n      local_1c = LookupBindID(local_14);\n      if (local_1c == 0) {\n        return 8;\n      }\n      local_38[0] = (void *)0x0;\n      if (local_18 == 0) {\n        param_1 = (short *)0x0;\n      }\n      (**(code **)(local_1c + 0x44))(local_16,param_1,local_18,local_38,&local_3a);\n      if (0x800 < local_3a) {\n        local_3a = 0x800;\n      }\n      local_20 = (undefined2 *)calloc(local_3a + 8,in_stack_ffffffb8);\n      *param_3 = local_20;\n      *local_20 = 0x1a;\n      *(undefined4 *)(local_20 + 1) = local_14;\n      local_20[3] = local_3a;\n      local_20 = local_20 + 4;\n      memcpy(local_20,local_38[0],(uint)local_3a);\n      free(local_38[0]);\n      *param_4 = local_3a + 8;\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandleCGCRPCMessage",
+                        "calloc",
+                        "memcpy",
+                        "BindEndpoint",
+                        "free",
+                        "LookupBindID"
+                    ],
+                    "calling_functions": [
+                        "HandleCGCMBMessage",
+                        "HandleCGCRPCMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            }
+        ],
+        "fs.c": [
+            {
+                "func_name": "InitializeFileSystem",
+                "func_c_signature": "void InitializeFileSystem(void)",
+                "decompiled_code": "void InitializeFileSystem(void) {\n  undefined4 uVar1;\n  int iVar2;\n  size_t __size;\n  char *__size_00;\n  undefined local_bc [128];\n  void *local_3c;\n  size_t local_38;\n  int local_34;\n  int local_30;\n  int *local_2c;\n  undefined2 *local_28;\n  int *local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  for (local_10 = 0; local_10 < 5; local_10 = local_10 + 1) {\n    uVar1 = random_in_range(0x20,0x40);\n    populate_random_string(serviceTypes + local_10 * 0x40,uVar1);\n  }\n  local_20 = random_in_range(0x40,0x80);\n  for (local_14 = 0; local_14 < 9; local_14 = local_14 + 1) {\n    local_2c = (int *)(allTrees + local_14 * 0xec);\n    iVar2 = rand();\n    *local_2c = iVar2;\n    populate_random_string(local_2c + 1,local_20 - local_14);\n    iVar2 = random_in_range(0,4);\n    strcpy((char *)(local_2c + 0x21),serviceTypes + iVar2 * 0x40);\n    local_18 = random_in_range(1,10);\n    local_1c = 0;\n    local_30 = random_in_range(0x40,0x80);\n    for (; 0 < local_18; local_18 = local_18 + -1) {\n      populate_random_string(local_bc,local_30 - local_18);\n      local_34 = CreateFile(local_2c,local_bc,0,0x31);\n      __size = 0x400;\n      local_38 = random_in_range(10);\n      local_3c = calloc(local_38,__size);\n      populate_random_string(local_3c,local_38);\n      WriteFile(local_34,local_3c,0,local_38 & 0xffff);\n      CloseFile(local_34);\n      free(local_3c);\n      local_2c[local_1c + 0x31] = local_34;\n      local_1c = local_1c + 1;\n    }\n  }\n  local_24 = (int *)(allTrees + 0x84c);\n  iVar2 = rand();\n  *local_24 = iVar2;\n  strcpy((char *)(local_24 + 1),\"SOMETREE\");\n  __size_00 = \"EYEPSEE\";\n  strcpy((char *)(local_24 + 0x21),\"EYEPSEE\");\n  local_28 = (undefined2 *)calloc(0x8c,(size_t)__size_00);\n  strcpy((char *)(local_28 + 1),\"NETSTUFF\");\n  iVar2 = rand();\n  *local_28 = (short)iVar2;\n  local_24[0x31] = (int)local_28;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitializeFileSystem",
+                        "random_in_range",
+                        "populate_random_string",
+                        "rand",
+                        "strcpy",
+                        "CreateFile",
+                        "calloc",
+                        "WriteFile",
+                        "CloseFile",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "InitializeFileSystem",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FindFileByName",
+                "func_c_signature": "int FindFileByName(int param_1,char *param_2)",
+                "decompiled_code": "int FindFileByName(int param_1,char *param_2) {\n  int iVar1;\n  int iVar2;\n  int local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (9 < local_10) {\n      return 0;\n    }\n    iVar1 = *(int *)(param_1 + 4 + (local_10 + 0x30) * 4);\n    if ((iVar1 != 0) && (iVar2 = strcmp((char *)(iVar1 + 2),param_2), iVar2 == 0)) break;\n    local_10 = local_10 + 1;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindFileByName",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "FindFileByName",
+                        "CreateFile",
+                        "FileStat"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CreateFile",
+                "func_c_signature": "undefined2 * CreateFile(int param_1,char *param_2,undefined4 param_3,int param_4)",
+                "decompiled_code": "undefined2 * CreateFile(int param_1,char *param_2,undefined4 param_3,int param_4) {\n  undefined2 *puVar1;\n  int iVar2;\n  char *__size;\n  int local_10;\n  \n  __size = param_2;\n  puVar1 = (undefined2 *)FindFileByName(param_1);\n  if (puVar1 == (undefined2 *)0x0) {\n    if (param_4 == 0x31) {\n      for (local_10 = 0; local_10 < 10; local_10 = local_10 + 1) {\n        if (*(int *)(param_1 + 4 + (local_10 + 0x30) * 4) == 0) {\n          puVar1 = (undefined2 *)calloc(0x8c,(size_t)__size);\n          iVar2 = rand();\n          *puVar1 = (short)iVar2;\n          strlen(param_2);\n          strncpy((char *)(puVar1 + 1),param_2,0x80);\n          *(undefined *)(puVar1 + 0x42) = 1;\n          *(undefined2 **)(param_1 + 4 + (local_10 + 0x30) * 4) = puVar1;\n          return puVar1;\n        }\n      }\n      puVar1 = (undefined2 *)0x0;\n    }\n    else {\n      puVar1 = (undefined2 *)0x0;\n    }\n  }\n  else if (*(char *)(puVar1 + 0x42) == '\\x01') {\n    puVar1 = (undefined2 *)0x0;\n  }\n  else {\n    *(undefined *)(puVar1 + 0x42) = 1;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CreateFile",
+                        "FindFileByName",
+                        "calloc",
+                        "rand",
+                        "strlen",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "HandleCGCMBMessage",
+                        "InitializeFileSystem",
+                        "CreateFile"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CloseFile",
+                "func_c_signature": "undefined ** CloseFile(undefined **param_1)",
+                "decompiled_code": "undefined ** CloseFile(undefined **param_1) {\n  undefined **ppuVar1;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  if (param_1 != (undefined **)0x0) {\n    *(undefined *)(param_1 + 0x21) = 0;\n    ppuVar1 = param_1;\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CloseFile"
+                    ],
+                    "calling_functions": [
+                        "HandleCGCMBMessage",
+                        "InitializeFileSystem",
+                        "CloseFile"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReadFile",
+                "func_c_signature": "undefined4 ReadFile(void *param_1,int param_2,ushort param_3,ushort param_4)",
+                "decompiled_code": "undefined4 ReadFile(void *param_1,int param_2,ushort param_3,ushort param_4) {\n  undefined4 uVar1;\n  ushort local_14;\n  \n  local_14 = param_4;\n  if (((param_2 == 0) || (param_1 == (void *)0x0)) || (param_4 == 0)) {\n    uVar1 = 0xffffffff;\n  }\n  else if (*(ushort *)(param_2 + 0x82) < param_3) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    if ((uint)*(ushort *)(param_2 + 0x82) < (uint)param_3 + (uint)param_4) {\n      local_14 = *(short *)(param_2 + 0x82) - param_3;\n    }\n    memcpy(param_1,(void *)((uint)param_3 + *(int *)(param_2 + 0x88)),(uint)local_14);\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReadFile",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "HandleCGCMBMessage",
+                        "ReadFile"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "WriteFile",
+                "func_c_signature": "undefined4 WriteFile(int param_1,void *param_2,ushort param_3,ushort param_4)",
+                "decompiled_code": "undefined4 WriteFile(int param_1,void *param_2,ushort param_3,ushort param_4) {\n  void *__src;\n  undefined4 uVar1;\n  void *pvVar2;\n  size_t in_stack_ffffffc8;\n  \n  if (((param_1 == 0) || (param_2 == (void *)0x0)) || (param_4 == 0)) {\n    uVar1 = 0xffffffff;\n  }\n  else if ((uint)param_4 + (uint)param_3 < 0x401) {\n    __src = *(void **)(param_1 + 0x88);\n    pvVar2 = calloc((uint)param_4 + (uint)param_3,in_stack_ffffffc8);\n    *(void **)(param_1 + 0x88) = pvVar2;\n    if ((param_3 != 0) && (__src != (void *)0x0)) {\n      if (*(ushort *)(param_1 + 0x82) < param_3) {\n        memcpy(*(void **)(param_1 + 0x88),__src,(uint)*(ushort *)(param_1 + 0x82));\n      }\n      else {\n        memcpy(*(void **)(param_1 + 0x88),__src,(uint)param_3);\n      }\n    }\n    memcpy((void *)((uint)param_3 + *(int *)(param_1 + 0x88)),param_2,(uint)param_4);\n    *(ushort *)(param_1 + 0x82) = param_3 + param_4;\n    free(__src);\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "WriteFile",
+                        "calloc",
+                        "memcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "HandleCGCMBMessage",
+                        "InitializeFileSystem",
+                        "WriteFile"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FindTreeByPath",
+                "func_c_signature": "undefined1 * FindTreeByPath(undefined4 param_1,char *param_2,char *param_3)",
+                "decompiled_code": "undefined1 * FindTreeByPath(undefined4 param_1,char *param_2,char *param_3) {\n  int iVar1;\n  int iVar2;\n  int local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (9 < local_10) {\n      return (undefined1 *)0x0;\n    }\n    iVar1 = local_10 * 0xec;\n    iVar2 = strcmp(allTrees + iVar1 + 4,param_2);\n    if ((iVar2 == 0) && (iVar2 = strcmp(allTrees + iVar1 + 0x84,param_3), iVar2 == 0)) break;\n    local_10 = local_10 + 1;\n  }\n  return allTrees + iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindTreeByPath",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "HandleCGCMBMessage",
+                        "FindTreeByPath",
+                        "FileStat"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            }
+        ],
+        "netstuff.c": [
+            {
+                "func_name": "AddData",
+                "func_c_signature": "void AddData(void **param_1,void *param_2,ushort param_3)",
+                "decompiled_code": "void AddData(void **param_1,void *param_2,ushort param_3) {\n  void *pvVar1;\n  void *pvVar2;\n  size_t in_stack_ffffffc8;\n  \n  if ((param_1 != (void **)0x0) && (param_2 != (void *)0x0)) {\n    if (*param_1 == (void *)0x0) {\n      pvVar1 = calloc((uint)param_3,in_stack_ffffffc8);\n      *param_1 = pvVar1;\n      memcpy(*param_1,param_2,(uint)param_3);\n      *(ushort *)(param_1 + 1) = param_3;\n      *(undefined2 *)((int)param_1 + 6) = 0;\n    }\n    else {\n      pvVar1 = *param_1;\n      pvVar2 = calloc((uint)param_3 + (uint)*(ushort *)(param_1 + 1),in_stack_ffffffc8);\n      *param_1 = pvVar2;\n      memcpy(*param_1,pvVar1,(uint)*(ushort *)(param_1 + 1));\n      memcpy((void *)((uint)*(ushort *)(param_1 + 1) + (int)*param_1),param_2,(uint)param_3);\n      *(ushort *)(param_1 + 1) = *(short *)(param_1 + 1) + param_3;\n      free(pvVar1);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AddData",
+                        "calloc",
+                        "memcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "AddData",
+                        "NETSTUFF_Handler",
+                        "ServiceEnum",
+                        "FileStat",
+                        "NetPathCanonicalize"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReadData",
+                "func_c_signature": "undefined4 ReadData(int *param_1,void *param_2,ushort param_3)",
+                "decompiled_code": "undefined4 ReadData(int *param_1,void *param_2,ushort param_3) {\n  undefined4 uVar1;\n  \n  if (((param_1 == (int *)0x0) || (*param_1 == 0)) || (param_2 == (void *)0x0)) {\n    uVar1 = 0xffffffff;\n  }\n  else if ((uint)*(ushort *)(param_1 + 1) < (uint)*(ushort *)((int)param_1 + 6) + (uint)param_3) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    memcpy(param_2,(void *)((uint)*(ushort *)((int)param_1 + 6) + *param_1),(uint)param_3);\n    *(ushort *)((int)param_1 + 6) = *(short *)((int)param_1 + 6) + param_3;\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReadData",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "ReadData"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "NETSTUFF_Handler",
+                "func_c_signature": "void NETSTUFF_Handler(ushort param_1,undefined4 param_2,undefined2 param_3,undefined4 *param_4,\n                     undefined2 *param_5)",
+                "decompiled_code": "void NETSTUFF_Handler(ushort param_1,undefined4 param_2,undefined2 param_3,undefined4 *param_4,\n                     undefined2 *param_5) {\n  ushort local_26;\n  undefined4 local_24;\n  undefined2 local_20;\n  undefined2 local_1e;\n  undefined4 local_1c;\n  undefined2 local_18;\n  undefined2 local_16;\n  undefined4 *local_14;\n  undefined4 *local_10;\n  \n  local_10 = &local_1c;\n  local_14 = &local_24;\n  local_1c = param_2;\n  local_18 = param_3;\n  local_16 = 0;\n  local_24 = 0;\n  local_20 = 0;\n  local_1e = 0;\n  local_26 = 0xe0;\n  if (param_1 < 0xbd) {\n    if (0xb5 < param_1) {\n      local_26 = NetPathCanonicalize(param_2,param_3,local_14);\n      local_26 = local_26 & 0xff;\n      goto LAB_000147f6;\n    }\n    if (param_1 < 0xb6) {\n      if (0xb2 < param_1) {\nLAB_0001479f:\n        local_26 = FileStat(param_2,param_3,local_14);\n        local_26 = local_26 & 0xff;\n        goto LAB_000147f6;\n      }\n      if (param_1 < 0xb2) {\n        if (0xaf < param_1) goto LAB_0001479f;\n      }\n      else if (param_1 == 0xb2) {\n        local_26 = ServiceEnum(param_2,param_3,local_14);\n        local_26 = local_26 & 0xff;\n        goto LAB_000147f6;\n      }\n    }\n  }\n  local_26 = 0xe1;\nLAB_000147f6:\n  AddData(local_14,&local_26,2);\n  *param_4 = *local_14;\n  *param_5 = *(undefined2 *)(local_14 + 1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "NETSTUFF_Handler",
+                        "NetPathCanonicalize",
+                        "FileStat",
+                        "ServiceEnum",
+                        "AddData"
+                    ],
+                    "calling_functions": [
+                        "NETSTUFF_Handler"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FindChar",
+                "func_c_signature": "int FindChar(int param_1,ushort param_2,char param_3)",
+                "decompiled_code": "int FindChar(int param_1,ushort param_2,char param_3) {\n  uint local_8;\n  \n  if (param_1 != 0) {\n    for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {\n      if (param_3 == *(char *)(local_8 + param_1)) {\n        return local_8 + param_1;\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindChar"
+                    ],
+                    "calling_functions": [
+                        "FindChar",
+                        "FileStat",
+                        "NetPathType",
+                        "CanonicalizePathName"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "BufCat",
+                "func_c_signature": "undefined4 BufCat(char *param_1,char *param_2)",
+                "decompiled_code": "undefined4 BufCat(char *param_1,char *param_2) {\n  if ((param_1 != (char *)0x0) && (param_2 != (char *)0x0)) {\n    for (; *param_1 != '\\0'; param_1 = param_1 + 1) {\n    }\n    while (*param_2 != '\\0') {\n      *param_1 = *param_2;\n      param_1 = param_1 + 1;\n      param_2 = param_2 + 1;\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "BufCat"
+                    ],
+                    "calling_functions": [
+                        "BufCat",
+                        "CanonicalizePathName"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "Length",
+                "func_c_signature": "int Length(char *param_1)",
+                "decompiled_code": "int Length(char *param_1) {\n  int local_8;\n  \n  local_8 = 0;\n  for (; *param_1 != '\\0'; param_1 = param_1 + 1) {\n    local_8 = local_8 + 1;\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "Length"
+                    ],
+                    "calling_functions": [
+                        "Length",
+                        "CanonicalizePathName"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "BufCmp",
+                "func_c_signature": "undefined4 BufCmp(byte *param_1,byte *param_2)",
+                "decompiled_code": "undefined4 BufCmp(byte *param_1,byte *param_2) {\n  undefined4 uVar1;\n  \n  if ((param_1 == (byte *)0x0) || (param_2 != (byte *)0x0)) {\n    if ((param_1 == (byte *)0x0) && (param_2 != (byte *)0x0)) {\n      uVar1 = 0xffffffff;\n    }\n    else if ((param_1 == (byte *)0x0) && (param_2 == (byte *)0x0)) {\n      uVar1 = 0;\n    }\n    else {\n      for (; (*param_1 != 0 && (*param_2 != 0)); param_2 = param_2 + 1) {\n        if (*param_2 < *param_1) {\n          return 1;\n        }\n        if (*param_1 < *param_2) {\n          return 0xffffffff;\n        }\n        param_1 = param_1 + 1;\n      }\n      if ((*param_1 == 0) || (*param_2 != 0)) {\n        if ((*param_1 == 0) && (*param_2 != 0)) {\n          uVar1 = 0xffffffff;\n        }\n        else {\n          uVar1 = 0;\n        }\n      }\n      else {\n        uVar1 = 1;\n      }\n    }\n  }\n  else {\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "BufCmp"
+                    ],
+                    "calling_functions": [
+                        "BufCmp",
+                        "NetPathType"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "BufCpy",
+                "func_c_signature": "char * BufCpy(char *param_1,char *param_2)",
+                "decompiled_code": "char * BufCpy(char *param_1,char *param_2) {\n  char *pcVar1;\n  \n  pcVar1 = param_1;\n  while (*param_2 != '\\0') {\n    *param_1 = *param_2;\n    param_1 = param_1 + 1;\n    param_2 = param_2 + 1;\n  }\n  *param_1 = '\\0';\n  return pcVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "BufCpy"
+                    ],
+                    "calling_functions": [
+                        "BufCpy",
+                        "ConvertPathMacros"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ServiceEnum",
+                "func_c_signature": "undefined4 ServiceEnum(undefined4 param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 ServiceEnum(undefined4 param_1,undefined4 param_2,undefined4 param_3) {\n  size_t sVar1;\n  ushort local_12;\n  int local_10;\n  \n  local_12 = 5;\n  AddData(param_3,&local_12,2);\n  for (local_10 = 0; local_10 < (int)(uint)local_12; local_10 = local_10 + 1) {\n    sVar1 = strlen(serviceTypes + local_10 * 0x40);\n    AddData(param_3,serviceTypes + local_10 * 0x40,sVar1 + 1 & 0xffff);\n  }\n  return 0xffffffe0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ServiceEnum",
+                        "AddData",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "NETSTUFF_Handler",
+                        "ServiceEnum"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FileStat",
+                "func_c_signature": "undefined4 FileStat(void *param_1,short param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 FileStat(void *param_1,short param_2,undefined4 param_3) {\n  ushort uVar1;\n  int iVar2;\n  undefined4 uVar3;\n  void *pvVar4;\n  void *pvVar5;\n  uint __size;\n  void *__dest;\n  void *__size_00;\n  \n  pvVar4 = param_1;\n  iVar2 = FindChar(param_1,param_2,0xd2);\n  if (iVar2 == 0) {\n    uVar3 = 0xffffffe2;\n  }\n  else {\n    pvVar4 = calloc((iVar2 - (int)param_1) + 1,(size_t)pvVar4);\n    memcpy(pvVar4,param_1,iVar2 - (int)param_1);\n    uVar1 = (param_2 - ((short)iVar2 - (short)param_1)) + 1;\n    pvVar5 = (void *)(iVar2 + 1);\n    __size = (uint)uVar1;\n    iVar2 = FindChar(pvVar5,__size,0xd0);\n    if (iVar2 == 0) {\n      free(pvVar4);\n      uVar3 = 0xffffffe2;\n    }\n    else {\n      __dest = calloc((iVar2 - (int)pvVar5) + 1,__size);\n      __size_00 = pvVar5;\n      memcpy(__dest,pvVar5,iVar2 - (int)pvVar5);\n      uVar1 = (uVar1 - ((short)iVar2 - (short)pvVar5)) + 1;\n      pvVar5 = calloc(uVar1 + 1,(size_t)__size_00);\n      memcpy(pvVar5,(void *)(iVar2 + 1),(uint)uVar1);\n      iVar2 = FindTreeByPath(0,__dest,pvVar4);\n      if (iVar2 == 0) {\n        free(pvVar4);\n        free(pvVar5);\n        free(__dest);\n        uVar3 = 0xffffffe3;\n      }\n      else {\n        iVar2 = FindFileByName(iVar2,pvVar5);\n        if (iVar2 == 0) {\n          free(pvVar4);\n          free(pvVar5);\n          free(__dest);\n          uVar3 = 0xffffffe3;\n        }\n        else {\n          AddData(param_3,iVar2,2);\n          AddData(param_3,iVar2 + 0x82,2);\n          AddData(param_3,iVar2 + 0x84,1);\n          uVar3 = 0xffffffe0;\n        }\n      }\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FileStat",
+                        "FindChar",
+                        "calloc",
+                        "memcpy",
+                        "free",
+                        "FindTreeByPath",
+                        "FindFileByName",
+                        "AddData"
+                    ],
+                    "calling_functions": [
+                        "NETSTUFF_Handler",
+                        "FileStat"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "NetPathCanonicalize",
+                "func_c_signature": "undefined4 NetPathCanonicalize(undefined4 param_1,ushort param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 NetPathCanonicalize(undefined4 param_1,ushort param_2,undefined4 param_3) {\n  char cVar1;\n  undefined4 uVar2;\n  undefined2 local_1bc;\n  undefined local_1b9 [428];\n  char local_d;\n  \n  if (param_2 < 0x1ad) {\n    local_d = NetPathType(param_1,param_2);\n    if (local_d == -1) {\n      uVar2 = 0xffffffe5;\n    }\n    else {\n      cVar1 = CanonicalizePathName(param_1,param_2,local_1b9,&local_1bc);\n      if (cVar1 == -0x20) {\n        AddData(param_3,local_1b9,local_1bc);\n        uVar2 = 0xffffffe0;\n      }\n      else {\n        uVar2 = 0xffffffe6;\n      }\n    }\n  }\n  else {\n    uVar2 = 0xffffffe2;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "NetPathCanonicalize",
+                        "NetPathType",
+                        "CanonicalizePathName",
+                        "AddData"
+                    ],
+                    "calling_functions": [
+                        "NETSTUFF_Handler",
+                        "NetPathCanonicalize"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "NetPathType",
+                "func_c_signature": "int NetPathType(void *param_1,undefined2 param_2)",
+                "decompiled_code": "int NetPathType(void *param_1,undefined2 param_2) {\n  int iVar1;\n  void *pvVar2;\n  int local_10;\n  \n  pvVar2 = param_1;\n  iVar1 = FindChar(param_1,param_2,0xd2);\n  pvVar2 = calloc((iVar1 - (int)param_1) + 1,(size_t)pvVar2);\n  if (iVar1 != 0) {\n    memcpy(pvVar2,param_1,iVar1 - (int)param_1);\n    for (local_10 = 0; local_10 < 5; local_10 = local_10 + 1) {\n      iVar1 = BufCmp(pvVar2,serviceTypes + local_10 * 0x40);\n      if (iVar1 == 0) {\n        return local_10;\n      }\n    }\n  }\n  return -1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "NetPathType",
+                        "FindChar",
+                        "calloc",
+                        "memcpy",
+                        "BufCmp"
+                    ],
+                    "calling_functions": [
+                        "NetPathCanonicalize",
+                        "NetPathType"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CanonicalizePathName",
+                "func_c_signature": "undefined4 CanonicalizePathName(void *param_1,uint param_2,undefined *param_3,ushort *param_4)",
+                "decompiled_code": "undefined4 CanonicalizePathName(void *param_1,uint param_2,undefined *param_3,ushort *param_4) {\n  char cVar1;\n  ushort uVar2;\n  uint __size;\n  size_t __size_00;\n  undefined4 uVar3;\n  undefined local_1cc [428];\n  int local_20;\n  void *local_1c;\n  int local_18;\n  int local_14;\n  void *local_10;\n  \n  uVar3 = 0x14e5b;\n  local_18 = _DAT_4347cc00;\n  local_10 = (void *)0x0;\n  __size_00 = 0;\n  memset(local_1cc,0,0x1ac);\n  if ((ushort)param_2 < 0x1ad) {\n    local_1c = calloc((param_2 & 0xffff) + 1,__size_00);\n    memcpy(local_1c,param_1,param_2 & 0xffff);\n    __size = param_2 & 0xffff;\n    local_20 = FindChar(local_1c,__size,0xd2,uVar3);\n    if (local_20 == 0) {\n      local_20 = 0;\n    }\n    else {\n      local_10 = calloc((local_20 - (int)local_1c) + 1,__size);\n      memcpy(local_10,local_1c,local_20 - (int)local_1c);\n      BufCat(local_1cc,local_10);\n      local_20 = local_20 + 1;\n      local_20 = FindChar(local_20,(param_2 & 0xffff) - (local_20 - (int)local_1c) & 0xffff,0xd2);\n      if (local_20 == 0) {\n        for (local_14 = 0; local_14 < (int)(param_2 & 0xffff); local_14 = local_14 + 1) {\n          if (*(char *)((int)local_1c + local_14) == -0x2d) {\n            *(undefined *)((int)local_1c + local_14) = 0xd0;\n          }\n        }\n        BufCat(local_1cc,local_1c);\n        cVar1 = ConvertPathMacros(local_1cc);\n        if (cVar1 == -0x20) {\n          free(local_10);\n          uVar2 = Length(local_1cc);\n          *param_4 = uVar2;\n          memcpy(param_3,local_1cc,(uint)*param_4);\n          param_3[*param_4] = 0;\n          if (local_18 != _DAT_4347cc00) {\n            _terminate(0xffffffff);\n          }\n          return 0xffffffe0;\n        }\n      }\n    }\n  }\n  free(local_10);\n  local_1cc[0] = 0;\n  *param_3 = 0;\n  if (local_18 != _DAT_4347cc00) {\n    _terminate(0xffffffff);\n  }\n  return 0xffffffe4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CanonicalizePathName",
+                        "memset",
+                        "calloc",
+                        "memcpy",
+                        "FindChar",
+                        "BufCat",
+                        "ConvertPathMacros",
+                        "free",
+                        "Length",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "NetPathCanonicalize",
+                        "CanonicalizePathName"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ConvertPathMacros",
+                "func_c_signature": "undefined4 ConvertPathMacros(char *param_1)",
+                "decompiled_code": "undefined4 ConvertPathMacros(char *param_1) {\n  char *pcVar1;\n  char *pcVar2;\n  byte local_14;\n  byte local_13;\n  char local_12;\n  char local_11;\n  char *local_10;\n  char *local_c;\n  char *local_8;\n  \n  local_8 = (char *)0x0;\n  local_c = param_1;\n  local_10 = (char *)0x0;\n  local_13 = 0;\n  local_11 = *param_1;\n  local_12 = param_1[1];\n  do {\n    pcVar2 = local_c;\n    if (local_11 == '\\0') {\n      return 0xffffffe0;\n    }\n    if ((local_10 == (char *)0x0) && (local_11 == -0x2e)) {\n      local_10 = local_c;\n    }\n    else {\n      if (local_11 == -0x30) {\n        if (local_12 == -0x30) {\n          return 0xffffffe4;\n        }\n        if (local_12 == -0x2f) {\n          local_14 = 0;\n          pcVar1 = local_c + 1;\n          for (local_c = pcVar1; (*local_c != -0x30 && (*local_c != '\\0')); local_c = local_c + 1) {\n            local_14 = local_14 + 1;\n          }\n          if (*local_c == '\\0') {\n            return 0xffffffe4;\n          }\n          if (local_8 == (char *)0x0) {\n            while (local_c = pcVar1, *local_c == -0x2f) {\n              local_13 = local_13 + 1;\n              pcVar1 = local_c + 1;\n            }\n            local_c = local_c + 1;\n            if (local_13 == 1) {\n              local_8 = local_10;\n              BufCpy(local_10 + 1,local_c);\n            }\n            else if (local_13 == local_14) {\n              local_8 = pcVar2 + (uint)local_13 * -2;\n            }\n            else {\n              local_8 = local_10;\n              BufCpy(local_10 + 1,local_c);\n            }\n          }\n          else {\n            BufCpy(local_8 + 1,local_c + 1);\n          }\n          goto LAB_0001522a;\n        }\n        local_8 = local_c;\n      }\n      local_c = local_c + 1;\n    }\nLAB_0001522a:\n    local_11 = *local_c;\n    local_12 = local_c[1];\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ConvertPathMacros",
+                        "BufCpy"
+                    ],
+                    "calling_functions": [
+                        "CanonicalizePathName",
+                        "ConvertPathMacros"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  size_t in_stack_ffffffd4;\n  uint in_stack_ffffffe0;\n  undefined4 local_18;\n  undefined4 local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  mbServerState = (undefined4 *)calloc(0x90,in_stack_ffffffd4);\n  *mbServerState = 0;\n  *(undefined2 *)(mbServerState + 1) = 0;\n  mbServerState[2] = 0;\n  srand(in_stack_ffffffe0);\n  GenerateUsers();\n  InitializeFileSystem();\n  InitializeCGCRPC();\n  while ((((iVar1 = ReceiveTransportMessage(&local_14), iVar1 != 0 ||\n           (iVar1 = ReceiveCGCMBMessage(local_14,&local_18), iVar1 != 0)) ||\n          (iVar1 = ParseCGCMBMessage(local_18), iVar1 != 0)) ||\n         (iVar1 = HandleCGCMBMessage(local_18), iVar1 == 0))) {\n    DestroyCGCMBMessage(&local_18);\n    DestroyTransportMessage(&local_14);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "calloc",
+                        "srand",
+                        "GenerateUsers",
+                        "InitializeFileSystem",
+                        "InitializeCGCRPC",
+                        "ReceiveTransportMessage",
+                        "ReceiveCGCMBMessage",
+                        "ParseCGCMBMessage",
+                        "HandleCGCMBMessage",
+                        "DestroyCGCMBMessage",
+                        "DestroyTransportMessage"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            }
+        ],
+        "transport.c": [
+            {
+                "func_name": "ReceiveBytes",
+                "func_c_signature": "undefined4 ReceiveBytes(int param_1,int param_2)",
+                "decompiled_code": "undefined4 ReceiveBytes(int param_1,int param_2) {\n  undefined4 uVar1;\n  undefined *puVar2;\n  undefined *puVar3;\n  undefined auStack_1c [4];\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  puVar3 = auStack_1c;\n  local_10 = 0;\n  if (param_1 == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    for (; local_10 < param_2; local_10 = local_18 + local_10) {\n      *(int **)(puVar3 + -4) = &local_18;\n      *(int *)(puVar3 + -8) = param_2 - local_10;\n      *(int *)(puVar3 + -0xc) = local_10 + param_1;\n      *(undefined4 *)(puVar3 + -0x10) = 0;\n      *(undefined4 *)(puVar3 + -0x14) = 0x15393;\n      local_14 = receive();\n      puVar2 = puVar3;\n      if (local_14 != 0) {\n        puVar2 = puVar3 + -0x10;\n        *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar3 + -0x14) = 0x153a9;\n        _terminate();\n      }\n      puVar3 = puVar2;\n      if (local_18 == 0) {\n        puVar3 = puVar2 + -0x10;\n        *(undefined4 *)(puVar2 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar2 + -0x14) = 0x153ba;\n        _terminate();\n      }\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReceiveBytes",
+                        "receive",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "ReceiveBytes",
+                        "ReceiveTransportMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "TransmitBytes",
+                "func_c_signature": "undefined4 TransmitBytes(int param_1,int param_2)",
+                "decompiled_code": "undefined4 TransmitBytes(int param_1,int param_2) {\n  undefined *puVar1;\n  undefined *puVar2;\n  undefined auStack_1c [4];\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  puVar2 = auStack_1c;\n  local_14 = 0;\n  for (local_10 = 0; local_10 < param_2; local_10 = local_18 + local_10) {\n    *(int **)(puVar2 + -4) = &local_18;\n    *(int *)(puVar2 + -8) = param_2 - local_10;\n    *(int *)(puVar2 + -0xc) = local_10 + param_1;\n    *(undefined4 *)(puVar2 + -0x10) = 1;\n    *(undefined4 *)(puVar2 + -0x14) = 0x15416;\n    local_14 = transmit();\n    puVar1 = puVar2;\n    if (local_14 != 0) {\n      puVar1 = puVar2 + -0x10;\n      *(undefined4 *)(puVar2 + -0x10) = 0xffffffff;\n      *(undefined4 *)(puVar2 + -0x14) = 0x1542c;\n      _terminate();\n    }\n    puVar2 = puVar1;\n    if (local_18 == 0) {\n      puVar2 = puVar1 + -0x10;\n      *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n      *(undefined4 *)(puVar1 + -0x14) = 0x1543d;\n      _terminate();\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "TransmitBytes",
+                        "transmit",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "TransmitBytes",
+                        "SendTransportMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ResetTransportMessage",
+                "func_c_signature": "undefined ** ResetTransportMessage(undefined **param_1)",
+                "decompiled_code": "undefined ** ResetTransportMessage(undefined **param_1) {\n  undefined **ppuVar1;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  if (param_1 != (undefined **)0x0) {\n    param_1[3] = (undefined *)0x0;\n    ppuVar1 = param_1;\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ResetTransportMessage"
+                    ],
+                    "calling_functions": [
+                        "ResetTransportMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReceiveTransportMessage",
+                "func_c_signature": "undefined4 ReceiveTransportMessage(char **param_1)",
+                "decompiled_code": "undefined4 ReceiveTransportMessage(char **param_1) {\n  char *pcVar1;\n  void *pvVar2;\n  size_t in_stack_ffffffd8;\n  size_t __size;\n  char *local_10;\n  \n  local_10 = (char *)calloc(0x10,in_stack_ffffffd8);\n  ReceiveBytes(local_10,1);\n  if (*local_10 == '\\0') {\n    __size = 4;\n    ReceiveBytes(local_10 + 4);\n    pcVar1 = local_10;\n    if (*(uint *)(local_10 + 4) < 0x1001) {\n      pvVar2 = calloc(*(size_t *)(local_10 + 4),__size);\n      *(void **)(pcVar1 + 8) = pvVar2;\n      ReceiveBytes(*(undefined4 *)(local_10 + 8),*(undefined4 *)(local_10 + 4));\n      *param_1 = local_10;\n      return 0;\n    }\n  }\n  DestroyTransportMessage(&local_10);\n  *param_1 = (char *)0x0;\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReceiveTransportMessage",
+                        "calloc",
+                        "ReceiveBytes",
+                        "DestroyTransportMessage"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "ReceiveTransportMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DestroyTransportMessage",
+                "func_c_signature": "void DestroyTransportMessage(int *param_1)",
+                "decompiled_code": "void DestroyTransportMessage(int *param_1) {\n  undefined4 *puVar1;\n  undefined4 auStack_2c [3];\n  undefined4 uStack_20;\n  undefined auStack_1c [12];\n  int local_10;\n  \n  puVar1 = (undefined4 *)auStack_1c;\n  uStack_20 = 0x15551;\n  if (param_1 == (int *)0x0) {\n    puVar1 = auStack_2c;\n    auStack_2c[0] = 0xffffffff;\n    _terminate();\n  }\n  local_10 = *param_1;\n  if (local_10 != 0) {\n    if (*(int *)(local_10 + 8) != 0) {\n      *(undefined4 *)((int)puVar1 + -0x10) = *(undefined4 *)(local_10 + 8);\n      *(undefined4 *)((int)puVar1 + -0x14) = 0x1558e;\n      free(*(void **)((int)puVar1 + -0x10));\n      *(undefined4 *)(local_10 + 8) = 0;\n    }\n    *(int *)((int)puVar1 + -0x10) = local_10;\n    *(undefined4 *)((int)puVar1 + -0x14) = 0x155a6;\n    free(*(void **)((int)puVar1 + -0x10));\n    *param_1 = 0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DestroyTransportMessage",
+                        "_terminate",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "TransmitCGCMBMessage",
+                        "main",
+                        "ReceiveTransportMessage",
+                        "DestroyTransportMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SendTransportMessage",
+                "func_c_signature": "void SendTransportMessage(int param_1)",
+                "decompiled_code": "void SendTransportMessage(int param_1) {\n  TransmitBytes(param_1,1);\n  TransmitBytes(param_1 + 4,4);\n  TransmitBytes(*(undefined4 *)(param_1 + 8),*(undefined4 *)(param_1 + 4));\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SendTransportMessage",
+                        "TransmitBytes"
+                    ],
+                    "calling_functions": [
+                        "TransmitCGCMBMessage",
+                        "SendTransportMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReadFromTransportMessage",
+                "func_c_signature": "undefined4 ReadFromTransportMessage(int param_1,void *param_2,size_t param_3)",
+                "decompiled_code": "undefined4 ReadFromTransportMessage(int param_1,void *param_2,size_t param_3) {\n  undefined4 uVar1;\n  \n  if ((param_1 == 0) || (param_2 == (void *)0x0)) {\n    uVar1 = 0xffffffff;\n  }\n  else if (*(int *)(param_1 + 8) == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else if (((int)param_3 < 0x1001) && (*(int *)(param_1 + 0xc) + param_3 <= *(uint *)(param_1 + 4)))\n  {\n    memcpy(param_2,(void *)(*(int *)(param_1 + 0xc) + *(int *)(param_1 + 8)),param_3);\n    *(size_t *)(param_1 + 0xc) = *(int *)(param_1 + 0xc) + param_3;\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReadFromTransportMessage",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "ReceiveCGCMBMessage",
+                        "ReadFromTransportMessage"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            }
+        ],
+        "user.c": [
+            {
+                "func_name": "GenerateUsers",
+                "func_c_signature": "undefined ** GenerateUsers(void)",
+                "decompiled_code": "undefined ** GenerateUsers(void) {\n  return &_GLOBAL_OFFSET_TABLE_;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GenerateUsers"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "GenerateUsers"
+                    ],
+                    "defined_in_file": "CROMU_00095_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,541 @@
+{
+    "file": "KPRCA_00010",
+    "decompiled_code": {
+        "dft.c": [
+            {
+                "func_name": "cfft",
+                "func_c_signature": "undefined8 * cfft(undefined8 *param_1,uint param_2)",
+                "decompiled_code": "undefined8 * cfft(undefined8 *param_1,uint param_2) {\n  undefined8 *puVar1;\n  void *__ptr;\n  void *__ptr_00;\n  undefined4 *puVar2;\n  void *__ptr_01;\n  void *__ptr_02;\n  double dVar3;\n  double dVar4;\n  double dVar5;\n  uint local_10;\n  \n  dVar3 = atan2(1.0,1.0);\n  dVar3 = _DAT_00015000 * dVar3;\n  if (param_2 == 1) {\n    puVar1 = (undefined8 *)malloc(0x10);\n    *puVar1 = *param_1;\n    puVar1[1] = param_1[1];\n  }\n  else {\n    __ptr = malloc((param_2 << 4) >> 1);\n    __ptr_00 = malloc((param_2 << 4) >> 1);\n    for (local_10 = 0; local_10 < param_2 >> 1; local_10 = local_10 + 1) {\n      puVar1 = param_1 + local_10 * 4;\n      puVar2 = (undefined4 *)((int)__ptr + local_10 * 0x10);\n      *puVar2 = *(undefined4 *)puVar1;\n      puVar2[1] = *(undefined4 *)((int)puVar1 + 4);\n      puVar2[2] = *(undefined4 *)(puVar1 + 1);\n      puVar2[3] = *(undefined4 *)((int)puVar1 + 0xc);\n      puVar1 = param_1 + local_10 * 4 + 2;\n      puVar2 = (undefined4 *)((int)__ptr_00 + local_10 * 0x10);\n      *puVar2 = *(undefined4 *)puVar1;\n      puVar2[1] = *(undefined4 *)((int)puVar1 + 4);\n      puVar2[2] = *(undefined4 *)(puVar1 + 1);\n      puVar2[3] = *(undefined4 *)((int)puVar1 + 0xc);\n    }\n    __ptr_01 = (void *)cfft(__ptr);\n    __ptr_02 = (void *)cfft(__ptr_00);\n    puVar1 = (undefined8 *)malloc(param_2 << 4);\n    for (local_10 = 0; local_10 < param_2 >> 1; local_10 = local_10 + 1) {\n      dVar5 = ((double)local_10 * (dVar3 + dVar3)) / (double)(ulonglong)param_2;\n      dVar4 = cos(dVar5);\n      dVar5 = sin(dVar5);\n      puVar1[local_10 * 2] =\n           *(double *)((int)__ptr_02 + local_10 * 0x10 + 8) * dVar5 +\n           *(double *)((int)__ptr_02 + local_10 * 0x10) * dVar4 +\n           *(double *)((int)__ptr_01 + local_10 * 0x10);\n      puVar1[local_10 * 2 + 1] =\n           *(double *)((int)__ptr_02 + local_10 * 0x10 + 8) * dVar4 +\n           -*(double *)((int)__ptr_02 + local_10 * 0x10) * dVar5 +\n           *(double *)((int)__ptr_01 + local_10 * 0x10 + 8);\n      puVar1[(local_10 + (param_2 >> 1)) * 2] =\n           *(double *)((int)__ptr_01 + local_10 * 0x10) -\n           (*(double *)((int)__ptr_02 + local_10 * 0x10 + 8) * dVar5 +\n           *(double *)((int)__ptr_02 + local_10 * 0x10) * dVar4);\n      puVar1[(local_10 + (param_2 >> 1)) * 2 + 1] =\n           *(double *)((int)__ptr_01 + local_10 * 0x10 + 8) -\n           (*(double *)((int)__ptr_02 + local_10 * 0x10 + 8) * dVar4 +\n           -*(double *)((int)__ptr_02 + local_10 * 0x10) * dVar5);\n    }\n    free(__ptr);\n    free(__ptr_00);\n    free(__ptr_01);\n    free(__ptr_02);\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cfft",
+                        "atan2",
+                        "malloc",
+                        "cos",
+                        "sin",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "cfft",
+                        "fft",
+                        "idft"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fft",
+                "func_c_signature": "undefined4 fft(int param_1,uint param_2)",
+                "decompiled_code": "undefined4 fft(int param_1,uint param_2) {\n  void *__ptr;\n  undefined4 uVar1;\n  uint local_10;\n  \n  __ptr = malloc(param_2 << 4);\n  for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {\n    *(undefined8 *)((int)__ptr + local_10 * 0x10) = *(undefined8 *)(local_10 * 8 + param_1);\n    *(undefined8 *)((int)__ptr + local_10 * 0x10 + 8) = 0;\n  }\n  uVar1 = cfft(__ptr,param_2);\n  free(__ptr);\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fft",
+                        "malloc",
+                        "cfft",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "fft",
+                        "dft"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dft",
+                "func_c_signature": "undefined4 dft(void *param_1,uint param_2,uint *param_3)",
+                "decompiled_code": "undefined4 dft(void *param_1,uint param_2,uint *param_3) {\n  void *__s;\n  size_t __n;\n  uint uVar1;\n  double dVar2;\n  undefined4 uVar3;\n  undefined4 local_10;\n  \n  uVar3 = 0x11407;\n  dVar2 = log2((double)(ulonglong)param_2);\n  if (param_2 == 1 << ((byte)(int)ROUND(dVar2) & 0x1f)) {\n    local_10 = fft(param_1,param_2);\n  }\n  else {\n    uVar1 = 1 << ((byte)(int)ROUND(dVar2) + 1 & 0x1f);\n    __s = malloc(uVar1 << 3);\n    if (__s == (void *)0x0) {\n      *param_3 = 0;\n      return 0;\n    }\n    memset(__s,0,uVar1 << 3);\n    __n = param_2 << 3;\n    memcpy(__s,param_1,__n);\n    local_10 = fft(__s,uVar1,__n,uVar3);\n    free(__s);\n    param_2 = uVar1;\n  }\n  *param_3 = param_2;\n  return local_10;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dft",
+                        "log2",
+                        "ROUND",
+                        "fft",
+                        "malloc",
+                        "memset",
+                        "memcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "dft",
+                        "eq_vis"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "idft",
+                "func_c_signature": "void * idft(void *param_1,uint param_2,uint *param_3)",
+                "decompiled_code": "void * idft(void *param_1,uint param_2,uint *param_3) {\n  void *pvVar1;\n  size_t __n;\n  uint uVar2;\n  double dVar3;\n  undefined4 uVar4;\n  uint local_14;\n  void *local_10;\n  \n  uVar4 = 0x11534;\n  dVar3 = log2((double)(ulonglong)param_2);\n  for (local_14 = 0; local_14 < param_2; local_14 = local_14 + 1) {\n    *(double *)((int)param_1 + local_14 * 0x10 + 8) =\n         -*(double *)((int)param_1 + local_14 * 0x10 + 8);\n  }\n  if (param_2 == 1 << ((byte)(int)ROUND(dVar3) & 0x1f)) {\n    local_10 = (void *)cfft(param_1);\n  }\n  else {\n    uVar2 = 1 << ((byte)(int)ROUND(dVar3) + 1 & 0x1f);\n    pvVar1 = malloc(uVar2 << 4);\n    if (pvVar1 == (void *)0x0) {\n      for (local_14 = 0; local_14 < uVar2; local_14 = local_14 + 1) {\n        *(double *)((int)param_1 + local_14 * 0x10 + 8) =\n             -*(double *)((int)param_1 + local_14 * 0x10 + 8);\n      }\n      *param_3 = 0;\n      return (void *)0x0;\n    }\n    memset(pvVar1,0,uVar2 << 4);\n    __n = param_2 << 4;\n    memcpy(pvVar1,param_1,__n);\n    local_10 = (void *)cfft(pvVar1,uVar2,__n,uVar4);\n    free(pvVar1);\n    param_2 = uVar2;\n  }\n  for (local_14 = 0; local_14 < param_2; local_14 = local_14 + 1) {\n    *(double *)((int)param_1 + local_14 * 0x10 + 8) =\n         -*(double *)((int)param_1 + local_14 * 0x10 + 8);\n  }\n  if (local_10 == (void *)0x0) {\n    pvVar1 = (void *)0x0;\n  }\n  else {\n    pvVar1 = malloc(param_2 << 3);\n    if (pvVar1 == (void *)0x0) {\n      free(local_10);\n      *param_3 = 0;\n      pvVar1 = (void *)0x0;\n    }\n    else {\n      for (local_14 = 0; local_14 < param_2; local_14 = local_14 + 1) {\n        *(double *)((int)pvVar1 + local_14 * 8) =\n             *(double *)((int)local_10 + local_14 * 0x10) / (double)(ulonglong)param_2;\n      }\n      free(local_10);\n      *param_3 = param_2;\n    }\n  }\n  return pvVar1;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "idft",
+                        "log2",
+                        "ROUND",
+                        "cfft",
+                        "malloc",
+                        "memset",
+                        "memcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "idft"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "readopt",
+                "func_c_signature": "uint readopt(undefined4 param_1)",
+                "decompiled_code": "uint readopt(undefined4 param_1) {\n  int iVar1;\n  uint uVar2;\n  int local_14;\n  char local_f;\n  byte local_e;\n  char local_d;\n  \n  local_e = 0;\n  local_f = '\\0';\n  local_d = '\\n';\n  iVar1 = receive(param_1,&local_e,1,&local_14);\n  if ((iVar1 == 0) && (local_14 != 0)) {\n    iVar1 = receive(param_1,&local_f,1,&local_14);\n    if ((iVar1 == 0) && (local_14 != 0)) {\n      if (local_d == local_f) {\n        uVar2 = (uint)local_e;\n      }\n      else {\n        do {\n          if (local_d == local_f) {\n            return 0xffffffff;\n          }\n          iVar1 = receive(param_1,&local_f,1,&local_14);\n        } while ((iVar1 == 0) && (local_14 != 0));\n        uVar2 = 0xffffffff;\n      }\n    }\n    else {\n      uVar2 = 0xffffffff;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readopt",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "readopt",
+                        "select_option"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_menu",
+                "func_c_signature": "void print_menu(int param_1)",
+                "decompiled_code": "void print_menu(int param_1) {\n  undefined4 uVar1;\n  uint uVar2;\n  \n  if (param_1 == 0) {\n    printf(\"1. Load File\\n\");\n    printf(\"2. Quit\\n\\n\");\n    printf(\"--NO FILE LOADED--\\n\");\n  }\n  else {\n    printf(\"1. Load New File\\n\");\n    printf(\"2. Wave Visualizer\\n\");\n    printf(\"3. EQ Visualizer\\n\");\n    printf(\"4. Power Visualizer\\n\");\n    printf(\"5. Enable Low Pass Filter\\n\");\n    printf(\"6. Enable High Pass Filter\\n\");\n    printf(\"7. Disable Filters\\n\");\n    printf(\"8. Set visualization speed multiplier (0-9)\\n\");\n    printf(\"9. Quit\\n\\n\");\n    printf(\"--Current Track: \");\n    uVar2 = (uint)*(ushort *)(param_1 + 0x22);\n    uVar1 = *(undefined4 *)(param_1 + 0x18);\n    printf(\"Sampled @%dHz %d bit, \",uVar1,uVar2);\n    if (*(short *)(param_1 + 0x16) == 1) {\n      printf(\"Mono - \",uVar1,uVar2);\n    }\n    else {\n      printf(\"Stereo - \",uVar1,uVar2);\n    }\n    uVar1 = *(undefined4 *)(param_1 + 0x28);\n    printf(\"Data Size=%d\\n\",uVar1,uVar2);\n    printf(\"::Options: Filter Type=\");\n    if (filter_type == 0) {\n      printf(\"None\",uVar1);\n    }\n    else if (filter_type == 1) {\n      printf(\"Low Pass\",uVar1);\n    }\n    else if (filter_type == 2) {\n      printf(\"High Pass\",uVar1);\n    }\n    uVar1 = get_vis_multiplier();\n    printf(\" | Visualization Slowdown Multiplier=%d::\\n\\n\",uVar1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "multiplier"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_menu",
+                        "printf",
+                        "multiplier",
+                        "get_vis_multiplier"
+                    ],
+                    "calling_functions": [
+                        "print_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_error_code",
+                "func_c_signature": "void print_error_code(int param_1)",
+                "decompiled_code": "void print_error_code(int param_1) {\n  if (param_1 == -2) {\n    printf(\"ERROR: Couldn\\'t load file, malformed file data\\n\");\n  }\n  if (param_1 == -4) {\n    printf(\"ERROR: Couldn\\'t load new file, contains malformed file data\\n\");\n  }\n  if (param_1 == -8) {\n    printf(\"ERROR: Bad Choice. Select another option\\n\");\n  }\n  if (param_1 == -0x10) {\n    printf(\"ERROR: Bad Input. Valid Options: 1, 2\\n\");\n  }\n  if (param_1 == -0x20) {\n    printf(\"ERROR: Bad Input. Valid Options: 1, 2, 3, 4, 5, 6, 7, 8, 9\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_error_code",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_error_code",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "load_file",
+                "func_c_signature": "void load_file(int *param_1)",
+                "decompiled_code": "void load_file(int *param_1) {\n  int iVar1;\n  \n  if (*param_1 != 0) {\n    clear_track(param_1);\n  }\n  iVar1 = init_track();\n  *param_1 = iVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "load_file",
+                        "clear_track",
+                        "init_track"
+                    ],
+                    "calling_functions": [
+                        "load_file",
+                        "select_option"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "quit",
+                "func_c_signature": "undefined ** quit(int *param_1)",
+                "decompiled_code": "undefined ** quit(int *param_1) {\n  undefined **ppuVar1;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  if (*param_1 != 0) {\n    ppuVar1 = (undefined **)clear_track(param_1);\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "quit",
+                        "clear_track"
+                    ],
+                    "calling_functions": [
+                        "quit",
+                        "select_option"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "select_option",
+                "func_c_signature": "undefined4 select_option(int *param_1)",
+                "decompiled_code": "undefined4 select_option(int *param_1) {\n  int iVar1;\n  char cVar2;\n  \n  iVar1 = *param_1;\n  cVar2 = readopt(0);\n  if (cVar2 == -1) {\n    if (iVar1 == 0) {\n      return 0xfffffff0;\n    }\n    return 0xffffffe0;\n  }\n  if (iVar1 == 0) {\n    if (cVar2 != '1') {\n      if (cVar2 != '2') {\n        return 0xfffffff8;\n      }\n      quit(param_1);\n      return 0;\n    }\n    load_file(param_1);\n    if (*param_1 == 0) {\n      return 0xfffffffe;\n    }\n  }\n  else {\n    switch(cVar2) {\n    case '1':\n      load_file(param_1);\n      if (*param_1 == 0) {\n        return 0xfffffffc;\n      }\n      break;\n    case '2':\n      wave_vis(iVar1);\n      break;\n    case '3':\n      eq_vis(iVar1,1,filter_type);\n      break;\n    case '4':\n      eq_vis(iVar1,2,filter_type);\n      break;\n    case '5':\n      filter_type = 1;\n      break;\n    case '6':\n      filter_type = 2;\n      break;\n    case '7':\n      filter_type = 0;\n      break;\n    case '8':\n      cVar2 = readopt(0);\n      set_vis_multiplier((int)cVar2);\n      break;\n    case '9':\n      quit(param_1);\n      return 0;\n    default:\n      return 0xfffffff8;\n    }\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "select_option",
+                        "readopt",
+                        "quit",
+                        "load_file",
+                        "wave_vis",
+                        "eq_vis",
+                        "set_vis_multiplier"
+                    ],
+                    "calling_functions": [
+                        "select_option",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  undefined4 local_18;\n  int local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_18 = 0;\n  local_14 = 1;\n  do {\n    print_error_code(local_14);\n    print_menu(local_18);\n    local_14 = select_option(&local_18);\n  } while (local_14 != 0);\n  printf(\"EXITING...\\n\");\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "print_error_code",
+                        "print_menu",
+                        "select_option",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            }
+        ],
+        "uwfc.c": [
+            {
+                "func_name": "set_vis_multiplier",
+                "func_c_signature": "void set_vis_multiplier(char param_1)",
+                "decompiled_code": "void set_vis_multiplier(char param_1) {\n  if ((param_1 < ':') && ('/' < param_1)) {\n    vis_multiplier = param_1 + -0x30;\n    printf(\"Multiplier set to %d\\n\",param_1 + -0x30);\n  }\n  else {\n    printf(\"Bad multiplier argument\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_vis_multiplier",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "select_option",
+                        "set_vis_multiplier"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_vis_multiplier",
+                "func_c_signature": "undefined4 get_vis_multiplier(void)",
+                "decompiled_code": "undefined4 get_vis_multiplier(void) {\n  return vis_multiplier;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_vis_multiplier"
+                    ],
+                    "calling_functions": [
+                        "print_menu",
+                        "get_vis_multiplier"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_header",
+                "func_c_signature": "int validate_header(void *param_1)",
+                "decompiled_code": "int validate_header(void *param_1) {\n  int iVar1;\n  \n  iVar1 = memcmp(param_1,&DAT_0001530b,4);\n  if (iVar1 == 0) {\n    if (*(int *)((int)param_1 + 4) ==\n        *(int *)((int)param_1 + 0x28) + *(int *)((int)param_1 + 0x10) + 0x14) {\n      iVar1 = memcmp((void *)((int)param_1 + 8),&DAT_00015310,4);\n      if (iVar1 == 0) {\n        iVar1 = memcmp((void *)((int)param_1 + 0xc),&DAT_00015315,4);\n        if (iVar1 == 0) {\n          if (*(short *)((int)param_1 + 0x14) == 1) {\n            if ((*(short *)((int)param_1 + 0x16) == 1) || (*(short *)((int)param_1 + 0x16) == 2)) {\n              if ((((*(int *)((int)param_1 + 0x18) == 8000) ||\n                   ((((*(int *)((int)param_1 + 0x18) == 0x2b11 ||\n                      (*(int *)((int)param_1 + 0x18) == 16000)) ||\n                     (*(int *)((int)param_1 + 0x18) == 0x5622)) ||\n                    ((*(int *)((int)param_1 + 0x18) == 32000 ||\n                     (*(int *)((int)param_1 + 0x18) == 0xac44)))))) ||\n                  (*(int *)((int)param_1 + 0x18) == 48000)) ||\n                 (*(int *)((int)param_1 + 0x18) == 4000)) {\n                if (*(uint *)((int)param_1 + 0x1c) ==\n                    (uint)*(ushort *)((int)param_1 + 0x22) *\n                    *(int *)((int)param_1 + 0x18) * (uint)*(ushort *)((int)param_1 + 0x16) >> 3) {\n                  iVar1 = (uint)*(ushort *)((int)param_1 + 0x22) *\n                          (uint)*(ushort *)((int)param_1 + 0x16);\n                  if (iVar1 < 0) {\n                    iVar1 = iVar1 + 7;\n                  }\n                  if ((uint)*(ushort *)((int)param_1 + 0x20) == iVar1 >> 3) {\n                    if ((*(short *)((int)param_1 + 0x22) == 8) ||\n                       (*(short *)((int)param_1 + 0x22) == 0x10)) {\n                      iVar1 = memcmp((void *)((int)param_1 + 0x24),&DAT_0001531a,4);\n                      if (iVar1 == 0) {\n                        iVar1 = *(int *)((int)param_1 + 4) + 8;\n                      }\n                      else {\n                        iVar1 = -0x800;\n                      }\n                    }\n                    else {\n                      iVar1 = -0x400;\n                    }\n                  }\n                  else {\n                    iVar1 = -0x100;\n                  }\n                }\n                else {\n                  iVar1 = -0x100;\n                }\n              }\n              else {\n                iVar1 = -0x80;\n              }\n            }\n            else {\n              iVar1 = -0x40;\n            }\n          }\n          else {\n            iVar1 = -0x20;\n          }\n        }\n        else {\n          iVar1 = -0x10;\n        }\n      }\n      else {\n        iVar1 = -8;\n      }\n    }\n    else {\n      iVar1 = -4;\n    }\n  }\n  else {\n    iVar1 = -2;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_header",
+                        "memcmp"
+                    ],
+                    "calling_functions": [
+                        "validate_header",
+                        "init_track"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_track",
+                "func_c_signature": "void * init_track(void)",
+                "decompiled_code": "void * init_track(void) {\n  int iVar1;\n  void *pvVar2;\n  int local_1c;\n  void *local_18;\n  size_t local_14;\n  int local_10;\n  \n  local_14 = 0;\n  local_1c = 0;\n  local_10 = 0;\n  local_18 = malloc(0x30);\n  if (local_18 != (void *)0x0) {\n    iVar1 = receive(0,local_18,0x2c,&local_1c);\n    if ((iVar1 == 0) && (local_1c == 0x2c)) {\n      iVar1 = validate_header(local_18);\n      local_14 = iVar1 - 0x2c;\n      if ((int)local_14 < 0) {\n        free(local_18);\n      }\n      else {\n        if (local_14 == 0) {\n          *(undefined4 *)((int)local_18 + 0x2c) = 0;\n        }\n        else {\n          pvVar2 = malloc(local_14);\n          *(void **)((int)local_18 + 0x2c) = pvVar2;\n          if (*(int *)((int)local_18 + 0x2c) == 0) {\n            free(local_18);\n            return (void *)0x0;\n          }\n        }\n        while( true ) {\n          iVar1 = receive(0,*(int *)((int)local_18 + 0x2c) + local_10,\n                          *(int *)((int)local_18 + 0x28) - local_10,&local_1c);\n          if (iVar1 != 0) {\n            return local_18;\n          }\n          if (local_1c + local_10 == *(int *)((int)local_18 + 0x28)) {\n            return local_18;\n          }\n          if (local_1c == 0) break;\n          local_10 = local_10 + local_1c;\n        }\n        free(*(void **)((int)local_18 + 0x2c));\n        free(local_18);\n      }\n    }\n    else {\n      free(local_18);\n    }\n  }\n  return (void *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_track",
+                        "malloc",
+                        "receive",
+                        "validate_header",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "load_file",
+                        "init_track"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clear_track",
+                "func_c_signature": "void clear_track(void **param_1)",
+                "decompiled_code": "void clear_track(void **param_1) {\n  void *__ptr;\n  \n  __ptr = *param_1;\n  if (__ptr != (void *)0x0) {\n    if (*(int *)((int)__ptr + 0x2c) != 0) {\n      free(*(void **)((int)__ptr + 0x2c));\n    }\n    if (__ptr != (void *)0x0) {\n      free(__ptr);\n    }\n    *param_1 = (void *)0x0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clear_track",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "load_file",
+                        "quit",
+                        "clear_track"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "slow_vis",
+                "func_c_signature": "void slow_vis(void)",
+                "decompiled_code": "void slow_vis(void) {\n  int local_10;\n  \n  for (local_10 = 0; local_10 < vis_multiplier * 200000; local_10 = local_10 + 1) {\n    sin((double)local_10);\n    cos((double)local_10);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "slow_vis",
+                        "sin",
+                        "cos"
+                    ],
+                    "calling_functions": [
+                        "slow_vis",
+                        "wave_vis",
+                        "vis_buckets"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "plot_mono_wave",
+                "func_c_signature": "void plot_mono_wave(int param_1,short *param_2)",
+                "decompiled_code": "void plot_mono_wave(int param_1,short *param_2) {\n  undefined *puVar1;\n  ushort in_FPUControlWord;\n  undefined auStack_3c [8];\n  undefined4 local_34;\n  ushort local_30;\n  undefined *local_28;\n  undefined4 local_24;\n  int local_20;\n  undefined4 local_1c;\n  int local_18;\n  double local_14;\n  \n  puVar1 = auStack_3c;\n  if (*(short *)(param_1 + 0x22) == 8) {\n    local_34 = *(byte *)param_2 - 0x7f;\n    local_14 = (double)(*(byte *)param_2 - 0x7f) / DAT_00015360;\n  }\n  else {\n    local_34 = CONCAT22(local_34._2_2_,*param_2);\n    local_14 = (double)*param_2 / DAT_00015368;\n  }\n  local_18 = 0x2a;\n  local_1c = 0x14;\n  local_30 = in_FPUControlWord | 0xc00;\n  local_20 = (int)ROUND(DAT_00015370 + local_14 * 20.0 + 20.0);\n  local_24 = 0x29;\n  for (; puVar1 != auStack_3c; puVar1 = puVar1 + -0x1000) {\n    *(undefined4 *)(puVar1 + -4) = *(undefined4 *)(puVar1 + -4);\n  }\n  *(undefined4 *)(puVar1 + -4) = *(undefined4 *)(puVar1 + -4);\n  local_28 = puVar1 + -0x30;\n  *(int *)(puVar1 + -0x38) = local_18;\n  *(undefined4 *)(puVar1 + -0x3c) = 0x20;\n  *(undefined **)(puVar1 + -0x40) = local_28;\n  *(undefined4 *)(puVar1 + -0x44) = 0x126f3;\n  memset(*(void **)(puVar1 + -0x40),*(int *)(puVar1 + -0x3c),*(size_t *)(puVar1 + -0x38));\n  local_28[local_18 + -1] = 0;\n  local_28[local_20] = 0x2a;\n  *(undefined **)(puVar1 + -0x3c) = local_28;\n  *(undefined **)(puVar1 + -0x40) = &DAT_0001531f;\n  *(undefined4 *)(puVar1 + -0x44) = 0x12720;\n  printf(*(char **)(puVar1 + -0x40));\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT22",
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "plot_mono_wave",
+                        "CONCAT22",
+                        "ROUND",
+                        "memset",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "plot_mono_wave",
+                        "wave_vis"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "plot_stereo_wave",
+                "func_c_signature": "void plot_stereo_wave(int param_1,short *param_2)",
+                "decompiled_code": "void plot_stereo_wave(int param_1,short *param_2) {\n  undefined *puVar1;\n  ushort in_FPUControlWord;\n  undefined auStack_4c [8];\n  undefined4 local_44;\n  ushort local_40;\n  undefined *local_38;\n  undefined4 local_34;\n  int local_30;\n  int local_2c;\n  undefined4 local_28;\n  int local_24;\n  int local_20;\n  double local_1c;\n  double local_14;\n  \n  puVar1 = auStack_4c;\n  if (*(short *)(param_1 + 0x22) == 8) {\n    local_14 = (double)(*(byte *)param_2 - 0x7f) / DAT_00015360;\n    local_44 = *(byte *)((int)param_2 + 1) - 0x7f;\n    local_1c = (double)local_44 / DAT_00015360;\n  }\n  else {\n    local_14 = (double)*param_2 / DAT_00015368;\n    local_44 = CONCAT22(local_44._2_2_,param_2[1]);\n    local_1c = (double)param_2[1] / DAT_00015368;\n  }\n  local_20 = 0x53;\n  local_24 = 0x29;\n  local_28 = 0x13;\n  local_40 = in_FPUControlWord | 0xc00;\n  local_2c = (int)ROUND(DAT_00015370 + local_14 * 19.0 + 19.0);\n  local_30 = (int)ROUND(DAT_00015378 + local_1c * 19.0 + 19.0 + 41.0);\n  local_34 = 0x52;\n  for (; puVar1 != auStack_4c; puVar1 = puVar1 + -0x1000) {\n    *(undefined4 *)(puVar1 + -4) = *(undefined4 *)(puVar1 + -4);\n  }\n  *(undefined4 *)(puVar1 + -4) = *(undefined4 *)(puVar1 + -4);\n  local_38 = puVar1 + -0x60;\n  *(int *)(puVar1 + -0x68) = local_20;\n  *(undefined4 *)(puVar1 + -0x6c) = 0x20;\n  *(undefined **)(puVar1 + -0x70) = local_38;\n  *(undefined4 *)(puVar1 + -0x74) = 0x128c1;\n  memset(*(void **)(puVar1 + -0x70),*(int *)(puVar1 + -0x6c),*(size_t *)(puVar1 + -0x68));\n  local_38[local_20 + -1] = 0;\n  local_38[local_24] = 0x7c;\n  local_38[local_2c] = 0x2a;\n  local_38[local_30] = 0x2a;\n  *(undefined **)(puVar1 + -0x6c) = local_38;\n  *(undefined **)(puVar1 + -0x70) = &DAT_0001531f;\n  *(undefined4 *)(puVar1 + -0x74) = 0x12904;\n  printf(*(char **)(puVar1 + -0x70));\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT22",
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "plot_stereo_wave",
+                        "CONCAT22",
+                        "ROUND",
+                        "memset",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "plot_stereo_wave",
+                        "wave_vis"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "wave_vis",
+                "func_c_signature": "void wave_vis(int param_1)",
+                "decompiled_code": "void wave_vis(int param_1) {\n  uint local_14;\n  int local_10;\n  \n  local_10 = *(int *)(param_1 + 0x2c);\n  for (local_14 = 0; local_14 < *(uint *)(param_1 + 0x28) / (uint)*(ushort *)(param_1 + 0x20);\n      local_14 = local_14 + 1) {\n    if (local_14 % *(uint *)(param_1 + 0x18) == 0) {\n      slow_vis();\n    }\n    if (*(short *)(param_1 + 0x16) == 2) {\n      plot_stereo_wave(param_1,local_10);\n    }\n    else if (*(short *)(param_1 + 0x16) == 1) {\n      plot_mono_wave(param_1,local_10);\n    }\n    local_10 = local_10 + (uint)*(ushort *)(param_1 + 0x20);\n  }\n  printf(\"++++END VISUALIZATION++++\\n\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "wave_vis",
+                        "slow_vis",
+                        "plot_stereo_wave",
+                        "plot_mono_wave",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "select_option",
+                        "wave_vis"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_to_bucket",
+                "func_c_signature": "void add_to_bucket(int param_1,double *param_2,int param_3,int param_4)",
+                "decompiled_code": "void add_to_bucket(int param_1,double *param_2,int param_3,int param_4) {\n  double *pdVar1;\n  double dVar2;\n  double dVar3;\n  \n  dVar2 = sqrt((double)param_3 / (double)param_4);\n  pdVar1 = (double *)(param_1 + (int)ROUND(DAT_00015380 * dVar2) * 0x14);\n  dVar3 = pow(*param_2,DAT_00015388);\n  dVar2 = pow(param_2[1],DAT_00015388);\n  dVar2 = dVar2 + dVar3;\n  if (DAT_00015390 < dVar2) {\n    *pdVar1 = *pdVar1 + dVar2;\n  }\n  if (pdVar1[1] < dVar2) {\n    pdVar1[1] = dVar2;\n  }\n  *(int *)(pdVar1 + 2) = *(int *)(pdVar1 + 2) + 1;\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_to_bucket",
+                        "sqrt",
+                        "ROUND",
+                        "pow"
+                    ],
+                    "calling_functions": [
+                        "add_to_bucket",
+                        "eq_vis"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "vis_buckets",
+                "func_c_signature": "void vis_buckets(int param_1,int param_2)",
+                "decompiled_code": "void vis_buckets(int param_1,int param_2) {\n  double *pdVar1;\n  undefined *puVar2;\n  ushort in_FPUControlWord;\n  double dVar3;\n  undefined auStack_4c [8];\n  int local_44;\n  ushort local_40;\n  ushort local_3e;\n  int local_30;\n  int local_2c;\n  undefined *local_28;\n  undefined4 local_24;\n  int local_20;\n  double local_1c;\n  int local_14;\n  int local_10;\n  \n  local_20 = 0x5a;\n  local_24 = 0x5a;\n  for (puVar2 = auStack_4c; puVar2 != auStack_4c; puVar2 = puVar2 + -0x1000) {\n    *(undefined4 *)(puVar2 + -4) = *(undefined4 *)(puVar2 + -4);\n  }\n  *(undefined4 *)(puVar2 + -4) = *(undefined4 *)(puVar2 + -4);\n  local_28 = puVar2 + -0x60;\n  *(undefined4 *)(puVar2 + -100) = 0x12b61;\n  slow_vis();\n  if (param_2 == 1) {\n    for (local_14 = local_20; -1 < local_14; local_14 = local_14 + -1) {\n      *(undefined **)(puVar2 + -0x70) = &DAT_0001533f;\n      *(undefined4 *)(puVar2 + -0x74) = 0x12b85;\n      printf(*(char **)(puVar2 + -0x70));\n      for (local_10 = 0; local_10 < 0xc; local_10 = local_10 + 1) {\n        if (local_14 == 0) {\n          *(char **)(puVar2 + -0x70) = \"|-----|\";\n          *(undefined4 *)(puVar2 + -0x74) = 0x12ba9;\n          printf(*(char **)(puVar2 + -0x70));\n        }\n        else {\n          *(double *)(puVar2 + -0x70) = *(double *)(param_1 + local_10 * 0x14 + 8);\n          *(undefined4 *)(puVar2 + -0x74) = 0x12bd4;\n          dVar3 = log(*(double *)(puVar2 + -0x70));\n          local_3e = in_FPUControlWord;\n          local_40 = in_FPUControlWord | 0xc00;\n          local_44 = (int)ROUND(dVar3);\n          if ((int)ROUND(dVar3) < local_14) {\n            if (local_14 < 0x1f) {\n              *(char **)(puVar2 + -0x70) = \"|     |\";\n              *(undefined4 *)(puVar2 + -0x74) = 0x12c1f;\n              printf(*(char **)(puVar2 + -0x70));\n            }\n          }\n          else {\n            *(char **)(puVar2 + -0x70) = \"|=====|\";\n            *(undefined4 *)(puVar2 + -0x74) = 0x12c05;\n            printf(*(char **)(puVar2 + -0x70));\n          }\n        }\n      }\n      *(undefined **)(puVar2 + -0x70) = &DAT_0001535b;\n      *(undefined4 *)(puVar2 + -0x74) = 0x12c3f;\n      printf(*(char **)(puVar2 + -0x70));\n    }\n  }\n  else if (param_2 == 2) {\n    local_1c = 0.0;\n    local_2c = 2;\n    local_30 = 0;\n    for (local_10 = 0; local_10 < 0xc; local_10 = local_10 + 1) {\n      local_1c = local_1c + *(double *)(param_1 + local_10 * 0x14);\n    }\n    pdVar1 = (double *)(puVar2 + -0x70);\n    *pdVar1 = local_1c + 1.0;\n    *(undefined4 *)(puVar2 + -0x74) = 0x12cb9;\n    dVar3 = log(*pdVar1);\n    local_3e = in_FPUControlWord;\n    local_40 = in_FPUControlWord | 0xc00;\n    local_30 = (int)ROUND(DAT_00015398 * dVar3);\n    *(int *)(puVar2 + -0x68) = local_20 + 1;\n    *(undefined4 *)(puVar2 + -0x6c) = 0;\n    *(undefined **)pdVar1 = local_28;\n    *(undefined4 *)(puVar2 + -0x74) = 0x12cef;\n    memset(*(void **)pdVar1,*(int *)(puVar2 + -0x6c),*(size_t *)(puVar2 + -0x68));\n    *(int *)(puVar2 + -0x68) = local_30;\n    *(undefined4 *)(puVar2 + -0x6c) = 0x3d;\n    *(undefined **)pdVar1 = local_28;\n    *(undefined4 *)(puVar2 + -0x74) = 0x12d03;\n    memset(*(void **)pdVar1,*(int *)(puVar2 + -0x6c),*(size_t *)(puVar2 + -0x68));\n    local_28[local_30] = 0x5d;\n    for (local_10 = 0; local_10 < local_2c; local_10 = local_10 + 1) {\n      *(undefined **)(puVar2 + -0x6c) = local_28;\n      *(undefined **)(puVar2 + -0x70) = &DAT_0001531f;\n      *(undefined4 *)(puVar2 + -0x74) = 0x12d2c;\n      printf(*(char **)(puVar2 + -0x70));\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "vis_buckets",
+                        "slow_vis",
+                        "printf",
+                        "log",
+                        "ROUND",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "vis_buckets",
+                        "eq_vis"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "eq_vis",
+                "func_c_signature": "void eq_vis(int param_1,undefined4 param_2,int param_3)",
+                "decompiled_code": "void eq_vis(int param_1,undefined4 param_2,int param_3) {\n  undefined8 local_130 [2];\n  undefined4 auStack_120 [56];\n  undefined local_40 [4];\n  void *local_3c;\n  void *local_38;\n  uint local_34;\n  short *local_30;\n  uint local_2c;\n  uint local_28;\n  double local_24;\n  double local_1c;\n  void *local_14;\n  void *local_10;\n  \n  local_30 = *(short **)(param_1 + 0x2c);\n  local_38 = (void *)0x0;\n  local_14 = (void *)0x0;\n  local_3c = malloc(*(int *)(param_1 + 0x18) << 3);\n  if ((local_3c != (void *)0x0) &&\n     ((*(short *)(param_1 + 0x16) != 2 ||\n      (local_10 = malloc(*(int *)(param_1 + 0x18) << 3), local_10 != (void *)0x0)))) {\n    local_28 = 0;\n    while (local_28 < *(uint *)(param_1 + 0x28) / (uint)*(ushort *)(param_1 + 0x20)) {\n      for (local_2c = 0; (int)local_2c < 0xc; local_2c = local_2c + 1) {\n        *(undefined8 *)((int)local_130 + local_2c * 0x14 + 8) = 0;\n        *(undefined8 *)((int)local_130 + local_2c * 0x14) = 0;\n        auStack_120[local_2c * 5] = 0;\n      }\n      local_2c = 0;\n      for (; (local_2c < *(uint *)(param_1 + 0x18) &&\n             (local_28 < *(uint *)(param_1 + 0x28) / (uint)*(ushort *)(param_1 + 0x20)));\n          local_28 = local_28 + 1) {\n        if (*(short *)(param_1 + 0x22) == 8) {\n          local_1c = (double)(*(byte *)local_30 - 0x7f) / DAT_00015360;\n          if (*(short *)(param_1 + 0x16) == 2) {\n            local_24 = (double)(*(byte *)((int)local_30 + 1) - 0x7f) / DAT_00015360;\n          }\n        }\n        else {\n          local_1c = (double)*local_30 / DAT_00015368;\n          if (*(short *)(param_1 + 0x16) == 2) {\n            local_24 = (double)local_30[1] / DAT_00015368;\n          }\n        }\n        *(double *)((int)local_3c + local_2c * 8) = local_1c;\n        if (*(short *)(param_1 + 0x16) == 2) {\n          *(double *)((int)local_10 + local_2c * 8) = local_24;\n        }\n        local_2c = local_2c + 1;\n        local_30 = (short *)((int)local_30 + (uint)*(ushort *)(param_1 + 0x20));\n      }\n      local_38 = (void *)dft(local_3c,local_2c,local_40);\n      if (*(short *)(param_1 + 0x16) == 2) {\n        local_14 = (void *)dft(local_10,local_2c,local_40);\n      }\n      if (param_3 == 1) {\n        for (local_34 = (uint)(*(int *)(param_1 + 0x18) << 2) / 0x14;\n            ((int)local_34 < (int)local_2c &&\n            (local_34 < (uint)(*(int *)(param_1 + 0x18) << 4) / 0x14)); local_34 = local_34 + 1) {\n          *(undefined8 *)((int)local_38 + local_34 * 0x10) = 0;\n          *(undefined8 *)((int)local_38 + local_34 * 0x10 + 8) = 0;\n          if (*(short *)(param_1 + 0x16) == 2) {\n            *(undefined8 *)((int)local_14 + local_34 * 0x10) = 0;\n            *(undefined8 *)((int)local_14 + local_34 * 0x10 + 8) = 0;\n          }\n        }\n      }\n      else if (param_3 == 2) {\n        for (local_34 = 0;\n            (local_34 < (uint)(*(int *)(param_1 + 0x18) * 2) / 0x14 &&\n            ((int)local_34 < (int)local_2c)); local_34 = local_34 + 1) {\n          *(undefined8 *)((int)local_38 + local_34 * 0x10) = 0;\n          *(undefined8 *)((int)local_38 + local_34 * 0x10 + 8) = 0;\n          if (*(short *)(param_1 + 0x16) == 2) {\n            *(undefined8 *)((int)local_14 + local_34 * 0x10) = 0;\n            *(undefined8 *)((int)local_14 + local_34 * 0x10 + 8) = 0;\n          }\n        }\n      }\n      for (local_34 = 0; (int)local_34 < (int)local_2c / 2; local_34 = local_34 + 1) {\n        add_to_bucket(local_130,(void *)((int)local_38 + local_34 * 0x10),local_34,(int)local_2c / 2\n                     );\n        if (*(short *)(param_1 + 0x16) == 2) {\n          add_to_bucket(local_130,(void *)((int)local_14 + local_34 * 0x10),local_34,\n                        (int)local_2c / 2);\n        }\n      }\n      vis_buckets(local_130,param_2);\n      free(local_38);\n      if (*(short *)(param_1 + 0x16) == 2) {\n        free(local_14);\n      }\n    }\n    printf(\"++++END VISUALIZATION++++\\n\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "eq_vis",
+                        "malloc",
+                        "dft",
+                        "add_to_bucket",
+                        "vis_buckets",
+                        "free",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "select_option",
+                        "eq_vis"
+                    ],
+                    "defined_in_file": "KPRCA_00010_decompiled.c"
+                }
+            }
+        ]
+    }
+}

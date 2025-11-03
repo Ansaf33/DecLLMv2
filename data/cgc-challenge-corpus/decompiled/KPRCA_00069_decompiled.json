@@ -1,0 +1,415 @@
+{
+    "file": "KPRCA_00069",
+    "decompiled_code": {
+        "barcode.c": [
+            {
+                "func_name": "find_entry_by_bin_rep",
+                "func_c_signature": "undefined1 * find_entry_by_bin_rep(char *param_1)",
+                "decompiled_code": "undefined1 * find_entry_by_bin_rep(char *param_1) {\n  int iVar1;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (0x6b < local_10) {\n      return (undefined1 *)0x0;\n    }\n    iVar1 = strcmp(g_barcode_lut + local_10 * 0x18 + 4,param_1);\n    if (iVar1 == 0) break;\n    local_10 = local_10 + 1;\n  }\n  return g_barcode_lut + local_10 * 0x18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_entry_by_bin_rep",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "find_entry_by_bin_rep",
+                        "create_barcode_from_encoded_data"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_barcode_from_str",
+                "func_c_signature": "int * create_barcode_from_str(char *param_1)",
+                "decompiled_code": "int * create_barcode_from_str(char *param_1) {\n  size_t sVar1;\n  int iVar2;\n  char *pcVar3;\n  void *pvVar4;\n  undefined2 local_2b;\n  undefined local_29;\n  char *local_28;\n  int *local_24;\n  int local_20;\n  ulong local_1c;\n  int local_18;\n  int local_14;\n  uint local_10;\n  \n  if (((param_1 == (char *)0x0) || (sVar1 = strlen(param_1), sVar1 == 0)) ||\n     (sVar1 = strlen(param_1), 0xfa < sVar1)) {\n    local_24 = (int *)0x0;\n  }\n  else {\n    local_24 = (int *)malloc(0x14);\n    local_14 = 1;\n    local_28 = (char *)0x0;\n    local_2b = 0;\n    local_29 = 0;\n    local_10 = 0;\n    while (sVar1 = strlen(param_1), local_10 < sVar1) {\n      iVar2 = isdigit((int)param_1[local_10]);\n      if (iVar2 == 0) {\n        local_14 = 0;\n      }\n      if (((param_1[local_10] < ' ') || (param_1[local_10] == '\\x7f')) &&\n         ((param_1[local_10] != '\\t' && (param_1[local_10] != -0x40)))) {\n        free(local_24);\n        return (int *)0x0;\n      }\n      local_10 = local_10 + 1;\n    }\n    printf(\"but the q isdid i make it here?\\n\");\n    local_18 = 0;\n    if (local_14 == 0) {\n      local_20 = 0;\n      local_24[1] = 100;\n      pcVar3 = strdup(param_1);\n      local_24[2] = (int)pcVar3;\n      local_24[4] = 0x68;\n      sVar1 = strlen(param_1);\n      *local_24 = sVar1 + 5;\n      pvVar4 = malloc(*local_24 << 2);\n      local_24[3] = (int)pvVar4;\n      *(undefined4 *)(local_24[3] + local_18 * 4) = g_blut_quiet;\n      *(undefined4 *)(local_24[3] + (local_18 + 1) * 4) = g_blut_startb;\n      local_10 = 0;\n      local_18 = local_18 + 2;\n      while (sVar1 = strlen(param_1), local_10 < sVar1) {\n        if (param_1[local_10] == '\\t') {\n          local_20 = 100;\n        }\n        else if (param_1[local_10] == -0x40) {\n          local_20 = 0x65;\n        }\n        else {\n          local_20 = param_1[local_10] + -0x20;\n        }\n        *(undefined1 **)(local_24[3] + local_18 * 4) = g_barcode_lut + local_20 * 0x18;\n        local_24[4] = local_24[4] + (local_10 + 1) * local_20;\n        local_10 = local_10 + 1;\n        local_18 = local_18 + 1;\n      }\n    }\n    else {\n      local_1c = 0;\n      local_24[1] = 0x65;\n      sVar1 = strlen(param_1);\n      if ((sVar1 & 1) == 0) {\n        pcVar3 = strdup(param_1);\n        local_24[2] = (int)pcVar3;\n      }\n      else {\n        sVar1 = strlen(param_1);\n        local_28 = (char *)malloc(sVar1 + 2);\n        *local_28 = '0';\n        sVar1 = strlen(param_1);\n        memcpy(local_28 + 1,param_1,sVar1 + 1);\n        param_1 = local_28;\n        local_24[2] = (int)local_28;\n      }\n      local_24[4] = 0x69;\n      sVar1 = strlen(param_1);\n      *local_24 = (sVar1 >> 1) + 5;\n      pvVar4 = malloc(*local_24 << 2);\n      local_24[3] = (int)pvVar4;\n      *(undefined4 *)(local_24[3] + local_18 * 4) = g_blut_quiet;\n      *(undefined4 *)(local_24[3] + (local_18 + 1) * 4) = g_blut_startc;\n      local_10 = 0;\n      local_18 = local_18 + 2;\n      while (sVar1 = strlen(param_1), local_10 < sVar1) {\n        local_2b = CONCAT11(param_1[local_10 + 1],param_1[local_10]);\n        local_1c = strtoul((char *)&local_2b,(char **)0x0,10);\n        if (99 < (int)local_1c) {\n          local_1c = 0;\n        }\n        *(undefined1 **)(local_24[3] + local_18 * 4) = g_barcode_lut + local_1c * 0x18;\n        local_24[4] = local_24[4] + ((int)(local_10 + 2) / 2) * local_1c;\n        local_10 = local_10 + 2;\n        local_18 = local_18 + 1;\n      }\n    }\n    local_24[4] = local_24[4] % 0x67;\n    *(undefined1 **)(local_24[3] + local_18 * 4) = g_barcode_lut + local_24[4] * 0x18;\n    iVar2 = local_18 + 2;\n    *(undefined4 *)(local_24[3] + (local_18 + 1) * 4) = g_blut_stop;\n    local_18 = local_18 + 3;\n    *(undefined4 *)(local_24[3] + iVar2 * 4) = g_blut_quiet;\n    if (local_18 != *local_24) {\n      printf(\"Bad barcode processing\\n\");\n      *local_24 = local_18;\n    }\n  }\n  return local_24;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT11"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_barcode_from_str",
+                        "strlen",
+                        "malloc",
+                        "isdigit",
+                        "free",
+                        "printf",
+                        "strdup",
+                        "memcpy",
+                        "CONCAT11",
+                        "strtoul"
+                    ],
+                    "calling_functions": [
+                        "create_barcode_from_str",
+                        "input_barcode"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_stop_code",
+                "func_c_signature": "char * find_stop_code(char *param_1)",
+                "decompiled_code": "char * find_stop_code(char *param_1) {\n  char *__s;\n  size_t sVar1;\n  char *pcVar2;\n  char *pcVar3;\n  size_t local_14;\n  int local_10;\n  \n  __s = (char *)(g_blut_stop + 4);\n  sVar1 = strlen(__s);\n  local_10 = sVar1 - 1;\n  local_14 = strlen(param_1);\n  do {\n    local_14 = local_14 - 1;\n    if ((int)local_14 < 0) break;\n  } while (param_1[local_14] == ' ');\n  while ((-1 < local_10 && (-1 < (int)local_14))) {\n    pcVar2 = __s + local_10;\n    pcVar3 = param_1 + local_14;\n    local_14 = local_14 - 1;\n    local_10 = local_10 + -1;\n    if (*pcVar2 != *pcVar3) {\n      return (char *)0x0;\n    }\n  }\n  return param_1 + local_14 + 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_stop_code",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "find_stop_code",
+                        "create_barcode_from_encoded_data"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_barcode_from_encoded_data",
+                "func_c_signature": "int * create_barcode_from_encoded_data(int param_1)",
+                "decompiled_code": "int * create_barcode_from_encoded_data(int param_1) {\n  int iVar1;\n  void *pvVar2;\n  undefined local_38 [11];\n  undefined local_2d;\n  int *local_2c;\n  byte *local_28;\n  int local_24;\n  int local_20;\n  size_t local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_20 = find_stop_code(param_1);\n  if (local_20 == 0) {\n    return (int *)0x0;\n  }\n  local_24 = (local_20 - param_1) + -0xb;\n  for (local_10 = 0;\n      (*(char *)(param_1 + local_10) != '\\0' && (*(char *)(param_1 + local_10) != '|'));\n      local_10 = local_10 + 1) {\n  }\n  if ((local_24 <= local_10) || (*(char *)(param_1 + local_10) == '\\0')) {\n    return (int *)0x0;\n  }\n  local_14 = 0;\n  local_18 = 0;\n  local_28 = (byte *)0x0;\n  local_2c = (int *)malloc(0x14);\n  local_2c[4] = 0;\n  *local_2c = (local_24 - local_10) / 0xb + 4;\n  pvVar2 = malloc(*local_2c << 2);\n  local_2c[3] = (int)pvVar2;\n  *(undefined4 *)(local_2c[3] + local_18 * 4) = g_blut_quiet;\n  local_2c[1] = 0;\n  local_2d = 0;\n  local_18 = local_18 + 1;\n  memcpy(local_38,(void *)(param_1 + local_10),0xb);\n  local_28 = (byte *)find_entry_by_bin_rep(local_38);\n  if (local_28 != (byte *)0x0) {\n    iVar1 = local_18 + 1;\n    *(byte **)(local_2c[3] + local_18 * 4) = local_28;\n    local_18 = iVar1;\n    if (local_28 == g_blut_startb) {\n      local_2c[1] = 100;\n      local_2c[4] = local_2c[4] + 0x68;\n    }\n    else {\n      if (local_28 != g_blut_startc) goto LAB_00011ae0;\n      local_2c[1] = 0x65;\n      local_2c[4] = local_2c[4] + 0x69;\n    }\n    while (local_10 = local_10 + 0xb, local_10 < local_24) {\n      memcpy(local_38,(void *)(param_1 + local_10),0xb);\n      local_28 = (byte *)find_entry_by_bin_rep(local_38);\n      if (local_28 == (byte *)0x0) {\n        local_28 = (byte *)0x0;\n        goto LAB_00011ae0;\n      }\n      *(byte **)(local_2c[3] + local_18 * 4) = local_28;\n      if (*local_28 == 9) {\n        local_2c[4] = local_2c[4] + (local_14 + 1) * 100;\n      }\n      else if (*local_28 == 0xc0) {\n        local_2c[4] = local_2c[4] + (local_14 + 1) * 0x65;\n      }\n      else {\n        local_2c[4] = local_2c[4] + (*local_28 - 0x20) * (local_14 + 1);\n      }\n      local_14 = local_14 + 1;\n      local_18 = local_18 + 1;\n    }\n    local_2d = 0;\n    memcpy(local_38,(void *)(param_1 + local_10),0xb);\n    local_28 = (byte *)find_entry_by_bin_rep(local_38);\n    local_2c[4] = local_2c[4] % 0x67;\n    if ((local_28 != (byte *)0x0) && (local_28 == g_barcode_lut + local_2c[4] * 0x18)) {\n      *(byte **)(local_2c[3] + local_18 * 4) = local_28;\n      iVar1 = local_18 + 2;\n      *(undefined4 *)(local_2c[3] + (local_18 + 1) * 4) = g_blut_stop;\n      local_18 = local_18 + 3;\n      *(undefined4 *)(local_2c[3] + iVar1 * 4) = g_blut_quiet;\n      if (local_18 != *local_2c) {\n        printf(\"Bad barcode processing\\n\");\n        *local_2c = local_18;\n      }\n      local_1c = 0;\n      if (local_2c[1] == 100) {\n        local_1c = *local_2c - 4;\n      }\n      else if (local_2c[1] == 0x65) {\n        local_1c = (*local_2c + -5) * 2 + 1;\n      }\n      pvVar2 = malloc(local_1c);\n      local_2c[2] = (int)pvVar2;\n      *(undefined *)(local_2c[2] + (local_1c - 1)) = 0;\n      for (local_10 = 2; local_10 < *local_2c + -3; local_10 = local_10 + 1) {\n        if (local_2c[1] == 100) {\n          *(undefined *)(local_2c[2] + local_10 + -2) = **(undefined **)(local_2c[3] + local_10 * 4)\n          ;\n        }\n        if (local_2c[1] == 0x65) {\n          *(undefined *)(local_2c[2] + (local_10 + -2) * 2) =\n               *(undefined *)(*(int *)(local_2c[3] + local_10 * 4) + 1);\n          *(undefined *)(local_2c[2] + (local_10 + -2) * 2 + 1) =\n               *(undefined *)(*(int *)(local_2c[3] + local_10 * 4) + 2);\n        }\n      }\n      return local_2c;\n    }\n  }\nLAB_00011ae0:\n  free((void *)local_2c[3]);\n  free(local_2c);\n  return (int *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_barcode_from_encoded_data",
+                        "find_stop_code",
+                        "malloc",
+                        "memcpy",
+                        "find_entry_by_bin_rep",
+                        "printf",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "create_barcode_from_encoded_data",
+                        "create_barcode_from_bmp",
+                        "input_barcode"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_barcode_ascii",
+                "func_c_signature": "char * create_barcode_ascii(int *param_1)",
+                "decompiled_code": "char * create_barcode_ascii(int *param_1) {\n  char *pcVar1;\n  char *local_18;\n  char *local_14;\n  int local_10;\n  \n  pcVar1 = (char *)calloc(1,(*param_1 + -1) * 0xb + 0xe);\n  local_14 = pcVar1;\n  for (local_10 = 0; local_10 < *param_1; local_10 = local_10 + 1) {\n    local_18 = (char *)(*(int *)(param_1[3] + local_10 * 4) + 4);\n    while (*local_18 != '\\0') {\n      *local_14 = *local_18;\n      local_18 = local_18 + 1;\n      local_14 = local_14 + 1;\n    }\n  }\n  return pcVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_barcode_ascii",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "create_barcode_ascii",
+                        "create_barcode_bmp_data"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_barcode_ascii",
+                "func_c_signature": "void print_barcode_ascii(int *param_1,int param_2)",
+                "decompiled_code": "void print_barcode_ascii(int *param_1,int param_2) {\n  int local_10;\n  \n  if (param_2 != 0) {\n    for (local_10 = 2; local_10 < *param_1 + -3; local_10 = local_10 + 1) {\n      if (param_1[1] == 100) {\n        printf(\"%c\",(uint)**(byte **)(param_1[3] + local_10 * 4));\n      }\n      if (param_1[1] == 0x65) {\n        printf(\"%s\",*(int *)(param_1[3] + local_10 * 4) + 1);\n      }\n    }\n    printf(\"\\n\");\n  }\n  for (local_10 = 1; local_10 < *param_1 + -1; local_10 = local_10 + 1) {\n    printf(\"%s\",*(int *)(param_1[3] + local_10 * 4) + 4);\n  }\n  printf(\"\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_barcode_ascii",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_barcode_ascii",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            }
+        ],
+        "bitmap.c": [
+            {
+                "func_name": "create_barcode_bmp_data",
+                "func_c_signature": "void * create_barcode_bmp_data(int param_1,size_t *param_2,size_t *param_3)",
+                "decompiled_code": "void * create_barcode_bmp_data(int param_1,size_t *param_2,size_t *param_3) {\n  char *__s;\n  size_t sVar1;\n  void *__src;\n  undefined *local_20;\n  int local_1c;\n  int local_18;\n  void *local_14;\n  char *local_10;\n  \n  *param_2 = 0;\n  *param_3 = 0;\n  __s = (char *)create_barcode_ascii(param_1);\n  if ((__s != (char *)0x0) && (sVar1 = strlen(*(char **)(param_1 + 8)), sVar1 < 0xfb)) {\n    sVar1 = strlen(__s);\n    *param_2 = sVar1 * 0x5a0;\n    __src = calloc(1,*param_2);\n    sVar1 = strlen(__s);\n    sVar1 = sVar1 * 0xc;\n    *param_3 = sVar1;\n    local_14 = __src;\n    for (local_10 = __s; *local_10 != '\\0'; local_10 = local_10 + 1) {\n      if (*local_10 == '|') {\n        local_20 = &DAT_00017041;\n      }\n      else {\n        local_20 = &DAT_00017045;\n      }\n      for (local_1c = 0; local_1c < 4; local_1c = local_1c + 1) {\n        memcpy(local_14,local_20,3);\n        local_14 = (void *)((int)local_14 + 3);\n      }\n    }\n    for (local_18 = 1; local_18 < 0x78; local_18 = local_18 + 1) {\n      memcpy((void *)((int)__src + local_18 * sVar1),__src,sVar1);\n    }\n    free(__s);\n    return __src;\n  }\n  return (void *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_barcode_bmp_data",
+                        "create_barcode_ascii",
+                        "strlen",
+                        "calloc",
+                        "memcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "create_barcode_bmp_data",
+                        "create_barcode_bmp"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_bmp_headers",
+                "func_c_signature": "undefined4 validate_bmp_headers(void *param_1,int *param_2)",
+                "decompiled_code": "undefined4 validate_bmp_headers(void *param_1,int *param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  \n  iVar1 = memcmp(param_1,&DAT_00017049,2);\n  if (((((iVar1 == 0) && (*(int *)((int)param_1 + 6) == 0)) &&\n       (*(int *)((int)param_1 + 2) == param_2[5] + 0x36)) &&\n      ((((*param_2 == 0x28 && (param_2[1] < 0x2b31)) &&\n        ((param_2[2] == 0x78 &&\n         ((*(short *)(param_2 + 3) == 1 && (*(short *)((int)param_2 + 0xe) == 0x18)))))) &&\n       (param_2[4] == 0)))) &&\n     ((((param_2[5] == (uint)(*(ushort *)((int)param_2 + 0xe) >> 3) * param_2[1] * param_2[2] &&\n        (param_2[6] == 0xb13)) && (param_2[7] == 0xb13)) && ((param_2[8] == 0 && (param_2[9] == 0)))\n      ))) {\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_bmp_headers",
+                        "memcmp"
+                    ],
+                    "calling_functions": [
+                        "validate_bmp_headers",
+                        "create_barcode_from_bmp",
+                        "input_barcode"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_barcode_bmp",
+                "func_c_signature": "void * create_barcode_bmp(undefined4 param_1)",
+                "decompiled_code": "void * create_barcode_bmp(undefined4 param_1) {\n  int local_54;\n  size_t local_50;\n  undefined4 local_4c;\n  int local_48;\n  undefined4 local_44;\n  undefined2 local_40;\n  undefined2 local_3e;\n  undefined4 local_3c;\n  int local_38;\n  undefined4 local_34;\n  undefined4 local_30;\n  undefined4 local_2c;\n  undefined4 local_28;\n  undefined local_22 [2];\n  int local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  void *local_14;\n  void *local_10;\n  \n  local_50 = 0;\n  local_54 = 0;\n  local_10 = (void *)create_barcode_bmp_data(param_1,&local_50,&local_54);\n  if ((local_10 == (void *)0x0) || (local_50 == 0)) {\n    local_14 = (void *)0x0;\n  }\n  else {\n    memcpy(local_22,&DAT_00017049,2);\n    local_1c = 0;\n    local_20 = local_50 + 0x36;\n    local_18 = 0x36;\n    local_4c = 0x28;\n    local_3e = 0x18;\n    local_48 = local_54 / 3;\n    local_44 = 0x78;\n    local_40 = 1;\n    local_3c = 0;\n    local_38 = local_48 * 0x168;\n    local_34 = 0xb13;\n    local_30 = 0xb13;\n    local_2c = 0;\n    local_28 = 0;\n    local_14 = malloc(local_50 + 0x36);\n    memcpy(local_14,local_22,0xe);\n    memcpy((void *)((int)local_14 + 0xe),&local_4c,0x28);\n    memcpy((void *)((int)local_14 + 0x36),local_10,local_50);\n    free(local_10);\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_barcode_bmp",
+                        "create_barcode_bmp_data",
+                        "memcpy",
+                        "malloc",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "create_barcode_bmp",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_barcode_from_bmp",
+                "func_c_signature": "undefined4 create_barcode_from_bmp(int param_1)",
+                "decompiled_code": "undefined4 create_barcode_from_bmp(int param_1) {\n  char cVar1;\n  int iVar2;\n  undefined4 uVar3;\n  void *__ptr;\n  undefined uVar4;\n  int local_14;\n  int local_10;\n  \n  iVar2 = validate_bmp_headers(param_1,param_1 + 0xe);\n  if (iVar2 == 0) {\n    iVar2 = *(int *)(param_1 + 0x12);\n    if (iVar2 < 0) {\n      iVar2 = iVar2 + 3;\n    }\n    __ptr = calloc(1,(iVar2 >> 2) + 1);\n    iVar2 = (uint)(*(ushort *)(param_1 + 0x1c) >> 3) * 4;\n    for (local_14 = 0;\n        local_14 < (int)((uint)(*(ushort *)(param_1 + 0x1c) >> 3) * *(int *)(param_1 + 0x12));\n        local_14 = local_14 + iVar2) {\n      cVar1 = *(char *)(local_14 + param_1 + 0x36);\n      if ((cVar1 != '\\0') && (cVar1 != -1)) goto LAB_000125a3;\n      for (local_10 = 1; local_10 < iVar2; local_10 = local_10 + 1) {\n        if (cVar1 != *(char *)(param_1 + 0x36 + local_14 + local_10)) goto LAB_000125a3;\n      }\n      if (cVar1 == '\\0') {\n        uVar4 = 0x7c;\n      }\n      else {\n        uVar4 = 0x20;\n      }\n      *(undefined *)((int)__ptr + local_14 / iVar2) = uVar4;\n    }\n    for (local_10 = 1; local_10 < 0x78; local_10 = local_10 + 1) {\n      iVar2 = memcmp((void *)(param_1 + (uint)(*(ushort *)(param_1 + 0x1c) >> 3) *\n                                        *(int *)(param_1 + 0x12) * local_10 + 0x36),\n                     (void *)(param_1 + 0x36),\n                     (uint)(*(ushort *)(param_1 + 0x1c) >> 3) * *(int *)(param_1 + 0x12));\n      if (iVar2 != 0) {\nLAB_000125a3:\n        free(__ptr);\n        return 0;\n      }\n    }\n    uVar3 = create_barcode_from_encoded_data(__ptr);\n    free(__ptr);\n  }\n  else {\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_barcode_from_bmp",
+                        "validate_bmp_headers",
+                        "calloc",
+                        "memcmp",
+                        "free",
+                        "create_barcode_from_encoded_data"
+                    ],
+                    "calling_functions": [
+                        "create_barcode_from_bmp",
+                        "input_barcode"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "add_to_cache",
+                "func_c_signature": "void add_to_cache(undefined4 param_1)",
+                "decompiled_code": "void add_to_cache(undefined4 param_1) {\n  int iVar1;\n  void *__ptr;\n  \n  if ((g_replace_oldest == 0) && (g_c_idx < 10)) {\n    iVar1 = g_c_idx * 4;\n    g_c_idx = g_c_idx + 1;\n    *(undefined4 *)(g_barcode_cache + iVar1) = param_1;\n  }\n  else {\n    g_replace_oldest = 1;\n    __ptr = *(void **)(g_barcode_cache + g_c_oldest * 4);\n    free(*(void **)((int)__ptr + 8));\n    free(*(void **)((int)__ptr + 0xc));\n    free(__ptr);\n    g_c_idx = g_c_oldest;\n    iVar1 = g_c_oldest * 4;\n    g_c_oldest = (g_c_oldest + 1) % 10;\n    *(undefined4 *)(g_barcode_cache + iVar1) = param_1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_to_cache",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "add_to_cache",
+                        "input_barcode"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "select_from_cache",
+                "func_c_signature": "undefined4 select_from_cache(void)",
+                "decompiled_code": "undefined4 select_from_cache(void) {\n  int iVar1;\n  ulong uVar2;\n  uint uVar3;\n  uint local_14;\n  uint local_10;\n  \n  local_10 = 0xffffffff;\n  uVar3 = g_c_idx;\n  if (g_replace_oldest != 0) {\n    uVar3 = 10;\n  }\n  while( true ) {\n    if (local_10 < uVar3) {\n      return *(undefined4 *)(g_barcode_cache + ((g_c_oldest + local_10) % 10) * 4);\n    }\n    printf(\"Select Cached Barcode\\n\");\n    for (local_14 = 0; local_14 < uVar3; local_14 = local_14 + 1) {\n      printf(\"    %d. Text: %s\\n\",local_14 + 1,\n             *(undefined4 *)\n              (*(int *)(g_barcode_cache + ((int)(g_c_oldest + local_14) % 10) * 4) + 8));\n    }\n    printf(\"    0. Return to main menu\\n\");\n    printf(\":-$  \");\n    fflush((FILE *)stdout);\n    iVar1 = freaduntil(g_input,0x800,10,stdin);\n    if (iVar1 == -1) break;\n    uVar2 = strtoul(g_input,(char **)0x0,10);\n    if (uVar2 == 0) {\n      return 0;\n    }\n    local_10 = uVar2 - 1;\n  }\n  printf(\"Invalid Selection\\n\");\n  fflush((FILE *)stdout);\n                    /* WARNING: Subroutine does not return */\n  exit(0);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "select_from_cache",
+                        "printf",
+                        "fflush",
+                        "freaduntil",
+                        "strtoul",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "select_from_cache",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "input_barcode",
+                "func_c_signature": "void input_barcode(void)",
+                "decompiled_code": "void input_barcode(void) {\n  int iVar1;\n  size_t sVar2;\n  FILE *__stream;\n  char local_14e [256];\n  undefined local_4e [2];\n  size_t local_4c;\n  undefined auStack_40 [40];\n  int local_18;\n  void *local_14;\n  ulong local_10;\n  \n  __stream = (FILE *)0x12869;\n  local_10 = 0xffffffff;\n  while (4 < local_10) {\n    printf(\"Input barcode as:\\n\");\n    printf(\"    1. String to encode\\n\");\n    printf(\"    2. Barcode encoded in ascii (\\\"|\\\" and \\\" \\\")\\n\");\n    printf(\"    3. Barcode bitmap\\n\");\n    printf(\"    0. Return to main menu\\n\");\n    printf(\":-$  \");\n    fflush((FILE *)stdout);\n    __stream = (FILE *)stdin;\n    iVar1 = freaduntil(g_input,0x800,10);\n    if (iVar1 == -1) {\n      printf(\"Invalid Selection\\n\");\n      fflush((FILE *)stdout);\n                    /* WARNING: Subroutine does not return */\n      exit(0);\n    }\n    local_10 = strtoul(g_input,(char **)0x0,10);\n  }\n  local_14 = (void *)0x0;\n  local_18 = 0;\n  fflush((FILE *)stdout);\n  if (local_10 == 3) {\n    sVar2 = fread(local_4e,0x36,(size_t)stdin,__stream);\n    if (sVar2 == 0xffffffff) {\n      sprintf(local_14e,\"Bad input\\n\");\n    }\n    else {\n      iVar1 = validate_bmp_headers(local_4e,auStack_40);\n      if (iVar1 == 0) {\n        local_14 = malloc(local_4c);\n        memcpy(local_14,local_4e,0x36);\n        fflush((FILE *)stdout);\n        sVar2 = fread((void *)((int)local_14 + 0x36),*(size_t *)((int)local_14 + 0x22),(size_t)stdin\n                      ,__stream);\n        if (sVar2 == 0xffffffff) {\n          sprintf(local_14e,\"Bad input\\n\");\n        }\n        else {\n          local_18 = create_barcode_from_bmp(local_14);\n          if (local_18 == 0) {\n            sprintf(local_14e,\"Bad barcode bitmap\\n\");\n          }\n          else {\n            add_to_cache(local_18);\n            sprintf(local_14e,\"Successfully added bitmap barcode to cache\\nBarcode text: %s\\n\",\n                    *(undefined4 *)(local_18 + 8));\n          }\n        }\n      }\n      else {\n        sprintf(local_14e,\"Bad input\\n\");\n      }\n    }\n    if (local_14 != (void *)0x0) {\n      free(local_14);\n    }\n    printf(local_14e);\n  }\n  else if (local_10 < 4) {\n    if (local_10 == 1) {\n      iVar1 = freaduntil(g_input,0x800,10,stdin);\n      if (iVar1 == -1) {\n        printf(\"Bad input\\n\");\n        fflush((FILE *)stdout);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      local_18 = create_barcode_from_str(g_input);\n      if (local_18 == 0) {\n        printf(\"Bad barcode string\\n\");\n      }\n      else {\n        add_to_cache(local_18);\n        printf(\"Successfully added barcode to cache\\n\");\n        printf(\"Barcode text: %s\\n\",*(undefined4 *)(local_18 + 8));\n      }\n    }\n    else if (local_10 == 2) {\n      iVar1 = freaduntil(g_input,0x800,10,stdin);\n      if (iVar1 == -1) {\n        printf(\"Bad input\\n\");\n        fflush((FILE *)stdout);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      local_18 = create_barcode_from_encoded_data(g_input);\n      if (local_18 == 0) {\n        printf(\"Bad barcode encoding\\n\");\n      }\n      else {\n        add_to_cache(local_18);\n        printf(\"Successfully added barcode to cache\\n\");\n        printf(\"Barcode text: %s\\n\",*(undefined4 *)(local_18 + 8));\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "ascii"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "input_barcode",
+                        "printf",
+                        "ascii",
+                        "fflush",
+                        "freaduntil",
+                        "exit",
+                        "strtoul",
+                        "fread",
+                        "sprintf",
+                        "validate_bmp_headers",
+                        "malloc",
+                        "memcpy",
+                        "create_barcode_from_bmp",
+                        "add_to_cache",
+                        "free",
+                        "create_barcode_from_str",
+                        "create_barcode_from_encoded_data"
+                    ],
+                    "calling_functions": [
+                        "input_barcode",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "view_cached_barcodes",
+                "func_c_signature": "void view_cached_barcodes(void)",
+                "decompiled_code": "void view_cached_barcodes(void) {\n  uint uVar1;\n  uint local_10;\n  \n  uVar1 = g_c_idx;\n  if (g_replace_oldest != 0) {\n    uVar1 = 10;\n  }\n  printf(\"Cached Barcodes\\n\");\n  for (local_10 = 0; local_10 < uVar1; local_10 = local_10 + 1) {\n    printf(\"    %d. Text: %s\\n\",local_10 + 1,\n           *(undefined4 *)(*(int *)(g_barcode_cache + ((int)(g_c_oldest + local_10) % 10) * 4) + 8))\n    ;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "view_cached_barcodes",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "view_cached_barcodes",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clear_cached_barcodes",
+                "func_c_signature": "void clear_cached_barcodes(void)",
+                "decompiled_code": "void clear_cached_barcodes(void) {\n  void *__ptr;\n  uint uVar1;\n  uint local_10;\n  \n  uVar1 = g_c_idx;\n  if (g_replace_oldest != 0) {\n    uVar1 = 10;\n  }\n  for (local_10 = 0; local_10 < uVar1; local_10 = local_10 + 1) {\n    __ptr = *(void **)(g_barcode_cache + local_10 * 4);\n    free(*(void **)((int)__ptr + 8));\n    free(*(void **)((int)__ptr + 0xc));\n    free(__ptr);\n  }\n  g_replace_oldest = 0;\n  g_c_idx = 0;\n  g_c_oldest = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clear_cached_barcodes",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "clear_cached_barcodes",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_seed",
+                "func_c_signature": "void check_seed(void)",
+                "decompiled_code": "void check_seed(void) {\n  FILE *__s;\n  int local_10 [2];\n  \n  __s = (FILE *)0x12e3d;\n  local_10[0] = 0;\n  fread(local_10,4,(size_t)stdin,(FILE *)0x12e3d);\n  if (_DAT_4347c000 == local_10[0]) {\n    fwrite(&DAT_4347c000,0x1000,(size_t)stdout,__s);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_seed",
+                        "fread",
+                        "fwrite"
+                    ],
+                    "calling_functions": [
+                        "check_seed",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  bool bVar1;\n  int iVar2;\n  long lVar3;\n  void *__ptr;\n  undefined4 uVar4;\n  FILE *__s;\n  \n  bVar1 = true;\n  uVar4 = 1;\n  fbuffered(stdout,1);\n  check_seed();\n  printf(\"Welcome to the EZ Barcode Encoder/Decoder Service\\n\");\n  while( true ) {\n    if (!bVar1) {\n      printf(\"Thanks for using the EZ Barcode Encoder/Decoder Service\\n\",uVar4);\n      fflush((FILE *)stdout);\n      return 0;\n    }\n    printf(\"--Select an option--\\n\",uVar4);\n    printf(\"1. Input a new barcode\\n\");\n    printf(\"2. View barcode ascii\\n\");\n    printf(\"3. Generate barcode image\\n\");\n    printf(\"4. View cached barcodes\\n\");\n    printf(\"5. Clear cached barcodes\\n\");\n    printf(\"6. Quit\\n\");\n    printf(\":-$  \");\n    fflush((FILE *)stdout);\n    iVar2 = freaduntil(g_input,0x800,10,stdin);\n    if (iVar2 == -1) break;\n    uVar4 = 0;\n    lVar3 = strtol(g_input,(char **)0x0,10);\n    switch(lVar3) {\n    default:\n      printf(\"Invalid Selection\\n\");\n      break;\n    case 1:\n      input_barcode();\n      break;\n    case 2:\n      iVar2 = select_from_cache();\n      if (iVar2 != 0) {\n        printf(\"Raw String: \");\n        uVar4 = 1;\n        print_barcode_ascii(iVar2);\n      }\n      break;\n    case 3:\n      __s = (FILE *)0x1306a;\n      iVar2 = select_from_cache();\n      if (iVar2 != 0) {\n        __ptr = (void *)create_barcode_bmp(iVar2);\n        if (__ptr == (void *)0x0) {\n          printf(\"Bad barcode\\n\");\n        }\n        else {\n          printf(\"    Printable Barcode:\\n\");\n          fwrite(__ptr,*(size_t *)((int)__ptr + 2),(size_t)stdout,__s);\n          uVar4 = *(undefined4 *)(iVar2 + 8);\n          printf(\"\\n    Barcode String: %s\\n\",uVar4);\n          free(__ptr);\n        }\n      }\n      break;\n    case 4:\n      view_cached_barcodes();\n      break;\n    case 5:\n      clear_cached_barcodes();\n      break;\n    case 6:\n      bVar1 = false;\n    }\n  }\n  printf(\"Invalid Selection\\n\");\n  fflush((FILE *)stdout);\n                    /* WARNING: Subroutine does not return */\n  exit(0);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "fbuffered",
+                        "check_seed",
+                        "printf",
+                        "fflush",
+                        "freaduntil",
+                        "strtol",
+                        "input_barcode",
+                        "select_from_cache",
+                        "print_barcode_ascii",
+                        "create_barcode_bmp",
+                        "fwrite",
+                        "free",
+                        "view_cached_barcodes",
+                        "clear_cached_barcodes",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00069_decompiled.c"
+                }
+            }
+        ]
+    }
+}

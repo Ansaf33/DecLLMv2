@@ -1,0 +1,553 @@
+{
+    "file": "KPRCA_00007",
+    "decompiled_code": {
+        "main.c": [
+            {
+                "func_name": "print",
+                "func_c_signature": "void print(char *param_1)",
+                "decompiled_code": "void print(char *param_1) {\n  size_t sVar1;\n  undefined local_10 [8];\n  \n  sVar1 = strlen(param_1);\n  transmit(1,param_1,sVar1,local_10);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print",
+                        "strlen",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "print",
+                        "readline",
+                        "cmd_add_route",
+                        "cmd_delete_route",
+                        "cmd_query_route",
+                        "cmd_add_router",
+                        "cmd_delete_router",
+                        "cmd_edit_router",
+                        "cmd_enable_mode",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "readline",
+                "func_c_signature": "undefined1 * readline(undefined4 param_1)",
+                "decompiled_code": "undefined1 * readline(undefined4 param_1) {\n  int iVar1;\n  int local_18;\n  undefined4 local_14;\n  int local_10;\n  \n  local_10 = 0;\n  print(param_1);\n  do {\n    iVar1 = receive(0,g_buffer + local_10,1,&local_18);\n    if ((iVar1 != 0) || (local_18 != 1)) {\n      return (undefined1 *)0x0;\n    }\n    if (g_buffer[local_10] == '\\n') {\n      g_buffer[local_10] = 0;\n      return g_buffer;\n    }\n    local_10 = local_10 + 1;\n    local_14 = 0;\n  } while (local_10 != 0x400);\n  return (undefined1 *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readline",
+                        "print",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "readline",
+                        "prompt_edit_router",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_ip",
+                "func_c_signature": "undefined4 parse_ip(undefined4 param_1,uint *param_2)",
+                "decompiled_code": "undefined4 parse_ip(undefined4 param_1,uint *param_2) {\n  char *__nptr;\n  undefined4 uVar1;\n  char *__nptr_00;\n  char *__nptr_01;\n  char *__nptr_02;\n  ulong uVar2;\n  ulong uVar3;\n  ulong uVar4;\n  ulong uVar5;\n  \n  __nptr = strsep((char **)&param_1,\".\");\n  if (__nptr == (char *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    __nptr_00 = strsep((char **)&param_1,\".\");\n    if (__nptr_00 == (char *)0x0) {\n      uVar1 = 0;\n    }\n    else {\n      __nptr_01 = strsep((char **)&param_1,\".\");\n      if (__nptr_01 == (char *)0x0) {\n        uVar1 = 0;\n      }\n      else {\n        __nptr_02 = strsep((char **)&param_1,\".\");\n        if (__nptr_02 == (char *)0x0) {\n          uVar1 = 0;\n        }\n        else {\n          uVar2 = strtoul(__nptr,(char **)0x0,10);\n          if (uVar2 < 0x100) {\n            uVar3 = strtoul(__nptr_00,(char **)0x0,10);\n            if (uVar3 < 0x100) {\n              uVar4 = strtoul(__nptr_01,(char **)0x0,10);\n              if (uVar4 < 0x100) {\n                uVar5 = strtoul(__nptr_02,(char **)0x0,10);\n                if (uVar5 < 0x100) {\n                  *param_2 = uVar4 << 8 | uVar2 << 0x18 | uVar3 << 0x10 | uVar5;\n                  uVar1 = 1;\n                }\n                else {\n                  uVar1 = 0;\n                }\n              }\n              else {\n                uVar1 = 0;\n              }\n            }\n            else {\n              uVar1 = 0;\n            }\n          }\n          else {\n            uVar1 = 0;\n          }\n        }\n      }\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_ip",
+                        "strsep",
+                        "strtoul"
+                    ],
+                    "calling_functions": [
+                        "parse_ip",
+                        "prompt_edit_router",
+                        "cmd_add_route",
+                        "cmd_delete_route",
+                        "cmd_query_route"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "valid_router",
+                "func_c_signature": "undefined4 valid_router(uint *param_1)",
+                "decompiled_code": "undefined4 valid_router(uint *param_1) {\n  undefined4 uVar1;\n  \n  if ((*param_1 == 0) || (0xffff < *param_1)) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "valid_router"
+                    ],
+                    "calling_functions": [
+                        "valid_router",
+                        "cmd_add_route",
+                        "cmd_add_router",
+                        "cmd_delete_router",
+                        "cmd_edit_router",
+                        "cmd_list_router"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_router",
+                "func_c_signature": "undefined1 * get_router(int param_1)",
+                "decompiled_code": "undefined1 * get_router(int param_1) {\n  return g_routers + (param_1 + -1) * 0x108;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_router"
+                    ],
+                    "calling_functions": [
+                        "get_router",
+                        "cmd_add_route",
+                        "cmd_query_route",
+                        "cmd_add_router",
+                        "cmd_delete_router",
+                        "cmd_edit_router",
+                        "cmd_list_router"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "mask_to_length",
+                "func_c_signature": "int mask_to_length(int param_1)",
+                "decompiled_code": "int mask_to_length(int param_1) {\n  int local_8;\n  \n  if (param_1 == 0) {\n    local_8 = 0;\n  }\n  else if (param_1 == -1) {\n    local_8 = 0x20;\n  }\n  else {\n    local_8 = 0;\n    while ((local_8 < 0x21 && (param_1 != -1 << (0x20U - (char)local_8 & 0x1f)))) {\n      local_8 = local_8 + 1;\n    }\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "mask_to_length"
+                    ],
+                    "calling_functions": [
+                        "mask_to_length",
+                        "cmd_add_route",
+                        "cmd_delete_route"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "route_mask",
+                "func_c_signature": "int route_mask(undefined4 *param_1)",
+                "decompiled_code": "int route_mask(undefined4 *param_1) {\n  int iVar1;\n  \n  if (param_1 == &g_default_route) {\n    iVar1 = 0;\n  }\n  else {\n    iVar1 = -1 << (0x1f - (*(byte *)((int)param_1 + 0xf) >> 3) & 0x1f);\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "route_mask"
+                    ],
+                    "calling_functions": [
+                        "route_mask",
+                        "lookup_route",
+                        "cmd_add_route"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "route_bit",
+                "func_c_signature": "int route_bit(undefined4 *param_1)",
+                "decompiled_code": "int route_bit(undefined4 *param_1) {\n  int iVar1;\n  \n  if (param_1 == &g_default_route) {\n    iVar1 = -0x80000000;\n  }\n  else {\n    iVar1 = 1 << (0x1e - (*(byte *)((int)param_1 + 0xf) >> 3) & 0x1f);\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "route_bit"
+                    ],
+                    "calling_functions": [
+                        "route_bit",
+                        "route_child",
+                        "cmd_add_route"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "route_child",
+                "func_c_signature": "undefined4 route_child(undefined4 *param_1,uint param_2)",
+                "decompiled_code": "undefined4 route_child(undefined4 *param_1,uint param_2) {\n  uint uVar1;\n  undefined4 uVar2;\n  \n  uVar1 = route_bit(param_1);\n  if ((uVar1 & param_2) == 0) {\n    uVar2 = *param_1;\n  }\n  else {\n    uVar2 = param_1[1];\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "route_child",
+                        "route_bit"
+                    ],
+                    "calling_functions": [
+                        "route_child",
+                        "lookup_route"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lookup_route",
+                "func_c_signature": "undefined4 * lookup_route(uint param_1,int param_2,undefined4 *param_3)",
+                "decompiled_code": "undefined4 * lookup_route(uint param_1,int param_2,undefined4 *param_3) {\n  undefined4 *puVar1;\n  uint uVar2;\n  undefined4 *local_8;\n  \n  if (param_2 == 0) {\n    if (param_1 == 0) {\n      if (param_3 != (undefined4 *)0x0) {\n        *param_3 = 0;\n      }\n      puVar1 = &g_default_route;\n    }\n    else {\n      puVar1 = (undefined4 *)0x0;\n    }\n  }\n  else {\n    local_8 = &g_default_route;\n    while (puVar1 = (undefined4 *)route_child(local_8,param_1), puVar1 != (undefined4 *)0x0) {\n      uVar2 = route_mask(puVar1);\n      if ((param_1 == puVar1[2]) && ((uint)(*(byte *)((int)puVar1 + 0xf) >> 3) == param_2 - 1U)) {\n        if (param_3 == (undefined4 *)0x0) {\n          return puVar1;\n        }\n        *param_3 = local_8;\n        return puVar1;\n      }\n      if ((((puVar1[2] ^ param_1) & uVar2) != 0) ||\n         (local_8 = puVar1, (*(byte *)((int)puVar1 + 0xf) & 0xf8) == 0xf8)) break;\n    }\n    puVar1 = (undefined4 *)0x0;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lookup_route",
+                        "route_child",
+                        "route_mask"
+                    ],
+                    "calling_functions": [
+                        "lookup_route",
+                        "delete_route",
+                        "cmd_delete_route"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "prompt_edit_router",
+                "func_c_signature": "void prompt_edit_router(undefined4 *param_1)",
+                "decompiled_code": "void prompt_edit_router(undefined4 *param_1) {\n  int iVar1;\n  undefined4 local_14;\n  char *local_10;\n  \n  printf(\"AS %d\\n\",*param_1);\n  printf(\" Name: %s\\n\",param_1 + 1);\n  printf(\" IP: %d.%d.%d.%d\\n\",(uint)param_1[0x41] >> 0x18,(uint)param_1[0x41] >> 0x10 & 0xff,\n         (uint)param_1[0x41] >> 8 & 0xff,param_1[0x41] & 0xff);\n  local_10 = (char *)readline(\"Modify name? \");\n  if (local_10 != (char *)0x0) {\n    iVar1 = strcmp(local_10,\"y\");\n    if (iVar1 == 0) {\n      local_10 = (char *)readline(\"New name? \");\n      if (local_10 != (char *)0x0) {\n        strncpy((char *)(param_1 + 1),local_10,0x100);\n        *(undefined *)((int)param_1 + 0x103) = 0;\n      }\n    }\n  }\n  local_10 = (char *)readline(\"Modify IP? \");\n  if (local_10 != (char *)0x0) {\n    iVar1 = strcmp(local_10,\"y\");\n    if (iVar1 == 0) {\n      local_10 = (char *)readline(\"New IP? \");\n      if (local_10 != (char *)0x0) {\n        iVar1 = parse_ip(local_10,&local_14);\n        if (iVar1 != 0) {\n          param_1[0x41] = local_14;\n        }\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "prompt_edit_router",
+                        "printf",
+                        "readline",
+                        "strcmp",
+                        "strncpy",
+                        "parse_ip"
+                    ],
+                    "calling_functions": [
+                        "prompt_edit_router",
+                        "cmd_add_router",
+                        "cmd_edit_router"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "allocate_route",
+                "func_c_signature": "int * allocate_route(void)",
+                "decompiled_code": "int * allocate_route(void) {\n  int *piVar1;\n  int iVar2;\n  int *local_20;\n  int *local_1c;\n  int *local_18;\n  int *local_14;\n  uint local_10;\n  \n  local_20 = (int *)0x0;\n  local_10 = 0;\n  while ((piVar1 = local_20, (int)local_10 < g_route_mem_length &&\n         ((local_14 = *(int **)(g_route_memory + local_10 * 4), local_14 == (int *)0x0 ||\n          (piVar1 = local_14, *local_14 == 0))))) {\n    local_10 = local_10 + 1;\n  }\n  local_20 = piVar1;\n  if (local_20 == (int *)0x0) {\n    if (g_route_mem_length == 0x400) {\n      return (int *)0x0;\n    }\n    iVar2 = allocate(0x10000,0,&local_20);\n    if (iVar2 != 0) {\n      return (int *)0x0;\n    }\n    *local_20 = 1;\n    for (local_10 = 1; local_10 < 0x1000; local_10 = local_10 + 1) {\n      local_18 = local_20 + local_10 * 4;\n      *(byte *)((int)local_18 + 0xf) = *(byte *)((int)local_18 + 0xf) | 4;\n      if (local_10 == 0xfff) {\n        local_18[2] = 0;\n      }\n      else {\n        local_18[2] = local_10 + 1;\n      }\n    }\n    iVar2 = g_route_mem_length * 4;\n    g_route_mem_length = g_route_mem_length + 1;\n    *(int **)(g_route_memory + iVar2) = local_20;\n  }\n  local_1c = local_20 + *local_20 * 4;\n  *local_20 = local_1c[2];\n  memset(local_1c,0,0x10);\n  return local_1c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "allocate_route",
+                        "allocate",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "allocate_route",
+                        "cmd_add_route"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free_route",
+                "func_c_signature": "void free_route(int param_1)",
+                "decompiled_code": "void free_route(int param_1) {\n  uint *puVar1;\n  int local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (g_route_mem_length <= local_10) {\n                    /* WARNING: Subroutine does not return */\n      exit(9);\n    }\n    puVar1 = *(uint **)(g_route_memory + local_10 * 4);\n    if ((puVar1 != (uint *)0x0) && ((uint)(param_1 - (int)puVar1) < 0x10000)) break;\n    local_10 = local_10 + 1;\n  }\n  *(byte *)(param_1 + 0xf) = *(byte *)(param_1 + 0xf) | 4;\n  *(uint *)(param_1 + 8) = *puVar1;\n  *puVar1 = (uint)(param_1 - (int)puVar1) >> 4;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_route",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "free_route",
+                        "delete_route"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "delete_route",
+                "func_c_signature": "void delete_route(int **param_1,int **param_2)",
+                "decompiled_code": "void delete_route(int **param_1,int **param_2) {\n  int iVar1;\n  int **local_18;\n  int **local_14;\n  int *local_10;\n  \n  if (param_2 == (int **)0x0) {\n    iVar1 = lookup_route(param_1[2],(*(byte *)((int)param_1 + 0xf) >> 3) + 1,&param_2);\n    if (iVar1 == 0) {\n                    /* WARNING: Subroutine does not return */\n      exit(1);\n    }\n  }\n  if (param_2 == (int **)0x0) {\n                    /* WARNING: Subroutine does not return */\n    exit(2);\n  }\n  if (param_1 == (int **)*param_2) {\n    local_14 = param_2;\n    local_10 = param_2[1];\n  }\n  else {\n    if (param_1 != (int **)param_2[1]) {\n                    /* WARNING: Subroutine does not return */\n      exit(3);\n    }\n    local_14 = param_2 + 1;\n    local_10 = *param_2;\n  }\n  *(undefined2 *)(param_1 + 3) = 0;\n  *(byte *)((int)param_1 + 0xf) = *(byte *)((int)param_1 + 0xf) & 0xfd;\n  if ((*param_1 == (int *)0x0) || (param_1[1] == (int *)0x0)) {\n    if (*param_1 == (int *)0x0) {\n      if (param_1[1] == (int *)0x0) {\n        if ((((param_2 == (int **)&g_default_route) || (*(short *)(param_2 + 3) != 0)) ||\n            ((*(byte *)((int)param_2 + 0xf) & 2) != 0)) || (local_10 == (int *)0x0)) {\n          *local_14 = (int *)0x0;\n          free_route(param_1);\n        }\n        else {\n          iVar1 = lookup_route(param_2[2],(*(byte *)((int)param_2 + 0xf) >> 3) + 1,&local_18);\n          if ((iVar1 != 0) && (local_18 != (int **)0x0)) {\n            if ((int **)*local_18 == param_2) {\n              *local_18 = local_10;\n            }\n            else {\n              local_18[1] = local_10;\n            }\n            free_route(param_2);\n            free_route(param_1);\n          }\n        }\n      }\n      else {\n        *local_14 = param_1[1];\n        free_route(param_1);\n      }\n    }\n    else {\n      *local_14 = *param_1;\n      free_route(param_1);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "delete_route",
+                        "lookup_route",
+                        "exit",
+                        "free_route"
+                    ],
+                    "calling_functions": [
+                        "delete_route",
+                        "cmd_delete_route",
+                        "cmd_delete_router"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cmd_add_route",
+                "func_c_signature": "void cmd_add_route(void)",
+                "decompiled_code": "void cmd_add_route(void) {\n  int iVar1;\n  undefined4 uVar2;\n  byte bVar3;\n  uint local_38;\n  uint local_34 [2];\n  uint local_2c;\n  undefined4 *local_28;\n  uint local_24;\n  ulong local_20;\n  char *local_1c;\n  uint local_18;\n  undefined4 *local_14;\n  undefined4 *local_10;\n  \n  local_1c = strsep((char **)&stack0x00000004,\" \");\n  if (((((local_1c != (char *)0x0) && (iVar1 = parse_ip(local_1c,local_34), iVar1 != 0)) &&\n       (local_1c = strsep((char **)&stack0x00000004,\" \"), local_1c != (char *)0x0)) &&\n      ((iVar1 = parse_ip(local_1c,&local_38), iVar1 != 0 &&\n       (local_1c = strsep((char **)&stack0x00000004,\" \"), local_1c != (char *)0x0)))) &&\n     (local_20 = strtoul(local_1c,(char **)0x0,10), local_20 < 0x10000)) {\n    if (local_20 != 0) {\n      uVar2 = get_router(local_20);\n      iVar1 = valid_router(uVar2);\n      if (iVar1 == 0) goto LAB_00011e67;\n    }\n    local_24 = mask_to_length(local_38);\n    if (((int)local_24 < 0x21) && ((local_34[0] & ~local_38) == 0)) {\n      if (local_24 == 0) {\n        DAT_00016534 = (short)local_20;\n        return;\n      }\n      local_24 = local_24 - 1;\n      local_14 = &g_default_route;\n      while( true ) {\n        local_18 = route_bit(local_14);\n        if ((local_18 & local_34[0]) == 0) {\n          local_28 = (undefined4 *)*local_14;\n        }\n        else {\n          local_28 = (undefined4 *)local_14[1];\n        }\n        if (local_28 == (undefined4 *)0x0) {\n          local_10 = (undefined4 *)allocate_route();\n          if (local_10 == (undefined4 *)0x0) {\n            print(\"OUT OF MEMORY\\n\");\n            return;\n          }\n          if ((local_18 & local_34[0]) == 0) {\n            *local_14 = local_10;\n          }\n          else {\n            local_14[1] = local_10;\n          }\n          goto LAB_00011e21;\n        }\n        local_2c = route_mask(local_28);\n        if (((local_28[2] & local_2c) != (local_34[0] & local_2c)) ||\n           ((int)local_24 < (int)(uint)(*(byte *)((int)local_28 + 0xf) >> 3))) break;\n        if (local_24 == *(byte *)((int)local_28 + 0xf) >> 3) {\n          local_10 = local_28;\nLAB_00011e21:\n          local_10[2] = local_34[0];\n          *(short *)(local_10 + 3) = (short)local_20;\n          *(byte *)((int)local_10 + 0xf) =\n               *(byte *)((int)local_10 + 0xf) & 7 | (char)local_24 * '\\b';\n          return;\n        }\n        local_14 = local_28;\n      }\n      local_2c = -1 << (0x1fU - (char)local_24 & 0x1f);\n      if ((local_28[2] & local_2c) == (local_34[0] & local_2c)) {\n        local_10 = (undefined4 *)allocate_route();\n        if (local_10 == (undefined4 *)0x0) {\n          print(\"OUT OF MEMORY\\n\");\n          return;\n        }\n        if ((local_18 & local_34[0]) == 0) {\n          *local_14 = local_10;\n        }\n        else {\n          local_14[1] = local_10;\n        }\n        if ((1 << (0x1eU - (char)local_24 & 0x1f) & local_28[2]) == 0) {\n          *local_10 = local_28;\n        }\n        else {\n          local_10[1] = local_28;\n        }\n      }\n      else {\n        local_10 = (undefined4 *)allocate_route();\n        if (local_10 == (undefined4 *)0x0) {\n          print(\"OUT OF MEMORY\\n\");\n          return;\n        }\n        if ((local_18 & local_34[0]) == 0) {\n          *local_14 = local_10;\n        }\n        else {\n          local_14[1] = local_10;\n        }\n        local_14 = local_10;\n        local_10 = (undefined4 *)allocate_route();\n        if (local_10 == (undefined4 *)0x0) {\n          print(\"OUT OF MEMORY\\n\");\n          return;\n        }\n        local_18 = 0x1f;\n        while ((bVar3 = (byte)local_18, -1 < (int)local_18 &&\n               ((1 << (bVar3 & 0x1f) & (local_34[0] ^ local_28[2])) == 0))) {\n          local_18 = local_18 + -1;\n        }\n        *(byte *)((int)local_14 + 0xf) =\n             *(byte *)((int)local_14 + 0xf) & 7 | ('\\x1f' - (bVar3 + 1)) * '\\b';\n        local_14[2] = local_34[0] & -1 << (bVar3 + 1 & 0x1f);\n        if ((local_34[0] & 1 << (bVar3 & 0x1f)) == 0) {\n          *local_14 = local_10;\n          local_14[1] = local_28;\n        }\n        else {\n          *local_14 = local_28;\n          local_14[1] = local_10;\n        }\n      }\n      goto LAB_00011e21;\n    }\n  }\nLAB_00011e67:\n  print(\"BAD ARGUMENTS\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cmd_add_route",
+                        "strsep",
+                        "parse_ip",
+                        "strtoul",
+                        "get_router",
+                        "valid_router",
+                        "mask_to_length",
+                        "route_bit",
+                        "allocate_route",
+                        "print",
+                        "route_mask"
+                    ],
+                    "calling_functions": [
+                        "cmd_add_route",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cmd_delete_route",
+                "func_c_signature": "void cmd_delete_route(void)",
+                "decompiled_code": "void cmd_delete_route(void) {\n  int iVar1;\n  undefined4 local_24;\n  undefined4 local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  char *local_10;\n  \n  local_10 = strsep((char **)&stack0x00000004,\" \");\n  if ((((local_10 == (char *)0x0) || (iVar1 = parse_ip(local_10,&local_1c), iVar1 == 0)) ||\n      (local_10 = strsep((char **)&stack0x00000004,\" \"), local_10 == (char *)0x0)) ||\n     ((iVar1 = parse_ip(local_10,&local_20), iVar1 == 0 ||\n      (local_14 = mask_to_length(local_20), 0x20 < local_14)))) {\n    print(\"BAD ARGUMENTS\\n\");\n  }\n  else if (local_14 == 0) {\n    if (local_1c == 0) {\n      DAT_00016534 = 0;\n    }\n    else {\n      print(\"ROUTE NOT FOUND\\n\");\n    }\n  }\n  else {\n    local_18 = lookup_route(local_1c,local_14,&local_24);\n    if ((local_18 == 0) ||\n       ((*(short *)(local_18 + 0xc) == 0 && ((*(byte *)(local_18 + 0xf) & 2) == 0)))) {\n      print(\"ROUTE NOT FOUND\\n\");\n    }\n    else {\n      delete_route(local_18,local_24);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cmd_delete_route",
+                        "strsep",
+                        "parse_ip",
+                        "mask_to_length",
+                        "print",
+                        "lookup_route",
+                        "delete_route"
+                    ],
+                    "calling_functions": [
+                        "cmd_delete_route",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cmd_query_route",
+                "func_c_signature": "void cmd_query_route(void)",
+                "decompiled_code": "void cmd_query_route(void) {\n  int iVar1;\n  uint local_38;\n  undefined4 *local_34;\n  char *local_30;\n  uint local_2c;\n  uint local_28;\n  undefined4 *local_24;\n  uint local_20;\n  \n  local_30 = strsep((char **)&stack0x00000004,\" \");\n  if ((local_30 == (char *)0x0) || (iVar1 = parse_ip(local_30,&local_38), iVar1 == 0)) {\n    print(\"BAD ARGUMENTS\\n\");\n  }\n  else {\n    local_20 = 0;\n    local_24 = &g_default_route;\n    while (local_24 != (undefined4 *)0x0) {\n      if (local_24 == &g_default_route) {\n        local_28 = 0;\n      }\n      else {\n        local_28 = -1 << (0x1f - (*(byte *)((int)local_24 + 0xf) >> 3) & 0x1f);\n      }\n      if ((local_24[2] & local_28) != (local_38 & local_28)) break;\n      if ((*(short *)(local_24 + 3) != 0) || ((*(byte *)((int)local_24 + 0xf) & 2) != 0)) {\n        local_20 = (uint)*(ushort *)(local_24 + 3);\n      }\n      if ((*(byte *)((int)local_24 + 0xf) & 0xf8) == 0xf8) break;\n      if (local_24 == &g_default_route) {\n        local_2c = 0x80000000;\n      }\n      else {\n        local_2c = 1 << (0x1e - (*(byte *)((int)local_24 + 0xf) >> 3) & 0x1f);\n      }\n      if ((local_2c & local_38) == 0) {\n        local_24 = (undefined4 *)*local_24;\n      }\n      else {\n        local_24 = (undefined4 *)local_24[1];\n      }\n    }\n    printf(\"Next hop for %d.%d.%d.%d is \",local_38 >> 0x18,local_38 >> 0x10 & 0xff,\n           local_38 >> 8 & 0xff,local_38 & 0xff);\n    if (local_20 == 0) {\n      printf(\"BLACKHOLE.\\n\");\n    }\n    else {\n      local_34 = (undefined4 *)get_router(local_20);\n      printf(\"%d.%d.%d.%d, AS %d (%s)\\n\",(uint)local_34[0x41] >> 0x18,\n             (uint)local_34[0x41] >> 0x10 & 0xff,(uint)local_34[0x41] >> 8 & 0xff,\n             local_34[0x41] & 0xff,*local_34,local_34 + 1);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "d"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cmd_query_route",
+                        "strsep",
+                        "parse_ip",
+                        "print",
+                        "printf",
+                        "get_router",
+                        "d"
+                    ],
+                    "calling_functions": [
+                        "cmd_query_route",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cmd_add_router",
+                "func_c_signature": "void cmd_add_router(void)",
+                "decompiled_code": "void cmd_add_router(void) {\n  char *__nptr;\n  ulong uVar1;\n  ulong *__s;\n  int iVar2;\n  \n  __nptr = strsep((char **)&stack0x00000004,\" \");\n  if (((__nptr != (char *)0x0) && (uVar1 = strtoul(__nptr,(char **)0x0,10), uVar1 != 0)) &&\n     (uVar1 < 0x10000)) {\n    __s = (ulong *)get_router(uVar1);\n    iVar2 = valid_router(__s);\n    if (iVar2 == 0) {\n      memset(__s,0,0x108);\n      *__s = uVar1;\n      prompt_edit_router(__s);\n      return;\n    }\n  }\n  print(\"BAD ARGUMENTS\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cmd_add_router",
+                        "strsep",
+                        "strtoul",
+                        "get_router",
+                        "valid_router",
+                        "memset",
+                        "prompt_edit_router",
+                        "print"
+                    ],
+                    "calling_functions": [
+                        "cmd_add_router",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cmd_delete_router",
+                "func_c_signature": "void cmd_delete_router(void)",
+                "decompiled_code": "void cmd_delete_router(void) {\n  char *__nptr;\n  ulong uVar1;\n  undefined4 *puVar2;\n  int iVar3;\n  int iVar4;\n  uint local_14;\n  int local_10;\n  \n  __nptr = strsep((char **)&stack0x00000004,\" \");\n  if (((__nptr != (char *)0x0) && (uVar1 = strtoul(__nptr,(char **)0x0,10), uVar1 != 0)) &&\n     (uVar1 < 0x10000)) {\n    puVar2 = (undefined4 *)get_router(uVar1);\n    iVar3 = valid_router(puVar2);\n    if (iVar3 != 0) {\n      for (local_10 = 0; local_10 < g_route_mem_length; local_10 = local_10 + 1) {\n        iVar3 = *(int *)(g_route_memory + local_10 * 4);\n        for (local_14 = 0; local_14 < 0xfff; local_14 = local_14 + 1) {\n          iVar4 = iVar3 + (local_14 + 1) * 0x10;\n          if (((*(byte *)(iVar4 + 0xf) & 4) == 0) && (uVar1 == *(ushort *)(iVar4 + 0xc))) {\n            delete_route(iVar4,0);\n          }\n        }\n      }\n      if (uVar1 == DAT_00016534) {\n        DAT_00016534 = 0;\n        DAT_00016537 = DAT_00016537 & 0xfd;\n      }\n      *puVar2 = 0;\n      return;\n    }\n  }\n  print(\"BAD ARGUMENTS\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cmd_delete_router",
+                        "strsep",
+                        "strtoul",
+                        "get_router",
+                        "valid_router",
+                        "delete_route",
+                        "print"
+                    ],
+                    "calling_functions": [
+                        "cmd_delete_router",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cmd_edit_router",
+                "func_c_signature": "void cmd_edit_router(void)",
+                "decompiled_code": "void cmd_edit_router(void) {\n  char *__nptr;\n  ulong uVar1;\n  undefined4 uVar2;\n  int iVar3;\n  \n  __nptr = strsep((char **)&stack0x00000004,\" \");\n  if ((__nptr != (char *)0x0) && (uVar1 = strtoul(__nptr,(char **)0x0,10), uVar1 < 0x10000)) {\n    uVar2 = get_router(uVar1);\n    iVar3 = valid_router(uVar2);\n    if (iVar3 != 0) {\n      prompt_edit_router(uVar2);\n      return;\n    }\n  }\n  print(\"BAD ARGUMENTS\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cmd_edit_router",
+                        "strsep",
+                        "strtoul",
+                        "get_router",
+                        "valid_router",
+                        "prompt_edit_router",
+                        "print"
+                    ],
+                    "calling_functions": [
+                        "cmd_edit_router",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cmd_list_router",
+                "func_c_signature": "void cmd_list_router(void)",
+                "decompiled_code": "void cmd_list_router(void) {\n  undefined4 *puVar1;\n  int iVar2;\n  int local_10;\n  \n  for (local_10 = 1; local_10 < 0x10000; local_10 = local_10 + 1) {\n    puVar1 = (undefined4 *)get_router(local_10);\n    iVar2 = valid_router(puVar1);\n    if (iVar2 != 0) {\n      printf(\"AS %d\\n\",*puVar1);\n      printf(\" Name: %s\\n\",puVar1 + 1);\n      printf(\" IP: %d.%d.%d.%d\\n\",(uint)puVar1[0x41] >> 0x18,(uint)puVar1[0x41] >> 0x10 & 0xff,\n             (uint)puVar1[0x41] >> 8 & 0xff,puVar1[0x41] & 0xff);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cmd_list_router",
+                        "get_router",
+                        "valid_router",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "cmd_list_router",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cmd_enable_mode",
+                "func_c_signature": "void cmd_enable_mode(void)",
+                "decompiled_code": "void cmd_enable_mode(void) {\n  char *__s1;\n  int iVar1;\n  \n  __s1 = strsep((char **)&stack0x00000004,\" \");\n  if (__s1 == (char *)0x0) {\n    print(\"BAD ARGUMENTS\\n\");\n  }\n  else {\n    iVar1 = strcmp(__s1,\"racoiaws\");\n    if (iVar1 == 0) {\n      g_enable = 1;\n    }\n    else {\n      print(\"BAD PASSWORD\\n\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cmd_enable_mode",
+                        "strsep",
+                        "print",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "cmd_enable_mode",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined *puVar2;\n  char *local_18;\n  char *local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  iVar1 = allocate(0x1000,0,&g_route_memory);\n  if (iVar1 == 0) {\n    do {\n      while( true ) {\n        if (g_enable == 0) {\n          puVar2 = &DAT_000140e3;\n        }\n        else {\n          puVar2 = &DAT_000140e0;\n        }\n        local_18 = (char *)readline(puVar2);\n        if (local_18 == (char *)0x0) goto LAB_00012858;\n        local_14 = strsep(&local_18,\" \");\n        if (g_enable == 0) break;\n        iVar1 = strcmp(local_14,\"add\");\n        if (iVar1 == 0) {\n          cmd_add_router(local_18);\n        }\n        iVar1 = strcmp(local_14,\"delete\");\n        if (iVar1 == 0) {\n          cmd_delete_router(local_18);\n        }\n        iVar1 = strcmp(local_14,\"edit\");\n        if (iVar1 == 0) {\n          cmd_edit_router(local_18);\n        }\n        iVar1 = strcmp(local_14,\"list\");\n        if (iVar1 == 0) {\n          cmd_list_router(local_18);\n        }\n        iVar1 = strcmp(local_14,\"quit\");\n        if (iVar1 == 0) {\n          g_enable = 0;\n        }\n      }\n      iVar1 = strcmp(local_14,\"add\");\n      if (iVar1 == 0) {\n        cmd_add_route(local_18);\n      }\n      iVar1 = strcmp(local_14,\"delete\");\n      if (iVar1 == 0) {\n        cmd_delete_route(local_18);\n      }\n      iVar1 = strcmp(local_14,\"query\");\n      if (iVar1 == 0) {\n        cmd_query_route(local_18);\n      }\n      iVar1 = strcmp(local_14,\"enable\");\n      if (iVar1 == 0) {\n        cmd_enable_mode(local_18);\n      }\n      iVar1 = strcmp(local_14,\"quit\");\n    } while (iVar1 != 0);\nLAB_00012858:\n    print(\"GOOD-BYE\\n\");\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "allocate",
+                        "readline",
+                        "strsep",
+                        "strcmp",
+                        "cmd_add_router",
+                        "cmd_delete_router",
+                        "cmd_edit_router",
+                        "cmd_list_router",
+                        "cmd_add_route",
+                        "cmd_delete_route",
+                        "cmd_query_route",
+                        "cmd_enable_mode",
+                        "print"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "KPRCA_00007_decompiled.c"
+                }
+            }
+        ]
+    }
+}

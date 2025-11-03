@@ -1,0 +1,155 @@
+{
+    "file": "iopoll",
+    "decompiled_code": {
+        "iopoll.c": [
+            {
+                "func_name": "iopoll_internal",
+                "func_c_signature": "undefined8 iopoll_internal(int param_1,int param_2,char param_3,char param_4)",
+                "decompiled_code": "undefined8 iopoll_internal(int param_1,int param_2,char param_3,char param_4) {\n  ushort uVar1;\n  int *piVar2;\n  undefined8 uVar3;\n  int __timeout;\n  long in_FS_OFFSET;\n  int local_2c;\n  pollfd local_28;\n  int local_20;\n  undefined2 local_1c;\n  ushort local_1a;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  if ((param_1 == -1) && (param_2 == -1)) {\n                    /* WARNING: Subroutine does not return */\n    __assert_fail(\"fdin != -1 || fdout != -1\",\n                  \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/iopoll.c\",\n                  0x40,\"iopoll_internal\");\n  }\n  local_28.events = 0x81;\n  local_28.revents = 0;\n  local_1c = 0x80;\n  local_1a = 0;\n  uVar1 = 0x38;\n  local_2c = 0;\n  local_28.fd = param_1;\n  local_20 = param_2;\n  if (param_4 != '\\x01') {\n    local_1c = 4;\n    local_28.events = 4;\n    uVar1 = 4;\n  }\n  while( true ) {\n    do {\n      if (local_2c < 0) {\n        piVar2 = __errno_location();\n        if (*piVar2 != 4) {\n          uVar3 = 0xfffffffd;\n          goto LAB_0010017a;\n        }\n      }\n      if (param_3 == '\\0') {\n        __timeout = 0;\n      }\n      else {\n        __timeout = -1;\n      }\n      local_2c = poll(&local_28,2,__timeout);\n    } while (local_2c < 0);\n    if ((local_2c == 0) && (param_3 != '\\x01')) break;\n    if (local_2c < 1) {\n                    /* WARNING: Subroutine does not return */\n      __assert_fail(\"0 < ret\",\n                    \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/iopoll.c\"\n                    ,0x58,\"iopoll_internal\");\n    }\n    if (local_28.revents != 0) {\n      uVar3 = 0;\n      goto LAB_0010017a;\n    }\n    if ((local_1a & uVar1) != 0) {\n      if (param_4 == '\\0') {\n        uVar3 = 0;\n      }\n      else {\n        uVar3 = 0xfffffffe;\n      }\nLAB_0010017a:\n      if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n        __stack_chk_fail();\n      }\n      return uVar3;\n    }\n  }\n  uVar3 = 0;\n  goto LAB_0010017a;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "iopoll_internal",
+                        "__assert_fail",
+                        "__errno_location",
+                        "poll",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "iopoll_internal",
+                        "iopoll",
+                        "fwait_for_nonblocking_write"
+                    ],
+                    "defined_in_file": "iopoll_decompiled.c"
+                }
+            },
+            {
+                "func_name": "iopoll",
+                "func_c_signature": "void iopoll(undefined4 param_1,undefined4 param_2,undefined param_3)",
+                "decompiled_code": "void iopoll(undefined4 param_1,undefined4 param_2,undefined param_3) {\n  iopoll_internal(param_1,param_2,param_3,1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "iopoll",
+                        "iopoll_internal"
+                    ],
+                    "calling_functions": [
+                        "iopoll"
+                    ],
+                    "defined_in_file": "iopoll_decompiled.c"
+                }
+            },
+            {
+                "func_name": "iopoll_input_ok",
+                "func_c_signature": "bool iopoll_input_ok(int param_1)",
+                "decompiled_code": "bool iopoll_input_ok(int param_1) {\n  bool bVar1;\n  int iVar2;\n  long in_FS_OFFSET;\n  stat local_a8;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  iVar2 = fstat(param_1,&local_a8);\n  if ((iVar2 == 0) &&\n     (((local_a8.st_mode & 0xf000) == 0x8000 || ((local_a8.st_mode & 0xf000) == 0x6000)))) {\n    bVar1 = true;\n  }\n  else {\n    bVar1 = false;\n  }\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return !bVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "iopoll_input_ok",
+                        "fstat",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "iopoll_input_ok"
+                    ],
+                    "defined_in_file": "iopoll_decompiled.c"
+                }
+            },
+            {
+                "func_name": "iopoll_output_ok",
+                "func_c_signature": "bool iopoll_output_ok(undefined4 param_1)",
+                "decompiled_code": "bool iopoll_output_ok(undefined4 param_1) {\n  int iVar1;\n  \n  iVar1 = isapipe(param_1);\n  return 0 < iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "iopoll_output_ok",
+                        "isapipe"
+                    ],
+                    "calling_functions": [
+                        "iopoll_output_ok"
+                    ],
+                    "defined_in_file": "iopoll_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fwait_for_nonblocking_write",
+                "func_c_signature": "undefined8 fwait_for_nonblocking_write(FILE *param_1)",
+                "decompiled_code": "undefined8 fwait_for_nonblocking_write(FILE *param_1) {\n  int iVar1;\n  int *piVar2;\n  undefined8 uVar3;\n  \n  piVar2 = __errno_location();\n  if ((*piVar2 == 0xb) || (piVar2 = __errno_location(), *piVar2 == 0xb)) {\n    iVar1 = fileno_unlocked(param_1);\n    if ((iVar1 == -1) || (iVar1 = iopoll_internal(0xffffffff,iVar1,1,0), iVar1 != 0)) {\n      piVar2 = __errno_location();\n      *piVar2 = 0xb;\n      uVar3 = 0;\n    }\n    else {\n      clearerr_unlocked(param_1);\n      uVar3 = 1;\n    }\n  }\n  else {\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fwait_for_nonblocking_write",
+                        "__errno_location",
+                        "fileno_unlocked",
+                        "iopoll_internal",
+                        "clearerr_unlocked"
+                    ],
+                    "calling_functions": [
+                        "fwait_for_nonblocking_write",
+                        "fclose_wait",
+                        "fwrite_wait"
+                    ],
+                    "defined_in_file": "iopoll_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fclose_wait",
+                "func_c_signature": "bool fclose_wait(FILE *param_1)",
+                "decompiled_code": "bool fclose_wait(FILE *param_1) {\n  char cVar1;\n  int iVar2;\n  \n  do {\n    iVar2 = fflush_unlocked(param_1);\n    if (iVar2 == 0) break;\n    cVar1 = fwait_for_nonblocking_write(param_1);\n  } while (cVar1 == '\\x01');\n  iVar2 = rpl_fclose(param_1);\n  return iVar2 == 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fclose_wait",
+                        "fflush_unlocked",
+                        "fwait_for_nonblocking_write",
+                        "rpl_fclose"
+                    ],
+                    "calling_functions": [
+                        "fclose_wait"
+                    ],
+                    "defined_in_file": "iopoll_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fwrite_wait",
+                "func_c_signature": "undefined8 fwrite_wait(void *param_1,size_t param_2,FILE *param_3)",
+                "decompiled_code": "undefined8 fwrite_wait(void *param_1,size_t param_2,FILE *param_3) {\n  char cVar1;\n  size_t sVar2;\n  size_t local_28;\n  void *local_20;\n  \n  local_28 = param_2;\n  local_20 = param_1;\n  while( true ) {\n    sVar2 = fwrite_unlocked(local_20,1,local_28,param_3);\n    local_28 = local_28 - sVar2;\n    if ((long)local_28 < 0) {\n                    /* WARNING: Subroutine does not return */\n      __assert_fail(\"size >= 0\",\n                    \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/iopoll.c\"\n                    ,0xe7,\"fwrite_wait\");\n    }\n    if ((long)local_28 < 1) break;\n    cVar1 = fwait_for_nonblocking_write(param_3);\n    if (cVar1 != '\\x01') {\n      return 0;\n    }\n    local_20 = (void *)((long)local_20 + sVar2);\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fwrite_wait",
+                        "fwrite_unlocked",
+                        "__assert_fail",
+                        "fwait_for_nonblocking_write"
+                    ],
+                    "calling_functions": [
+                        "fwrite_wait"
+                    ],
+                    "defined_in_file": "iopoll_decompiled.c"
+                }
+            }
+        ]
+    }
+}

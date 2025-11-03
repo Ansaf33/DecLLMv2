@@ -1,0 +1,58 @@
+{
+    "file": "group-list",
+    "decompiled_code": {
+        "group-list.c": [
+            {
+                "func_name": "print_group_list",
+                "func_c_signature": "undefined print_group_list(long param_1,__uid_t param_2,__gid_t param_3,__gid_t param_4,\n                          undefined param_5,char param_6)",
+                "decompiled_code": "undefined print_group_list(long param_1,__uid_t param_2,__gid_t param_3,__gid_t param_4,\n                          undefined param_5,char param_6) {\n  char cVar1;\n  __gid_t _Var2;\n  int iVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  long in_FS_OFFSET;\n  undefined local_59;\n  int local_58;\n  void *local_40;\n  passwd *local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_59 = 1;\n  local_38 = (passwd *)0x0;\n  if ((param_1 != 0) && (local_38 = getpwuid(param_2), local_38 == (passwd *)0x0)) {\n    local_59 = 0;\n  }\n  cVar1 = print_group(param_3,param_5);\n  if (cVar1 != '\\x01') {\n    local_59 = 0;\n  }\n  if (param_4 != param_3) {\n    putchar_unlocked((int)param_6);\n    cVar1 = print_group(param_4,param_5);\n    if (cVar1 != '\\x01') {\n      local_59 = 0;\n    }\n  }\n  _Var2 = param_4;\n  if (local_38 != (passwd *)0x0) {\n    _Var2 = local_38->pw_gid;\n  }\n  iVar3 = xgetgroups(param_1,_Var2,&local_40);\n  if (iVar3 < 0) {\n    if (param_1 == 0) {\n      uVar4 = gettext(\"failed to get groups for the current process\");\n      piVar6 = __errno_location();\n      local_28 = uVar4;\n      error(0,*piVar6,uVar4);\n    }\n    else {\n      uVar4 = quote(param_1);\n      uVar5 = gettext(\"failed to get groups for user %s\");\n      piVar6 = __errno_location();\n      local_30 = uVar5;\n      error(0,*piVar6,uVar5,uVar4);\n    }\n    local_59 = 0;\n  }\n  else {\n    for (local_58 = 0; local_58 < iVar3; local_58 = local_58 + 1) {\n      if ((param_3 != *(__gid_t *)((long)local_40 + (long)local_58 * 4)) &&\n         (param_4 != *(__gid_t *)((long)local_40 + (long)local_58 * 4))) {\n        putchar_unlocked((int)param_6);\n        cVar1 = print_group(*(undefined4 *)((long)local_40 + (long)local_58 * 4),param_5);\n        if (cVar1 != '\\x01') {\n          local_59 = 0;\n        }\n      }\n    }\n    free(local_40);\n  }\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return local_59;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_group_list",
+                        "getpwuid",
+                        "print_group",
+                        "putchar_unlocked",
+                        "xgetgroups",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "quote",
+                        "free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_group_list"
+                    ],
+                    "defined_in_file": "group-list_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_group",
+                "func_c_signature": "undefined print_group(__gid_t param_1,char param_2)",
+                "decompiled_code": "undefined print_group(__gid_t param_1,char param_2) {\n  undefined8 uVar1;\n  undefined local_29;\n  group *local_20;\n  \n  local_20 = (group *)0x0;\n  local_29 = 1;\n  if (param_2 != '\\0') {\n    local_20 = getgrgid(param_1);\n    if (local_20 == (group *)0x0) {\n      uVar1 = gettext(\"cannot find name for group ID %ju\");\n      error(0,0,uVar1,param_1);\n      local_29 = 0;\n    }\n  }\n  if (local_20 == (group *)0x0) {\n    printf(\"%ju\",(ulong)param_1);\n  }\n  else {\n    printf(\"%s\",local_20->gr_name);\n  }\n  return local_29;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_group",
+                        "getgrgid",
+                        "gettext",
+                        "error",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_group_list",
+                        "print_group"
+                    ],
+                    "defined_in_file": "group-list_decompiled.c"
+                }
+            }
+        ]
+    }
+}

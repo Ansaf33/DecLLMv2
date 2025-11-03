@@ -1,0 +1,564 @@
+{
+    "file": "KPRCA_00036",
+    "decompiled_code": {
+        "main.c": [
+            {
+                "func_name": "resize_buf",
+                "func_c_signature": "size_t resize_buf(void **param_1,uint param_2)",
+                "decompiled_code": "size_t resize_buf(void **param_1,uint param_2) {\n  size_t __size;\n  void *__dest;\n  \n  if (param_2 < 0x3d091) {\n    __size = param_2 * 2;\n    __dest = malloc(__size);\n    if (*param_1 != (void *)0x0) {\n      memcpy(__dest,*param_1,param_2);\n      free(*param_1);\n    }\n    *param_1 = __dest;\n  }\n  else {\n    __size = 0;\n  }\n  return __size;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "resize_buf",
+                        "malloc",
+                        "memcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "resize_buf",
+                        "create_text"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "readopt",
+                "func_c_signature": "uint readopt(undefined4 param_1)",
+                "decompiled_code": "uint readopt(undefined4 param_1) {\n  int iVar1;\n  uint uVar2;\n  int local_14;\n  char local_e;\n  byte local_d [5];\n  \n  local_d[0] = 0;\n  local_e = '\\0';\n  iVar1 = receive(param_1,local_d,1,&local_14);\n  if ((((iVar1 == 0) && (local_14 != 0)) &&\n      (iVar1 = receive(param_1,&local_e,1,&local_14), iVar1 == 0)) && (local_14 != 0)) {\n    if (local_e == '\\n') {\n      uVar2 = (uint)local_d[0];\n    }\n    else {\n      do {\n        if (local_e == '\\n') {\n          return 0xffffffff;\n        }\n        iVar1 = receive(param_1,&local_e,1,&local_14);\n      } while ((iVar1 == 0) && (local_14 != 0));\n      uVar2 = 0xffffffff;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readopt",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "readopt",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "readtrex",
+                "func_c_signature": "uint readtrex(undefined4 param_1,char *param_2,uint param_3)",
+                "decompiled_code": "uint readtrex(undefined4 param_1,char *param_2,uint param_3) {\n  int iVar1;\n  char local_15;\n  int local_14;\n  uint local_10;\n  \n  local_15 = '\\0';\n  for (local_10 = 0; local_10 < param_3; local_10 = local_10 + 1) {\n    iVar1 = receive(param_1,param_2,1,&local_14);\n    if ((iVar1 != 0) || (local_14 == 0)) {\n      return 0xffffffff;\n    }\n    if (*param_2 == '\\n') break;\n    param_2 = param_2 + 1;\n  }\n  if (*param_2 == '\\n') {\n    *param_2 = '\\0';\n  }\n  else {\n    do {\n      if (local_15 == '\\n') {\n        return 0xffffffff;\n      }\n      iVar1 = receive(param_1,&local_15,1,&local_14);\n    } while ((iVar1 == 0) && (local_14 != 0));\n    local_10 = 0xffffffff;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readtrex",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "readtrex",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_text",
+                "func_c_signature": "int create_text(undefined4 param_1,void **param_2)",
+                "decompiled_code": "int create_text(undefined4 param_1,void **param_2) {\n  int iVar1;\n  int local_20;\n  void *local_1c;\n  char *local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  local_14 = 0x10;\n  local_18 = \"\\n\\n\\n\";\n  local_14 = resize_buf(param_2,0x10);\n  while (local_14 != 0) {\n    local_1c = *param_2;\n    iVar1 = receive(param_1,(int)local_1c + local_10,1,&local_20);\n    if ((iVar1 != 0) || (local_20 == 0)) goto LAB_000112e8;\n    if (*(char *)(local_10 + (int)local_1c) == *local_18) {\n      local_18 = local_18 + 1;\n      if (*local_18 == '\\0') break;\n    }\n    else {\n      local_18 = \"\\n\\n\\n\";\n    }\n    local_10 = local_10 + 1;\n    if (local_10 == local_14) {\n      local_14 = resize_buf(param_2,local_14);\n    }\n  }\n  if ((local_10 < 3) || (local_14 == 0)) {\nLAB_000112e8:\n    if (local_14 != 0) {\n      free(*param_2);\n    }\n    *param_2 = (void *)0x0;\n    iVar1 = 0;\n  }\n  else {\n    *(undefined *)((int)*param_2 + (local_10 - 2)) = 0;\n    iVar1 = local_10 - 2;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_text",
+                        "resize_buf",
+                        "receive",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "create_text",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_menu",
+                "func_c_signature": "void print_menu(int param_1,char *param_2,char *param_3)",
+                "decompiled_code": "void print_menu(int param_1,char *param_2,char *param_3) {\n  char cVar1;\n  size_t sVar2;\n  \n  fdprintf(1,\"Text Searcher: Main Menu\\n\");\n  fdprintf(1,\"1. Enter Text\\n\");\n  fdprintf(1,\"2. Enter Search String\\n\");\n  fdprintf(1,\"3. Line Search - Partial Matches\\n\");\n  fdprintf(1,\"4. Line Search - Exact Matches\\n\");\n  fdprintf(1,\"5. Print Text\\n\");\n  fdprintf(1,\"6. Print Search String\\n\");\n  fdprintf(1,\"7. Search Text\\n\");\n  fdprintf(1,\"8. Quit\\n\\n\");\n  if (param_2 != (char *)0x0) {\n    sVar2 = strlen(param_2);\n    if (sVar2 < 0x10) {\n      fdprintf(1,\"[Text=%s]\\n\",param_2);\n    }\n    else {\n      cVar1 = param_2[0xf];\n      param_2[0xf] = '\\0';\n      fdprintf(1,\"[Text=%s...]\\n\",param_2);\n      param_2[0xf] = cVar1;\n    }\n  }\n  sVar2 = strlen(param_3);\n  if (sVar2 != 0) {\n    sVar2 = strlen(param_3);\n    if (sVar2 < 0x10) {\n      fdprintf(1,\"[SearchString=%s]\\n\",param_3);\n    }\n    else {\n      cVar1 = param_3[0xf];\n      param_3[0xf] = '\\0';\n      fdprintf(1,\"[SearchString=%s...]\\n\",param_3);\n      param_3[0xf] = cVar1;\n    }\n  }\n  if (param_1 == 0) {\n    fdprintf(1,\"[LineMatching=Partial]\\n\");\n  }\n  if (param_1 == 1) {\n    fdprintf(1,\"[LineMatching=Exact]\\n\");\n  }\n  fdprintf(1,\"Select: \");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_menu",
+                        "fdprintf",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "print_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "test",
+                "func_c_signature": "void test(void)",
+                "decompiled_code": "void test(void) {\n  size_t sVar1;\n  undefined4 local_20;\n  int local_1c;\n  char *local_18;\n  char *local_14;\n  int local_10;\n  \n  local_20 = 0;\n  local_14 = \"aaaaaaaa\";\n  local_18 = \"a\";\n  sVar1 = strlen(\"a\");\n  local_1c = retorpn(local_18,sVar1 + 1,&local_20);\n  sVar1 = strlen(local_18);\n  local_1c = retorpn(local_18,sVar1 + 1,&local_20);\n  if (local_1c < 0) {\n    fdprintf(1,\"Invalid search string\\n\");\n  }\n  else {\n    local_10 = evalrpn(local_20);\n  }\n  if (local_10 == 0) {\n    fdprintf(1,\"Bad rpn\\n\");\n  }\n  debug_state(local_10);\n  fdprintf(1,\"trex = %s\\n\",local_18);\n  fdprintf(1,\"rpn = %s\\n\",local_20);\n  fdprintf(1,\"Test string = %s\\n\",local_14);\n  fdprintf(1,\"Partial Matching:\\n\");\n  match(local_10,local_14,0);\n  fdprintf(1,\"Full Line Matching:\\n\");\n  match(local_10,local_14,1);\n                    /* WARNING: Subroutine does not return */\n  exit(0);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "test",
+                        "strlen",
+                        "retorpn",
+                        "fdprintf",
+                        "evalrpn",
+                        "debug_state",
+                        "match",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "test"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  size_t sVar1;\n  int iVar2;\n  undefined4 *puVar3;\n  undefined local_23c;\n  undefined4 local_48;\n  undefined4 *local_44;\n  int local_40;\n  int local_3c;\n  undefined4 local_38;\n  char local_31;\n  undefined4 local_30;\n  undefined4 *local_2c;\n  int local_28;\n  int local_24;\n  undefined *local_14;\n  \n  local_14 = &stack0x00000004;\n  local_30 = 0;\n  local_44 = (undefined4 *)0x0;\n  local_48 = 0;\n  puVar3 = (undefined4 *)&local_23c;\n  for (iVar2 = 0x7d; iVar2 != 0; iVar2 = iVar2 + -1) {\n    *puVar3 = 0;\n    puVar3 = puVar3 + 1;\n  }\n  local_31 = '\\0';\n  local_38 = 0;\n  local_24 = 0;\n  local_28 = 0;\n  local_2c = (undefined4 *)0x0;\n  local_3c = 0;\n  init_trex();\n  do {\n    fdprintf(1,&DAT_000151c0);\n    puVar3 = (undefined4 *)&local_23c;\n    print_menu(local_2c,local_44,puVar3);\n    local_31 = readopt(0);\n    switch(local_31) {\n    case '1':\n      fdprintf(1,\"Enter text to search\\n\");\n      if (local_44 != (undefined4 *)0x0) {\n        free(local_44);\n        local_44 = (undefined4 *)0x0;\n      }\n      local_24 = create_text(0,&local_44);\n      break;\n    case '2':\n      fdprintf(1,\"Enter search string\\n\");\n      puVar3 = (undefined4 *)0x1f4;\n      local_28 = readtrex(0,&local_23c,500);\n      if (local_28 < 0) {\n        local_28 = 0;\n        local_23c = 0;\n      }\n      break;\n    case '3':\n      local_2c = (undefined4 *)0x0;\n      break;\n    case '4':\n      local_2c = (undefined4 *)0x1;\n      break;\n    case '5':\n      puVar3 = local_44;\n      if (local_44 == (undefined4 *)0x0) {\n        fdprintf(1,\"--Text--\\n\\n\",0);\n      }\n      else {\n        fdprintf(1,\"--Text--\\n%s\\n\",local_44);\n      }\n      break;\n    case '6':\n      sVar1 = strlen(&local_23c);\n      if (sVar1 == 0) {\n        puVar3 = (undefined4 *)&local_23c;\n        fdprintf(1,\"--Search String--\\n\\n\",puVar3);\n      }\n      else {\n        puVar3 = (undefined4 *)&local_23c;\n        fdprintf(1,\"--Search String--\\n%s\\n\",puVar3);\n      }\n      break;\n    case '7':\n      if (local_24 == 0) {\n        fdprintf(1,\"Input text has not been received\\n\");\n      }\n      else if (local_28 == 0) {\n        fdprintf(1,\"Search text has not been received\\n\");\n      }\n      else {\n        sVar1 = strlen(&local_23c);\n        puVar3 = &local_48;\n        local_40 = retorpn(&local_23c,sVar1 + 1,puVar3);\n        if (local_40 < 0) {\n          fdprintf(1,\"Invalid search string\\n\");\n        }\n        else {\n          local_3c = evalrpn(local_48);\n          if (local_3c == 0) {\n            fdprintf(1,\"Bad rpn\\n\");\n          }\n          else {\n            puVar3 = local_2c;\n            match(local_3c,local_44,local_2c);\n          }\n        }\n      }\n      break;\n    case '8':\n      break;\n    default:\n      fdprintf(1,\"Bad Selection\\n\");\n    }\n  } while (local_31 != '8');\n  fdprintf(1,\"Exiting...\\n\",puVar3);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "init_trex",
+                        "fdprintf",
+                        "print_menu",
+                        "readopt",
+                        "free",
+                        "create_text",
+                        "readtrex",
+                        "strlen",
+                        "retorpn",
+                        "evalrpn",
+                        "match"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            }
+        ],
+        "state.c": [
+            {
+                "func_name": "init_trex",
+                "func_c_signature": "void init_trex(void)",
+                "decompiled_code": "void init_trex(void) {\n  if (g_all_states == (void *)0x0) {\n    g_all_states = malloc(4000);\n    g_id = 0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_trex",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "init_trex"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clear_trex",
+                "func_c_signature": "void clear_trex(void)",
+                "decompiled_code": "void clear_trex(void) {\n  uint local_10;\n  \n  for (local_10 = 0; local_10 < g_id; local_10 = local_10 + 1) {\n    free(*(void **)(g_all_states + local_10 * 4));\n  }\n  g_id = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clear_trex",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "clear_trex",
+                        "evalrpn"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_state",
+                "func_c_signature": "uint * create_state(undefined param_1)",
+                "decompiled_code": "uint * create_state(undefined param_1) {\n  uint *puVar1;\n  int iVar2;\n  \n  if (g_id < 1000) {\n    puVar1 = (uint *)malloc(0x14);\n    *puVar1 = g_id;\n    *(undefined *)(puVar1 + 1) = param_1;\n    *(undefined *)((int)puVar1 + 5) = 1;\n    puVar1[2] = 0;\n    puVar1[3] = 0;\n    puVar1[4] = 0;\n    iVar2 = g_id * 4;\n    g_id = g_id + 1;\n    *(uint **)(g_all_states + iVar2) = puVar1;\n  }\n  else {\n    puVar1 = (uint *)0x0;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_state",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "create_state",
+                        "op_union",
+                        "op_star",
+                        "op_qmark",
+                        "op_plus",
+                        "evalrpn"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "op_concat",
+                "func_c_signature": "int op_concat(int param_1,int param_2)",
+                "decompiled_code": "int op_concat(int param_1,int param_2) {\n  *(undefined *)(param_1 + 5) = 0;\n  if (*(int *)(param_1 + 0x10) == 0) {\n    *(int *)(param_1 + 8) = param_2;\n  }\n  else {\n    *(undefined *)(*(int *)(param_1 + 0x10) + 5) = 0;\n    if (*(int *)(*(int *)(param_1 + 0x10) + 8) == 0) {\n      *(int *)(*(int *)(param_1 + 0x10) + 8) = param_2;\n    }\n    else {\n      *(int *)(*(int *)(param_1 + 0x10) + 0xc) = param_2;\n    }\n  }\n  if (*(int *)(param_2 + 0x10) != 0) {\n    param_2 = *(int *)(param_2 + 0x10);\n  }\n  *(int *)(param_1 + 0x10) = param_2;\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "op_concat"
+                    ],
+                    "calling_functions": [
+                        "op_concat",
+                        "evalrpn"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "op_union",
+                "func_c_signature": "int op_union(int param_1,int param_2)",
+                "decompiled_code": "int op_union(int param_1,int param_2) {\n  int iVar1;\n  int iVar2;\n  int iVar3;\n  \n  iVar1 = create_state(0x80);\n  iVar2 = create_state(0x80);\n  if ((iVar1 == 0) || (iVar2 == 0)) {\n    iVar1 = 0;\n  }\n  else {\n    *(undefined *)(iVar1 + 5) = 0;\n    *(int *)(iVar1 + 8) = param_1;\n    *(int *)(iVar1 + 0xc) = param_2;\n    *(int *)(iVar1 + 0x10) = iVar2;\n    *(undefined *)(param_1 + 5) = 0;\n    if (*(int *)(param_1 + 0x10) == 0) {\n      *(int *)(param_1 + 8) = iVar2;\n    }\n    else {\n      *(undefined *)(*(int *)(param_1 + 0x10) + 5) = 0;\n      if (*(int *)(*(int *)(param_1 + 0x10) + 8) == 0) {\n        *(int *)(*(int *)(param_1 + 0x10) + 8) = iVar2;\n      }\n      else {\n        *(int *)(*(int *)(param_1 + 0x10) + 0xc) = iVar2;\n      }\n    }\n    iVar3 = iVar2;\n    if (*(int *)(iVar2 + 0x10) != 0) {\n      iVar3 = *(int *)(iVar2 + 0x10);\n    }\n    *(int *)(param_1 + 0x10) = iVar3;\n    *(undefined *)(param_2 + 5) = 0;\n    if (*(int *)(param_2 + 0x10) == 0) {\n      *(int *)(param_2 + 8) = iVar2;\n    }\n    else {\n      *(undefined *)(*(int *)(param_2 + 0x10) + 5) = 0;\n      if (*(int *)(*(int *)(param_2 + 0x10) + 8) == 0) {\n        *(int *)(*(int *)(param_2 + 0x10) + 8) = iVar2;\n      }\n      else {\n        *(int *)(*(int *)(param_2 + 0x10) + 0xc) = iVar2;\n      }\n    }\n    if (*(int *)(iVar2 + 0x10) != 0) {\n      iVar2 = *(int *)(iVar2 + 0x10);\n    }\n    *(int *)(param_2 + 0x10) = iVar2;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "op_union",
+                        "create_state"
+                    ],
+                    "calling_functions": [
+                        "op_union",
+                        "evalrpn"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "op_star",
+                "func_c_signature": "int op_star(int param_1)",
+                "decompiled_code": "int op_star(int param_1) {\n  int iVar1;\n  int iVar2;\n  \n  if (param_1 != *(int *)(param_1 + 0x10)) {\n    iVar1 = create_state(0x80);\n    if (iVar1 == 0) {\n      param_1 = 0;\n    }\n    else {\n      *(undefined *)(param_1 + 5) = 0;\n      if (*(int *)(param_1 + 0x10) == 0) {\n        *(int *)(param_1 + 8) = iVar1;\n      }\n      else {\n        *(undefined *)(*(int *)(param_1 + 0x10) + 5) = 0;\n        if (*(int *)(*(int *)(param_1 + 0x10) + 8) == 0) {\n          *(int *)(*(int *)(param_1 + 0x10) + 8) = iVar1;\n        }\n        else {\n          *(int *)(*(int *)(param_1 + 0x10) + 0xc) = iVar1;\n        }\n      }\n      iVar2 = iVar1;\n      if (*(int *)(iVar1 + 0x10) != 0) {\n        iVar2 = *(int *)(iVar1 + 0x10);\n      }\n      *(int *)(param_1 + 0x10) = iVar2;\n      *(int *)(iVar1 + 8) = param_1;\n      *(int *)(iVar1 + 0x10) = iVar1;\n      *(undefined *)(iVar1 + 5) = 1;\n      param_1 = iVar1;\n    }\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "op_star",
+                        "create_state"
+                    ],
+                    "calling_functions": [
+                        "op_star",
+                        "evalrpn"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "op_qmark",
+                "func_c_signature": "int op_qmark(int param_1)",
+                "decompiled_code": "int op_qmark(int param_1) {\n  int iVar1;\n  int iVar2;\n  \n  iVar1 = create_state(0x80);\n  iVar2 = create_state(0x80);\n  if ((iVar1 == 0) || (iVar2 == 0)) {\n    iVar1 = 0;\n  }\n  else {\n    *(undefined *)(iVar1 + 5) = 0;\n    *(int *)(iVar1 + 8) = param_1;\n    *(int *)(iVar1 + 0xc) = iVar2;\n    *(int *)(iVar1 + 0x10) = iVar2;\n    *(undefined *)(param_1 + 5) = 0;\n    if (*(int *)(param_1 + 0x10) == 0) {\n      *(int *)(param_1 + 8) = iVar2;\n    }\n    else {\n      *(undefined *)(*(int *)(param_1 + 0x10) + 5) = 0;\n      if (*(int *)(*(int *)(param_1 + 0x10) + 8) == 0) {\n        *(int *)(*(int *)(param_1 + 0x10) + 8) = iVar2;\n      }\n      else {\n        *(int *)(*(int *)(param_1 + 0x10) + 0xc) = iVar2;\n      }\n    }\n    if (*(int *)(iVar2 + 0x10) != 0) {\n      iVar2 = *(int *)(iVar2 + 0x10);\n    }\n    *(int *)(param_1 + 0x10) = iVar2;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "op_qmark",
+                        "create_state"
+                    ],
+                    "calling_functions": [
+                        "op_qmark",
+                        "evalrpn"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "op_plus",
+                "func_c_signature": "int op_plus(int param_1)",
+                "decompiled_code": "int op_plus(int param_1) {\n  int iVar1;\n  int iVar2;\n  \n  iVar1 = create_state(0x80);\n  if (iVar1 == 0) {\n    param_1 = 0;\n  }\n  else {\n    *(undefined *)(param_1 + 5) = 0;\n    if (*(int *)(param_1 + 0x10) == 0) {\n      *(int *)(param_1 + 8) = iVar1;\n    }\n    else {\n      *(undefined *)(*(int *)(param_1 + 0x10) + 5) = 0;\n      if (*(int *)(*(int *)(param_1 + 0x10) + 8) == 0) {\n        *(int *)(*(int *)(param_1 + 0x10) + 8) = iVar1;\n      }\n      else {\n        *(int *)(*(int *)(param_1 + 0x10) + 0xc) = iVar1;\n      }\n    }\n    iVar2 = iVar1;\n    if (*(int *)(iVar1 + 0x10) != 0) {\n      iVar2 = *(int *)(iVar1 + 0x10);\n    }\n    *(int *)(param_1 + 0x10) = iVar2;\n    *(int *)(iVar1 + 8) = param_1;\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "op_plus",
+                        "create_state"
+                    ],
+                    "calling_functions": [
+                        "op_plus",
+                        "evalrpn"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            }
+        ],
+        "thompson.c": [
+            {
+                "func_name": "normalize_infix",
+                "func_c_signature": "undefined4 normalize_infix(byte **param_1)",
+                "decompiled_code": "undefined4 normalize_infix(byte **param_1) {\n  byte bVar1;\n  byte *pbVar2;\n  byte *pbVar3;\n  int iVar4;\n  char *pcVar5;\n  size_t sVar6;\n  size_t sVar7;\n  byte local_104 [204];\n  byte *local_38;\n  int local_34;\n  byte *local_30;\n  byte *local_2c;\n  byte *local_28;\n  byte local_21;\n  byte *local_20;\n  \n  local_20 = *param_1;\n  local_21 = 0;\n  local_28 = *param_1;\n  local_30 = *param_1;\n  do {\n    if (*local_28 == 0) {\n      *param_1 = local_20;\n      return 0;\n    }\n    iVar4 = isprint((uint)*local_28);\n    if (iVar4 == 0) {\n      return 0xfffffffc;\n    }\n    pcVar5 = strchr(\"|*+?()\",(uint)*local_28);\n    if (pcVar5 == (char *)0x0) {\n      if (*local_28 == 0x5c) {\n        if (local_28[1] == 0) {\n          return 0xfffffffc;\n        }\n        pcVar5 = strchr(\"|*+?()[]\\\\\",(uint)local_28[1]);\n        if (pcVar5 == (char *)0x0) {\n          return 0xfffffffc;\n        }\n        *local_28 = 0xdc;\n        local_28 = local_28 + 1;\n      }\n      else if (*local_28 == 0x5b) {\n        local_34 = 0;\n        local_38 = local_28;\n        local_21 = 1;\n        local_104[0] = 0xa8;\n        while ((pbVar2 = local_28, local_34 == 0 && (pbVar2 = local_28 + 1, *pbVar2 != 0))) {\n          if (*pbVar2 == 0x5d) {\n            if (local_21 < 2) {\n              return 0xfffffffc;\n            }\n            local_2c = local_28 + 2;\n            local_34 = 1;\n            local_28 = local_2c;\n          }\n          else {\n            if (0xc4 < local_21) {\n              return 0xfffffffc;\n            }\n            bVar1 = local_21 + 1;\n            local_104[local_21] = *pbVar2;\n            local_21 = local_21 + 2;\n            local_104[bVar1] = 0xfc;\n            local_28 = pbVar2;\n          }\n        }\n        local_28 = pbVar2;\n        if (local_34 == 0) {\n          return 0xfffffffc;\n        }\n        local_104[local_21] = 0;\n        local_21 = local_21 - 1;\n        local_104[local_21] = 0xa9;\n        sVar6 = strlen((char *)local_30);\n        sVar7 = strlen((char *)local_104);\n        local_20 = (byte *)malloc(sVar7 + sVar6 + 1);\n        memcpy(local_20,local_30,(int)local_38 - (int)local_30);\n        sVar6 = strlen((char *)local_104);\n        memcpy(local_20 + ((int)local_38 - (int)local_30),local_104,sVar6);\n        sVar6 = strlen((char *)local_2c);\n        pbVar3 = local_30;\n        pbVar2 = local_38;\n        sVar7 = strlen((char *)local_104);\n        memcpy(local_20 + (int)(pbVar2 + (sVar7 - (int)pbVar3)),local_2c,sVar6 + 1);\n        pbVar3 = local_30;\n        pbVar2 = local_38;\n        sVar6 = strlen((char *)local_104);\n        local_28 = local_20 + (int)(pbVar2 + (sVar6 - (int)pbVar3) + -1);\n        free(local_30);\n        local_30 = local_20;\n      }\n    }\n    else {\n      *local_28 = *local_28 + 0x80;\n    }\n    local_28 = local_28 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "normalize_infix",
+                        "isprint",
+                        "strchr",
+                        "strlen",
+                        "malloc",
+                        "memcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "normalize_infix",
+                        "retorpn"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "peek",
+                "func_c_signature": "undefined peek(int param_1)",
+                "decompiled_code": "undefined peek(int param_1) {\n  return *(undefined *)(param_1 + -1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "peek"
+                    ],
+                    "calling_functions": [
+                        "peek",
+                        "retorpn"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_nonconcat_char",
+                "func_c_signature": "undefined4 is_nonconcat_char(char param_1)",
+                "decompiled_code": "undefined4 is_nonconcat_char(char param_1) {\n  undefined4 uVar1;\n  \n  if ((((param_1 == -4) || (param_1 == -0x56)) || (param_1 == -0x55)) ||\n     (((param_1 == -0x41 || (param_1 == -0x57)) || (param_1 == -0x24)))) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_nonconcat_char"
+                    ],
+                    "calling_functions": [
+                        "is_nonconcat_char",
+                        "retorpn"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "debug_print_re",
+                "func_c_signature": "void debug_print_re(byte *param_1)",
+                "decompiled_code": "void debug_print_re(byte *param_1) {\n  byte *pbVar1;\n  size_t sVar2;\n  byte *pbVar3;\n  byte bVar4;\n  byte *local_10;\n  \n  pbVar1 = param_1;\n  sVar2 = strlen((char *)param_1);\n  pbVar3 = (byte *)malloc(sVar2 + 1);\n  local_10 = pbVar3;\n  for (; *param_1 != 0; param_1 = param_1 + 1) {\n    if (*param_1 < 0x81) {\n      bVar4 = *param_1;\n    }\n    else {\n      bVar4 = *param_1 + 0x80;\n    }\n    *local_10 = bVar4;\n    local_10 = local_10 + 1;\n  }\n  fdprintf(1,\"Normalized re = %s\\n\",pbVar3);\n  fdprintf(1,\"Original re = %s\\n\",pbVar1);\n  free((void *)0x0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "debug_print_re",
+                        "strlen",
+                        "malloc",
+                        "fdprintf",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "debug_print_re"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "retorpn",
+                "func_c_signature": "int retorpn(byte *param_1,uint param_2,byte **param_3)",
+                "decompiled_code": "int retorpn(byte *param_1,uint param_2,byte **param_3) {\n  byte bVar1;\n  bool bVar2;\n  char cVar3;\n  size_t sVar4;\n  byte *__ptr;\n  byte *__ptr_00;\n  byte *__dest;\n  int iVar5;\n  int local_18;\n  byte *local_14;\n  byte *local_10;\n  \n  *param_3 = (byte *)0x0;\n  sVar4 = strlen((char *)param_1);\n  if (sVar4 == 0) {\n    local_18 = -4;\n  }\n  else {\n    sVar4 = strlen((char *)param_1);\n    if (sVar4 < 0xfffffff1) {\n      sVar4 = strlen((char *)param_1);\n      if (param_2 < sVar4) {\n        local_18 = -0x40;\n      }\n      else {\n        sVar4 = strlen((char *)param_1);\n        __ptr = (byte *)calloc(1,sVar4 * 2 + 1);\n        sVar4 = strlen((char *)param_1);\n        __ptr_00 = (byte *)calloc(1,sVar4 + 1);\n        __dest = (byte *)malloc(param_2);\n        bVar2 = false;\n        strcpy((char *)__dest,(char *)param_1);\n        param_1 = __dest;\n        local_18 = normalize_infix(&param_1,param_2);\n        local_14 = __ptr_00;\n        local_10 = __ptr;\n        if (local_18 == 0) {\n          for (; *param_1 != 0; param_1 = param_1 + 1) {\n            bVar1 = *param_1;\n            if (bVar1 == 0xfc) {\n              if (((local_10 == __ptr) || (param_1[1] == 0)) ||\n                 (iVar5 = is_nonconcat_char(param_1[1]), iVar5 != 0)) {\n                local_18 = -4;\n                goto LAB_00012af4;\n              }\n              while (((local_14 != __ptr_00 && (cVar3 = peek(local_14), cVar3 != -0x58)) &&\n                     (cVar3 = peek(local_14), cVar3 != -4))) {\n                local_14 = local_14 + -1;\n                bVar1 = *local_14;\n                *local_14 = 0;\n                *local_10 = bVar1;\n                local_10 = local_10 + 1;\n              }\n              *local_14 = *param_1;\n              local_14 = local_14 + 1;\nLAB_000129de:\n              if (((*param_1 != 0xfc) && (param_1[1] != 0)) &&\n                 (iVar5 = is_nonconcat_char(param_1[1]), iVar5 == 0)) {\n                while ((local_14 != __ptr_00 &&\n                       (((cVar3 = peek(local_14), cVar3 == -0x56 || (cVar3 == -0x55)) ||\n                        ((cVar3 == -0x41 || (cVar3 == -0x5a))))))) {\n                  local_14 = local_14 + -1;\n                  bVar1 = *local_14;\n                  *local_14 = 0;\n                  *local_10 = bVar1;\n                  local_10 = local_10 + 1;\n                }\n                *local_14 = 0xa6;\n                local_14 = local_14 + 1;\n              }\n              if (bVar2) {\n                local_18 = -4;\n                goto LAB_00012af4;\n              }\n            }\n            else {\n              if (0xfc < bVar1) {\nLAB_000129ca:\n                *local_10 = *param_1;\n                local_10 = local_10 + 1;\n                goto LAB_000129de;\n              }\n              if (bVar1 == 0xdc) goto LAB_000129de;\n              if (0xdc < bVar1) goto LAB_000129ca;\n              if (bVar1 == 0xbf) {\nLAB_00012956:\n                if (local_10 != __ptr) {\n                  while ((local_14 != __ptr_00 &&\n                         (((cVar3 = peek(local_14), cVar3 == -0x56 || (cVar3 == -0x55)) ||\n                          (cVar3 == -0x41))))) {\n                    local_14 = local_14 + -1;\n                    bVar1 = *local_14;\n                    *local_14 = 0;\n                    *local_10 = bVar1;\n                    local_10 = local_10 + 1;\n                  }\n                  *local_14 = *param_1;\n                  local_14 = local_14 + 1;\n                  goto LAB_000129de;\n                }\n                local_18 = -4;\n                goto LAB_00012af4;\n              }\n              if ((0xbf < bVar1) || (0xab < bVar1)) goto LAB_000129ca;\n              if (0xa9 < bVar1) goto LAB_00012956;\n              if (bVar1 != 0xa8) {\n                if (bVar1 == 0xa9) {\n                  bVar2 = true;\n                  while (local_14 != __ptr_00) {\n                    cVar3 = peek(local_14);\n                    if (cVar3 == -0x58) {\n                      local_14[-1] = 0;\n                      bVar2 = false;\n                      local_14 = local_14 + -1;\n                      break;\n                    }\n                    local_14 = local_14 + -1;\n                    bVar1 = *local_14;\n                    *local_14 = 0;\n                    *local_10 = bVar1;\n                    local_10 = local_10 + 1;\n                  }\n                  goto LAB_000129de;\n                }\n                goto LAB_000129ca;\n              }\n              if ((param_1[1] == 0) || (iVar5 = is_nonconcat_char(param_1[1]), iVar5 != 0)) {\n                local_18 = -4;\n                goto LAB_00012af4;\n              }\n              *local_14 = *param_1;\n              local_14 = local_14 + 1;\n            }\n          }\n          while (local_14 != __ptr_00) {\n            local_14 = local_14 + -1;\n            bVar1 = *local_14;\n            *local_14 = 0;\n            *local_10 = bVar1;\n            local_10 = local_10 + 1;\n          }\n          *param_3 = __ptr;\n          free(__dest);\n          free(__ptr_00);\n          local_18 = 0;\n        }\n        else {\nLAB_00012af4:\n          free(__dest);\n          free(__ptr);\n          free(__ptr_00);\n        }\n      }\n    }\n    else {\n      local_18 = -0x20;\n    }\n  }\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "retorpn",
+                        "strlen",
+                        "calloc",
+                        "malloc",
+                        "strcpy",
+                        "normalize_infix",
+                        "is_nonconcat_char",
+                        "peek",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "test",
+                        "main",
+                        "retorpn"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            }
+        ],
+        "trex.c": [
+            {
+                "func_name": "debug_state_helper",
+                "func_c_signature": "void debug_state_helper(ushort **param_1,int param_2)",
+                "decompiled_code": "void debug_state_helper(ushort **param_1,int param_2) {\n  int iVar1;\n  ushort *puVar2;\n  ushort local_12;\n  int local_10;\n  \n  if (param_1 != (ushort **)0x0) {\n    local_12 = (ushort)*(byte *)(param_1 + 1);\n    for (local_10 = 0; local_10 < g_state_length; local_10 = local_10 + 1) {\n      if (*(ushort **)(g_states_checked + local_10 * 4) == *param_1) {\n        return;\n      }\n    }\n    iVar1 = g_state_length * 4;\n    g_state_length = g_state_length + 1;\n    *(ushort **)(iVar1 + g_states_checked) = *param_1;\n    for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {\n      fdprintf(1,&DAT_000152eb);\n    }\n    if ((char)local_12 == -0x80) {\n      puVar2 = *param_1;\n      fdprintf(1,&DAT_000152ef,puVar2);\n    }\n    else {\n      puVar2 = &local_12;\n      fdprintf(1,&DAT_000152f3,puVar2);\n    }\n    if (*(char *)((int)param_1 + 5) != '\\0') {\n      puVar2 = *param_1;\n      fdprintf(1,\"::Accepting State Id::%d\",puVar2);\n    }\n    fdprintf(1,&DAT_00015310,puVar2);\n    debug_state_helper(param_1[2],param_2 + 1);\n    debug_state_helper(param_1[3],param_2 + 1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "debug_state_helper",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "debug_state_helper",
+                        "debug_state"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "match_helper",
+                "func_c_signature": "int match_helper(int *param_1,char *param_2,int param_3,int param_4)",
+                "decompiled_code": "int match_helper(int *param_1,char *param_2,int param_3,int param_4) {\n  char cVar1;\n  uint uVar2;\n  size_t sVar3;\n  int iVar4;\n  int iVar5;\n  int local_10;\n  \n  if (param_1 == (int *)0x0) {\n    return 0;\n  }\n  uVar2 = *(uint *)(*param_1 * 4 + g_epsilon_loop);\n  sVar3 = strlen(param_2);\n  if (uVar2 < sVar3) {\n    return 0;\n  }\n  sVar3 = strlen(param_2);\n  *(size_t *)(*param_1 * 4 + g_epsilon_loop) = sVar3;\n  local_10 = 1;\n  if (*(char *)(param_1 + 1) == -0x80) {\n    local_10 = 0;\n    if (param_4 == 0) {\n      cVar1 = *(char *)((int)param_1 + 5);\n    }\n    else {\n      if (*param_2 != '\\0') goto LAB_00012de6;\n      cVar1 = *(char *)((int)param_1 + 5);\n    }\n    if ((cVar1 != '\\0') && (param_3 != 0)) {\n      return param_3;\n    }\n  }\n  else {\n    if (*param_2 != *(char *)(param_1 + 1)) {\n      return 0;\n    }\n    if (param_4 == 0) {\n      if (*(char *)((int)param_1 + 5) != '\\0') {\n        return param_3 + 1;\n      }\n    }\n    else if ((param_2[1] == '\\0') && (*(char *)((int)param_1 + 5) != '\\0')) {\n      return param_3 + 1;\n    }\n  }\nLAB_00012de6:\n  if (((param_4 == 0) && (*(char *)((int)param_1 + 5) != '\\0')) && (param_3 != 0)) {\n    iVar4 = param_3 + 1;\n  }\n  else {\n    iVar4 = match_helper(param_1[3],param_2 + local_10,param_3 + local_10,param_4);\n    iVar5 = match_helper(param_1[2],param_2 + local_10,param_3 + local_10,param_4);\n    if (iVar4 <= iVar5) {\n      iVar4 = iVar5;\n    }\n  }\n  return iVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "match_helper",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "match_helper",
+                        "match"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "debug_state",
+                "func_c_signature": "void debug_state(undefined4 param_1)",
+                "decompiled_code": "void debug_state(undefined4 param_1) {\n  if (g_states_checked == (void *)0x0) {\n    g_states_checked = malloc(4000);\n  }\n  g_state_length = 0;\n  debug_state_helper(param_1,0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "debug_state",
+                        "malloc",
+                        "debug_state_helper"
+                    ],
+                    "calling_functions": [
+                        "test",
+                        "debug_state"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "match",
+                "func_c_signature": "void match(undefined4 param_1,char *param_2,int param_3)",
+                "decompiled_code": "void match(undefined4 param_1,char *param_2,int param_3) {\n  char *pcVar1;\n  size_t sVar2;\n  char *__dest;\n  int iVar3;\n  bool bVar4;\n  char *local_24;\n  char *local_20;\n  char *local_1c;\n  int local_10;\n  \n  bVar4 = false;\n  sVar2 = strlen(param_2);\n  __dest = (char *)malloc(sVar2 + 1);\n  sVar2 = strlen(param_2);\n  memcpy(__dest,param_2,sVar2 + 1);\n  local_24 = __dest;\n  local_20 = __dest;\n  pcVar1 = __dest;\n  if (g_epsilon_loop == (void *)0x0) {\n    g_epsilon_loop = malloc(4000);\n  }\n  do {\n    do {\n      local_1c = pcVar1;\n      if (bVar4) {\n        free(__dest);\n        return;\n      }\n      pcVar1 = local_1c + 1;\n    } while ((*pcVar1 != '\\n') && (*pcVar1 != '\\0'));\n    bVar4 = *pcVar1 == '\\0';\n    *pcVar1 = '\\0';\n    for (; *local_24 != '\\0'; local_24 = local_24 + 1) {\n      for (local_10 = 0; local_10 < 1000; local_10 = local_10 + 1) {\n        *(undefined4 *)((int)g_epsilon_loop + local_10 * 4) = 1000;\n      }\n      iVar3 = match_helper(param_1,local_24,0,param_3);\n      if (iVar3 != 0) {\n        fdprintf(1,&DAT_00015312,local_20);\n        break;\n      }\n      if (param_3 == 1) break;\n    }\n    local_24 = local_1c + 2;\n    local_20 = local_24;\n    pcVar1 = local_24;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "match",
+                        "strlen",
+                        "malloc",
+                        "memcpy",
+                        "free",
+                        "match_helper",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "test",
+                        "main",
+                        "match"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "evalrpn",
+                "func_c_signature": "int evalrpn(byte *param_1)",
+                "decompiled_code": "int evalrpn(byte *param_1) {\n  byte bVar1;\n  int iVar2;\n  int *piVar3;\n  int iVar4;\n  int local_14;\n  int *local_10;\n  \n  if (g_stack == (int *)0x0) {\n    g_stack = (int *)malloc(4000);\n  }\n  local_10 = g_stack;\n  for (; *param_1 != 0; param_1 = param_1 + 1) {\n    bVar1 = *param_1;\n    piVar3 = local_10;\n    if (bVar1 == 0xfc) {\n      if (local_10 != g_stack) {\n        piVar3 = local_10 + -1;\n        iVar4 = *piVar3;\n        *piVar3 = 0;\n        if (piVar3 != g_stack) {\n          piVar3 = local_10 + -2;\n          iVar2 = *piVar3;\n          *piVar3 = 0;\n          local_14 = op_union(iVar2,iVar4);\n        }\n      }\n    }\n    else if (bVar1 < 0xfd) {\n      if (bVar1 == 0xbf) {\n        if (local_10 != g_stack) {\n          piVar3 = local_10 + -1;\n          iVar4 = *piVar3;\n          *piVar3 = 0;\n          local_14 = op_qmark(iVar4);\n        }\n      }\n      else {\n        if (0xbf < bVar1) goto LAB_000130cd;\n        if (bVar1 == 0xab) {\n          if (local_10 != g_stack) {\n            piVar3 = local_10 + -1;\n            iVar4 = *piVar3;\n            *piVar3 = 0;\n            local_14 = op_plus(iVar4);\n          }\n        }\n        else {\n          if (0xab < bVar1) goto LAB_000130cd;\n          if (bVar1 == 0xa6) {\n            if (local_10 != g_stack) {\n              piVar3 = local_10 + -1;\n              iVar4 = *piVar3;\n              *piVar3 = 0;\n              if (piVar3 != g_stack) {\n                piVar3 = local_10 + -2;\n                iVar2 = *piVar3;\n                *piVar3 = 0;\n                local_14 = op_concat(iVar2,iVar4);\n              }\n            }\n          }\n          else {\n            if (bVar1 != 0xaa) goto LAB_000130cd;\n            if (local_10 != g_stack) {\n              piVar3 = local_10 + -1;\n              iVar4 = *piVar3;\n              *piVar3 = 0;\n              local_14 = op_star(iVar4);\n            }\n          }\n        }\n      }\n    }\n    else {\nLAB_000130cd:\n      local_14 = create_state(*param_1);\n    }\n    local_10 = piVar3;\n    if (local_14 == 0) goto LAB_000132ab;\n    *local_10 = local_14;\n    local_10 = local_10 + 1;\n  }\n  if (local_10 == g_stack) {\nLAB_000132ab:\n    clear_trex();\n    iVar4 = 0;\n  }\n  else {\n    iVar4 = local_10[-1];\n    local_10[-1] = 0;\n  }\n  return iVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "evalrpn",
+                        "malloc",
+                        "op_union",
+                        "op_qmark",
+                        "op_plus",
+                        "op_concat",
+                        "op_star",
+                        "create_state",
+                        "clear_trex"
+                    ],
+                    "calling_functions": [
+                        "test",
+                        "main",
+                        "evalrpn"
+                    ],
+                    "defined_in_file": "KPRCA_00036_decompiled.c"
+                }
+            }
+        ]
+    }
+}

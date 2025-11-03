@@ -1,0 +1,420 @@
+{
+    "file": "NRFIN_00003",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "copy_uri",
+                "func_c_signature": "undefined4 copy_uri(void *param_1)",
+                "decompiled_code": "undefined4 copy_uri(void *param_1) {\n  uint uVar1;\n  int iVar2;\n  undefined4 uVar3;\n  \n  uVar1 = findchar(buf_recv,0x20);\n  if ((uVar1 == 0xffffffff) || (0x3f0 < uVar1)) {\n    iVar2 = sendallnulltrunc(1,\"invalid request\\n\",0x11);\n    if (iVar2 < 1) {\n      _terminate(4);\n    }\n    uVar3 = 0x3f3;\n  }\n  else {\n    memcpy(param_1,buf_recv + uVar1 + 1,0x11);\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copy_uri",
+                        "findchar",
+                        "sendallnulltrunc",
+                        "_terminate",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "copy_uri",
+                        "dispatch_verb"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_plebian",
+                "func_c_signature": "undefined4 check_plebian(void)",
+                "decompiled_code": "undefined4 check_plebian(void) {\n  undefined4 uVar1;\n  \n  if (*ptr_credits == '\\0') {\n    uVar1 = 0x3f1;\n  }\n  else {\n    *ptr_credits = *ptr_credits + -1;\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_plebian"
+                    ],
+                    "calling_functions": [
+                        "check_plebian",
+                        "dispatch_verb"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_file_contents",
+                "func_c_signature": "int get_file_contents(void *param_1)",
+                "decompiled_code": "int get_file_contents(void *param_1) {\n  int iVar1;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (num_files <= local_10) {\n      iVar1 = sendallnulltrunc(1,\"requested file not found\\n\",0x1a);\n      if (iVar1 < 1) {\n        _terminate(4);\n      }\n      return 0;\n    }\n    iVar1 = memcmp(param_1,(void *)(files + local_10 * 0x20),0x10);\n    if (iVar1 == 0) break;\n    local_10 = local_10 + 1;\n  }\n  return files + local_10 * 0x20 + 0x10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_file_contents",
+                        "sendallnulltrunc",
+                        "_terminate",
+                        "memcmp"
+                    ],
+                    "calling_functions": [
+                        "get_file_contents",
+                        "dump_file",
+                        "head_file"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dump_file",
+                "func_c_signature": "undefined4 dump_file(undefined4 param_1)",
+                "decompiled_code": "undefined4 dump_file(undefined4 param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined4 local_10;\n  \n  uVar2 = 0x111a4;\n  local_10 = 0;\n  iVar1 = get_file_contents(param_1);\n  if (iVar1 == 0) {\n    local_10 = 0x3f2;\n  }\n  else {\n    iVar1 = sendall(1,iVar1,0x10,uVar2);\n    if (iVar1 < 1) {\n      _terminate(4);\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dump_file",
+                        "get_file_contents",
+                        "sendall",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "dump_file",
+                        "do_gimme",
+                        "do_mooch"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "head_file",
+                "func_c_signature": "undefined4 head_file(undefined4 param_1)",
+                "decompiled_code": "undefined4 head_file(undefined4 param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined4 local_10;\n  \n  uVar2 = 0x11216;\n  local_10 = 0;\n  iVar1 = get_file_contents(param_1);\n  if (iVar1 == 0) {\n    local_10 = 0x3f2;\n  }\n  else {\n    iVar1 = sendall(1,iVar1,4,uVar2);\n    if (iVar1 < 1) {\n      _terminate(4);\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "head_file",
+                        "get_file_contents",
+                        "sendall",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "head_file",
+                        "do_tip",
+                        "do_smore"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "list_files",
+                "func_c_signature": "undefined4 list_files(void)",
+                "decompiled_code": "undefined4 list_files(void) {\n  undefined *puVar1;\n  undefined *puVar2;\n  undefined auStack_1c [4];\n  int local_18;\n  undefined4 local_14;\n  uint local_10;\n  \n  puVar2 = auStack_1c;\n  local_14 = 0;\n  local_18 = -1;\n  for (local_10 = 0; local_10 < num_files; local_10 = local_10 + 1) {\n    *(undefined4 *)(puVar2 + -8) = 0x10;\n    *(uint *)(puVar2 + -0xc) = files + local_10 * 0x20;\n    *(undefined4 *)(puVar2 + -0x10) = 1;\n    *(undefined4 *)(puVar2 + -0x14) = 0x112c9;\n    local_18 = sendall();\n    puVar1 = puVar2;\n    if (local_18 < 1) {\n      puVar1 = puVar2 + -0x10;\n      *(undefined4 *)(puVar2 + -0x10) = 4;\n      *(undefined4 *)(puVar2 + -0x14) = 0x112df;\n      _terminate();\n    }\n    *(undefined4 *)(puVar1 + -8) = 1;\n    *(undefined **)(puVar1 + -0xc) = &DAT_0001302b;\n    *(undefined4 *)(puVar1 + -0x10) = 1;\n    *(undefined4 *)(puVar1 + -0x14) = 0x112f2;\n    local_18 = sendall();\n    puVar2 = puVar1;\n    if (local_18 < 1) {\n      puVar2 = puVar1 + -0x10;\n      *(undefined4 *)(puVar1 + -0x10) = 4;\n      *(undefined4 *)(puVar1 + -0x14) = 0x11308;\n      _terminate();\n    }\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "list_files",
+                        "sendall",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "list_files",
+                        "do_list",
+                        "do_sup"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dispatch_verb",
+                "func_c_signature": "int dispatch_verb(void)",
+                "decompiled_code": "int dispatch_verb(void) {\n  int iVar1;\n  undefined *puVar2;\n  undefined auStack_1c [8];\n  int local_14;\n  int local_10;\n  \n  puVar2 = auStack_1c;\n  local_10 = 0;\n  local_14 = 0xffffffff;\n  iVar1 = memcmp(buf_recv,&DAT_0001302d,4);\n  if (iVar1 == 0) {\n    local_10 = check_plebian();\n    if ((local_10 == 0) && (local_10 = copy_uri(), local_10 == 0)) {\n      local_10 = do_tip();\n    }\n  }\n  else {\n    iVar1 = memcmp(buf_recv,\"STATUS\",7);\n    if (iVar1 == 0) {\n      local_10 = check_plebian();\n      if (local_10 == 0) {\n        local_10 = do_status();\n      }\n    }\n    else {\n      iVar1 = memcmp(buf_recv,\"GIMME\",6);\n      if (iVar1 == 0) {\n        local_10 = check_plebian();\n        if ((local_10 == 0) && (local_10 = copy_uri(), local_10 == 0)) {\n          local_10 = do_gimme();\n        }\n      }\n      else {\n        iVar1 = memcmp(buf_recv,&DAT_0001303e,5);\n        if (iVar1 == 0) {\n          local_10 = check_plebian();\n          if (local_10 == 0) {\n            local_10 = do_list();\n          }\n        }\n        else {\n          iVar1 = memcmp(buf_recv,\"SMORE\",6);\n          if (iVar1 == 0) {\n            local_10 = copy_uri();\n            if (local_10 == 0) {\n              local_10 = do_smore();\n            }\n          }\n          else {\n            iVar1 = memcmp(buf_recv,\"YOUUP\",6);\n            if (iVar1 == 0) {\n              local_10 = do_youup();\n            }\n            else {\n              iVar1 = memcmp(buf_recv,\"MOOCH\",6);\n              if (iVar1 == 0) {\n                local_10 = copy_uri();\n                if (local_10 == 0) {\n                  local_10 = do_mooch();\n                }\n              }\n              else {\n                iVar1 = memcmp(buf_recv,&DAT_00013055,4);\n                if (iVar1 == 0) {\n                  local_10 = do_sup();\n                }\n                else {\n                  iVar1 = memcmp(buf_recv,&DAT_00013059,5);\n                  if (iVar1 == 0) {\n                    local_10 = copy_uri();\n                    if (local_10 == 0) {\n                      local_10 = do_auth();\n                    }\n                  }\n                  else {\n                    iVar1 = memcmp(buf_recv,&DAT_0001305e,5);\n                    if (iVar1 == 0) {\n                      puVar2 = &stack0xffffffd4;\n                      _terminate();\n                    }\n                    *(undefined4 *)(puVar2 + -8) = 0xe;\n                    *(char **)(puVar2 + -0xc) = \"invalid verb\\n\";\n                    *(undefined4 *)(puVar2 + -0x10) = 1;\n                    *(undefined4 *)(puVar2 + -0x14) = 0x116d4;\n                    local_14 = sendallnulltrunc();\n                    if (local_14 < 1) {\n                      *(undefined4 *)(puVar2 + -0x10) = 4;\n                      *(undefined4 *)(puVar2 + -0x14) = 0x116ea;\n                      _terminate();\n                    }\n                    local_10 = 0x3f0;\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dispatch_verb",
+                        "memcmp",
+                        "check_plebian",
+                        "copy_uri",
+                        "do_tip",
+                        "do_status",
+                        "do_gimme",
+                        "do_list",
+                        "do_smore",
+                        "do_youup",
+                        "do_mooch",
+                        "do_sup",
+                        "do_auth",
+                        "_terminate",
+                        "sendallnulltrunc"
+                    ],
+                    "calling_functions": [
+                        "dispatch_verb",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_content",
+                "func_c_signature": "int init_content(void)",
+                "decompiled_code": "int init_content(void) {\n  long lVar1;\n  byte **ppbVar2;\n  byte *pbStack_4c;\n  undefined4 uStack_48;\n  int *piStack_44;\n  undefined4 uStack_40;\n  int local_3c;\n  byte local_38 [16];\n  byte abStack_28 [16];\n  int local_18;\n  uint local_14;\n  uint local_10;\n  \n  ppbVar2 = (byte **)&local_3c;\n  uStack_40 = 0x11705;\n  local_18 = 0;\n  local_3c = 0;\n  local_10 = 0;\n  local_14 = 0;\n  do {\n    piStack_44 = &local_3c;\n    uStack_48 = 1;\n    pbStack_4c = local_38;\n    lVar1 = random();\n    if (lVar1 == 0) break;\n  } while (local_3c != 1);\n  num_files = local_38[0];\n  if (local_38[0] == 0) {\n    num_files = 1;\n  }\n  pbStack_4c = (byte *)((uint)num_files << 5);\n  piStack_44 = &files;\n  uStack_48 = 0;\n  local_18 = allocate();\n  if (local_18 != 0) {\n    ppbVar2 = &pbStack_4c;\n    pbStack_4c = (byte *)0x6;\n    _terminate();\n  }\n  if (local_18 == 0) {\n    for (local_10 = 0; local_10 < num_files; local_10 = local_10 + 1) {\n      do {\n        *(int **)((int)ppbVar2 + -8) = &local_3c;\n        *(undefined4 *)((int)ppbVar2 + -0xc) = 0x20;\n        *(byte **)((int)ppbVar2 + -0x10) = local_38;\n        *(undefined4 *)((int)ppbVar2 + -0x14) = 0x117cf;\n        lVar1 = random();\n        if (lVar1 == 0) break;\n      } while (local_3c != 0x20);\n      for (local_14 = 0; local_14 < 0x10; local_14 = local_14 + 1) {\n        *(byte *)(local_14 + local_10 * 0x20 + files) = local_38[local_14] % 0x1a + 0x61;\n      }\n      for (local_14 = 0; local_14 < 0x10; local_14 = local_14 + 1) {\n        *(byte *)(local_14 + local_10 * 0x20 + files + 0x10) = abStack_28[local_14] % 10 + 0x30;\n      }\n    }\n  }\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_content",
+                        "random",
+                        "allocate",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "init_content",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(void)",
+                "decompiled_code": "void main(void) {\n  undefined *puVar1;\n  undefined *puVar2;\n  undefined4 *puVar3;\n  undefined4 uStack_90;\n  char *pcStack_8c;\n  undefined4 uStack_88;\n  undefined4 uStack_84;\n  undefined auStack_80 [12];\n  undefined4 local_74;\n  undefined4 local_70;\n  undefined4 local_6c;\n  undefined4 local_68;\n  undefined4 local_64;\n  undefined4 local_60;\n  undefined4 local_5c;\n  undefined4 local_58;\n  undefined4 local_54;\n  undefined4 local_50;\n  undefined4 local_4c;\n  undefined4 local_48;\n  undefined local_44;\n  undefined2 local_43;\n  undefined local_41;\n  undefined4 local_40;\n  undefined4 local_3c;\n  undefined4 local_38;\n  undefined4 local_34;\n  undefined4 local_30;\n  undefined4 local_2c;\n  undefined4 local_28;\n  undefined4 local_24;\n  undefined4 local_20;\n  undefined4 *local_1c;\n  int local_18;\n  int local_14;\n  undefined *puStack_10;\n  \n  puStack_10 = &stack0x00000004;\n  puVar3 = (undefined4 *)auStack_80;\n  local_14 = 0;\n  local_18 = -1;\n  local_1c = &local_20;\n  local_30 = 0;\n  local_2c = 0;\n  local_28 = 0;\n  local_24 = 0;\n  local_40 = 0;\n  local_3c = 0;\n  local_38 = 0;\n  local_34 = 0;\n  local_43 = 0;\n  local_41 = 0;\n  local_44 = 0;\n  local_54 = 0;\n  local_50 = 0;\n  local_4c = 0;\n  local_48 = 0;\n  local_64 = 0;\n  local_60 = 0;\n  local_5c = 0;\n  local_58 = 0;\n  local_74 = 0;\n  local_70 = 0;\n  local_6c = 0;\n  local_68 = 0;\n  ptr_uri_tip = &local_30;\n  ptr_uri_gimme = &local_40;\n  ptr_credits = &local_44;\n  ptr_uri_smore = &local_54;\n  ptr_uri_mooch = &local_64;\n  ptr_uri_auth = &local_74;\n  uStack_84 = 0x119c1;\n  local_14 = init_content();\n  if (local_14 != 0) {\n    uStack_84 = 0;\n    uStack_88 = 0x23;\n    pcStack_8c = \"fatal error during init_content()\\n\";\n    puVar3 = &uStack_90;\n    uStack_90 = 1;\n    transmit();\n    uStack_90 = 0x924;\n    _terminate();\n  }\n  do {\n    *(undefined4 *)((int)puVar3 + -8) = 0x400;\n    *(undefined1 **)((int)puVar3 + -0xc) = buf_recv;\n    *(undefined4 *)((int)puVar3 + -0x10) = 0;\n    *(undefined4 *)((int)puVar3 + -0x14) = 0x11a02;\n    local_14 = recvline();\n    puVar1 = (undefined *)puVar3;\n    if (local_14 < 0) {\n      puVar1 = (undefined *)((int)puVar3 + -0x10);\n      *(undefined4 *)((int)puVar3 + -0x10) = 5;\n      *(undefined4 *)((int)puVar3 + -0x14) = 0x11a18;\n      _terminate();\n    }\n    *(undefined4 *)(puVar1 + -4) = 0x11a1d;\n    local_14 = dispatch_verb();\n    puVar2 = puVar1;\n    if (local_14 == 0x3f1) {\n      *(undefined4 *)(puVar1 + -8) = 0x25;\n      *(char **)(puVar1 + -0xc) = \"you\\'re too poor to use this verb :(\\n\";\n      *(undefined4 *)(puVar1 + -0x10) = 1;\n      *(undefined4 *)(puVar1 + -0x14) = 0x11a3c;\n      local_18 = sendallnulltrunc();\n      if (local_18 < 1) {\n        puVar2 = puVar1 + -0x10;\n        *(undefined4 *)(puVar1 + -0x10) = 4;\n        *(undefined4 *)(puVar1 + -0x14) = 0x11a52;\n        _terminate();\n      }\n    }\n    *(undefined4 *)(puVar2 + -8) = 2;\n    *(undefined **)(puVar2 + -0xc) = &DAT_000130bd;\n    *(undefined4 *)(puVar2 + -0x10) = 1;\n    *(undefined4 *)(puVar2 + -0x14) = 0x11a65;\n    local_18 = sendallnulltrunc();\n    puVar3 = (undefined4 *)puVar2;\n    if (local_18 < 1) {\n      puVar3 = (undefined4 *)(puVar2 + -0x10);\n      *(undefined4 *)(puVar2 + -0x10) = 4;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11a7b;\n      _terminate();\n    }\n    *local_1c = 0xdeadbeef;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "init_content",
+                        "transmit",
+                        "_terminate",
+                        "recvline",
+                        "dispatch_verb",
+                        "sendallnulltrunc"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            }
+        ],
+        "verbs.c": [
+            {
+                "func_name": "do_tip",
+                "func_c_signature": "undefined4 do_tip(undefined4 param_1)",
+                "decompiled_code": "undefined4 do_tip(undefined4 param_1) {\n  undefined4 uVar1;\n  undefined4 *puVar2;\n  undefined4 uStack_2c;\n  char *pcStack_28;\n  undefined4 uStack_24;\n  undefined4 uStack_20;\n  undefined auStack_1c [8];\n  int local_14;\n  undefined4 local_10;\n  \n  puVar2 = (undefined4 *)auStack_1c;\n  uStack_20 = 0x11db7;\n  local_10 = 0;\n  local_14 = 0;\n  uStack_24 = 0x1d;\n  pcStack_28 = \"Just the Tip!\\n-------------\\n\";\n  uStack_2c = 1;\n  local_14 = sendallnulltrunc();\n  if (local_14 < 1) {\n    puVar2 = &uStack_2c;\n    uStack_2c = 4;\n    _terminate();\n  }\n  if (local_14 == 0x1d) {\n    *(undefined4 *)((int)puVar2 + -0x10) = param_1;\n    *(undefined4 *)((int)puVar2 + -0x14) = 0x11e0c;\n    uVar1 = head_file();\n  }\n  else {\n    uVar1 = 4;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_tip",
+                        "sendallnulltrunc",
+                        "_terminate",
+                        "head_file"
+                    ],
+                    "calling_functions": [
+                        "dispatch_verb",
+                        "do_tip"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_status",
+                "func_c_signature": "int do_status(void)",
+                "decompiled_code": "int do_status(void) {\n  int iVar1;\n  \n  iVar1 = sendallnulltrunc(1,\"FASTLANE fully operational!\\nThank you for asking kind sir/madam!\\n\",\n                           0x42);\n  if (iVar1 < 1) {\n    _terminate(4);\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_status",
+                        "sendallnulltrunc",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "dispatch_verb",
+                        "do_status"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_gimme",
+                "func_c_signature": "undefined4 do_gimme(undefined4 param_1)",
+                "decompiled_code": "undefined4 do_gimme(undefined4 param_1) {\n  undefined4 uVar1;\n  undefined4 *puVar2;\n  undefined4 uStack_2c;\n  char *pcStack_28;\n  undefined4 uStack_24;\n  undefined4 uStack_20;\n  undefined auStack_1c [8];\n  int local_14;\n  undefined4 local_10;\n  \n  puVar2 = (undefined4 *)auStack_1c;\n  uStack_20 = 0x11e82;\n  local_10 = 0;\n  local_14 = 0;\n  uStack_24 = 0x75;\n  pcStack_28 = \n  \"Your FASTLANE file contents; we appreciate your business!\\n---------------------------------------------------------\\n\"\n  ;\n  uStack_2c = 1;\n  local_14 = sendallnulltrunc();\n  if (local_14 < 1) {\n    puVar2 = &uStack_2c;\n    uStack_2c = 4;\n    _terminate();\n  }\n  if (local_14 == 0x75) {\n    *(undefined4 *)((int)puVar2 + -0x10) = param_1;\n    *(undefined4 *)((int)puVar2 + -0x14) = 0x11ed7;\n    uVar1 = dump_file();\n  }\n  else {\n    uVar1 = 4;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_gimme",
+                        "sendallnulltrunc",
+                        "_terminate",
+                        "dump_file"
+                    ],
+                    "calling_functions": [
+                        "dispatch_verb",
+                        "do_gimme"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_list",
+                "func_c_signature": "undefined4 do_list(void)",
+                "decompiled_code": "undefined4 do_list(void) {\n  undefined4 uVar1;\n  undefined4 *puVar2;\n  undefined4 uStack_2c;\n  char *pcStack_28;\n  undefined4 uStack_24;\n  undefined4 uStack_20;\n  undefined auStack_1c [8];\n  int local_14;\n  undefined4 local_10;\n  \n  puVar2 = (undefined4 *)auStack_1c;\n  uStack_20 = 0x11efc;\n  local_10 = 0;\n  local_14 = 0;\n  uStack_24 = 0x39;\n  pcStack_28 = \"Your files, kind sir/madam!\\n---------------------------\\n\";\n  uStack_2c = 1;\n  local_14 = sendallnulltrunc();\n  if (local_14 < 1) {\n    puVar2 = &uStack_2c;\n    uStack_2c = 4;\n    _terminate();\n  }\n  if (local_14 == 0x39) {\n    *(undefined4 *)((int)puVar2 + -4) = 0x11f4b;\n    uVar1 = list_files();\n  }\n  else {\n    uVar1 = 4;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_list",
+                        "sendallnulltrunc",
+                        "_terminate",
+                        "list_files"
+                    ],
+                    "calling_functions": [
+                        "dispatch_verb",
+                        "do_list"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_smore",
+                "func_c_signature": "undefined4 do_smore(undefined4 param_1)",
+                "decompiled_code": "undefined4 do_smore(undefined4 param_1) {\n  undefined4 uVar1;\n  undefined4 *puVar2;\n  undefined4 uStack_2c;\n  char *pcStack_28;\n  undefined4 uStack_24;\n  undefined4 uStack_20;\n  undefined auStack_1c [8];\n  int local_14;\n  undefined4 local_10;\n  \n  puVar2 = (undefined4 *)auStack_1c;\n  uStack_20 = 0x11f6d;\n  local_10 = 0;\n  local_14 = 0;\n  uStack_24 = 0x25;\n  pcStack_28 = \"here\\'s a lil\\' bit\\n-----------------\\n\";\n  uStack_2c = 1;\n  local_14 = sendallnulltrunc();\n  if (local_14 < 1) {\n    puVar2 = &uStack_2c;\n    uStack_2c = 4;\n    _terminate();\n  }\n  if (local_14 == 0x25) {\n    *(undefined4 *)((int)puVar2 + -0x10) = param_1;\n    *(undefined4 *)((int)puVar2 + -0x14) = 0x11fc2;\n    uVar1 = head_file();\n  }\n  else {\n    uVar1 = 4;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_smore",
+                        "sendallnulltrunc",
+                        "_terminate",
+                        "head_file"
+                    ],
+                    "calling_functions": [
+                        "dispatch_verb",
+                        "do_smore"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_youup",
+                "func_c_signature": "int do_youup(void)",
+                "decompiled_code": "int do_youup(void) {\n  int iVar1;\n  \n  iVar1 = sendallnulltrunc(1,\n                           \"Yep, i\\'m up, but all our basic lines are \\\"clogged\\\"\\nUpgrade to FASTLANE today!\\n\"\n                           ,0x4f);\n  if (iVar1 < 1) {\n    _terminate(4);\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_youup",
+                        "sendallnulltrunc",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "dispatch_verb",
+                        "do_youup"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_mooch",
+                "func_c_signature": "undefined4 do_mooch(undefined4 param_1)",
+                "decompiled_code": "undefined4 do_mooch(undefined4 param_1) {\n  undefined4 uVar1;\n  undefined4 *puVar2;\n  undefined4 uStack_2c;\n  char *pcStack_28;\n  undefined4 uStack_24;\n  undefined4 uStack_20;\n  undefined auStack_1c [8];\n  int local_14;\n  undefined4 local_10;\n  \n  puVar2 = (undefined4 *)auStack_1c;\n  uStack_20 = 0x12038;\n  local_10 = 0;\n  local_14 = 0;\n  uStack_24 = 0x4b;\n  pcStack_28 = \"the tubes are \\\"clogged\\\" right now...\\n------------------------------------\\n\";\n  uStack_2c = 1;\n  local_14 = sendallnulltrunc();\n  if (local_14 < 1) {\n    puVar2 = &uStack_2c;\n    uStack_2c = 4;\n    _terminate();\n  }\n  if (local_14 == 0x4b) {\n    *(undefined4 *)((int)puVar2 + -0x10) = 3;\n    *(undefined4 *)((int)puVar2 + -0x14) = 0x1208c;\n    pause();\n    *(undefined4 *)((int)puVar2 + -0x10) = param_1;\n    *(undefined4 *)((int)puVar2 + -0x14) = 0x1209a;\n    uVar1 = dump_file();\n  }\n  else {\n    uVar1 = 4;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_mooch",
+                        "sendallnulltrunc",
+                        "_terminate",
+                        "pause",
+                        "dump_file"
+                    ],
+                    "calling_functions": [
+                        "dispatch_verb",
+                        "do_mooch"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_sup",
+                "func_c_signature": "undefined4 do_sup(void)",
+                "decompiled_code": "undefined4 do_sup(void) {\n  undefined4 uVar1;\n  undefined4 *puVar2;\n  undefined4 uStack_2c;\n  char *pcStack_28;\n  undefined4 uStack_24;\n  undefined4 uStack_20;\n  undefined auStack_1c [8];\n  int local_14;\n  undefined4 local_10;\n  \n  puVar2 = (undefined4 *)auStack_1c;\n  uStack_20 = 0x120bf;\n  local_10 = 0;\n  local_14 = 0;\n  uStack_24 = 0x3b;\n  pcStack_28 = \"here\\'re your files, plebian:\\n----------------------------\\n\";\n  uStack_2c = 1;\n  local_14 = sendallnulltrunc();\n  if (local_14 < 1) {\n    puVar2 = &uStack_2c;\n    uStack_2c = 4;\n    _terminate();\n  }\n  if (local_14 == 0x3b) {\n    *(undefined4 *)((int)puVar2 + -4) = 0x1210e;\n    uVar1 = list_files();\n  }\n  else {\n    uVar1 = 4;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_sup",
+                        "sendallnulltrunc",
+                        "_terminate",
+                        "list_files"
+                    ],
+                    "calling_functions": [
+                        "dispatch_verb",
+                        "do_sup"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_auth",
+                "func_c_signature": "int do_auth(undefined4 param_1)",
+                "decompiled_code": "int do_auth(undefined4 param_1) {\n  uint uVar1;\n  char **ppcVar2;\n  undefined *puVar3;\n  char *apcStack_50 [13];\n  undefined auStack_1c [4];\n  uint local_18;\n  undefined4 local_14;\n  int local_10;\n  \n  ppcVar2 = (char **)auStack_1c;\n  apcStack_50[12] = (char *)0x12130;\n  local_10 = 0;\n  local_14 = 0;\n  apcStack_50[11] = (char *)0x37;\n  apcStack_50[10] = \"Adding FASTLANE credits...\\n--------------------------\\n\";\n  apcStack_50[9] = (char *)0x1;\n  local_10 = sendallnulltrunc();\n  if (local_10 < 1) {\n    ppcVar2 = apcStack_50 + 9;\n    apcStack_50[9] = (char *)0x4;\n    _terminate();\n  }\n  *(undefined4 *)((int)ppcVar2 + -0x10) = param_1;\n  *(undefined4 *)((int)ppcVar2 + -0x14) = 0x12178;\n  local_18 = hex2UINT32();\n  local_18 = local_18 & 0xffffff;\n  if (local_18 != 0xffffffff) {\n    *(uint *)((int)ppcVar2 + -0xc) = local_18;\n    *(undefined4 *)((int)ppcVar2 + -0x10) = 5;\n    *(undefined4 *)((int)ppcVar2 + -0x14) = 0x12198;\n    uVar1 = my_pow();\n    puVar3 = (undefined *)ppcVar2;\n    if (uVar1 % 0xfffffd == 0xc5698d) goto LAB_000121eb;\n  }\n  *(undefined4 *)((int)ppcVar2 + -8) = 0x1f;\n  *(char **)((int)ppcVar2 + -0xc) = \"Sorry, failed to add credits.\\n\";\n  puVar3 = (undefined *)((int)ppcVar2 + -0x10);\n  *(undefined4 *)((int)ppcVar2 + -0x10) = 1;\n  *(undefined4 *)((int)ppcVar2 + -0x14) = 0x121d5;\n  local_10 = sendallnulltrunc();\n  if (0 < local_10) {\n    return local_10;\n  }\n  *(undefined4 *)((int)ppcVar2 + -0x10) = 4;\n  *(undefined4 *)((int)ppcVar2 + -0x14) = 0x121eb;\n  _terminate();\nLAB_000121eb:\n  *(undefined4 *)(puVar3 + -8) = 0x1c;\n  *(char **)(puVar3 + -0xc) = \"Authentication successful!\\n\";\n  *(undefined4 *)(puVar3 + -0x10) = 1;\n  *(undefined4 *)(puVar3 + -0x14) = 0x121fe;\n  local_10 = sendallnulltrunc();\n  if (local_10 < 1) {\n    *(undefined4 *)(puVar3 + -0x10) = 4;\n    *(undefined4 *)(puVar3 + -0x14) = 0x12214;\n    _terminate();\n  }\n  *ptr_credits = *ptr_credits + '\\x03';\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_auth",
+                        "sendallnulltrunc",
+                        "_terminate",
+                        "hex2UINT32",
+                        "my_pow"
+                    ],
+                    "calling_functions": [
+                        "dispatch_verb",
+                        "do_auth"
+                    ],
+                    "defined_in_file": "NRFIN_00003_decompiled.c"
+                }
+            }
+        ]
+    }
+}

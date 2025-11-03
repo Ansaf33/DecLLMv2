@@ -1,0 +1,797 @@
+{
+    "file": "KPRCA_00055",
+    "decompiled_code": {
+        "main.c": [
+            {
+                "func_name": "create_random_shorts",
+                "func_c_signature": "void * create_random_shorts(void)",
+                "decompiled_code": "void * create_random_shorts(void) {\n  void *pvVar1;\n  uint local_10;\n  \n  pvVar1 = malloc(0x800);\n  if (pvVar1 == (void *)0x0) {\n    pvVar1 = (void *)0x0;\n  }\n  else {\n    for (local_10 = 0; local_10 < 0x400; local_10 = local_10 + 1) {\n      *(short *)((int)pvVar1 + local_10 * 2) = (short)*(char *)(local_10 * 3 + 0x4347c000);\n    }\n  }\n  return pvVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_random_shorts",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "create_random_shorts",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_rand_short",
+                "func_c_signature": "undefined2 get_rand_short(int param_1)",
+                "decompiled_code": "undefined2 get_rand_short(int param_1) {\n  uint uVar1;\n  \n  if (0x3ff < g_random_usage) {\n    g_random_usage = 0;\n  }\n  uVar1 = g_random_usage;\n  g_random_usage = g_random_usage + 1;\n  return *(undefined2 *)(param_1 + uVar1 * 2);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_rand_short"
+                    ],
+                    "calling_functions": [
+                        "get_rand_short",
+                        "random_matrix"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_byte",
+                "func_c_signature": "uint get_byte(void)",
+                "decompiled_code": "uint get_byte(void) {\n  byte *pbVar1;\n  int iVar2;\n  int local_10 [2];\n  \n  if (rxidx_2 == rxcnt_1) {\n    iVar2 = receive(0,&rxbuf_0,0x40,local_10);\n    if ((iVar2 != 0) || (local_10[0] == 0)) {\n      return 0xffffffff;\n    }\n    rxcnt_1 = local_10[0];\n    rxidx_2 = 0;\n  }\n  pbVar1 = &rxbuf_0 + rxidx_2;\n  rxidx_2 = rxidx_2 + 1;\n  return (uint)*pbVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_byte",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "get_byte",
+                        "readline"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "readline",
+                "func_c_signature": "undefined4 readline(int param_1,uint param_2)",
+                "decompiled_code": "undefined4 readline(int param_1,uint param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  uint local_10;\n  \n  if ((param_1 == 0) || (param_2 < 2)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {\n      iVar2 = get_byte();\n      if (iVar2 == -1) {\n        return 1;\n      }\n      *(char *)(local_10 + param_1) = (char)iVar2;\n      if (*(char *)(local_10 + param_1) == '\\n') {\n        *(undefined *)(local_10 + param_1) = 0;\n        break;\n      }\n    }\n    if ((local_10 == param_2) || (local_10 == 0)) {\n      uVar1 = 0xffffffff;\n    }\n    else {\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readline",
+                        "get_byte"
+                    ],
+                    "calling_functions": [
+                        "readline",
+                        "readnum",
+                        "input_matrix"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "readnum",
+                "func_c_signature": "int readnum(char *param_1,undefined4 param_2,long *param_3)",
+                "decompiled_code": "int readnum(char *param_1,undefined4 param_2,long *param_3) {\n  int iVar1;\n  long lVar2;\n  \n  iVar1 = readline(param_1,param_2);\n  if (iVar1 == 0) {\n    lVar2 = strtol(param_1,(char **)0x0,10);\n    *param_3 = lVar2;\n  }\n  else {\n    *param_3 = 0;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readnum",
+                        "readline",
+                        "strtol"
+                    ],
+                    "calling_functions": [
+                        "readnum",
+                        "select_menu_choice",
+                        "choose_matrix",
+                        "resize_matrix",
+                        "swap_matrix_row_col"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "select_menu_choice",
+                "func_c_signature": "undefined4 select_menu_choice(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "undefined4 select_menu_choice(undefined4 param_1,undefined4 param_2) {\n  int iVar1;\n  undefined4 local_10 [2];\n  \n  local_10[0] = 0;\n  printf(\n        \"Make a selection: \\n1. Input Matrix\\n2. Print Matrix\\n3. Add Matrices\\n4. Subtract Matrices\\n5. Multiply Matrices\\n6. Swap Matrix Row\\n7. Swap Matrix Col\\n8. Transpose Matrix\\n9. Perform Reduced Row Echelon Form on Matrix\\n10. Randomize Matrix\\n11. Exit\\n>> \"\n        );\n  iVar1 = readnum(param_1,param_2,local_10);\n  if (iVar1 == 1) {\n    local_10[0] = 0xb;\n  }\n  return local_10[0];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "select_menu_choice",
+                        "printf",
+                        "readnum"
+                    ],
+                    "calling_functions": [
+                        "select_menu_choice",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "choose_matrix",
+                "func_c_signature": "undefined4\nchoose_matrix(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)",
+                "decompiled_code": "undefined4\nchoose_matrix(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4) {\n  int iVar1;\n  int local_14;\n  undefined4 local_10;\n  \n  local_14 = 0;\n  local_10 = 0;\n  printf(\"Select Matrix 1 or Matrix 2\\n>> \");\n  iVar1 = readnum(param_3,param_4,&local_14);\n  if (iVar1 == 1) {\n    param_1 = 0;\n  }\n  else if (local_14 == 2) {\n    param_1 = param_2;\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "choose_matrix",
+                        "printf",
+                        "readnum"
+                    ],
+                    "calling_functions": [
+                        "choose_matrix",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "resize_matrix",
+                "func_c_signature": "undefined4 resize_matrix(int *param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 resize_matrix(int *param_1,undefined4 param_2,undefined4 param_3) {\n  int iVar1;\n  int local_14;\n  int local_10 [2];\n  \n  local_10[0] = 0;\n  local_14 = 0;\n  while( true ) {\n    printf(\"New Row Size (0 to stay the same): \");\n    iVar1 = readnum(param_2,param_3,local_10);\n    if (iVar1 == 1) {\n      return 1;\n    }\n    if (local_10[0] == 0) {\n      local_10[0] = *param_1;\n    }\n    printf(\"New Column Size (0 to stay the same): \");\n    iVar1 = readnum(param_2,param_3,&local_14);\n    if (iVar1 == 1) break;\n    if (local_14 == 0) {\n      local_14 = param_1[1];\n    }\n    iVar1 = (*(code *)param_1[8])(param_1,local_10[0],local_14);\n    if (iVar1 == 0) {\n      return 0;\n    }\n    printf(\"Row and Column Sizes must be between 1-16\\n\");\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [
+                    "Size"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "resize_matrix",
+                        "printf",
+                        "Size",
+                        "readnum"
+                    ],
+                    "calling_functions": [
+                        "resize_matrix",
+                        "input_matrix",
+                        "random_matrix"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "input_matrix",
+                "func_c_signature": "int input_matrix(int *param_1,char *param_2,undefined4 param_3)",
+                "decompiled_code": "int input_matrix(int *param_1,char *param_2,undefined4 param_3) {\n  int iVar1;\n  int iVar2;\n  int iVar3;\n  size_t sVar4;\n  char *__nptr;\n  long lVar5;\n  int local_18;\n  uint local_14;\n  int local_10;\n  \n  iVar2 = resize_matrix(param_1,param_2,param_3);\n  if (iVar2 == 1) {\n    iVar3 = 1;\n  }\n  else {\n    iVar2 = *param_1;\n    iVar1 = param_1[1];\n    iVar3 = readline(param_2,param_3);\n    if ((iVar3 == 1) || (iVar3 == -1)) {\n      printf(\"Bad Input\\n\");\n    }\n    else {\n      local_10 = 1;\n      for (local_14 = 0; sVar4 = strlen(param_2), local_14 < sVar4; local_14 = local_14 + 1) {\n        if (param_2[local_14] == ' ') {\n          local_10 = local_10 + 1;\n        }\n      }\n      if (local_10 == iVar1 * iVar2) {\n        for (local_14 = 0; (int)local_14 < *param_1; local_14 = local_14 + 1) {\n          for (local_18 = 0; local_18 < param_1[1]; local_18 = local_18 + 1) {\n            __nptr = strsep(&param_2,\" \");\n            if (__nptr == (char *)0x0) {\n              return 1;\n            }\n            lVar5 = strtol(__nptr,(char **)0x0,10);\n            (*(code *)param_1[6])(param_1,local_14,local_18,lVar5);\n          }\n        }\n        iVar3 = 0;\n      }\n      else {\n        printf(\"Bad Input\\n\");\n        iVar3 = -1;\n      }\n    }\n  }\n  return iVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "input_matrix",
+                        "resize_matrix",
+                        "readline",
+                        "printf",
+                        "strlen",
+                        "strsep",
+                        "strtol"
+                    ],
+                    "calling_functions": [
+                        "input_matrix",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "random_matrix",
+                "func_c_signature": "undefined4 random_matrix(int *param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)",
+                "decompiled_code": "undefined4 random_matrix(int *param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4) {\n  code *pcVar1;\n  short sVar2;\n  int iVar3;\n  undefined4 uVar4;\n  int local_14;\n  int local_10;\n  \n  iVar3 = resize_matrix(param_1,param_2,param_3,0x11565);\n  if (iVar3 == 1) {\n    uVar4 = 1;\n  }\n  else {\n    for (local_10 = 0; local_10 < *param_1; local_10 = local_10 + 1) {\n      for (local_14 = 0; local_14 < param_1[1]; local_14 = local_14 + 1) {\n        pcVar1 = (code *)param_1[6];\n        sVar2 = get_rand_short(param_4);\n        (*pcVar1)(param_1,local_10,local_14,(int)sVar2);\n      }\n    }\n    uVar4 = 0;\n  }\n  return uVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "random_matrix",
+                        "resize_matrix",
+                        "get_rand_short"
+                    ],
+                    "calling_functions": [
+                        "random_matrix",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_matrices",
+                "func_c_signature": "void print_matrices(undefined4 param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void print_matrices(undefined4 param_1,undefined4 param_2,undefined4 param_3) {\n  print_matrix(\"-Matrix 1-\",param_1);\n  printf(\"\\n\");\n  print_matrix(\"-Matrix 2-\",param_2);\n  printf(\"\\n\");\n  print_matrix(\"-Resultant Matrix-\",param_3);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_matrices",
+                        "print_matrix",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_matrices",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_matrices",
+                "func_c_signature": "void add_matrices(undefined4 param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void add_matrices(undefined4 param_1,undefined4 param_2,undefined4 param_3) {\n  int iVar1;\n  \n  iVar1 = m_add(param_1,param_2,param_3);\n  if (iVar1 == 0) {\n    print_matrix(\"Result:\",param_3);\n  }\n  else {\n    printf(\"Could not add matrices together. Check sizes\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_matrices",
+                        "m_add",
+                        "print_matrix",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "add_matrices",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "subtract_matrices",
+                "func_c_signature": "void subtract_matrices(undefined4 param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void subtract_matrices(undefined4 param_1,undefined4 param_2,undefined4 param_3) {\n  int iVar1;\n  \n  iVar1 = m_subtract(param_1,param_2,param_3);\n  if (iVar1 == 0) {\n    print_matrix(\"Result:\",param_3);\n  }\n  else {\n    printf(\"Could not subtract matrices. Check sizes\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "subtract_matrices",
+                        "m_subtract",
+                        "print_matrix",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "subtract_matrices",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "multiply_matrices",
+                "func_c_signature": "void multiply_matrices(undefined4 param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void multiply_matrices(undefined4 param_1,undefined4 param_2,undefined4 param_3) {\n  int iVar1;\n  \n  iVar1 = m_multiply(param_1,param_2,param_3);\n  if (iVar1 == 0) {\n    print_matrix(\"Result:\",param_3);\n  }\n  else {\n    printf(\"Could not multiply matrices together. Check sizes\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "multiply_matrices",
+                        "m_multiply",
+                        "print_matrix",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "multiply_matrices",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "swap_matrix_row_col",
+                "func_c_signature": "undefined4 swap_matrix_row_col(int *param_1,int param_2,undefined4 param_3,undefined4 param_4)",
+                "decompiled_code": "undefined4 swap_matrix_row_col(int *param_1,int param_2,undefined4 param_3,undefined4 param_4) {\n  int iVar1;\n  undefined4 uVar2;\n  int local_1c;\n  int local_18;\n  char *local_14;\n  int local_10;\n  \n  local_18 = 0;\n  local_1c = 0;\n  if (param_2 == 1) {\n    local_14 = \"Row\";\n    local_10 = *param_1;\n  }\n  else {\n    if (param_2 != 2) {\n      return 0xffffffff;\n    }\n    local_14 = \"Column\";\n    local_10 = param_1[1];\n  }\n  printf(\"Enter %s Index 1: \",local_14);\n  iVar1 = readnum(param_3,param_4,&local_18);\n  if (iVar1 == 1) {\n    uVar2 = 1;\n  }\n  else if (local_18 < local_10) {\n    printf(\"Enter %s Index 2: \",local_14);\n    iVar1 = readnum(param_3,param_4,&local_1c);\n    if (iVar1 == 1) {\n      uVar2 = 1;\n    }\n    else if (local_1c < local_10) {\n      print_matrix(\"Original Matrix\",param_1);\n      if (param_2 == 1) {\n        uVar2 = swap_row(param_1,local_18,local_1c);\n      }\n      else if (param_2 == 2) {\n        uVar2 = swap_col(param_1,local_18,local_1c);\n      }\n      else {\n        uVar2 = 0xffffffff;\n      }\n    }\n    else {\n      printf(\"Bad Input\\n\");\n      uVar2 = 0xffffffff;\n    }\n  }\n  else {\n    printf(\"Bad Input\\n\");\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "swap_matrix_row_col",
+                        "printf",
+                        "readnum",
+                        "print_matrix",
+                        "swap_row",
+                        "swap_col"
+                    ],
+                    "calling_functions": [
+                        "swap_matrix_row_col",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "transpose_matrix",
+                "func_c_signature": "void transpose_matrix(undefined4 param_1)",
+                "decompiled_code": "void transpose_matrix(undefined4 param_1) {\n  print_matrix(\"Original Matrix\",param_1);\n  m_transpose(param_1);\n  print_matrix(\"Transposed Matrix\",param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "transpose_matrix",
+                        "print_matrix",
+                        "m_transpose"
+                    ],
+                    "calling_functions": [
+                        "transpose_matrix",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rref_matrix",
+                "func_c_signature": "void rref_matrix(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "void rref_matrix(undefined4 param_1,undefined4 param_2) {\n  int iVar1;\n  \n  iVar1 = m_rref(param_1,param_2);\n  if (iVar1 == 0) {\n    print_matrix(\"RREF Result:\",param_2);\n  }\n  else {\n    printf(\"Could not complete reduced row echelon form\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rref_matrix",
+                        "m_rref",
+                        "print_matrix",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "rref_matrix",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined local_42c [1020];\n  int local_30;\n  void *local_2c;\n  undefined4 local_28;\n  undefined4 local_24;\n  undefined4 local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  int local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_14 = 0;\n  local_18 = 0;\n  local_1c = create_random_shorts();\n  local_20 = create_matrix(1,0);\n  local_24 = create_matrix(1,0);\n  local_28 = create_matrix(2,local_42c);\n  local_2c = malloc(0x800);\n  printf(\"Matrix math is fun!\\n\");\n  printf(\"-------------------\\n\");\nLAB_00011a73:\n  do {\n    local_18 = select_menu_choice(local_2c,0x800);\n    switch(local_18) {\n    default:\n      printf(\"Bad Selection\\n\");\n      goto LAB_00011a73;\n    case 1:\n      printf(\"Inputting Matrix Values:\\n\");\n      local_30 = choose_matrix(local_20,local_24,local_2c,0x800);\n      if (local_30 == 0) goto LAB_00011dc5;\n      iVar1 = input_matrix(local_30,local_2c,0x800);\n      break;\n    case 2:\n      printf(\"Print Matrices:\\n\");\n      print_matrices(local_20,local_24,local_28);\n      goto LAB_00011a73;\n    case 3:\n      printf(\"Adding Matrices:\\n\");\n      add_matrices(local_20,local_24,local_28);\n      goto LAB_00011a73;\n    case 4:\n      printf(\"Subtracting Matrices:\\n\");\n      subtract_matrices(local_20,local_24,local_28);\n      goto LAB_00011a73;\n    case 5:\n      printf(\"Multiplying Matrices:\\n\");\n      multiply_matrices(local_20,local_24,local_28);\n      goto LAB_00011a73;\n    case 6:\n      printf(\"Swap Rows in a  Matrix:\\n\");\n      local_30 = choose_matrix(local_20,local_24,local_2c,0x800);\n      if ((local_30 == 0) ||\n         (local_14 = swap_matrix_row_col(local_30,1,local_2c,0x800), local_14 == 1))\n      goto LAB_00011dc5;\n      if (local_14 == 0) {\n        print_matrix(\"Swapped Rows\",local_30);\n      }\n      goto LAB_00011a73;\n    case 7:\n      printf(\"Swap Columns in a  Matrix:\\n\");\n      local_30 = choose_matrix(local_20,local_24,local_2c,0x800);\n      if ((local_30 == 0) ||\n         (local_14 = swap_matrix_row_col(local_30,2,local_2c,0x800), local_14 == 1))\n      goto LAB_00011dc5;\n      if (local_14 == 0) {\n        print_matrix(\"Swapped Columns\",local_30);\n      }\n      goto LAB_00011a73;\n    case 8:\n      printf(\"Transpose a Matrix:\\n\");\n      local_30 = choose_matrix(local_20,local_24,local_2c,0x800);\n      if (local_30 == 0) goto LAB_00011dc5;\n      transpose_matrix(local_30);\n      goto LAB_00011a73;\n    case 9:\n      printf(\"Perform Reduced Row Echelon Form on Matrix\\n\");\n      local_30 = choose_matrix(local_20,local_24,local_2c,0x800);\n      if (local_30 == 0) goto LAB_00011dc5;\n      rref_matrix(local_30,local_28);\n      goto LAB_00011a73;\n    case 10:\n      printf(\"Create a Random Matrix:\\n\");\n      local_30 = choose_matrix(local_20,local_24,local_2c,0x800);\n      if (local_30 == 0) goto LAB_00011dc5;\n      iVar1 = random_matrix(local_30,local_2c,0x800,local_1c);\n      break;\n    case 0xb:\n      goto LAB_00011dc5;\n    }\n    if (iVar1 == 1) {\nLAB_00011dc5:\n      printf(\"Exiting...\\n\");\n      return 0;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "create_random_shorts",
+                        "create_matrix",
+                        "malloc",
+                        "printf",
+                        "select_menu_choice",
+                        "choose_matrix",
+                        "input_matrix",
+                        "print_matrices",
+                        "add_matrices",
+                        "subtract_matrices",
+                        "multiply_matrices",
+                        "swap_matrix_row_col",
+                        "print_matrix",
+                        "transpose_matrix",
+                        "rref_matrix",
+                        "random_matrix"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            }
+        ],
+        "matrix.c": [
+            {
+                "func_name": "print_matrix",
+                "func_c_signature": "void print_matrix(undefined4 param_1,int param_2)",
+                "decompiled_code": "void print_matrix(undefined4 param_1,int param_2) {\n  printf(\"%s\\n\",param_1);\n  (**(code **)(param_2 + 0x24))(param_2);\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_matrix",
+                        "sprintf",
+                        "strlen",
+                        "transmitall",
+                        "ROUND"
+                    ],
+                    "calling_functions": [
+                        "print_matrix",
+                        "print_matrices",
+                        "add_matrices",
+                        "subtract_matrices",
+                        "multiply_matrices",
+                        "swap_matrix_row_col",
+                        "transpose_matrix",
+                        "rref_matrix",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "m_get_cell",
+                "func_c_signature": "uint m_get_cell(uint *param_1,uint param_2,uint param_3)",
+                "decompiled_code": "uint m_get_cell(uint *param_1,uint param_2,uint param_3) {\n  uint uVar1;\n  \n  if (param_1 == (uint *)0x0) {\n    uVar1 = 1;\n  }\n  else if ((*param_1 < param_2) || (param_1[1] < param_3)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    uVar1 = param_1[2];\n    if (uVar1 == 4) {\n      uVar1 = (uint)ROUND(*(float *)((param_3 + param_1[1] * param_2) * 4 + param_1[3]));\n    }\n    else if (uVar1 < 5) {\n      if (uVar1 == 1) {\n        uVar1 = (uint)*(short *)((param_3 + param_1[1] * param_2) * 2 + param_1[3]);\n      }\n      else if (uVar1 == 2) {\n        uVar1 = *(uint *)((param_3 + param_1[1] * param_2) * 4 + param_1[3]);\n      }\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "m_get_cell",
+                        "ROUND"
+                    ],
+                    "calling_functions": [
+                        "m_get_cell"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "m_get_fcell",
+                "func_c_signature": "undefined ** m_get_fcell(uint *param_1,uint param_2,uint param_3)",
+                "decompiled_code": "undefined ** m_get_fcell(uint *param_1,uint param_2,uint param_3) {\n  undefined **ppuVar1;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  if (((param_1 != (uint *)0x0) && (param_2 <= *param_1)) && (param_3 <= param_1[1])) {\n    ppuVar1 = (undefined **)param_1[2];\n    if (ppuVar1 == (undefined **)0x4) {\n      ppuVar1 = (undefined **)((param_3 + param_1[1] * param_2) * 4 + param_1[3]);\n    }\n    else if (ppuVar1 < (undefined **)0x5) {\n      if (ppuVar1 == (undefined **)0x1) {\n        ppuVar1 = (undefined **)(uint)*(ushort *)((param_3 + param_1[1] * param_2) * 2 + param_1[3])\n        ;\n      }\n      else if (ppuVar1 == (undefined **)0x2) {\n        ppuVar1 = *(undefined ***)((param_3 + param_1[1] * param_2) * 4 + param_1[3]);\n      }\n    }\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "m_get_fcell"
+                    ],
+                    "calling_functions": [
+                        "m_get_fcell"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "m_set_cell",
+                "func_c_signature": "undefined4 m_set_cell(uint *param_1,uint param_2,uint param_3,int param_4)",
+                "decompiled_code": "undefined4 m_set_cell(uint *param_1,uint param_2,uint param_3,int param_4) {\n  uint uVar1;\n  undefined4 uVar2;\n  \n  if (param_1 == (uint *)0x0) {\n    uVar2 = 1;\n  }\n  else if ((*param_1 < param_2) || (param_1[1] < param_3)) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    uVar1 = param_1[2];\n    if (uVar1 == 4) {\n      *(float *)((param_3 + param_1[1] * param_2) * 4 + param_1[3]) = (float)param_4;\n    }\n    else if (uVar1 < 5) {\n      if (uVar1 == 1) {\n        *(short *)((param_3 + param_1[1] * param_2) * 2 + param_1[3]) = (short)param_4;\n      }\n      else if (uVar1 == 2) {\n        *(int *)(param_1[3] + (param_3 + param_1[1] * param_2) * 4) = param_4;\n      }\n    }\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "m_set_cell"
+                    ],
+                    "calling_functions": [
+                        "m_set_cell"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "m_set_fcell",
+                "func_c_signature": "undefined4 m_set_fcell(uint *param_1,uint param_2,uint param_3,float param_4)",
+                "decompiled_code": "undefined4 m_set_fcell(uint *param_1,uint param_2,uint param_3,float param_4) {\n  uint uVar1;\n  undefined4 uVar2;\n  \n  if (param_1 == (uint *)0x0) {\n    uVar2 = 1;\n  }\n  else if ((*param_1 < param_2) || (param_1[1] < param_3)) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    uVar1 = param_1[2];\n    if (uVar1 == 4) {\n      *(float *)((param_3 + param_1[1] * param_2) * 4 + param_1[3]) = param_4;\n    }\n    else if (uVar1 < 5) {\n      if (uVar1 == 1) {\n        *(short *)(param_1[3] + (param_3 + param_1[1] * param_2) * 2) = (short)ROUND(param_4);\n      }\n      else if (uVar1 == 2) {\n        *(int *)(param_1[3] + (param_3 + param_1[1] * param_2) * 4) = (int)ROUND(param_4);\n      }\n    }\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "m_set_fcell",
+                        "ROUND"
+                    ],
+                    "calling_functions": [
+                        "m_set_fcell"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "m_set_rows_cols",
+                "func_c_signature": "undefined4 m_set_rows_cols(uint *param_1,uint param_2,uint param_3)",
+                "decompiled_code": "undefined4 m_set_rows_cols(uint *param_1,uint param_2,uint param_3) {\n  undefined4 uVar1;\n  \n  if (param_1 == (uint *)0x0) {\n    uVar1 = 1;\n  }\n  else if ((param_2 < 0x11) && (param_3 < 0x11)) {\n    *param_1 = param_2;\n    param_1[1] = param_3;\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "m_set_rows_cols"
+                    ],
+                    "calling_functions": [
+                        "m_set_rows_cols"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "transmitall",
+                "func_c_signature": "void transmitall(int param_1,uint param_2)",
+                "decompiled_code": "void transmitall(int param_1,uint param_2) {\n  int iVar1;\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (param_2 <= local_10) {\n      return;\n    }\n    iVar1 = transmit(1,param_1 + local_10,param_2 - local_10,&local_14);\n    if (iVar1 != 0) break;\n    if (local_14 == 0) {\n      return;\n    }\n    local_10 = local_10 + local_14;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "transmitall",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "print_matrix",
+                        "transmitall"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_matrix",
+                "func_c_signature": "void print_matrix(int *param_1)",
+                "decompiled_code": "void print_matrix(int *param_1) {\n  float fVar1;\n  float fVar2;\n  size_t sVar3;\n  longdouble lVar4;\n  undefined4 uVar5;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  uVar5 = 0x1252a;\n  if (param_1 != (int *)0x0) {\n    buf_0 = '\\0';\n    for (local_10 = 0; local_10 < *param_1; local_10 = local_10 + 1) {\n      sprintf(&buf_0,\"%s|\",&buf_0);\n      for (local_14 = 0; local_14 < param_1[1]; local_14 = local_14 + 1) {\n        sVar3 = strlen(&buf_0);\n        if (0x1c18 < sVar3) {\n          sVar3 = strlen(&buf_0);\n          transmitall(&buf_0,sVar3);\n          buf_0 = '\\0';\n        }\n        if (param_1[2] == 4) {\n          lVar4 = (longdouble)(*(code *)param_1[5])(param_1,local_10,local_14);\n          fVar1 = (float)lVar4;\n          fVar2 = fVar1;\n          if (fVar1 < 0.0) {\n            fVar2 = -fVar1;\n          }\n          local_18 = (int)ROUND(fVar2);\n          local_1c = (int)ROUND(DAT_000174b0 * (fVar2 - (float)(int)ROUND(fVar2)));\n          if ((int)ROUND(DAT_000174b4 * (fVar2 - (float)(int)ROUND(fVar2))) == 9999) {\n            local_18 = local_18 + 1;\n            local_1c = 0;\n          }\n          else if ((int)ROUND(DAT_000174b4 * (fVar2 - (float)(int)ROUND(fVar2))) == 1) {\n            local_1c = 0;\n          }\n          if ((float)DAT_000174b8 <= fVar2) {\n            if ((double)fVar1 < DAT_000174c0) {\n              sprintf(&buf_0,\"%s -%d.%d |\",&buf_0,local_18,local_1c);\n            }\n            else {\n              sprintf(&buf_0,\"%s %d.%d |\",&buf_0,local_18,local_1c);\n            }\n          }\n          else {\n            sprintf(&buf_0,\"%s 0.0 |\",&buf_0);\n          }\n        }\n        else {\n          uVar5 = (*(code *)param_1[4])(param_1,local_10,local_14);\n          sprintf(&buf_0,\"%s %d |\",&buf_0,uVar5);\n        }\n      }\n      sprintf(&buf_0,\"%s\\n\",&buf_0,uVar5);\n    }\n    if (buf_0 != '\\0') {\n      sVar3 = strlen(&buf_0);\n      transmitall(&buf_0,sVar3);\n      buf_0 = '\\0';\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_matrix",
+                        "sprintf",
+                        "strlen",
+                        "transmitall",
+                        "ROUND"
+                    ],
+                    "calling_functions": [
+                        "print_matrix",
+                        "print_matrices",
+                        "add_matrices",
+                        "subtract_matrices",
+                        "multiply_matrices",
+                        "swap_matrix_row_col",
+                        "transpose_matrix",
+                        "rref_matrix",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_matrix",
+                "func_c_signature": "undefined4 * create_matrix(uint param_1,int param_2)",
+                "decompiled_code": "undefined4 * create_matrix(uint param_1,int param_2) {\n  int local_14;\n  undefined4 *local_10;\n  \n  if (param_2 == 0) {\n    if (param_1 == 4) {\n      local_14 = 0x400;\n    }\n    else if (param_1 < 5) {\n      if (param_1 == 1) {\n        local_14 = 0x200;\n      }\n      else if (param_1 == 2) {\n        local_14 = 0x400;\n      }\n    }\n    local_10 = (undefined4 *)calloc(1,local_14 + 0x28);\n    if (local_10 == (undefined4 *)0x0) {\n      return (undefined4 *)0x0;\n    }\n    local_10[3] = local_10 + 10;\n  }\n  else {\n    local_10 = (undefined4 *)calloc(1,0x28);\n    if (local_10 == (undefined4 *)0x0) {\n      return (undefined4 *)0x0;\n    }\n    local_10[3] = param_2;\n  }\n  *local_10 = 1;\n  local_10[1] = 1;\n  local_10[2] = param_1;\n  local_10[4] = m_get_cell;\n  local_10[5] = m_get_fcell;\n  local_10[6] = m_set_cell;\n  local_10[7] = m_set_fcell;\n  local_10[8] = m_set_rows_cols;\n  local_10[9] = print_matrix;\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_matrix",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "create_matrix",
+                        "m_transpose"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "m_add",
+                "func_c_signature": "undefined4 m_add(int *param_1,int *param_2,int *param_3)",
+                "decompiled_code": "undefined4 m_add(int *param_1,int *param_2,int *param_3) {\n  short sVar1;\n  short sVar2;\n  undefined4 uVar3;\n  int local_14;\n  int local_10;\n  \n  if (((param_1 == (int *)0x0) || (param_2 == (int *)0x0)) || (param_3 == (int *)0x0)) {\n    uVar3 = 1;\n  }\n  else if ((*param_1 == *param_2) && (param_1[1] == param_2[1])) {\n    param_3[2] = 1;\n    (*(code *)param_3[8])(param_3,*param_1,param_1[1],0x12922);\n    for (local_10 = 0; local_10 < *param_3; local_10 = local_10 + 1) {\n      for (local_14 = 0; local_14 < param_3[1]; local_14 = local_14 + 1) {\n        sVar1 = (*(code *)param_1[4])(param_1,local_10,local_14);\n        sVar2 = (*(code *)param_2[4])(param_2,local_10,local_14);\n        (*(code *)param_3[6])(param_3,local_10,local_14,(int)sVar1 + (int)sVar2);\n      }\n    }\n    uVar3 = 0;\n  }\n  else {\n    uVar3 = 0xffffffff;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "m_add"
+                    ],
+                    "calling_functions": [
+                        "add_matrices",
+                        "m_add"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "m_subtract",
+                "func_c_signature": "undefined4 m_subtract(int *param_1,int *param_2,int *param_3)",
+                "decompiled_code": "undefined4 m_subtract(int *param_1,int *param_2,int *param_3) {\n  short sVar1;\n  short sVar2;\n  undefined4 uVar3;\n  int local_14;\n  int local_10;\n  \n  if (((param_1 == (int *)0x0) || (param_2 == (int *)0x0)) || (param_3 == (int *)0x0)) {\n    uVar3 = 1;\n  }\n  else if ((*param_1 == *param_2) && (param_1[1] == param_2[1])) {\n    param_3[2] = 1;\n    (*(code *)param_3[8])(param_3,*param_1,param_1[1],0x12a3a);\n    for (local_10 = 0; local_10 < *param_3; local_10 = local_10 + 1) {\n      for (local_14 = 0; local_14 < param_3[1]; local_14 = local_14 + 1) {\n        sVar1 = (*(code *)param_1[4])(param_1,local_10,local_14);\n        sVar2 = (*(code *)param_2[4])(param_2,local_10,local_14);\n        (*(code *)param_3[6])(param_3,local_10,local_14,(int)sVar1 - (int)sVar2);\n      }\n    }\n    uVar3 = 0;\n  }\n  else {\n    uVar3 = 0xffffffff;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "m_subtract"
+                    ],
+                    "calling_functions": [
+                        "subtract_matrices",
+                        "m_subtract"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "m_multiply",
+                "func_c_signature": "undefined4 m_multiply(int *param_1,int *param_2,int param_3)",
+                "decompiled_code": "undefined4 m_multiply(int *param_1,int *param_2,int param_3) {\n  undefined4 uVar1;\n  int iVar2;\n  int iVar3;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  if (((param_1 == (int *)0x0) || (param_2 == (int *)0x0)) || (param_3 == 0)) {\n    uVar1 = 1;\n  }\n  else if (param_1[1] == *param_2) {\n    *(undefined4 *)(param_3 + 8) = 2;\n    (**(code **)(param_3 + 0x20))(param_3,*param_1,param_2[1],0x12b53);\n    for (local_10 = 0; local_10 < *param_1; local_10 = local_10 + 1) {\n      for (local_18 = 0; local_18 < param_2[1]; local_18 = local_18 + 1) {\n        local_1c = 0;\n        for (local_14 = 0; local_14 < param_1[1]; local_14 = local_14 + 1) {\n          iVar2 = (*(code *)param_1[4])(param_1,local_10,local_14);\n          iVar3 = (*(code *)param_2[4])(param_2,local_14,local_18);\n          local_1c = local_1c + iVar3 * iVar2;\n        }\n        (**(code **)(param_3 + 0x18))(param_3,local_10,local_18,local_1c);\n      }\n    }\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "m_multiply"
+                    ],
+                    "calling_functions": [
+                        "multiply_matrices",
+                        "m_multiply"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "swap_row",
+                "func_c_signature": "undefined4 swap_row(int *param_1,int param_2,int param_3)",
+                "decompiled_code": "undefined4 swap_row(int *param_1,int param_2,int param_3) {\n  undefined4 uVar1;\n  longdouble lVar2;\n  float fVar3;\n  int local_10;\n  \n  fVar3 = 1.077879e-40;\n  if (param_1 == (int *)0x0) {\n    uVar1 = 1;\n  }\n  else if ((*param_1 < param_2) || (*param_1 < param_3)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    for (local_10 = 0; local_10 < param_1[1]; local_10 = local_10 + 1) {\n      lVar2 = (longdouble)(*(code *)param_1[5])(param_1,param_2,local_10,fVar3);\n      fVar3 = (float)lVar2;\n      lVar2 = (longdouble)(*(code *)param_1[5])(param_1,param_3,local_10);\n      (*(code *)param_1[7])(param_1,param_2,local_10,(float)lVar2);\n      (*(code *)param_1[7])(param_1,param_3,local_10);\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "swap_row"
+                    ],
+                    "calling_functions": [
+                        "swap_matrix_row_col",
+                        "swap_row",
+                        "swap_nonzero_cell"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "swap_col",
+                "func_c_signature": "undefined4 swap_col(int *param_1,int param_2,int param_3)",
+                "decompiled_code": "undefined4 swap_col(int *param_1,int param_2,int param_3) {\n  undefined4 uVar1;\n  int iVar2;\n  int iVar3;\n  int local_10;\n  \n  iVar3 = 0x12d40;\n  if (param_1 == (int *)0x0) {\n    uVar1 = 1;\n  }\n  else if ((param_1[1] < param_2) || (param_1[1] < param_3)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    for (local_10 = 0; local_10 < *param_1; local_10 = local_10 + 1) {\n      iVar3 = (*(code *)param_1[4])(param_1,local_10,param_2,iVar3);\n      iVar2 = (*(code *)param_1[4])(param_1,local_10,param_3);\n      (*(code *)param_1[6])(param_1,local_10,param_2,(int)ROUND((float)iVar2));\n      iVar3 = (int)ROUND((float)iVar3);\n      (*(code *)param_1[6])(param_1,local_10,param_3);\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "swap_col",
+                        "ROUND"
+                    ],
+                    "calling_functions": [
+                        "swap_matrix_row_col",
+                        "swap_col"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "m_transpose",
+                "func_c_signature": "undefined4 m_transpose(int *param_1)",
+                "decompiled_code": "undefined4 m_transpose(int *param_1) {\n  int iVar1;\n  int iVar2;\n  uint uVar3;\n  undefined4 uVar4;\n  int local_1c;\n  int local_18;\n  void *local_14;\n  int local_10;\n  \n  if (param_1 == (int *)0x0) {\n    uVar4 = 1;\n  }\n  else {\n    iVar1 = *param_1;\n    iVar2 = param_1[1];\n    local_14 = (void *)0x0;\n    uVar3 = param_1[2];\n    if (uVar3 == 4) {\n      (*pcRam00000020)(0,iVar2,iVar1,0x12e55);\n      local_10 = 4;\n    }\n    else if (uVar3 < 5) {\n      if (uVar3 == 1) {\n        local_14 = (void *)create_matrix(1,0);\n        local_10 = 2;\n      }\n      else if (uVar3 == 2) {\n        local_14 = (void *)create_matrix(2,0);\n        local_10 = 4;\n      }\n    }\n    (**(code **)((int)local_14 + 0x20))(local_14,iVar2,iVar1);\n    for (local_18 = 0; local_18 < *param_1; local_18 = local_18 + 1) {\n      for (local_1c = 0; local_1c < param_1[1]; local_1c = local_1c + 1) {\n        uVar4 = (*(code *)param_1[4])(param_1,local_18,local_1c);\n        (**(code **)((int)local_14 + 0x18))(local_14,local_1c,local_18,uVar4);\n      }\n    }\n    (*(code *)param_1[8])(param_1,iVar2,iVar1);\n    memcpy(param_1 + 10,(void *)((int)local_14 + 0x28),iVar2 * iVar1 * local_10);\n    free(local_14);\n    uVar4 = 0;\n  }\n  return uVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "m_transpose",
+                        "create_matrix",
+                        "memcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "transpose_matrix",
+                        "m_transpose"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "swap_nonzero_cell",
+                "func_c_signature": "undefined4 swap_nonzero_cell(int *param_1,int param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 swap_nonzero_cell(int *param_1,int param_2,undefined4 param_3) {\n  int iVar1;\n  undefined4 uVar2;\n  longdouble lVar3;\n  \n  iVar1 = param_2;\n  if (param_1 == (int *)0x0) {\n    uVar2 = 1;\n  }\n  else {\n    lVar3 = (longdouble)(*(code *)param_1[5])(param_1,param_2,param_3);\n    if ((lVar3 <= (longdouble)_DAT_000174c8) &&\n       (lVar3 = (longdouble)(*(code *)param_1[5])(param_1,param_2,param_3),\n       (longdouble)DAT_000174c0 <= lVar3)) {\n      param_2 = param_2 + 1;\n      while( true ) {\n        if (*param_1 <= param_2) {\n          return 0xffffffff;\n        }\n        lVar3 = (longdouble)(*(code *)param_1[5])(param_1,param_2,param_3);\n        if (((longdouble)_DAT_000174c8 < lVar3) ||\n           (lVar3 = (longdouble)(*(code *)param_1[5])(param_1,param_2,param_3),\n           lVar3 < (longdouble)DAT_000174c0)) break;\n        param_2 = param_2 + 1;\n      }\n      uVar2 = swap_row(param_1,iVar1,param_2);\n      return uVar2;\n    }\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "swap_nonzero_cell",
+                        "swap_row"
+                    ],
+                    "calling_functions": [
+                        "swap_nonzero_cell",
+                        "m_rref"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "subtract_row",
+                "func_c_signature": "undefined4 subtract_row(int *param_1,int param_2,int param_3,int param_4,float param_5)",
+                "decompiled_code": "undefined4 subtract_row(int *param_1,int param_2,int param_3,int param_4,float param_5) {\n  undefined4 uVar1;\n  longdouble lVar2;\n  longdouble lVar3;\n  float fVar4;\n  int local_10;\n  \n  fVar4 = 1.093517e-40;\n  if (param_1 == (int *)0x0) {\n    uVar1 = 1;\n  }\n  else if ((*param_1 < param_2) || (*param_1 < param_3)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    for (local_10 = param_4; local_10 < param_1[1]; local_10 = local_10 + 1) {\n      lVar2 = (longdouble)(*(code *)param_1[5])(param_1,param_2,local_10,fVar4);\n      lVar3 = (longdouble)(*(code *)param_1[5])(param_1,param_3,local_10);\n      fVar4 = (float)lVar3 - (float)((longdouble)param_5 * lVar2);\n      (*(code *)param_1[7])(param_1,param_3,local_10);\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "subtract_row"
+                    ],
+                    "calling_functions": [
+                        "subtract_row",
+                        "m_rref"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            },
+            {
+                "func_name": "m_rref",
+                "func_c_signature": "undefined4 m_rref(int *param_1,int *param_2)",
+                "decompiled_code": "undefined4 m_rref(int *param_1,int *param_2) {\n  float fVar1;\n  code *pcVar2;\n  undefined4 uVar3;\n  int iVar4;\n  longdouble lVar5;\n  int local_1c;\n  float local_18;\n  int local_14;\n  int local_10;\n  \n  if ((param_1 == (int *)0x0) || (param_2 == (int *)0x0)) {\n    uVar3 = 1;\n  }\n  else {\n    param_2[2] = 4;\n    (*(code *)param_2[8])(param_2,*param_1,param_1[1]);\n    for (local_10 = 0; local_10 < *param_1; local_10 = local_10 + 1) {\n      for (local_14 = 0; local_14 < param_1[1]; local_14 = local_14 + 1) {\n        pcVar2 = (code *)param_2[7];\n        iVar4 = (*(code *)param_1[4])(param_1,local_10,local_14);\n        (*pcVar2)(param_2,local_10,local_14,(float)iVar4);\n      }\n    }\n    local_18 = 1.0;\n    local_10 = 0;\n    for (local_14 = 0; (local_10 < *param_2 && (local_14 < param_2[1])); local_14 = local_14 + 1) {\n      if ((local_18 <= (float)_DAT_000174c8) && (DAT_000174c0 <= (double)local_18)) {\n        local_10 = local_10 + -1;\n      }\n      swap_nonzero_cell(param_2,local_10,local_14);\n      lVar5 = (longdouble)(*(code *)param_2[5])(param_2,local_10,local_14);\n      local_18 = (float)lVar5;\n      local_1c = local_14;\n      while (((local_1c < param_2[1] &&\n              (((float)_DAT_000174c8 < local_18 || ((double)local_18 < DAT_000174c0)))) &&\n             (((float)_DAT_000174c8 < local_18 - 1.0 || (local_18 - 1.0 < (float)DAT_000174c0))))) {\n        lVar5 = (longdouble)(*(code *)param_2[5])(param_2,local_10,local_1c);\n        (*(code *)param_2[7])(param_2,local_10,local_1c,(float)lVar5 / local_18);\n        local_1c = local_1c + 1;\n      }\n      local_1c = 0;\n      while ((local_1c < *param_2 &&\n             (((float)_DAT_000174c8 < local_18 || ((double)local_18 < DAT_000174c0))))) {\n        if (local_1c != local_10) {\n          lVar5 = (longdouble)(*(code *)param_2[5])(param_2,local_1c,local_14);\n          fVar1 = (float)lVar5;\n          if ((_DAT_000174c8 < (double)fVar1) || (fVar1 < (float)DAT_000174c0)) {\n            subtract_row(param_2,local_10,local_1c,local_14,fVar1);\n          }\n        }\n        local_1c = local_1c + 1;\n      }\n      local_10 = local_10 + 1;\n    }\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "m_rref",
+                        "swap_nonzero_cell",
+                        "subtract_row"
+                    ],
+                    "calling_functions": [
+                        "rref_matrix",
+                        "m_rref"
+                    ],
+                    "defined_in_file": "KPRCA_00055_decompiled.c"
+                }
+            }
+        ]
+    }
+}

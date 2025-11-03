@@ -1,0 +1,1081 @@
+{
+    "file": "CROMU_00008",
+    "decompiled_code": {
+        "command_handler.c": [
+            {
+                "func_name": "stringbeg",
+                "func_c_signature": "int stringbeg(byte *param_1,byte *param_2)",
+                "decompiled_code": "int stringbeg(byte *param_1,byte *param_2) {\n  int iVar1;\n  int iVar2;\n  int local_10;\n  \n  local_10 = 0;\n  while ((*param_1 != 0 && (iVar1 = isspace((uint)*param_1), iVar1 != 0))) {\n    param_1 = param_1 + 1;\n    local_10 = local_10 + 1;\n  }\n  while( true ) {\n    if (*param_1 == 0) {\n      return local_10;\n    }\n    if (*param_2 == 0) break;\n    iVar1 = tolower((uint)*param_1);\n    iVar2 = tolower((uint)*param_2);\n    if (iVar1 != iVar2) {\n      return -1;\n    }\n    param_1 = param_1 + 1;\n    param_2 = param_2 + 1;\n    local_10 = local_10 + 1;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "stringbeg",
+                        "isspace",
+                        "tolower"
+                    ],
+                    "calling_functions": [
+                        "stringbeg",
+                        "parse_command"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_user",
+                "func_c_signature": "void init_user(undefined4 *param_1)",
+                "decompiled_code": "void init_user(undefined4 *param_1) {\n  *param_1 = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_user"
+                    ],
+                    "calling_functions": [
+                        "init_user",
+                        "run_parser"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_command",
+                "func_c_signature": "undefined4 parse_command(int param_1,int *param_2)",
+                "decompiled_code": "undefined4 parse_command(int param_1,int *param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  int local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (*(int *)(&DAT_00017024 + local_10 * 0x2c) == 0) {\n      printf(\"Command not found.\\n\");\n      return 0xffffffff;\n    }\n    iVar1 = stringbeg(param_1,g_cmdTable + local_10 * 0x2c);\n    if (0 < iVar1) break;\n    local_10 = local_10 + 1;\n  }\n  if ((((&DAT_00017028)[local_10 * 0x2c] & 1) != 0) && (*param_2 == 0)) {\n    printf(\"Authentication required. Try login\\n\");\n    return 0xffffffff;\n  }\n  uVar2 = (**(code **)(&DAT_00017024 + local_10 * 0x2c))(param_1 + iVar1,param_2);\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_command",
+                        "printf",
+                        "stringbeg"
+                    ],
+                    "calling_functions": [
+                        "parse_command",
+                        "run_parser"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "command_insert",
+                "func_c_signature": "undefined4 command_insert(void)",
+                "decompiled_code": "undefined4 command_insert(void) {\n  undefined local_232 [129];\n  undefined local_1b1 [129];\n  undefined local_130 [129];\n  undefined local_af [129];\n  uint local_2e;\n  undefined2 local_2a;\n  int local_28;\n  int local_24;\n  undefined4 local_20;\n  \n  printf(\"First name: \");\n  local_20 = readLine(0,local_af,0x80);\n  sanitize_string(local_af);\n  printf(\"Last name: \");\n  local_20 = readLine(0,local_130,0x80);\n  sanitize_string(local_130);\n  printf(\"User name: \");\n  local_20 = readLine(0,local_1b1,0x80);\n  sanitize_string(local_1b1);\n  printf(\"Birthdate (mm/dd/yy hh:mm:ss): \");\n  local_20 = readLine(0,local_232,0x80);\n  local_24 = parse_date(local_232,&local_2e);\n  if (local_24 == 0) {\n    printf(\"Date parsing error.\\n\");\n  }\n  else {\n    printf(\"Date is: $d/$d/$d $d:$d:$d\\n\",local_2e >> 0x18,(uint)(byte)local_2a,\n           local_2a._1_1_ + 0x76c,local_2e & 0xff,local_2e >> 8 & 0xff,local_2e >> 0x10 & 0xff);\n    local_28 = db_add_record(local_1b1,local_af,local_130,local_2e,local_2a);\n    if (local_28 == -1) {\n      printf(\"Database full.\\n\");\n    }\n    else {\n      printf(\"Data added, record $d\\n\",local_28);\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [
+                    "Birthdate"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "command_insert",
+                        "printf",
+                        "readLine",
+                        "sanitize_string",
+                        "Birthdate",
+                        "parse_date",
+                        "db_add_record"
+                    ],
+                    "calling_functions": [
+                        "command_insert"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "command_remove",
+                "func_c_signature": "undefined4 command_remove(void)",
+                "decompiled_code": "undefined4 command_remove(void) {\n  int iVar1;\n  char local_95 [129];\n  int local_14;\n  undefined4 local_10;\n  \n  printf(\"Enter record number to remove: \");\n  local_10 = readLine(0,local_95,0x80);\n  local_14 = atoi(local_95);\n  iVar1 = db_remove_record(local_14);\n  if (iVar1 == 0) {\n    printf(\"Record not found.\\n\");\n  }\n  else {\n    printf(\"Record $d removed.\\n\",local_14);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "command_remove",
+                        "printf",
+                        "readLine",
+                        "atoi",
+                        "db_remove_record"
+                    ],
+                    "calling_functions": [
+                        "command_remove"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "command_update",
+                "func_c_signature": "undefined4 command_update(void)",
+                "decompiled_code": "undefined4 command_update(void) {\n  char local_23a [129];\n  undefined local_1b9 [129];\n  undefined local_138 [129];\n  undefined local_b7 [129];\n  uint local_36;\n  undefined2 local_32;\n  int local_30;\n  int local_2c;\n  int local_28;\n  int local_24;\n  undefined4 local_20;\n  \n  printf(\"Enter record number to update: \");\n  local_20 = readLine(0,local_23a,0x80);\n  local_24 = atoi(local_23a);\n  local_28 = db_search_index(local_24);\n  if (local_28 == 0) {\n    printf(\"Record not found.\\n\");\n  }\n  else {\n    printf(\"Update first name ($s): \",local_28 + 4);\n    local_20 = readLine(0,local_b7,0x80);\n    sanitize_string(local_b7);\n    printf(\"Update last name ($s): \",local_28 + 0x85);\n    local_20 = readLine(0,local_138,0x80);\n    sanitize_string(local_138);\n    printf(\"Update user name ($s): \",local_28 + 0x106);\n    local_20 = readLine(0,local_1b9,0x80);\n    sanitize_string(local_1b9);\n    printf(\"Update birthdate ($d/$d/$d $d:$d:$d): \",(uint)*(byte *)(local_28 + 0x18a),\n           (uint)*(byte *)(local_28 + 0x18b),*(byte *)(local_28 + 0x18c) + 0x76c,\n           (uint)*(byte *)(local_28 + 0x187),(uint)*(byte *)(local_28 + 0x188),\n           (uint)*(byte *)(local_28 + 0x189));\n    local_20 = readLine(0,local_23a,0x80);\n    local_2c = parse_date(local_23a,&local_36);\n    if (local_2c == 0) {\n      printf(\"Date parsing error.\\n\");\n    }\n    else {\n      printf(\"Date is: $d/$d/$d $d:$d:$d\\n\",local_36 >> 0x18,(uint)(byte)local_32,\n             local_32._1_1_ + 0x76c,local_36 & 0xff,local_36 >> 8 & 0xff,local_36 >> 0x10 & 0xff);\n      local_30 = db_update_record(local_24,local_1b9,local_b7,local_138,local_36,local_32);\n      if (local_30 == 0) {\n        printf(\"Record update failed.\\n\");\n      }\n      else {\n        printf(\"Record $d updated.\\n\",local_24);\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [
+                    "name",
+                    "birthdate"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "command_update",
+                        "printf",
+                        "readLine",
+                        "atoi",
+                        "db_search_index",
+                        "name",
+                        "sanitize_string",
+                        "birthdate",
+                        "parse_date",
+                        "db_update_record"
+                    ],
+                    "calling_functions": [
+                        "command_update"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "command_print",
+                "func_c_signature": "undefined4 command_print(void)",
+                "decompiled_code": "undefined4 command_print(void) {\n  int iVar1;\n  undefined4 uVar2;\n  uint uVar3;\n  char local_99 [129];\n  int local_18;\n  undefined4 local_14;\n  uint local_10;\n  \n  printf(\"Enter record number to print (or \\\"all\\\" for all records): \");\n  local_14 = readLine(0,local_99,0x80);\n  iVar1 = strcmp(local_99,\"all\");\n  if (iVar1 == 0) {\n    uVar2 = db_get_record_count();\n    printf(\"Printing all $d records.\\n\",uVar2);\n    local_10 = 0;\n    while ((uVar3 = db_get_record_count(), local_10 < uVar3 &&\n           (local_18 = db_search_index(local_10), local_18 != 0))) {\n      print_record_helper(local_18);\n      local_10 = local_10 + 1;\n    }\n  }\n  else {\n    local_10 = atoi(local_99);\n    local_18 = db_search_index(local_10);\n    if (local_18 == 0) {\n      printf(\"Record not found.\\n\");\n    }\n    else {\n      print_record_helper(local_18);\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [
+                    "print"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "command_print",
+                        "printf",
+                        "print",
+                        "readLine",
+                        "strcmp",
+                        "db_get_record_count",
+                        "db_search_index",
+                        "print_record_helper",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "command_print"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "command_find",
+                "func_c_signature": "undefined4 command_find(void)",
+                "decompiled_code": "undefined4 command_find(void) {\n  int iVar1;\n  __jmp_buf_tag *__env;\n  undefined local_91 [129];\n  undefined4 local_10;\n  \n  iVar1 = db_get_record_count();\n  if (iVar1 == 0) {\n    printf(\"Database empty. No records to find.\\n\");\n  }\n  else {\n    printf(\n          \"Enter search express (firstname or fn, lastname or ln, username or un, birthdate or bd, operators ==, !=, >, <, AND and OR):\\n\"\n          );\n    local_10 = readLine(0,local_91,0x80);\n    __env = (__jmp_buf_tag *)get_next_exception_frame();\n    iVar1 = setjmp(__env);\n    if (iVar1 == 3) {\n      printf(\"Parser overflow\\n\");\n    }\n    else if (iVar1 < 4) {\n      if (iVar1 == 2) {\n        printf(\"Syntax error\\n\");\n      }\n      else if (iVar1 < 3) {\n        if (iVar1 == 0) {\n          parse_search_expression(local_91);\n        }\n        else if (iVar1 == 1) {\n          printf(\"Invalid token\\n\");\n        }\n      }\n    }\n    pop_exception_frame();\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [
+                    "express"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "command_find",
+                        "db_get_record_count",
+                        "printf",
+                        "express",
+                        "readLine",
+                        "get_next_exception_frame",
+                        "setjmp",
+                        "parse_search_expression",
+                        "pop_exception_frame"
+                    ],
+                    "calling_functions": [
+                        "command_find"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "command_login",
+                "func_c_signature": "undefined4 command_login(undefined4 param_1,int *param_2)",
+                "decompiled_code": "undefined4 command_login(undefined4 param_1,int *param_2) {\n  if (*param_2 == 1) {\n    printf(\"You are already logged in.\\n\");\n  }\n  else {\n    *param_2 = 1;\n    printf(\"You logged in.\\n\");\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "command_login",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "command_login"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "command_logout",
+                "func_c_signature": "undefined4 command_logout(undefined4 param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 command_logout(undefined4 param_1,undefined4 *param_2) {\n  *param_2 = 0;\n  printf(\"You logged out.\\n\");\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "command_logout",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "command_logout"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "command_exit",
+                "func_c_signature": "undefined4 command_exit(void)",
+                "decompiled_code": "undefined4 command_exit(void) {\n  undefined4 uVar1;\n  \n  printf(\"Disconnecting.\\n\");\n  uVar1 = 0;\n  _terminate();\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "command_exit",
+                        "printf",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "command_exit"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            }
+        ],
+        "database.c": [
+            {
+                "func_name": "init_database",
+                "func_c_signature": "void init_database(void)",
+                "decompiled_code": "void init_database(void) {\n  g_recordCount = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_database"
+                    ],
+                    "calling_functions": [
+                        "init_database",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "db_add_record",
+                "func_c_signature": "uint db_add_record(char *param_1,char *param_2,char *param_3)",
+                "decompiled_code": "uint db_add_record(char *param_1,char *param_2,char *param_3) {\n  uint uVar1;\n  \n  uVar1 = g_recordCount;\n  if (g_recordCount < 0x40) {\n    *(uint *)(g_ddapDatabase + g_recordCount * 400) = g_recordCount;\n    strncpy(g_ddapDatabase + g_recordCount * 400 + 4,param_2,0x80);\n    strncpy(g_ddapDatabase + g_recordCount * 400 + 0x85,param_3,0x80);\n    strncpy(g_ddapDatabase + g_recordCount * 400 + 0x106,param_1,0x80);\n    memcpy(g_ddapDatabase + g_recordCount * 400 + 0x187,&stack0x00000010,6);\n    g_recordCount = g_recordCount + 1;\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "db_add_record",
+                        "strncpy",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "command_insert",
+                        "db_add_record"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "db_update_record",
+                "func_c_signature": "bool db_update_record(uint param_1,char *param_2,char *param_3,char *param_4)",
+                "decompiled_code": "bool db_update_record(uint param_1,char *param_2,char *param_3,char *param_4) {\n  bool bVar1;\n  \n  bVar1 = param_1 < g_recordCount;\n  if (bVar1) {\n    strncpy(g_ddapDatabase + param_1 * 400 + 4,param_3,0x80);\n    strncpy(g_ddapDatabase + param_1 * 400 + 0x85,param_4,0x80);\n    strncpy(g_ddapDatabase + param_1 * 400 + 0x106,param_2,0x80);\n    memcpy(g_ddapDatabase + param_1 * 400 + 0x187,&stack0x00000014,6);\n  }\n  return bVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "db_update_record",
+                        "strncpy",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "command_update",
+                        "db_update_record"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "db_remove_record",
+                "func_c_signature": "undefined4 db_remove_record(uint param_1)",
+                "decompiled_code": "undefined4 db_remove_record(uint param_1) {\n  undefined4 uVar1;\n  uint local_10;\n  \n  if (param_1 < g_recordCount) {\n    if (g_recordCount == 0) {\n      uVar1 = 0;\n    }\n    else {\n      g_recordCount = g_recordCount - 1;\n      for (local_10 = param_1; local_10 < g_recordCount; local_10 = local_10 + 1) {\n        *(int *)(g_ddapDatabase + local_10 * 400) =\n             *(int *)(g_ddapDatabase + (local_10 + 1) * 400) + -1;\n        strcpy(g_ddapDatabase + local_10 * 400 + 4,g_ddapDatabase + (local_10 + 1) * 400 + 4);\n        strcpy(g_ddapDatabase + local_10 * 400 + 0x85,g_ddapDatabase + (local_10 + 1) * 400 + 0x85);\n        strcpy(g_ddapDatabase + local_10 * 400 + 0x106,g_ddapDatabase + (local_10 + 1) * 400 + 0x106\n              );\n        memcpy(g_ddapDatabase + local_10 * 400 + 0x187,g_ddapDatabase + (local_10 + 1) * 400 + 0x187\n               ,6);\n      }\n      uVar1 = 1;\n    }\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "db_remove_record",
+                        "strcpy",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "command_remove",
+                        "db_remove_record"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "db_get_record_count",
+                "func_c_signature": "undefined4 db_get_record_count(void)",
+                "decompiled_code": "undefined4 db_get_record_count(void) {\n  return g_recordCount;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "db_get_record_count"
+                    ],
+                    "calling_functions": [
+                        "command_print",
+                        "command_find",
+                        "db_get_record_count",
+                        "do_date_search",
+                        "do_string_search"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "db_search_first_name",
+                "func_c_signature": "undefined1 * db_search_first_name(char *param_1)",
+                "decompiled_code": "undefined1 * db_search_first_name(char *param_1) {\n  int iVar1;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (g_recordCount <= local_10) {\n      return (undefined1 *)0x0;\n    }\n    iVar1 = strcmp(param_1,g_ddapDatabase + local_10 * 400 + 4);\n    if (iVar1 == 0) break;\n    local_10 = local_10 + 1;\n  }\n  return g_ddapDatabase + local_10 * 400;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "db_search_first_name",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "db_search_first_name"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "db_search_last_name",
+                "func_c_signature": "undefined1 * db_search_last_name(char *param_1)",
+                "decompiled_code": "undefined1 * db_search_last_name(char *param_1) {\n  int iVar1;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (g_recordCount <= local_10) {\n      return (undefined1 *)0x0;\n    }\n    iVar1 = strcmp(param_1,g_ddapDatabase + local_10 * 400 + 0x85);\n    if (iVar1 == 0) break;\n    local_10 = local_10 + 1;\n  }\n  return g_ddapDatabase + local_10 * 400;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "db_search_last_name",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "db_search_last_name"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "db_search_user_name",
+                "func_c_signature": "undefined1 * db_search_user_name(char *param_1)",
+                "decompiled_code": "undefined1 * db_search_user_name(char *param_1) {\n  int iVar1;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (g_recordCount <= local_10) {\n      return (undefined1 *)0x0;\n    }\n    iVar1 = strcmp(param_1,g_ddapDatabase + local_10 * 400 + 0x106);\n    if (iVar1 == 0) break;\n    local_10 = local_10 + 1;\n  }\n  return g_ddapDatabase + local_10 * 400;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "db_search_user_name",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "db_search_user_name"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "db_search_birth_date",
+                "func_c_signature": "undefined1 * db_search_birth_date(undefined4 param_1,undefined2 param_2)",
+                "decompiled_code": "undefined1 * db_search_birth_date(undefined4 param_1,undefined2 param_2) {\n  int iVar1;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (g_recordCount <= local_10) {\n      return (undefined1 *)0x0;\n    }\n    iVar1 = date_compare(*(undefined4 *)(g_ddapDatabase + local_10 * 400 + 0x187),\n                         *(undefined2 *)(g_ddapDatabase + local_10 * 400 + 0x18b),param_1,param_2);\n    if (iVar1 == 0) break;\n    local_10 = local_10 + 1;\n  }\n  return g_ddapDatabase + local_10 * 400;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "db_search_birth_date",
+                        "date_compare"
+                    ],
+                    "calling_functions": [
+                        "db_search_birth_date"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "db_search_index",
+                "func_c_signature": "undefined1 * db_search_index(uint param_1)",
+                "decompiled_code": "undefined1 * db_search_index(uint param_1) {\n  undefined1 *puVar1;\n  \n  if (param_1 < g_recordCount) {\n    puVar1 = g_ddapDatabase + param_1 * 400;\n  }\n  else {\n    puVar1 = (undefined1 *)0x0;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "db_search_index"
+                    ],
+                    "calling_functions": [
+                        "command_update",
+                        "command_print",
+                        "db_search_index",
+                        "do_date_search",
+                        "do_string_search",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_record_helper",
+                "func_c_signature": "void print_record_helper(undefined4 *param_1)",
+                "decompiled_code": "void print_record_helper(undefined4 *param_1) {\n  if (param_1 != (undefined4 *)0x0) {\n    printf(\"Record [$d]\\n\",*param_1);\n    printf(\"First name: $s\\n\",param_1 + 1);\n    printf(\"Last name: $s\\n\",(int)param_1 + 0x85);\n    printf(\"User name: $s\\n\",(int)param_1 + 0x106);\n    printf(\"Birthdate: $d/$d/$d $d:$d:$d\\n\",(uint)*(byte *)((int)param_1 + 0x18a),\n           (uint)*(byte *)((int)param_1 + 0x18b),*(byte *)(param_1 + 99) + 0x76c,\n           (uint)*(byte *)((int)param_1 + 0x187),(uint)*(byte *)(param_1 + 0x62),\n           (uint)*(byte *)((int)param_1 + 0x189));\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_record_helper",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "command_print",
+                        "print_record_helper",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            }
+        ],
+        "date.c": [
+            {
+                "func_name": "date_compare",
+                "func_c_signature": "undefined4 date_compare(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)",
+                "decompiled_code": "undefined4 date_compare(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4) {\n  undefined4 uVar1;\n  \n  if (param_2._1_1_ < param_4._1_1_) {\n    uVar1 = 0xffffffff;\n  }\n  else if (param_4._1_1_ < param_2._1_1_) {\n    uVar1 = 1;\n  }\n  else if (param_1._3_1_ < param_3._3_1_) {\n    uVar1 = 0xffffffff;\n  }\n  else if (param_3._3_1_ < param_1._3_1_) {\n    uVar1 = 1;\n  }\n  else if ((byte)param_2 < (byte)param_4) {\n    uVar1 = 0xffffffff;\n  }\n  else if ((byte)param_4 < (byte)param_2) {\n    uVar1 = 1;\n  }\n  else if ((byte)param_1 < (byte)param_3) {\n    uVar1 = 0xffffffff;\n  }\n  else if ((byte)param_3 < (byte)param_1) {\n    uVar1 = 1;\n  }\n  else if (param_1._1_1_ < param_3._1_1_) {\n    uVar1 = 0xffffffff;\n  }\n  else if (param_3._1_1_ < param_1._1_1_) {\n    uVar1 = 1;\n  }\n  else if (param_1._2_1_ < param_3._2_1_) {\n    uVar1 = 0xffffffff;\n  }\n  else if (param_3._2_1_ < param_1._2_1_) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "date_compare"
+                    ],
+                    "calling_functions": [
+                        "db_search_birth_date",
+                        "date_compare",
+                        "do_date_search"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_date",
+                "func_c_signature": "int parse_date(char *param_1,void *param_2)",
+                "decompiled_code": "int parse_date(char *param_1,void *param_2) {\n  char *pcVar1;\n  int iVar2;\n  byte local_16;\n  byte local_15;\n  byte local_14;\n  byte local_13;\n  byte local_12;\n  byte local_11;\n  char *local_10;\n  \n  local_10 = param_1;\n  if (param_1 == (char *)0x0) {\n    iVar2 = 0;\n  }\n  else {\n    while (iVar2 = isspace((int)*param_1), iVar2 != 0) {\n      param_1 = param_1 + 1;\n    }\n    iVar2 = isdigit((int)*param_1);\n    if (iVar2 == 0) {\n      iVar2 = 0;\n    }\n    else {\n      local_13 = *param_1 - 0x30;\n      pcVar1 = param_1 + 1;\n      iVar2 = isdigit((int)*pcVar1);\n      if (iVar2 == 0) {\n        param_1 = pcVar1;\n        if (*pcVar1 != '/') {\n          return 0;\n        }\n      }\n      else {\n        local_13 = (*pcVar1 + local_13 * '\\n') - 0x30;\n        param_1 = param_1 + 2;\n        if (*param_1 != '/') {\n          return 0;\n        }\n      }\n      if ((local_13 == 0) || (0xc < local_13)) {\n        iVar2 = 0;\n      }\n      else {\n        iVar2 = isdigit((int)param_1[1]);\n        if (iVar2 == 0) {\n          iVar2 = 0;\n        }\n        else {\n          local_12 = param_1[1] - 0x30;\n          pcVar1 = param_1 + 2;\n          iVar2 = isdigit((int)*pcVar1);\n          if (iVar2 == 0) {\n            param_1 = pcVar1;\n            if (*pcVar1 != '/') {\n              return 0;\n            }\n          }\n          else {\n            local_12 = (*pcVar1 + local_12 * '\\n') - 0x30;\n            param_1 = param_1 + 3;\n            if (*param_1 != '/') {\n              return 0;\n            }\n          }\n          if ((local_12 == 0) || (0x1f < local_12)) {\n            iVar2 = 0;\n          }\n          else {\n            iVar2 = isdigit((int)param_1[1]);\n            if (iVar2 == 0) {\n              iVar2 = 0;\n            }\n            else {\n              local_11 = param_1[1] - 0x30;\n              pcVar1 = param_1 + 2;\n              iVar2 = isdigit((int)*pcVar1);\n              if (iVar2 == 0) {\n                iVar2 = isspace((int)*pcVar1);\n                param_1 = pcVar1;\n                if (iVar2 == 0) {\n                  return 0;\n                }\n              }\n              else {\n                local_11 = (*pcVar1 + local_11 * '\\n') - 0x30;\n                param_1 = param_1 + 3;\n              }\n              if (local_11 < 0x1c) {\n                local_11 = local_11 + 100;\n              }\n              while (iVar2 = isspace((int)*param_1), iVar2 != 0) {\n                param_1 = param_1 + 1;\n              }\n              iVar2 = isdigit((int)*param_1);\n              if (iVar2 == 0) {\n                iVar2 = 0;\n              }\n              else {\n                local_16 = *param_1 - 0x30;\n                pcVar1 = param_1 + 1;\n                iVar2 = isdigit((int)*pcVar1);\n                if (iVar2 == 0) {\n                  param_1 = pcVar1;\n                  if (*pcVar1 != ':') {\n                    return 0;\n                  }\n                }\n                else {\n                  local_16 = (*pcVar1 + local_16 * '\\n') - 0x30;\n                  param_1 = param_1 + 2;\n                  if (*param_1 != ':') {\n                    return 0;\n                  }\n                }\n                if (local_16 < 0x18) {\n                  iVar2 = isdigit((int)param_1[1]);\n                  if (iVar2 == 0) {\n                    iVar2 = 0;\n                  }\n                  else {\n                    local_15 = param_1[1] - 0x30;\n                    pcVar1 = param_1 + 2;\n                    iVar2 = isdigit((int)*pcVar1);\n                    if (iVar2 == 0) {\n                      param_1 = pcVar1;\n                      if (*pcVar1 != ':') {\n                        return 0;\n                      }\n                    }\n                    else {\n                      local_15 = (*pcVar1 + local_15 * '\\n') - 0x30;\n                      param_1 = param_1 + 3;\n                      if (*param_1 != ':') {\n                        return 0;\n                      }\n                    }\n                    if (local_15 < 0x3c) {\n                      iVar2 = isdigit((int)param_1[1]);\n                      if (iVar2 == 0) {\n                        iVar2 = 0;\n                      }\n                      else {\n                        local_14 = param_1[1] - 0x30;\n                        pcVar1 = param_1 + 2;\n                        iVar2 = isdigit((int)*pcVar1);\n                        if (iVar2 != 0) {\n                          local_14 = (*pcVar1 + local_14 * '\\n') - 0x30;\n                          pcVar1 = param_1 + 3;\n                        }\n                        param_1 = pcVar1;\n                        if (local_14 < 0x3c) {\n                          memcpy(param_2,&local_16,6);\n                          iVar2 = (int)param_1 - (int)local_10;\n                        }\n                        else {\n                          iVar2 = 0;\n                        }\n                      }\n                    }\n                    else {\n                      iVar2 = 0;\n                    }\n                  }\n                }\n                else {\n                  iVar2 = 0;\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_date",
+                        "isspace",
+                        "isdigit",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "command_insert",
+                        "command_update",
+                        "parse_date",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            }
+        ],
+        "exception_handler.c": [
+            {
+                "func_name": "init_exception_handler",
+                "func_c_signature": "void init_exception_handler(void)",
+                "decompiled_code": "void init_exception_handler(void) {\n  uint local_8;\n  \n  g_exceptionFrameCur = 0;\n  for (local_8 = 0; local_8 < 0x80000; local_8 = local_8 + 1) {\n    g_memoryGlobal[local_8 + 0x640] = 0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_exception_handler"
+                    ],
+                    "calling_functions": [
+                        "init_exception_handler",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_next_exception_frame",
+                "func_c_signature": "undefined1 * get_next_exception_frame(void)",
+                "decompiled_code": "undefined1 * get_next_exception_frame(void) {\n  undefined1 *local_8;\n  \n  if (g_exceptionFrameCur < 5) {\n    local_8 = g_memoryGlobal + (g_exceptionFrameCur + 0x2d) * 0x20;\n    g_exceptionFrameCur = g_exceptionFrameCur + 1;\n  }\n  else {\n    local_8 = (undefined1 *)0x0;\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_next_exception_frame"
+                    ],
+                    "calling_functions": [
+                        "command_find",
+                        "get_next_exception_frame",
+                        "test"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_current_exception_frame",
+                "func_c_signature": "undefined1 * get_current_exception_frame(void)",
+                "decompiled_code": "undefined1 * get_current_exception_frame(void) {\n  undefined1 *local_8;\n  \n  if (g_exceptionFrameCur == 0) {\n    local_8 = (undefined1 *)0x0;\n  }\n  else {\n    local_8 = g_memoryGlobal + (g_exceptionFrameCur + 0x2c) * 0x20;\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_current_exception_frame"
+                    ],
+                    "calling_functions": [
+                        "get_current_exception_frame",
+                        "do_date_search",
+                        "do_string_search",
+                        "parse_search_expression",
+                        "test"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "pop_exception_frame",
+                "func_c_signature": "undefined1 * pop_exception_frame(void)",
+                "decompiled_code": "undefined1 * pop_exception_frame(void) {\n  undefined1 *local_8;\n  \n  if (g_exceptionFrameCur == 0) {\n    local_8 = (undefined1 *)0x0;\n  }\n  else {\n    g_exceptionFrameCur = g_exceptionFrameCur - 1;\n    local_8 = g_memoryGlobal + (g_exceptionFrameCur + 0x2d) * 0x20;\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "pop_exception_frame"
+                    ],
+                    "calling_functions": [
+                        "command_find",
+                        "pop_exception_frame",
+                        "test"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            }
+        ],
+        "expression_parser.c": [
+            {
+                "func_name": "peek_parser_stack",
+                "func_c_signature": "undefined4 * peek_parser_stack(undefined4 *param_1)",
+                "decompiled_code": "undefined4 * peek_parser_stack(undefined4 *param_1) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 *puVar3;\n  undefined4 local_58 [18];\n  \n  if (g_parseStackSize == 0) {\n    local_58[0] = 2;\n    puVar2 = local_58;\n    puVar3 = param_1;\n    for (iVar1 = 0x12; iVar1 != 0; iVar1 = iVar1 + -1) {\n      *puVar3 = *puVar2;\n      puVar2 = puVar2 + 1;\n      puVar3 = puVar3 + 1;\n    }\n  }\n  else {\n    puVar2 = (undefined4 *)(g_memoryGlobal + (g_parseStackSize - 1) * 0x48);\n    puVar3 = param_1;\n    for (iVar1 = 0x12; iVar1 != 0; iVar1 = iVar1 + -1) {\n      *puVar3 = *puVar2;\n      puVar2 = puVar2 + 1;\n      puVar3 = puVar3 + 1;\n    }\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "peek_parser_stack"
+                    ],
+                    "calling_functions": [
+                        "peek_parser_stack",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "pop_parser_stack",
+                "func_c_signature": "undefined4 * pop_parser_stack(undefined4 *param_1)",
+                "decompiled_code": "undefined4 * pop_parser_stack(undefined4 *param_1) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 *puVar3;\n  undefined4 local_58 [18];\n  \n  if (g_parseStackSize == 0) {\n    local_58[0] = 2;\n    puVar2 = local_58;\n    puVar3 = param_1;\n    for (iVar1 = 0x12; iVar1 != 0; iVar1 = iVar1 + -1) {\n      *puVar3 = *puVar2;\n      puVar2 = puVar2 + 1;\n      puVar3 = puVar3 + 1;\n    }\n  }\n  else {\n    g_parseStackSize = g_parseStackSize - 1;\n    puVar2 = (undefined4 *)(g_memoryGlobal + (uint)g_parseStackSize * 0x48);\n    puVar3 = param_1;\n    for (iVar1 = 0x12; iVar1 != 0; iVar1 = iVar1 + -1) {\n      *puVar3 = *puVar2;\n      puVar2 = puVar2 + 1;\n      puVar3 = puVar3 + 1;\n    }\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "pop_parser_stack"
+                    ],
+                    "calling_functions": [
+                        "pop_parser_stack",
+                        "do_reduce_stack",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "push_parser_stack",
+                "func_c_signature": "void push_parser_stack(void)",
+                "decompiled_code": "void push_parser_stack(void) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 *puVar3;\n  \n  puVar2 = (undefined4 *)&stack0x00000004;\n  puVar3 = (undefined4 *)(g_memoryGlobal + (uint)g_parseStackSize * 0x48);\n  for (iVar1 = 0x12; iVar1 != 0; iVar1 = iVar1 + -1) {\n    *puVar3 = *puVar2;\n    puVar2 = puVar2 + 1;\n    puVar3 = puVar3 + 1;\n  }\n  g_parseStackSize = g_parseStackSize + 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "push_parser_stack"
+                    ],
+                    "calling_functions": [
+                        "push_parser_stack",
+                        "do_date_search",
+                        "do_string_search",
+                        "do_result_search",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "strbeg",
+                "func_c_signature": "undefined4 strbeg(int param_1,int param_2)",
+                "decompiled_code": "undefined4 strbeg(int param_1,int param_2) {\n  int local_8;\n  \n  local_8 = 0;\n  while( true ) {\n    if ((*(char *)(local_8 + param_1) == '\\0') && (*(char *)(local_8 + param_2) == '\\0')) {\n      return 0;\n    }\n    if (*(char *)(local_8 + param_2) == '\\0') {\n      return 0;\n    }\n    if (*(char *)(local_8 + param_1) == '\\0') break;\n    if (*(char *)(local_8 + param_1) != *(char *)(local_8 + param_2)) {\n      return 1;\n    }\n    local_8 = local_8 + 1;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strbeg"
+                    ],
+                    "calling_functions": [
+                        "strbeg",
+                        "parse_get_symbol"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_get_symbol",
+                "func_c_signature": "undefined4 parse_get_symbol(int param_1,int *param_2)",
+                "decompiled_code": "undefined4 parse_get_symbol(int param_1,int *param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  size_t sVar3;\n  int local_14;\n  int local_10;\n  \n  local_14 = 0;\n  while (iVar1 = isspace((int)*(char *)(local_14 + param_1)), iVar1 != 0) {\n    local_14 = local_14 + 1;\n  }\n  if (*(char *)(local_14 + param_1) == '\\0') {\n    *param_2 = local_14;\n    uVar2 = 0xd;\n  }\n  else {\n    local_10 = 0;\n    while (*(int *)(g_parseTable + local_10 * 8 + 4) != 0xc) {\n      iVar1 = strbeg(local_14 + param_1,*(undefined4 *)(g_parseTable + local_10 * 8));\n      if (iVar1 == 0) {\n        sVar3 = strlen(*(char **)(g_parseTable + local_10 * 8));\n        *param_2 = local_14 + sVar3;\n        return *(undefined4 *)(g_parseTable + local_10 * 8 + 4);\n      }\n      local_10 = local_10 + 1;\n    }\n    *param_2 = local_14;\n    uVar2 = 0xc;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_get_symbol",
+                        "isspace",
+                        "strbeg",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "parse_get_symbol",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_symbol_close_paran",
+                "func_c_signature": "bool is_symbol_close_paran(int param_1)",
+                "decompiled_code": "bool is_symbol_close_paran(int param_1) {\n  return param_1 == 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_symbol_close_paran"
+                    ],
+                    "calling_functions": [
+                        "is_symbol_close_paran",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_symbol_open_paran",
+                "func_c_signature": "bool is_symbol_open_paran(int param_1)",
+                "decompiled_code": "bool is_symbol_open_paran(int param_1) {\n  return param_1 == 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_symbol_open_paran"
+                    ],
+                    "calling_functions": [
+                        "is_symbol_open_paran",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_symbol_result_operator",
+                "func_c_signature": "bool is_symbol_result_operator(int param_1)",
+                "decompiled_code": "bool is_symbol_result_operator(int param_1) {\n  return param_1 - 6U < 2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_symbol_result_operator"
+                    ],
+                    "calling_functions": [
+                        "is_symbol_result_operator",
+                        "do_reduce_stack",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_symbol_db_operator",
+                "func_c_signature": "bool is_symbol_db_operator(int param_1)",
+                "decompiled_code": "bool is_symbol_db_operator(int param_1) {\n  return param_1 - 2U < 4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_symbol_db_operator"
+                    ],
+                    "calling_functions": [
+                        "is_symbol_db_operator",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_symbol_element",
+                "func_c_signature": "bool is_symbol_element(int param_1)",
+                "decompiled_code": "bool is_symbol_element(int param_1) {\n  return param_1 - 8U < 4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_symbol_element"
+                    ],
+                    "calling_functions": [
+                        "is_symbol_element",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_symbol_birthdate",
+                "func_c_signature": "bool is_symbol_birthdate(int param_1)",
+                "decompiled_code": "bool is_symbol_birthdate(int param_1) {\n  return param_1 == 0xb;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_symbol_birthdate"
+                    ],
+                    "calling_functions": [
+                        "is_symbol_birthdate"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_date_search",
+                "func_c_signature": "void do_date_search(uint param_1)",
+                "decompiled_code": "void do_date_search(uint param_1) {\n  byte bVar1;\n  __jmp_buf_tag *__env;\n  int iVar2;\n  undefined4 *puVar3;\n  undefined4 *puVar4;\n  byte bVar5;\n  undefined4 auStackY_cc [15];\n  undefined4 uStackY_90;\n  undefined4 local_78;\n  undefined auStack_74 [64];\n  byte local_34;\n  int local_30;\n  undefined4 local_2c;\n  uint local_28;\n  uint local_24;\n  uint local_20;\n  \n  bVar5 = 0;\n  local_28 = db_get_record_count();\n  local_78 = 1;\n  local_34 = 0;\n  local_20 = 0;\n  do {\n    if (local_28 <= local_20) {\n      puVar3 = &local_78;\n      puVar4 = auStackY_cc;\n      for (iVar2 = 0x12; iVar2 != 0; iVar2 = iVar2 + -1) {\n        *puVar4 = *puVar3;\n        puVar3 = puVar3 + (uint)bVar5 * -2 + 1;\n        puVar4 = puVar4 + (uint)bVar5 * -2 + 1;\n      }\n      push_parser_stack();\n      return;\n    }\n    uStackY_90 = 0x12f1c;\n    local_2c = db_search_index();\n    uStackY_90 = 0x12f54;\n    local_30 = date_compare();\n    bVar1 = local_34;\n    local_24 = 0;\n    if (param_1 == 5) {\n      if (local_30 == 1) {\n        local_24 = 1;\n      }\n      local_24 = (uint)(local_30 == 1);\n    }\n    else {\n      if (5 < param_1) {\nLAB_00012fc3:\n        __env = (__jmp_buf_tag *)get_current_exception_frame();\n                    /* WARNING: Subroutine does not return */\n        uStackY_90 = 0x12fd3;\n        longjmp(__env,1);\n      }\n      if (param_1 == 4) {\n        if (local_30 == -1) {\n          local_24 = 1;\n        }\n        local_24 = (uint)(local_30 == -1);\n      }\n      else {\n        if (4 < param_1) goto LAB_00012fc3;\n        if (param_1 == 2) {\n          if (local_30 == 0) {\n            local_24 = 1;\n          }\n          local_24 = (uint)(local_30 == 0);\n        }\n        else {\n          if (param_1 != 3) goto LAB_00012fc3;\n          if (local_30 != 0) {\n            local_24 = 1;\n          }\n        }\n      }\n    }\n    if (local_24 != 0) {\n      local_34 = local_34 + 1;\n      auStack_74[bVar1] = (char)local_20;\n    }\n    local_20 = local_20 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_date_search",
+                        "db_get_record_count",
+                        "push_parser_stack",
+                        "db_search_index",
+                        "date_compare",
+                        "get_current_exception_frame",
+                        "longjmp"
+                    ],
+                    "calling_functions": [
+                        "do_date_search",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_string_search",
+                "func_c_signature": "void do_string_search(uint param_1,uint param_2,char *param_3)",
+                "decompiled_code": "void do_string_search(uint param_1,uint param_2,char *param_3) {\n  byte bVar1;\n  __jmp_buf_tag *p_Var2;\n  int iVar3;\n  undefined4 *puVar4;\n  undefined4 *puVar5;\n  byte bVar6;\n  undefined4 auStackY_cc [15];\n  undefined4 uStackY_90;\n  undefined4 local_78;\n  undefined auStack_74 [64];\n  byte local_34;\n  int local_30;\n  uint local_2c;\n  int local_28;\n  int local_24;\n  uint local_20;\n  \n  bVar6 = 0;\n  local_2c = db_get_record_count();\n  local_78 = 1;\n  local_34 = 0;\n  local_20 = 0;\n  do {\n    if (local_2c <= local_20) {\n      puVar4 = &local_78;\n      puVar5 = auStackY_cc;\n      for (iVar3 = 0x12; iVar3 != 0; iVar3 = iVar3 + -1) {\n        *puVar5 = *puVar4;\n        puVar4 = puVar4 + (uint)bVar6 * -2 + 1;\n        puVar5 = puVar5 + (uint)bVar6 * -2 + 1;\n      }\n      push_parser_stack();\n      return;\n    }\n    uStackY_90 = 0x13070;\n    local_30 = db_search_index();\n    local_28 = 0;\n    if (param_1 == 10) {\n      uStackY_90 = 0x130ab;\n      local_24 = strcmp((char *)(local_30 + 0x106),param_3);\n    }\n    else {\n      if (10 < param_1) {\nLAB_000130e9:\n        p_Var2 = (__jmp_buf_tag *)get_current_exception_frame();\n                    /* WARNING: Subroutine does not return */\n        uStackY_90 = 0x130f9;\n        longjmp(p_Var2,1);\n      }\n      if (param_1 == 8) {\n        uStackY_90 = 0x130e1;\n        local_24 = strcmp((char *)(local_30 + 0x85),param_3);\n      }\n      else {\n        if (param_1 != 9) goto LAB_000130e9;\n        uStackY_90 = 0x130c5;\n        local_24 = strcmp((char *)(local_30 + 4),param_3);\n      }\n    }\n    bVar1 = local_34;\n    if (param_2 == 5) {\n      if (local_24 == 1) {\n        local_28 = 1;\n      }\n    }\n    else {\n      if (5 < param_2) {\nLAB_0001315b:\n        p_Var2 = (__jmp_buf_tag *)get_current_exception_frame();\n                    /* WARNING: Subroutine does not return */\n        uStackY_90 = 0x1316b;\n        longjmp(p_Var2,1);\n      }\n      if (param_2 == 4) {\n        if (local_24 == -1) {\n          local_28 = 1;\n        }\n      }\n      else {\n        if (4 < param_2) goto LAB_0001315b;\n        if (param_2 == 2) {\n          if (local_24 == 0) {\n            local_28 = 1;\n          }\n        }\n        else {\n          if (param_2 != 3) goto LAB_0001315b;\n          if (local_24 != 0) {\n            local_28 = 1;\n          }\n        }\n      }\n    }\n    if (local_28 != 0) {\n      local_34 = local_34 + 1;\n      auStack_74[bVar1] = (char)local_20;\n    }\n    local_20 = local_20 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_string_search",
+                        "db_get_record_count",
+                        "push_parser_stack",
+                        "db_search_index",
+                        "strcmp",
+                        "get_current_exception_frame",
+                        "longjmp"
+                    ],
+                    "calling_functions": [
+                        "do_string_search",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_result_search",
+                "func_c_signature": "undefined ** do_result_search(void)",
+                "decompiled_code": "undefined ** do_result_search(void) {\n  byte bVar1;\n  undefined **ppuVar2;\n  int iVar3;\n  undefined4 *puVar4;\n  undefined4 *puVar5;\n  byte param_11;\n  int param_12;\n  byte param_14;\n  undefined4 auStack_d8 [17];\n  undefined4 uStack_94;\n  undefined4 local_90;\n  char local_8c [64];\n  byte local_4c;\n  uint local_48;\n  uint local_44;\n  uint local_40;\n  uint local_3c;\n  uint local_38;\n  uint local_34;\n  int local_30;\n  uint local_2c;\n  int local_28;\n  uint local_24;\n  uint local_20;\n  uint local_1c;\n  uint local_18;\n  uint local_14;\n  \n  uStack_94 = 0x131d8;\n  ppuVar2 = &_GLOBAL_OFFSET_TABLE_;\n  if (param_12 == 6) {\n    local_44 = (uint)param_11;\n    local_48 = (uint)param_14;\n    local_90 = 1;\n    local_4c = 0;\n    for (local_14 = 0; local_14 < local_44; local_14 = local_14 + 1) {\n      for (local_18 = 0; bVar1 = local_4c, local_18 < local_48; local_18 = local_18 + 1) {\n        if ((&stack0x00000008)[local_14] == (&stack0x00000054)[local_18]) {\n          local_4c = local_4c + 1;\n          local_8c[bVar1] = (&stack0x00000008)[local_14];\n        }\n      }\n    }\n    puVar4 = &local_90;\n    puVar5 = auStack_d8;\n    for (iVar3 = 0x12; iVar3 != 0; iVar3 = iVar3 + -1) {\n      *puVar5 = *puVar4;\n      puVar4 = puVar4 + 1;\n      puVar5 = puVar5 + 1;\n    }\n    ppuVar2 = (undefined **)push_parser_stack();\n  }\n  else if (param_12 == 7) {\n    local_34 = (uint)param_11;\n    local_38 = (uint)param_14;\n    local_90 = 1;\n    local_4c = 0;\n    for (local_1c = 0; bVar1 = local_4c, local_1c < local_34; local_1c = local_1c + 1) {\n      local_40 = (uint)local_4c;\n      local_28 = 0;\n      for (local_24 = 0; local_24 < local_4c; local_24 = local_24 + 1) {\n        if ((&stack0x00000008)[local_1c] == local_8c[local_24]) {\n          local_28 = 1;\n          break;\n        }\n      }\n      if (local_28 == 0) {\n        local_4c = local_4c + 1;\n        local_8c[bVar1] = (&stack0x00000008)[local_1c];\n      }\n    }\n    for (local_20 = 0; bVar1 = local_4c, local_20 < local_38; local_20 = local_20 + 1) {\n      local_3c = (uint)local_4c;\n      local_30 = 0;\n      for (local_2c = 0; local_2c < local_4c; local_2c = local_2c + 1) {\n        if ((&stack0x00000054)[local_20] == local_8c[local_2c]) {\n          local_30 = 1;\n          break;\n        }\n      }\n      if (local_30 == 0) {\n        local_4c = local_4c + 1;\n        local_8c[bVar1] = (&stack0x00000054)[local_20];\n      }\n    }\n    puVar4 = &local_90;\n    puVar5 = auStack_d8;\n    for (iVar3 = 0x12; iVar3 != 0; iVar3 = iVar3 + -1) {\n      *puVar5 = *puVar4;\n      puVar4 = puVar4 + 1;\n      puVar5 = puVar5 + 1;\n    }\n    ppuVar2 = (undefined **)push_parser_stack();\n  }\n  return ppuVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_result_search",
+                        "push_parser_stack"
+                    ],
+                    "calling_functions": [
+                        "do_result_search",
+                        "do_reduce_stack"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_reduce_stack",
+                "func_c_signature": "void do_reduce_stack(void)",
+                "decompiled_code": "void do_reduce_stack(void) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 *puVar3;\n  undefined4 *puVar4;\n  byte bVar5;\n  undefined4 local_f4 [3];\n  undefined4 local_e8 [18];\n  undefined local_a0 [4];\n  undefined4 local_9c;\n  undefined4 local_58 [18];\n  \n  bVar5 = 0;\n  puVar2 = local_f4;\n  while( true ) {\n    if (((g_parseStackSize < 3) || (*(int *)(g_memoryGlobal + (g_parseStackSize - 1) * 0x48) != 1))\n       || (*(int *)(g_memoryGlobal + (g_parseStackSize - 2) * 0x48) != 0)) {\n      return;\n    }\n    *(undefined4 *)((int)puVar2 + -4) =\n         *(undefined4 *)(g_memoryGlobal + (g_parseStackSize - 2) * 0x48 + 4);\n    *(undefined4 *)((int)puVar2 + -8) = 0x134b5;\n    iVar1 = is_symbol_result_operator();\n    if (iVar1 == 0) {\n      return;\n    }\n    if (*(int *)(g_memoryGlobal + (g_parseStackSize - 3) * 0x48) != 1) break;\n    *(undefined4 **)((int)puVar2 + -4) = local_e8;\n    *(undefined4 *)((int)puVar2 + -8) = 0x134f2;\n    pop_parser_stack();\n    *(undefined **)((int)puVar2 + -8) = local_a0;\n    *(undefined4 *)((int)puVar2 + -0xc) = 0x134fe;\n    pop_parser_stack();\n    *(undefined4 **)((int)puVar2 + -0xc) = local_58;\n    *(undefined4 *)((int)puVar2 + -0x10) = 0x13507;\n    pop_parser_stack();\n    local_f4[0] = local_9c;\n    puVar3 = local_e8;\n    puVar4 = (undefined4 *)((int)puVar2 + -0x54);\n    for (iVar1 = 0x12; iVar1 != 0; iVar1 = iVar1 + -1) {\n      *puVar4 = *puVar3;\n      puVar3 = puVar3 + (uint)bVar5 * -2 + 1;\n      puVar4 = puVar4 + (uint)bVar5 * -2 + 1;\n    }\n    *(undefined4 *)((int)puVar2 + -0x58) = local_f4[0];\n    puVar3 = local_58;\n    puVar4 = (undefined4 *)((int)puVar2 + -0xa0);\n    for (iVar1 = 0x12; iVar1 != 0; iVar1 = iVar1 + -1) {\n      *puVar4 = *puVar3;\n      puVar3 = puVar3 + (uint)bVar5 * -2 + 1;\n      puVar4 = puVar4 + (uint)bVar5 * -2 + 1;\n    }\n    *(undefined4 *)((int)puVar2 + -0xa4) = 0x1354b;\n    do_result_search();\n    puVar2 = (undefined4 *)((int)puVar2 + -0xc);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_reduce_stack",
+                        "is_symbol_result_operator",
+                        "pop_parser_stack",
+                        "do_result_search"
+                    ],
+                    "calling_functions": [
+                        "do_reduce_stack",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_search_expression",
+                "func_c_signature": "void parse_search_expression(char *param_1)",
+                "decompiled_code": "void parse_search_expression(char *param_1) {\n  uint uVar1;\n  int iVar2;\n  undefined4 uVar3;\n  undefined *puVar4;\n  int *piVar5;\n  int *piVar6;\n  byte bVar7;\n  undefined auStack_15c [4];\n  int local_158;\n  int local_154;\n  int local_110;\n  int local_10c;\n  undefined4 local_8e;\n  undefined2 local_8a;\n  int local_88;\n  byte local_84 [64];\n  byte local_44;\n  int local_40;\n  uint local_3c;\n  int local_38;\n  int local_34;\n  undefined4 local_30;\n  uint local_2c;\n  uint local_28;\n  char *local_24;\n  int local_20;\n  \n  bVar7 = 0;\n  puVar4 = auStack_15c;\n  local_20 = 0;\n  local_24 = param_1;\n  g_parseStackSize = '\\0';\n  local_30 = 0xc;\n  do {\n    local_40 = 0;\n    *(int **)(puVar4 + -0xc) = &local_40;\n    *(char **)(puVar4 + -0x10) = local_24;\n    *(undefined4 *)(puVar4 + -0x14) = 0x135a8;\n    local_34 = parse_get_symbol();\n    local_24 = local_24 + local_40;\n    *(int *)(puVar4 + -0x10) = local_34;\n    *(undefined4 *)(puVar4 + -0x14) = 0x135bf;\n    iVar2 = is_symbol_db_operator();\n    if (iVar2 == 0) {\n      *(int *)(puVar4 + -0x10) = local_34;\n      *(undefined4 *)(puVar4 + -0x14) = 0x13745;\n      iVar2 = is_symbol_open_paran();\n      if (iVar2 == 0) {\n        *(int *)(puVar4 + -0x10) = local_34;\n        *(undefined4 *)(puVar4 + -0x14) = 0x137f7;\n        iVar2 = is_symbol_close_paran();\n        if (iVar2 == 0) {\n          *(int *)(puVar4 + -0x10) = local_34;\n          *(undefined4 *)(puVar4 + -0x14) = 0x13898;\n          iVar2 = is_symbol_result_operator();\n          if (iVar2 == 0) {\n            *(int *)(puVar4 + -0x10) = local_34;\n            *(undefined4 *)(puVar4 + -0x14) = 0x13912;\n            iVar2 = is_symbol_element();\n            if (iVar2 == 0) {\n              if (local_34 == 0xd) {\n                local_20 = 1;\n              }\n              else if (local_34 == 0xc) {\n                *(undefined4 *)(puVar4 + -4) = 0x139dc;\n                uVar3 = get_current_exception_frame();\n                *(undefined4 *)(puVar4 + -0xc) = 2;\n                *(undefined4 *)(puVar4 + -0x10) = uVar3;\n                    /* WARNING: Subroutine does not return */\n                *(undefined4 *)(puVar4 + -0x14) = 0x139e7;\n                longjmp(*(__jmp_buf_tag **)(puVar4 + -0x10),*(int *)(puVar4 + -0xc));\n              }\n            }\n            else {\n              *(int **)(puVar4 + -0x10) = &local_158;\n              *(undefined4 *)(puVar4 + -0x14) = 0x1392c;\n              peek_parser_stack();\n              if (local_158 != 2) {\n                if (local_158 == 0) {\n                  *(int *)(puVar4 + -0x14) = local_154;\n                  *(undefined4 *)(puVar4 + -0x18) = 0x13953;\n                  iVar2 = is_symbol_open_paran();\n                  if (iVar2 != 0) goto LAB_0001398a;\n                }\n                if (local_158 != 0) {\nLAB_0001397a:\n                  *(undefined4 *)(puVar4 + -8) = 0x1397f;\n                  uVar3 = get_current_exception_frame();\n                  *(undefined4 *)(puVar4 + -0x10) = 2;\n                  *(undefined4 *)(puVar4 + -0x14) = uVar3;\n                    /* WARNING: Subroutine does not return */\n                  *(undefined4 *)(puVar4 + -0x18) = 0x1398a;\n                  longjmp(*(__jmp_buf_tag **)(puVar4 + -0x14),*(int *)(puVar4 + -0x10));\n                }\n                *(int *)(puVar4 + -0x14) = local_154;\n                *(undefined4 *)(puVar4 + -0x18) = 0x13973;\n                iVar2 = is_symbol_result_operator();\n                if (iVar2 == 0) goto LAB_0001397a;\n              }\nLAB_0001398a:\n              local_110 = 0;\n              local_10c = local_34;\n              piVar5 = &local_110;\n              piVar6 = (int *)(puVar4 + -0x54);\n              for (iVar2 = 0x12; iVar2 != 0; iVar2 = iVar2 + -1) {\n                *piVar6 = *piVar5;\n                piVar5 = piVar5 + (uint)bVar7 * -2 + 1;\n                piVar6 = piVar6 + (uint)bVar7 * -2 + 1;\n              }\n              *(undefined4 *)(puVar4 + -0x58) = 0x139bd;\n              push_parser_stack();\n              puVar4 = puVar4 + -4;\n            }\n          }\n          else {\n            *(int **)(puVar4 + -0x10) = &local_158;\n            *(undefined4 *)(puVar4 + -0x14) = 0x138ae;\n            peek_parser_stack();\n            if (local_158 != 1) {\n              *(undefined4 *)(puVar4 + -8) = 0x138c1;\n              uVar3 = get_current_exception_frame();\n              *(undefined4 *)(puVar4 + -0x10) = 2;\n              *(undefined4 *)(puVar4 + -0x14) = uVar3;\n                    /* WARNING: Subroutine does not return */\n              *(undefined4 *)(puVar4 + -0x18) = 0x138cc;\n              longjmp(*(__jmp_buf_tag **)(puVar4 + -0x14),*(int *)(puVar4 + -0x10));\n            }\n            local_110 = 0;\n            local_10c = local_34;\n            piVar5 = &local_110;\n            piVar6 = (int *)(puVar4 + -0x54);\n            for (iVar2 = 0x12; iVar2 != 0; iVar2 = iVar2 + -1) {\n              *piVar6 = *piVar5;\n              piVar5 = piVar5 + (uint)bVar7 * -2 + 1;\n              piVar6 = piVar6 + (uint)bVar7 * -2 + 1;\n            }\n            *(undefined4 *)(puVar4 + -0x58) = 0x138ff;\n            push_parser_stack();\n            puVar4 = puVar4 + -4;\n          }\n        }\n        else {\n          *(int **)(puVar4 + -0x10) = &local_158;\n          *(undefined4 *)(puVar4 + -0x14) = 0x13811;\n          pop_parser_stack();\n          if (local_158 != 1) {\n            *(undefined4 *)(puVar4 + -8) = 0x13824;\n            uVar3 = get_current_exception_frame();\n            *(undefined4 *)(puVar4 + -0x10) = 2;\n            *(undefined4 *)(puVar4 + -0x14) = uVar3;\n                    /* WARNING: Subroutine does not return */\n            *(undefined4 *)(puVar4 + -0x18) = 0x1382f;\n            longjmp(*(__jmp_buf_tag **)(puVar4 + -0x14),*(int *)(puVar4 + -0x10));\n          }\n          *(int **)(puVar4 + -0x14) = &local_110;\n          *(undefined4 *)(puVar4 + -0x18) = 0x1383e;\n          pop_parser_stack();\n          if ((local_110 != 0) || (local_10c != 0)) {\n            *(undefined4 *)(puVar4 + -0xc) = 0x1385a;\n            uVar3 = get_current_exception_frame();\n            *(undefined4 *)(puVar4 + -0x14) = 2;\n            *(undefined4 *)(puVar4 + -0x18) = uVar3;\n                    /* WARNING: Subroutine does not return */\n            *(undefined4 *)(puVar4 + -0x1c) = 0x13865;\n            longjmp(*(__jmp_buf_tag **)(puVar4 + -0x18),*(int *)(puVar4 + -0x14));\n          }\n          piVar5 = &local_158;\n          piVar6 = (int *)(puVar4 + -0x58);\n          for (iVar2 = 0x12; iVar2 != 0; iVar2 = iVar2 + -1) {\n            *piVar6 = *piVar5;\n            piVar5 = piVar5 + (uint)bVar7 * -2 + 1;\n            piVar6 = piVar6 + (uint)bVar7 * -2 + 1;\n          }\n          *(undefined4 *)(puVar4 + -0x5c) = 0x13885;\n          push_parser_stack();\n          puVar4 = puVar4 + -8;\n        }\n      }\n      else {\n        *(int **)(puVar4 + -0x10) = &local_158;\n        *(undefined4 *)(puVar4 + -0x14) = 0x1375f;\n        peek_parser_stack();\n        if ((local_158 != 2) && ((local_158 != 0 || (local_154 != 0)))) {\n          if (local_158 != 0) {\nLAB_000137a1:\n            *(undefined4 *)(puVar4 + -8) = 0x137a6;\n            uVar3 = get_current_exception_frame();\n            *(undefined4 *)(puVar4 + -0x10) = 2;\n            *(undefined4 *)(puVar4 + -0x14) = uVar3;\n                    /* WARNING: Subroutine does not return */\n            *(undefined4 *)(puVar4 + -0x18) = 0x137b1;\n            longjmp(*(__jmp_buf_tag **)(puVar4 + -0x14),*(int *)(puVar4 + -0x10));\n          }\n          *(int *)(puVar4 + -0x14) = local_154;\n          *(undefined4 *)(puVar4 + -0x18) = 0x1379a;\n          iVar2 = is_symbol_result_operator();\n          if (iVar2 == 0) goto LAB_000137a1;\n        }\n        local_110 = 0;\n        local_10c = local_34;\n        piVar5 = &local_110;\n        piVar6 = (int *)(puVar4 + -0x54);\n        for (iVar2 = 0x12; iVar2 != 0; iVar2 = iVar2 + -1) {\n          *piVar6 = *piVar5;\n          piVar5 = piVar5 + (uint)bVar7 * -2 + 1;\n          piVar6 = piVar6 + (uint)bVar7 * -2 + 1;\n        }\n        *(undefined4 *)(puVar4 + -0x58) = 0x137e4;\n        push_parser_stack();\n        puVar4 = puVar4 + -4;\n      }\n    }\n    else {\n      *(int **)(puVar4 + -0x10) = &local_158;\n      *(undefined4 *)(puVar4 + -0x14) = 0x135d9;\n      pop_parser_stack();\n      if (local_158 != 0) {\nLAB_000135fc:\n        *(undefined4 *)(puVar4 + -8) = 0x13601;\n        uVar3 = get_current_exception_frame();\n        *(undefined4 *)(puVar4 + -0x10) = 2;\n        *(undefined4 *)(puVar4 + -0x14) = uVar3;\n                    /* WARNING: Subroutine does not return */\n        *(undefined4 *)(puVar4 + -0x18) = 0x1360c;\n        longjmp(*(__jmp_buf_tag **)(puVar4 + -0x14),*(int *)(puVar4 + -0x10));\n      }\n      *(int *)(puVar4 + -0x14) = local_154;\n      *(undefined4 *)(puVar4 + -0x18) = 0x135f5;\n      iVar2 = is_symbol_element();\n      if (iVar2 == 0) goto LAB_000135fc;\n      if (local_154 == 0xb) {\n        *(undefined4 **)(puVar4 + -0x10) = &local_8e;\n        *(char **)(puVar4 + -0x14) = local_24;\n        *(undefined4 *)(puVar4 + -0x18) = 0x13629;\n        local_38 = parse_date();\n        if (local_38 == 0) {\n          *(undefined4 *)(puVar4 + -8) = 0x1363a;\n          uVar3 = get_current_exception_frame();\n          *(undefined4 *)(puVar4 + -0x10) = 2;\n          *(undefined4 *)(puVar4 + -0x14) = uVar3;\n                    /* WARNING: Subroutine does not return */\n          *(undefined4 *)(puVar4 + -0x18) = 0x13645;\n          longjmp(*(__jmp_buf_tag **)(puVar4 + -0x14),*(int *)(puVar4 + -0x10));\n        }\n        local_24 = local_24 + local_38;\n        *(undefined4 *)(puVar4 + -0x10) = local_8e;\n        *(undefined2 *)(puVar4 + -0xc) = local_8a;\n        *(int *)(puVar4 + -0x14) = local_34;\n        *(undefined4 *)(puVar4 + -0x18) = 0x1366e;\n        do_date_search();\n        puVar4 = puVar4 + -4;\n      }\n      else {\n        while( true ) {\n          *(int *)(puVar4 + -0x14) = (int)*local_24;\n          *(undefined4 *)(puVar4 + -0x18) = 0x1368c;\n          iVar2 = isspace(*(int *)(puVar4 + -0x14));\n          if (iVar2 == 0) break;\n          local_24 = local_24 + 1;\n        }\n        if (*local_24 != '\\\"') {\n          *(undefined4 *)(puVar4 + -8) = 0x136a2;\n          uVar3 = get_current_exception_frame();\n          *(undefined4 *)(puVar4 + -0x10) = 2;\n          *(undefined4 *)(puVar4 + -0x14) = uVar3;\n                    /* WARNING: Subroutine does not return */\n          *(undefined4 *)(puVar4 + -0x18) = 0x136ad;\n          longjmp(*(__jmp_buf_tag **)(puVar4 + -0x14),*(int *)(puVar4 + -0x10));\n        }\n        local_24 = local_24 + 1;\n        local_28 = 0;\n        do {\n          if ((*local_24 == '\\0') || (*local_24 == '\\\"')) break;\n          uVar1 = local_28 + 1;\n          *(char *)((int)&local_110 + local_28) = *local_24;\n          local_24 = local_24 + 1;\n          local_28 = uVar1;\n        } while (uVar1 < 0x80);\n        *(undefined *)((int)&local_110 + local_28) = 0;\n        if (local_24 == (char *)0x0) {\n          *(undefined4 *)(puVar4 + -8) = 0x1370a;\n          uVar3 = get_current_exception_frame();\n          *(undefined4 *)(puVar4 + -0x10) = 2;\n          *(undefined4 *)(puVar4 + -0x14) = uVar3;\n                    /* WARNING: Subroutine does not return */\n          *(undefined4 *)(puVar4 + -0x18) = 0x13715;\n          longjmp(*(__jmp_buf_tag **)(puVar4 + -0x14),*(int *)(puVar4 + -0x10));\n        }\n        local_24 = local_24 + 1;\n        *(int **)(puVar4 + -0xc) = &local_110;\n        *(int *)(puVar4 + -0x10) = local_34;\n        *(int *)(puVar4 + -0x14) = local_154;\n        *(undefined4 *)(puVar4 + -0x18) = 0x13732;\n        do_string_search();\n        puVar4 = puVar4 + -4;\n      }\n    }\n    *(undefined4 *)(puVar4 + -4) = 0x139ec;\n    do_reduce_stack();\n    if (local_20 != 0) {\n      *(int **)(puVar4 + -0x10) = &local_88;\n      *(undefined4 *)(puVar4 + -0x14) = 0x13a05;\n      pop_parser_stack();\n      if ((local_88 == 1) && (g_parseStackSize == '\\0')) {\n        local_3c = (uint)local_44;\n        *(uint *)(puVar4 + -0x10) = (uint)local_44;\n        *(char **)(puVar4 + -0x14) = \"Search results, $d items found:\\n\";\n        *(undefined4 *)(puVar4 + -0x18) = 0x13a4a;\n        printf(*(char **)(puVar4 + -0x14));\n        for (local_2c = 0; local_2c < local_3c; local_2c = local_2c + 1) {\n          *(uint *)(puVar4 + -0x14) = (uint)local_84[local_2c];\n          *(undefined4 *)(puVar4 + -0x18) = 0x13a6d;\n          uVar3 = db_search_index();\n          *(undefined4 *)(puVar4 + -0x14) = uVar3;\n          *(undefined4 *)(puVar4 + -0x18) = 0x13a79;\n          print_record_helper();\n        }\n        return;\n      }\n      *(undefined4 *)(puVar4 + -8) = 0x13a23;\n      uVar3 = get_current_exception_frame();\n      *(undefined4 *)(puVar4 + -0x10) = 2;\n      *(undefined4 *)(puVar4 + -0x14) = uVar3;\n                    /* WARNING: Subroutine does not return */\n      *(undefined4 *)(puVar4 + -0x18) = 0x13a2e;\n      longjmp(*(__jmp_buf_tag **)(puVar4 + -0x14),*(int *)(puVar4 + -0x10));\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_search_expression",
+                        "parse_get_symbol",
+                        "is_symbol_db_operator",
+                        "is_symbol_open_paran",
+                        "is_symbol_close_paran",
+                        "is_symbol_result_operator",
+                        "is_symbol_element",
+                        "get_current_exception_frame",
+                        "longjmp",
+                        "peek_parser_stack",
+                        "push_parser_stack",
+                        "pop_parser_stack",
+                        "parse_date",
+                        "do_date_search",
+                        "isspace",
+                        "do_string_search",
+                        "do_reduce_stack",
+                        "printf",
+                        "db_search_index",
+                        "print_record_helper"
+                    ],
+                    "calling_functions": [
+                        "command_find",
+                        "parse_search_expression"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            }
+        ],
+        "io.c": [
+            {
+                "func_name": "readLine",
+                "func_c_signature": "uint readLine(undefined4 param_1,char *param_2,uint param_3)",
+                "decompiled_code": "uint readLine(undefined4 param_1,char *param_2,uint param_3) {\n  int iVar1;\n  undefined local_1c [6];\n  char local_16 [2];\n  undefined4 local_14;\n  uint local_10;\n  \n  for (local_10 = 1; local_10 < param_3; local_10 = local_10 + 1) {\n    iVar1 = receive(param_1,local_16,1,local_1c);\n    if (iVar1 != 0) {\n      g_lasterror = iVar1;\n      return 0xffffffff;\n    }\n    if (local_16[0] == '\\n') break;\n    *param_2 = local_16[0];\n    param_2 = param_2 + 1;\n    local_14 = 0;\n  }\n  *param_2 = '\\0';\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readLine",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "command_insert",
+                        "command_remove",
+                        "command_update",
+                        "command_print",
+                        "command_find",
+                        "readLine",
+                        "run_parser"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sanitize_string",
+                "func_c_signature": "char * sanitize_string(char *param_1)",
+                "decompiled_code": "char * sanitize_string(char *param_1) {\n  char cVar1;\n  char *pcVar2;\n  \n  pcVar2 = param_1;\n  for (; cVar1 = *param_1, cVar1 != '\\0'; param_1 = param_1 + 1) {\n    if ((((cVar1 < 'a') || ('z' < cVar1)) && ((cVar1 < 'A' || ('Z' < cVar1)))) &&\n       ((cVar1 < '0' || ('9' < cVar1)))) {\n      *param_1 = '_';\n    }\n  }\n  return pcVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sanitize_string"
+                    ],
+                    "calling_functions": [
+                        "command_insert",
+                        "command_update",
+                        "sanitize_string"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "run_parser",
+                "func_c_signature": "void run_parser(void)",
+                "decompiled_code": "void run_parser(void) {\n  undefined local_21c [7];\n  undefined local_215 [513];\n  int local_14;\n  char local_d;\n  \n  local_d = '\\0';\n  init_user(local_21c);\n  do {\n    printf(\"> \");\n    local_14 = readLine(0,local_215,0x200);\n    if (local_14 == -1) {\n      printf(\"Connection failed. Exiting.\\n\");\n      local_d = '\\x01';\n    }\n    else {\n      parse_command(local_215,local_21c);\n    }\n  } while (local_d == '\\0');\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "run_parser",
+                        "init_user",
+                        "printf",
+                        "readLine",
+                        "parse_command"
+                    ],
+                    "calling_functions": [
+                        "run_parser",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "test",
+                "func_c_signature": "void test(void)",
+                "decompiled_code": "void test(void) {\n  __jmp_buf_tag *p_Var1;\n  int iVar2;\n  \n  printf(\"Enter test function\\n\");\n  p_Var1 = (__jmp_buf_tag *)get_next_exception_frame();\n  iVar2 = setjmp(p_Var1);\n  if (iVar2 == 0) {\n    p_Var1 = (__jmp_buf_tag *)get_current_exception_frame();\n                    /* WARNING: Subroutine does not return */\n    longjmp(p_Var1,1);\n  }\n  if (iVar2 != 1) {\n    printf(\"Blah\\n\");\n    pop_exception_frame();\n    printf(\"Exit test function\\n\");\n    return;\n  }\n  printf(\"Got 1\\n\");\n  p_Var1 = (__jmp_buf_tag *)get_current_exception_frame();\n                    /* WARNING: Subroutine does not return */\n  longjmp(p_Var1,1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "test",
+                        "printf",
+                        "get_next_exception_frame",
+                        "setjmp",
+                        "get_current_exception_frame",
+                        "longjmp",
+                        "pop_exception_frame"
+                    ],
+                    "calling_functions": [
+                        "test"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  init_exception_handler();\n  init_database();\n  run_parser();\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "init_exception_handler",
+                        "init_database",
+                        "run_parser"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00008_decompiled.c"
+                }
+            }
+        ]
+    }
+}

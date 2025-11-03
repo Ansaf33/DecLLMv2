@@ -1,0 +1,332 @@
+{
+    "file": "wc",
+    "decompiled_code": {
+        "wc.c": [
+            {
+                "func_name": "avx2_supported",
+                "func_c_signature": "char avx2_supported(void)",
+                "decompiled_code": "char avx2_supported(void) {\n  char cVar1;\n  undefined8 uVar2;\n  \n  uVar2 = gcc_feature_to_glibc_hwcap(&DAT_001031f4);\n  cVar1 = hwcap_allowed(uVar2);\n  if ((cVar1 == '\\0') || ((_DAT_0010405c & 0x400) == 0)) {\n    cVar1 = '\\0';\n  }\n  else {\n    cVar1 = '\\x01';\n  }\n  if (debug != '\\0') {\n    if (cVar1 == '\\0') {\n      uVar2 = gettext(\"avx2 support not detected\");\n    }\n    else {\n      uVar2 = gettext(\"using avx2 hardware support\");\n    }\n    error(0,0,uVar2);\n  }\n  return cVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "avx2_supported",
+                        "gcc_feature_to_glibc_hwcap",
+                        "hwcap_allowed",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "avx2_supported",
+                        "wc_lines"
+                    ],
+                    "defined_in_file": "wc_decompiled.c"
+                }
+            },
+            {
+                "func_name": "avx512_supported",
+                "func_c_signature": "char avx512_supported(void)",
+                "decompiled_code": "char avx512_supported(void) {\n  char cVar1;\n  undefined8 uVar2;\n  \n  uVar2 = gcc_feature_to_glibc_hwcap(\"avx512f\");\n  cVar1 = hwcap_allowed(uVar2);\n  if ((cVar1 != '\\0') && ((_DAT_0010405c & 0x8000) != 0)) {\n    uVar2 = gcc_feature_to_glibc_hwcap(\"avx512bw\");\n    cVar1 = hwcap_allowed(uVar2);\n    if ((cVar1 != '\\0') && ((_DAT_0010405c & 0x200000) != 0)) {\n      cVar1 = '\\x01';\n      goto LAB_0010056a;\n    }\n  }\n  cVar1 = '\\0';\nLAB_0010056a:\n  if (debug != '\\0') {\n    if (cVar1 == '\\0') {\n      uVar2 = gettext(\"avx512 support not detected\");\n    }\n    else {\n      uVar2 = gettext(\"using avx512 hardware support\");\n    }\n    error(0,0,uVar2);\n  }\n  return cVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "avx512_supported",
+                        "gcc_feature_to_glibc_hwcap",
+                        "hwcap_allowed",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "avx512_supported",
+                        "wc_lines"
+                    ],
+                    "defined_in_file": "wc_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\n                            \"Usage: %s [OPTION]... [FILE]...\\n  or:  %s [OPTION]... --files0-from=F\\n\"\n                            );\n    printf(pcVar3,uVar2,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Print newline, word, and byte counts for each FILE, and a total line if\\nmore than one FILE is specified.  A word is a nonempty sequence of non white\\nspace delimited by white space characters or by start or end of input.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_stdin_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nThe options below may be used to select which counts are printed, always in\\nthe following order: newline, word, character, byte, maximum line length.\\n  -c, --bytes            print the byte counts\\n  -m, --chars            print the character counts\\n  -l, --lines            print the newline counts\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --files0-from=F    read input from the files specified by\\n                           NUL-terminated names in file F;\\n                           If F is - then read names from standard input\\n  -L, --max-line-length  print the maximum display width\\n  -w, --words            print the word counts\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --total=WHEN       when to print a line with total counts;\\n                           WHEN can be: auto, always, only, never\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(&DAT_001037e1);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_stdin_note",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "wc_decompiled.c"
+                }
+            },
+            {
+                "func_name": "maybe_c32isnbspace",
+                "func_c_signature": "undefined8 maybe_c32isnbspace(undefined4 param_1)",
+                "decompiled_code": "undefined8 maybe_c32isnbspace(undefined4 param_1) {\n  int iVar1;\n  \n  if ((posixly_correct != '\\x01') && (iVar1 = c32isnbspace(param_1), iVar1 != 0)) {\n    return 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "maybe_c32isnbspace",
+                        "c32isnbspace"
+                    ],
+                    "calling_functions": [
+                        "maybe_c32isnbspace",
+                        "wc",
+                        "main"
+                    ],
+                    "defined_in_file": "wc_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write_counts",
+                "func_c_signature": "void write_counts(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4,\n                 undefined8 param_5,char *param_6)",
+                "decompiled_code": "void write_counts(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4,\n                 undefined8 param_5,char *param_6) {\n  undefined8 uVar1;\n  char *pcVar2;\n  long in_FS_OFFSET;\n  undefined5 *local_30;\n  undefined local_28 [24];\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_30 = (undefined5 *)((long)&format_sp_int_3 + 1);\n  if (print_lines != '\\0') {\n    uVar1 = umaxtostr(param_1,local_28);\n    printf((char *)((long)&format_sp_int_3 + 1),(ulong)number_width,uVar1);\n    local_30 = &format_sp_int_3;\n  }\n  if (print_words != '\\0') {\n    uVar1 = umaxtostr(param_2,local_28);\n    printf((char *)local_30,(ulong)number_width,uVar1);\n    local_30 = &format_sp_int_3;\n  }\n  if (print_chars != '\\0') {\n    uVar1 = umaxtostr(param_3,local_28);\n    printf((char *)local_30,(ulong)number_width,uVar1);\n    local_30 = &format_sp_int_3;\n  }\n  if (print_bytes != '\\0') {\n    uVar1 = umaxtostr(param_4,local_28);\n    printf((char *)local_30,(ulong)number_width,uVar1);\n    local_30 = &format_sp_int_3;\n  }\n  if (print_linelength != '\\0') {\n    uVar1 = imaxtostr(param_5,local_28);\n    printf((char *)local_30,(ulong)number_width,uVar1);\n  }\n  if (param_6 != (char *)0x0) {\n    pcVar2 = strchr(param_6,10);\n    if (pcVar2 != (char *)0x0) {\n      param_6 = (char *)quotearg_n_style_colon(0,3,param_6);\n    }\n    printf(\" %s\",param_6);\n  }\n  putchar_unlocked(10);\n  if (local_10 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_counts",
+                        "umaxtostr",
+                        "printf",
+                        "imaxtostr",
+                        "strchr",
+                        "quotearg_n_style_colon",
+                        "putchar_unlocked",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "write_counts",
+                        "wc",
+                        "main"
+                    ],
+                    "defined_in_file": "wc_decompiled.c"
+                }
+            },
+            {
+                "func_name": "wc_lines",
+                "func_c_signature": "int * wc_lines(int *param_1,int param_2)",
+                "decompiled_code": "int * wc_lines(int *param_1,int param_2) {\n  long lVar1;\n  bool bVar2;\n  undefined *puVar3;\n  char cVar4;\n  int iVar5;\n  ssize_t sVar6;\n  int *piVar7;\n  char *pcVar8;\n  undefined *puVar9;\n  long in_FS_OFFSET;\n  long lStack_40070;\n  long lStack_40068;\n  long lStack_40060;\n  char *pcStack_40058;\n  char *pcStack_40050;\n  char acStack_40018 [16];\n  undefined auStack_40008 [262144];\n  \n  puVar3 = &stack0xfffffffffffffff8;\n  do {\n    puVar9 = puVar3;\n    *(undefined8 *)(puVar9 + -0x1000) = *(undefined8 *)(puVar9 + -0x1000);\n    puVar3 = puVar9 + -0x1000;\n  } while (puVar9 + -0x1000 != auStack_40008);\n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  if (use_avx512_2 == '\\0') {\n    *(undefined8 *)(puVar9 + -0x1088) = 0x1009be;\n    cVar4 = avx512_supported();\n    if (cVar4 == '\\0') {\n      use_avx512_2 = -1;\n    }\n    else {\n      use_avx512_2 = '\\x01';\n    }\n  }\n  if (use_avx512_2 < '\\x01') {\n    if (use_avx2_1 == '\\0') {\n      *(undefined8 *)(puVar9 + -0x1088) = 0x100a0b;\n      cVar4 = avx2_supported();\n      if (cVar4 == '\\0') {\n        use_avx2_1 = -1;\n      }\n      else {\n        use_avx2_1 = '\\x01';\n      }\n    }\n    if (use_avx2_1 < '\\x01') {\n      lStack_40070 = 0;\n      lStack_40068 = 0;\n      bVar2 = false;\n      while( true ) {\n        *(undefined8 *)(puVar9 + -0x1088) = 0x100a81;\n        sVar6 = read(param_2,acStack_40018,0x40000);\n        if (sVar6 < 1) break;\n        lStack_40068 = lStack_40068 + sVar6;\n        pcVar8 = acStack_40018 + sVar6;\n        lStack_40060 = 0;\n        if (bVar2) {\n          *pcVar8 = '\\n';\n          pcStack_40050 = acStack_40018;\n          while( true ) {\n            *(undefined8 *)(puVar9 + -0x1088) = 0x100b9c;\n            pcStack_40050 = (char *)rawmemchr(pcStack_40050,10);\n            if (pcVar8 <= pcStack_40050) break;\n            lStack_40060 = lStack_40060 + 1;\n            pcStack_40050 = pcStack_40050 + 1;\n          }\n        }\n        else {\n          for (pcStack_40058 = acStack_40018; pcStack_40058 < pcVar8;\n              pcStack_40058 = pcStack_40058 + 1) {\n            lStack_40060 = lStack_40060 + (ulong)(*pcStack_40058 == '\\n');\n          }\n        }\n        bVar2 = lStack_40060 * 0xf <= sVar6;\n        lStack_40070 = lStack_40070 + lStack_40060;\n      }\n      if (sVar6 == 0) {\n        iVar5 = 0;\n      }\n      else {\n        *(undefined8 *)(puVar9 + -0x1088) = 0x100aa1;\n        piVar7 = __errno_location();\n        iVar5 = *piVar7;\n      }\n      *param_1 = iVar5;\n      *(long *)(param_1 + 2) = lStack_40070;\n      *(long *)(param_1 + 4) = lStack_40068;\n    }\n    else {\n      *(undefined8 *)(puVar9 + -0x1088) = 0x100a43;\n      wc_lines_avx2(param_1,param_2);\n    }\n  }\n  else {\n    *(undefined8 *)(puVar9 + -0x1088) = 0x1009f6;\n    wc_lines_avx512(param_1,param_2);\n  }\n  if (lVar1 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return param_1;\n  }\n                    /* WARNING: Subroutine does not return */\n  *(undefined8 *)(puVar9 + -0x1088) = 0x100bfb;\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "wc_lines",
+                        "avx512_supported",
+                        "avx2_supported",
+                        "read",
+                        "rawmemchr",
+                        "__errno_location",
+                        "wc_lines_avx2",
+                        "wc_lines_avx512",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "wc_lines",
+                        "wc"
+                    ],
+                    "defined_in_file": "wc_decompiled.c"
+                }
+            },
+            {
+                "func_name": "wc",
+                "func_c_signature": "bool wc(int param_1,long param_2,int *param_3)",
+                "decompiled_code": "bool wc(int param_1,long param_2,int *param_3) {\n  byte bVar1;\n  long lVar2;\n  undefined *puVar3;\n  char cVar4;\n  int iVar5;\n  long lVar6;\n  size_t sVar7;\n  __off_t _Var8;\n  __off_t _Var9;\n  uint *puVar10;\n  ssize_t sVar11;\n  byte *pbVar12;\n  undefined8 uVar13;\n  byte *pbVar14;\n  long lVar15;\n  undefined *puVar16;\n  long lVar17;\n  long in_FS_OFFSET;\n  bool bVar18;\n  char cStack_40103;\n  byte bStack_40102;\n  bool bStack_40100;\n  bool bStack_400ff;\n  bool bStack_400fd;\n  bool bStack_400fc;\n  uint uStack_400f8;\n  long lStack_400e8;\n  long lStack_400e0;\n  long lStack_400d8;\n  long lStack_400d0;\n  long lStack_400c8;\n  long lStack_400c0;\n  size_t sStack_400b8;\n  byte *pbStack_400b0;\n  ulong uStack_400a8;\n  long lStack_400a0;\n  long lStack_40098;\n  byte *pbStack_40090;\n  uint auStack_40038 [2];\n  long lStack_40030;\n  long lStack_40028;\n  mbstate_t mStack_40020;\n  byte abStack_40018 [16];\n  undefined auStack_40008 [262144];\n  \n  puVar3 = &stack0xfffffffffffffff8;\n  do {\n    puVar16 = puVar3;\n    *(undefined8 *)(puVar16 + -0x1000) = *(undefined8 *)(puVar16 + -0x1000);\n    puVar3 = puVar16 + -0x1000;\n  } while (puVar16 + -0x1000 != auStack_40008);\n  lVar2 = *(long *)(in_FS_OFFSET + 0x28);\n  uStack_400f8 = 0;\n  lVar6 = param_2;\n  if (param_2 == 0) {\n    *(undefined8 *)(puVar16 + -0x1128) = 0x100c72;\n    lVar6 = gettext(\"standard input\");\n  }\n  lStack_400c8 = 0;\n  lStack_400d0 = 0;\n  lStack_400d8 = 0;\n  lStack_400e0 = 0;\n  lStack_400e8 = 0;\n  *(undefined8 *)(puVar16 + -0x1128) = 0x100cca;\n  sVar7 = __ctype_get_mb_cur_max();\n  if (sVar7 < 2) {\n    if ((print_bytes == '\\0') && (print_chars == 0)) {\n      cStack_40103 = '\\0';\n    }\n    else {\n      cStack_40103 = '\\x01';\n    }\n    bStack_40102 = 0;\n  }\n  else {\n    cStack_40103 = print_bytes;\n    bStack_40102 = print_chars;\n  }\n  if ((print_words == '\\0') && (print_linelength == '\\0')) {\n    bVar18 = false;\n  }\n  else {\n    bVar18 = true;\n  }\n  if ((((cStack_40103 != '\\x01') || (bStack_40102 != 0)) || (print_lines != '\\0')) || (bVar18)) {\n    *(undefined8 *)(puVar16 + -0x1128) = 0x100d98;\n    fdadvise(param_1,0,0,2);\n  }\n  if (((cStack_40103 == '\\0') || (bStack_40102 == 1)) || ((print_lines == '\\x01' || (bVar18)))) {\n    if ((bStack_40102 == 1) || (bVar18)) {\n      *(undefined8 *)(puVar16 + -0x1128) = 0x1010ca;\n      sVar7 = __ctype_get_mb_cur_max();\n      if (sVar7 < 2) {\n        bStack_400fc = false;\n        lStack_400a0 = 0;\n        while( true ) {\n          *(undefined8 *)(puVar16 + -0x1128) = 0x10174a;\n          lStack_40098 = read(param_1,abStack_40018,0x40000);\n          if (lStack_40098 == 0) break;\n          if (lStack_40098 < 0) {\n            *(undefined8 *)(puVar16 + -0x1128) = 0x1015a0;\n            puVar10 = (uint *)__errno_location();\n            uStack_400f8 = *puVar10;\n            break;\n          }\n          lStack_400d0 = lStack_400d0 + lStack_40098;\n          pbStack_40090 = abStack_40018;\n          do {\n            bVar1 = *pbStack_40090;\n            switch(bVar1) {\n            case 9:\n              lStack_400a0 = lStack_400a0 + (8 - lStack_400a0 % 8);\n              bStack_400fc = false;\n              break;\n            case 10:\n              lStack_400e8 = lStack_400e8 + 1;\n            case 0xc:\n            case 0xd:\n              if (lStack_400c8 < lStack_400a0) {\n                lStack_400c8 = lStack_400a0;\n              }\n              lStack_400a0 = 0;\n              bStack_400fc = false;\n              break;\n            default:\n              lStack_400a0 = lStack_400a0 + (ulong)(byte)wc_isprint[(int)(uint)bVar1];\n              lStack_400e0 = lStack_400e0 +\n                             (int)(uint)(wc_isspace[(int)(uint)bVar1] == '\\0' & (bStack_400fc ^ 1U))\n              ;\n              bStack_400fc = wc_isspace[(int)(uint)bVar1] == '\\0';\n              break;\n            case 0x20:\n              lStack_400a0 = lStack_400a0 + 1;\n            case 0xb:\n              bStack_400fc = false;\n            }\n            lStack_40098 = lStack_40098 + -1;\n            pbStack_40090 = pbStack_40090 + 1;\n          } while (lStack_40098 != 0);\n        }\n        if (lStack_400c8 < lStack_400a0) {\n          lStack_400c8 = lStack_400a0;\n        }\n      }\n      else {\n        bStack_40100 = false;\n        lStack_400c0 = 0;\n        *(undefined8 *)(puVar16 + -0x1128) = 0x1010f5;\n        mbszero(&mStack_40020);\n        bStack_400ff = false;\n        sStack_400b8 = 0;\nLAB_001014fc:\n        *(undefined8 *)(puVar16 + -0x1128) = 0x101530;\n        sVar11 = read(param_1,abStack_40018 + sStack_400b8,0x40000 - sStack_400b8);\n        if ((sVar11 == 0) && (sStack_400b8 == 0)) goto LAB_00101553;\n        if (-1 < sVar11) {\n          lStack_400d0 = lStack_400d0 + sVar11;\n          pbStack_400b0 = abStack_40018;\n          pbVar12 = pbStack_400b0 + sStack_400b8 + sVar11;\n          do {\n            if ((bStack_400ff == true) || ((char)*pbStack_400b0 < '\\0')) {\n              pbVar14 = pbStack_400b0 + sStack_400b8;\n              *(undefined8 *)(puVar16 + -0x1128) = 0x1011fd;\n              uStack_400a8 = rpl_mbrtoc32(auStack_40038,pbStack_400b0 + sStack_400b8,\n                                          (long)pbVar12 - (long)pbVar14,&mStack_40020);\n              sStack_400b8 = 0;\n              if (uStack_400a8 <= (ulong)((long)pbVar12 - (long)pbVar14)) {\n                uStack_400a8 = uStack_400a8 + (uStack_400a8 == 0);\n                bVar18 = uStack_400a8 == (bStack_400ff ^ 1);\n                *(undefined8 *)(puVar16 + -0x1128) = 0x101317;\n                iVar5 = mbsinit(&mStack_40020);\n                bStack_400ff = iVar5 == 0;\n                goto LAB_00101322;\n              }\n              if (((uStack_400a8 == 0xfffffffffffffffe) &&\n                  ((long)pbVar12 - (long)pbStack_400b0 < 0x40000)) && (sVar11 != 0)) {\n                sStack_400b8 = (long)pbVar12 - (long)pbStack_400b0;\n                *(undefined8 *)(puVar16 + -0x1128) = 0x101282;\n                memmove(abStack_40018,pbStack_400b0,sStack_400b8);\n                bStack_400ff = true;\n                break;\n              }\n              pbStack_400b0 = pbStack_400b0 + 1;\n              *(undefined8 *)(puVar16 + -0x1128) = 0x1012a5;\n              mbszero(&mStack_40020);\n              bStack_400ff = false;\n              lStack_400e0 = lStack_400e0 + (ulong)(bStack_40100 ^ 1);\n              bStack_40100 = true;\n            }\n            else {\n              uStack_400a8 = 1;\n              auStack_40038[0] = (uint)(char)*pbStack_400b0;\n              bVar18 = true;\nLAB_00101322:\n              switch(auStack_40038[0]) {\n              case 9:\n                lStack_400c0 = lStack_400c0 + (8 - lStack_400c0 % 8);\n                bStack_40100 = false;\n                break;\n              case 10:\n                lStack_400e8 = lStack_400e8 + 1;\n              case 0xc:\n              case 0xd:\n                if (lStack_400c8 < lStack_400c0) {\n                  lStack_400c8 = lStack_400c0;\n                }\n                lStack_400c0 = 0;\n                bStack_40100 = false;\n                break;\n              default:\n                if (bVar18) {\n                  lStack_400c0 = lStack_400c0 + (ulong)(byte)wc_isprint[auStack_40038[0]];\n                  bStack_400fd = wc_isspace[auStack_40038[0]] == '\\0';\n                }\n                else {\n                  if (print_linelength != '\\0') {\n                    *(undefined8 *)(puVar16 + -0x1128) = 0x10144c;\n                    iVar5 = c32width(auStack_40038[0]);\n                    if (0 < iVar5) {\n                      lStack_400c0 = lStack_400c0 + iVar5;\n                    }\n                  }\n                  *(undefined8 *)(puVar16 + -0x1128) = 0x101477;\n                  iVar5 = c32isspace(auStack_40038[0]);\n                  if (iVar5 == 0) {\n                    *(undefined8 *)(puVar16 + -0x1128) = 0x101488;\n                    iVar5 = maybe_c32isnbspace(auStack_40038[0]);\n                    if (iVar5 == 0) {\n                      bStack_400fd = true;\n                      goto LAB_001014a5;\n                    }\n                  }\n                  bStack_400fd = false;\n                }\nLAB_001014a5:\n                lStack_400e0 = lStack_400e0 + (int)(uint)(bStack_400fd & (bStack_40100 ^ 1U));\n                bStack_40100 = bStack_400fd;\n                break;\n              case 0x20:\n                lStack_400c0 = lStack_400c0 + 1;\n              case 0xb:\n                bStack_40100 = false;\n              }\n              pbStack_400b0 = pbStack_400b0 + uStack_400a8;\n              lStack_400d8 = lStack_400d8 + 1;\n            }\n          } while (pbStack_400b0 < pbVar12);\n          goto LAB_001014fc;\n        }\n        *(undefined8 *)(puVar16 + -0x1128) = 0x10111b;\n        puVar10 = (uint *)__errno_location();\n        uStack_400f8 = *puVar10;\nLAB_00101553:\n        if (lStack_400c8 < lStack_400c0) {\n          lStack_400c8 = lStack_400c0;\n        }\n      }\n    }\n    else {\n      *(undefined8 *)(puVar16 + -0x1128) = 0x101098;\n      wc_lines(auStack_40038,param_1);\n      uStack_400f8 = auStack_40038[0];\n      lStack_400e8 = lStack_40030;\n      lStack_400d0 = lStack_40028;\n    }\n    goto LAB_00101780;\n  }\n  bVar18 = false;\n  if (0 < *param_3) {\n    *(undefined8 *)(puVar16 + -0x1128) = 0x100e0a;\n    iVar5 = fstat(param_1,(stat *)(param_3 + 2));\n    *param_3 = iVar5;\n  }\n  if (*param_3 == 0) {\n    *(undefined8 *)(puVar16 + -0x1128) = 0x100e37;\n    cVar4 = usable_st_size(param_3 + 2);\n    if ((cVar4 != '\\0') && (-1 < *(long *)(param_3 + 0xe))) {\n      lVar15 = *(long *)(param_3 + 0xe);\n      *(undefined8 *)(puVar16 + -0x1128) = 0x100e7c;\n      _Var8 = lseek(param_1,0,1);\n      if (-1 < _Var8) {\n        if (lVar15 % page_size == 0) {\n          if ((*(long *)(param_3 + 0x10) < 1) || (0x2000000000000000 < *(ulong *)(param_3 + 0x10)))\n          {\n            lVar17 = 0x201;\n          }\n          else {\n            lVar17 = *(long *)(param_3 + 0x10) + 1;\n          }\n          lVar15 = lVar15 - lVar15 % lVar17;\n          if ((-1 < _Var8) && (_Var8 < lVar15)) {\n            *(undefined8 *)(puVar16 + -0x1128) = 0x100fbe;\n            _Var9 = lseek(param_1,lVar15,1);\n            if (-1 < _Var9) {\n              lStack_400d0 = lVar15 - _Var8;\n            }\n          }\n        }\n        else {\n          if (lVar15 < _Var8) {\n            lStack_400d0 = 0;\n          }\n          else {\n            lStack_400d0 = lVar15 - _Var8;\n          }\n          if (lStack_400d0 != 0) {\n            *(undefined8 *)(puVar16 + -0x1128) = 0x100f01;\n            _Var8 = lseek(param_1,lStack_400d0,1);\n            if (-1 < _Var8) {\n              bVar18 = true;\n              goto LAB_00100fd8;\n            }\n          }\n          lStack_400d0 = 0;\n        }\n      }\n    }\n  }\nLAB_00100fd8:\n  if (!bVar18) {\n    *(undefined8 *)(puVar16 + -0x1128) = 0x101006;\n    fdadvise(param_1,0,0,2);\n    while( true ) {\n      *(undefined8 *)(puVar16 + -0x1128) = 0x10104f;\n      sVar11 = read(param_1,abStack_40018,0x40000);\n      if (sVar11 == 0) break;\n      if (sVar11 < 0) {\n        *(undefined8 *)(puVar16 + -0x1128) = 0x101017;\n        puVar10 = (uint *)__errno_location();\n        uStack_400f8 = *puVar10;\n        break;\n      }\n      lStack_400d0 = lStack_400d0 + sVar11;\n    }\n  }\nLAB_00101780:\n  if (bStack_40102 < print_chars) {\n    lStack_400d8 = lStack_400d0;\n  }\n  if (total_mode != 2) {\n    *(undefined8 *)(puVar16 + -0x1128) = 0x1017e0;\n    write_counts(lStack_400e8,lStack_400e0,lStack_400d8,lStack_400d0,lStack_400c8,param_2);\n  }\n  lVar15 = total_lines + -0x8000000000000000;\n  total_lines = lVar15 + lStack_400e8 + -0x8000000000000000;\n  total_lines_overflow = (byte)(SCARRY8(lVar15,lStack_400e8) | total_lines_overflow) != 0;\n  lVar15 = total_words + -0x8000000000000000;\n  total_words = lVar15 + lStack_400e0 + -0x8000000000000000;\n  total_words_overflow = (byte)(SCARRY8(lVar15,lStack_400e0) | total_words_overflow) != 0;\n  lVar15 = total_chars + -0x8000000000000000;\n  total_chars = lVar15 + lStack_400d8 + -0x8000000000000000;\n  total_chars_overflow = (byte)(SCARRY8(lVar15,lStack_400d8) | total_chars_overflow) != 0;\n  lVar15 = total_bytes + -0x8000000000000000;\n  total_bytes = lVar15 + lStack_400d0 + -0x8000000000000000;\n  total_bytes_overflow = (byte)(SCARRY8(lVar15,lStack_400d0) | total_bytes_overflow) != 0;\n  if (max_line_length < lStack_400c8) {\n    max_line_length = lStack_400c8;\n  }\n  if (uStack_400f8 != 0) {\n    *(undefined8 *)(puVar16 + -0x1128) = 0x10198c;\n    uVar13 = quotearg_n_style_colon(0,3,lVar6);\n    *(undefined8 *)(puVar16 + -0x1128) = 0x1019d2;\n    error(0,uStack_400f8,&DAT_001037f7,uVar13);\n  }\n  if (lVar2 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    *(undefined8 *)(puVar16 + -0x1128) = 0x1019f1;\n    __stack_chk_fail();\n  }\n  return uStack_400f8 == 0;\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "wc",
+                        "gettext",
+                        "__ctype_get_mb_cur_max",
+                        "fdadvise",
+                        "read",
+                        "__errno_location",
+                        "mbszero",
+                        "rpl_mbrtoc32",
+                        "mbsinit",
+                        "memmove",
+                        "c32width",
+                        "c32isspace",
+                        "maybe_c32isnbspace",
+                        "wc_lines",
+                        "fstat",
+                        "usable_st_size",
+                        "lseek",
+                        "write_counts",
+                        "SCARRY8",
+                        "quotearg_n_style_colon",
+                        "error",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "wc",
+                        "wc_file"
+                    ],
+                    "defined_in_file": "wc_decompiled.c"
+                }
+            },
+            {
+                "func_name": "wc_file",
+                "func_c_signature": "ulong wc_file(char *param_1,undefined8 param_2)",
+                "decompiled_code": "ulong wc_file(char *param_1,undefined8 param_2) {\n  char cVar1;\n  byte bVar2;\n  int iVar3;\n  ulong uVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  \n  if ((param_1 == (char *)0x0) || (cVar1 = streq(param_1,&DAT_001038bc), cVar1 != '\\0')) {\n    have_read_stdin = 1;\n    xset_binary_mode(0,0);\n    uVar4 = wc(0,param_1,param_2);\n    return uVar4;\n  }\n  iVar3 = open(param_1,0);\n  if (iVar3 == -1) {\n    uVar5 = quotearg_n_style_colon(0,3,param_1);\n    piVar6 = __errno_location();\n    error(0,*piVar6,&DAT_001037f7,uVar5);\n    return 0;\n  }\n  bVar2 = wc(iVar3,param_1,param_2);\n  iVar3 = close(iVar3);\n  if (iVar3 != 0) {\n    uVar5 = quotearg_n_style_colon(0,3,param_1);\n    piVar6 = __errno_location();\n    error(0,*piVar6,&DAT_001037f7,uVar5);\n    return 0;\n  }\n  return (ulong)bVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "wc_file",
+                        "streq",
+                        "xset_binary_mode",
+                        "wc",
+                        "open",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "close"
+                    ],
+                    "calling_functions": [
+                        "wc_file",
+                        "main"
+                    ],
+                    "defined_in_file": "wc_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_input_fstatus",
+                "func_c_signature": "undefined4 * get_input_fstatus(long param_1,long param_2)",
+                "decompiled_code": "undefined4 * get_input_fstatus(long param_1,long param_2) {\n  char cVar1;\n  int iVar2;\n  long lVar3;\n  undefined4 *puVar4;\n  long local_18;\n  \n  lVar3 = param_1;\n  if (param_1 == 0) {\n    lVar3 = 1;\n  }\n  puVar4 = (undefined4 *)xnmalloc(lVar3,0x98);\n  if ((param_1 == 0) ||\n     ((param_1 == 1 &&\n      ((uint)print_linelength +\n       (uint)print_lines + (uint)print_words + (uint)print_chars + (uint)print_bytes == 1)))) {\n    *puVar4 = 1;\n  }\n  else {\n    for (local_18 = 0; local_18 < param_1; local_18 = local_18 + 1) {\n      if ((*(long *)(param_2 + local_18 * 8) == 0) ||\n         (cVar1 = streq(*(undefined8 *)(param_2 + local_18 * 8),&DAT_001038bc), cVar1 != '\\0')) {\n        iVar2 = fstat(0,(stat *)(puVar4 + local_18 * 0x26 + 2));\n      }\n      else {\n        iVar2 = stat(*(char **)(param_2 + local_18 * 8),(stat *)(puVar4 + local_18 * 0x26 + 2));\n      }\n      puVar4[local_18 * 0x26] = iVar2;\n    }\n  }\n  return puVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_input_fstatus",
+                        "xnmalloc",
+                        "streq",
+                        "fstat",
+                        "stat"
+                    ],
+                    "calling_functions": [
+                        "get_input_fstatus",
+                        "main"
+                    ],
+                    "defined_in_file": "wc_decompiled.c"
+                }
+            },
+            {
+                "func_name": "compute_number_width",
+                "func_c_signature": "int compute_number_width(long param_1,int *param_2)",
+                "decompiled_code": "int compute_number_width(long param_1,int *param_2) {\n  long lVar1;\n  long in_FS_OFFSET;\n  int local_28;\n  int local_24;\n  ulong local_20;\n  long local_18;\n  \n  local_28 = 1;\n  if ((0 < param_1) && (*param_2 < 1)) {\n    local_24 = 1;\n    local_20 = 0;\n    for (local_18 = 0; local_18 < param_1; local_18 = local_18 + 1) {\n      if (param_2[local_18 * 0x26] == 0) {\n        if ((param_2[local_18 * 0x26 + 8] & 0xf000U) == 0x8000) {\n          lVar1 = local_20 + 0x8000000000000000;\n          local_20 = lVar1 + *(long *)(param_2 + local_18 * 0x26 + 0xe) + 0x8000000000000000;\n          if (SCARRY8(lVar1,*(long *)(param_2 + local_18 * 0x26 + 0xe))) {\n            local_20 = 0xffffffffffffffff;\n            break;\n          }\n        }\n        else {\n          local_24 = 7;\n        }\n      }\n    }\n    for (; 9 < local_20; local_20 = local_20 / 10) {\n      local_28 = local_28 + 1;\n    }\n    if (local_28 < local_24) {\n      local_28 = local_24;\n    }\n  }\n  if (*(long *)(in_FS_OFFSET + 0x28) != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return local_28;\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "compute_number_width",
+                        "SCARRY8",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "compute_number_width",
+                        "main"
+                    ],
+                    "defined_in_file": "wc_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  bool bVar2;\n  undefined uVar3;\n  char cVar4;\n  byte bVar5;\n  int iVar6;\n  undefined4 uVar7;\n  char *pcVar8;\n  ushort **ppuVar9;\n  undefined8 uVar10;\n  undefined8 uVar11;\n  undefined8 uVar12;\n  long lVar13;\n  ulong uVar14;\n  int *piVar15;\n  long in_FS_OFFSET;\n  double dVar16;\n  double dVar17;\n  bool local_2e6;\n  uint local_2e4;\n  int local_2e0;\n  int local_2dc;\n  int local_2d8;\n  int local_2d4;\n  undefined4 local_2d0;\n  undefined4 local_2cc;\n  undefined4 local_2c8;\n  int local_2c4;\n  undefined4 local_2c0;\n  undefined4 local_2bc;\n  undefined4 local_2b8;\n  undefined4 local_2b4;\n  undefined4 local_2b0;\n  undefined4 local_2ac;\n  undefined4 local_2a8;\n  undefined4 local_2a4;\n  undefined4 local_2a0;\n  int local_29c;\n  undefined4 local_298;\n  undefined4 local_294;\n  undefined4 local_290;\n  undefined4 local_28c;\n  undefined4 local_288;\n  undefined4 local_284;\n  undefined4 local_280;\n  undefined4 local_27c;\n  undefined4 local_278;\n  int local_274;\n  long local_270;\n  undefined8 *local_268;\n  long local_260;\n  long local_258;\n  FILE *local_250;\n  undefined4 *local_248;\n  char *local_240;\n  undefined8 local_238;\n  undefined8 local_230;\n  undefined8 local_228;\n  undefined8 local_220;\n  undefined *local_218;\n  char *local_210;\n  undefined8 local_208;\n  undefined8 local_200;\n  undefined8 local_1f8;\n  undefined8 local_1f0;\n  undefined8 local_1e8;\n  undefined *local_1e0;\n  long local_1d8;\n  undefined8 *local_1d0;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_260 = 0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  iVar6 = getpagesize();\n  page_size = (long)iVar6;\n  setvbuf(_stdout,(char *)0x0,1,0);\n  pcVar8 = getenv(\"POSIXLY_CORRECT\");\n  posixly_correct = pcVar8 != (char *)0x0;\n  print_bytes = '\\0';\n  print_chars = '\\0';\n  print_words = '\\0';\n  print_lines = '\\0';\n  print_linelength = '\\0';\n  max_line_length = 0;\n  total_bytes = 0;\n  total_chars = 0;\n  total_words = 0;\n  total_lines = 0;\n  while (local_2d4 = getopt_long(param_1,param_2,\"clLmw\",longopts,0), local_2d4 != -1) {\n    if (local_2d4 < 0x83) {\n      if (local_2d4 < 0x4c) {\n        if (local_2d4 == -0x83) {\nLAB_00102121:\n          uVar10 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n          uVar12 = proper_name_lite(\"Paul Rubin\",\"Paul Rubin\");\n          version_etc(_stdout,&DAT_001037e1,\"GNU coreutils\",_Version,uVar12,uVar10,0);\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (local_2d4 == -0x82) {\n          usage(0);\n          goto LAB_00102121;\n        }\n        goto switchD_00102058_caseD_4d;\n      }\n      switch(local_2d4) {\n      case 0x4c:\n        print_linelength = '\\x01';\n        break;\n      default:\n        goto switchD_00102058_caseD_4d;\n      case 99:\n        print_bytes = '\\x01';\n        break;\n      case 0x6c:\n        print_lines = '\\x01';\n        break;\n      case 0x6d:\n        print_chars = '\\x01';\n        break;\n      case 0x77:\n        print_words = '\\x01';\n        break;\n      case 0x80:\n        debug = 1;\n        break;\n      case 0x81:\n        local_260 = _optarg;\n        break;\n      case 0x82:\n        lVar13 = __xargmatch_internal(\"--total\",_optarg,total_args,total_types,4,_argmatch_die,1);\n        total_mode = *(int *)(total_types + lVar13 * 4);\n      }\n    }\n    else {\nswitchD_00102058_caseD_4d:\n      usage(1);\n    }\n  }\n  if ((((print_lines != '\\x01') && (print_words != '\\x01')) && (print_chars != '\\x01')) &&\n     ((print_bytes != '\\x01' && (print_linelength != '\\x01')))) {\n    print_bytes = '\\x01';\n    print_words = '\\x01';\n    print_lines = '\\x01';\n  }\n  local_2d4 = 0xffffffff;\n  if (print_linelength != '\\0') {\n    for (local_2e0 = 0; local_2e0 < 0x100; local_2e0 = local_2e0 + 1) {\n      ppuVar9 = __ctype_b_loc();\n      wc_isprint[local_2e0] = ((*ppuVar9)[local_2e0] & 0x4000) != 0;\n    }\n  }\n  if (print_words != '\\0') {\n    for (local_2dc = 0; local_2dc < 0x100; local_2dc = local_2dc + 1) {\n      ppuVar9 = __ctype_b_loc();\n      if (((*ppuVar9)[local_2dc] & 0x2000) == 0) {\n        uVar7 = btoc32(local_2dc);\n        iVar6 = maybe_c32isnbspace(uVar7);\n        if (iVar6 != 0) goto LAB_00102306;\n        uVar3 = 0;\n      }\n      else {\nLAB_00102306:\n        uVar3 = 1;\n      }\n      wc_isspace[local_2dc] = uVar3;\n    }\n  }\n  bVar2 = false;\n  if (local_260 == 0) {\n    if (_optind < param_1) {\n      local_268 = param_2 + _optind;\n      local_270 = (long)(param_1 - _optind);\n    }\n    else {\n      local_268 = &stdin_only_0;\n      local_270 = 1;\n    }\n    local_258 = argv_iter_init_argv(local_268);\n  }\n  else {\n    if (_optind < param_1) {\n      uVar10 = quotearg_style(4,param_2[_optind]);\n      local_238 = gettext(\"extra operand %s\");\n      local_2d0 = 0;\n      local_2cc = 0;\n      error(0,0,local_238,uVar10);\n      uVar10 = gettext(\"file operands cannot be combined with --files0-from\");\n      fprintf(_stderr,\"%s\\n\",uVar10);\n      usage(1);\n    }\n    cVar4 = streq(local_260,&DAT_001038bc);\n    if (cVar4 == '\\0') {\n      local_250 = (FILE *)rpl_fopen(local_260,&DAT_00103968);\n      if (local_250 == (FILE *)0x0) {\n        uVar10 = quotearg_style(4,local_260);\n        uVar12 = gettext(\"cannot open %s for reading\");\n        piVar15 = __errno_location();\n        local_2c4 = *piVar15;\n        local_2c8 = 1;\n        local_230 = uVar12;\n        error(1,local_2c4,uVar12,uVar10);\n      }\n    }\n    else {\n      local_250 = _stdin;\n    }\n    iVar6 = fileno_unlocked(local_250);\n    iVar6 = fstat(iVar6,&local_b8);\n    if ((iVar6 == 0) && ((local_b8.st_mode & 0xf000) == 0x8000)) {\n      dVar16 = (double)physmem_available();\n      dVar17 = DAT_00103b50;\n      if (dVar16 / DAT_00103b48 <= DAT_00103b50) {\n        dVar17 = (double)physmem_available();\n        dVar17 = dVar17 / DAT_00103b48;\n      }\n      if ((double)local_b8.st_size <= dVar17) {\n        bVar2 = true;\n        readtokens0_init(&local_1d8);\n        cVar4 = readtokens0(local_250,&local_1d8);\n        if ((cVar4 != '\\x01') || (iVar6 = rpl_fclose(local_250), iVar6 != 0)) {\n          uVar10 = quotearg_style(4,local_260);\n          local_228 = gettext(\"cannot read file names from %s\");\n          local_2c0 = 1;\n          local_2bc = 0;\n          error(1,0,local_228,uVar10);\n        }\n        local_268 = local_1d0;\n        local_270 = local_1d8;\n        local_258 = argv_iter_init_argv(local_1d0);\n        goto LAB_00102714;\n      }\n    }\n    local_268 = (undefined8 *)0x0;\n    local_270 = 0;\n    local_258 = argv_iter_init_stream(local_250);\n  }\nLAB_00102714:\n  if (local_258 == 0) {\n    xalloc_die();\n  }\n  local_248 = (undefined4 *)get_input_fstatus(local_270,local_268);\n  if (total_mode == 2) {\n    number_width = 1;\n  }\n  else {\n    number_width = compute_number_width(local_270,local_248);\n  }\n  local_2e6 = true;\n  local_2d8 = 0;\n  while (local_240 = (char *)argv_iter(local_258,&local_2e4), local_240 != (char *)0x0) {\n    bVar1 = false;\n    if (((local_260 != 0) && (cVar4 = streq(local_260,&DAT_001038bc), cVar4 != '\\0')) &&\n       (cVar4 = streq(local_240,&DAT_001038bc), cVar4 != '\\0')) {\n      uVar10 = quotearg_style(4,local_240);\n      local_220 = gettext(\"when reading file names from standard input, no file name of %s allowed\")\n      ;\n      local_2b8 = 0;\n      local_2b4 = 0;\n      error(0,0,local_220,uVar10);\n      bVar1 = true;\n    }\n    if (*local_240 == '\\0') {\n      if (local_260 == 0) {\n        uVar10 = gettext(\"invalid zero-length file name\");\n        local_2b0 = 0;\n        local_2ac = 0;\n        local_218 = &DAT_001037f7;\n        error(0,0,&DAT_001037f7,uVar10);\n      }\n      else {\n        uVar10 = gettext(\"invalid zero-length file name\");\n        uVar12 = argv_iter_n_args(local_258);\n        uVar11 = quotearg_n_style_colon(0,3,local_260);\n        local_2a8 = 0;\n        local_2a4 = 0;\n        local_210 = \"%s:%zu: %s\";\n        error(0,0,\"%s:%zu: %s\",uVar11,uVar12,uVar10);\n      }\n      bVar1 = true;\n    }\n    if (bVar1) {\n      local_2e6 = false;\n    }\n    else {\n      if (local_270 == 0) {\n        lVar13 = 0;\n      }\n      else {\n        lVar13 = (long)local_2d8 * 0x98;\n      }\n      bVar5 = wc_file(local_240,lVar13 + (long)local_248);\n      local_2e6 = (bVar5 & local_2e6) != 0;\n    }\n    if (local_270 == 0) {\n      *local_248 = 1;\n    }\n    local_2d8 = local_2d8 + 1;\n  }\n  if (local_2e4 == 4) {\n    uVar10 = quotearg_n_style_colon(0,3,local_260);\n    uVar12 = gettext(\"%s: read error\");\n    piVar15 = __errno_location();\n    local_29c = *piVar15;\n    local_2a0 = 0;\n    local_208 = uVar12;\n    error(0,local_29c,uVar12,uVar10);\n    local_2e6 = false;\n  }\n  else if (((local_2e4 < 5) && (local_2e4 != 2)) && (local_2e4 == 3)) {\n    xalloc_die();\n  }\n  if (((local_2e6 != false) && (local_260 == 0)) &&\n     (lVar13 = argv_iter_n_args(local_258), lVar13 == 0)) {\n    bVar5 = wc_file(0,local_248);\n    local_2e6 = (bVar5 & local_2e6) != 0;\n  }\n  if (bVar2) {\n    readtokens0_free(&local_1d8);\n  }\n  if ((total_mode != 3) && ((total_mode != 0 || (uVar14 = argv_iter_n_args(local_258), 1 < uVar14)))\n     ) {\n    if (total_lines_overflow != '\\0') {\n      total_lines = 0xffffffffffffffff;\n      local_200 = gettext(\"total lines\");\n      local_298 = 0;\n      local_294 = 0x4b;\n      error(0,0x4b,local_200);\n      local_2e6 = false;\n    }\n    if (total_words_overflow != '\\0') {\n      total_words = 0xffffffffffffffff;\n      local_1f8 = gettext(\"total words\");\n      local_290 = 0;\n      local_28c = 0x4b;\n      error(0,0x4b,local_1f8);\n      local_2e6 = false;\n    }\n    if (total_chars_overflow != '\\0') {\n      total_chars = 0xffffffffffffffff;\n      local_1f0 = gettext(\"total characters\");\n      local_288 = 0;\n      local_284 = 0x4b;\n      error(0,0x4b,local_1f0);\n      local_2e6 = false;\n    }\n    if (total_bytes_overflow != '\\0') {\n      total_bytes = 0xffffffffffffffff;\n      local_1e8 = gettext(\"total bytes\");\n      local_280 = 0;\n      local_27c = 0x4b;\n      error(0,0x4b,local_1e8);\n      local_2e6 = false;\n    }\n    if (total_mode == 2) {\n      uVar10 = 0;\n    }\n    else {\n      uVar10 = gettext(\"total\");\n    }\n    write_counts(total_lines,total_words,total_chars,total_bytes,max_line_length,uVar10);\n  }\n  argv_iter_free(local_258);\n  free(local_248);\n  if ((have_read_stdin != '\\0') && (iVar6 = close(0), iVar6 != 0)) {\n    piVar15 = __errno_location();\n    local_274 = *piVar15;\n    local_278 = 1;\n    local_1e0 = &DAT_001038bc;\n    error(1,local_274,&DAT_001038bc);\n  }\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return local_2e6 ^ 1;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getpagesize",
+                        "setvbuf",
+                        "getenv",
+                        "getopt_long",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage",
+                        "__xargmatch_internal",
+                        "__ctype_b_loc",
+                        "btoc32",
+                        "maybe_c32isnbspace",
+                        "argv_iter_init_argv",
+                        "quotearg_style",
+                        "gettext",
+                        "error",
+                        "fprintf",
+                        "streq",
+                        "rpl_fopen",
+                        "__errno_location",
+                        "fileno_unlocked",
+                        "fstat",
+                        "physmem_available",
+                        "readtokens0_init",
+                        "readtokens0",
+                        "rpl_fclose",
+                        "argv_iter_init_stream",
+                        "xalloc_die",
+                        "get_input_fstatus",
+                        "compute_number_width",
+                        "argv_iter",
+                        "argv_iter_n_args",
+                        "quotearg_n_style_colon",
+                        "wc_file",
+                        "readtokens0_free",
+                        "write_counts",
+                        "argv_iter_free",
+                        "free",
+                        "close",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "wc_decompiled.c"
+                }
+            }
+        ]
+    }
+}

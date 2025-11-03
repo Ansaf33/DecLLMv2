@@ -1,0 +1,635 @@
+{
+    "file": "KPRCA_00019",
+    "decompiled_code": {
+        "link.c": [
+            {
+                "func_name": "link_send",
+                "func_c_signature": "void link_send(byte param_1,uint param_2,void *param_3)",
+                "decompiled_code": "void link_send(byte param_1,uint param_2,void *param_3) {\n  ushort uVar1;\n  byte local_165;\n  undefined local_164;\n  undefined auStack_163 [339];\n  undefined local_10 [8];\n  \n  uVar1 = (ushort)param_2 & 0x1ff;\n  local_164 = (undefined)(uVar1 >> 5);\n  local_165 = local_165 & 4 | (char)uVar1 * '\\b' | param_1 & 3 | 4;\n  if (0x153 < param_2) {\n    param_2 = 0x153;\n  }\n  memcpy(auStack_163,param_3,param_2);\n  transmit(1,&local_165,param_2 + 2,local_10);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "link_send",
+                        "memcpy",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "link_send",
+                        "_session_send"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "link_recv",
+                "func_c_signature": "undefined4 link_recv(uint *param_1,uint *param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 link_recv(uint *param_1,uint *param_2,undefined4 param_3) {\n  int iVar1;\n  undefined4 uVar2;\n  ushort local_12;\n  uint local_10 [2];\n  \n  while ((iVar1 = receive(0,&local_12,2,local_10), iVar1 == 0 && (1 < local_10[0]))) {\n    if ((local_12 >> 3 & 0x1ff) < 0x154) {\n      iVar1 = receive(0,param_3,local_12 >> 3 & 0x1ff,local_10);\n      if ((iVar1 == 0) && ((local_12 >> 3 & 0x1ff) == local_10[0])) {\n        *param_1 = (uint)((byte)local_12 & 3);\n        *param_2 = (uint)(local_12 >> 3 & 0x1ff);\n        uVar2 = 0;\n      }\n      else {\n        uVar2 = 0xffffffff;\n      }\n      return uVar2;\n    }\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "link_recv",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "link_recv",
+                        "session_loop"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "send_data",
+                "func_c_signature": "void send_data(undefined4 param_1,byte param_2,size_t param_3,void *param_4)",
+                "decompiled_code": "void send_data(undefined4 param_1,byte param_2,size_t param_3,void *param_4) {\n  byte *__ptr;\n  undefined4 uVar1;\n  \n  uVar1 = 0x1150e;\n  __ptr = (byte *)malloc(param_3 + 1);\n  *__ptr = param_2 | 0xa0;\n  memcpy(__ptr + 1,param_4,param_3);\n  session_send(param_1,param_3 + 1,__ptr,uVar1);\n  free(__ptr);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "send_data",
+                        "malloc",
+                        "memcpy",
+                        "session_send",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "send_data",
+                        "send_report",
+                        "handle_control_packet"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "send_handshake",
+                "func_c_signature": "void send_handshake(undefined4 param_1,undefined param_2)",
+                "decompiled_code": "void send_handshake(undefined4 param_1,undefined param_2) {\n  undefined local_d [5];\n  \n  local_d[0] = param_2;\n  session_send(param_1,1,local_d,0x11586);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "send_handshake",
+                        "session_send"
+                    ],
+                    "calling_functions": [
+                        "send_handshake",
+                        "handle_control_packet"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "send_report",
+                "func_c_signature": "void send_report(undefined4 param_1)",
+                "decompiled_code": "void send_report(undefined4 param_1) {\n  undefined4 uVar1;\n  undefined local_32c [804];\n  \n  random();\n  if (g_protocol == '\\0') {\n    uVar1 = 200;\n  }\n  else {\n    uVar1 = 700;\n  }\n  send_data(param_1,1,uVar1,local_32c);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "send_report",
+                        "random",
+                        "send_data"
+                    ],
+                    "calling_functions": [
+                        "send_report",
+                        "handle_control_packet"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_control_packet",
+                "func_c_signature": "void handle_control_packet(undefined4 param_1,uint param_2,byte *param_3)",
+                "decompiled_code": "void handle_control_packet(undefined4 param_1,uint param_2,byte *param_3) {\n  byte bVar1;\n  size_t __n;\n  \n  if (param_2 != 0) {\n    bVar1 = *param_3 & 0xf;\n    if ((g_incoming_report_type == -1) || (*param_3 >> 4 == 10)) {\n      switch(*param_3 >> 4) {\n      default:\n        send_handshake(param_1,3);\n        break;\n      case 1:\n        if (bVar1 == 5) {\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        break;\n      case 4:\n        if (bVar1 == 1) {\n          send_report(param_1);\n        }\n        else if (bVar1 == 2) {\n          send_data(param_1,2,600,g_incoming_report);\n        }\n        else {\n          send_handshake(param_1,4);\n        }\n        break;\n      case 5:\n        if (bVar1 == 2) {\n          g_incoming_report_type = 2;\n        }\n        else {\n          send_handshake(param_1,4);\n        }\n        break;\n      case 6:\n        send_data(param_1,0,1,&g_protocol);\n        break;\n      case 7:\n        g_protocol = *param_3 & 1;\n        send_handshake(param_1,0);\n        break;\n      case 10:\n        if (g_incoming_report_type == -1) {\n          send_handshake(param_1,1);\n        }\n        else {\n          if (1 < param_2) {\n            __n = param_2 - 1;\n            if (600 < __n) {\n              __n = 600;\n            }\n            memcpy(g_incoming_report,param_3 + 1,__n);\n          }\n          send_handshake(param_1,0);\n          g_incoming_report_type = -1;\n        }\n        break;\n      case 0xb:\n        send_data(param_1,0,0x35,main);\n      }\n    }\n    else {\n      g_incoming_report_type = -1;\n      send_handshake(param_1,1);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_control_packet",
+                        "send_handshake",
+                        "exit",
+                        "send_report",
+                        "send_data",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "handle_control_packet",
+                        "handle_event"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_event",
+                "func_c_signature": "undefined ** handle_event(undefined4 param_1,int param_2,int *param_3)",
+                "decompiled_code": "undefined ** handle_event(undefined4 param_1,int param_2,int *param_3) {\n  undefined **ppuVar1;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  if ((param_2 == 0) && (ppuVar1 = (undefined **)*param_3, ppuVar1 == (undefined **)0x0)) {\n    ppuVar1 = (undefined **)handle_control_packet(param_1,param_3[2],param_3[1]);\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_event",
+                        "handle_control_packet"
+                    ],
+                    "calling_functions": [
+                        "handle_event"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_interrupt_connect",
+                "func_c_signature": "void handle_interrupt_connect(undefined4 param_1)",
+                "decompiled_code": "void handle_interrupt_connect(undefined4 param_1) {\n  session_register_userdata(param_1,1);\n  session_register_events(param_1,handle_event);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_interrupt_connect",
+                        "session_register_userdata",
+                        "session_register_events"
+                    ],
+                    "calling_functions": [
+                        "handle_interrupt_connect"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  undefined *puVar1;\n  \n  puVar1 = &stack0x00000004;\n  session_register_psm(0x1011,handle_control_connect);\n  session_register_psm(0x1013,handle_interrupt_connect);\n  session_loop(puVar1);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "session_register_psm",
+                        "session_loop"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            }
+        ],
+        "session.c": [
+            {
+                "func_name": "_session_send",
+                "func_c_signature": "void _session_send(undefined2 param_1,ushort param_2,void *param_3)",
+                "decompiled_code": "void _session_send(undefined2 param_1,ushort param_2,void *param_3) {\n  undefined4 uVar1;\n  uint local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  g_temp_packet = param_2;\n  DAT_00026342 = param_1;\n  memcpy(&DAT_00026344,param_3,(uint)param_2);\n  for (; local_10 < param_2 + 4; local_10 = local_10 + local_14) {\n    local_14 = (param_2 + 4) - local_10;\n    if (0x153 < local_14) {\n      local_14 = 0x153;\n    }\n    if (local_10 == 0) {\n      uVar1 = 2;\n    }\n    else {\n      uVar1 = 1;\n    }\n    link_send(uVar1,local_14,(int)&g_temp_packet + local_10);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_session_send",
+                        "memcpy",
+                        "link_send"
+                    ],
+                    "calling_functions": [
+                        "_session_send",
+                        "session_send_reject",
+                        "session_send_config",
+                        "session_connection_request",
+                        "session_configuration_request",
+                        "session_disconnection_request",
+                        "session_echo_request",
+                        "session_information_request",
+                        "session_send"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_find_psm",
+                "func_c_signature": "undefined4 * session_find_psm(int param_1)",
+                "decompiled_code": "undefined4 * session_find_psm(int param_1) {\n  undefined4 *local_8;\n  \n  local_8 = g_psm_head;\n  while( true ) {\n    if (local_8 == (undefined4 *)0x0) {\n      return (undefined4 *)0x0;\n    }\n    if (param_1 == local_8[1]) break;\n    local_8 = (undefined4 *)*local_8;\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_find_psm"
+                    ],
+                    "calling_functions": [
+                        "session_find_psm",
+                        "session_connection_request",
+                        "session_register_psm"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_new_channel",
+                "func_c_signature": "undefined * session_new_channel(ushort param_1)",
+                "decompiled_code": "undefined * session_new_channel(ushort param_1) {\n  undefined *puVar1;\n  ushort local_20;\n  \n  local_20 = param_1;\n  if (param_1 == 0) {\n    local_20 = (ushort)g_dynamic_id;\n    g_dynamic_id = g_dynamic_id + 1;\n  }\n  puVar1 = (undefined *)malloc(0x18);\n  *puVar1 = 0;\n  *(ushort *)(puVar1 + 2) = local_20;\n  *(undefined4 *)(puVar1 + 0x14) = 0x2a0;\n  *(undefined4 *)(puVar1 + 0x10) = 0x2a0;\n  *(undefined **)(g_channels + (uint)local_20 * 4) = puVar1;\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_new_channel",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "session_new_channel",
+                        "session_connection_request"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_send_reject",
+                "func_c_signature": "void session_send_reject(undefined param_1,undefined2 param_2)",
+                "decompiled_code": "void session_send_reject(undefined param_1,undefined2 param_2) {\n  undefined local_12;\n  undefined local_11;\n  undefined2 local_10;\n  undefined2 local_e;\n  \n  local_12 = 1;\n  local_11 = param_1;\n  local_10 = 2;\n  local_e = param_2;\n  _session_send(1,6,&local_12,0x11ad0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_send_reject",
+                        "_session_send"
+                    ],
+                    "calling_functions": [
+                        "session_send_reject",
+                        "session_connection_request",
+                        "session_configuration_request",
+                        "session_disconnection_request",
+                        "session_disconnection_response",
+                        "session_information_request",
+                        "session_handle_command"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_send_config",
+                "func_c_signature": "void session_send_config(int param_1)",
+                "decompiled_code": "void session_send_config(int param_1) {\n  undefined local_14;\n  undefined local_13;\n  undefined2 local_12;\n  undefined2 local_10;\n  undefined2 local_e;\n  \n  local_14 = 4;\n  local_13 = g_config_req_id;\n  local_12 = 4;\n  local_10 = *(undefined2 *)(param_1 + 4);\n  local_e = 0;\n  _session_send(1,8,&local_14);\n  *(undefined *)(param_1 + 1) = 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_send_config",
+                        "_session_send"
+                    ],
+                    "calling_functions": [
+                        "session_send_config",
+                        "session_configuration_request"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_connection_request",
+                "func_c_signature": "void session_connection_request(int param_1)",
+                "decompiled_code": "void session_connection_request(int param_1) {\n  undefined local_24;\n  undefined local_23;\n  undefined2 local_22;\n  undefined2 local_20;\n  undefined2 local_1e;\n  undefined2 local_1c;\n  undefined2 local_1a;\n  undefined *local_18;\n  int local_14;\n  undefined2 *local_10;\n  \n  local_10 = (undefined2 *)(param_1 + 4);\n  if (*(short *)(param_1 + 2) == 4) {\n    local_14 = session_find_psm(*local_10);\n    if (local_14 == 0) {\n      local_20 = 0;\n      local_1e = local_10[1];\n      local_1c = 2;\n    }\n    else {\n      local_18 = (undefined *)session_new_channel(0);\n      if (local_18 == (undefined *)0x0) {\n        session_send_reject(*(undefined *)(param_1 + 1),0);\n        return;\n      }\n      *(undefined2 *)(local_18 + 4) = local_10[1];\n      *local_18 = 1;\n      local_18[1] = 0;\n      if (*(int *)(local_14 + 8) != 0) {\n        (**(code **)(local_14 + 8))(local_18);\n      }\n      local_20 = *(undefined2 *)(local_18 + 2);\n      local_1e = *(undefined2 *)(local_18 + 4);\n      local_1c = 0;\n    }\n    local_1a = 0;\n    local_24 = 3;\n    local_23 = *(undefined *)(param_1 + 1);\n    local_22 = 8;\n    _session_send(1,0xc,&local_24);\n  }\n  else {\n    session_send_reject(*(undefined *)(param_1 + 1),0);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_connection_request",
+                        "session_find_psm",
+                        "session_new_channel",
+                        "session_send_reject",
+                        "_session_send"
+                    ],
+                    "calling_functions": [
+                        "session_connection_request",
+                        "session_handle_command"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_configuration_request",
+                "func_c_signature": "void session_configuration_request(int param_1)",
+                "decompiled_code": "void session_configuration_request(int param_1) {\n  byte bVar1;\n  byte bVar2;\n  undefined2 uVar3;\n  ushort uVar4;\n  char *pcVar5;\n  ushort *puVar6;\n  undefined *__ptr;\n  int local_14;\n  uint local_10;\n  \n  puVar6 = (ushort *)(param_1 + 4);\n  local_10 = 0;\n  local_14 = 0;\n  if (*(ushort *)(param_1 + 2) < 4) {\n    session_send_reject(*(undefined *)(param_1 + 1),0);\n  }\n  else {\n    pcVar5 = *(char **)(g_channels + (uint)*puVar6 * 4);\n    if ((pcVar5 == (char *)0x0) || (*pcVar5 == '\\0')) {\n      session_send_reject(*(undefined *)(param_1 + 1),2);\n    }\n    else if ((*pcVar5 == '\\x01') && (pcVar5[1] != '\\0')) {\n      session_send_reject(*(undefined *)(param_1 + 1),2);\n    }\n    else {\n      __ptr = (undefined *)malloc(*(ushort *)(param_1 + 2) + 10);\n      if (__ptr == (undefined *)0x0) {\n        session_send_reject(*(undefined *)(param_1 + 1),0);\n      }\n      else {\n        *__ptr = 5;\n        __ptr[1] = *(undefined *)(param_1 + 1);\n        uVar3 = *(undefined2 *)(pcVar5 + 4);\n        __ptr[4] = (char)uVar3;\n        __ptr[5] = (char)((ushort)uVar3 >> 8);\n        __ptr[6] = (byte)*(undefined2 *)(param_1 + 6) & 1;\n        __ptr[7] = 0;\n        __ptr[8] = 0;\n        __ptr[9] = 0;\n        for (; local_10 < *(ushort *)(param_1 + 2) - 4; local_10 = local_10 + bVar2 + 2) {\n          bVar1 = *(byte *)((int)puVar6 + local_10 + 4);\n          bVar2 = *(byte *)((int)puVar6 + local_10 + 5);\n          if ((bVar1 & 0x7f) == 1) {\n            if (bVar2 == 2) {\n              uVar4 = *(ushort *)((int)puVar6 + local_10 + 6);\n              if (uVar4 < 0x30) {\n                __ptr[8] = 1;\n                __ptr[9] = 0;\n                __ptr[local_14 + 10] = bVar1;\n                __ptr[local_14 + 0xb] = 2;\n                *(undefined2 *)(__ptr + local_14 + 0xc) = 0x30;\n                local_14 = local_14 + 4;\n              }\n              else {\n                *(uint *)(pcVar5 + 0x10) = (uint)uVar4;\n                __ptr[local_14 + 10] = bVar1;\n                __ptr[local_14 + 0xb] = 2;\n                *(ushort *)(__ptr + local_14 + 0xc) = uVar4;\n                local_14 = local_14 + 4;\n              }\n            }\n            else {\n              __ptr[8] = 2;\n              __ptr[9] = 0;\n            }\n          }\n          else if (-1 < (char)bVar1) {\n            __ptr[8] = 3;\n            __ptr[9] = 0;\n            __ptr[local_14 + 10] = bVar1;\n            __ptr[local_14 + 0xb] = bVar2;\n            memcpy(__ptr + local_14 + 0xc,(void *)((int)puVar6 + local_10 + 6),(uint)bVar2);\n          }\n        }\n        __ptr[2] = (char)(local_14 + 6);\n        __ptr[3] = (char)((uint)(local_14 + 6) >> 8);\n        _session_send(1,*(short *)(__ptr + 2) + 4,__ptr);\n        free(__ptr);\n        if (((*(short *)(__ptr + 8) == 0) && ((*(ushort *)(__ptr + 6) & 1) == 0)) &&\n           (*pcVar5 != '\\x02')) {\n          session_send_config(pcVar5);\n        }\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_configuration_request",
+                        "session_send_reject",
+                        "malloc",
+                        "memcpy",
+                        "_session_send",
+                        "free",
+                        "session_send_config"
+                    ],
+                    "calling_functions": [
+                        "session_configuration_request",
+                        "session_handle_command"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_configuration_response",
+                "func_c_signature": "void session_configuration_response(int param_1)",
+                "decompiled_code": "void session_configuration_response(int param_1) {\n  char *pcVar1;\n  \n  pcVar1 = *(char **)(g_channels + (uint)*(ushort *)(param_1 + 4) * 4);\n  if (((pcVar1 != (char *)0x0) && (*pcVar1 == '\\x01')) && (pcVar1[1] == '\\x01')) {\n    *pcVar1 = '\\x02';\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_configuration_response"
+                    ],
+                    "calling_functions": [
+                        "session_configuration_response",
+                        "session_handle_command"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_disconnection_request",
+                "func_c_signature": "void session_disconnection_request(int param_1)",
+                "decompiled_code": "void session_disconnection_request(int param_1) {\n  undefined4 local_28 [3];\n  undefined local_1c;\n  undefined local_1b;\n  undefined2 local_1a;\n  ushort local_18;\n  ushort local_16;\n  char *local_14;\n  ushort *local_10;\n  \n  local_10 = (ushort *)(param_1 + 4);\n  if (*(short *)(param_1 + 2) == 4) {\n    local_14 = *(char **)(g_channels + (uint)*local_10 * 4);\n    if ((local_14 == (char *)0x0) || (*local_14 == '\\0')) {\n      session_send_reject(*(undefined *)(param_1 + 1),2);\n    }\n    else {\n      local_28[0] = 1;\n      if (*(int *)(local_14 + 8) != 0) {\n        (**(code **)(local_14 + 8))(local_14,*(undefined4 *)(local_14 + 0xc),local_28);\n      }\n      local_1c = 7;\n      local_1b = *(undefined *)(param_1 + 1);\n      local_1a = 4;\n      local_18 = *local_10;\n      local_16 = local_10[1];\n      _session_send(1,8,&local_1c);\n      *local_14 = '\\0';\n    }\n  }\n  else {\n    session_send_reject(*(undefined *)(param_1 + 1),0);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_disconnection_request",
+                        "session_send_reject",
+                        "_session_send"
+                    ],
+                    "calling_functions": [
+                        "session_disconnection_request",
+                        "session_handle_command"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_disconnection_response",
+                "func_c_signature": "void session_disconnection_response(int param_1)",
+                "decompiled_code": "void session_disconnection_response(int param_1) {\n  char *pcVar1;\n  \n  if (*(short *)(param_1 + 2) == 4) {\n    pcVar1 = *(char **)(g_channels + (uint)*(ushort *)(param_1 + 4) * 4);\n    if ((pcVar1 == (char *)0x0) || (*pcVar1 != '\\x03')) {\n      session_send_reject(*(undefined *)(param_1 + 1),2);\n    }\n    else {\n      *pcVar1 = '\\0';\n    }\n  }\n  else {\n    session_send_reject(*(undefined *)(param_1 + 1),0);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_disconnection_response",
+                        "session_send_reject"
+                    ],
+                    "calling_functions": [
+                        "session_disconnection_response",
+                        "session_handle_command"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_echo_request",
+                "func_c_signature": "void session_echo_request(undefined *param_1)",
+                "decompiled_code": "void session_echo_request(undefined *param_1) {\n  *param_1 = 9;\n  _session_send(1,*(short *)(param_1 + 2) + 4,param_1,0x122db);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_echo_request",
+                        "_session_send"
+                    ],
+                    "calling_functions": [
+                        "session_echo_request",
+                        "session_handle_command"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_information_request",
+                "func_c_signature": "void session_information_request(int param_1)",
+                "decompiled_code": "void session_information_request(int param_1) {\n  undefined local_18;\n  undefined local_17;\n  undefined2 local_16;\n  undefined2 local_14;\n  undefined2 local_12;\n  undefined2 *local_10;\n  \n  local_10 = (undefined2 *)(param_1 + 4);\n  if (*(short *)(param_1 + 2) == 2) {\n    local_17 = *(undefined *)(param_1 + 1);\n    local_18 = 0xb;\n    local_16 = 4;\n    local_14 = *local_10;\n    local_12 = 1;\n    _session_send(1,8,&local_18,0x12312);\n  }\n  else {\n    session_send_reject(*(undefined *)(param_1 + 1),0);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_information_request",
+                        "_session_send",
+                        "session_send_reject"
+                    ],
+                    "calling_functions": [
+                        "session_information_request",
+                        "session_handle_command"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_handle_command",
+                "func_c_signature": "void session_handle_command(undefined *param_1)",
+                "decompiled_code": "void session_handle_command(undefined *param_1) {\n  switch(*param_1) {\n  default:\n    session_send_reject(param_1[1],0);\n    break;\n  case 1:\n  case 3:\n  case 9:\n  case 0xb:\n    break;\n  case 2:\n    session_connection_request(param_1);\n    break;\n  case 4:\n    session_configuration_request(param_1);\n    break;\n  case 5:\n    session_configuration_response(param_1);\n    break;\n  case 6:\n    session_disconnection_request(param_1);\n    break;\n  case 7:\n    session_disconnection_response(param_1);\n    break;\n  case 8:\n    session_echo_request(param_1);\n    break;\n  case 10:\n    session_information_request(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_handle_command",
+                        "session_send_reject",
+                        "session_connection_request",
+                        "session_configuration_request",
+                        "session_configuration_response",
+                        "session_disconnection_request",
+                        "session_disconnection_response",
+                        "session_echo_request",
+                        "session_information_request"
+                    ],
+                    "calling_functions": [
+                        "session_handle_command",
+                        "session_handle_control"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_handle_control",
+                "func_c_signature": "undefined4 session_handle_control(void)",
+                "decompiled_code": "undefined4 session_handle_control(void) {\n  undefined *puVar1;\n  int local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if ((uint)g_current_packet < local_10 + 4U) {\n      return 0;\n    }\n    puVar1 = &DAT_00016324 + local_10;\n    if ((uint)g_current_packet < local_10 + 4 + (uint)*(ushort *)(&DAT_00016326 + local_10)) break;\n    local_10 = local_10 + 4 + (uint)*(ushort *)(&DAT_00016326 + local_10);\n    session_handle_command(puVar1);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_handle_control",
+                        "session_handle_command"
+                    ],
+                    "calling_functions": [
+                        "session_handle_control",
+                        "session_handle_packet"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_handle_packet",
+                "func_c_signature": "undefined4 session_handle_packet(void)",
+                "decompiled_code": "undefined4 session_handle_packet(void) {\n  undefined4 uVar1;\n  undefined4 local_1c;\n  undefined *local_18;\n  uint local_14;\n  char *local_10;\n  \n  if (DAT_00016322 == 1) {\n    uVar1 = session_handle_control();\n  }\n  else {\n    local_10 = *(char **)(g_channels + (uint)DAT_00016322 * 4);\n    if ((local_10 == (char *)0x0) || (*local_10 != '\\x02')) {\n      uVar1 = 0;\n    }\n    else {\n      local_1c = 0;\n      local_18 = &DAT_00016324;\n      local_14 = (uint)g_current_packet;\n      if (*(int *)(local_10 + 8) != 0) {\n        (**(code **)(local_10 + 8))(local_10,*(undefined4 *)(local_10 + 0xc),&local_1c);\n      }\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_handle_packet",
+                        "session_handle_control"
+                    ],
+                    "calling_functions": [
+                        "session_handle_packet",
+                        "session_loop"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_loop",
+                "func_c_signature": "void session_loop(void)",
+                "decompiled_code": "void session_loop(void) {\n  int iVar1;\n  size_t local_16c;\n  int local_168;\n  undefined local_163 [339];\n  uint local_10;\n  \n  local_10 = 0xffffffff;\nLAB_00012667:\n  iVar1 = link_recv(&local_168,&local_16c,local_163);\n  if (iVar1 != 0) {\n    return;\n  }\n  if (local_168 == 2) {\n    local_10 = 0;\n    memset(&g_current_packet,0,0x10003);\n  }\n  else if (local_168 != 1) {\n    local_10 = 0xffffffff;\n    goto LAB_00012667;\n  }\n  if (local_10 != 0xffffffff) {\n    if (local_16c + local_10 < 0x10004) {\n      memcpy((void *)((int)&g_current_packet + local_10),local_163,local_16c);\n      local_10 = local_16c + local_10;\n      if ((3 < local_10) && (g_current_packet + 4 == local_10)) {\n        local_10 = 0xffffffff;\n        iVar1 = session_handle_packet();\n        if (iVar1 != 0) {\n          return;\n        }\n      }\n    }\n    else {\n      local_10 = 0xffffffff;\n    }\n  }\n  goto LAB_00012667;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_loop",
+                        "link_recv",
+                        "memset",
+                        "memcpy",
+                        "session_handle_packet"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "session_loop"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_register_psm",
+                "func_c_signature": "void session_register_psm(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "void session_register_psm(undefined4 param_1,undefined4 param_2) {\n  undefined4 *local_10;\n  \n  local_10 = (undefined4 *)session_find_psm(param_1);\n  if (local_10 == (undefined4 *)0x0) {\n    local_10 = (undefined4 *)malloc(0xc);\n    if (local_10 == (undefined4 *)0x0) {\n      return;\n    }\n    local_10[1] = param_1;\n    *local_10 = g_psm_head;\n    g_psm_head = local_10;\n  }\n  local_10[2] = param_2;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_register_psm",
+                        "session_find_psm",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "session_register_psm"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_register_events",
+                "func_c_signature": "void session_register_events(int param_1,undefined4 param_2)",
+                "decompiled_code": "void session_register_events(int param_1,undefined4 param_2) {\n  *(undefined4 *)(param_1 + 8) = param_2;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_register_events"
+                    ],
+                    "calling_functions": [
+                        "handle_control_connect",
+                        "handle_interrupt_connect",
+                        "session_register_events"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_register_userdata",
+                "func_c_signature": "void session_register_userdata(int param_1,undefined4 param_2)",
+                "decompiled_code": "void session_register_userdata(int param_1,undefined4 param_2) {\n  *(undefined4 *)(param_1 + 0xc) = param_2;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_register_userdata"
+                    ],
+                    "calling_functions": [
+                        "handle_control_connect",
+                        "handle_interrupt_connect",
+                        "session_register_userdata"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "session_send",
+                "func_c_signature": "void session_send(int param_1,undefined2 param_2,undefined4 param_3)",
+                "decompiled_code": "void session_send(int param_1,undefined2 param_2,undefined4 param_3) {\n  _session_send(*(undefined2 *)(param_1 + 4),param_2,param_3,0x12751);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "session_send",
+                        "_session_send"
+                    ],
+                    "calling_functions": [
+                        "send_data",
+                        "send_handshake",
+                        "session_send"
+                    ],
+                    "defined_in_file": "KPRCA_00019_decompiled.c"
+                }
+            }
+        ]
+    }
+}

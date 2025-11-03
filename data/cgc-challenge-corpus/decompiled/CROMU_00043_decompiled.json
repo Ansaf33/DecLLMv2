@@ -1,0 +1,540 @@
+{
+    "file": "CROMU_00043",
+    "decompiled_code": {
+        "io.c": [
+            {
+                "func_name": "FailAndTerminate",
+                "func_c_signature": "void FailAndTerminate(int param_1)",
+                "decompiled_code": "void FailAndTerminate(int param_1) {\n  int iStack_30;\n  int iStack_2c;\n  undefined **ppuStack_24;\n  code *pcStack_20;\n  undefined *puStack_1c;\n  int iStack_18;\n  int iStack_14;\n  undefined4 uStack_10;\n  \n  uStack_10 = 0x1100c;\n  iStack_18 = param_1;\n  puStack_1c = &DAT_00014000;\n  pcStack_20 = (code *)0x11024;\n  TransmitFormattedBytes();\n  puStack_1c = (undefined *)0xffffffff;\n  pcStack_20 = ReceiveBytes;\n  _terminate();\n  ppuStack_24 = &_GLOBAL_OFFSET_TABLE_;\n  pcStack_20 = (code *)&stack0xfffffffc;\n  for (; iStack_14 != 0; iStack_14 = iStack_14 - iStack_30) {\n    iStack_2c = receive(0,iStack_18,iStack_14,&iStack_30);\n    if (iStack_2c != 0) {\n      FailAndTerminate(\"failed during receive\");\n    }\n    if (iStack_30 == 0) {\n      FailAndTerminate(\"zero bytes received\");\n    }\n    iStack_18 = iStack_18 + iStack_30;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FailAndTerminate",
+                        "TransmitFormattedBytes",
+                        "_terminate",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "FailAndTerminate",
+                        "ReceiveBytes",
+                        "ReceiveAndVerifyInitializationPacket",
+                        "ReceiveAndVerifyFilters",
+                        "ReceiveAndProcessFile",
+                        "ReceiveAndProcessStream"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReceiveBytes",
+                "func_c_signature": "void ReceiveBytes(int param_1,int param_2)",
+                "decompiled_code": "void ReceiveBytes(int param_1,int param_2) {\n  int local_14;\n  int local_10;\n  \n  for (; param_2 != 0; param_2 = param_2 - local_14) {\n    local_10 = receive(0,param_1,param_2,&local_14);\n    if (local_10 != 0) {\n      FailAndTerminate(\"failed during receive\");\n    }\n    if (local_14 == 0) {\n      FailAndTerminate(\"zero bytes received\");\n    }\n    param_1 = param_1 + local_14;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReceiveBytes",
+                        "receive",
+                        "FailAndTerminate"
+                    ],
+                    "calling_functions": [
+                        "ReceiveBytes",
+                        "ReceiveAndVerifyInitializationPacket",
+                        "ReceiveAndVerifyFilters",
+                        "ReceiveAndProcessFile",
+                        "ReceiveAndProcessStream"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "itoh",
+                "func_c_signature": "char itoh(byte param_1,int param_2)",
+                "decompiled_code": "char itoh(byte param_1,int param_2) {\n  char cVar1;\n  byte local_8;\n  \n  local_8 = param_1;\n  if (param_2 == 1) {\n    local_8 = param_1 >> 4;\n  }\n  switch(local_8 & 0xf) {\n  case 10:\n    cVar1 = 'A';\n    break;\n  case 0xb:\n    cVar1 = 'B';\n    break;\n  case 0xc:\n    cVar1 = 'C';\n    break;\n  case 0xd:\n    cVar1 = 'D';\n    break;\n  case 0xe:\n    cVar1 = 'E';\n    break;\n  case 0xf:\n    cVar1 = 'F';\n    break;\n  default:\n    cVar1 = (local_8 & 0xf) + 0x30;\n  }\n  return cVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "itoh"
+                    ],
+                    "calling_functions": [
+                        "itoh",
+                        "HexDump"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HexDump",
+                "func_c_signature": "void HexDump(int param_1,uint param_2)",
+                "decompiled_code": "void HexDump(int param_1,uint param_2) {\n  char *pcVar1;\n  int iVar2;\n  char cVar3;\n  size_t sVar4;\n  char local_4a [50];\n  int local_18;\n  int local_14;\n  uint local_10;\n  \n  for (local_10 = 0; local_10 < param_2; local_10 = local_10 + local_14) {\n    bzero(local_4a,0x32);\n    local_18 = 0;\n    for (local_14 = 0; (iVar2 = local_18, local_14 < 0x10 && (local_14 + local_10 < param_2));\n        local_14 = local_14 + 1) {\n      local_18 = local_18 + 1;\n      cVar3 = itoh(*(undefined *)(param_1 + local_14 + local_10),1);\n      local_4a[iVar2] = cVar3;\n      iVar2 = local_18;\n      local_18 = local_18 + 1;\n      cVar3 = itoh(*(undefined *)(param_1 + local_14 + local_10),0);\n      local_4a[iVar2] = cVar3;\n      pcVar1 = local_4a + local_18;\n      local_18 = local_18 + 1;\n      *pcVar1 = ' ';\n    }\n    local_4a[local_18] = '\\n';\n    sVar4 = strlen(local_4a);\n    TransmitBytes(local_4a,sVar4);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HexDump",
+                        "bzero",
+                        "itoh",
+                        "strlen",
+                        "TransmitBytes"
+                    ],
+                    "calling_functions": [
+                        "HexDump",
+                        "AnalyzePhysicalLayer",
+                        "AnalyzePacket"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "TransmitBytes",
+                "func_c_signature": "void TransmitBytes(int param_1,int param_2)",
+                "decompiled_code": "void TransmitBytes(int param_1,int param_2) {\n  undefined *puVar1;\n  undefined *puVar2;\n  int aiStack_30 [4];\n  int *piStack_20;\n  undefined auStack_1c [8];\n  int local_14;\n  int local_10;\n  \n  puVar2 = auStack_1c;\n  for (; param_2 != 0; param_2 = param_2 - local_14) {\n    *(int **)(puVar2 + -4) = &local_14;\n    *(int *)(puVar2 + -8) = param_2;\n    *(int *)(puVar2 + -0xc) = param_1;\n    *(undefined4 *)(puVar2 + -0x10) = 1;\n    *(undefined4 *)(puVar2 + -0x14) = 0x11253;\n    local_10 = transmit();\n    puVar1 = puVar2;\n    if (local_10 != 0) {\n      puVar1 = puVar2 + -0x10;\n      *(undefined4 *)(puVar2 + -0x10) = 0xfffffffe;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11269;\n      _terminate();\n    }\n    param_1 = param_1 + local_14;\n    puVar2 = puVar1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "TransmitBytes",
+                        "transmit",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "HexDump",
+                        "TransmitBytes",
+                        "vTransmitFormattedBytes",
+                        "TransmitOptionHeader",
+                        "DisplayStatistics",
+                        "AnalyzePacket"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "TransmitFormattedBytes",
+                "func_c_signature": "void TransmitFormattedBytes(undefined4 param_1)",
+                "decompiled_code": "void TransmitFormattedBytes(undefined4 param_1) {\n  vTransmitFormattedBytes(param_1,&stack0x00000008);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "TransmitFormattedBytes",
+                        "vTransmitFormattedBytes"
+                    ],
+                    "calling_functions": [
+                        "FailAndTerminate",
+                        "TransmitFormattedBytes",
+                        "TransmitOptionHeader",
+                        "DisplayStatistics",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "vTransmitFormattedBytes",
+                "func_c_signature": "void vTransmitFormattedBytes(char *param_1,char **param_2)",
+                "decompiled_code": "void vTransmitFormattedBytes(char *param_1,char **param_2) {\n  char *pcVar1;\n  char cVar2;\n  size_t sVar3;\n  char local_5d [10];\n  undefined local_53;\n  char local_52 [11];\n  char local_47 [11];\n  undefined4 local_3c;\n  undefined4 *local_38;\n  char *local_34;\n  char *local_30;\n  char *local_2c;\n  int local_28;\n  char *local_24;\n  int local_20;\n  char *local_1c;\n  int local_18;\n  char *local_14;\n  char *local_10;\n  \n  if (param_1 != (char *)0x0) {\n    while (pcVar1 = param_1, *param_1 != '\\0') {\n      local_2c = param_1;\n      for (; (*param_1 != '+' && (*param_1 != '\\0')); param_1 = param_1 + 1) {\n      }\n      TransmitBytes(pcVar1,(int)param_1 - (int)pcVar1);\n      if (*param_1 == '+') {\n        cVar2 = param_1[1];\n        if (cVar2 == 'x') {\n          local_24 = *param_2;\n          local_5d[0] = '0';\n          local_5d[1] = 0x78;\n          local_53 = 0;\n          for (local_28 = 9; 1 < local_28; local_28 = local_28 + -1) {\n            switch((uint)local_24 & 0xf) {\n            case 10:\n              local_5d[local_28] = 'A';\n              break;\n            case 0xb:\n              local_5d[local_28] = 'B';\n              break;\n            case 0xc:\n              local_5d[local_28] = 'C';\n              break;\n            case 0xd:\n              local_5d[local_28] = 'D';\n              break;\n            case 0xe:\n              local_5d[local_28] = 'E';\n              break;\n            case 0xf:\n              local_5d[local_28] = 'F';\n              break;\n            default:\n              local_5d[local_28] = ((byte)local_24 & 0xf) + 0x30;\n            }\n            local_24 = (char *)((int)local_24 >> 4);\n          }\n          TransmitBytes(local_5d,10);\n          param_2 = param_2 + 1;\n        }\n        else {\n          if ('x' < cVar2) {\n            return;\n          }\n          if (cVar2 == 'u') {\n            local_30 = *param_2;\n            local_20 = 0;\n            local_1c = local_30;\n            if (local_30 == (char *)0x0) {\n              local_20 = 1;\n            }\n            else {\n              for (; local_1c != (char *)0x0; local_1c = (char *)((uint)local_1c / 10)) {\n                local_20 = local_20 + 1;\n              }\n            }\n            pcVar1 = local_52 + local_20;\n            local_20 = local_20 + -1;\n            local_1c = local_30;\n            *pcVar1 = '\\0';\n            while (-1 < local_20) {\n              pcVar1 = local_52 + local_20;\n              local_20 = local_20 + -1;\n              *pcVar1 = (char)local_1c +\n                        ((char)((uint)local_1c / 10 << 2) + (char)((uint)local_1c / 10)) * -2 + '0';\n              local_1c = (char *)((uint)local_1c / 10);\n            }\n            sVar3 = strlen(local_52);\n            TransmitBytes(local_52,sVar3);\n            param_2 = param_2 + 1;\n          }\n          else {\n            if ('u' < cVar2) {\n              return;\n            }\n            if (cVar2 == 's') {\n              local_34 = *param_2;\n              sVar3 = strlen(local_34);\n              TransmitBytes(local_34,sVar3);\n              param_2 = param_2 + 1;\n            }\n            else {\n              if ('s' < cVar2) {\n                return;\n              }\n              if (cVar2 == 'd') {\n                local_10 = *param_2;\n                if ((int)local_10 < 0) {\n                  TransmitBytes(&DAT_0001404a,1);\n                  local_10 = (char *)-(int)local_10;\n                }\n                local_14 = local_10;\n                local_18 = 0;\n                if (local_10 == (char *)0x0) {\n                  local_18 = 1;\n                }\n                else {\n                  for (; local_14 != (char *)0x0; local_14 = (char *)((int)local_14 / 10)) {\n                    local_18 = local_18 + 1;\n                  }\n                }\n                local_14 = local_10;\n                pcVar1 = local_47 + local_18;\n                local_18 = local_18 + -1;\n                *pcVar1 = '\\0';\n                while (-1 < local_18) {\n                  pcVar1 = local_47 + local_18;\n                  local_18 = local_18 + -1;\n                  *pcVar1 = (char)local_14 + (char)((int)local_14 / 10) * -10 + '0';\n                  local_14 = (char *)((int)local_14 / 10);\n                }\n                sVar3 = strlen(local_47);\n                TransmitBytes(local_47,sVar3);\n                param_2 = param_2 + 1;\n              }\n              else {\n                if ('d' < cVar2) {\n                  return;\n                }\n                if (cVar2 == '!') {\n                  local_38 = *(undefined4 **)(param_1 + 2);\n                  local_3c = *(undefined4 *)(param_1 + 6);\n                  *local_38 = local_3c;\n                }\n                else {\n                  if (cVar2 != '+') {\n                    return;\n                  }\n                  TransmitBytes(&DAT_00014048,1);\n                }\n              }\n            }\n          }\n        }\n        param_1 = param_1 + 2;\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "vTransmitFormattedBytes",
+                        "TransmitBytes",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "TransmitFormattedBytes",
+                        "vTransmitFormattedBytes",
+                        "DisplayFormatted"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            }
+        ],
+        "packet_analysis.c": [
+            {
+                "func_name": "DisplayFormatted",
+                "func_c_signature": "undefined ** DisplayFormatted(int param_1,ushort param_2,undefined4 param_3)",
+                "decompiled_code": "undefined ** DisplayFormatted(int param_1,ushort param_2,undefined4 param_3) {\n  undefined **ppuVar1;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  if ((*(ushort *)(param_1 + 2) & param_2) != 0) {\n    ppuVar1 = (undefined **)vTransmitFormattedBytes(param_3,&stack0x00000010);\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DisplayFormatted",
+                        "vTransmitFormattedBytes"
+                    ],
+                    "calling_functions": [
+                        "DisplayFormatted",
+                        "AnalyzePhysicalLayer",
+                        "AnalyzeTransportLayer",
+                        "AnalyzeNetworkLayer",
+                        "AnalyzeApplicationLayer"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "TransmitOptionHeader",
+                "func_c_signature": "void TransmitOptionHeader(undefined *param_1)",
+                "decompiled_code": "void TransmitOptionHeader(undefined *param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  \n  switch(*param_1) {\n  case 1:\n    TransmitFormattedBytes(*(undefined4 *)(param_1 + 8));\n    TransmitBytes(&DAT_000140f5,1);\n    break;\n  case 2:\n    iVar2 = count_strings(*(undefined4 *)(param_1 + 8));\n    if (iVar2 == 2) {\n      uVar1 = next_string(*(undefined4 *)(param_1 + 8));\n      TransmitFormattedBytes\n                (\"GPS Coordinates: +s Latitude, +s Longitude\\n\",*(undefined4 *)(param_1 + 8),uVar1);\n    }\n    else {\n      TransmitFormattedBytes(\"Address: +s\\n\",*(undefined4 *)(param_1 + 8));\n    }\n    break;\n  case 3:\n    iVar2 = atoi(*(char **)(param_1 + 8));\n    if ((iVar2 < 5) && (-1 < iVar2)) {\n      TransmitFormattedBytes\n                (\"Capturing Authority: +s\\n\",*(undefined4 *)(authority_names + iVar2 * 4));\n    }\n    else {\n      TransmitFormattedBytes(\"Capturing Authority Unknown\\n\");\n    }\n    break;\n  case 4:\n    TransmitFormattedBytes(\"Capture Date: +s\\n\",*(undefined4 *)(param_1 + 8));\n    break;\n  case 5:\n    iVar2 = atoi(*(char **)(param_1 + 8));\n    if (iVar2 == 1) {\n      TransmitFormattedBytes(\"Sharing Allowed: True\\n\");\n    }\n    else {\n      TransmitFormattedBytes(\"Sharing Allowed: False\\n\");\n    }\n    break;\n  case 6:\n    iVar2 = atoi(*(char **)(param_1 + 8));\n    if (iVar2 == 1) {\n      TransmitFormattedBytes(\"This content has been modified\\n\");\n    }\n    else {\n      TransmitFormattedBytes(\"This content has not been modified from the original\\n\");\n    }\n    break;\n  case 7:\n    TransmitFormattedBytes(\"Capturing Device: +s\\n\",*(undefined4 *)(param_1 + 8));\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "TransmitOptionHeader",
+                        "TransmitFormattedBytes",
+                        "TransmitBytes",
+                        "count_strings",
+                        "next_string",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "TransmitOptionHeader",
+                        "DisplayStatistics"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DisplayStatistics",
+                "func_c_signature": "void DisplayStatistics(int param_1)",
+                "decompiled_code": "void DisplayStatistics(int param_1) {\n  int local_10;\n  \n  TransmitFormattedBytes(\"Final Statistics:\\n\");\n  TransmitFormattedBytes(\"\\tTotal Packets: +d\\n\",**(undefined4 **)(param_1 + 0x48));\n  TransmitFormattedBytes(\"\\tStart Time: +x\\n\",*(undefined4 *)(*(int *)(param_1 + 0x48) + 4));\n  TransmitFormattedBytes(\"\\tEnd Time: +x\\n\",*(undefined4 *)(*(int *)(param_1 + 0x48) + 8));\n  TransmitFormattedBytes(\"\\tLargest Packet: +d\\n\",*(undefined4 *)(*(int *)(param_1 + 0x48) + 0xc));\n  TransmitFormattedBytes(\"\\tSmallest Packet: +d\\n\",*(undefined4 *)(*(int *)(param_1 + 0x48) + 0x10))\n  ;\n  TransmitFormattedBytes\n            (\"\\tNumber of malformed packets: +d\\n\",*(undefined4 *)(*(int *)(param_1 + 0x48) + 0x20))\n  ;\n  TransmitFormattedBytes\n            (\"\\tNumber of packets shown +d\\n\",*(undefined4 *)(*(int *)(param_1 + 0x48) + 0x1c));\n  TransmitFormattedBytes(\"Option Headers:\\n\");\n  for (local_10 = *(int *)(*(int *)(param_1 + 0x48) + 0x28); local_10 != 0;\n      local_10 = *(int *)(local_10 + 4)) {\n    TransmitOptionHeader(local_10);\n  }\n  TransmitBytes(&DAT_000140f5,1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DisplayStatistics",
+                        "TransmitFormattedBytes",
+                        "TransmitOptionHeader",
+                        "TransmitBytes"
+                    ],
+                    "calling_functions": [
+                        "DisplayStatistics",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FilterMatch",
+                "func_c_signature": "undefined4 FilterMatch(ushort *param_1,int param_2)",
+                "decompiled_code": "undefined4 FilterMatch(ushort *param_1,int param_2) {\n  undefined4 uVar1;\n  int local_8;\n  \n  if (*(ushort *)(param_2 + 4) < *param_1) {\n    uVar1 = 0;\n  }\n  else if (*(int *)(param_2 + 8) == 0) {\n    uVar1 = 0;\n  }\n  else {\n    for (local_8 = 0; local_8 < (int)(uint)*param_1; local_8 = local_8 + 1) {\n      if ((*(byte *)(local_8 + *(int *)(param_1 + 2)) &\n          (*(byte *)(local_8 + *(int *)(param_2 + 8)) ^ *(byte *)(local_8 + *(int *)(param_1 + 4))))\n          != 0) {\n        return 0;\n      }\n    }\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FilterMatch"
+                    ],
+                    "calling_functions": [
+                        "FilterMatch",
+                        "ProcessAllFilters"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ProcessAllFilters",
+                "func_c_signature": "void ProcessAllFilters(undefined4 param_1,int param_2,int *param_3,int *param_4)",
+                "decompiled_code": "void ProcessAllFilters(undefined4 param_1,int param_2,int *param_3,int *param_4) {\n  int iVar1;\n  int iVar2;\n  int local_10;\n  int local_c;\n  int local_8;\n  \n  local_8 = 0;\n  local_c = 0;\n  for (local_10 = 0; local_10 < (int)(uint)*(byte *)(param_2 + 4); local_10 = local_10 + 1) {\n    iVar1 = *(int *)(param_2 + 8 + local_10 * 4);\n    iVar2 = FilterMatch(iVar1,param_1);\n    if (iVar2 == 1) {\n      if (*(char *)(iVar1 + 2) == '\\x01') {\n        local_8 = local_8 + 1;\n      }\n      else {\n        local_c = local_c + 1;\n      }\n    }\n  }\n  *param_3 = local_c;\n  *param_4 = local_8;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ProcessAllFilters",
+                        "FilterMatch"
+                    ],
+                    "calling_functions": [
+                        "ProcessAllFilters",
+                        "AnalyzePacket"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CalculateChecksum",
+                "func_c_signature": "int CalculateChecksum(int param_1,ushort param_2)",
+                "decompiled_code": "int CalculateChecksum(int param_1,ushort param_2) {\n  int local_c;\n  int local_8;\n  \n  local_8 = 0;\n  for (local_c = 0; local_c < (int)(uint)param_2; local_c = local_c + 1) {\n    local_8 = local_8 + (uint)*(byte *)(param_1 + local_c);\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CalculateChecksum"
+                    ],
+                    "calling_functions": [
+                        "CalculateChecksum",
+                        "AnalyzePhysicalLayer"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AnalyzePhysicalLayer",
+                "func_c_signature": "undefined4 AnalyzePhysicalLayer(int param_1,int param_2)",
+                "decompiled_code": "undefined4 AnalyzePhysicalLayer(int param_1,int param_2) {\n  int iVar1;\n  ushort uVar2;\n  undefined4 uVar3;\n  int iVar4;\n  \n  iVar1 = *(int *)(*(int *)(param_2 + 8) + 8);\n  if ((int)(uint)*(ushort *)(param_2 + 4) < iVar1) {\n    DisplayFormatted(param_1,1,\"Invalid Packet Length: +x (+x)\\n\",iVar1,*(undefined2 *)(param_2 + 4)\n                    );\n    uVar3 = 0xffffffff;\n  }\n  else if (iVar1 < 0xe) {\n    DisplayFormatted(param_1,1,\"Packet too short: +d\\n\",iVar1);\n    uVar3 = 0xffffffff;\n  }\n  else {\n    iVar4 = iVar1;\n    DisplayFormatted(param_1,1,\"Physical Length:+d\\n\",iVar1);\n    uVar2 = (short)*(undefined4 *)(*(int *)(param_2 + 8) + 0xc) - 1;\n    if (uVar2 < 3) {\n      uVar3 = *(undefined4 *)(physical_type_names + (uint)uVar2 * 4);\n      DisplayFormatted(param_1,1,\"Physical Type: +s\\n\",uVar3);\n      if (uVar2 == 0) {\n        if (iVar1 < 0x14) {\n          DisplayFormatted(param_1,1,\"Packet too short: +d\\n\",iVar1);\n          return 0xffffffff;\n        }\n        uVar2 = *(short *)(*(int *)(param_2 + 8) + 0xe) - 1;\n        if (3 < uVar2) {\n          DisplayFormatted(param_1,1,\"Invalid Wire speed\\n\",uVar3);\n          return 0xffffffff;\n        }\n        DisplayFormatted(param_1,1,\"Wire Speed: +s\\n\",\n                         *(undefined4 *)(physical_wire_speeds + (uint)uVar2 * 4));\n        iVar1 = *(int *)(*(int *)(param_2 + 8) + 0x10);\n        *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 0x14;\n        *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -0x14;\n        iVar4 = CalculateChecksum(*(undefined4 *)(param_2 + 8),*(undefined2 *)(param_2 + 4));\n        if (iVar1 != iVar4) {\n          uVar3 = CalculateChecksum(*(undefined4 *)(param_2 + 8),*(undefined2 *)(param_2 + 4));\n          DisplayFormatted(param_1,1,\"Invalid Physical Layer Checksum: got +x, expected +x\\n\",iVar1,\n                           uVar3);\n          return 0xffffffff;\n        }\n      }\n      else {\n        if (uVar2 != 1) {\n          if (uVar2 == 2) {\n            if ((*(ushort *)(param_1 + 2) & 1) != 0) {\n              HexDump(*(int *)(param_2 + 8) + 0xe,*(ushort *)(param_2 + 4) - 0xe);\n            }\n            return 0xffffffff;\n          }\n          DisplayFormatted(param_1,1,\"Invalid Physical Type\\n\",uVar2);\n          return 0xffffffff;\n        }\n        if (iVar1 < 0x2a) {\n          DisplayFormatted(param_1,1,\"Packet too short: +d\\n\",iVar1);\n          return 0xffffffff;\n        }\n        DisplayFormatted(param_1,1,\"Source Address: +x\\n\",\n                         *(undefined4 *)(*(int *)(param_2 + 8) + 0xe));\n        DisplayFormatted(param_1,1,\"Destination Address: +x\\n\",\n                         *(undefined4 *)(*(int *)(param_2 + 8) + 0x12));\n        DisplayFormatted(param_1,1,\"Transmit strength: +u\\n\",\n                         *(undefined4 *)(*(int *)(param_2 + 8) + 0x16));\n        DisplayFormatted(param_1,1,\"Receive strength: +u\\n\",\n                         *(undefined4 *)(*(int *)(param_2 + 8) + 0x1a));\n        DisplayFormatted(param_1,1,\"Frequency: +d\\n\",*(undefined4 *)(*(int *)(param_2 + 8) + 0x1e));\n        DisplayFormatted(param_1,1,\"SNR: +u\\n\",*(undefined4 *)(*(int *)(param_2 + 8) + 0x22));\n        *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 0x2a;\n        *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -0x2a;\n      }\n      uVar3 = 0;\n    }\n    else {\n      DisplayFormatted(param_1,1,\"Invalid Physical Type\\n\",iVar4);\n      uVar3 = 0xffffffff;\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [
+                    "x"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AnalyzePhysicalLayer",
+                        "DisplayFormatted",
+                        "x",
+                        "CalculateChecksum",
+                        "HexDump"
+                    ],
+                    "calling_functions": [
+                        "AnalyzePhysicalLayer",
+                        "AnalyzePacket"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AnalyzeTransportLayer",
+                "func_c_signature": "undefined4 AnalyzeTransportLayer(undefined4 param_1,int param_2)",
+                "decompiled_code": "undefined4 AnalyzeTransportLayer(undefined4 param_1,int param_2) {\n  if (*(ushort *)(param_2 + 4) < 4) {\n    DisplayFormatted(param_1,2,\"Transport Layer too short\\n\");\n    return 0xffffffff;\n  }\n  if (**(int **)(param_2 + 8) == 1) {\n    if (*(ushort *)(param_2 + 4) < 0x16) {\n      DisplayFormatted(param_1,2,\"Transport Layer too short\\n\");\n      return 0xffffffff;\n    }\n    DisplayFormatted(param_1,2,\"Transport Type: STREAM\\n\");\n    DisplayFormatted(param_1,2,\"Stream number: +u\\n\",*(undefined4 *)(*(int *)(param_2 + 8) + 4));\n    DisplayFormatted(param_1,2,\"Sequence number: +u\\n\",*(undefined4 *)(*(int *)(param_2 + 8) + 8));\n    DisplayFormatted(param_1,2,\"Window: +d\\n\",*(undefined2 *)(*(int *)(param_2 + 8) + 0xc));\n    DisplayFormatted(param_1,2,\"Acknowledgment: +x\\n\",*(undefined4 *)(*(int *)(param_2 + 8) + 0xe));\n    DisplayFormatted(param_1,2,\"Length: +d\\n\",*(undefined4 *)(*(int *)(param_2 + 8) + 0x12));\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 0x16;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -0x16;\n  }\n  else {\n    if (**(int **)(param_2 + 8) != 2) {\n      DisplayFormatted(param_1,2,\"Invalid Transport Type\\n\");\n      return 0xffffffff;\n    }\n    if (*(ushort *)(param_2 + 4) < 8) {\n      DisplayFormatted(param_1,2,\"Transport Layer too short\\n\");\n      return 0xffffffff;\n    }\n    DisplayFormatted(param_1,2,\"Transport Type: MESSAGE\\n\");\n    DisplayFormatted(param_1,2,\"Length: +d\\n\",*(undefined4 *)(*(int *)(param_2 + 8) + 4));\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 8;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -8;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AnalyzeTransportLayer",
+                        "DisplayFormatted"
+                    ],
+                    "calling_functions": [
+                        "AnalyzeTransportLayer",
+                        "AnalyzePacket"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AnalyzeNetworkLayer",
+                "func_c_signature": "undefined4 AnalyzeNetworkLayer(undefined4 param_1,int param_2)",
+                "decompiled_code": "undefined4 AnalyzeNetworkLayer(undefined4 param_1,int param_2) {\n  short sVar1;\n  ushort uVar2;\n  \n  if (*(ushort *)(param_2 + 4) < 6) {\n    DisplayFormatted(param_1,4,\"Network layer too short\\n\");\n    return 0xffffffff;\n  }\n  sVar1 = *(short *)(*(int *)(param_2 + 8) + 4);\n  if (sVar1 == 1) {\n    DisplayFormatted(param_1,4,\"Network type: Endpoint\\n\");\n    if (*(ushort *)(param_2 + 4) < 0xe) {\n      DisplayFormatted(param_1,4,\"Network layer too short\\n\");\n      return 0xffffffff;\n    }\n    DisplayFormatted(param_1,4,\"Source Address: +x\\n\",*(undefined4 *)(*(int *)(param_2 + 8) + 6));\n    DisplayFormatted(param_1,4,\"Destination Address: +x\\n\",\n                     *(undefined4 *)(*(int *)(param_2 + 8) + 10));\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 0xe;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -0xe;\n  }\n  else if (sVar1 == 2) {\n    DisplayFormatted(param_1,4,\"Network type: Broadcast\\n\");\n    if (*(ushort *)(param_2 + 4) < 10) {\n      DisplayFormatted(param_1,4,\"Network layer too short\\n\");\n      return 0xffffffff;\n    }\n    DisplayFormatted(param_1,4,\"Source Address: +x\\n\",*(undefined4 *)(*(int *)(param_2 + 8) + 6));\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 10;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -10;\n  }\n  else {\n    if (sVar1 != 3) {\n      DisplayFormatted(param_1,4,\"Invalid network type\\n\");\n      return 0xffffffff;\n    }\n    DisplayFormatted(param_1,4,\"Network type: Debug\\n\");\n    if (*(ushort *)(param_2 + 4) < 0x16) {\n      DisplayFormatted(param_1,4,\"Network layer too short\\n\");\n      return 0xffffffff;\n    }\n    uVar2 = *(short *)(*(int *)(param_2 + 8) + 6) - 1;\n    if (5 < uVar2) {\n      DisplayFormatted(param_1,4,\"Invalid network debug type\\n\");\n      return 0xffffffff;\n    }\n    DisplayFormatted(param_1,4,\"Network debug type: +s\\n\",\n                     *(undefined4 *)(debug_type_names + (uint)uVar2 * 4));\n    DisplayFormatted(param_1,4,\"Source Address: +x\\n\",*(undefined4 *)(*(int *)(param_2 + 8) + 8));\n    DisplayFormatted(param_1,4,\"Destination Address: +x\\n\",\n                     *(undefined4 *)(*(int *)(param_2 + 8) + 0xc));\n    DisplayFormatted(param_1,4,\"Hop Count: +u\\n\",*(undefined2 *)(*(int *)(param_2 + 8) + 0x10));\n    DisplayFormatted(param_1,4,\"Timestamp: +u\\n\",*(undefined4 *)(*(int *)(param_2 + 8) + 0x12));\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 0x16;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -0x16;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AnalyzeNetworkLayer",
+                        "DisplayFormatted"
+                    ],
+                    "calling_functions": [
+                        "AnalyzeNetworkLayer",
+                        "AnalyzePacket"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AnalyzeApplicationLayer",
+                "func_c_signature": "undefined4 AnalyzeApplicationLayer(undefined4 param_1,int param_2)",
+                "decompiled_code": "undefined4 AnalyzeApplicationLayer(undefined4 param_1,int param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  undefined *puVar3;\n  undefined *puVar4;\n  void *apvStackY_160 [3];\n  char *apcStackY_154 [6];\n  undefined auStack_12c [4];\n  undefined local_128 [256];\n  undefined4 local_28;\n  undefined4 local_24;\n  byte local_1e;\n  byte local_1d;\n  short local_1c;\n  ushort local_1a;\n  ushort local_18;\n  short local_16;\n  undefined4 local_14;\n  short local_e;\n  \n  puVar3 = auStack_12c;\n  if (*(ushort *)(param_2 + 4) < 6) {\n    DisplayFormatted();\n    return 0xffffffff;\n  }\n  local_14 = **(undefined4 **)(param_2 + 8);\n  local_16 = *(short *)(*(int *)(param_2 + 8) + 4);\n  if (local_16 == 1) {\n    DisplayFormatted();\n    if (*(ushort *)(param_2 + 4) < 0xc) {\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    DisplayFormatted();\n    DisplayFormatted();\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 0xc;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -0xc;\n  }\n  else if (local_16 == 2) {\n    DisplayFormatted();\n    if (*(ushort *)(param_2 + 4) < 0xe) {\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    DisplayFormatted();\n    DisplayFormatted();\n    DisplayFormatted();\n    local_e = *(short *)(*(int *)(param_2 + 8) + 0xc);\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 0xe;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -0xe;\n    while ((local_e != 0 && (*(short *)(param_2 + 4) != 0))) {\n      bzero(local_128,0x100);\n      local_1e = **(byte **)(param_2 + 8);\n      *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 1;\n      *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -1;\n      if (*(ushort *)(param_2 + 4) < (ushort)local_1e) {\n        DisplayFormatted();\n        return 0xffffffff;\n      }\n      memcpy(local_128,*(void **)(param_2 + 8),(uint)local_1e);\n      DisplayFormatted();\n      *(uint *)(param_2 + 8) = *(int *)(param_2 + 8) + (uint)local_1e;\n      *(ushort *)(param_2 + 4) = *(short *)(param_2 + 4) - (ushort)local_1e;\n      local_e = local_e + -1;\n    }\n  }\n  else if (local_16 == 3) {\n    DisplayFormatted();\n    if (*(ushort *)(param_2 + 4) < 0x46) {\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    bzero(local_128,0x21);\n    memcpy(local_128,(void *)(*(int *)(param_2 + 8) + 6),0x20);\n    DisplayFormatted();\n    memcpy(local_128,(void *)(*(int *)(param_2 + 8) + 0x26),0x20);\n    DisplayFormatted();\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 0x46;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -0x46;\n  }\n  else if (local_16 == 4) {\n    DisplayFormatted();\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 6;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -6;\n    if (*(short *)(param_2 + 4) == 0) {\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    local_1d = **(byte **)(param_2 + 8);\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 1;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -1;\n    if (*(ushort *)(param_2 + 4) < (ushort)local_1d) {\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    bzero(local_128,0x100);\n    memcpy(local_128,*(void **)(param_2 + 8),(uint)local_1d);\n    DisplayFormatted();\n    *(uint *)(param_2 + 8) = *(int *)(param_2 + 8) + (uint)local_1d;\n    *(ushort *)(param_2 + 4) = *(short *)(param_2 + 4) - (ushort)local_1d;\n    if (*(short *)(param_2 + 4) == 0) {\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    local_1d = **(byte **)(param_2 + 8);\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 1;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -1;\n    bzero(local_128,0x100);\n    memcpy(local_128,*(void **)(param_2 + 8),(uint)local_1d);\n    DisplayFormatted();\n    *(uint *)(param_2 + 8) = *(int *)(param_2 + 8) + (uint)local_1d;\n    *(ushort *)(param_2 + 4) = *(short *)(param_2 + 4) - (ushort)local_1d;\n    if (*(short *)(param_2 + 4) == 0) {\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    local_1d = **(byte **)(param_2 + 8);\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 1;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -1;\n    bzero(local_128,0x100);\n    memcpy(local_128,*(void **)(param_2 + 8),(uint)local_1d);\n    DisplayFormatted();\n    *(uint *)(param_2 + 8) = *(int *)(param_2 + 8) + (uint)local_1d;\n    *(ushort *)(param_2 + 4) = *(short *)(param_2 + 4) - (ushort)local_1d;\n  }\n  else {\n    if (local_16 != 5) {\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    DisplayFormatted();\n    if (*(ushort *)(param_2 + 4) < 8) {\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 6;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -6;\n    local_18 = **(ushort **)(param_2 + 8);\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 2;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -2;\n    if (0x400 < local_18) {\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    if (*(ushort *)(param_2 + 4) < local_18) {\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    iVar2 = allocate();\n    if (iVar2 != 0) {\n      puVar3 = &stack0xfffffec4;\n      _terminate();\n    }\n    *(uint *)(puVar3 + -0xc) = local_18 + 1;\n    *(undefined4 *)(puVar3 + -0x10) = local_24;\n    *(undefined4 *)(puVar3 + -0x14) = 0x12f41;\n    bzero(*(void **)(puVar3 + -0x10),*(size_t *)(puVar3 + -0xc));\n    uVar1 = *(undefined4 *)(param_2 + 8);\n    *(uint *)(puVar3 + -8) = (uint)local_18;\n    *(undefined4 *)(puVar3 + -0xc) = uVar1;\n    *(undefined4 *)(puVar3 + -0x10) = local_24;\n    *(undefined4 *)(puVar3 + -0x14) = 0x12f5c;\n    memcpy(*(void **)(puVar3 + -0x10),*(void **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n    *(undefined4 *)(puVar3 + -4) = local_24;\n    *(char **)(puVar3 + -8) = \"URL: +s\\n\";\n    *(undefined4 *)(puVar3 + -0xc) = 8;\n    *(undefined4 *)(puVar3 + -0x10) = param_1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x12f74;\n    DisplayFormatted();\n    *(uint *)(param_2 + 8) = *(int *)(param_2 + 8) + (uint)local_18;\n    *(ushort *)(param_2 + 4) = *(short *)(param_2 + 4) - local_18;\n    *(uint *)(puVar3 + -0xc) = local_18 + 1;\n    *(undefined4 *)(puVar3 + -0x10) = local_24;\n    *(undefined4 *)(puVar3 + -0x14) = 0x12fb3;\n    deallocate();\n    if (*(ushort *)(param_2 + 4) < 2) {\n      *(char **)(puVar3 + -8) = \"Application layer too short\\n\";\n      *(undefined4 *)(puVar3 + -0xc) = 8;\n      *(undefined4 *)(puVar3 + -0x10) = param_1;\n      *(undefined4 *)(puVar3 + -0x14) = 0x12fd7;\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    local_1a = **(ushort **)(param_2 + 8);\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 2;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -2;\n    if (0x400 < local_1a) {\n      *(char **)(puVar3 + -8) = \"Invalid header length\\n\";\n      *(undefined4 *)(puVar3 + -0xc) = 8;\n      *(undefined4 *)(puVar3 + -0x10) = param_1;\n      *(undefined4 *)(puVar3 + -0x14) = 0x1302d;\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    if (*(ushort *)(param_2 + 4) < local_1a) {\n      *(char **)(puVar3 + -8) = \"Application layer too short\\n\";\n      *(undefined4 *)(puVar3 + -0xc) = 8;\n      *(undefined4 *)(puVar3 + -0x10) = param_1;\n      *(undefined4 *)(puVar3 + -0x14) = 0x1305b;\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    *(undefined4 **)(puVar3 + -8) = &local_28;\n    *(undefined4 *)(puVar3 + -0xc) = 0;\n    *(uint *)(puVar3 + -0x10) = local_1a + 1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x13080;\n    iVar2 = allocate();\n    puVar4 = puVar3;\n    if (iVar2 != 0) {\n      *(undefined4 *)(puVar3 + -0x10) = 0xffffffff;\n      *(undefined4 *)(puVar3 + -0x14) = 0x13091;\n      _terminate();\n      puVar4 = puVar3 + -0x10;\n    }\n    *(uint *)(puVar4 + -0xc) = local_1a + 1;\n    *(undefined4 *)(puVar4 + -0x10) = local_28;\n    *(undefined4 *)(puVar4 + -0x14) = 0x130a7;\n    bzero(*(void **)(puVar4 + -0x10),*(size_t *)(puVar4 + -0xc));\n    uVar1 = *(undefined4 *)(param_2 + 8);\n    *(uint *)(puVar4 + -8) = (uint)local_1a;\n    *(undefined4 *)(puVar4 + -0xc) = uVar1;\n    *(undefined4 *)(puVar4 + -0x10) = local_28;\n    *(undefined4 *)(puVar4 + -0x14) = 0x130c2;\n    memcpy(*(void **)(puVar4 + -0x10),*(void **)(puVar4 + -0xc),*(size_t *)(puVar4 + -8));\n    *(undefined4 *)(puVar4 + -4) = local_28;\n    *(char **)(puVar4 + -8) = \"Headers: +s\\n\";\n    *(undefined4 *)(puVar4 + -0xc) = 8;\n    *(undefined4 *)(puVar4 + -0x10) = param_1;\n    *(undefined4 *)(puVar4 + -0x14) = 0x130da;\n    DisplayFormatted();\n    *(uint *)(param_2 + 8) = *(int *)(param_2 + 8) + (uint)local_1a;\n    *(ushort *)(param_2 + 4) = *(short *)(param_2 + 4) - local_1a;\n    *(uint *)(puVar4 + -0xc) = local_1a + 1;\n    *(undefined4 *)(puVar4 + -0x10) = local_28;\n    *(undefined4 *)(puVar4 + -0x14) = 0x13119;\n    deallocate();\n    if (*(ushort *)(param_2 + 4) < 2) {\n      *(char **)(puVar4 + -8) = \"Application layer too short\\n\";\n      *(undefined4 *)(puVar4 + -0xc) = 8;\n      *(undefined4 *)(puVar4 + -0x10) = param_1;\n      *(undefined4 *)(puVar4 + -0x14) = 0x1313d;\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n    local_1c = **(short **)(param_2 + 8);\n    *(int *)(param_2 + 8) = *(int *)(param_2 + 8) + 2;\n    *(short *)(param_2 + 4) = *(short *)(param_2 + 4) + -2;\n    if (local_1c != *(short *)(param_2 + 4)) {\n      *(char **)(puVar4 + -8) = \"Invalid webpage length\\n\";\n      *(undefined4 *)(puVar4 + -0xc) = 8;\n      *(undefined4 *)(puVar4 + -0x10) = param_1;\n      *(undefined4 *)(puVar4 + -0x14) = 0x13195;\n      DisplayFormatted();\n      return 0xffffffff;\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AnalyzeApplicationLayer",
+                        "DisplayFormatted",
+                        "bzero",
+                        "memcpy",
+                        "allocate",
+                        "_terminate",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "AnalyzeApplicationLayer",
+                        "AnalyzePacket"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AnalyzePacket",
+                "func_c_signature": "undefined4 AnalyzePacket(int param_1,int param_2)",
+                "decompiled_code": "undefined4 AnalyzePacket(int param_1,int param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  int local_14;\n  int local_10 [2];\n  \n  local_10[0] = 0;\n  local_14 = 0;\n  ProcessAllFilters(param_2,param_1,local_10,&local_14);\n  if (local_10[0] < 1) {\n    if ((*(int *)(*(int *)(param_1 + 0x48) + 0x14) == 0) || (local_14 != 0)) {\n      *(int *)(*(int *)(param_1 + 0x48) + 0x1c) = *(int *)(*(int *)(param_1 + 0x48) + 0x1c) + 1;\n      iVar2 = AnalyzePhysicalLayer(param_1,param_2);\n      if ((iVar2 == 0) &&\n         (((iVar2 = AnalyzeTransportLayer(param_1,param_2), iVar2 == 0 &&\n           (iVar2 = AnalyzeNetworkLayer(param_1,param_2), iVar2 == 0)) &&\n          (iVar2 = AnalyzeApplicationLayer(param_1,param_2), iVar2 == 0)))) {\n        if ((*(ushort *)(param_1 + 2) & 0x20) != 0) {\n          HexDump(*(undefined4 *)(param_2 + 8),*(undefined2 *)(param_2 + 4));\n          TransmitBytes(&DAT_000140f5,1);\n        }\n        return 0;\n      }\n      uVar1 = 0xfffffffe;\n    }\n    else {\n      TransmitBytes(\"skip\\n\",5);\n      uVar1 = 0xffffffff;\n    }\n  }\n  else {\n    TransmitBytes(\"skip\\n\",5);\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AnalyzePacket",
+                        "ProcessAllFilters",
+                        "AnalyzePhysicalLayer",
+                        "AnalyzeTransportLayer",
+                        "AnalyzeNetworkLayer",
+                        "AnalyzeApplicationLayer",
+                        "HexDump",
+                        "TransmitBytes"
+                    ],
+                    "calling_functions": [
+                        "AnalyzePacket",
+                        "ReceiveAndProcessFile",
+                        "ReceiveAndProcessStream"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            }
+        ],
+        "packet_io.c": [
+            {
+                "func_name": "ReceiveAndVerifyInitializationPacket",
+                "func_c_signature": "undefined4 ReceiveAndVerifyInitializationPacket(byte *param_1)",
+                "decompiled_code": "undefined4 ReceiveAndVerifyInitializationPacket(byte *param_1) {\n  int iVar1;\n  int local_10 [2];\n  \n  ReceiveBytes(local_10,4);\n  if (local_10[0] != -0x5aa55aa6) {\n    FailAndTerminate(\"improper initialization format\");\n  }\n  ReceiveBytes(param_1,1);\n  if (2 < *param_1) {\n    FailAndTerminate(\"unsupported mode\");\n  }\n  ReceiveBytes(param_1 + 2,2);\n  ReceiveBytes(param_1 + 4,1);\n  if (0x10 < param_1[4]) {\n    FailAndTerminate(\"too many filters\");\n  }\n  iVar1 = allocate(0x2c,1,param_1 + 0x48);\n  if (iVar1 != 0) {\n    FailAndTerminate(\"Failed to allocate statistics\");\n  }\n  bzero(*(void **)(param_1 + 0x48),0x2c);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReceiveAndVerifyInitializationPacket",
+                        "ReceiveBytes",
+                        "FailAndTerminate",
+                        "allocate",
+                        "bzero"
+                    ],
+                    "calling_functions": [
+                        "ReceiveAndVerifyInitializationPacket",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReceiveAndVerifyFilters",
+                "func_c_signature": "undefined4 ReceiveAndVerifyFilters(int param_1)",
+                "decompiled_code": "undefined4 ReceiveAndVerifyFilters(int param_1) {\n  int iVar1;\n  ushort *local_14;\n  int local_10;\n  \n  for (local_10 = 0; local_10 < (int)(uint)*(byte *)(param_1 + 4); local_10 = local_10 + 1) {\n    iVar1 = allocate(0xc,1,&local_14);\n    if (iVar1 != 0) {\n      FailAndTerminate(\"failed to allocate packet filter\");\n    }\n    *(ushort **)(param_1 + 8 + local_10 * 4) = local_14;\n    ReceiveBytes(local_14,2);\n    if (0x1000 < *local_14) {\n      FailAndTerminate(\"filter too large\");\n    }\n    ReceiveBytes(local_14 + 1,1);\n    if (2 < *(byte *)(local_14 + 1)) {\n      FailAndTerminate(\"invalid filter type\");\n    }\n    iVar1 = allocate(*local_14,1,local_14 + 2);\n    if (iVar1 != 0) {\n      FailAndTerminate(\"failed allocating filter mask\");\n    }\n    bzero(*(void **)(local_14 + 2),(uint)*local_14);\n    iVar1 = allocate(*local_14,1,local_14 + 4);\n    if (iVar1 != 0) {\n      FailAndTerminate(\"failed allocating filter content\");\n    }\n    bzero(*(void **)(local_14 + 4),(uint)*local_14);\n    ReceiveBytes(*(undefined4 *)(local_14 + 2),*local_14);\n    ReceiveBytes(*(undefined4 *)(local_14 + 4),*local_14);\n    if (*(char *)(local_14 + 1) == '\\x01') {\n      *(int *)(*(int *)(param_1 + 0x48) + 0x14) = *(int *)(*(int *)(param_1 + 0x48) + 0x14) + 1;\n    }\n    else {\n      *(int *)(*(int *)(param_1 + 0x48) + 0x18) = *(int *)(*(int *)(param_1 + 0x48) + 0x18) + 1;\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReceiveAndVerifyFilters",
+                        "allocate",
+                        "FailAndTerminate",
+                        "ReceiveBytes",
+                        "bzero"
+                    ],
+                    "calling_functions": [
+                        "ReceiveAndVerifyFilters",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReceiveAndProcessFile",
+                "func_c_signature": "undefined4 ReceiveAndProcessFile(int param_1)",
+                "decompiled_code": "undefined4 ReceiveAndProcessFile(int param_1) {\n  int iVar1;\n  undefined local_30 [4];\n  ushort local_2c [2];\n  undefined4 local_28;\n  ushort local_24;\n  undefined4 local_20;\n  int local_1c;\n  uint local_18;\n  int local_14;\n  void *local_10;\n  \n  ReceiveBytes(&local_1c,4);\n  if (local_1c != -0x23502357) {\n    FailAndTerminate(\"invalid DCAP file\");\n  }\n  ReceiveBytes(*(int *)(param_1 + 0x48) + 4,4);\n  ReceiveBytes(*(int *)(param_1 + 0x48) + 8,4);\n  ReceiveBytes(*(undefined4 *)(param_1 + 0x48),4);\n  if (0x800 < **(uint **)(param_1 + 0x48)) {\n    FailAndTerminate(\"too many packets\");\n  }\n  ReceiveBytes(*(int *)(param_1 + 0x48) + 0x24,1);\n  if (0x32 < *(byte *)(*(int *)(param_1 + 0x48) + 0x24)) {\n    FailAndTerminate(\"too many option headers\");\n  }\n  local_10 = (void *)0x0;\n  for (local_14 = 0; local_14 < (int)(uint)*(byte *)(*(int *)(param_1 + 0x48) + 0x24);\n      local_14 = local_14 + 1) {\n    if (local_10 == (void *)0x0) {\n      iVar1 = allocate(0xc,1,*(int *)(param_1 + 0x48) + 0x28);\n      if (iVar1 != 0) {\n        FailAndTerminate(\"error allocating first option header\");\n      }\n      local_10 = *(void **)(*(int *)(param_1 + 0x48) + 0x28);\n    }\n    else {\n      iVar1 = allocate(0xc,1,(int)local_10 + 4);\n      if (iVar1 != 0) {\n        FailAndTerminate(\"error allocating option header\");\n      }\n      local_10 = *(void **)((int)local_10 + 4);\n    }\n    bzero(local_10,0xc);\n    ReceiveBytes(local_10,1);\n    ReceiveBytes((int)local_10 + 1,1);\n    iVar1 = allocate(*(byte *)((int)local_10 + 1) + 1,1,(int)local_10 + 8);\n    if (iVar1 != 0) {\n      FailAndTerminate(\"failed to allocate option header value\");\n    }\n    bzero(*(void **)((int)local_10 + 8),*(byte *)((int)local_10 + 1) + 1);\n    ReceiveBytes(*(undefined4 *)((int)local_10 + 8),*(undefined *)((int)local_10 + 1));\n  }\n  for (local_18 = 0; local_18 < **(uint **)(param_1 + 0x48); local_18 = local_18 + 1) {\n    ReceiveBytes(local_30,4);\n    ReceiveBytes(local_2c,2);\n    if (0x1000 < local_2c[0]) {\n      FailAndTerminate(\"packet too large\");\n    }\n    iVar1 = allocate(local_2c[0],1,&local_28);\n    if (iVar1 != 0) {\n      FailAndTerminate(\"Failed allocating packet data\");\n    }\n    ReceiveBytes(local_28,local_2c[0]);\n    local_24 = local_2c[0];\n    local_20 = local_28;\n    AnalyzePacket(param_1,local_30);\n    deallocate(local_20,local_24);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReceiveAndProcessFile",
+                        "ReceiveBytes",
+                        "FailAndTerminate",
+                        "allocate",
+                        "bzero",
+                        "AnalyzePacket",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "ReceiveAndProcessFile",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReceiveAndProcessStream",
+                "func_c_signature": "undefined4 ReceiveAndProcessStream(int param_1)",
+                "decompiled_code": "undefined4 ReceiveAndProcessStream(int param_1) {\n  int iVar1;\n  int local_24;\n  ushort local_20 [2];\n  undefined4 local_1c;\n  ushort local_18;\n  undefined4 local_14;\n  int local_10;\n  \n  local_10 = 1;\n  ReceiveBytes(local_20,2);\n  while (local_20[0] != 0) {\n    if (0x1000 < local_20[0]) {\n      FailAndTerminate(\"packet too large\");\n    }\n    **(int **)(param_1 + 0x48) = **(int **)(param_1 + 0x48) + 1;\n    iVar1 = allocate(local_20[0],1,&local_1c);\n    if (iVar1 != 0) {\n      FailAndTerminate(\"Failed allocating packet data\");\n    }\n    ReceiveBytes(local_1c,local_20[0]);\n    local_24 = local_10;\n    local_18 = local_20[0];\n    local_14 = local_1c;\n    local_10 = local_10 + 1;\n    AnalyzePacket(param_1,&local_24);\n    deallocate(local_1c,local_20[0]);\n    ReceiveBytes(local_20,2);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReceiveAndProcessStream",
+                        "ReceiveBytes",
+                        "FailAndTerminate",
+                        "allocate",
+                        "AnalyzePacket",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "ReceiveAndProcessStream",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined4 uVar2;\n  char local_5c [2];\n  ushort local_5a;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  iVar1 = ReceiveAndVerifyInitializationPacket(local_5c);\n  if (iVar1 == 0) {\n    iVar1 = ReceiveAndVerifyFilters(local_5c);\n    if (iVar1 == 0) {\n      if (local_5c[0] == '\\x01') {\n        ReceiveAndProcessFile(local_5c);\n      }\n      else if (local_5c[0] == '\\x02') {\n        ReceiveAndProcessStream(local_5c);\n      }\n      if ((local_5a & 0x10) != 0) {\n        DisplayStatistics(local_5c);\n      }\n      TransmitFormattedBytes(\"Goodbye.\\n\");\n      uVar2 = 0;\n    }\n    else {\n      uVar2 = 0xffffffff;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "ReceiveAndVerifyInitializationPacket",
+                        "ReceiveAndVerifyFilters",
+                        "ReceiveAndProcessFile",
+                        "ReceiveAndProcessStream",
+                        "DisplayStatistics",
+                        "TransmitFormattedBytes"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00043_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,413 @@
+{
+    "file": "KPRCA_00020",
+    "decompiled_code": {
+        "asl6.c": [
+            {
+                "func_name": "parse_tag_class",
+                "func_c_signature": "undefined4 parse_tag_class(byte *param_1,byte *param_2)",
+                "decompiled_code": "undefined4 parse_tag_class(byte *param_1,byte *param_2) {\n  undefined4 uVar1;\n  \n  if (*param_1 >> 6 < 4) {\n    *param_2 = *param_1 >> 6;\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_tag_class"
+                    ],
+                    "calling_functions": [
+                        "parse_tag_class",
+                        "_decode"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_tag",
+                "func_c_signature": "undefined4 parse_tag(byte *param_1,int param_2)",
+                "decompiled_code": "undefined4 parse_tag(byte *param_1,int param_2) {\n  undefined4 uVar1;\n  \n  if ((*param_1 & 0x1f) < 0x1f) {\n    *(byte *)(param_2 + 1) = *param_1 & 0x1f;\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_tag"
+                    ],
+                    "calling_functions": [
+                        "parse_tag",
+                        "_decode"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_length",
+                "func_c_signature": "int parse_length(byte *param_1,int param_2)",
+                "decompiled_code": "int parse_length(byte *param_1,int param_2) {\n  int iVar1;\n  uint uVar2;\n  uint local_14;\n  uint local_10;\n  \n  if ((char)*param_1 < '\\0') {\n    uVar2 = (uint)(*param_1 & 0x7f);\n    if (uVar2 < 5) {\n      if (uVar2 == 0) {\n        fdprintf(1,\"ERROR: infinite length\\n\");\n        iVar1 = 0;\n      }\n      else {\n        local_14 = 0;\n        for (local_10 = 0; local_10 < uVar2; local_10 = local_10 + 1) {\n          local_14 = (uint)param_1[local_10 + 1] | local_14 << 8;\n        }\n        *(uint *)(param_2 + 8) = local_14;\n        iVar1 = uVar2 + 1;\n      }\n    }\n    else {\n      fdprintf(1,\"ERROR: length too large\\n\");\n      iVar1 = -1;\n    }\n  }\n  else {\n    *(uint *)(param_2 + 8) = (uint)*param_1;\n    iVar1 = 1;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_length",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "parse_length",
+                        "_decode"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free_element",
+                "func_c_signature": "void free_element(void *param_1)",
+                "decompiled_code": "void free_element(void *param_1) {\n  uint local_10;\n  \n  if ((param_1 != (void *)0x0) && (*(int *)((int)param_1 + 0x18) != 0)) {\n    for (local_10 = 0; local_10 < *(uint *)((int)param_1 + 0x14); local_10 = local_10 + 1) {\n      if (*(int *)(*(int *)((int)param_1 + 0x18) + local_10 * 4) != 0) {\n        free_element(*(undefined4 *)(*(int *)((int)param_1 + 0x18) + local_10 * 4));\n      }\n    }\n  }\n  if ((param_1 != (void *)0x0) && (*(int *)((int)param_1 + 0x18) != 0)) {\n    free(*(void **)((int)param_1 + 0x18));\n  }\n  if (param_1 != (void *)0x0) {\n    free(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_element",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "free_element",
+                        "_decode",
+                        "pprint"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "append_sub",
+                "func_c_signature": "undefined4 append_sub(int param_1,undefined4 param_2)",
+                "decompiled_code": "undefined4 append_sub(int param_1,undefined4 param_2) {\n  int iVar1;\n  uint uVar2;\n  void *pvVar3;\n  \n  if (*(int *)(param_1 + 0x14) == *(int *)(param_1 + 0x10)) {\n    uVar2 = *(int *)(param_1 + 0x10) * 2;\n    if (uVar2 / *(uint *)(param_1 + 0x10) != 2) {\n      return 0xffffffff;\n    }\n    pvVar3 = realloc(*(void **)(param_1 + 0x18),*(int *)(param_1 + 0x10) << 3);\n    *(void **)(param_1 + 0x18) = pvVar3;\n    if (*(int *)(param_1 + 0x18) == 0) {\n      return 0xffffffff;\n    }\n    *(uint *)(param_1 + 0x10) = uVar2;\n  }\n  iVar1 = *(int *)(param_1 + 0x14);\n  *(int *)(param_1 + 0x14) = iVar1 + 1;\n  *(undefined4 *)(*(int *)(param_1 + 0x18) + iVar1 * 4) = param_2;\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "append_sub",
+                        "realloc"
+                    ],
+                    "calling_functions": [
+                        "append_sub",
+                        "_decode"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "within",
+                "func_c_signature": "undefined4 within(uint param_1,undefined4 param_2,uint param_3,uint param_4)",
+                "decompiled_code": "undefined4 within(uint param_1,undefined4 param_2,uint param_3,uint param_4) {\n  undefined4 uVar1;\n  \n  if ((param_1 < param_3) || (param_4 <= param_1)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "within"
+                    ],
+                    "calling_functions": [
+                        "within",
+                        "_decode"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_decode",
+                "func_c_signature": "void * _decode(byte *param_1,int param_2,uint param_3,undefined4 param_4)",
+                "decompiled_code": "void * _decode(byte *param_1,int param_2,uint param_3,undefined4 param_4) {\n  int iVar1;\n  void *pvVar2;\n  void *pvVar3;\n  int iVar4;\n  uint local_10;\n  \n  iVar1 = within(param_1,0,param_3,param_4);\n  if (iVar1 == 0) {\n    pvVar2 = malloc(0x1c);\n    if (pvVar2 != (void *)0x0) {\n      *(undefined4 *)((int)pvVar2 + 0x10) = 2;\n      pvVar3 = calloc(4,*(size_t *)((int)pvVar2 + 0x10));\n      *(void **)((int)pvVar2 + 0x18) = pvVar3;\n      if (*(int *)((int)pvVar2 + 0x18) != 0) {\n        *(undefined4 *)((int)pvVar2 + 0x14) = 0;\n        *(int *)((int)pvVar2 + 0xc) = param_2;\n        *(bool *)((int)pvVar2 + 2) = (*param_1 & 0x20) == 0;\n        iVar1 = parse_tag_class(param_1,pvVar2);\n        if (iVar1 < 0) {\n          fdprintf(1,\"ERROR: unknown class\\n\");\n        }\n        else {\n          iVar1 = parse_tag(param_1,pvVar2);\n          if (iVar1 < 0) {\n            fdprintf(1,\"ERROR: unknown tag\\n\");\n          }\n          else if (((*(char *)((int)pvVar2 + 2) == '\\0') && (*(char *)((int)pvVar2 + 1) != '\\x11'))\n                  && (*(char *)((int)pvVar2 + 1) != '\\x10')) {\n            fdprintf(1,\"ERROR: bad constructed type\\n\");\n          }\n          else if ((*(char *)((int)pvVar2 + 2) == '\\0') ||\n                  ((*(char *)((int)pvVar2 + 1) != '\\x11' && (*(char *)((int)pvVar2 + 1) != '\\x10')))\n                  ) {\n            iVar1 = parse_length(param_1 + 1,pvVar2);\n            if (0 < iVar1) {\n              if ((*(char *)((int)pvVar2 + 1) == '\\x01') && (*(int *)((int)pvVar2 + 8) != 1)) {\n                fdprintf(1,\"ERROR: invalid length for bool\\n\");\n              }\n              else if ((*(char *)((int)pvVar2 + 1) == '\\x05') && (*(int *)((int)pvVar2 + 8) != 0)) {\n                fdprintf(1,\"ERROR: invalid length for null\\n\");\n              }\n              else {\n                *(byte **)((int)pvVar2 + 4) = param_1 + iVar1 + 1;\n                iVar1 = within(*(undefined4 *)((int)pvVar2 + 4),*(undefined4 *)((int)pvVar2 + 8),\n                               param_3,param_4);\n                if (iVar1 == 0) {\n                  if (*(char *)((int)pvVar2 + 2) != '\\0') {\n                    return pvVar2;\n                  }\n                  local_10 = *(uint *)((int)pvVar2 + 4);\n                  while ((iVar1 = _decode(local_10,param_2 + 1,param_3,param_4), iVar1 != 0 &&\n                         (iVar4 = append_sub(pvVar2,iVar1), -1 < iVar4))) {\n                    local_10 = *(int *)(iVar1 + 8) + *(int *)(iVar1 + 4);\n                    if (local_10 < param_3) {\n                      return pvVar2;\n                    }\n                    if ((uint)(*(int *)((int)pvVar2 + 8) + *(int *)((int)pvVar2 + 4)) <= local_10) {\n                      return pvVar2;\n                    }\n                  }\n                }\n                else {\n                  fdprintf(1,\"ERROR: bounds exceeded\\n\");\n                }\n              }\n            }\n          }\n          else {\n            fdprintf(1,\"ERROR: bad primitive type\\n\");\n          }\n        }\n      }\n    }\n    free_element(pvVar2);\n  }\n  else {\n    fdprintf(1,\"ERROR: bounds exceeded\\n\");\n  }\n  return (void *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_decode",
+                        "within",
+                        "malloc",
+                        "calloc",
+                        "parse_tag_class",
+                        "fdprintf",
+                        "parse_tag",
+                        "parse_length",
+                        "append_sub",
+                        "free_element"
+                    ],
+                    "calling_functions": [
+                        "_decode",
+                        "decode"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "decode",
+                "func_c_signature": "void decode(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "void decode(undefined4 param_1,undefined4 param_2) {\n  _decode(param_1,0,param_1,param_2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "decode",
+                        "_decode"
+                    ],
+                    "calling_functions": [
+                        "decode",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_indent",
+                "func_c_signature": "void print_indent(uint param_1)",
+                "decompiled_code": "void print_indent(uint param_1) {\n  uint local_10;\n  \n  for (local_10 = 0; local_10 < param_1; local_10 = local_10 + 1) {\n    fdprintf(1,&DAT_000141dc);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_indent",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "print_indent",
+                        "print_hex",
+                        "pprint"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_time",
+                "func_c_signature": "void print_time(int param_1,int param_2)",
+                "decompiled_code": "void print_time(int param_1,int param_2) {\n  uint uVar1;\n  int iVar2;\n  uint local_24;\n  undefined *local_20;\n  \n  local_20 = *(undefined **)(param_1 + 4);\n  if (param_2 == 0) {\n    uVar1 = 0xe;\n  }\n  else {\n    uVar1 = 0xc;\n  }\n  if (*(uint *)(param_1 + 8) < uVar1) {\n    fdprintf(1,\"INVALID TIME\");\n  }\n  else {\n    for (local_24 = 0; local_24 < uVar1; local_24 = local_24 + 1) {\n      iVar2 = isdigit((uint)(byte)local_20[local_24]);\n      if (iVar2 == 0) {\n        fdprintf(1,\"INVALID TIME\");\n        return;\n      }\n    }\n    if (param_2 == 0) {\n      fdprintf(1,\"%c%c/%c%c/%c%c%c%c\",local_20[6],local_20[7],local_20[4],local_20[5],*local_20,\n               local_20[1],local_20[2],local_20[3]);\n      local_20 = local_20 + 2;\n    }\n    else {\n      fdprintf(1,\"%c%c/%c%c/\",local_20[4],local_20[5],local_20[2],local_20[3]);\n      if (**(byte **)(param_1 + 4) < 0x36) {\n        fdprintf(1,&DAT_000141fc,&DAT_000141f9);\n      }\n      else {\n        fdprintf(1,&DAT_000141fc,&DAT_000141ff);\n      }\n      fdprintf(1,&DAT_00014202,*local_20,local_20[1]);\n    }\n    fdprintf(1,\" %c%c:%c%c:%c%c GMT\",local_20[6],local_20[7],local_20[8],local_20[9],local_20[10],\n             local_20[0xb]);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_time",
+                        "fdprintf",
+                        "isdigit"
+                    ],
+                    "calling_functions": [
+                        "print_time",
+                        "print_primitive"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_hex",
+                "func_c_signature": "void print_hex(int param_1)",
+                "decompiled_code": "void print_hex(int param_1) {\n  uint uVar1;\n  uint local_10;\n  \n  if (*(uint *)(param_1 + 8) < 0x11) {\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 8); local_10 = local_10 + 1) {\n      fdprintf(1,\"%02X \",*(undefined *)(local_10 + *(int *)(param_1 + 4)));\n    }\n  }\n  else {\n    fdprintf(1,&DAT_0001422e);\n    print_indent(*(int *)(param_1 + 0xc) + 1);\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 8); local_10 = local_10 + 1) {\n      uVar1 = (uint)*(byte *)(local_10 + *(int *)(param_1 + 4));\n      fdprintf(1,&DAT_00014230,uVar1);\n      if ((local_10 & 0x1f) == 0x1f) {\n        fdprintf(1,&DAT_0001422e,uVar1);\n        print_indent(*(int *)(param_1 + 0xc) + 1);\n      }\n      else {\n        fdprintf(1,&DAT_00014235,uVar1);\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_hex",
+                        "fdprintf",
+                        "print_indent"
+                    ],
+                    "calling_functions": [
+                        "print_hex",
+                        "print_primitive"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_octet_int",
+                "func_c_signature": "int read_octet_int(int param_1,uint param_2,uint *param_3)",
+                "decompiled_code": "int read_octet_int(int param_1,uint param_2,uint *param_3) {\n  uint local_8;\n  \n  *param_3 = 0;\n  for (local_8 = 0; (local_8 < 4 && (local_8 < param_2)); local_8 = local_8 + 1) {\n    *param_3 = *param_3 << 7;\n    *param_3 = (uint)(*(byte *)(local_8 + param_1) & 0x7f) | *param_3;\n    if (-1 < *(char *)(local_8 + param_1)) {\n      return local_8 + 1;\n    }\n  }\n  return -1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_octet_int"
+                    ],
+                    "calling_functions": [
+                        "read_octet_int",
+                        "print_oid"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_oid",
+                "func_c_signature": "void print_oid(int param_1)",
+                "decompiled_code": "void print_oid(int param_1) {\n  uint local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  local_18 = 0;\n  do {\n    if (local_10 == 0) {\n      local_14 = read_octet_int(*(undefined4 *)(param_1 + 4),*(undefined4 *)(param_1 + 8),&local_18)\n      ;\n      if ((((int)local_14 < 0) || (*(uint *)(param_1 + 8) <= local_14)) || (local_18 == 0x50)) {\n        return;\n      }\n      local_10 = local_14;\n      if (local_18 < 0x50) {\n        fdprintf(1,&DAT_0001423d,local_18 / 0x28);\n        fdprintf(1,&DAT_00014240,local_18 % 0x28);\n      }\n      else {\n        fdprintf(1,&DAT_00014244);\n        fdprintf(1,&DAT_00014240,local_18 - 0x50);\n      }\n    }\n    local_14 = read_octet_int(*(int *)(param_1 + 4) + local_10,*(undefined4 *)(param_1 + 8),\n                              &local_18);\n    if ((int)local_14 < 0) {\n      return;\n    }\n    local_10 = local_10 + local_14;\n    fdprintf(1,&DAT_00014240,local_18);\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_oid",
+                        "read_octet_int",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "print_oid",
+                        "print_primitive"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_tag",
+                "func_c_signature": "void print_tag(byte *param_1)",
+                "decompiled_code": "void print_tag(byte *param_1) {\n  byte bVar1;\n  \n  bVar1 = *param_1;\n  if (bVar1 == 3) {\n    fdprintf(1,\"PRIVATE_%d \",param_1[1]);\n    return;\n  }\n  if (bVar1 < 4) {\n    if (bVar1 == 2) {\n      fdprintf(1,\"[%d] \",param_1[1]);\n      return;\n    }\n    if (bVar1 < 3) {\n      if (bVar1 == 0) {\n        if (0x1e < param_1[1]) {\n          fdprintf(1,\"UNIVERSAL_%d \",param_1[1]);\n          return;\n        }\n        fdprintf(1,\"UNIVERSAL %s \",*(undefined4 *)(utag_names + (uint)param_1[1] * 4));\n        return;\n      }\n      if (bVar1 == 1) {\n        fdprintf(1,\"APPLICATION_%d \",param_1[1]);\n        return;\n      }\n    }\n  }\n  fdprintf(1,\"UNKNOWN_%d \",param_1[1]);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_tag",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "print_tag",
+                        "pprint"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_string",
+                "func_c_signature": "void print_string(int param_1)",
+                "decompiled_code": "void print_string(int param_1) {\n  int iVar1;\n  uint local_10;\n  \n  for (local_10 = 0; local_10 < *(uint *)(param_1 + 8); local_10 = local_10 + 1) {\n    iVar1 = isalnum((uint)*(byte *)(local_10 + *(int *)(param_1 + 4)));\n    if (iVar1 == 0) {\n      fdprintf(1,&DAT_00014293,*(undefined *)(local_10 + *(int *)(param_1 + 4)));\n    }\n    else {\n      fdprintf(1,&DAT_00014290,*(undefined *)(local_10 + *(int *)(param_1 + 4)));\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_string",
+                        "isalnum",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "print_string",
+                        "print_primitive"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_primitive",
+                "func_c_signature": "void print_primitive(char *param_1)",
+                "decompiled_code": "void print_primitive(char *param_1) {\n  char *pcVar1;\n  \n  if (*param_1 == '\\0') {\n    switch(param_1[1]) {\n    default:\n      goto code_r0x00011e6f;\n    case '\\x01':\n      if (**(char **)(param_1 + 4) == '\\0') {\n        pcVar1 = \"False\";\n      }\n      else {\n        pcVar1 = \"True\";\n      }\n      fdprintf(1,&DAT_000141fc,pcVar1);\n      break;\n    case '\\x02':\n    case '\\x03':\n    case '\\x04':\n      print_hex(param_1);\n      break;\n    case '\\x06':\n      print_oid(param_1);\n      break;\n    case '\\f':\n    case '\\x12':\n    case '\\x13':\n    case '\\x14':\n    case '\\x15':\n    case '\\x16':\n    case '\\x1a':\n      print_string(param_1);\n      break;\n    case '\\x17':\n      print_time(param_1,1);\n      break;\n    case '\\x18':\n      print_time(param_1,0);\n    }\n  }\n  else {\ncode_r0x00011e6f:\n    fdprintf(1,\"UNPRINTABLE\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_primitive",
+                        "fdprintf",
+                        "print_hex",
+                        "print_oid",
+                        "print_string",
+                        "print_time"
+                    ],
+                    "calling_functions": [
+                        "print_primitive",
+                        "pprint"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "pprint",
+                "func_c_signature": "void pprint(int param_1)",
+                "decompiled_code": "void pprint(int param_1) {\n  uint local_10;\n  \n  print_indent(*(undefined4 *)(param_1 + 0xc));\n  print_tag(param_1);\n  if (*(char *)(param_1 + 2) == '\\0') {\n    fdprintf(1,&DAT_0001422e);\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 0x14); local_10 = local_10 + 1) {\n      pprint(*(undefined4 *)(*(int *)(param_1 + 0x18) + local_10 * 4));\n    }\n  }\n  else {\n    print_primitive(param_1);\n    fdprintf(1,&DAT_0001422e);\n  }\n  if (*(int *)(param_1 + 0xc) == 0) {\n    free_element(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "pprint",
+                        "print_indent",
+                        "print_tag",
+                        "fdprintf",
+                        "print_primitive",
+                        "free_element"
+                    ],
+                    "calling_functions": [
+                        "pprint",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "read_exactly",
+                "func_c_signature": "undefined4 read_exactly(undefined4 param_1,int param_2,int param_3)",
+                "decompiled_code": "undefined4 read_exactly(undefined4 param_1,int param_2,int param_3) {\n  int iVar1;\n  int local_10 [2];\n  \n  while( true ) {\n    if (param_3 == 0) {\n      return 0;\n    }\n    iVar1 = receive(param_1,param_2,param_3,local_10);\n    if (iVar1 != 0) break;\n    param_3 = param_3 - local_10[0];\n    param_2 = param_2 + param_3;\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_exactly",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "read_exactly",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  undefined **ppuVar1;\n  int iVar2;\n  int iVar3;\n  undefined *puVar4;\n  undefined local_801c [12];\n  undefined local_8010 [32756];\n  int local_1c;\n  uint local_18;\n  int local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  ppuVar1 = &local_10;\n  do {\n    puVar4 = (undefined *)ppuVar1;\n    *(undefined4 *)(puVar4 + -0x1000) = *(undefined4 *)(puVar4 + -0x1000);\n    ppuVar1 = (undefined **)(puVar4 + -0x1000);\n  } while (puVar4 + -0x1000 != local_8010);\n  *(undefined4 *)(puVar4 + -0x1014) = 0x12316;\n  iVar3 = *(int *)(puVar4 + -0x1014);\n  local_18 = 0;\n  local_1c = 0;\n  *(undefined4 *)(puVar4 + -0x1018) = 0x8000;\n  *(undefined4 *)(puVar4 + -0x101c) = 0;\n  *(undefined **)(puVar4 + -0x1020) = local_801c;\n  *(undefined4 *)(puVar4 + -0x1024) = 0x12340;\n  memset(*(void **)(puVar4 + -0x1020),*(int *)(puVar4 + -0x101c),*(size_t *)(puVar4 + -0x1018));\n  *(int **)(puVar4 + -0x1014) = &local_1c;\n  *(undefined4 *)(puVar4 + -0x1018) = 4;\n  *(uint **)(puVar4 + -0x101c) = &local_18;\n  *(undefined4 *)(puVar4 + -0x1020) = 0;\n  *(undefined4 *)(puVar4 + -0x1024) = 0x12354;\n  iVar2 = receive();\n  if (iVar2 != 0) {\n    *(undefined4 *)(puVar4 + -0x1020) = 1;\n                    /* WARNING: Subroutine does not return */\n    *(undefined **)(puVar4 + -0x1024) = &UNK_00012365;\n    exit(*(int *)(puVar4 + -0x1020));\n  }\n  if (local_1c != 4) {\n    *(undefined4 *)(puVar4 + -0x1020) = 1;\n                    /* WARNING: Subroutine does not return */\n    *(undefined **)(puVar4 + -0x1024) = &UNK_0001237a;\n    exit(*(int *)(puVar4 + -0x1020));\n  }\n  if (0x8000 < local_18) {\n    *(int *)(puVar4 + -0x101c) = iVar3 + 0x2006;\n    *(undefined4 *)(puVar4 + -0x1020) = 1;\n    *(undefined4 *)(puVar4 + -0x1024) = 0x12398;\n    fdprintf();\n    *(undefined4 *)(puVar4 + -0x1020) = 1;\n                    /* WARNING: Subroutine does not return */\n    *(undefined **)(puVar4 + -0x1024) = &UNK_000123a5;\n    exit(*(int *)(puVar4 + -0x1020));\n  }\n  *(uint *)(puVar4 + -0x1018) = local_18;\n  *(undefined **)(puVar4 + -0x101c) = local_801c;\n  *(undefined4 *)(puVar4 + -0x1020) = 0;\n  *(undefined4 *)(puVar4 + -0x1024) = 0x123bd;\n  iVar2 = read_exactly();\n  if (iVar2 != 0) {\n    *(undefined4 *)(puVar4 + -0x1020) = 1;\n                    /* WARNING: Subroutine does not return */\n    *(undefined **)(puVar4 + -0x1024) = &UNK_000123ce;\n    exit(*(int *)(puVar4 + -0x1020));\n  }\n  *(undefined **)(puVar4 + -0x101c) = local_801c + local_18;\n  *(undefined **)(puVar4 + -0x1020) = local_801c;\n  *(undefined4 *)(puVar4 + -0x1024) = 0x123ec;\n  local_14 = decode();\n  if (local_14 == 0) {\n    *(undefined4 *)(puVar4 + -0x1020) = 1;\n                    /* WARNING: Subroutine does not return */\n    *(undefined **)(puVar4 + -0x1024) = &UNK_00012402;\n    exit(*(int *)(puVar4 + -0x1020));\n  }\n  *(int *)(puVar4 + -0x1020) = local_14;\n  *(undefined4 *)(puVar4 + -0x1024) = 0x12410;\n  pprint();\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "memset",
+                        "receive",
+                        "exit",
+                        "fdprintf",
+                        "read_exactly",
+                        "decode",
+                        "pprint"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00020_decompiled.c"
+                }
+            }
+        ]
+    }
+}

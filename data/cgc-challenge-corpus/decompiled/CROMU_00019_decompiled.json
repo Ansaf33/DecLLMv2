@@ -1,0 +1,548 @@
+{
+    "file": "CROMU_00019",
+    "decompiled_code": {
+        "blackjack.c": [
+            {
+                "func_name": "is_an_ace",
+                "func_c_signature": "undefined4 is_an_ace(char param_1)",
+                "decompiled_code": "undefined4 is_an_ace(char param_1) {\n  undefined4 uVar1;\n  \n  if ((((param_1 == '\\r') || (param_1 == '\\x1a')) || (param_1 == '\\'')) || (param_1 == '4')) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_an_ace"
+                    ],
+                    "calling_functions": [
+                        "is_an_ace",
+                        "hand_total"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "hand_total",
+                "func_c_signature": "int hand_total(int param_1,uint param_2,int param_3)",
+                "decompiled_code": "int hand_total(int param_1,uint param_2,int param_3) {\n  int iVar1;\n  int iVar2;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (param_2 <= local_10) {\n      return param_3;\n    }\n    iVar1 = is_an_ace((int)*(char *)(param_1 + local_10));\n    if (iVar1 != 0) break;\n    param_3 = param_3 + *(int *)(bj_value + *(char *)(param_1 + local_10) * 4);\n    local_10 = local_10 + 1;\n  }\n  iVar1 = local_10 + 1;\n  iVar2 = hand_total(param_1 + iVar1,param_2 - iVar1,param_3 + 0xb);\n  iVar1 = hand_total(param_1 + iVar1,param_2 - iVar1,param_3 + 1);\n  if (iVar2 < 0x16) {\n    return iVar2;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "hand_total",
+                        "is_an_ace"
+                    ],
+                    "calling_functions": [
+                        "hand_total",
+                        "blackjack"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "blackjack",
+                "func_c_signature": "void blackjack(undefined *param_1)",
+                "decompiled_code": "void blackjack(undefined *param_1) {\n  char cVar1;\n  int iVar2;\n  int iVar3;\n  undefined4 uVar4;\n  undefined4 uVar5;\n  char local_96;\n  undefined local_95 [53];\n  undefined local_60 [58];\n  char local_26 [11];\n  char local_1b [11];\n  int local_10;\n  \n  bzero(local_1b,0xb);\n  bzero(local_26,0xb);\n  if (param_1 == (undefined *)0x0) {\n    param_1 = local_60;\n  }\n  shuffle(local_95);\n  *(int *)(param_1 + 0x24) = *(int *)(param_1 + 0x24) + 0x32;\n  if (9 < *(int *)(param_1 + 0x30)) {\n    *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + -10;\n  }\n  local_1b[0] = draw(local_95);\n  local_26[0] = draw(local_95);\n  local_1b[1] = draw(local_95);\n  local_26[1] = draw(local_95);\n  printf(\"D: * @s \\n\",*(undefined4 *)(local_26[1] * 4 + 0x18000));\n  printf(\"P: @s @s \\n\",*(undefined4 *)(local_1b[0] * 4 + 0x18000),\n         *(undefined4 *)(local_1b[1] * 4 + 0x18000));\n  iVar2 = hand_total(local_26,0xb,0);\n  if (iVar2 == 0x15) {\n    iVar2 = hand_total(local_1b,0xb,0);\n    if (iVar2 == 0x15) {\n      printf(\"Dealer Blackjack! Player Blackjack! You Tie :/\\n\");\n      *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_0001810c;\n    }\n    else {\n      printf(\"Dealer Blackjack! You Lose!\\n\");\n    }\n  }\n  else {\n    iVar2 = hand_total(local_1b,0xb,0);\n    if (iVar2 == 0x15) {\n      printf(\"Blackjack! You Win!\\n\");\n      *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_00018110;\n    }\n    else {\n      local_96 = '\\0';\n      local_10 = 2;\n      do {\n        printf(\"Enter h for hit or s for stand:\");\n        receive_fixed_input(&local_96,10,1);\n        iVar2 = local_10;\n        if (local_96 == 'h') {\n          local_10 = local_10 + 1;\n          cVar1 = draw(local_95);\n          local_1b[iVar2] = cVar1;\n          printf(\"P: \");\n          print_hand(local_1b,0xb);\n          iVar2 = hand_total(local_1b,0xb,0);\n          if (0x15 < iVar2) {\n            printf(\"Bust\\n\");\n            break;\n          }\n        }\n      } while (local_96 != 's');\n      local_10 = 2;\n      printf(\"D: \");\n      print_hand(local_26,0xb);\n      while (iVar3 = hand_total(local_26,0xb,0), iVar2 = local_10, iVar3 < 0x11) {\n        local_10 = local_10 + 1;\n        cVar1 = draw(local_95);\n        local_26[iVar2] = cVar1;\n        printf(\"D: \");\n        print_hand(local_26,0xb);\n      }\n      uVar4 = hand_total(local_26,0xb,0);\n      uVar5 = hand_total(local_1b,0xb,0);\n      printf(\"P:@d D:@d\\n\",uVar5,uVar4);\n      iVar2 = hand_total(local_1b,0xb,0);\n      if (iVar2 < 0x16) {\n        iVar2 = hand_total(local_26,0xb,0);\n        if (iVar2 < 0x16) {\n          iVar2 = hand_total(local_1b,0xb,0);\n          iVar3 = hand_total(local_26,0xb,0);\n          if (iVar3 < iVar2) {\n            printf(\"You Win.\\n\");\n            *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_00018114;\n          }\n          else {\n            iVar2 = hand_total(local_1b,0xb,0);\n            iVar3 = hand_total(local_26,0xb,0);\n            if (iVar2 == iVar3) {\n              printf(\"Push.\\n\");\n              *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_0001810c;\n            }\n            else {\n              printf(\"You Lose.\\n\");\n            }\n          }\n        }\n        else {\n          printf(\"Dealer Bust. You Win.\\n\");\n          *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_00018114;\n        }\n      }\n      else {\n        printf(\"Player Bust. You Lose.\\n\");\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "blackjack",
+                        "bzero",
+                        "shuffle",
+                        "draw",
+                        "printf",
+                        "hand_total",
+                        "receive_fixed_input",
+                        "print_hand"
+                    ],
+                    "calling_functions": [
+                        "blackjack",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            }
+        ],
+        "casino.c": [
+            {
+                "func_name": "lookup_by_number",
+                "func_c_signature": "int * lookup_by_number(int param_1,int *param_2)",
+                "decompiled_code": "int * lookup_by_number(int param_1,int *param_2) {\n  int *local_8;\n  \n  for (local_8 = param_2; (local_8 != (int *)0x0 && (param_1 != *local_8));\n      local_8 = (int *)local_8[0xd]) {\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lookup_by_number"
+                    ],
+                    "calling_functions": [
+                        "lookup_by_number",
+                        "login_player_by_number",
+                        "register_player"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "login_player_by_number",
+                "func_c_signature": "int login_player_by_number(undefined4 param_1)",
+                "decompiled_code": "int login_player_by_number(undefined4 param_1) {\n  undefined4 local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  int local_14;\n  int local_10;\n  \n  printf(\"Enter Player Number:\");\n  local_20 = 0;\n  local_1c = 0;\n  local_18 = 0;\n  receive_fixed_input(&local_20,10,0xb);\n  local_10 = atoi((char *)&local_20);\n  local_14 = lookup_by_number(local_10,param_1);\n  if (local_14 == 0) {\n    printf(\"Player not found\\n\");\n  }\n  else {\n    printf(\"Hello, @s!\\n\",local_14 + 4);\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "login_player_by_number",
+                        "printf",
+                        "receive_fixed_input",
+                        "atoi",
+                        "lookup_by_number"
+                    ],
+                    "calling_functions": [
+                        "login_player_by_number",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_player_info",
+                "func_c_signature": "void print_player_info(undefined4 *param_1)",
+                "decompiled_code": "void print_player_info(undefined4 *param_1) {\n  if (param_1 == (undefined4 *)0x0) {\n    printf(\"Player does not exist\\n\");\n  }\n  else {\n    printf(\"Player Name: @s\\n\",param_1 + 1);\n    printf(\"Player Number: @d\\n\",*param_1);\n    printf(\"Blackjack Score: @d\\n\",param_1[9]);\n    printf(\"Poker Score: @d\\n\",param_1[10]);\n    printf(\"Slots Score: @d\\n\",param_1[0xb]);\n    printf(\"Player Wallet Balance: @d\\n\",param_1[0xc]);\n    printf(\"\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_player_info",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_player_info",
+                        "register_player",
+                        "print_all_players",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "register_player",
+                "func_c_signature": "uint * register_player(uint *param_1)",
+                "decompiled_code": "uint * register_player(uint *param_1) {\n  uint *puVar1;\n  int iVar2;\n  uint uVar3;\n  undefined4 local_1c;\n  undefined4 local_18;\n  undefined4 local_14;\n  uint *local_10;\n  \n  iVar2 = allocate(0x38,0,&local_10);\n  if (iVar2 == 0) {\n    memset(local_10,0,0x38);\n    do {\n      uVar3 = prng();\n      *local_10 = uVar3 & 0x7fffffff;\n      iVar2 = lookup_by_number(*local_10,param_1);\n    } while (iVar2 != 0);\n    printf(\"Enter your name:\");\n    receive_fixed_input(local_10 + 1,10,0x1f);\n    printf(\"How much cash do you want to spend?:\");\n    local_1c = 0;\n    local_18 = 0;\n    local_14 = 0;\n    receive_fixed_input(&local_1c,10,0xb);\n    puVar1 = local_10;\n    uVar3 = atoi((char *)&local_1c);\n    puVar1[0xc] = uVar3;\n    if ((1000 < (int)local_10[0xc]) || ((int)local_10[0xc] < 0)) {\n      local_10[0xc] = 1000;\n    }\n    print_player_info(local_10);\n    local_10[0xd] = (uint)param_1;\n    param_1 = local_10;\n  }\n  else {\n    printf(\"Error allocating memory for new player\\n\");\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "register_player",
+                        "allocate",
+                        "memset",
+                        "prng",
+                        "lookup_by_number",
+                        "printf",
+                        "receive_fixed_input",
+                        "atoi",
+                        "print_player_info"
+                    ],
+                    "calling_functions": [
+                        "register_player",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_all_players",
+                "func_c_signature": "undefined ** print_all_players(undefined **param_1)",
+                "decompiled_code": "undefined ** print_all_players(undefined **param_1) {\n  undefined **ppuVar1;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  while (param_1 != (undefined **)0x0) {\n    print_player_info(param_1);\n    ppuVar1 = (undefined **)param_1[0xd];\n    param_1 = ppuVar1;\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_all_players",
+                        "print_player_info"
+                    ],
+                    "calling_functions": [
+                        "print_all_players",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lookup",
+                "func_c_signature": "undefined4 lookup(undefined param_1)",
+                "decompiled_code": "undefined4 lookup(undefined param_1) {\n  undefined4 uVar1;\n  \n  switch(param_1) {\n  case 0x21:\n    uVar1 = 0;\n    break;\n  default:\n    uVar1 = _terminate(1);\n    break;\n  case 0x23:\n    uVar1 = 2;\n    break;\n  case 0x24:\n    uVar1 = 3;\n    break;\n  case 0x25:\n    uVar1 = 4;\n    break;\n  case 0x26:\n    uVar1 = 6;\n    break;\n  case 0x2a:\n    uVar1 = 0xf;\n    break;\n  case 0x2b:\n    uVar1 = 7;\n    break;\n  case 0x3a:\n    uVar1 = 9;\n    break;\n  case 0x3c:\n    uVar1 = 0xb;\n    break;\n  case 0x3d:\n    uVar1 = 8;\n    break;\n  case 0x3e:\n    uVar1 = 10;\n    break;\n  case 0x3f:\n    uVar1 = 0xd;\n    break;\n  case 0x40:\n    uVar1 = 1;\n    break;\n  case 0x5e:\n    uVar1 = 5;\n    break;\n  case 0x7c:\n    uVar1 = 0xc;\n    break;\n  case 0x7e:\n    uVar1 = 0xe;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lookup",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "lookup",
+                        "decode"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "decode",
+                "func_c_signature": "void decode(char *param_1,byte *param_2,int param_3)",
+                "decompiled_code": "void decode(char *param_1,byte *param_2,int param_3) {\n  char *pcVar1;\n  int iVar2;\n  byte local_15;\n  byte *local_14;\n  char *local_10;\n  \n  local_10 = param_1;\n  local_14 = param_2;\n  while (local_10 < param_1 + param_3) {\n    if (*local_10 == '`') {\n      local_10 = local_10 + 1;\n      local_15 = 0;\n    }\n    else {\n      pcVar1 = local_10 + 1;\n      local_15 = lookup((int)*local_10);\n      local_10 = local_10 + 2;\n      iVar2 = lookup((int)*pcVar1);\n      local_15 = local_15 | (byte)(iVar2 << 4);\n    }\n    *local_14 = local_15;\n    local_14 = local_14 + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "decode",
+                        "lookup"
+                    ],
+                    "calling_functions": [
+                        "decode",
+                        "programming_interface"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "programming_interface",
+                "func_c_signature": "void programming_interface(void)",
+                "decompiled_code": "void programming_interface(void) {\n  uint *puVar1;\n  undefined *puVar2;\n  undefined *puVar3;\n  uint auStack_90 [3];\n  int *apiStack_84 [10];\n  undefined local_5c [56];\n  int local_24;\n  uint local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  puVar1 = (uint *)local_5c;\n  apiStack_84[9] = &local_1c;\n  apiStack_84[8] = (int *)0x4;\n  apiStack_84[7] = (int *)&local_20;\n  apiStack_84[6] = (int *)0x0;\n  local_18 = receive();\n  if ((local_18 != 0) || (local_1c == 0)) {\n    puVar1 = auStack_90 + 9;\n    apiStack_84[6] = (int *)0x2;\n    _terminate();\n  }\n  if (((int)local_20 < 1) || (puVar3 = (undefined *)puVar1, 0x70 < local_20)) {\n    puVar3 = (undefined *)((int)puVar1 + -0x10);\n    *(undefined4 *)((int)puVar1 + -0x10) = 1;\n    *(undefined4 *)((int)puVar1 + -0x14) = 0x11d91;\n    _terminate();\n  }\n  *(int **)(puVar3 + -8) = &local_24;\n  *(undefined4 *)(puVar3 + -0xc) = 1;\n  *(uint *)(puVar3 + -0x10) = local_20;\n  *(undefined4 *)(puVar3 + -0x14) = 0x11da5;\n  local_18 = allocate();\n  if ((local_18 != 0) || (puVar2 = puVar3, local_24 == 0)) {\n    puVar2 = puVar3 + -0x10;\n    *(undefined4 *)(puVar3 + -0x10) = 2;\n    *(undefined4 *)(puVar3 + -0x14) = 0x11dc2;\n    _terminate();\n  }\n  local_14 = local_24;\n  puVar3 = puVar2;\n  for (local_10 = 0; local_10 < (int)local_20; local_10 = local_1c + local_10) {\n    *(int **)(puVar3 + -4) = &local_1c;\n    *(uint *)(puVar3 + -8) = local_20 - local_10;\n    *(int *)(puVar3 + -0xc) = local_14;\n    *(undefined4 *)(puVar3 + -0x10) = 0;\n    *(undefined4 *)(puVar3 + -0x14) = 0x11de8;\n    local_18 = receive();\n    puVar2 = puVar3;\n    if (local_18 != 0) {\n      puVar2 = puVar3 + -0x10;\n      *(undefined4 *)(puVar3 + -0x10) = 2;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11dfe;\n      _terminate();\n    }\n    local_14 = local_14 + local_1c;\n    puVar3 = puVar2;\n  }\n  *(uint *)(puVar3 + -8) = local_20;\n  *(undefined **)(puVar3 + -0xc) = local_5c;\n  *(int *)(puVar3 + -0x10) = local_24;\n  *(undefined4 *)(puVar3 + -0x14) = 0x11e2d;\n  decode();\n  *(undefined4 *)(puVar3 + -8) = 0x38;\n  *(undefined **)(puVar3 + -0xc) = local_5c;\n  *(undefined4 **)(puVar3 + -0x10) = &payouts;\n  *(undefined4 *)(puVar3 + -0x14) = 0x11e45;\n  memcpy(*(void **)(puVar3 + -0x10),*(void **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n  *(uint *)(puVar3 + -0xc) = local_20;\n  *(int *)(puVar3 + -0x10) = local_24;\n  *(undefined4 *)(puVar3 + -0x14) = 0x11e5a;\n  deallocate();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "programming_interface",
+                        "receive",
+                        "_terminate",
+                        "allocate",
+                        "decode",
+                        "memcpy",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "programming_interface",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  size_t sVar1;\n  undefined *puVar2;\n  undefined *puVar3;\n  uint *puVar4;\n  char *apcStack_f4 [21];\n  char *pcStack_9c;\n  undefined4 uStack_98;\n  undefined4 *puStack_94;\n  uint local_90;\n  undefined4 local_8c;\n  uint local_88;\n  uint local_84;\n  char local_7d;\n  undefined4 local_7c;\n  char local_78 [64];\n  int local_38;\n  undefined4 local_34;\n  int local_30;\n  uint local_2c;\n  uint local_28;\n  uint local_24;\n  undefined *local_18;\n  \n  local_18 = &stack0x00000004;\n  puVar4 = &local_90;\n  puStack_94 = (undefined4 *)0x11e7c;\n  printf(\"Enter your name:\");\n  puStack_94 = &local_7c;\n  uStack_98 = 0x53;\n  pcStack_9c = local_78;\n  local_38 = receive();\n  if ((local_38 != 0) || (local_7c == 0)) {\n    puVar4 = (uint *)&stack0xffffff60;\n    _terminate();\n  }\n  local_78[local_7c] = '\\0';\n  *(char **)((int)puVar4 + -0x10) = local_78;\n  *(undefined4 *)((int)puVar4 + -0x14) = 0x11ed6;\n  sVar1 = strlen(*(char **)((int)puVar4 + -0x10));\n  if (local_78[sVar1 - 1] == '\\n') {\n    *(char **)((int)puVar4 + -0x10) = local_78;\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x11ef1;\n    sVar1 = strlen(*(char **)((int)puVar4 + -0x10));\n    local_78[sVar1 - 1] = '\\0';\n  }\n  *(char **)((int)puVar4 + -0xc) = local_78;\n  *(char **)((int)puVar4 + -0x10) = \"Hello, @s!\\n\";\n  *(undefined4 *)((int)puVar4 + -0x14) = 0x11f0f;\n  printf(*(char **)((int)puVar4 + -0x10));\n  local_28 = 0;\n  local_24 = 0;\n  local_2c = 0;\n  while( true ) {\n    *(char **)((int)puVar4 + -0x10) = local_78;\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x11f96;\n    sVar1 = strlen(*(char **)((int)puVar4 + -0x10));\n    if (sVar1 <= local_2c) break;\n    local_84 = local_24 << 8 | local_28 >> 0x18;\n    local_88 = local_28 << 8;\n    local_90 = local_24 >> 0x18;\n    local_8c = 0;\n    local_28 = local_90 ^ (int)local_78[local_2c] | local_88;\n    local_24 = (int)local_78[local_2c] >> 0x1f | local_84;\n    local_2c = local_2c + 1;\n  }\n  *(uint *)((int)puVar4 + -0xc) = local_24;\n  *(uint *)((int)puVar4 + -0x10) = local_28;\n  *(undefined4 *)((int)puVar4 + -0x14) = 0x11fae;\n  sprng();\n  if ((local_28 ^ 0x32360652 | local_24 ^ 0x64623130) == 0) {\n    *(char **)((int)puVar4 + -0x10) = \"Access Granted\\n\";\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x11fd5;\n    printf(*(char **)((int)puVar4 + -0x10));\n    *(undefined4 *)((int)puVar4 + -4) = 0x11fdd;\n    programming_interface();\n  }\n  local_30 = 0;\n  local_34 = 0;\n  while ((local_30 == 0 || (*(int *)(local_30 + 0x30) < 0x1389))) {\n    *(undefined **)((int)puVar4 + -0x10) = &DAT_000155d4;\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x11fff;\n    printf(*(char **)((int)puVar4 + -0x10));\n    *(char **)((int)puVar4 + -0x10) = \"1. Play Blackjack\\n\";\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x12011;\n    printf(*(char **)((int)puVar4 + -0x10));\n    *(char **)((int)puVar4 + -0x10) = \"2. Play Poker\\n\";\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x12023;\n    printf(*(char **)((int)puVar4 + -0x10));\n    *(char **)((int)puVar4 + -0x10) = \"3. Play Slots\\n\";\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x12035;\n    printf(*(char **)((int)puVar4 + -0x10));\n    *(char **)((int)puVar4 + -0x10) = \"4. Enter a Players Club Number\\n\";\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x12047;\n    printf(*(char **)((int)puVar4 + -0x10));\n    *(char **)((int)puVar4 + -0x10) = \"5. Register a new Player\\n\";\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x12059;\n    printf(*(char **)((int)puVar4 + -0x10));\n    *(char **)((int)puVar4 + -0x10) = \"6. Show Player Status\\n\";\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x1206b;\n    printf(*(char **)((int)puVar4 + -0x10));\n    *(char **)((int)puVar4 + -0x10) = \"7. Show All Players\\n\";\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x1207d;\n    printf(*(char **)((int)puVar4 + -0x10));\n    *(char **)((int)puVar4 + -0x10) = \"8. Exit\\n\";\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x1208f;\n    printf(*(char **)((int)puVar4 + -0x10));\n    *(char **)((int)puVar4 + -0x10) = \"Select a number:\";\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x120a1;\n    printf(*(char **)((int)puVar4 + -0x10));\n    *(undefined4 *)((int)puVar4 + -8) = 1;\n    *(undefined4 *)((int)puVar4 + -0xc) = 10;\n    *(char **)((int)puVar4 + -0x10) = &local_7d;\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x120b4;\n    receive_fixed_input();\n    switch(local_7d) {\n    case '1':\n      *(char **)((int)puVar4 + -0x10) = \"Play Blackjack\\n\";\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x120e7;\n      printf(*(char **)((int)puVar4 + -0x10));\n      *(int *)((int)puVar4 + -0x10) = local_30;\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x120f5;\n      blackjack();\n      break;\n    case '2':\n      *(char **)((int)puVar4 + -0x10) = \"Play Poker\\n\";\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x1210c;\n      printf(*(char **)((int)puVar4 + -0x10));\n      *(int *)((int)puVar4 + -0x10) = local_30;\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x1211a;\n      poker();\n      break;\n    case '3':\n      *(char **)((int)puVar4 + -0x10) = \"Play Slots\\n\";\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x12131;\n      printf(*(char **)((int)puVar4 + -0x10));\n      *(int *)((int)puVar4 + -0x10) = local_30;\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x1213f;\n      slots();\n      break;\n    case '4':\n      *(undefined4 *)((int)puVar4 + -0x10) = local_34;\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x12152;\n      local_30 = login_player_by_number();\n      break;\n    case '5':\n      *(char **)((int)puVar4 + -0x10) = \"Register a new Player\\n\";\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x1216c;\n      printf(*(char **)((int)puVar4 + -0x10));\n      *(undefined4 *)((int)puVar4 + -0x10) = local_34;\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x1217a;\n      local_34 = register_player();\n      break;\n    case '6':\n      *(int *)((int)puVar4 + -0x10) = local_30;\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x12190;\n      print_player_info();\n      break;\n    case '7':\n      *(char **)((int)puVar4 + -0x10) = \"Show All Players\\n\";\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x121a7;\n      printf(*(char **)((int)puVar4 + -0x10));\n      *(undefined4 *)((int)puVar4 + -0x10) = local_34;\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x121b5;\n      print_all_players();\n      break;\n    case '8':\n      *(char **)((int)puVar4 + -0x10) = \"you don\\'t really want to leave do you?\\n\";\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x121cc;\n      printf(*(char **)((int)puVar4 + -0x10));\n      *(undefined4 *)((int)puVar4 + -8) = 1;\n      *(undefined4 *)((int)puVar4 + -0xc) = 10;\n      *(char **)((int)puVar4 + -0x10) = &local_7d;\n      *(undefined4 *)((int)puVar4 + -0x14) = 0x121df;\n      receive_fixed_input();\n      if (local_7d == 'y') {\n        puVar3 = (undefined *)puVar4;\n        if (local_30 == 0) {\n          *(char **)((int)puVar4 + -0x10) = \"Goodbye, stranger\\n\";\n          *(undefined4 *)((int)puVar4 + -0x14) = 0x12203;\n          printf(*(char **)((int)puVar4 + -0x10));\n          *(undefined4 *)((int)puVar4 + -0x10) = 0;\n          *(undefined4 *)((int)puVar4 + -0x14) = 0x12210;\n          _terminate();\n          puVar3 = (undefined *)((int)puVar4 + -0x10);\n        }\n        puVar2 = puVar3;\n        if (*(int *)(local_30 + 0x24) == 0) {\n          puVar2 = puVar3 + -0x10;\n          *(char **)(puVar3 + -0x10) = \"But you didn\\'t even play blackjack :(\\n\";\n          *(undefined4 *)(puVar3 + -0x14) = 0x12229;\n          printf(*(char **)(puVar3 + -0x10));\n          *(undefined4 *)(puVar3 + -0x10) = 0;\n          *(undefined4 *)(puVar3 + -0x14) = 0x12236;\n          _terminate();\n        }\n        puVar3 = puVar2;\n        if (*(int *)(local_30 + 0x28) == 0) {\n          puVar3 = puVar2 + -0x10;\n          *(char **)(puVar2 + -0x10) = \"But you didn\\'t even play poker :(\\n\";\n          *(undefined4 *)(puVar2 + -0x14) = 0x1224f;\n          printf(*(char **)(puVar2 + -0x10));\n          *(undefined4 *)(puVar2 + -0x10) = 0;\n          *(undefined4 *)(puVar2 + -0x14) = 0x1225c;\n          _terminate();\n        }\n        puVar4 = (uint *)puVar3;\n        if (*(int *)(local_30 + 0x2c) == 0) {\n          puVar4 = (uint *)(puVar3 + -0x10);\n          *(char **)(puVar3 + -0x10) = \"But you didn\\'t even play slots :(\\n\";\n          *(undefined4 *)(puVar3 + -0x14) = 0x12275;\n          printf(*(char **)(puVar3 + -0x10));\n          *(undefined4 *)(puVar3 + -0x10) = 0;\n          *(undefined4 *)(puVar3 + -0x14) = 0x12282;\n          _terminate();\n        }\n        *(char **)((int)puVar4 + -0x10) = \"Okay, you\\'ve had enough ;)\\n\";\n        *(undefined4 *)((int)puVar4 + -0x14) = 0x12291;\n        printf(*(char **)((int)puVar4 + -0x10));\nLAB_000122c7:\n        *(char **)((int)puVar4 + -0x10) = \"Goodbye\\n\";\n        *(undefined4 *)((int)puVar4 + -0x14) = 0x122d6;\n        printf(*(char **)((int)puVar4 + -0x10));\n        return 0;\n      }\n    }\n  }\n  *(char **)((int)puVar4 + -0x10) = \"You broke the bank!\\n\";\n  *(undefined4 *)((int)puVar4 + -0x14) = 0x122c4;\n  printf(*(char **)((int)puVar4 + -0x10));\n  goto LAB_000122c7;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "printf",
+                        "receive",
+                        "_terminate",
+                        "strlen",
+                        "sprng",
+                        "programming_interface",
+                        "receive_fixed_input",
+                        "blackjack",
+                        "poker",
+                        "slots",
+                        "login_player_by_number",
+                        "register_player",
+                        "print_player_info",
+                        "print_all_players"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            }
+        ],
+        "deck.c": [
+            {
+                "func_name": "shuffle",
+                "func_c_signature": "void shuffle(int param_1)",
+                "decompiled_code": "void shuffle(int param_1) {\n  int iVar1;\n  int local_10;\n  \n  for (local_10 = 0; local_10 < 0x34; local_10 = local_10 + 1) {\n    iVar1 = random_in_range(0,local_10);\n    *(undefined *)(local_10 + param_1) = *(undefined *)(iVar1 + param_1);\n    *(char *)(iVar1 + param_1) = (char)local_10 + '\\x01';\n  }\n  *(undefined *)(param_1 + 0x34) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "shuffle",
+                        "random_in_range"
+                    ],
+                    "calling_functions": [
+                        "blackjack",
+                        "shuffle",
+                        "poker"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_deck",
+                "func_c_signature": "void print_deck(int param_1)",
+                "decompiled_code": "void print_deck(int param_1) {\n  int local_10;\n  \n  printf(\"deck: \");\n  for (local_10 = 0; local_10 < 0x34; local_10 = local_10 + 1) {\n    printf(\"@s \",*(undefined4 *)(card_names + *(char *)(local_10 + param_1) * 4));\n  }\n  printf(\"\\ntop: @d\\n\",(int)*(char *)(param_1 + 0x34));\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_deck",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_deck"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_hand",
+                "func_c_signature": "void print_hand(int param_1,uint param_2)",
+                "decompiled_code": "void print_hand(int param_1,uint param_2) {\n  uint local_10;\n  \n  for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {\n    if (('\\0' < *(char *)(param_1 + local_10)) && (*(char *)(param_1 + local_10) < '5')) {\n      printf(\"@s \",*(undefined4 *)(card_names + *(char *)(param_1 + local_10) * 4));\n    }\n  }\n  printf(\"\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_hand",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "blackjack",
+                        "print_hand",
+                        "poker"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "draw",
+                "func_c_signature": "undefined draw(int param_1)",
+                "decompiled_code": "undefined draw(int param_1) {\n  int iVar1;\n  \n  iVar1 = is_empty(param_1);\n  if (iVar1 != 0) {\n    printf(\"Error: Drawing from an empty deck!\\n\");\n    _terminate(1);\n  }\n  *(char *)(param_1 + 0x34) = *(char *)(param_1 + 0x34) + '\\x01';\n  return *(undefined *)(param_1 + *(char *)(param_1 + 0x34) + -1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "draw",
+                        "is_empty",
+                        "printf",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "blackjack",
+                        "draw",
+                        "poker"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_empty",
+                "func_c_signature": "bool is_empty(int param_1)",
+                "decompiled_code": "bool is_empty(int param_1) {\n  return '3' < *(char *)(param_1 + 0x34);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_empty"
+                    ],
+                    "calling_functions": [
+                        "draw",
+                        "is_empty"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_suit",
+                "func_c_signature": "undefined4 get_suit(char param_1)",
+                "decompiled_code": "undefined4 get_suit(char param_1) {\n  undefined4 uVar1;\n  \n  if ((param_1 < '\\x01') || ('5' < param_1)) {\n    uVar1 = 0;\n  }\n  else if (param_1 < '\\x0e') {\n    uVar1 = 1;\n  }\n  else if (param_1 < '\\x1b') {\n    uVar1 = 2;\n  }\n  else if (param_1 < '(') {\n    uVar1 = 3;\n  }\n  else {\n    uVar1 = 4;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_suit"
+                    ],
+                    "calling_functions": [
+                        "get_suit",
+                        "poker"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            }
+        ],
+        "poker.c": [
+            {
+                "func_name": "sort_by_suit",
+                "func_c_signature": "void sort_by_suit(int param_1,uint param_2)",
+                "decompiled_code": "void sort_by_suit(int param_1,uint param_2) {\n  undefined uVar1;\n  uint local_c;\n  uint local_8;\n  \n  for (local_8 = 1; local_8 < param_2; local_8 = local_8 + 1) {\n    local_c = local_8;\n    uVar1 = *(undefined *)(param_1 + local_8);\n    while ((0 < (int)local_c && (*(char *)(param_1 + local_c) < *(char *)(param_1 + (local_c - 1))))\n          ) {\n      *(undefined *)(param_1 + local_c) = *(undefined *)(param_1 + (local_c - 1));\n      local_c = local_c - 1;\n      *(undefined *)(local_c + param_1) = uVar1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sort_by_suit"
+                    ],
+                    "calling_functions": [
+                        "sort_by_suit",
+                        "poker"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sort_by_value",
+                "func_c_signature": "void sort_by_value(int param_1,uint param_2)",
+                "decompiled_code": "void sort_by_value(int param_1,uint param_2) {\n  undefined uVar1;\n  uint local_10;\n  uint local_c;\n  \n  for (local_c = 1; local_c < param_2; local_c = local_c + 1) {\n    local_10 = local_c;\n    uVar1 = *(undefined *)(param_1 + local_c);\n    while ((0 < (int)local_10 &&\n           (*(int *)(poker_value + *(char *)(param_1 + local_10) * 4) <\n            *(int *)(poker_value + *(char *)(param_1 + (local_10 - 1)) * 4)))) {\n      *(undefined *)(param_1 + local_10) = *(undefined *)(param_1 + (local_10 - 1));\n      local_10 = local_10 - 1;\n      *(undefined *)(local_10 + param_1) = uVar1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sort_by_value"
+                    ],
+                    "calling_functions": [
+                        "sort_by_value",
+                        "poker"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "count_cards",
+                "func_c_signature": "int count_cards(int param_1,uint param_2,char param_3)",
+                "decompiled_code": "int count_cards(int param_1,uint param_2,char param_3) {\n  uint local_c;\n  int local_8;\n  \n  local_8 = 0;\n  for (local_c = 0; local_c < param_2; local_c = local_c + 1) {\n    if (*(int *)(poker_value + *(char *)(param_1 + local_c) * 4) ==\n        *(int *)(poker_value + param_3 * 4)) {\n      local_8 = local_8 + 1;\n    }\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "count_cards"
+                    ],
+                    "calling_functions": [
+                        "count_cards",
+                        "poker"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "poker",
+                "func_c_signature": "void poker(undefined *param_1)",
+                "decompiled_code": "void poker(undefined *param_1) {\n  char cVar1;\n  int iVar2;\n  int iVar3;\n  undefined auStackY_da [26];\n  undefined4 uStackY_c0;\n  char local_a9 [5];\n  undefined local_a4 [57];\n  char local_6b [5];\n  char local_66 [4];\n  char local_62;\n  int local_2c;\n  undefined4 local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  uint local_18;\n  int local_14;\n  int local_10;\n  \n  if (param_1 == (undefined *)0x0) {\n    param_1 = local_a4;\n  }\nLAB_000126f6:\n  do {\n    uStackY_c0 = 0x12702;\n    shuffle();\n    uStackY_c0 = 0x12711;\n    local_66[0] = draw();\n    uStackY_c0 = 0x12723;\n    local_66[1] = draw();\n    uStackY_c0 = 0x12735;\n    local_66[2] = draw();\n    uStackY_c0 = 0x12747;\n    local_66[3] = draw();\n    uStackY_c0 = 0x12759;\n    local_62 = draw();\n    uStackY_c0 = 0x1276d;\n    print_hand();\n    uStackY_c0 = 0x1277e;\n    bzero(local_6b,5);\n    uStackY_c0 = 0x12790;\n    printf(\"Enter cards to hold by number (ex: 13 or 12345). Others will be replaced.\\n\");\n    uStackY_c0 = 0x127a3;\n    receive_fixed_input();\n    if (local_6b[0] == 'q') {\n      return;\n    }\n    *(int *)(param_1 + 0x28) = *(int *)(param_1 + 0x28) + 100;\n    if (4 < *(int *)(param_1 + 0x30)) {\n      *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + -5;\n    }\n    uStackY_c0 = 0x127ec;\n    bzero(local_a9,5);\n    for (local_10 = 0; local_10 < 5; local_10 = local_10 + 1) {\n      if (('0' < local_6b[local_10]) && (local_6b[local_10] < '6')) {\n        auStackY_da[local_6b[local_10]] = 1;\n      }\n    }\n    for (local_14 = 0; local_14 < 5; local_14 = local_14 + 1) {\n      if (local_a9[local_14] == '\\0') {\n        uStackY_c0 = 0x12860;\n        cVar1 = draw();\n        local_66[local_14] = cVar1;\n      }\n    }\n    uStackY_c0 = 0x12885;\n    print_hand();\n    uStackY_c0 = 0x12896;\n    sort_by_suit();\n    uStackY_c0 = 0x128a9;\n    iVar2 = get_suit();\n    uStackY_c0 = 0x128be;\n    iVar3 = get_suit();\n    if (iVar2 == iVar3) {\n      uStackY_c0 = 0x128d9;\n      iVar2 = get_suit();\n      uStackY_c0 = 0x128ee;\n      iVar3 = get_suit();\n      if (iVar2 == iVar3) {\n        uStackY_c0 = 0x12909;\n        iVar2 = get_suit();\n        uStackY_c0 = 0x1291e;\n        iVar3 = get_suit();\n        if (iVar2 == iVar3) {\n          uStackY_c0 = 0x12939;\n          iVar2 = get_suit();\n          uStackY_c0 = 0x1294e;\n          iVar3 = get_suit();\n          if (iVar2 == iVar3) {\n            if ((((local_66[0] == '\\t') || (local_66[0] == '\\x16')) || (local_66[0] == '#')) ||\n               (local_66[0] == '0')) {\n              uStackY_c0 = 0x12988;\n              printf(\"Royal Flush!\\n\");\n              *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_000180e8;\n            }\n            else if ((int)local_62 == local_66[0] + 4) {\n              uStackY_c0 = 0x129cb;\n              printf(\"Straight Flush!\\n\");\n              *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_000180ec;\n            }\n            else {\n              uStackY_c0 = 0x129f9;\n              printf(\"Flush!\\n\");\n              *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_000180f0;\n            }\n            goto LAB_000126f6;\n          }\n        }\n      }\n    }\n    uStackY_c0 = 0x12a26;\n    sort_by_value();\n    local_28 = 0;\n    local_1c = 0;\n    local_20 = 0;\n    local_24 = 0;\n    for (local_18 = 0; local_18 < 5; local_18 = local_18 + local_2c) {\n      uStackY_c0 = 0x12a6e;\n      local_2c = count_cards();\n      if (local_2c == 4) {\n        uStackY_c0 = 0x12a89;\n        printf(\"Four of a kind!\\n\");\n        *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_000180f4;\n        goto LAB_000126f6;\n      }\n      if (local_2c == 3) {\n        if (local_20 == 1) {\n          uStackY_c0 = 0x12ac3;\n          printf(\"Full House!\\n\");\n          *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_000180f8;\n          goto LAB_000126f6;\n        }\n        local_1c = 1;\n      }\n      if (local_2c == 2) {\n        if (local_1c == 1) {\n          uStackY_c0 = 0x12b08;\n          printf(\"Full House!\\n\");\n          *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_000180f8;\n          goto LAB_000126f6;\n        }\n        if (10 < *(int *)(poker_value + local_66[local_18] * 4)) {\n          local_24 = 1;\n        }\n        if (local_20 == 1) {\n          uStackY_c0 = 0x12b5d;\n          printf(\"Two Pair!\\n\");\n          *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_000180fc;\n          goto LAB_000126f6;\n        }\n        local_20 = 1;\n      }\n    }\n    if (local_1c == 1) {\n      uStackY_c0 = 0x12baa;\n      printf(\"Three of a kind!\\n\");\n      *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_00018100;\n    }\n    else if (local_24 == 1) {\n      uStackY_c0 = 0x12bde;\n      printf(\"Jacks or better!\\n\");\n      *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_00018104;\n    }\n    else if ((local_20 == 0) &&\n            (*(int *)(poker_value + local_62 * 4) == *(int *)(poker_value + local_66[0] * 4) + 4)) {\n      uStackY_c0 = 0x12c32;\n      printf(\"Straight!\\n\");\n      *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + _DAT_00018108;\n    }\n    else {\n      uStackY_c0 = 0x12c5d;\n      printf(\"You Lose!\\n\");\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [
+                    "number"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "poker",
+                        "shuffle",
+                        "draw",
+                        "print_hand",
+                        "bzero",
+                        "printf",
+                        "number",
+                        "receive_fixed_input",
+                        "sort_by_suit",
+                        "get_suit",
+                        "sort_by_value",
+                        "count_cards"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "poker"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            }
+        ],
+        "slots.c": [
+            {
+                "func_name": "print_board",
+                "func_c_signature": "void print_board(int param_1,int param_2)",
+                "decompiled_code": "void print_board(int param_1,int param_2) {\n  int local_14;\n  int local_10;\n  \n  for (local_10 = 0; local_10 < param_1; local_10 = local_10 + 1) {\n    for (local_14 = 0; local_14 < param_1; local_14 = local_14 + 1) {\n      printf(\"@c \",(uint)*(byte *)(local_10 + param_1 * local_14 + param_2));\n    }\n    printf(\"\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_board",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_board",
+                        "slots"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            },
+            {
+                "func_name": "slots",
+                "func_c_signature": "void slots(undefined *param_1)",
+                "decompiled_code": "void slots(undefined *param_1) {\n  int iVar1;\n  undefined **ppuVar2;\n  undefined uVar3;\n  undefined *puVar4;\n  uint uVar5;\n  undefined *puVar6;\n  undefined auStack_9c [12];\n  undefined *local_90;\n  int local_8c;\n  int local_88;\n  int local_84;\n  undefined **local_80;\n  char local_79;\n  undefined local_78 [56];\n  undefined *local_40;\n  int local_3c;\n  int local_38;\n  int local_34;\n  int local_30;\n  int local_2c;\n  int local_28;\n  int local_24;\n  char local_1d;\n  \n  local_80 = &_GLOBAL_OFFSET_TABLE_;\n  if (param_1 == (undefined *)0x0) {\n    param_1 = local_78;\n  }\n  printf(\"Enter number of rows (2 to 5):\");\n  receive_fixed_input(&local_79,10,1);\n  local_90 = auStack_9c;\n  if (('1' < local_79) && (local_79 < '6')) {\n    local_34 = local_79 + -0x30;\n    while (local_79 != 'q') {\n      if (1 < *(int *)(param_1 + 0x30)) {\n        *(int *)(param_1 + 0x30) = *(int *)(param_1 + 0x30) + -2;\n      }\n      *(int *)(param_1 + 0x2c) = *(int *)(param_1 + 0x2c) + 1;\n      local_38 = local_34 + -1;\n      local_84 = local_34;\n      local_3c = local_34 + -1;\n      local_88 = local_34;\n      local_8c = local_34;\n      uVar5 = ((local_34 * local_34 + 0xfU) / 0x10) * 0x10;\n      puVar4 = local_90 + -(uVar5 & 0xfffff000);\n      for (puVar6 = local_90; puVar6 != puVar4; puVar6 = puVar6 + -0x1000) {\n        *(undefined4 *)(puVar6 + -4) = *(undefined4 *)(puVar6 + -4);\n      }\n      iVar1 = -(uVar5 & 0xfff);\n      if ((uVar5 & 0xfff) != 0) {\n        *(undefined4 *)(puVar6 + ((uVar5 & 0xfff) - 4) + iVar1) =\n             *(undefined4 *)(puVar6 + ((uVar5 & 0xfff) - 4) + iVar1);\n      }\n      local_40 = puVar6 + iVar1;\n      *(int *)(puVar6 + iVar1 + -0xc) = local_8c * local_88;\n      *(undefined **)(puVar6 + iVar1 + -0x10) = local_40;\n      *(undefined4 *)(puVar6 + iVar1 + -0x14) = 0x12ea5;\n      bzero(*(void **)(puVar6 + iVar1 + -0x10),*(size_t *)(puVar6 + iVar1 + -0xc));\n      local_1d = '/';\n      if (local_34 == 5) {\n        local_1d = '#';\n      }\n      else if (local_34 < 6) {\n        if (local_34 == 3) {\n          local_1d = '\\'';\n        }\n        else if (local_34 == 4) {\n          local_1d = '%';\n        }\n      }\n      for (local_24 = 0; local_24 < local_34; local_24 = local_24 + 1) {\n        for (local_28 = 0; local_28 < local_34; local_28 = local_28 + 1) {\n          *(int *)(puVar6 + iVar1 + -0xc) = (int)local_1d;\n          *(undefined4 *)(puVar6 + iVar1 + -0x10) = 0x21;\n          *(undefined4 *)(puVar6 + iVar1 + -0x14) = 0x12efb;\n          uVar3 = random_in_range();\n          local_40[local_28 + local_84 * local_24] = uVar3;\n        }\n      }\n      *(undefined **)(puVar6 + iVar1 + -0xc) = local_40;\n      *(int *)(puVar6 + iVar1 + -0x10) = local_34;\n      *(undefined4 *)(puVar6 + iVar1 + -0x14) = 0x12f39;\n      print_board();\n      for (local_2c = 0; local_2c < local_34; local_2c = local_2c + 1) {\n        for (local_30 = 1;\n            (local_30 < local_34 &&\n            (local_40[local_30 + local_84 * local_2c] == local_40[local_84 * local_2c]));\n            local_30 = local_30 + 1) {\n        }\n        if (local_30 == local_34) {\n          *(int *)(puVar6 + iVar1 + -0xc) = local_2c;\n          ppuVar2 = local_80;\n          *(int *)(puVar6 + iVar1 + -0x10) = (int)local_80 + -0x22a1;\n          *(undefined4 *)(puVar6 + iVar1 + -0x14) = 0x12fa1;\n          printf(*(char **)(puVar6 + iVar1 + -0x10));\n          if (param_1 != (undefined *)0x0) {\n            *(undefined **)(param_1 + 0x30) = ppuVar2[0x3b] + *(int *)(param_1 + 0x30);\n          }\n        }\n      }\n      for (local_30 = 0; local_30 < local_34; local_30 = local_30 + 1) {\n        local_2c = 1;\n        while ((local_2c < local_34 &&\n               (local_40[local_30 + local_84 * local_2c] == local_40[local_30]))) {\n          local_2c = local_2c + 1;\n        }\n        if (local_2c == local_34) {\n          *(int *)(puVar6 + iVar1 + -0xc) = local_30;\n          ppuVar2 = local_80;\n          *(int *)(puVar6 + iVar1 + -0x10) = (int)local_80 + -0x228e;\n          *(undefined4 *)(puVar6 + iVar1 + -0x14) = 0x13031;\n          printf(*(char **)(puVar6 + iVar1 + -0x10));\n          if (param_1 != (undefined *)0x0) {\n            *(undefined **)(param_1 + 0x30) = ppuVar2[0x3c] + *(int *)(param_1 + 0x30);\n          }\n        }\n      }\n      *(undefined ***)(puVar6 + iVar1 + -0x10) = local_80 + -0x89f;\n      *(undefined4 *)(puVar6 + iVar1 + -0x14) = 0x13075;\n      printf(*(char **)(puVar6 + iVar1 + -0x10));\n      *(undefined4 *)(puVar6 + iVar1 + -8) = 1;\n      *(undefined4 *)(puVar6 + iVar1 + -0xc) = 10;\n      *(char **)(puVar6 + iVar1 + -0x10) = &local_79;\n      *(undefined4 *)(puVar6 + iVar1 + -0x14) = 0x13088;\n      receive_fixed_input();\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "rows"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "slots",
+                        "printf",
+                        "rows",
+                        "receive_fixed_input",
+                        "bzero",
+                        "random_in_range",
+                        "print_board"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "slots"
+                    ],
+                    "defined_in_file": "CROMU_00019_decompiled.c"
+                }
+            }
+        ]
+    }
+}

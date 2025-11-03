@@ -1,0 +1,135 @@
+{
+    "file": "rm",
+    "decompiled_code": {
+        "rm.c": [
+            {
+                "func_name": "diagnose_leading_hyphen",
+                "func_c_signature": "void diagnose_leading_hyphen(int param_1,undefined8 *param_2)",
+                "decompiled_code": "void diagnose_leading_hyphen(int param_1,undefined8 *param_2) {\n  undefined8 uVar1;\n  int iVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  char *pcVar5;\n  long in_FS_OFFSET;\n  int local_d4;\n  stat local_c8;\n  long local_30;\n  \n  local_30 = *(long *)(in_FS_OFFSET + 0x28);\n  local_d4 = 1;\n  do {\n    if (param_1 <= local_d4) {\ncode_r0x001003aa:\n      if (local_30 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n        __stack_chk_fail();\n      }\n      return;\n    }\n    pcVar5 = (char *)param_2[local_d4];\n    if ((*pcVar5 == '-') && (pcVar5[1] != '\\0')) {\n      iVar2 = lstat(pcVar5,&local_c8);\n      if (iVar2 == 0) {\n        uVar3 = quotearg_style(4,pcVar5);\n        uVar4 = quotearg_n_style(1,3,pcVar5);\n        uVar1 = *param_2;\n        pcVar5 = (char *)gettext(\"Try \\'%s ./%s\\' to remove the file %s.\\n\");\n        fprintf(_stderr,pcVar5,uVar1,uVar4,uVar3);\n        goto code_r0x001003aa;\n      }\n    }\n    local_d4 = local_d4 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "diagnose_leading_hyphen",
+                        "__stack_chk_fail",
+                        "lstat",
+                        "quotearg_style",
+                        "quotearg_n_style",
+                        "gettext",
+                        "fprintf"
+                    ],
+                    "calling_functions": [
+                        "diagnose_leading_hyphen",
+                        "main"
+                    ],
+                    "defined_in_file": "rm_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [FILE]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Remove (unlink) the FILE(s).\\n\\n  -f, --force           ignore nonexistent files and arguments, never prompt\\n  -i                    prompt before every removal\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -I                    prompt once before removing more than three files, or\\n                          when removing recursively; less intrusive than -i,\\n                          while still giving protection against most mistakes\\n      --interactive[=WHEN]  prompt according to WHEN: never, once (-I), or\\n                          always (-i); without WHEN, prompt always\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --one-file-system  when removing a hierarchy recursively, skip any\\n                          directory that is on a file system different from\\n                          that of the corresponding command line argument\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --no-preserve-root  do not treat \\'/\\' specially\\n      --preserve-root[=all]  do not remove \\'/\\' (default);\\n                              with \\'all\\', reject any command line argument\\n                              on a separate device from its parent\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -r, -R, --recursive   remove directories and their contents recursively\\n  -d, --dir             remove empty directories\\n  -v, --verbose         explain what is being done\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nBy default, rm does not remove directories.  Use the --recursive (-r or -R)\\noption to remove each listed directory, too, along with all of its contents.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nAny attempt to remove a file whose last file name component is \\'.\\' or \\'..\\'\\nis rejected with a diagnostic.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    uVar2 = _program_name;\n    pcVar3 = (char *)gettext(\n                            \"\\nTo remove a file whose name starts with a \\'-\\', for example \\'-foo\\',\\nuse one of these commands:\\n  %s -- -foo\\n\\n  %s ./-foo\\n\"\n                            );\n    printf(pcVar3,uVar2,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nIf you use rm to remove a file, it might be possible to recover\\nsome of its contents, given sufficient expertise and/or time.  For greater\\nassurance that the contents are unrecoverable, consider using shred(1).\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(&DAT_0010178d);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "Remove",
+                    "FILE",
+                    "once",
+                    "always",
+                    "recursive",
+                    "shred"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "Remove",
+                        "FILE",
+                        "fputs_unlocked",
+                        "once",
+                        "always",
+                        "recursive",
+                        "shred",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "rm_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rm_option_init",
+                "func_c_signature": "void rm_option_init(undefined *param_1)",
+                "decompiled_code": "void rm_option_init(undefined *param_1) {\n  int iVar1;\n  \n  *param_1 = 0;\n  *(undefined4 *)(param_1 + 4) = 4;\n  param_1[8] = 0;\n  param_1[10] = 0;\n  param_1[9] = 0;\n  *(undefined8 *)(param_1 + 0x10) = 0;\n  param_1[0x18] = 0;\n  iVar1 = isatty(0);\n  param_1[0x19] = iVar1 != 0;\n  param_1[0x1a] = 0;\n  param_1[0x1b] = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rm_option_init",
+                        "isatty"
+                    ],
+                    "calling_functions": [
+                        "rm_option_init",
+                        "main"
+                    ],
+                    "defined_in_file": "rm_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "bool main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "bool main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  char cVar2;\n  int iVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  int *piVar8;\n  ulong uVar9;\n  long lVar10;\n  char *__format;\n  long in_FS_OFFSET;\n  bool bVar11;\n  int local_b4;\n  char local_58 [4];\n  undefined4 local_54;\n  undefined local_50;\n  char local_4f;\n  undefined local_4e;\n  long local_48;\n  undefined local_40;\n  undefined local_3f;\n  undefined local_3e;\n  long local_30;\n  \n  local_30 = *(long *)(in_FS_OFFSET + 0x28);\n  bVar11 = true;\n  bVar1 = false;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdin);\n  rm_option_init(local_58);\n  priv_set_remove_linkdir();\n  while (iVar3 = getopt_long(param_1,param_2,\"dfirvIR\",long_opts,0), iVar3 != -1) {\n    if (iVar3 < 0x85) {\n      if (iVar3 < 0x49) {\n        if (iVar3 == -0x83) {\nLAB_001009ee:\n          uVar6 = proper_name_lite(\"Jim Meyering\",\"Jim Meyering\");\n          uVar7 = proper_name_lite(\"Richard M. Stallman\",\"Richard M. Stallman\");\n          uVar4 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n          uVar5 = proper_name_lite(\"Paul Rubin\",\"Paul Rubin\");\n          version_etc(_stdout,&DAT_0010178d,\"GNU coreutils\",_Version,uVar5,uVar4,uVar7,uVar6,0);\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (iVar3 == -0x82) {\n          usage(0);\n          goto LAB_001009ee;\n        }\n        goto switchD_0010076d_caseD_4a;\n      }\n      switch(iVar3) {\n      case 0x49:\n        local_54 = 4;\n        local_58[0] = '\\0';\n        bVar1 = true;\n        break;\n      default:\n        goto switchD_0010076d_caseD_4a;\n      case 0x52:\n      case 0x72:\n        local_4f = '\\x01';\n        break;\n      case 100:\n        local_4e = 1;\n        break;\n      case 0x66:\n        local_54 = 5;\n        local_58[0] = '\\x01';\n        bVar1 = false;\n        break;\n      case 0x69:\n        local_54 = 3;\n        local_58[0] = '\\0';\n        bVar1 = false;\n        break;\n      case 0x76:\n        local_3e = 1;\n        break;\n      case 0x80:\n        if (_optarg == 0) {\n          local_b4 = 2;\n        }\n        else {\n          lVar10 = __xargmatch_internal\n                             (\"--interactive\",_optarg,interactive_args,interactive_types,4,\n                              _argmatch_die,1);\n          local_b4 = *(int *)(interactive_types + lVar10 * 4);\n        }\n        if (local_b4 == 2) {\n          local_54 = 3;\n          local_58[0] = '\\0';\n          bVar1 = false;\n        }\n        else if (local_b4 < 3) {\n          if (local_b4 == 0) {\n            local_54 = 5;\n            bVar1 = false;\n          }\n          else if (local_b4 == 1) {\n            local_54 = 4;\n            local_58[0] = '\\0';\n            bVar1 = true;\n          }\n        }\n        break;\n      case 0x81:\n        local_50 = 1;\n        break;\n      case 0x82:\n        cVar2 = streq(param_2[(long)_optind + -1],\"--no-preserve-root\");\n        if (cVar2 != '\\x01') {\n          uVar6 = gettext(\"you may not abbreviate the --no-preserve-root option\");\n          error(1,0,uVar6);\n        }\n        bVar11 = false;\n        break;\n      case 0x83:\n        if (_optarg != 0) {\n          cVar2 = streq(_optarg,&DAT_00101805);\n          if (cVar2 == '\\0') {\n            uVar6 = quotearg_style(4,_optarg);\n            uVar7 = gettext(\"unrecognized --preserve-root argument: %s\");\n            error(1,0,uVar7,uVar6);\n          }\n          else {\n            local_40 = 1;\n          }\n        }\n        bVar11 = true;\n        break;\n      case 0x84:\n        local_3f = 1;\n      }\n    }\n    else {\nswitchD_0010076d_caseD_4a:\n      diagnose_leading_hyphen(param_1,param_2);\n      usage(1);\n    }\n  }\n  if (param_1 <= _optind) {\n    if (local_58[0] != '\\0') {\n      bVar11 = false;\n      goto LAB_00100d67;\n    }\n    uVar6 = gettext(\"missing operand\");\n    error(0,0,uVar6);\n    usage(1);\n  }\n  if (((local_4f != '\\0') && (bVar11)) &&\n     (local_48 = get_root_dev_ino(dev_ino_buf_1), local_48 == 0)) {\n    uVar6 = quotearg_style(4,&DAT_0010189c);\n    uVar7 = gettext(\"failed to get attributes of %s\");\n    piVar8 = __errno_location();\n    error(1,*piVar8,uVar7,uVar6);\n  }\n  uVar6 = _program_name;\n  uVar9 = (ulong)(param_1 - _optind);\n  lVar10 = (long)_optind;\n  if ((bVar1) && ((local_4f != '\\0' || (3 < uVar9)))) {\n    if (local_4f == '\\0') {\n      uVar7 = select_plural(uVar9);\n      __format = (char *)ngettext(\"%s: remove %ju argument? \",\"%s: remove %ju arguments? \",uVar7);\n    }\n    else {\n      uVar7 = select_plural(uVar9);\n      __format = (char *)ngettext(\"%s: remove %ju argument recursively? \",\n                                  \"%s: remove %ju arguments recursively? \",uVar7);\n    }\n    fprintf(_stderr,__format,uVar6,uVar9);\n    cVar2 = yesno();\n    if (cVar2 != '\\x01') {\n      bVar11 = false;\n      goto LAB_00100d67;\n    }\n  }\n  iVar3 = rm(param_2 + lVar10,local_58);\n  if (((iVar3 != 2) && (iVar3 != 3)) && ((iVar3 != 4 && (iVar3 != 5)))) {\n                    /* WARNING: Subroutine does not return */\n    __assert_fail(\"((status) == RM_OK || (status) == RM_USER_ACCEPTED || (status) == RM_USER_DECLINED || (status) == RM_ERROR)\"\n                  ,\"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/rm.c\",\n                  0x174,(char *)&__PRETTY_FUNCTION___0);\n  }\n  bVar11 = iVar3 == 5;\nLAB_00100d67:\n  if (local_30 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return bVar11;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "rm_option_init",
+                        "priv_set_remove_linkdir",
+                        "getopt_long",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage",
+                        "__xargmatch_internal",
+                        "streq",
+                        "gettext",
+                        "error",
+                        "quotearg_style",
+                        "diagnose_leading_hyphen",
+                        "get_root_dev_ino",
+                        "__errno_location",
+                        "select_plural",
+                        "ngettext",
+                        "fprintf",
+                        "yesno",
+                        "rm",
+                        "__assert_fail",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "rm_decompiled.c"
+                }
+            }
+        ]
+    }
+}

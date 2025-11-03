@@ -1,0 +1,1142 @@
+{
+    "file": "KPRCA_00031",
+    "decompiled_code": {
+        "common.c": [
+            {
+                "func_name": "readline",
+                "func_c_signature": "undefined4 readline(undefined4 param_1,void *param_2,uint param_3,uint *param_4)",
+                "decompiled_code": "undefined4 readline(undefined4 param_1,void *param_2,uint param_3,uint *param_4) {\n  size_t local_41c;\n  char local_415 [1025];\n  char *local_14;\n  int local_10;\n  \n  *param_4 = 0;\n  do {\n    do {\n      if (param_3 <= *param_4) {\n        return 0;\n      }\n      local_10 = receive(param_1,local_415,0x400,&local_41c);\n      if (local_10 < 0) {\n        return 0xffffffff;\n      }\n      if ((local_10 == 0) && (local_41c == 0)) {\n        return 0;\n      }\n    } while ((local_10 != 0) || (local_41c == 0));\n    local_14 = strchr(local_415,10);\n    if ((*param_4 == 0) && (local_14 == local_415)) {\n      return 0xffffffff;\n    }\n    if (local_14 != (char *)0x0) {\n      local_41c = (int)local_14 - (int)local_415;\n    }\n    if (param_3 < local_41c + *param_4) {\n      local_41c = param_3 - *param_4;\n    }\n    *param_4 = *param_4 + local_41c;\n    memcpy(param_2,local_415,local_41c);\n    param_2 = (void *)((int)param_2 + local_41c);\n    memset(local_415,0,0x401);\n  } while (local_14 == (char *)0x0);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readline",
+                        "receive",
+                        "strchr",
+                        "memcpy",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "readline",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            }
+        ],
+        "error.c": [
+            {
+                "func_name": "_error",
+                "func_c_signature": "void _error(undefined4 param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void _error(undefined4 param_1,undefined4 param_2,undefined4 param_3) {\n  switch(param_1) {\n  default:\n    fdprintf(2,\"%s:%d - unknown error\\n\",param_2,param_3);\n    break;\n  case 1:\n    fdprintf(2,\"%s:%d - allocation error\\n\",param_2,param_3);\n    break;\n  case 2:\n    fdprintf(2,\"%s:%d - something broke with the tree\\n\",param_2,param_3);\n    break;\n  case 3:\n    fdprintf(2,\"%s:%d - something broke with the list\\n\",param_2,param_3);\n    break;\n  case 4:\n    fdprintf(2,\"%s:%d - something broke with commands\\n\",param_2,param_3);\n    break;\n  case 5:\n    fdprintf(2,\"%s:%d - random failed, getting out of here.\\n\",param_2,param_3);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_error",
+                        "fdprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "_error",
+                        "init_list",
+                        "random_element",
+                        "follow_chain",
+                        "tick_common",
+                        "load_corpus",
+                        "main",
+                        "new_string",
+                        "set_string",
+                        "append_string",
+                        "init_tree",
+                        "word_list_to_str",
+                        "split_words",
+                        "chunk_words",
+                        "insert_wordlist"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            }
+        ],
+        "list.c": [
+            {
+                "func_name": "init_list",
+                "func_c_signature": "void * init_list(undefined4 param_1)",
+                "decompiled_code": "void * init_list(undefined4 param_1) {\n  void *pvVar1;\n  \n  pvVar1 = calloc(1,0xc);\n  if (pvVar1 == (void *)0x0) {\n    _error(1,\n           \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/list.c\"\n           ,0x24);\n  }\n  *(undefined4 *)((int)pvVar1 + 8) = param_1;\n  return pvVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_list",
+                        "calloc",
+                        "_error"
+                    ],
+                    "calling_functions": [
+                        "init_list",
+                        "append_list",
+                        "init_tree",
+                        "tree_to_list"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "append_list",
+                "func_c_signature": "void append_list(int **param_1,char *param_2,int param_3)",
+                "decompiled_code": "void append_list(int **param_1,char *param_2,int param_3) {\n  int *piVar1;\n  int iVar2;\n  int **local_10;\n  \n  if (*param_1 == (int *)0x0) {\n    piVar1 = (int *)init_list(param_2);\n    *param_1 = piVar1;\n  }\n  else {\n    local_10 = (int **)*param_1;\n    if (param_3 == 0) {\n      for (; local_10 != (int **)0x0; local_10 = (int **)*local_10) {\n        iVar2 = strcmp(param_2,(char *)local_10[2]);\n        if (iVar2 == 0) {\n          return;\n        }\n      }\n    }\n    piVar1 = (int *)init_list(param_2);\n    for (local_10 = (int **)*param_1; *local_10 != (int *)0x0; local_10 = (int **)*local_10) {\n    }\n    *local_10 = piVar1;\n    piVar1[1] = (int)local_10;\n    *piVar1 = 0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "append_list",
+                        "init_list",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "append_list",
+                        "concat_list",
+                        "copy_list",
+                        "follow_chain",
+                        "init",
+                        "ins_tree",
+                        "_tree_to_list",
+                        "split_words",
+                        "chunk_words"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "concat_list",
+                "func_c_signature": "undefined4 * concat_list(undefined4 *param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 * concat_list(undefined4 *param_1,undefined4 *param_2) {\n  undefined4 *puVar1;\n  undefined4 uVar2;\n  \n  uVar2 = 0x116d6;\n  puVar1 = param_2;\n  if ((param_1 != (undefined4 *)0x0) && (puVar1 = param_1, param_2 != (undefined4 *)0x0)) {\n    for (; param_2 != (undefined4 *)0x0; param_2 = (undefined4 *)*param_2) {\n      append_list(&param_1,param_2[2],1,uVar2);\n    }\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "concat_list",
+                        "append_list"
+                    ],
+                    "calling_functions": [
+                        "concat_list"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "len_list",
+                "func_c_signature": "int len_list(undefined4 *param_1)",
+                "decompiled_code": "int len_list(undefined4 *param_1) {\n  int local_8;\n  \n  if (param_1 == (undefined4 *)0x0) {\n    local_8 = 0;\n  }\n  else {\n    local_8 = 0;\n    for (; param_1 != (undefined4 *)0x0; param_1 = (undefined4 *)*param_1) {\n      local_8 = local_8 + 1;\n    }\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "len_list"
+                    ],
+                    "calling_functions": [
+                        "len_list",
+                        "lindex",
+                        "copy_list",
+                        "random_element",
+                        "int_cmd",
+                        "gen_msg",
+                        "chunk_words",
+                        "upto_last"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lindex",
+                "func_c_signature": "undefined4 lindex(undefined4 *param_1,uint param_2)",
+                "decompiled_code": "undefined4 lindex(undefined4 *param_1,uint param_2) {\n  undefined4 uVar1;\n  uint uVar2;\n  uint local_c;\n  uint local_8;\n  \n  if (param_1 == (undefined4 *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    if ((int)param_2 < 0) {\n      local_8 = len_list(param_1);\n      for (; (int)param_2 < 0; param_2 = param_2 + 1) {\n        local_8 = local_8 - 1;\n      }\n      param_2 = local_8;\n    }\n    uVar2 = len_list(param_1);\n    if (param_2 < uVar2) {\n      for (local_c = 0; local_c < param_2; local_c = local_c + 1) {\n        param_1 = (undefined4 *)*param_1;\n      }\n      uVar1 = param_1[2];\n    }\n    else {\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lindex",
+                        "len_list"
+                    ],
+                    "calling_functions": [
+                        "lindex",
+                        "random_element",
+                        "follow_chain",
+                        "insert_wordlist"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "copy_list",
+                "func_c_signature": "undefined4 copy_list(undefined4 *param_1,uint param_2,uint param_3)",
+                "decompiled_code": "undefined4 copy_list(undefined4 *param_1,uint param_2,uint param_3) {\n  undefined4 local_20;\n  uint local_1c;\n  uint local_18;\n  uint local_14;\n  undefined4 *local_10;\n  \n  if (param_1 == (undefined4 *)0x0) {\n    local_20 = 0;\n  }\n  else {\n    local_1c = len_list(param_1);\n    if ((param_3 == 0) || (local_1c < param_3)) {\n      param_3 = local_1c;\n    }\n    if (param_2 < param_3) {\n      local_10 = param_1;\n      local_20 = 0;\n      for (local_14 = 0; local_14 < param_2; local_14 = local_14 + 1) {\n        local_10 = (undefined4 *)*local_10;\n      }\n      for (local_18 = param_2; local_18 < param_3; local_18 = local_18 + 1) {\n        append_list(&local_20,local_10[2],1);\n        local_10 = (undefined4 *)*local_10;\n      }\n    }\n    else {\n      local_20 = 0;\n    }\n  }\n  return local_20;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copy_list",
+                        "len_list",
+                        "append_list"
+                    ],
+                    "calling_functions": [
+                        "copy_list",
+                        "follow_chain",
+                        "chunk_words",
+                        "upto_last"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free_list",
+                "func_c_signature": "void free_list(undefined4 *param_1,int param_2)",
+                "decompiled_code": "void free_list(undefined4 *param_1,int param_2) {\n  undefined4 *local_10;\n  \n  for (local_10 = param_1; local_10 != (undefined4 *)0x0; local_10 = (undefined4 *)*local_10) {\n    if (param_2 == 0) {\n      free((void *)local_10[2]);\n    }\n    if (local_10[1] != 0) {\n      free((void *)local_10[1]);\n    }\n  }\n  free((void *)0x0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_list",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "free_list",
+                        "free_list_of_lists",
+                        "pont_cmd"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free_list_of_lists",
+                "func_c_signature": "void free_list_of_lists(undefined4 *param_1,int param_2)",
+                "decompiled_code": "void free_list_of_lists(undefined4 *param_1,int param_2) {\n  undefined4 *local_10;\n  \n  for (local_10 = param_1; local_10 != (undefined4 *)0x0; local_10 = (undefined4 *)*local_10) {\n    free_list(param_1[2],param_2 + -1);\n    if (local_10[1] != 0) {\n      free((void *)local_10[1]);\n    }\n  }\n  free((void *)0x0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_list_of_lists",
+                        "free_list",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "free_list_of_lists"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "random_element",
+                "func_c_signature": "undefined4 random_element(undefined4 param_1)",
+                "decompiled_code": "undefined4 random_element(undefined4 param_1) {\n  long lVar1;\n  undefined4 uVar2;\n  int *piVar3;\n  int local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_10 = len_list(param_1);\n  piVar3 = &local_18;\n  lVar1 = random();\n  if (lVar1 < 0) {\n    piVar3 = (int *)0xb3;\n    _error(5,\n           \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/list.c\"\n           ,0xb3);\n  }\n  if (local_18 == 4) {\n    local_14 = local_14 % local_10;\n    uVar2 = lindex(param_1,local_14,piVar3);\n  }\n  else {\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "random_element",
+                        "len_list",
+                        "random",
+                        "_error",
+                        "lindex"
+                    ],
+                    "calling_functions": [
+                        "random_element",
+                        "pont_cmd",
+                        "follow_chain"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "hello_cmd",
+                "func_c_signature": "undefined4 hello_cmd(void)",
+                "decompiled_code": "undefined4 hello_cmd(void) {\n  fdprintf(1,\"case > Hello, you.\\n\");\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "hello_cmd",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "hello_cmd"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "int_cmd",
+                "func_c_signature": "undefined4 int_cmd(void)",
+                "decompiled_code": "undefined4 int_cmd(void) {\n  int iVar1;\n  undefined4 *local_14;\n  int local_10;\n  \n  local_10 = 0;\n  for (local_14 = (undefined4 *)tree_to_list(ct); local_14 != (undefined4 *)0x0;\n      local_14 = (undefined4 *)*local_14) {\n    iVar1 = len_list(local_14[2]);\n    local_10 = local_10 + iVar1;\n  }\n  iVar1 = num_nodes(ct);\n  fdprintf(1,\"case > I have an intelligence rating of: %u / %u\\n\",local_10,iVar1 << 3);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "int_cmd",
+                        "tree_to_list",
+                        "len_list",
+                        "num_nodes",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "int_cmd"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rev_cmd",
+                "func_c_signature": "undefined4 rev_cmd(char *param_1)",
+                "decompiled_code": "undefined4 rev_cmd(char *param_1) {\n  size_t sVar1;\n  byte *__dest;\n  char *pcVar2;\n  undefined4 uVar3;\n  byte *local_14;\n  byte *local_10;\n  \n  sVar1 = strlen(param_1);\n  __dest = (byte *)calloc(1,sVar1 + 1);\n  strcpy((char *)__dest,param_1);\n  pcVar2 = strchr((char *)__dest,0);\n  if (pcVar2 == (char *)0x0) {\n    uVar3 = 0xffffffff;\n  }\n  else {\n    local_14 = (byte *)strchr((char *)__dest,0);\n    for (local_10 = __dest; local_14 = local_14 + -1, local_10 < local_14; local_10 = local_10 + 1)\n    {\n      *local_10 = *local_10 ^ *local_14;\n      *local_14 = *local_14 ^ *local_10;\n      *local_10 = *local_10 ^ *local_14;\n    }\n    fdprintf(1,\"case > %s\\n\",__dest);\n    free(__dest);\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rev_cmd",
+                        "strlen",
+                        "calloc",
+                        "strcpy",
+                        "strchr",
+                        "fdprintf",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "rev_cmd"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "pont_cmd",
+                "func_c_signature": "undefined4 pont_cmd(int param_1)",
+                "decompiled_code": "undefined4 pont_cmd(int param_1) {\n  undefined4 uVar1;\n  int local_48;\n  undefined *local_44;\n  undefined *local_40;\n  char *local_3c;\n  undefined *local_38;\n  undefined *local_34;\n  undefined4 local_30;\n  undefined *local_2c;\n  undefined4 local_28;\n  char *local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_48 = 0;\n  local_44 = &DAT_00016259;\n  local_40 = &DAT_0001625e;\n  local_3c = \"symptom \";\n  local_38 = &DAT_0001626a;\n  local_34 = &DAT_0001626e;\n  local_30 = 0;\n  local_2c = &DAT_00016273;\n  local_28 = 0;\n  local_24 = \" complex.\";\n  if (param_1 == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    local_14 = split_words(param_1,0);\n    local_18 = new_string(\"Hmm, I think that \");\n    if ((local_14 == 0) || (local_18 == 0)) {\n      uVar1 = 0xffffffff;\n    }\n    else {\n      for (local_10 = 0; local_10 < 10; local_10 = local_10 + 1) {\n        if ((&local_48)[local_10] == 0) {\n          local_20 = random_element(local_14);\n          if (local_20 == 0) {\n            return 0xffffffff;\n          }\n          append_string(local_18,local_20);\n        }\n        else {\n          append_string(local_18,(&local_48)[local_10]);\n        }\n      }\n      local_1c = new_string(*(undefined4 *)(local_18 + 4));\n      if (local_1c == 0) {\n        uVar1 = 0xffffffff;\n      }\n      else {\n        free_string(local_18);\n        fdprintf(1,\"molly > %s\\n\",*(undefined4 *)(local_1c + 4));\n        free_string(local_1c);\n        free_list(local_14,0);\n        uVar1 = 0;\n      }\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "pont_cmd",
+                        "split_words",
+                        "new_string",
+                        "random_element",
+                        "append_string",
+                        "free_string",
+                        "fdprintf",
+                        "free_list"
+                    ],
+                    "calling_functions": [
+                        "pont_cmd"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "part_cmd",
+                "func_c_signature": "void part_cmd(void)",
+                "decompiled_code": "void part_cmd(void) {\n  fdprintf(1,\"BYE!\\n\");\n                    /* WARNING: Subroutine does not return */\n  exit(0);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "part_cmd",
+                        "fdprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "part_cmd"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_command",
+                "func_c_signature": "undefined4 is_command(char *param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 is_command(char *param_1,undefined4 *param_2) {\n  char **ppcVar1;\n  size_t sVar2;\n  int iVar3;\n  undefined4 *local_10;\n  \n  if ((param_1 != (char *)0x0) && (sVar2 = strlen(param_1), sVar2 != 0)) {\n    for (local_10 = param_2; local_10 != (undefined4 *)0x0; local_10 = (undefined4 *)*local_10) {\n      ppcVar1 = (char **)local_10[2];\n      sVar2 = strlen(*ppcVar1);\n      iVar3 = strncmp(param_1,*ppcVar1,sVar2);\n      if (iVar3 == 0) {\n        return 1;\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_command",
+                        "strlen",
+                        "strncmp"
+                    ],
+                    "calling_functions": [
+                        "is_command",
+                        "tick_common"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_command",
+                "func_c_signature": "char ** get_command(char *param_1,undefined4 *param_2)",
+                "decompiled_code": "char ** get_command(char *param_1,undefined4 *param_2) {\n  char **ppcVar1;\n  size_t __n;\n  int iVar2;\n  undefined4 *local_10;\n  \n  if (param_1 != (char *)0x0) {\n    for (local_10 = param_2; local_10 != (undefined4 *)0x0; local_10 = (undefined4 *)*local_10) {\n      ppcVar1 = (char **)local_10[2];\n      __n = strlen(*ppcVar1);\n      iVar2 = strncmp(param_1,*ppcVar1,__n);\n      if (iVar2 == 0) {\n        return ppcVar1;\n      }\n    }\n  }\n  return (char **)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_command",
+                        "strlen",
+                        "strncmp"
+                    ],
+                    "calling_functions": [
+                        "get_command",
+                        "tick_common"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "will_chat",
+                "func_c_signature": "undefined4 will_chat(uint param_1)",
+                "decompiled_code": "undefined4 will_chat(uint param_1) {\n  long lVar1;\n  undefined4 uVar2;\n  int local_14;\n  uint local_10;\n  \n  lVar1 = random();\n  if (lVar1 < 0) {\n    uVar2 = 0;\n  }\n  else if ((local_14 == 4) && (local_10 % 100 <= param_1)) {\n    uVar2 = 1;\n  }\n  else {\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "will_chat",
+                        "random"
+                    ],
+                    "calling_functions": [
+                        "will_chat",
+                        "tick_common"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "follow_chain",
+                "func_c_signature": "undefined4 follow_chain(int param_1,uint param_2)",
+                "decompiled_code": "undefined4 follow_chain(int param_1,uint param_2) {\n  longlong lVar1;\n  undefined4 local_38;\n  undefined4 local_34;\n  undefined4 local_30;\n  int local_2c;\n  int local_28;\n  undefined4 local_24;\n  int local_20;\n  uint local_1c;\n  uint local_18;\n  undefined8 local_14;\n  \n  if ((param_1 == 0) || (param_2 == 0)) {\n    local_30 = 0;\n  }\n  else {\n    local_30 = 0;\n    local_34 = 0;\n    local_20 = upto_last(param_1);\n    if (local_20 == 0) {\n      local_30 = 0;\n    }\n    else {\n      local_14 = key_from_wordlist(local_20);\n      if (local_14 == 0) {\n        local_30 = 0;\n      }\n      else {\n        for (local_18 = 0; local_18 < param_2; local_18 = local_18 + 1) {\n          local_38 = copy_list(local_20,0,0);\n          local_34 = 0;\n          lVar1 = local_14;\n          for (local_1c = 0; local_1c < 0xf; local_1c = local_1c + 1) {\n            local_14 = lVar1;\n            local_24 = lindex(local_38,0);\n            append_list(&local_34,local_24,1);\n            local_28 = get_tree(ct,local_14);\n            lVar1 = local_14;\n            if (local_28 == 0) break;\n            local_2c = random_element(local_28);\n            if (local_2c == 0) {\n              _error(3,\n                     \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/main.c\"\n                     ,0xf4);\n            }\n            local_38 = copy_list(local_38,1,0);\n            append_list(&local_38,local_2c,1);\n            lVar1 = key_from_wordlist(local_38);\n          }\n          local_14 = lVar1;\n          append_list(&local_30,local_34,1);\n        }\n      }\n    }\n  }\n  return local_30;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "follow_chain",
+                        "upto_last",
+                        "key_from_wordlist",
+                        "copy_list",
+                        "lindex",
+                        "append_list",
+                        "get_tree",
+                        "random_element",
+                        "_error"
+                    ],
+                    "calling_functions": [
+                        "follow_chain",
+                        "gen_msg"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "gen_msg",
+                "func_c_signature": "int gen_msg(undefined4 *param_1)",
+                "decompiled_code": "int gen_msg(undefined4 *param_1) {\n  uint uVar1;\n  uint uVar2;\n  undefined4 *local_18;\n  undefined4 *local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_14 = param_1;\n  do {\n    if (local_14 == (undefined4 *)0x0) {\n      return local_10;\n    }\n    for (local_18 = (undefined4 *)follow_chain(local_14[2],5); local_18 != (undefined4 *)0x0;\n        local_18 = (undefined4 *)*local_18) {\n      if (local_10 == 0) {\nLAB_00012134:\n        local_10 = local_18[2];\n      }\n      else {\n        uVar1 = len_list(local_18[2]);\n        uVar2 = len_list(local_10);\n        if (uVar2 < uVar1) goto LAB_00012134;\n      }\n    }\n    local_14 = (undefined4 *)*local_14;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "gen_msg",
+                        "follow_chain",
+                        "len_list"
+                    ],
+                    "calling_functions": [
+                        "gen_msg",
+                        "tick_common"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "wordlist_to_string",
+                "func_c_signature": "undefined4 wordlist_to_string(undefined4 *param_1)",
+                "decompiled_code": "undefined4 wordlist_to_string(undefined4 *param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  undefined4 *local_10;\n  \n  if (param_1 == (undefined4 *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = new_string(0);\n    for (local_10 = param_1; local_10 != (undefined4 *)0x0; local_10 = (undefined4 *)*local_10) {\n      iVar2 = append_string(uVar1,local_10[2]);\n      if ((iVar2 < 0) || (iVar2 = append_string(uVar1,&DAT_00016273), iVar2 < 0)) {\n        free_string(uVar1);\n        return 0;\n      }\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "wordlist_to_string",
+                        "new_string",
+                        "append_string",
+                        "free_string"
+                    ],
+                    "calling_functions": [
+                        "wordlist_to_string",
+                        "tick_common"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "tick_common",
+                "func_c_signature": "undefined4 tick_common(char *param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)",
+                "decompiled_code": "undefined4 tick_common(char *param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4) {\n  int iVar1;\n  char **ppcVar2;\n  char *pcVar3;\n  size_t sVar4;\n  undefined4 uVar5;\n  int iVar6;\n  int iVar7;\n  \n  iVar1 = is_command(param_1,param_2);\n  if (iVar1 == 0) {\n    iVar1 = str_to_wordlists(param_1);\n    if (iVar1 == 0) {\n      uVar5 = 0;\n    }\n    else {\n      uVar5 = gen_msg(iVar1);\n      iVar6 = wordlist_to_string(uVar5);\n      if (iVar6 != 0) {\n        iVar7 = will_chat(param_4);\n        if (iVar7 != 0) {\n          fdprintf(1,\"%s > %s\\n\",param_3,*(undefined4 *)(iVar6 + 4));\n        }\n      }\n      crosstalk = iVar6;\n      iVar1 = insert_wordlists(iVar1,&ct);\n      if (iVar1 < 0) {\n        uVar5 = 0xffffffff;\n      }\n      else {\n        uVar5 = 0;\n      }\n    }\n  }\n  else {\n    ppcVar2 = (char **)get_command(param_1,param_2);\n    if (ppcVar2 == (char **)0x0) {\n      _error(4,\n             \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/main.c\"\n             ,0x12a);\n    }\n    pcVar3 = strchr(param_1,0x20);\n    if (pcVar3 == (char *)0x0) {\n      sVar4 = strlen(*ppcVar2);\n      param_1 = param_1 + sVar4;\n    }\n    else {\n      param_1 = strchr(param_1,0x20);\n      param_1 = param_1 + 1;\n    }\n    (*(code *)ppcVar2[1])(param_1);\n    uVar5 = 0;\n  }\n  return uVar5;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "tick_common",
+                        "is_command",
+                        "str_to_wordlists",
+                        "gen_msg",
+                        "wordlist_to_string",
+                        "will_chat",
+                        "fdprintf",
+                        "insert_wordlists",
+                        "get_command",
+                        "_error",
+                        "strchr",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "tick_common",
+                        "tick_main_bot",
+                        "tick_buddy_bot"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "tick_main_bot",
+                "func_c_signature": "void tick_main_bot(undefined4 param_1)",
+                "decompiled_code": "void tick_main_bot(undefined4 param_1) {\n  tick_common(param_1,b1_cmds,&DAT_00016336,0x21);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "tick_main_bot",
+                        "tick_common"
+                    ],
+                    "calling_functions": [
+                        "tick_main_bot",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "tick_buddy_bot",
+                "func_c_signature": "void tick_buddy_bot(undefined4 param_1)",
+                "decompiled_code": "void tick_buddy_bot(undefined4 param_1) {\n  tick_common(param_1,b2_cmds,\"molly\",10);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "tick_buddy_bot",
+                        "tick_common"
+                    ],
+                    "calling_functions": [
+                        "tick_buddy_bot",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_prompt",
+                "func_c_signature": "void print_prompt(void)",
+                "decompiled_code": "void print_prompt(void) {\n  fdprintf(1,&DAT_00016348,\"you > \");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_prompt",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "print_prompt",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "load_corpus",
+                "func_c_signature": "void load_corpus(void)",
+                "decompiled_code": "void load_corpus(void) {\n  int iVar1;\n  undefined **local_10;\n  \n  for (local_10 = &sentences; *local_10 != (undefined *)0x0; local_10 = local_10 + 1) {\n    iVar1 = split_words(*local_10,1);\n    if (iVar1 == 0) {\n      _error(3,\n             \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/main.c\"\n             ,0x15b);\n    }\n    iVar1 = insert_wordlist(iVar1,&ct);\n    if (iVar1 < 0) {\n      _error(3,\n             \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/main.c\"\n             ,0x15e);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "load_corpus",
+                        "split_words",
+                        "_error",
+                        "insert_wordlist"
+                    ],
+                    "calling_functions": [
+                        "load_corpus",
+                        "init"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init",
+                "func_c_signature": "int init(EVP_PKEY_CTX *ctx)",
+                "decompiled_code": "int init(EVP_PKEY_CTX *ctx) {\n  int iVar1;\n  undefined8 uVar2;\n  \n  append_list(&b1_cmds,&hello,0);\n  append_list(&b1_cmds,&_int,0);\n  append_list(&b1_cmds,&rev,0);\n  append_list(&b1_cmds,&part,0);\n  append_list(&b2_cmds,&pont,0);\n  uVar2 = hash_str(\"ROOT NODE\");\n  ct = init_tree(uVar2,\"ROOT NODE\");\n  crosstalk = 0;\n  load_corpus();\n  iVar1 = fdprintf(1,&DAT_00016348,\n                   \"\\nWelcome to the Enslavednode chat server!\\nThe bots here love to talk, but they are shy...\\nYou need to get the ball rolling.\\n\"\n                  );\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init",
+                        "append_list",
+                        "hash_str",
+                        "init_tree",
+                        "load_corpus",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "init",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  EVP_PKEY_CTX *in_stack_ffffffe0;\n  int local_18;\n  void *local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_14 = (void *)0x0;\n  init(in_stack_ffffffe0);\n  while( true ) {\n    while( true ) {\n      local_14 = calloc(1,0x1fbf);\n      if (local_14 == (void *)0x0) {\n        _error(1,\n               \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/main.c\"\n               ,0x184);\n      }\n      print_prompt();\n      memset(local_14,0,0x1fbf);\n      iVar1 = readline(1,local_14,0x1fbe,&local_18);\n      if ((-1 < iVar1) && (local_18 != 0)) break;\n      free(local_14);\n    }\n    *(undefined *)((int)local_14 + local_18) = 0;\n    iVar1 = tick_main_bot(local_14);\n    if (iVar1 < 0) break;\n    if ((crosstalk == 0) || (*(int *)(crosstalk + 4) == 0)) {\n      free(local_14);\n    }\n    else {\n      tick_buddy_bot(*(undefined4 *)(crosstalk + 4));\n      crosstalk = 0;\n      free(local_14);\n    }\n  }\n  free(local_14);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "init",
+                        "calloc",
+                        "_error",
+                        "print_prompt",
+                        "memset",
+                        "readline",
+                        "free",
+                        "tick_main_bot",
+                        "tick_buddy_bot"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            }
+        ],
+        "string.c": [
+            {
+                "func_name": "new_string",
+                "func_c_signature": "undefined4 * new_string(char *param_1)",
+                "decompiled_code": "undefined4 * new_string(char *param_1) {\n  undefined4 *puVar1;\n  void *pvVar2;\n  \n  puVar1 = (undefined4 *)calloc(1,8);\n  if (puVar1 == (undefined4 *)0x0) {\n    _error(1,\n           \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/string.c\"\n           ,0x23);\n  }\n  pvVar2 = calloc(1,0x80);\n  puVar1[1] = pvVar2;\n  if (puVar1[1] == 0) {\n    _error(1,\n           \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/string.c\"\n           ,0x27);\n  }\n  *puVar1 = 0x80;\n  if (param_1 != (char *)0x0) {\n    strcpy((char *)puVar1[1],param_1);\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "new_string",
+                        "calloc",
+                        "_error",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "pont_cmd",
+                        "wordlist_to_string",
+                        "new_string"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_string",
+                "func_c_signature": "undefined4 set_string(size_t *param_1,char *param_2)",
+                "decompiled_code": "undefined4 set_string(size_t *param_1,char *param_2) {\n  undefined4 uVar1;\n  size_t sVar2;\n  size_t sVar3;\n  void *pvVar4;\n  \n  if ((param_2 == (char *)0x0) || (param_1 == (size_t *)0x0)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    memset((void *)param_1[1],0,*param_1);\n    sVar2 = strlen(param_2);\n    if (*param_1 < sVar2 + 1) {\n      sVar2 = strlen(param_2);\n      sVar3 = strlen((char *)param_1[1]);\n      *param_1 = (sVar3 + sVar2 + 1) * 2;\n      pvVar4 = realloc((void *)param_1[1],*param_1);\n      param_1[1] = (size_t)pvVar4;\n      if (param_1[1] == 0) {\n        _error(1,\n               \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/string.c\"\n               ,0x44);\n      }\n    }\n    strncpy((char *)param_1[1],param_2,*param_1);\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_string",
+                        "memset",
+                        "strlen",
+                        "realloc",
+                        "_error",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "set_string"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "append_string",
+                "func_c_signature": "undefined4 append_string(uint *param_1,char *param_2)",
+                "decompiled_code": "undefined4 append_string(uint *param_1,char *param_2) {\n  undefined4 uVar1;\n  size_t sVar2;\n  size_t sVar3;\n  void *pvVar4;\n  \n  if ((param_2 == (char *)0x0) || (param_1 == (uint *)0x0)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    sVar2 = strlen(param_2);\n    sVar3 = strlen((char *)param_1[1]);\n    if (*param_1 < sVar3 + sVar2 + 1) {\n      sVar2 = strlen(param_2);\n      sVar3 = strlen((char *)param_1[1]);\n      *param_1 = (sVar3 + sVar2 + 1) * 2;\n      pvVar4 = realloc((void *)param_1[1],*param_1);\n      param_1[1] = (uint)pvVar4;\n      if (param_1[1] == 0) {\n        _error(1,\n               \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/string.c\"\n               ,0x54);\n      }\n    }\n    strcat((char *)param_1[1],param_2);\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "append_string",
+                        "strlen",
+                        "realloc",
+                        "_error",
+                        "strcat"
+                    ],
+                    "calling_functions": [
+                        "pont_cmd",
+                        "wordlist_to_string",
+                        "append_string"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "contains_string",
+                "func_c_signature": "bool contains_string(int param_1,char *param_2)",
+                "decompiled_code": "bool contains_string(int param_1,char *param_2) {\n  size_t sVar1;\n  size_t sVar2;\n  int iVar3;\n  bool bVar4;\n  uint local_1c;\n  char *local_18;\n  char *local_14;\n  char *local_10;\n  \n  if ((param_1 == 0) || (param_2 == (char *)0x0)) {\n    bVar4 = false;\n  }\n  else {\n    local_10 = *(char **)(param_1 + 4);\n    sVar1 = strlen(param_2);\n    sVar2 = strlen(*(char **)(param_1 + 4));\n    if (sVar2 < sVar1) {\n      bVar4 = false;\n    }\n    else if ((sVar2 == 0) || (sVar1 == 0)) {\n      if ((sVar2 == sVar1) && (*local_10 == *param_2)) {\n        bVar4 = true;\n      }\n      else {\n        bVar4 = false;\n      }\n    }\n    else if (sVar2 == sVar1) {\n      iVar3 = strcmp(local_10,param_2);\n      bVar4 = iVar3 == 0;\n    }\n    else {\n      for (; *local_10 != '\\0'; local_10 = local_10 + 1) {\n        local_14 = param_2;\n        sVar2 = strlen(local_10);\n        local_18 = local_10;\n        for (local_1c = 0; (local_1c < sVar1 && (local_1c < sVar2)); local_1c = local_1c + 1) {\n          if (*local_14 != *local_18) break;\n          local_18 = local_18 + 1;\n          local_14 = local_14 + 1;\n        }\n        if (local_1c == sVar1) {\n          return true;\n        }\n      }\n      bVar4 = false;\n    }\n  }\n  return bVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "contains_string",
+                        "strlen",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "contains_string"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free_string",
+                "func_c_signature": "void free_string(int param_1)",
+                "decompiled_code": "void free_string(int param_1) {\n  if ((param_1 != 0) && (*(int *)(param_1 + 4) != 0)) {\n    free(*(void **)(param_1 + 4));\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_string",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "pont_cmd",
+                        "wordlist_to_string",
+                        "free_string"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            }
+        ],
+        "tree.c": [
+            {
+                "func_name": "init_tree",
+                "func_c_signature": "uint * init_tree(uint param_1,uint param_2,int param_3)",
+                "decompiled_code": "uint * init_tree(uint param_1,uint param_2,int param_3) {\n  uint *puVar1;\n  uint uVar2;\n  \n  puVar1 = (uint *)calloc(1,0x14);\n  if (puVar1 == (uint *)0x0) {\n    _error(1,\n           \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/tree.c\"\n           ,0x22);\n  }\n  if (((param_1 | param_2) != 0) && (param_3 != 0)) {\n    *puVar1 = param_1;\n    puVar1[1] = param_2;\n    uVar2 = init_list(param_3);\n    puVar1[2] = uVar2;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_tree",
+                        "calloc",
+                        "_error",
+                        "init_list"
+                    ],
+                    "calling_functions": [
+                        "init",
+                        "init_tree",
+                        "ins_tree",
+                        "insert_wordlist"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_tree",
+                "func_c_signature": "uint get_tree(uint *param_1,uint param_2,uint param_3)",
+                "decompiled_code": "uint get_tree(uint *param_1,uint param_2,uint param_3) {\n  uint uVar1;\n  \n  if (param_1 == (uint *)0x0) {\n    uVar1 = 0;\n  }\n  else if (param_3 < param_1[1] || param_3 - param_1[1] < (uint)(param_2 < *param_1)) {\n    uVar1 = get_tree(param_1[3],param_2,param_3,0x12b8f);\n  }\n  else if (param_1[1] < param_3 || param_1[1] - param_3 < (uint)(*param_1 < param_2)) {\n    uVar1 = get_tree(param_1[4],param_2,param_3,0x12b8f);\n  }\n  else {\n    uVar1 = param_1[2];\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_tree"
+                    ],
+                    "calling_functions": [
+                        "follow_chain",
+                        "get_tree"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ins_tree",
+                "func_c_signature": "undefined4 ins_tree(uint *param_1,uint param_2,uint param_3,undefined4 param_4)",
+                "decompiled_code": "undefined4 ins_tree(uint *param_1,uint param_2,uint param_3,undefined4 param_4) {\n  undefined4 uVar1;\n  uint uVar2;\n  uint *local_10;\n  \n  if (param_1 == (uint *)0x0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    if (param_3 < param_1[1] || param_3 - param_1[1] < (uint)(param_2 < *param_1)) {\n      local_10 = param_1 + 3;\n    }\n    else {\n      if (param_3 <= param_1[1] && (uint)(*param_1 < param_2) <= param_1[1] - param_3) {\n        append_list(param_1 + 2,param_4,0,0x12c19);\n        return 0;\n      }\n      local_10 = param_1 + 4;\n    }\n    if (*local_10 == 0) {\n      uVar2 = init_tree(param_2,param_3,param_4);\n      *local_10 = uVar2;\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = ins_tree(*local_10,param_2,param_3,param_4);\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ins_tree",
+                        "append_list",
+                        "init_tree"
+                    ],
+                    "calling_functions": [
+                        "ins_tree",
+                        "insert_wordlist"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "num_nodes",
+                "func_c_signature": "int num_nodes(int param_1)",
+                "decompiled_code": "int num_nodes(int param_1) {\n  int iVar1;\n  int iVar2;\n  \n  if (param_1 == 0) {\n    iVar1 = 0;\n  }\n  else {\n    iVar1 = num_nodes(*(undefined4 *)(param_1 + 0xc));\n    iVar2 = num_nodes(*(undefined4 *)(param_1 + 0x10));\n    iVar1 = iVar2 + iVar1 + 1;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "num_nodes"
+                    ],
+                    "calling_functions": [
+                        "int_cmd",
+                        "num_nodes"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_tree_to_list",
+                "func_c_signature": "undefined4 _tree_to_list(int param_1,undefined4 param_2)",
+                "decompiled_code": "undefined4 _tree_to_list(int param_1,undefined4 param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  \n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    append_list(&param_2,*(undefined4 *)(param_1 + 8),1,0x12d3b);\n    iVar2 = _tree_to_list(*(undefined4 *)(param_1 + 0xc),param_2);\n    if (iVar2 < 0) {\n      uVar1 = 0xffffffff;\n    }\n    else {\n      iVar2 = _tree_to_list(*(undefined4 *)(param_1 + 0x10),param_2);\n      if (iVar2 < 0) {\n        uVar1 = 0xffffffff;\n      }\n      else {\n        uVar1 = 0;\n      }\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_tree_to_list",
+                        "append_list"
+                    ],
+                    "calling_functions": [
+                        "_tree_to_list",
+                        "tree_to_list"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "tree_to_list",
+                "func_c_signature": "undefined4 tree_to_list(int param_1)",
+                "decompiled_code": "undefined4 tree_to_list(int param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  \n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = init_list(*(undefined4 *)(param_1 + 8));\n    iVar2 = _tree_to_list(*(undefined4 *)(param_1 + 0xc),uVar1);\n    if (iVar2 < 0) {\n      uVar1 = 0;\n    }\n    else {\n      iVar2 = _tree_to_list(*(undefined4 *)(param_1 + 0x10),uVar1);\n      if (iVar2 < 0) {\n        uVar1 = 0;\n      }\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "tree_to_list",
+                        "init_list",
+                        "_tree_to_list"
+                    ],
+                    "calling_functions": [
+                        "int_cmd",
+                        "tree_to_list"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            }
+        ],
+        "wl.c": [
+            {
+                "func_name": "word_list_to_str",
+                "func_c_signature": "char * word_list_to_str(undefined4 *param_1)",
+                "decompiled_code": "char * word_list_to_str(undefined4 *param_1) {\n  size_t sVar1;\n  size_t sVar2;\n  size_t sVar3;\n  size_t sVar4;\n  undefined4 *local_18;\n  size_t local_14;\n  char *local_10;\n  \n  if (param_1 == (undefined4 *)0x0) {\n    local_10 = (char *)0x0;\n  }\n  else {\n    local_10 = (char *)calloc(1,0x80);\n    local_14 = 0x80;\n    if (local_10 == (char *)0x0) {\n      _error(1,\n             \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/wl.c\"\n             ,0x2e);\n    }\n    for (local_18 = param_1; (local_18 != (undefined4 *)0x0 && (local_18[2] != 0));\n        local_18 = (undefined4 *)*local_18) {\n      sVar1 = strlen(local_10);\n      sVar2 = strlen(local_10);\n      sVar3 = strlen((char *)local_18[2]);\n      sVar4 = strlen(word_sep);\n      if (local_14 < sVar4 + sVar2 + sVar3 + 1) {\n        sVar2 = strlen(local_10);\n        sVar3 = strlen((char *)local_18[2]);\n        sVar4 = strlen(word_sep);\n        local_14 = (sVar4 + sVar2 + sVar3 + 1) * 2;\n        local_10 = (char *)realloc(local_10,local_14);\n        if (local_10 == (char *)0x0) {\n          _error(1,\n                 \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/wl.c\"\n                 ,0x38);\n        }\n        memset(local_10 + sVar1,0,local_14 - sVar1);\n      }\n      strcat(local_10,(char *)local_18[2]);\n      strcat(local_10,word_sep);\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "word_list_to_str",
+                        "calloc",
+                        "_error",
+                        "strlen",
+                        "realloc",
+                        "memset",
+                        "strcat"
+                    ],
+                    "calling_functions": [
+                        "word_list_to_str",
+                        "key_from_wordlist"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "hash_str",
+                "func_c_signature": "undefined8 hash_str(char *param_1)",
+                "decompiled_code": "undefined8 hash_str(char *param_1) {\n  uint uVar1;\n  uint uVar2;\n  uint uVar3;\n  bool bVar4;\n  uint local_14;\n  int local_10;\n  \n  local_14 = 0xfacedead;\n  local_10 = -0x21125313;\n  while (*param_1 != '\\0') {\n    uVar1 = local_14 >> 0x1b;\n    bVar4 = CARRY4(local_14 * 0x20,local_14);\n    uVar2 = local_14 * 0x21;\n    uVar3 = (uint)param_1[1];\n    local_14 = uVar3 + uVar2;\n    local_10 = ((int)uVar3 >> 0x1f) + (local_10 << 5 | uVar1) + local_10 + (uint)bVar4 +\n               (uint)CARRY4(uVar3,uVar2);\n    param_1 = param_1 + 1;\n  }\n  return CONCAT44(local_10,local_14);\n}",
+                "globals": [],
+                "externs": [
+                    "CARRY4",
+                    "CONCAT44"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "hash_str",
+                        "CARRY4",
+                        "CONCAT44"
+                    ],
+                    "calling_functions": [
+                        "init",
+                        "hash_str",
+                        "key_from_wordlist"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "split_words",
+                "func_c_signature": "undefined4 split_words(char *param_1,int param_2)",
+                "decompiled_code": "undefined4 split_words(char *param_1,int param_2) {\n  size_t sVar1;\n  int iVar2;\n  undefined4 local_2c;\n  char *local_28;\n  char *local_24;\n  char *local_20;\n  char *local_1c;\n  char *local_18;\n  char *local_14;\n  char *local_10;\n  \n  local_10 = (char *)0x0;\n  local_18 = (char *)0x0;\n  local_2c = 0;\n  if (param_1 == (char *)0x0) {\n    local_2c = 0;\n  }\n  else {\n    sVar1 = strlen(param_1);\n    local_1c = (char *)calloc(1,sVar1 + 1);\n    local_10 = local_1c;\n    if (local_1c == (char *)0x0) {\n      _error(1,\n             \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/wl.c\"\n             ,0x59);\n    }\n    sVar1 = strlen(param_1);\n    strncpy(local_10,param_1,sVar1);\n    sVar1 = strlen(param_1);\n    local_18 = local_10 + sVar1;\n    while (local_10 < local_18) {\n      while( true ) {\n        iVar2 = isspace((int)*local_10);\n        if (iVar2 == 0) break;\n        local_10 = local_10 + 1;\n      }\n      local_24 = local_10;\n      for (local_14 = local_10; local_14 < local_18; local_14 = local_14 + 1) {\n        iVar2 = isprint((int)*local_14);\n        if (iVar2 == 0) break;\n        iVar2 = isspace((int)*local_14);\n        if (iVar2 != 0) break;\n      }\n      *local_14 = '\\0';\n      sVar1 = strlen(local_24);\n      local_28 = (char *)calloc(1,sVar1 + 1);\n      strcpy(local_28,local_24);\n      append_list(&local_2c,local_28,1);\n      local_10 = local_14 + 1;\n    }\n    if (param_2 != 0) {\n      sVar1 = strlen(chain_term);\n      local_20 = (char *)calloc(1,sVar1 + 1);\n      strcpy(local_20,chain_term);\n      append_list(&local_2c,chain_term,1);\n    }\n    free(local_1c);\n  }\n  return local_2c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "split_words",
+                        "strlen",
+                        "calloc",
+                        "_error",
+                        "strncpy",
+                        "isspace",
+                        "isprint",
+                        "strcpy",
+                        "append_list",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "pont_cmd",
+                        "load_corpus",
+                        "split_words",
+                        "str_to_wordlists"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "chunk_words",
+                "func_c_signature": "undefined4 chunk_words(undefined4 param_1,uint param_2)",
+                "decompiled_code": "undefined4 chunk_words(undefined4 param_1,uint param_2) {\n  undefined4 local_20;\n  int local_1c;\n  uint local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_14 = len_list(param_1);\n  local_20 = 0;\n  if (param_2 < local_14) {\n    local_18 = local_14 - param_2;\n    if (local_14 < local_18) {\n      local_20 = 0;\n    }\n    else {\n      for (local_10 = 0; local_10 < local_18; local_10 = local_10 + 1) {\n        local_1c = copy_list(param_1,local_10,param_2 + local_10 + 1);\n        if (local_1c == 0) {\n          _error(1,\n                 \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/wl.c\"\n                 ,0x87);\n        }\n        append_list(&local_20,local_1c,1);\n      }\n    }\n  }\n  else {\n    local_20 = 0;\n  }\n  return local_20;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "chunk_words",
+                        "len_list",
+                        "copy_list",
+                        "_error",
+                        "append_list"
+                    ],
+                    "calling_functions": [
+                        "chunk_words",
+                        "str_to_wordlists"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "upto_last",
+                "func_c_signature": "undefined4 upto_last(int param_1)",
+                "decompiled_code": "undefined4 upto_last(int param_1) {\n  uint uVar1;\n  int iVar2;\n  undefined4 uVar3;\n  \n  uVar3 = 0x1331b;\n  if ((param_1 != 0) && (uVar1 = len_list(param_1), 1 < uVar1)) {\n    iVar2 = len_list(param_1);\n    uVar3 = copy_list(param_1,0,iVar2 + -1,uVar3);\n    return uVar3;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "upto_last",
+                        "len_list",
+                        "copy_list"
+                    ],
+                    "calling_functions": [
+                        "follow_chain",
+                        "upto_last",
+                        "insert_wordlist"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "key_from_wordlist",
+                "func_c_signature": "undefined8 key_from_wordlist(undefined4 param_1)",
+                "decompiled_code": "undefined8 key_from_wordlist(undefined4 param_1) {\n  void *__ptr;\n  undefined8 uVar1;\n  \n  __ptr = (void *)word_list_to_str(param_1);\n  if (__ptr == (void *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = hash_str(__ptr);\n    free(__ptr);\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "key_from_wordlist",
+                        "word_list_to_str",
+                        "hash_str",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "follow_chain",
+                        "key_from_wordlist",
+                        "insert_wordlist"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "insert_wordlist",
+                "func_c_signature": "undefined4 insert_wordlist(int param_1,int *param_2)",
+                "decompiled_code": "undefined4 insert_wordlist(int param_1,int *param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  longlong lVar3;\n  \n  if ((param_1 == 0) || (param_2 == (int *)0x0)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    iVar2 = upto_last(param_1);\n    if (iVar2 == 0) {\n      uVar1 = 0;\n    }\n    else {\n      lVar3 = key_from_wordlist(iVar2);\n      if (lVar3 == 0) {\n        uVar1 = 0xffffffff;\n      }\n      else {\n        iVar2 = lindex(param_1,0xffffffff);\n        if (iVar2 == 0) {\n          _error(3,\n                 \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/wl.c\"\n                 ,0xb0);\n        }\n        if (*param_2 == 0) {\n          iVar2 = init_tree(lVar3,iVar2);\n          *param_2 = iVar2;\n        }\n        else {\n          iVar2 = ins_tree(*param_2,lVar3,iVar2);\n          if (iVar2 < 0) {\n            _error(2,\n                   \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/wl.c\"\n                   ,0xb6);\n          }\n        }\n        uVar1 = 0;\n      }\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "insert_wordlist",
+                        "upto_last",
+                        "key_from_wordlist",
+                        "lindex",
+                        "_error",
+                        "init_tree",
+                        "ins_tree"
+                    ],
+                    "calling_functions": [
+                        "load_corpus",
+                        "insert_wordlist",
+                        "insert_wordlists"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "insert_wordlists",
+                "func_c_signature": "undefined4 insert_wordlists(undefined4 *param_1,undefined4 param_2)",
+                "decompiled_code": "undefined4 insert_wordlists(undefined4 *param_1,undefined4 param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  undefined4 *local_10;\n  \n  if (param_1 == (undefined4 *)0x0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    for (local_10 = param_1; local_10 != (undefined4 *)0x0; local_10 = (undefined4 *)*local_10) {\n      iVar2 = insert_wordlist(local_10[2],param_2);\n      if (iVar2 < 0) {\n        return 0xffffffff;\n      }\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "insert_wordlists",
+                        "insert_wordlist"
+                    ],
+                    "calling_functions": [
+                        "tick_common",
+                        "insert_wordlists"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            },
+            {
+                "func_name": "str_to_wordlists",
+                "func_c_signature": "int str_to_wordlists(char *param_1)",
+                "decompiled_code": "int str_to_wordlists(char *param_1) {\n  size_t __n;\n  char *__dest;\n  int iVar1;\n  size_t sVar2;\n  undefined4 uVar3;\n  \n  uVar3 = 0x13533;\n  __n = strlen(param_1);\n  __dest = (char *)calloc(1,__n + 1);\n  sVar2 = __n;\n  strncpy(__dest,param_1,__n);\n  __dest[__n] = '\\0';\n  iVar1 = split_words(__dest,1,sVar2,uVar3);\n  if (iVar1 == 0) {\n    iVar1 = 0;\n  }\n  else {\n    free(__dest);\n    iVar1 = chunk_words(iVar1,2);\n    if (iVar1 == 0) {\n      iVar1 = 0;\n    }\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "str_to_wordlists",
+                        "strlen",
+                        "calloc",
+                        "strncpy",
+                        "split_words",
+                        "free",
+                        "chunk_words"
+                    ],
+                    "calling_functions": [
+                        "tick_common",
+                        "str_to_wordlists"
+                    ],
+                    "defined_in_file": "KPRCA_00031_decompiled.c"
+                }
+            }
+        ]
+    }
+}

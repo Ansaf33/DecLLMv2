@@ -1,0 +1,198 @@
+{
+    "file": "ln",
+    "decompiled_code": {
+        "ln.c": [
+            {
+                "func_name": "errnoize",
+                "func_c_signature": "int errnoize(int param_1)",
+                "decompiled_code": "int errnoize(int param_1) {\n  int iVar1;\n  int *piVar2;\n  \n  if (param_1 < 0) {\n    piVar2 = __errno_location();\n    iVar1 = *piVar2;\n  }\n  else {\n    iVar1 = 0;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "errnoize",
+                        "__errno_location"
+                    ],
+                    "calling_functions": [
+                        "errnoize",
+                        "atomic_link"
+                    ],
+                    "defined_in_file": "ln_decompiled.c"
+                }
+            },
+            {
+                "func_name": "convert_abs_rel",
+                "func_c_signature": "void * convert_abs_rel(undefined8 param_1,undefined8 param_2)",
+                "decompiled_code": "void * convert_abs_rel(undefined8 param_1,undefined8 param_2) {\n  char cVar1;\n  void *__ptr;\n  void *__ptr_00;\n  void *__ptr_01;\n  void *local_28;\n  \n  __ptr = (void *)dir_name(param_2);\n  __ptr_00 = (void *)canonicalize_filename_mode(__ptr,2);\n  __ptr_01 = (void *)canonicalize_filename_mode(param_1,2);\n  local_28 = (void *)0x0;\n  if ((__ptr_00 != (void *)0x0) && (__ptr_01 != (void *)0x0)) {\n    local_28 = (void *)xmalloc(0x1000);\n    cVar1 = relpath(__ptr_01,__ptr_00,local_28,0x1000);\n    if (cVar1 != '\\x01') {\n      free(local_28);\n      local_28 = (void *)0x0;\n    }\n  }\n  free(__ptr);\n  free(__ptr_00);\n  free(__ptr_01);\n  if (local_28 == (void *)0x0) {\n    local_28 = (void *)xstrdup(param_1);\n  }\n  return local_28;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "convert_abs_rel",
+                        "dir_name",
+                        "canonicalize_filename_mode",
+                        "xmalloc",
+                        "relpath",
+                        "free",
+                        "xstrdup"
+                    ],
+                    "calling_functions": [
+                        "convert_abs_rel",
+                        "do_link"
+                    ],
+                    "defined_in_file": "ln_decompiled.c"
+                }
+            },
+            {
+                "func_name": "atomic_link",
+                "func_c_signature": "undefined8 atomic_link(char *param_1,int param_2,char *param_3)",
+                "decompiled_code": "undefined8 atomic_link(char *param_1,int param_2,char *param_3) {\n  int iVar1;\n  undefined8 uVar2;\n  \n  if (symbolic_link == '\\0') {\n    if (beware_hard_dir_link == '\\0') {\n      if (logical == '\\0') {\n        iVar1 = 0;\n      }\n      else {\n        iVar1 = 0x400;\n      }\n      iVar1 = linkat(-100,param_1,param_2,param_3,iVar1);\n      uVar2 = errnoize(iVar1);\n    }\n    else {\n      uVar2 = 0xffffffff;\n    }\n  }\n  else if (relative == '\\0') {\n    iVar1 = symlinkat(param_1,param_2,param_3);\n    uVar2 = errnoize(iVar1);\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "atomic_link",
+                        "linkat",
+                        "errnoize",
+                        "symlinkat"
+                    ],
+                    "calling_functions": [
+                        "atomic_link",
+                        "do_link",
+                        "main"
+                    ],
+                    "defined_in_file": "ln_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_link",
+                "func_c_signature": "bool do_link(char *param_1,int param_2,char *param_3,void *param_4,int param_5)",
+                "decompiled_code": "bool do_link(char *param_1,int param_2,char *param_3,void *param_4,int param_5) {\n  char cVar1;\n  byte bVar2;\n  bool bVar3;\n  int iVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  int *piVar7;\n  char *__format;\n  size_t __n;\n  size_t sVar8;\n  undefined8 uVar9;\n  long in_FS_OFFSET;\n  int local_238;\n  char *local_230;\n  char local_21d;\n  int local_21c;\n  char *local_1c8;\n  char *local_1c0;\n  undefined *local_1b8;\n  undefined *local_1b0;\n  char *local_1a8;\n  void *local_1a0;\n  stat local_148;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_21c = 1;\n  local_1c8 = (char *)0x0;\n  local_1c0 = (char *)0x0;\n  if (logical == '\\0') {\n    iVar4 = 0x100;\n  }\n  else {\n    iVar4 = 0;\n  }\n  local_238 = param_5;\n  if (param_5 < 0) {\n    local_238 = atomic_link(param_1,param_2,param_3);\n  }\n  if ((((local_238 != 0) || (dest_set != 0)) && (symbolic_link != 1)) &&\n     (local_21c = fstatat(-100,param_1,&local_148,iVar4), local_21c != 0)) {\n    uVar5 = quotearg_style(4,param_1);\n    uVar6 = gettext(\"failed to access %s\");\n    piVar7 = __errno_location();\n    error(0,*piVar7,uVar6,uVar5);\n    bVar3 = false;\n    goto LAB_00101064;\n  }\n  local_230 = param_1;\n  if (local_238 != 0) {\n    if (((symbolic_link != 1) && (hard_dir_link != '\\x01')) &&\n       ((local_148.st_mode & 0xf000) == 0x4000)) {\n      uVar5 = quotearg_n_style_colon(0,3,param_1);\n      uVar6 = gettext(\"%s: hard link not allowed for directory\");\n      error(0,0,uVar6,uVar5);\n      bVar3 = false;\n      goto LAB_00101064;\n    }\n    if (relative != '\\0') {\n      local_230 = (char *)convert_abs_rel(param_1,param_4);\n      local_1c0 = local_230;\n    }\n    if (((remove_existing_files == 0) && (interactive == '\\0')) && (backup_type == 0)) {\n      local_21d = '\\0';\n    }\n    else {\n      local_21d = '\\x01';\n    }\n    if (local_21d != '\\0') {\n      iVar4 = fstatat(param_2,param_3,&local_b8,0x100);\n      if (iVar4 == 0) {\n        if ((local_b8.st_mode & 0xf000) == 0x4000) {\n          uVar5 = quotearg_n_style_colon(0,3,param_4);\n          uVar6 = gettext(\"%s: cannot overwrite directory\");\n          error(0,0,uVar6,uVar5);\n        }\n        else {\n          cVar1 = seen_file(dest_set,param_4,&local_b8);\n          if (cVar1 == '\\0') {\n            bVar2 = remove_existing_files;\n            if (backup_type != 0) {\n              bVar2 = symbolic_link ^ 1;\n            }\n            if (bVar2 != 0) {\n              if (local_21c != 0) {\n                local_21c = stat(local_230,&local_148);\n              }\n              if (((local_21c == 0) && (cVar1 = psame_inode(&local_148,&local_b8), cVar1 != '\\0'))\n                 && ((local_148.st_nlink == 1 ||\n                     (cVar1 = same_nameat(0xffffff9c,local_230,param_2,param_3), cVar1 != '\\0')))) {\n                uVar5 = quotearg_n_style(1,4,param_4);\n                uVar6 = quotearg_n_style(0,4,local_230);\n                uVar9 = gettext(\"%s and %s are the same file\");\n                error(0,0,uVar9,uVar6,uVar5);\n                goto LAB_00100bf7;\n              }\n            }\n            if ((local_238 < 0) || (local_238 == 0x11)) {\n              if (interactive != '\\0') {\n                uVar6 = quotearg_style(4,param_4);\n                uVar5 = _program_name;\n                __format = (char *)gettext(\"%s: replace %s? \");\n                fprintf(_stderr,__format,uVar5,uVar6);\n                cVar1 = yesno();\n                if (cVar1 != '\\x01') {\n                  free(local_1c0);\n                  bVar3 = false;\n                  goto LAB_00101064;\n                }\n              }\n              if (backup_type != 0) {\n                local_1c8 = (char *)find_backup_file_name(param_2,param_3,backup_type);\n                iVar4 = renameat(param_2,param_3,param_2,local_1c8);\n                if (iVar4 != 0) {\n                  piVar7 = __errno_location();\n                  iVar4 = *piVar7;\n                  free(local_1c8);\n                  local_1c8 = (char *)0x0;\n                  if (iVar4 != 2) {\n                    uVar5 = quotearg_style(4,param_4);\n                    uVar6 = gettext(\"cannot backup %s\");\n                    error(0,iVar4,uVar6,uVar5);\n                    goto LAB_00100bf7;\n                  }\n                  local_21d = '\\0';\n                }\n              }\n            }\n            goto LAB_00100c10;\n          }\n          uVar5 = quotearg_n_style(1,4,local_230);\n          uVar6 = quotearg_n_style(0,4,param_4);\n          uVar9 = gettext(\"will not overwrite just-created %s with %s\");\n          error(0,0,uVar9,uVar6,uVar5);\n        }\n      }\n      else {\n        piVar7 = __errno_location();\n        if (*piVar7 == 2) {\n          local_21d = '\\0';\n          goto LAB_00100c10;\n        }\n        uVar5 = quotearg_style(4,param_4);\n        uVar6 = gettext(\"failed to access %s\");\n        piVar7 = __errno_location();\n        error(0,*piVar7,uVar6,uVar5);\n      }\nLAB_00100bf7:\n      free(local_1c0);\n      bVar3 = false;\n      goto LAB_00101064;\n    }\nLAB_00100c10:\n    if (symbolic_link == 0) {\n      if (logical == '\\0') {\n        uVar5 = 0;\n      }\n      else {\n        uVar5 = 0x400;\n      }\n      local_238 = force_linkat(0xffffff9c,local_230,param_2,param_3,uVar5,local_21d,local_238);\n    }\n    else {\n      local_238 = force_symlinkat(local_230,param_2,param_3,local_21d,local_238);\n    }\n  }\n  if (local_238 < 1) {\n    if (symbolic_link != 1) {\n      record_file(dest_set,param_4,&local_148);\n    }\n    if (verbose != '\\0') {\n      local_1b8 = &DAT_00102004;\n      local_1b0 = &DAT_00102004;\n      if (local_1c8 != (char *)0x0) {\n        local_1a8 = local_1c8;\n        local_1a0 = (void *)0x0;\n        __n = (long)param_3 - (long)param_4;\n        if (0 < (long)__n) {\n          sVar8 = strlen(local_1c8);\n          local_1a0 = (void *)xmalloc(sVar8 + __n + 1);\n          local_1a8 = (char *)memcpy(local_1a0,param_4,__n);\n          strcpy(local_1a8 + __n,local_1c8);\n        }\n        local_1b8 = (undefined *)quotearg_n_style(2,4,local_1a8);\n        local_1b0 = &DAT_00102199;\n        free(local_1a0);\n      }\n      uVar5 = quotearg_n_style(1,4,local_230);\n      if (symbolic_link == 0) {\n        uVar6 = 0x3d;\n      }\n      else {\n        uVar6 = 0x2d;\n      }\n      uVar9 = quotearg_n_style(0,4,param_4);\n      printf(\"%s%s%s %c> %s\\n\",local_1b8,local_1b0,uVar9,uVar6,uVar5);\n    }\n  }\n  else {\n    uVar5 = quotearg_n_style(1,4,local_230);\n    uVar6 = quotearg_n_style(0,4,param_4);\n    if (symbolic_link == 0) {\n      if (local_238 == 0x1f) {\n        uVar9 = gettext(\"failed to create hard link to %.0s%s\");\n      }\n      else if ((((local_238 == 0x7a) || (local_238 == 0x11)) || (local_238 == 0x1c)) ||\n              (local_238 == 0x1e)) {\n        uVar9 = gettext(\"failed to create hard link %s\");\n      }\n      else {\n        uVar9 = gettext(\"failed to create hard link %s => %s\");\n      }\n    }\n    else if ((local_238 == 0x24) || (*local_230 == '\\0')) {\n      uVar9 = gettext(\"failed to create symbolic link %s -> %s\");\n    }\n    else {\n      uVar9 = gettext(\"failed to create symbolic link %s\");\n    }\n    error(0,local_238,uVar9,uVar6,uVar5);\n    if ((local_1c8 != (char *)0x0) &&\n       (iVar4 = renameat(param_2,local_1c8,param_2,param_3), iVar4 != 0)) {\n      uVar5 = quotearg_style(4,param_4);\n      uVar6 = gettext(\"cannot un-backup %s\");\n      piVar7 = __errno_location();\n      error(0,*piVar7,uVar6,uVar5);\n    }\n  }\n  free(local_1c8);\n  free(local_1c0);\n  bVar3 = local_238 < 1;\nLAB_00101064:\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return bVar3;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_link",
+                        "atomic_link",
+                        "fstatat",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "quotearg_n_style_colon",
+                        "convert_abs_rel",
+                        "seen_file",
+                        "stat",
+                        "psame_inode",
+                        "same_nameat",
+                        "quotearg_n_style",
+                        "fprintf",
+                        "yesno",
+                        "free",
+                        "find_backup_file_name",
+                        "renameat",
+                        "force_linkat",
+                        "force_symlinkat",
+                        "record_file",
+                        "strlen",
+                        "xmalloc",
+                        "memcpy",
+                        "strcpy",
+                        "printf",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "do_link",
+                        "main"
+                    ],
+                    "defined_in_file": "ln_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\n                            \"Usage: %s [OPTION]... [-T] TARGET LINK_NAME\\n  or:  %s [OPTION]... TARGET\\n  or:  %s [OPTION]... TARGET... DIRECTORY\\n  or:  %s [OPTION]... -t DIRECTORY TARGET...\\n\"\n                            );\n    printf(pcVar3,uVar2,uVar2,uVar2,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"In the 1st form, create a link to TARGET with the name LINK_NAME.\\nIn the 2nd form, create a link to TARGET in the current directory.\\nIn the 3rd and 4th forms, create links to each TARGET in DIRECTORY.\\nCreate hard links by default, symbolic links with --symbolic.\\nBy default, each destination (name of new link) should not already exist.\\nWhen creating hard links, each TARGET must exist.  Symbolic links\\ncan hold arbitrary text; if later resolved, a relative link is\\ninterpreted in relation to its parent directory.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --backup[=CONTROL]      make a backup of each existing destination file\\n  -b                          like --backup but does not accept an argument\\n  -d, -F, --directory         allow the superuser to attempt to hard link\\n                                directories (this will probably fail due to\\n                                system restrictions, even for the superuser)\\n  -f, --force                 remove existing destination files\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -i, --interactive           prompt whether to remove destinations\\n  -L, --logical               dereference TARGETs that are symbolic links\\n  -n, --no-dereference        treat LINK_NAME as a normal file if\\n                                it is a symbolic link to a directory\\n  -P, --physical              make hard links directly to symbolic links\\n  -r, --relative              with -s, create links relative to link location\\n  -s, --symbolic              make symbolic links instead of hard links\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -S, --suffix=SUFFIX         override the usual backup suffix\\n  -t, --target-directory=DIRECTORY  specify the DIRECTORY in which to create\\n                                the links\\n  -T, --no-target-directory   treat LINK_NAME as a normal file always\\n  -v, --verbose               print name of each linked file\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_backup_suffix_note();\n    pcVar3 = (char *)gettext(\n                            \"\\nUsing -s ignores -L and -P.  Otherwise, the last option specified controls\\nbehavior when a TARGET is a symbolic link, defaulting to %s.\\n\"\n                            );\n    printf(pcVar3,&DAT_00102b4a);\n    emit_ancillary_info(&DAT_00102b4d);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "destination",
+                    "directories"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "destination",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "directories",
+                        "emit_backup_suffix_note",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "ln_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "void main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  bool bVar2;\n  byte bVar3;\n  int iVar4;\n  undefined4 uVar5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  int *piVar8;\n  long in_FS_OFFSET;\n  byte local_19b;\n  int local_198;\n  int local_194;\n  int local_190;\n  int local_18c;\n  undefined8 local_138;\n  char *local_130;\n  char *local_128;\n  char *local_120;\n  undefined8 *local_118;\n  char *local_110;\n  void *local_108;\n  undefined8 local_100;\n  undefined8 local_f8;\n  undefined8 local_f0;\n  undefined8 local_e8;\n  undefined8 local_e0;\n  undefined8 local_d8;\n  undefined8 local_d0;\n  undefined8 local_c8;\n  undefined8 local_c0;\n  stat local_b8;\n  undefined8 local_20;\n  \n  local_20 = *(undefined8 *)(in_FS_OFFSET + 0x28);\n  bVar2 = false;\n  local_130 = (char *)0x0;\n  local_128 = (char *)0x0;\n  local_120 = (char *)0x0;\n  bVar1 = false;\n  local_190 = -1;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdin);\n  hard_dir_link = '\\0';\n  verbose = 0;\n  interactive = 0;\n  remove_existing_files = '\\0';\n  symbolic_link = '\\0';\n  while (iVar4 = getopt_long(param_1,param_2,\"bdfinrst:vFLPS:T\",long_options,0), iVar4 != -1) {\n    if (iVar4 < 0x77) {\n      if (iVar4 < 0x46) {\n        if (iVar4 == -0x83) {\nLAB_001015d9:\n          uVar6 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n          uVar7 = proper_name_lite(\"Mike Parker\",\"Mike Parker\");\n          version_etc(_stdout,&DAT_00102b4d,\"GNU coreutils\",_Version,uVar7,uVar6,0);\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (iVar4 == -0x82) {\n          usage(0);\n          goto LAB_001015d9;\n        }\n        goto switchD_0010139c_caseD_47;\n      }\n      switch(iVar4) {\n      case 0x46:\n      case 100:\n        hard_dir_link = '\\x01';\n        break;\n      default:\n        goto switchD_0010139c_caseD_47;\n      case 0x4c:\n        logical = 1;\n        break;\n      case 0x50:\n        logical = 0;\n        break;\n      case 0x53:\n        bVar2 = true;\n        local_130 = _optarg;\n        break;\n      case 0x54:\n        bVar1 = true;\n        break;\n      case 0x62:\n        bVar2 = true;\n        if (_optarg != (char *)0x0) {\n          local_128 = _optarg;\n        }\n        break;\n      case 0x66:\n        remove_existing_files = '\\x01';\n        interactive = 0;\n        break;\n      case 0x69:\n        remove_existing_files = '\\0';\n        interactive = 1;\n        break;\n      case 0x6e:\n        dereference_dest_dir_symlinks = '\\0';\n        break;\n      case 0x72:\n        relative = '\\x01';\n        break;\n      case 0x73:\n        symbolic_link = '\\x01';\n        break;\n      case 0x74:\n        if (local_120 != (char *)0x0) {\n          local_100 = gettext(\"multiple target directories specified\");\n          error(1,0,local_100);\n        }\n        iVar4 = stat(_optarg,&local_b8);\n        if (iVar4 != 0) {\n          uVar6 = quotearg_style(4,_optarg);\n          uVar7 = gettext(\"failed to access %s\");\n          piVar8 = __errno_location();\n          local_f8 = uVar7;\n          error(1,*piVar8,uVar7,uVar6);\n        }\n        if ((local_b8.st_mode & 0xf000) != 0x4000) {\n          uVar6 = quotearg_style(4,_optarg);\n          local_f0 = gettext(\"target %s is not a directory\");\n          error(1,0,local_f0,uVar6);\n        }\n        local_120 = _optarg;\n        break;\n      case 0x76:\n        verbose = 1;\n      }\n    }\n    else {\nswitchD_0010139c_caseD_47:\n      usage(1);\n    }\n  }\n  local_194 = param_1 - _optind;\n  local_118 = param_2 + _optind;\n  if (local_194 < 1) {\n    local_e8 = gettext(\"missing file operand\");\n    error(0,0,local_e8);\n    usage(1);\n  }\n  if ((relative != '\\0') && (symbolic_link != '\\x01')) {\n    local_e0 = gettext(\"cannot do --relative without --symbolic\");\n    error(1,0,local_e0);\n  }\n  if (hard_dir_link != '\\x01') {\n    priv_set_remove_linkdir();\n    beware_hard_dir_link = 0;\n  }\n  if (bVar1) {\n    if (local_120 != (char *)0x0) {\n      local_d8 = gettext(\"cannot combine --target-directory and --no-target-directory\");\n      error(1,0,local_d8);\n    }\n    if (local_194 == 2) goto LAB_00101ac2;\n    if (local_194 < 2) {\n      uVar6 = quotearg_style(4,*local_118);\n      local_d0 = gettext(\"missing destination file operand after %s\");\n      error(0,0,local_d0,uVar6);\n    }\n    else {\n      uVar6 = quotearg_style(4,local_118[2]);\n      local_c8 = gettext(\"extra operand %s\");\n      error(0,0,local_c8,uVar6);\n    }\n    usage(1);\n  }\n  if ((local_194 < 2) && (local_120 == (char *)0x0)) {\n    local_120 = \".\";\n    local_198 = -100;\n  }\n  else {\n    if ((local_194 == 2) && (local_120 == (char *)0x0)) {\n      local_190 = atomic_link(*local_118,0xffffff9c,local_118[1]);\n    }\n    if ((((local_190 < 0) || (local_190 == 0x11)) || (local_190 == 0x14)) || (local_190 == 0x16)) {\n      local_110 = local_120;\n      if (local_120 == (char *)0x0) {\n        local_110 = (char *)local_118[(long)local_194 + -1];\n      }\n      if (dereference_dest_dir_symlinks == '\\0') {\n        uVar5 = 0x230000;\n      }\n      else {\n        uVar5 = 0x210000;\n      }\n      local_198 = openat_safer(0xffffff9c,local_110,uVar5);\n      if (local_198 < 0) {\n        if ((local_194 != 2) || (local_120 != (char *)0x0)) {\n          uVar6 = quotearg_style(4,local_110);\n          uVar7 = gettext(\"target %s\");\n          piVar8 = __errno_location();\n          local_c0 = uVar7;\n          error(1,*piVar8,uVar7,uVar6);\n        }\n      }\n      else {\n        local_194 = local_194 - (uint)(local_120 == (char *)0x0);\n        local_120 = local_110;\n      }\n    }\n  }\nLAB_00101ac2:\n  if (bVar2) {\n    uVar6 = gettext(\"backup type\");\n    backup_type = xget_version(uVar6,local_128);\n  }\n  else {\n    backup_type = 0;\n  }\n  set_simple_backup_suffix(local_130);\n  if (local_120 == (char *)0x0) {\n    local_19b = do_link(*local_118,0xffffff9c,local_118[1],local_118[1],local_190);\n  }\n  else {\n    if (((1 < local_194) && (remove_existing_files != '\\0')) &&\n       ((symbolic_link != '\\x01' &&\n        ((backup_type != 3 &&\n         (dest_set = hash_initialize(0x3d,0,&triple_hash,&triple_compare,&triple_free),\n         dest_set == 0)))))) {\n      xalloc_die();\n    }\n    local_19b = true;\n    for (local_18c = 0; local_18c < local_194; local_18c = local_18c + 1) {\n      uVar6 = last_component(local_118[local_18c]);\n      local_108 = (void *)file_name_concat(local_120,uVar6,&local_138);\n      strip_trailing_slashes(local_138);\n      bVar3 = do_link(local_118[local_18c],local_198,local_138,local_108,0xffffffff);\n      local_19b = (bVar3 & local_19b) != 0;\n      free(local_108);\n    }\n  }\n                    /* WARNING: Subroutine does not return */\n  exit((uint)(local_19b ^ 1));\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage",
+                        "gettext",
+                        "error",
+                        "stat",
+                        "quotearg_style",
+                        "__errno_location",
+                        "priv_set_remove_linkdir",
+                        "atomic_link",
+                        "openat_safer",
+                        "xget_version",
+                        "set_simple_backup_suffix",
+                        "do_link",
+                        "hash_initialize",
+                        "xalloc_die",
+                        "last_component",
+                        "file_name_concat",
+                        "strip_trailing_slashes",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "ln_decompiled.c"
+                }
+            }
+        ]
+    }
+}

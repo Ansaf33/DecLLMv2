@@ -1,0 +1,278 @@
+{
+    "file": "KPRCA_00047",
+    "decompiled_code": {
+        "main.c": [
+            {
+                "func_name": "send_n_bytes",
+                "func_c_signature": "int send_n_bytes(undefined4 param_1,int param_2,int param_3)",
+                "decompiled_code": "int send_n_bytes(undefined4 param_1,int param_2,int param_3) {\n  int iVar1;\n  int local_14;\n  int local_10;\n  \n  if ((param_2 == 0) || (param_3 == 0)) {\n    param_2 = -1;\n  }\n  else {\n    local_14 = 0;\n    for (local_10 = param_2; local_10 != 0; local_10 = local_10 - local_14) {\n      iVar1 = transmit(param_1,(param_2 - local_10) + param_3,local_10,&local_14);\n      if (iVar1 != 0) {\n        return -1;\n      }\n      if (local_14 == 0) break;\n    }\n    param_2 = param_2 - local_10;\n  }\n  return param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "send_n_bytes",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "send_n_bytes"
+                    ],
+                    "defined_in_file": "KPRCA_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_n_bytes",
+                "func_c_signature": "int read_n_bytes(undefined4 param_1,int param_2,int param_3)",
+                "decompiled_code": "int read_n_bytes(undefined4 param_1,int param_2,int param_3) {\n  int iVar1;\n  int local_14;\n  int local_10;\n  \n  if ((param_2 == 0) || (param_3 == 0)) {\n    param_2 = -1;\n  }\n  else {\n    local_14 = 0;\n    for (local_10 = param_2; local_10 != 0; local_10 = local_10 - local_14) {\n      iVar1 = receive(param_1,(param_2 - local_10) + param_3,local_10,&local_14);\n      if (iVar1 != 0) {\n        return -1;\n      }\n      if (local_14 == 0) break;\n    }\n    param_2 = param_2 - local_10;\n  }\n  return param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_n_bytes",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "read_n_bytes",
+                        "read_until"
+                    ],
+                    "defined_in_file": "KPRCA_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_until",
+                "func_c_signature": "int read_until(undefined4 param_1,uint param_2,char param_3,int param_4)",
+                "decompiled_code": "int read_until(undefined4 param_1,uint param_2,char param_3,int param_4) {\n  size_t __n;\n  void *pvVar1;\n  undefined *puVar2;\n  undefined4 uVar3;\n  uint local_10;\n  \n  uVar3 = 0x1112c;\n  local_10 = 0;\n  while( true ) {\n    if (param_2 <= local_10) {\n      return -1;\n    }\n    __n = read_n_bytes(param_1,1,local_10 + param_4,uVar3);\n    if ((int)__n < 0) {\n      return -1;\n    }\n    if (__n == 0) {\n      return -1;\n    }\n    pvVar1 = memchr((void *)(local_10 + param_4),(int)param_3,__n);\n    if (pvVar1 != (void *)0x0) break;\n    local_10 = local_10 + __n;\n  }\n  puVar2 = (undefined *)memchr((void *)(local_10 + param_4),(int)param_3,__n);\n  *puVar2 = 0;\n  return local_10 + __n;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_until",
+                        "read_n_bytes",
+                        "memchr"
+                    ],
+                    "calling_functions": [
+                        "read_until",
+                        "read_image",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_image",
+                "func_c_signature": "uint read_image(undefined4 param_1,uint param_2,int param_3,void **param_4)",
+                "decompiled_code": "uint read_image(undefined4 param_1,uint param_2,int param_3,void **param_4) {\n  void *__ptr;\n  int local_18;\n  int local_14;\n  uint local_10;\n  \n  if (param_4 == (void **)0x0) {\n    local_10 = 0;\n  }\n  else {\n    *param_4 = (void *)0x0;\n    __ptr = calloc(param_2 * param_3,1);\n    if (__ptr == (void *)0x0) {\n      fdprintf(2,\"DEBUG %s:%d:\\tcalloc() failed\\n\",\n               \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00047/src/main.c\"\n               ,0x86);\n                    /* WARNING: Subroutine does not return */\n      exit(1);\n    }\n    local_10 = 0;\n    local_14 = 0;\n    while (local_10 < param_2 * param_3) {\n      if (local_14 == 0) {\n        local_18 = read_until(param_1,param_2 + 1,10,(int)__ptr + local_10);\n      }\n      else {\n        local_18 = read_until(param_1,param_2 + 1,10,local_14 + local_10 + (int)__ptr);\n      }\n      if (local_18 < 0) {\n        free(__ptr);\n        return 0;\n      }\n      if (local_18 == 0) goto LAB_00011345;\n      if ((local_14 == 0) || (local_14 + local_18 == param_2 + 1)) {\n        if ((local_14 == 0) && (param_2 + 1 != local_18)) {\n          local_14 = local_18 + -1;\n        }\n        else {\n          local_10 = local_10 + param_2;\n          local_14 = 0;\n        }\n      }\n      else {\n        local_14 = local_14 + local_18 + -1;\n      }\n    }\n    if (local_10 == param_2 * param_3) {\n      *param_4 = __ptr;\n      local_10 = local_10 / param_2;\n    }\n    else {\nLAB_00011345:\n      free(__ptr);\n      local_10 = 0;\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [
+                    "tcalloc"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_image",
+                        "calloc",
+                        "fdprintf",
+                        "tcalloc",
+                        "exit",
+                        "read_until",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "read_image",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "make_2d_view",
+                "func_c_signature": "int * make_2d_view(int param_1,int param_2,int param_3,int param_4,int param_5)",
+                "decompiled_code": "int * make_2d_view(int param_1,int param_2,int param_3,int param_4,int param_5) {\n  int *piVar1;\n  \n  piVar1 = (int *)calloc(1,0x1c);\n  if (piVar1 == (int *)0x0) {\n    fdprintf(2,\"DEBUG %s:%d:\\tcalloc() failed\\n\",\n             \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00047/src/main.c\"\n             ,0xc3);\n                    /* WARNING: Subroutine does not return */\n    exit(1);\n  }\n  *piVar1 = param_1;\n  if (*piVar1 == 0) {\n    fdprintf(2,\"DEBUG %s:%d:\\tcalloc() failed\\n\",\n             \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00047/src/main.c\"\n             ,0xc6);\n                    /* WARNING: Subroutine does not return */\n    exit(1);\n  }\n  piVar1[3] = param_2;\n  piVar1[4] = param_3;\n  piVar1[5] = param_4;\n  piVar1[6] = param_5;\n  piVar1[1] = param_2 - param_4;\n  piVar1[2] = param_3 - param_5;\n  return piVar1;\n}",
+                "globals": [],
+                "externs": [
+                    "tcalloc"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "make_2d_view",
+                        "calloc",
+                        "fdprintf",
+                        "tcalloc",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "make_2d_view",
+                        "perform_ocr"
+                    ],
+                    "defined_in_file": "KPRCA_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "index_through_view",
+                "func_c_signature": "undefined4 index_through_view(uint param_1,uint param_2,int *param_3,undefined *param_4)",
+                "decompiled_code": "undefined4 index_through_view(uint param_1,uint param_2,int *param_3,undefined *param_4) {\n  undefined4 uVar1;\n  \n  if ((((param_1 < (uint)param_3[1]) && (param_2 < (uint)param_3[2])) &&\n      (param_3[5] + param_1 < (uint)param_3[3])) && (param_3[6] + param_2 < (uint)param_3[4])) {\n    *param_4 = *(undefined *)(param_1 + param_3[5] + param_3[3] * (param_2 + param_3[6]) + *param_3)\n    ;\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "index_through_view"
+                    ],
+                    "calling_functions": [
+                        "index_through_view",
+                        "match_percent"
+                    ],
+                    "defined_in_file": "KPRCA_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_dimensions",
+                "func_c_signature": "undefined4 parse_dimensions(char *param_1,int param_2,int *param_3,int *param_4)",
+                "decompiled_code": "undefined4 parse_dimensions(char *param_1,int param_2,int *param_3,int *param_4) {\n  int iVar1;\n  undefined4 uVar2;\n  long lVar3;\n  char *local_14;\n  char *local_10;\n  \n  local_14 = (char *)0x0;\n  local_10 = param_1;\n  while( true ) {\n    if ((param_1 + param_2 <= local_10) || (*local_10 == '\\0')) {\n      iVar1 = isdigit((int)*param_1);\n      if (iVar1 == 0) {\n        uVar2 = 0xffffffff;\n      }\n      else {\n        lVar3 = strtol(param_1,&local_14,10);\n        *param_3 = lVar3;\n        if (*param_3 == 0) {\n          uVar2 = 0xffffffff;\n        }\n        else {\n          while ((local_14 < param_1 + param_2 && (iVar1 = isspace((int)*local_14), iVar1 != 0))) {\n            local_14 = local_14 + 1;\n          }\n          if (param_1 + param_2 == local_14) {\n            uVar2 = 0xffffffff;\n          }\n          else {\n            lVar3 = strtol(local_14,&local_14,10);\n            *param_4 = lVar3;\n            if (*param_4 == 0) {\n              uVar2 = 0xffffffff;\n            }\n            else if (param_1 + param_2 == local_14) {\n              uVar2 = 0;\n            }\n            else {\n              uVar2 = 0xffffffff;\n            }\n          }\n        }\n      }\n      return uVar2;\n    }\n    iVar1 = isspace((int)*local_10);\n    if ((iVar1 == 0) && (iVar1 = isdigit((int)*local_10), iVar1 == 0)) break;\n    local_10 = local_10 + 1;\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_dimensions",
+                        "isdigit",
+                        "strtol",
+                        "isspace"
+                    ],
+                    "calling_functions": [
+                        "parse_dimensions",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "match_percent",
+                "func_c_signature": "longdouble match_percent(undefined4 param_1,uint *param_2)",
+                "decompiled_code": "longdouble match_percent(undefined4 param_1,uint *param_2) {\n  int iVar1;\n  char local_11;\n  uint local_10;\n  uint local_c;\n  uint local_8;\n  \n  local_8 = 0;\n  for (local_c = 0; local_c < param_2[1]; local_c = local_c + 1) {\n    for (local_10 = 0; local_10 < *param_2; local_10 = local_10 + 1) {\n      iVar1 = index_through_view(local_10,local_c,param_1,&local_11);\n      if (-1 < iVar1) {\n        local_8 = local_8 + (*(char *)((int)param_2 + *param_2 * local_c + local_10 + 9) == local_11\n                            );\n      }\n    }\n  }\n  return (longdouble)(ulonglong)local_8 / (longdouble)(ulonglong)(*param_2 * param_2[1]);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "match_percent",
+                        "index_through_view"
+                    ],
+                    "calling_functions": [
+                        "match_percent",
+                        "find_matching_object"
+                    ],
+                    "defined_in_file": "KPRCA_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_matching_object",
+                "func_c_signature": "undefined * find_matching_object(int param_1,float param_2)",
+                "decompiled_code": "undefined * find_matching_object(int param_1,float param_2) {\n  float fVar1;\n  longdouble lVar2;\n  uint local_18;\n  undefined *local_14;\n  float local_10;\n  \n  local_10 = 0.0;\n  local_14 = (undefined *)0x0;\n  for (local_18 = 0; local_18 < 0x1b; local_18 = local_18 + 1) {\n    if ((*(uint *)(&DAT_005cf004 + local_18 * 0x60) <= *(uint *)(param_1 + 8)) &&\n       (*(uint *)(&match_objects + local_18 * 0x60) <= *(uint *)(param_1 + 4))) {\n      lVar2 = (longdouble)match_percent(param_1,&match_objects + local_18 * 0x60);\n      fVar1 = (float)lVar2;\n      if ((local_10 <= fVar1) && (fVar1 < (float)DAT_005ccf00)) {\n        local_14 = &match_objects + local_18 * 0x60;\n        local_10 = fVar1;\n      }\n    }\n  }\n  if (local_10 < param_2) {\n    local_14 = (undefined *)0x0;\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_matching_object",
+                        "match_percent"
+                    ],
+                    "calling_functions": [
+                        "find_matching_object",
+                        "perform_ocr"
+                    ],
+                    "defined_in_file": "KPRCA_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "perform_ocr",
+                "func_c_signature": "char * perform_ocr(undefined4 param_1,uint param_2,uint param_3,undefined4 param_4)",
+                "decompiled_code": "char * perform_ocr(undefined4 param_1,uint param_2,uint param_3,undefined4 param_4) {\n  char *pcVar1;\n  char local_64 [64];\n  char *local_24;\n  int *local_20;\n  undefined4 local_1c;\n  size_t local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  local_18 = 0;\n  while ((local_10 < param_2 && (local_14 < param_3))) {\n    local_1c = make_2d_view(param_1,param_2,param_3,local_10,local_14);\n    local_20 = (int *)find_matching_object(local_1c,param_4);\n    if (local_20 == (int *)0x0) {\n      if (local_10 < param_2) {\n        local_10 = local_10 + 1;\n      }\n      else {\n        if (param_3 <= local_14) break;\n        local_10 = 0;\n        local_14 = local_14 + 1;\n      }\n    }\n    else {\n      pcVar1 = local_64 + local_18;\n      local_18 = local_18 + 1;\n      *pcVar1 = *(char *)(local_20 + 2);\n      if (local_10 + *local_20 < param_2) {\n        local_10 = local_10 + *local_20;\n      }\n      else {\n        if (param_3 <= local_14 + local_20[1]) break;\n        local_10 = 0;\n        local_14 = local_14 + local_20[1];\n      }\n    }\n  }\n  if (local_18 == 0) {\n    local_24 = (char *)0x0;\n  }\n  else {\n    local_24 = (char *)calloc(local_18,1);\n    if (local_24 == (char *)0x0) {\n      fdprintf(2,\"DEBUG %s:%d:\\tcalloc() failed\\n\",\n               \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00047/src/main.c\"\n               ,0x165);\n                    /* WARNING: Subroutine does not return */\n      exit(1);\n    }\n    strncpy(local_24,local_64,local_18);\n  }\n  return local_24;\n}",
+                "globals": [],
+                "externs": [
+                    "tcalloc"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "perform_ocr",
+                        "make_2d_view",
+                        "find_matching_object",
+                        "calloc",
+                        "fdprintf",
+                        "tcalloc",
+                        "exit",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "perform_ocr",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_junk",
+                "func_c_signature": "bool check_junk(void)",
+                "decompiled_code": "bool check_junk(void) {\n  size_t sVar1;\n  uint local_18;\n  uint local_14;\n  undefined *local_10;\n  \n  local_10 = (undefined *)0x0;\n  sVar1 = strlen(junk);\n  for (local_14 = 0; local_14 < 0x10; local_14 = local_14 + 1) {\n    for (local_18 = 0; local_18 < sVar1; local_18 = local_18 + 1) {\n      if (0x100 < local_14 + local_18) {\n        local_10 = (undefined *)\n                   ((uint)local_10 ^\n                   (int)(char)junk[local_14 + local_18 + -0x100] <<\n                   ((char)local_18 + ((byte)local_14 & 0x3f) & 0x1f));\n      }\n      if (0x800 < local_14 + local_18) {\n        local_10 = (undefined *)\n                   ((uint)local_10 ^\n                   (int)(char)(junk[local_14 + local_18 + -0x800] | junk[local_14 + local_18]));\n      }\n      if (30000 < local_14 + local_18) {\n        local_10 = (undefined *)\n                   ((uint)local_10 ^\n                   (int)(char)(junk[local_14 + local_18 + -30000] | junk[local_14 + local_18]));\n      }\n    }\n  }\n  return local_10 == &DAT_001afd7f;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_junk",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "check_junk",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00047_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  size_t sVar2;\n  size_t sVar3;\n  int local_58;\n  int local_54;\n  undefined4 local_50;\n  char local_4c [32];\n  int local_2c;\n  int local_28;\n  undefined4 local_24;\n  undefined *local_14;\n  \n  local_14 = &stack0x00000004;\n  iVar1 = check_junk();\n  if (iVar1 == 0) {\n    fdprintf(2,\"DEBUG %s:%d:\\tbad junk\\n\",\n             \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00047/src/main.c\"\n             ,0x188);\n                    /* WARNING: Subroutine does not return */\n    exit(1);\n  }\n  fdprintf(1,\"Welcome to the super awesome OCR engine! Enter your input to have it OCR\\'d\\n\");\n  local_24 = 0;\n  memset(local_4c,0,0x20);\n  iVar1 = read_until(local_24,0x20,10,local_4c);\n  if (iVar1 < 0) {\n    fdprintf(2,\"DEBUG %s:%d:\\tbad line\\n\",\n             \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00047/src/main.c\"\n             ,0x192);\n                    /* WARNING: Subroutine does not return */\n    exit(1);\n  }\n  sVar2 = strlen(local_4c);\n  sVar3 = strlen(magic);\n  if (sVar2 == sVar3) {\n    sVar2 = strlen(local_4c);\n    iVar1 = strncmp(local_4c,magic,sVar2);\n    if (iVar1 == 0) {\n      memset(local_4c,0,0x20);\n      iVar1 = read_until(local_24,0x20,10,local_4c);\n      if (iVar1 < 0) {\n        fdprintf(2,\"DEBUG %s:%d:\\tbad line\\n\",\n                 \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00047/src/main.c\"\n                 ,0x19d);\n                    /* WARNING: Subroutine does not return */\n        exit(1);\n      }\n      sVar2 = strlen(local_4c);\n      iVar1 = parse_dimensions(local_4c,sVar2,&local_50,&local_54);\n      if (iVar1 != 0) {\n        fdprintf(2,\"DEBUG %s:%d:\\tbad dimensions\\n\",\n                 \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00047/src/main.c\"\n                 ,0x1a3);\n                    /* WARNING: Subroutine does not return */\n        exit(1);\n      }\n      local_28 = read_image(local_24,local_50,local_54,&local_58);\n      if ((local_28 == local_54) && (local_58 != 0)) {\n        local_2c = perform_ocr(local_58,local_50,local_54,DAT_005ccf08);\n        if (local_2c == 0) {\n          fdprintf(1,\"No characters recognized\\n\");\n        }\n        else {\n          fdprintf(1,\"Result: %s\\n\",local_2c);\n        }\n        return 0;\n      }\n      fdprintf(2,\"DEBUG %s:%d:\\tbad image\\n\",\n               \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00047/src/main.c\"\n               ,0x1aa);\n                    /* WARNING: Subroutine does not return */\n      exit(1);\n    }\n  }\n  fdprintf(2,\"DEBUG %s:%d:\\tbad magic\\n\",\n           \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00047/src/main.c\"\n           ,0x197);\n                    /* WARNING: Subroutine does not return */\n  exit(1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "check_junk",
+                        "fdprintf",
+                        "exit",
+                        "memset",
+                        "read_until",
+                        "strlen",
+                        "strncmp",
+                        "parse_dimensions",
+                        "read_image",
+                        "perform_ocr"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "KPRCA_00047_decompiled.c"
+                }
+            }
+        ]
+    }
+}

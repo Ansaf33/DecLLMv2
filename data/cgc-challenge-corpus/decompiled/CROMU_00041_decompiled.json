@@ -1,0 +1,465 @@
+{
+    "file": "CROMU_00041",
+    "decompiled_code": {
+        "message.c": [
+            {
+                "func_name": "print_message",
+                "func_c_signature": "void print_message(int param_1,int param_2)",
+                "decompiled_code": "void print_message(int param_1,int param_2) {\n  int iVar1;\n  \n  iVar1 = strcmp(globs + param_2 * 0x34 + param_1 * 0x410 + 4,\"\");\n  if (iVar1 != 0) {\n    printf(\"******************\\n\");\n    printf(\"To: @s\\nFrom: @s \\nMsg: @s\\n\",param_2 * 0x34 + param_1 * 0x410 + 0x17024,\n           param_1 * 0x410 + param_2 * 0x34 + 0x17033,param_1 * 0x410 + param_2 * 0x34 + 0x17042);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_message",
+                        "strcmp",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_message"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_message",
+                "func_c_signature": "undefined4 add_message(char *param_1,char *param_2,char *param_3,char param_4)",
+                "decompiled_code": "undefined4 add_message(char *param_1,char *param_2,char *param_3,char param_4) {\n  undefined4 uVar1;\n  int iVar2;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  char local_d;\n  \n  globs._10400_4_ = print_message;\n  local_d = -1;\n  for (local_14 = 0; local_14 < user_count; local_14 = local_14 + 1) {\n    iVar2 = strcmp(param_1,*(char **)(listOfUsers + local_14 * 4));\n    if (iVar2 == 0) {\n      local_d = (char)local_14;\n      break;\n    }\n  }\n  if (local_d == -1) {\n    printf(\"User does not exist.\\n\");\n    uVar1 = 0;\n  }\n  else {\n    local_18 = -1;\n    if (param_4 == '\\x01') {\n      local_1c = get_user_index(param_2);\n    }\n    else {\n      local_1c = get_user_index(param_1);\n    }\n    if ((*(int *)(current_user + 0x24) == 1) &&\n       (*(undefined4 *)(current_user + 0x24) = 0, 0x13 < *(int *)(current_user + 0x28))) {\n      local_18 = *(int *)(current_user + 0x28);\n    }\n    else {\n      for (local_20 = 0; local_20 < 0x15; local_20 = local_20 + 1) {\n        if (*(int *)(globs + local_1c * 0x410 + local_20 * 0x34) != 0xbeef) {\n          local_18 = local_20;\n          break;\n        }\n      }\n    }\n    if (local_18 == -1) {\n      uVar1 = 0;\n    }\n    else {\n      iVar2 = local_18 * 0x34 + local_1c * 0x410;\n      *(undefined4 *)(globs + iVar2) = 0xbeef;\n      strcpy(globs + iVar2 + 0x13,param_2);\n      strcpy(globs + iVar2 + 4,param_1);\n      strcpy(globs + iVar2 + 0x22,param_3);\n      globs[iVar2 + 0x31] = param_4;\n      msg_count_login = msg_count_login + 1;\n      *(int *)(current_user + 0x28) = *(int *)(current_user + 0x28) + 1;\n      uVar1 = 1;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_message",
+                        "strcmp",
+                        "printf",
+                        "get_user_index",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "add_message",
+                        "handle_B_input"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "list_drafts",
+                "func_c_signature": "void list_drafts(char *param_1)",
+                "decompiled_code": "void list_drafts(char *param_1) {\n  bool bVar1;\n  int iVar2;\n  int iVar3;\n  int local_14;\n  \n  iVar2 = get_user_index(param_1);\n  bVar1 = false;\n  for (local_14 = 0; local_14 < 0x14; local_14 = local_14 + 1) {\n    if (*(int *)(globs + iVar2 * 0x410 + local_14 * 0x34) == 0xbeef) {\n      iVar3 = strcmp(param_1,globs + iVar2 * 0x410 + local_14 * 0x34 + 0x13);\n      if ((iVar3 == 0) && (globs[iVar2 * 0x410 + local_14 * 0x34 + 0x31] == '\\x01')) {\n        bVar1 = true;\n        (*(code *)globs._10400_4_)(iVar2,local_14);\n      }\n    }\n  }\n  if (!bVar1) {\n    printf(\"No drafts for this user.\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "list_drafts",
+                        "get_user_index",
+                        "strcmp",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "list_drafts",
+                        "handle_B_input"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "list_inbox",
+                "func_c_signature": "void list_inbox(char *param_1)",
+                "decompiled_code": "void list_inbox(char *param_1) {\n  bool bVar1;\n  int iVar2;\n  int iVar3;\n  int local_14;\n  \n  iVar2 = get_user_index(param_1);\n  bVar1 = false;\n  for (local_14 = 0; local_14 < 0x14; local_14 = local_14 + 1) {\n    if (*(int *)(globs + iVar2 * 0x410 + local_14 * 0x34) == 0xbeef) {\n      iVar3 = strcmp(param_1,globs + local_14 * 0x34 + iVar2 * 0x410 + 4);\n      if ((iVar3 == 0) && (globs[iVar2 * 0x410 + local_14 * 0x34 + 0x31] == '\\0')) {\n        bVar1 = true;\n        (*(code *)globs._10400_4_)(iVar2,local_14);\n      }\n    }\n  }\n  if (!bVar1) {\n    printf(\"No messages for this user.\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "list_inbox",
+                        "get_user_index",
+                        "strcmp",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "list_inbox",
+                        "handle_B_input"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "list_all_messages",
+                "func_c_signature": "void list_all_messages(void)",
+                "decompiled_code": "void list_all_messages(void) {\n  bool bVar1;\n  int local_18;\n  int local_14;\n  \n  bVar1 = false;\n  for (local_14 = 0; local_14 < user_count; local_14 = local_14 + 1) {\n    for (local_18 = 0; local_18 < 0x14; local_18 = local_18 + 1) {\n      bVar1 = true;\n      (*(code *)globs._10400_4_)(local_14,local_18);\n    }\n  }\n  if (!bVar1) {\n    printf(\"No messages.\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "list_all_messages",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "list_all_messages",
+                        "handle_B_input"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_draft_count",
+                "func_c_signature": "int get_draft_count(char *param_1)",
+                "decompiled_code": "int get_draft_count(char *param_1) {\n  int iVar1;\n  int iVar2;\n  int local_14;\n  int local_10;\n  \n  iVar1 = get_user_index(param_1);\n  local_10 = 0;\n  for (local_14 = 0; local_14 < 0x14; local_14 = local_14 + 1) {\n    iVar2 = strcmp(param_1,globs + iVar1 * 0x410 + local_14 * 0x34 + 0x13);\n    if ((iVar2 == 0) && (globs[iVar1 * 0x410 + local_14 * 0x34 + 0x31] == '\\x01')) {\n      local_10 = local_10 + 1;\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_draft_count",
+                        "get_user_index",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "get_draft_count",
+                        "print_B",
+                        "handle_B_input"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_inbox_count",
+                "func_c_signature": "int get_inbox_count(char *param_1)",
+                "decompiled_code": "int get_inbox_count(char *param_1) {\n  int iVar1;\n  int iVar2;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  iVar1 = get_user_index(param_1);\n  for (local_14 = 0; local_14 < 0x14; local_14 = local_14 + 1) {\n    iVar2 = strcmp(param_1,globs + local_14 * 0x34 + iVar1 * 0x410 + 4);\n    if ((iVar2 == 0) && (globs[iVar1 * 0x410 + local_14 * 0x34 + 0x31] == '\\0')) {\n      local_10 = local_10 + 1;\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_inbox_count",
+                        "get_user_index",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "get_inbox_count",
+                        "print_B"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_total_count",
+                "func_c_signature": "int get_total_count(void)",
+                "decompiled_code": "int get_total_count(void) {\n  int local_10;\n  int local_c;\n  int local_8;\n  \n  local_8 = 0;\n  for (local_c = 0; local_c < user_count; local_c = local_c + 1) {\n    for (local_10 = 0; local_10 < *(int *)(*(int *)(listOfUsers + local_c * 4) + 0x28);\n        local_10 = local_10 + 1) {\n      local_8 = local_8 + 1;\n    }\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_total_count"
+                    ],
+                    "calling_functions": [
+                        "get_total_count",
+                        "print_B",
+                        "handle_B_input"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_draft_for_send",
+                "func_c_signature": "void print_draft_for_send(char *param_1)",
+                "decompiled_code": "void print_draft_for_send(char *param_1) {\n  int iVar1;\n  undefined4 local_34;\n  undefined4 *local_30;\n  int local_2c;\n  undefined4 *local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_20 = get_user_index(param_1);\n  for (local_10 = 0; local_10 < 0x14; local_10 = local_10 + 1) {\n    if (*(int *)(globs + local_20 * 0x410 + local_10 * 0x34) == 0xbeef) {\n      iVar1 = strcmp(param_1,globs + local_20 * 0x410 + local_10 * 0x34 + 0x13);\n      if ((iVar1 == 0) && (globs[local_20 * 0x410 + local_10 * 0x34 + 0x31] == '\\x01')) {\n        printf(\"@d: To: @s Msg: @s\\n\",local_10,local_10 * 0x34 + local_20 * 0x410 + 0x17024,\n               local_20 * 0x410 + local_10 * 0x34 + 0x17042);\n      }\n    }\n  }\n  local_34 = 0;\n  local_14 = 0;\n  while (local_14 == 0) {\n    local_14 = receive_until(&local_34,10,3);\n  }\n  local_24 = atoi((char *)&local_34);\n  if ((local_24 < 0x14) && (-1 < local_24)) {\n    iVar1 = strcmp(param_1,globs + local_20 * 0x410 + local_24 * 0x34 + 0x13);\n    if ((iVar1 == 0) && (globs[local_20 * 0x410 + local_24 * 0x34 + 0x31] == '\\x01')) {\n      local_28 = (undefined4 *)(globs + local_24 * 0x34 + local_20 * 0x410);\n      local_2c = get_user_index(local_24 * 0x34 + local_20 * 0x410 + 0x17024);\n      local_18 = -1;\n      for (local_1c = 0; local_1c < 0x14; local_1c = local_1c + 1) {\n        if (*(int *)(globs + local_2c * 0x410 + local_1c * 0x34) != 0xbeef) {\n          local_18 = local_1c;\n          break;\n        }\n      }\n      if (local_18 == -1) {\n        printf(\"No space left for this user.\\n\");\n      }\n      else {\n        iVar1 = local_18 * 0x34 + local_2c * 0x410;\n        local_30 = (undefined4 *)(globs + iVar1);\n        strcpy(globs + iVar1 + 0x13,(char *)((int)local_28 + 0x13));\n        strcpy((char *)(local_30 + 1),(char *)(local_28 + 1));\n        strcpy((char *)((int)local_30 + 0x22),(char *)((int)local_28 + 0x22));\n        *(undefined *)((int)local_30 + 0x31) = 0;\n        *local_30 = 0xbeef;\n        bzero(local_28 + 1,0xf);\n        bzero((void *)((int)local_28 + 0x13),0xf);\n        bzero((void *)((int)local_28 + 0x22),0xf);\n        *local_28 = 0;\n      }\n    }\n    else {\n      printf(\"Not a valid selection.\\n\");\n    }\n  }\n  else {\n    printf(\"Out of range.\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_draft_for_send",
+                        "get_user_index",
+                        "strcmp",
+                        "printf",
+                        "receive_until",
+                        "atoi",
+                        "strcpy",
+                        "bzero"
+                    ],
+                    "calling_functions": [
+                        "print_draft_for_send",
+                        "handle_B_input"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_draft_for_del",
+                "func_c_signature": "void print_draft_for_del(char *param_1)",
+                "decompiled_code": "void print_draft_for_del(char *param_1) {\n  int iVar1;\n  undefined2 local_1f;\n  undefined local_1d;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_18 = get_user_index(param_1);\n  for (local_10 = 0; local_10 < 0x14; local_10 = local_10 + 1) {\n    iVar1 = strcmp(param_1,globs + local_18 * 0x410 + local_10 * 0x34 + 0x13);\n    if ((iVar1 == 0) && (globs[local_18 * 0x410 + local_10 * 0x34 + 0x31] == '\\x01')) {\n      printf(\"@d: To: @s Msg: @s\\n\",local_10,local_10 * 0x34 + local_18 * 0x410 + 0x17024,\n             local_18 * 0x410 + local_10 * 0x34 + 0x17042);\n    }\n  }\n  local_1f = 0;\n  local_1d = 0;\n  local_14 = 0;\n  while (local_14 == 0) {\n    local_14 = receive_until(&local_1f,10,2);\n  }\n  local_1c = atoi((char *)&local_1f);\n  if ((local_1c < 0x14) && (-1 < local_1c)) {\n    iVar1 = strcmp(param_1,globs + local_18 * 0x410 + local_1c * 0x34 + 0x13);\n    if ((iVar1 == 0) && (globs[local_18 * 0x410 + local_1c * 0x34 + 0x31] == '\\x01')) {\n      bzero(globs + local_1c * 0x34 + local_18 * 0x410 + 4,0xf);\n      bzero(globs + local_18 * 0x410 + local_1c * 0x34 + 0x13,0xf);\n      bzero(globs + local_18 * 0x410 + local_1c * 0x34 + 0x22,0xf);\n      *(undefined4 *)(globs + local_18 * 0x410 + local_1c * 0x34) = 0;\n      *(int *)(current_user + 0x28) = *(int *)(current_user + 0x28) + -1;\n    }\n    else {\n      printf(\"Not a valid selection.\\n\");\n    }\n  }\n  else {\n    printf(\"Out of range.\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_draft_for_del",
+                        "get_user_index",
+                        "strcmp",
+                        "printf",
+                        "receive_until",
+                        "atoi",
+                        "bzero"
+                    ],
+                    "calling_functions": [
+                        "print_draft_for_del",
+                        "handle_B_input"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "print_A",
+                "func_c_signature": "void print_A(void)",
+                "decompiled_code": "void print_A(void) {\n  printf(\"******************\\n\");\n  printf(\"1. Create User\\n\");\n  printf(\"2. Login\\n\");\n  printf(\"3. Exit\\n\");\n  printf(\": \\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_A",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_A",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_A_input",
+                "func_c_signature": "undefined4 handle_A_input(void)",
+                "decompiled_code": "undefined4 handle_A_input(void) {\n  int iVar1;\n  undefined *puVar2;\n  undefined auStack_3c [7];\n  undefined local_35 [15];\n  undefined local_26 [15];\n  undefined2 local_17;\n  undefined local_15;\n  int local_14;\n  int local_10;\n  \n  puVar2 = auStack_3c;\n  local_17 = 0;\n  local_15 = 0;\n  local_10 = 0;\n  while (local_10 == 0) {\n    local_10 = receive_until();\n  }\n  if ((char)local_17 == '1') {\n    create_user();\n  }\n  else if ((char)local_17 == '2') {\n    list_users();\n    printf(\"Username: \\n\");\n    iVar1 = receive_until();\n    local_14 = iVar1 + 1;\n    local_26[iVar1] = 0;\n    printf(\"Password: \\n\");\n    iVar1 = receive_until();\n    local_14 = iVar1 + 1;\n    local_35[iVar1] = 0;\n    msg_count_login = 0;\n    iVar1 = login();\n    if (iVar1 == 1) {\n      return 2;\n    }\n    printf(\"Bad login.\\n\");\n    bad_login_count = bad_login_count + 1;\n    if (2 < bad_login_count) {\n      create_user();\n      bad_login_count = 0;\n    }\n  }\n  else {\n    if ((char)local_17 == '3') {\n      puVar2 = &stack0xffffffb4;\n      printf(\"The end.\\n\");\n      _terminate();\n    }\n    *(int *)(puVar2 + -8) = (int)local_17._1_1_;\n    *(int *)(puVar2 + -0xc) = (int)(char)local_17;\n    *(char **)(puVar2 + -0x10) = \"unknown input: @c @c\\n\";\n    *(undefined4 *)(puVar2 + -0x14) = 0x121b7;\n    printf(*(char **)(puVar2 + -0x10));\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_A_input",
+                        "receive_until",
+                        "create_user",
+                        "list_users",
+                        "printf",
+                        "login",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "handle_A_input",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_B",
+                "func_c_signature": "void print_B(void)",
+                "decompiled_code": "void print_B(void) {\n  undefined4 uVar1;\n  \n  printf(\"********@s********\\n\",current_user);\n  printf(\"1. Create Message\\n\");\n  printf(\"2. Send Message\\n\");\n  uVar1 = get_total_count();\n  printf(\"3. List All [@d]\\n\",uVar1);\n  uVar1 = get_draft_count(current_user);\n  printf(\"4. List Drafts [@d]\\n\",uVar1);\n  uVar1 = get_inbox_count(current_user);\n  printf(\"5. List Inbox [@d]\\n\",uVar1);\n  printf(\"6. Delete Draft\\n\");\n  printf(\"7. Logout\\n\");\n  printf(\"8. Exit\\n\");\n  printf(\": \\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_B",
+                        "printf",
+                        "get_total_count",
+                        "get_draft_count",
+                        "get_inbox_count"
+                    ],
+                    "calling_functions": [
+                        "print_B",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_B_input",
+                "func_c_signature": "undefined4 handle_B_input(void)",
+                "decompiled_code": "undefined4 handle_B_input(void) {\n  undefined4 uVar1;\n  int iVar2;\n  undefined *puVar3;\n  undefined auStack_3c [7];\n  undefined local_35 [15];\n  undefined local_26 [15];\n  undefined2 local_17;\n  undefined local_15;\n  int local_14;\n  int local_10;\n  \n  puVar3 = auStack_3c;\n  local_17 = 0;\n  local_15 = 0;\n  local_10 = 0;\n  while (local_10 == 0) {\n    local_10 = receive_until();\n  }\n  if ((char)local_17 == '7') {\n    printf(\"Logging out of user @s\\n\");\n    logout();\n    uVar1 = 2;\n  }\n  else {\n    if ((char)local_17 == '8') {\n      puVar3 = &stack0xffffffb4;\n      printf(\"The end.\\n\");\n      _terminate();\n    }\n    if ((char)local_17 == '2') {\n      *(undefined4 *)(puVar3 + -0x10) = current_user;\n      *(undefined4 *)(puVar3 + -0x14) = 0x12379;\n      iVar2 = get_draft_count();\n      if (iVar2 == 0) {\n        *(char **)(puVar3 + -0x10) = \"Must create draft first.\\n\";\n        *(undefined4 *)(puVar3 + -0x14) = 0x1238f;\n        printf(*(char **)(puVar3 + -0x10));\n        return 0;\n      }\n      *(undefined4 *)(puVar3 + -0x10) = current_user;\n      *(undefined4 *)(puVar3 + -0x14) = 0x123ad;\n      print_draft_for_send();\n    }\n    else if ((char)local_17 == '1') {\n      if (3 < msg_count_login) {\n        *(char **)(puVar3 + -0x10) = \"Reached maximum messages for this session.\\n\";\n        *(undefined4 *)(puVar3 + -0x14) = 0x123dd;\n        printf(*(char **)(puVar3 + -0x10));\n        return 0;\n      }\n      *(undefined **)(puVar3 + -0x10) = &DAT_0001525c;\n      *(undefined4 *)(puVar3 + -0x14) = 0x123f9;\n      printf(*(char **)(puVar3 + -0x10));\n      *(undefined4 *)(puVar3 + -8) = 0xe;\n      *(undefined4 *)(puVar3 + -0xc) = 10;\n      *(undefined **)(puVar3 + -0x10) = local_26;\n      *(undefined4 *)(puVar3 + -0x14) = 0x1240c;\n      iVar2 = receive_until();\n      local_14 = iVar2 + 1;\n      local_26[iVar2] = 0;\n      *(char **)(puVar3 + -0x10) = \"Message:\\n\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x1242f;\n      printf(*(char **)(puVar3 + -0x10));\n      *(undefined4 *)(puVar3 + -8) = 0xe;\n      *(undefined4 *)(puVar3 + -0xc) = 10;\n      *(undefined **)(puVar3 + -0x10) = local_35;\n      *(undefined4 *)(puVar3 + -0x14) = 0x12442;\n      iVar2 = receive_until();\n      local_14 = iVar2 + 1;\n      local_35[iVar2] = 0;\n      *(undefined4 *)(puVar3 + -4) = 1;\n      *(undefined **)(puVar3 + -8) = local_35;\n      *(undefined4 *)(puVar3 + -0xc) = current_user;\n      *(undefined **)(puVar3 + -0x10) = local_26;\n      *(undefined4 *)(puVar3 + -0x14) = 0x12470;\n      iVar2 = add_message();\n      if (iVar2 != 1) {\n        *(char **)(puVar3 + -0x10) = \"add_message failed\\n\";\n        *(undefined4 *)(puVar3 + -0x14) = 0x1248b;\n        printf(*(char **)(puVar3 + -0x10));\n      }\n    }\n    else if ((char)local_17 == '3') {\n      *(undefined4 *)(puVar3 + -4) = 0x124a0;\n      iVar2 = get_total_count();\n      if (iVar2 == 0) {\n        *(char **)(puVar3 + -0x10) = \"No messages.\\n\";\n        *(undefined4 *)(puVar3 + -0x14) = 0x124b3;\n        printf(*(char **)(puVar3 + -0x10));\n        return 0;\n      }\n      *(undefined4 *)(puVar3 + -4) = 0x124c5;\n      list_all_messages();\n    }\n    else if ((char)local_17 == '4') {\n      *(undefined4 *)(puVar3 + -0x10) = current_user;\n      *(undefined4 *)(puVar3 + -0x14) = 0x124e3;\n      list_drafts();\n    }\n    else if ((char)local_17 == '5') {\n      *(undefined4 *)(puVar3 + -0x10) = current_user;\n      *(undefined4 *)(puVar3 + -0x14) = 0x12504;\n      list_inbox();\n    }\n    else if ((char)local_17 == '6') {\n      *(undefined4 *)(puVar3 + -0x10) = current_user;\n      *(undefined4 *)(puVar3 + -0x14) = 0x12522;\n      iVar2 = get_draft_count();\n      if (iVar2 == 0) {\n        *(char **)(puVar3 + -0x10) = \"Must create draft first.\\n\";\n        *(undefined4 *)(puVar3 + -0x14) = 0x12538;\n        printf(*(char **)(puVar3 + -0x10));\n        return 0;\n      }\n      *(undefined4 *)(puVar3 + -0x10) = current_user;\n      *(undefined4 *)(puVar3 + -0x14) = 0x12553;\n      print_draft_for_del();\n    }\n    else {\n      *(int *)(puVar3 + -8) = (int)local_17._1_1_;\n      *(int *)(puVar3 + -0xc) = (int)(char)local_17;\n      *(char **)(puVar3 + -0x10) = \"unknown input: @c @c\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x12577;\n      printf(*(char **)(puVar3 + -0x10));\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_B_input",
+                        "receive_until",
+                        "printf",
+                        "logout",
+                        "_terminate",
+                        "get_draft_count",
+                        "print_draft_for_send",
+                        "add_message",
+                        "get_total_count",
+                        "list_all_messages",
+                        "list_drafts",
+                        "list_inbox",
+                        "print_draft_for_del"
+                    ],
+                    "calling_functions": [
+                        "handle_B_input",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(void)",
+                "decompiled_code": "void main(void) {\n  int iVar1;\n  \n  msg_count_login = 0;\n  user_count = 0;\n  bad_login_count = 0;\n  do {\n    print_A();\n    iVar1 = handle_A_input();\n    while (iVar1 == 2) {\n      print_B();\n      iVar1 = handle_B_input();\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "print_A",
+                        "handle_A_input",
+                        "print_B",
+                        "handle_B_input"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            }
+        ],
+        "user.c": [
+            {
+                "func_name": "login",
+                "func_c_signature": "undefined4 login(char *param_1,char *param_2)",
+                "decompiled_code": "undefined4 login(char *param_1,char *param_2) {\n  int iVar1;\n  int local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (user_count <= local_10) {\n      return 0;\n    }\n    iVar1 = strcmp(param_1,*(char **)(listOfUsers + local_10 * 4));\n    if ((iVar1 == 0) &&\n       (iVar1 = strcmp(param_2,(char *)(*(int *)(listOfUsers + local_10 * 4) + 0xf)), iVar1 == 0))\n    break;\n    local_10 = local_10 + 1;\n  }\n  current_user = *(undefined4 *)(listOfUsers + local_10 * 4);\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "login",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "handle_A_input",
+                        "login"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "logout",
+                "func_c_signature": "undefined4 logout(void)",
+                "decompiled_code": "undefined4 logout(void) {\n  *(undefined4 *)(current_user + 0x24) = 0;\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "logout"
+                    ],
+                    "calling_functions": [
+                        "handle_B_input",
+                        "logout"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_user_index",
+                "func_c_signature": "int get_user_index(char *param_1)",
+                "decompiled_code": "int get_user_index(char *param_1) {\n  int iVar1;\n  int local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (user_count <= local_10) {\n      return -1;\n    }\n    iVar1 = strcmp(param_1,*(char **)(listOfUsers + local_10 * 4));\n    if (iVar1 == 0) break;\n    local_10 = local_10 + 1;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_user_index",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "add_message",
+                        "list_drafts",
+                        "list_inbox",
+                        "get_draft_count",
+                        "get_inbox_count",
+                        "print_draft_for_send",
+                        "print_draft_for_del",
+                        "get_user_index"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_user",
+                "func_c_signature": "void create_user(int param_1)",
+                "decompiled_code": "void create_user(int param_1) {\n  int iVar1;\n  size_t sVar2;\n  void *pvVar3;\n  char local_36 [15];\n  char local_27 [15];\n  size_t local_18;\n  int local_14;\n  int local_10;\n  \n  printf(\"Username: \\n\");\n  iVar1 = receive_until(local_27,10,0xe);\n  local_18 = iVar1 + 1;\n  local_27[iVar1] = '\\0';\n  local_10 = -1;\n  sVar2 = strlen(local_27);\n  if (sVar2 != 0) {\n    for (local_14 = 0; local_14 < user_count; local_14 = local_14 + 1) {\n      iVar1 = strcmp(local_27,*(char **)(listOfUsers + local_14 * 4));\n      if (iVar1 == 0) {\n        local_10 = local_14;\n        break;\n      }\n    }\n    iVar1 = user_count;\n    if (param_1 < 1) {\n      if (local_10 == -1) {\n        if (user_count < 10) {\n          pvVar3 = malloc(0x2c);\n          *(void **)(listOfUsers + iVar1 * 4) = pvVar3;\n          strncpy(*(char **)(listOfUsers + user_count * 4),local_27,local_18);\n          *(int *)(*(int *)(listOfUsers + user_count * 4) + 0x20) = user_count;\n          *(undefined4 *)(*(int *)(listOfUsers + user_count * 4) + 0x24) = 1;\n          *(undefined4 *)(*(int *)(listOfUsers + user_count * 4) + 0x28) = 0;\n          printf(\"Password: \\n\");\n          iVar1 = receive_until(local_36,10,0xe);\n          local_18 = iVar1 + 1;\n          local_36[iVar1] = '\\0';\n          iVar1 = user_count * 4;\n          user_count = user_count + 1;\n          strncpy((char *)(*(int *)(listOfUsers + iVar1) + 0xf),local_36,local_18);\n        }\n        else {\n          printf(\"Maximum number of users reached.\\n\");\n        }\n      }\n    }\n    else if (local_10 != -1) {\n      *(undefined4 *)(*(int *)(listOfUsers + local_10 * 4) + 0x24) = 1;\n      printf(\"Password: \\n\");\n      iVar1 = receive_until(local_36,10,0xe);\n      local_18 = iVar1 + 1;\n      local_36[iVar1] = '\\0';\n      bzero((void *)(*(int *)(listOfUsers + local_10 * 4) + 0xf),0xf);\n      strncpy((char *)(*(int *)(listOfUsers + local_10 * 4) + 0xf),local_36,local_18);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_user",
+                        "printf",
+                        "receive_until",
+                        "strlen",
+                        "strcmp",
+                        "malloc",
+                        "strncpy",
+                        "bzero"
+                    ],
+                    "calling_functions": [
+                        "handle_A_input",
+                        "create_user"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            },
+            {
+                "func_name": "list_users",
+                "func_c_signature": "void list_users(void)",
+                "decompiled_code": "void list_users(void) {\n  int local_10;\n  \n  for (local_10 = 0; local_10 < user_count; local_10 = local_10 + 1) {\n    printf(\"@s -- @s\\n\",*(undefined4 *)(listOfUsers + local_10 * 4),\n           *(int *)(listOfUsers + local_10 * 4) + 0xf);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "list_users",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "handle_A_input",
+                        "list_users"
+                    ],
+                    "defined_in_file": "CROMU_00041_decompiled.c"
+                }
+            }
+        ]
+    }
+}

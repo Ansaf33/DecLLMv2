@@ -1,0 +1,102 @@
+{
+    "file": "NRFIN_00037",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "inst_decode",
+                "func_c_signature": "undefined4 inst_decode(byte *param_1,ushort param_2,byte *param_3)",
+                "decompiled_code": "undefined4 inst_decode(byte *param_1,ushort param_2,byte *param_3) {\n  byte local_d;\n  int local_c;\n  undefined4 local_8;\n  \n  local_8 = 0;\n  param_3[1] = *param_1;\n  if ((param_3[1] & 4) == 0) {\n    local_d = '\\x03';\n  }\n  else {\n    local_d = '\\x05';\n  }\n  if ((param_3[1] & 8) == 0) {\n    local_d = local_d + 2;\n  }\n  else {\n    local_d = local_d + 4;\n  }\n  if (param_2 < local_d) {\n    local_8 = 0xffffffe0;\n  }\n  else {\n    *param_3 = local_d;\n    if ((param_3[1] & 4) == 0) {\n      *(uint *)(param_3 + 4) = (uint)CONCAT11(param_1[1],param_1[2]);\n      local_c = 2;\n    }\n    else {\n      *(uint *)(param_3 + 4) =\n           (uint)param_1[4] |\n           (uint)param_1[1] << 0x18 | (uint)param_1[2] << 0x10 | (uint)param_1[3] << 8;\n      local_c = 4;\n    }\n    if ((param_3[1] & 8) == 0) {\n      *(uint *)(param_3 + 8) = (uint)CONCAT11(param_1[local_c + 1],param_1[local_c + 2]);\n    }\n    else {\n      *(uint *)(param_3 + 8) =\n           (uint)param_1[local_c + 4] |\n           (uint)param_1[local_c + 1] << 0x18 | (uint)param_1[local_c + 2] << 0x10 |\n           (uint)param_1[local_c + 3] << 8;\n    }\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT11"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "inst_decode",
+                        "CONCAT11"
+                    ],
+                    "calling_functions": [
+                        "inst_decode",
+                        "bytecode_vrfy",
+                        "bytecode_exec"
+                    ],
+                    "defined_in_file": "NRFIN_00037_decompiled.c"
+                }
+            },
+            {
+                "func_name": "bytecode_vrfy",
+                "func_c_signature": "undefined4 bytecode_vrfy(int param_1,short param_2)",
+                "decompiled_code": "undefined4 bytecode_vrfy(int param_1,short param_2) {\n  int iVar1;\n  short local_28;\n  byte local_1c;\n  byte local_1b;\n  uint local_18;\n  uint local_14;\n  undefined4 local_10;\n  int local_c;\n  undefined4 local_8;\n  \n  local_28 = param_2;\n  local_c = param_1;\n  local_10 = 0;\n  while( true ) {\n    local_8 = 0;\n    if (local_28 == 0) {\n      return 0;\n    }\n    iVar1 = inst_decode(local_c,local_28,&local_1c);\n    if (iVar1 != 0) {\n      return 0xffffffbd;\n    }\n    if (((local_1b & 4) != 0) && (0xffc < local_18)) {\n      return 0xffffffe5;\n    }\n    if (((local_1b & 8) != 0) && (0xffc < local_14)) break;\n    local_c = local_c + (uint)local_1c;\n    local_28 = local_28 - (ushort)local_1c;\n  }\n  return 0xffffffe5;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bytecode_vrfy",
+                        "inst_decode"
+                    ],
+                    "calling_functions": [
+                        "bytecode_vrfy",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00037_decompiled.c"
+                }
+            },
+            {
+                "func_name": "bytecode_exec",
+                "func_c_signature": "int bytecode_exec(int param_1,short param_2,int param_3,uint *param_4)",
+                "decompiled_code": "int bytecode_exec(int param_1,short param_2,int param_3,uint *param_4) {\n  byte bVar1;\n  short local_38;\n  uint local_28;\n  byte local_24;\n  byte local_23;\n  uint local_20;\n  uint local_1c;\n  uint *local_18;\n  uint local_14;\n  uint local_10;\n  int local_c;\n  int local_8;\n  \n  local_38 = param_2;\n  local_8 = 0;\n  local_c = param_1;\n  local_28 = 0;\n  local_10 = 0;\n  local_14 = 0;\n  local_18 = (uint *)0x0;\n  while( true ) {\n    if (local_38 == 0) {\n      return local_8;\n    }\n    local_8 = inst_decode(local_c,local_38,&local_24);\n    if (local_8 != 0) break;\n    if ((local_23 & 1) == 0) {\n      local_18 = &local_28;\n    }\n    else {\n      local_18 = (uint *)(param_3 + local_20);\n    }\n    if (((local_23 & 1) == 0) || ((local_23 & 2) == 0)) {\n      if (((local_23 & 1) != 0) && ((local_23 & 2) == 0)) {\n        return -0x3e;\n      }\n      if (((local_23 & 1) == 0) && ((local_23 & 2) != 0)) {\n        local_10 = local_28;\n      }\n      else if (((local_23 & 1) == 0) && ((local_23 & 2) == 0)) {\n        if ((local_23 & 4) == 0) {\n          local_10 = local_20;\n        }\n        else {\n          local_10 = CONCAT13(*(undefined *)(param_3 + local_20 + 3),\n                              CONCAT12(*(undefined *)(param_3 + local_20 + 2),\n                                       CONCAT11(*(undefined *)(param_3 + local_20 + 1),\n                                                *(undefined *)(param_3 + local_20))));\n        }\n      }\n    }\n    else {\n      if ((local_23 & 4) == 0) {\n        return -0x3e;\n      }\n      local_10 = local_28;\n    }\n    if ((local_23 & 8) == 0) {\n      local_14 = local_1c;\n    }\n    else {\n      local_14 = CONCAT13(*(undefined *)(param_3 + local_1c + 3),\n                          CONCAT12(*(undefined *)(param_3 + local_1c + 2),\n                                   CONCAT11(*(undefined *)(param_3 + local_1c + 1),\n                                            *(undefined *)(param_3 + local_1c))));\n    }\n    bVar1 = local_23 & 0xf0;\n    if (bVar1 == 0xf0) {\n      *param_4 = local_28;\n    }\n    else {\n      if (0xf0 < bVar1) {\n        return -0x3e;\n      }\n      if (bVar1 == 0x30) {\n        if (local_14 == 0) {\n          local_14 = 0xf000f000;\n        }\n        *local_18 = local_10 / local_14;\n      }\n      else {\n        if (0x30 < bVar1) {\n          return -0x3e;\n        }\n        if (bVar1 == 0x20) {\n          *local_18 = local_10 * local_14;\n        }\n        else {\n          if (0x20 < bVar1) {\n            return -0x3e;\n          }\n          if ((local_23 & 0xf0) == 0) {\n            *local_18 = local_10 + local_14;\n          }\n          else {\n            if (bVar1 != 0x10) {\n              return -0x3e;\n            }\n            *local_18 = local_10 - local_14;\n          }\n        }\n      }\n    }\n    local_c = local_c + (uint)local_24;\n    local_38 = local_38 - (ushort)local_24;\n  }\n  return -0x43;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT13",
+                    "CONCAT12",
+                    "CONCAT11"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bytecode_exec",
+                        "inst_decode",
+                        "CONCAT13",
+                        "CONCAT12",
+                        "CONCAT11"
+                    ],
+                    "calling_functions": [
+                        "bytecode_exec",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00037_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "int main(void)",
+                "decompiled_code": "int main(void) {\n  undefined4 local_38;\n  ushort local_32;\n  int local_30;\n  undefined4 local_2c;\n  undefined4 local_28;\n  int local_24;\n  undefined *local_14;\n  \n  local_14 = &stack0x00000004;\n  local_24 = 0;\n  local_28 = 0;\n  local_2c = 0;\n  local_30 = 0;\n  local_24 = allocate(0x1000,0,&local_30,0x1157f);\n  if (local_24 == 0) {\n    local_32 = 0;\n    local_28 = 0;\n    local_24 = receive_all(0,&local_32,2,&local_28);\n    if (local_24 == 0) {\n      if (local_32 < 0x7fd) {\n        local_28 = 0;\n        local_24 = receive_all(0,local_30 + 0x800,local_32,&local_28);\n        if (local_24 == 0) {\n          local_24 = bytecode_vrfy(local_30 + 0x800,local_32);\n          if (local_24 == 0) {\n            local_38 = 0xdeadbeef;\n            local_24 = bytecode_exec(local_30 + 0x800,local_32,local_30,&local_38);\n            if (local_24 == 0) {\n              local_2c = 0;\n              local_24 = transmit_all(1,&local_38,4,&local_2c);\n              if (local_24 != 0) {\n                local_24 = -0x58;\n              }\n            }\n          }\n        }\n        else {\n          local_24 = -0x3f;\n        }\n      }\n      else {\n        local_24 = 0;\n      }\n    }\n    else {\n      local_24 = -0x3f;\n    }\n    if (local_30 != 0) {\n      deallocate(local_30,0x1000);\n    }\n  }\n  return local_24;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "allocate",
+                        "receive_all",
+                        "bytecode_vrfy",
+                        "bytecode_exec",
+                        "transmit_all",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "NRFIN_00037_decompiled.c"
+                }
+            }
+        ]
+    }
+}

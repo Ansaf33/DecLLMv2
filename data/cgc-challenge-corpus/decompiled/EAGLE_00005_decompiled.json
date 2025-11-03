@@ -1,0 +1,270 @@
+{
+    "file": "EAGLE_00005",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "clearBoard",
+                "func_c_signature": "void clearBoard(void)",
+                "decompiled_code": "void clearBoard(void) {\n  int local_8;\n  \n  for (local_8 = 0; local_8 < 7; local_8 = local_8 + 1) {\n    *(undefined *)(*(int *)(local_8 * 4 + 0x1000c) + 0x1000c) = 0x20;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clearBoard"
+                    ],
+                    "calling_functions": [
+                        "clearBoard",
+                        "reset"
+                    ],
+                    "defined_in_file": "EAGLE_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "reset",
+                "func_c_signature": "void reset(void)",
+                "decompiled_code": "void reset(void) {\n  int local_c;\n  \n  clearBoard();\n  for (local_c = 0; local_c < 0x1a; local_c = local_c + 1) {\n    *(char *)(local_c + (int)puRam0001004b) = (char)local_c + 'a';\n    *(undefined *)(local_c + (int)puRam0001004b) = 0;\n  }\n  *puRam0001004b = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "reset",
+                        "clearBoard"
+                    ],
+                    "calling_functions": [
+                        "reset",
+                        "playGame"
+                    ],
+                    "defined_in_file": "EAGLE_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "addPart",
+                "func_c_signature": "void addPart(int param_1)",
+                "decompiled_code": "void addPart(int param_1) {\n  *(undefined *)(*(int *)(param_1 * 4 + 0x100a6) + 0x100a6) = *(undefined *)(param_1 + 0x100a6);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "addPart"
+                    ],
+                    "calling_functions": [
+                        "addPart",
+                        "makeGuess"
+                    ],
+                    "defined_in_file": "EAGLE_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "printBoard",
+                "func_c_signature": "void printBoard(void)",
+                "decompiled_code": "void printBoard(void) {\n  printf((char *)0x100e0,0x100dc);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "printBoard",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "printBoard",
+                        "makeGuess",
+                        "doTurn"
+                    ],
+                    "defined_in_file": "EAGLE_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getWord",
+                "func_c_signature": "void getWord(void)",
+                "decompiled_code": "void getWord(void) {\n  size_t sVar1;\n  undefined *puVar2;\n  undefined auStack_1c [8];\n  uint local_14;\n  uint local_10;\n  \n  puVar2 = auStack_1c;\n  printf(\"\");\n  sVar1 = fread(&local_14,4,1,*ppFRam0001010f);\n  if (sVar1 != 1) {\n    puVar2 = &stack0xffffffd4;\n    _terminate();\n  }\n  local_10 = local_14 % 0xffd;\n  local_14 = *(uint *)(local_10 + (int)ppFRam0001010f);\n  *(FILE **)(puVar2 + -0xc) = ppFRam0001010f[local_14 % (uint)*ppFRam0001010f];\n  *(FILE ***)(puVar2 + -0x10) = ppFRam0001010f;\n  *(undefined4 *)(puVar2 + -0x14) = 0x101ac;\n  strcpy(*(char **)(puVar2 + -0x10),*(char **)(puVar2 + -0xc));\n  local_14 = 0;\n  while( true ) {\n    *(FILE ***)(puVar2 + -0x10) = ppFRam0001010f;\n    *(undefined4 *)(puVar2 + -0x14) = 0x101dd;\n    sVar1 = strlen(*(char **)(puVar2 + -0x10));\n    if (sVar1 <= local_14) break;\n    *(undefined *)((int)ppFRam0001010f + local_14) = 0x5f;\n    local_14 = local_14 + 1;\n  }\n  *(undefined *)((int)ppFRam0001010f + local_14) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getWord",
+                        "printf",
+                        "fread",
+                        "_terminate",
+                        "strcpy",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "getWord",
+                        "playGame"
+                    ],
+                    "defined_in_file": "EAGLE_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getHighScore",
+                "func_c_signature": "void getHighScore(void)",
+                "decompiled_code": "void getHighScore(void) {\n  char *pcVar1;\n  undefined *puVar2;\n  undefined auStack_3c [12];\n  char local_30 [32];\n  char *local_10;\n  \n  printf((char *)0x10240);\n  printf((char *)0x1027e);\n  pcVar1 = fgets(local_30,0x50,*ppFRam00010208);\n  puVar2 = auStack_3c;\n  if (pcVar1 == (char *)0x0) {\n    _terminate();\n    puVar2 = &stack0xffffffb4;\n  }\n  for (local_10 = local_30; (*local_10 != '\\0' && (*local_10 != '\\n')); local_10 = local_10 + 1) {\n  }\n  *local_10 = '\\0';\n  *(undefined4 *)(puVar2 + -0x10) = 0x10292;\n  *(undefined4 *)(puVar2 + -0x14) = 0x1028d;\n  printf(*(char **)(puVar2 + -0x10));\n  *(char **)(puVar2 + -0x10) = local_30;\n  *(undefined4 *)(puVar2 + -0x14) = 0x1029c;\n  printf(*(char **)(puVar2 + -0x10));\n  *(undefined4 *)(puVar2 + -0x10) = 0x102aa;\n  *(undefined4 *)(puVar2 + -0x14) = 0x102ae;\n  printf(*(char **)(puVar2 + -0x10));\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getHighScore",
+                        "printf",
+                        "fgets",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "getHighScore",
+                        "makeGuess"
+                    ],
+                    "defined_in_file": "EAGLE_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "isValid",
+                "func_c_signature": "undefined4 isValid(char param_1)",
+                "decompiled_code": "undefined4 isValid(char param_1) {\n  undefined4 uVar1;\n  char *local_10;\n  \n  local_10 = strchr(pcRam000102c4,(int)param_1);\n  if (local_10 == (char *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    for (; *local_10 != '\\0'; local_10 = local_10 + 1) {\n      *local_10 = local_10[1];\n    }\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "isValid",
+                        "strchr"
+                    ],
+                    "calling_functions": [
+                        "isValid",
+                        "doTurn"
+                    ],
+                    "defined_in_file": "EAGLE_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "makeGuess",
+                "func_c_signature": "undefined4 makeGuess(char param_1)",
+                "decompiled_code": "undefined4 makeGuess(char param_1) {\n  int iVar1;\n  bool bVar2;\n  size_t sVar3;\n  undefined4 uVar4;\n  uint local_10;\n  \n  bVar2 = false;\n  for (local_10 = 0; sVar3 = strlen((char *)piRam0001032b), local_10 < sVar3;\n      local_10 = local_10 + 1) {\n    if (param_1 == *(char *)(local_10 + (int)piRam0001032b)) {\n      *(char *)((int)piRam0001032b + local_10) = param_1;\n      bVar2 = true;\n    }\n  }\n  if (bVar2) {\n    for (local_10 = 0; sVar3 = strlen((char *)piRam0001032b), local_10 < sVar3;\n        local_10 = local_10 + 1) {\n      if (*(char *)(local_10 + (int)piRam0001032b) == '_') {\n        printf((char *)0x103cf);\n        return 0;\n      }\n    }\n    printf((char *)0x10407);\n    printf(\"\",piRam0001032b);\n    getHighScore();\n    uVar4 = 1;\n  }\n  else {\n    if (*piRam0001032b < 7) {\n      iVar1 = *piRam0001032b;\n      *piRam0001032b = iVar1 + 1;\n      addPart(iVar1);\n      if (*piRam0001032b == 7) {\n        printBoard();\n        printf(\"\");\n        printf(\"\\x1c\\x01\");\n        printf((char *)piRam0001032b);\n        printf((char *)0x1048a);\n        return 1;\n      }\n      printf(\"\");\n    }\n    uVar4 = 0;\n  }\n  return uVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "makeGuess",
+                        "strlen",
+                        "printf",
+                        "getHighScore",
+                        "addPart",
+                        "printBoard"
+                    ],
+                    "calling_functions": [
+                        "makeGuess",
+                        "doTurn"
+                    ],
+                    "defined_in_file": "EAGLE_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "askYN",
+                "func_c_signature": "bool askYN(char *param_1)",
+                "decompiled_code": "bool askYN(char *param_1) {\n  int iVar1;\n  undefined *puVar2;\n  undefined auStack_1c [15];\n  char local_d;\n  \n  printf(param_1);\n  printf((char *)0x1067d);\n  iVar1 = getchar();\n  local_d = (char)iVar1;\n  iVar1 = getchar();\n  puVar2 = auStack_1c;\n  if (iVar1 != 10) {\n    _terminate();\n    puVar2 = &stack0xffffffd4;\n  }\n  *(int *)(puVar2 + -0x10) = (int)local_d;\n  *(undefined4 *)(puVar2 + -0x14) = 0x10535;\n  iVar1 = tolower(*(int *)(puVar2 + -0x10));\n  return iVar1 == 0x79;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "askYN",
+                        "printf",
+                        "getchar",
+                        "_terminate",
+                        "tolower"
+                    ],
+                    "calling_functions": [
+                        "askYN",
+                        "main"
+                    ],
+                    "defined_in_file": "EAGLE_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "doTurn",
+                "func_c_signature": "undefined4 doTurn(void)",
+                "decompiled_code": "undefined4 doTurn(void) {\n  char cVar1;\n  int iVar2;\n  int iVar3;\n  size_t sVar4;\n  undefined4 uVar5;\n  \n  printBoard();\n  printf(\"\");\n  printf(pcRam00010554);\n  printf((char *)0x106ff);\n  printf(\"\");\n  printf(pcRam00010554);\n  printf((char *)0x106ff);\n  printf((char *)0x1070f);\n  printf(pcRam00010554);\n  printf((char *)0x105f6);\n  printf(\"\");\n  iVar2 = getchar();\n  iVar3 = getchar();\n  if (iVar3 == 10) {\n    iVar2 = tolower((int)(char)iVar2);\n    cVar1 = (char)iVar2;\n    iVar2 = isValid((int)cVar1);\n    if (iVar2 != 0) {\n      sVar4 = strlen(pcRam00010554);\n      pcRam00010554[sVar4] = cVar1;\n      uVar5 = makeGuess((int)cVar1);\n      return uVar5;\n    }\n  }\n  printf((char *)0x10728);\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "doTurn",
+                        "printBoard",
+                        "printf",
+                        "getchar",
+                        "tolower",
+                        "isValid",
+                        "strlen",
+                        "makeGuess"
+                    ],
+                    "calling_functions": [
+                        "doTurn",
+                        "playGame"
+                    ],
+                    "defined_in_file": "EAGLE_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "playGame",
+                "func_c_signature": "void playGame(void)",
+                "decompiled_code": "void playGame(void) {\n  int iVar1;\n  \n  reset();\n  getWord();\n  do {\n    iVar1 = doTurn();\n  } while (iVar1 == 0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "playGame",
+                        "reset",
+                        "getWord",
+                        "doTurn"
+                    ],
+                    "calling_functions": [
+                        "playGame",
+                        "main"
+                    ],
+                    "defined_in_file": "EAGLE_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  char *pcVar1;\n  int iVar2;\n  FILE **local_14;\n  \n  printf(\"? \");\n  pcVar1 = fgets((char *)ppFRam000106d8,0xff,*ppFRam000106d8);\n  if (pcVar1 != (char *)0x0) {\n    for (local_14 = ppFRam000106d8; (*(char *)local_14 != '\\0' && (*(char *)local_14 != '\\n'));\n        local_14 = (FILE **)((int)local_14 + 1)) {\n    }\n    *(char *)local_14 = '\\0';\n    iVar2 = strcmp((char *)ppFRam000106d8,\"er of the HOF: \");\n    if (iVar2 == 0) {\n      printf(\"F: \");\n      do {\n        playGame();\n        iVar2 = askYN(\" manage to prolong Tuco\\'s life.\\n\");\n      } while (iVar2 != 0);\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "printf",
+                        "fgets",
+                        "strcmp",
+                        "playGame",
+                        "askYN"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "EAGLE_00005_decompiled.c"
+                }
+            }
+        ]
+    }
+}

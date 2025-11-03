@@ -1,0 +1,867 @@
+{
+    "file": "numfmt",
+    "decompiled_code": {
+        "numfmt.c": [
+            {
+                "func_name": "newline_or_blank",
+                "func_c_signature": "undefined4 newline_or_blank(int param_1)",
+                "decompiled_code": "undefined4 newline_or_blank(int param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  \n  if (param_1 == 10) {\nLAB_00100382:\n    uVar2 = 1;\n  }\n  else {\n    iVar1 = c32isblank(param_1);\n    if (iVar1 != 0) {\n      iVar1 = c32isnbspace(param_1);\n      if (iVar1 == 0) goto LAB_00100382;\n    }\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "newline_or_blank",
+                        "c32isblank",
+                        "c32isnbspace"
+                    ],
+                    "calling_functions": [
+                        "newline_or_blank"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "default_scale_base",
+                "func_c_signature": "undefined8 default_scale_base(int param_1)",
+                "decompiled_code": "undefined8 default_scale_base(int param_1) {\n  undefined8 uVar1;\n  \n  if (param_1 - 3U < 2) {\n    uVar1 = 0x400;\n  }\n  else {\n    uVar1 = 1000;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "default_scale_base"
+                    ],
+                    "calling_functions": [
+                        "default_scale_base",
+                        "simple_strtod_human",
+                        "double_to_human"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "valid_suffix",
+                "func_c_signature": "bool valid_suffix(char param_1)",
+                "decompiled_code": "bool valid_suffix(char param_1) {\n  char *pcVar1;\n  \n  pcVar1 = strchr(valid_suffixes,(int)param_1);\n  return pcVar1 != (char *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "valid_suffix",
+                        "strchr"
+                    ],
+                    "calling_functions": [
+                        "valid_suffix",
+                        "simple_strtod_human"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "suffix_power",
+                "func_c_signature": "undefined8 suffix_power(undefined param_1)",
+                "decompiled_code": "undefined8 suffix_power(undefined param_1) {\n  undefined8 uVar1;\n  \n  switch(param_1) {\n  case 0x45:\n    uVar1 = 6;\n    break;\n  default:\n    uVar1 = 0;\n    break;\n  case 0x47:\n    uVar1 = 3;\n    break;\n  case 0x4b:\n  case 0x6b:\n    uVar1 = 1;\n    break;\n  case 0x4d:\n    uVar1 = 2;\n    break;\n  case 0x50:\n    uVar1 = 5;\n    break;\n  case 0x51:\n    uVar1 = 10;\n    break;\n  case 0x52:\n    uVar1 = 9;\n    break;\n  case 0x54:\n    uVar1 = 4;\n    break;\n  case 0x59:\n    uVar1 = 8;\n    break;\n  case 0x5a:\n    uVar1 = 7;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "suffix_power"
+                    ],
+                    "calling_functions": [
+                        "suffix_power",
+                        "simple_strtod_human"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "suffix_power_char",
+                "func_c_signature": "char * suffix_power_char(undefined4 param_1)",
+                "decompiled_code": "char * suffix_power_char(undefined4 param_1) {\n  char *pcVar1;\n  \n  switch(param_1) {\n  case 0:\n    pcVar1 = \"\";\n    break;\n  case 1:\n    pcVar1 = \"K\";\n    break;\n  case 2:\n    pcVar1 = \"M\";\n    break;\n  case 3:\n    pcVar1 = \"G\";\n    break;\n  case 4:\n    pcVar1 = \"T\";\n    break;\n  case 5:\n    pcVar1 = \"P\";\n    break;\n  case 6:\n    pcVar1 = \"E\";\n    break;\n  case 7:\n    pcVar1 = \"Z\";\n    break;\n  case 8:\n    pcVar1 = \"Y\";\n    break;\n  case 9:\n    pcVar1 = \"R\";\n    break;\n  case 10:\n    pcVar1 = \"Q\";\n    break;\n  default:\n    pcVar1 = \"(error)\";\n  }\n  return pcVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "suffix_power_char"
+                    ],
+                    "calling_functions": [
+                        "suffix_power_char",
+                        "double_to_human"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "powerld",
+                "func_c_signature": "void powerld(int param_1)",
+                "decompiled_code": "void powerld(int param_1) {\n  int local_1c;\n  \n  local_1c = param_1;\n  if (param_1 != 0) {\n    do {\n      local_1c = local_1c + -1;\n    } while (local_1c != 0);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "powerld"
+                    ],
+                    "calling_functions": [
+                        "powerld",
+                        "simple_strtod_float",
+                        "simple_strtod_human",
+                        "double_to_human"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "absld",
+                "func_c_signature": "void absld(void)",
+                "decompiled_code": "void absld(void) {\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "absld"
+                    ],
+                    "calling_functions": [
+                        "absld",
+                        "expld",
+                        "double_to_human"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "expld",
+                "func_c_signature": "void expld(int param_1,int *param_2)",
+                "decompiled_code": "void expld(int param_1,int *param_2) {\n  longdouble in_ST0;\n  longdouble in_ST1;\n  longdouble in_ST2;\n  longdouble in_ST3;\n  longdouble in_ST4;\n  longdouble in_ST5;\n  longdouble lVar1;\n  undefined8 param_7;\n  undefined2 in_stack_00000010;\n  int local_c;\n  \n  local_c = 0;\n  if ((_DAT_00105b20 <= (longdouble)CONCAT28(in_stack_00000010,param_7)) &&\n     ((longdouble)CONCAT28(in_stack_00000010,param_7) <= _DAT_00105b30)) {\n    while (lVar1 = in_ST5, absld(), (longdouble)param_1 <= in_ST0) {\n      local_c = local_c + 1;\n      in_ST0 = in_ST1;\n      in_ST1 = in_ST2;\n      in_ST2 = in_ST3;\n      in_ST3 = in_ST4;\n      in_ST4 = in_ST5;\n      in_ST5 = lVar1;\n    }\n  }\n  if (param_2 != (int *)0x0) {\n    *param_2 = local_c;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT28"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "expld",
+                        "CONCAT28",
+                        "absld"
+                    ],
+                    "calling_functions": [
+                        "expld",
+                        "double_to_human",
+                        "prepare_padded_number"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simple_round_ceiling",
+                "func_c_signature": "long simple_round_ceiling(void)",
+                "decompiled_code": "long simple_round_ceiling(void) {\n  longdouble param_7;\n  long local_10;\n  \n  local_10 = (long)ROUND(param_7);\n  if ((longdouble)local_10 < param_7) {\n    local_10 = local_10 + 1;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simple_round_ceiling",
+                        "ROUND"
+                    ],
+                    "calling_functions": [
+                        "simple_round_ceiling",
+                        "simple_round_floor",
+                        "simple_round_from_zero",
+                        "simple_round"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simple_round_floor",
+                "func_c_signature": "long simple_round_floor(void)",
+                "decompiled_code": "long simple_round_floor(void) {\n  long lVar1;\n  \n  lVar1 = simple_round_ceiling();\n  return -lVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simple_round_floor",
+                        "simple_round_ceiling"
+                    ],
+                    "calling_functions": [
+                        "simple_round_floor",
+                        "simple_round_from_zero",
+                        "simple_round"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simple_round_from_zero",
+                "func_c_signature": "void simple_round_from_zero(void)",
+                "decompiled_code": "void simple_round_from_zero(void) {\n  undefined8 param_7;\n  undefined2 in_stack_00000010;\n  \n  if ((longdouble)0 <= (longdouble)CONCAT28(in_stack_00000010,param_7)) {\n    simple_round_ceiling();\n  }\n  else {\n    simple_round_floor();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT28"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simple_round_from_zero",
+                        "CONCAT28",
+                        "simple_round_ceiling",
+                        "simple_round_floor"
+                    ],
+                    "calling_functions": [
+                        "simple_round_from_zero",
+                        "simple_round"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simple_round_to_zero",
+                "func_c_signature": "long simple_round_to_zero(void)",
+                "decompiled_code": "long simple_round_to_zero(void) {\n  longdouble param_7;\n  \n  return (long)ROUND(param_7);\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simple_round_to_zero",
+                        "ROUND"
+                    ],
+                    "calling_functions": [
+                        "simple_round_to_zero",
+                        "simple_round"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simple_round_nearest",
+                "func_c_signature": "long simple_round_nearest(void)",
+                "decompiled_code": "long simple_round_nearest(void) {\n  longdouble param_7;\n  long local_18;\n  \n  if ((longdouble)0 <= param_7) {\n    param_7 = _DAT_00105b40 + param_7;\n  }\n  else {\n    param_7 = param_7 - _DAT_00105b40;\n  }\n  local_18 = (long)ROUND(param_7);\n  return local_18;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simple_round_nearest",
+                        "ROUND"
+                    ],
+                    "calling_functions": [
+                        "simple_round_nearest",
+                        "simple_round"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simple_round",
+                "func_c_signature": "void simple_round(undefined4 param_1)",
+                "decompiled_code": "void simple_round(undefined4 param_1) {\n  switch(param_1) {\n  case 0:\n    simple_round_ceiling();\n    break;\n  case 1:\n    simple_round_floor();\n    break;\n  case 2:\n    simple_round_from_zero();\n    break;\n  case 3:\n    simple_round_to_zero();\n    break;\n  case 4:\n    simple_round_nearest();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simple_round",
+                        "simple_round_ceiling",
+                        "simple_round_floor",
+                        "simple_round_from_zero",
+                        "simple_round_to_zero",
+                        "simple_round_nearest"
+                    ],
+                    "calling_functions": [
+                        "simple_round",
+                        "double_to_human"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simple_strtod_int",
+                "func_c_signature": "undefined4 simple_strtod_int(char *param_1,char **param_2,unkbyte10 *param_3,char *param_4)",
+                "decompiled_code": "undefined4 simple_strtod_int(char *param_1,char **param_2,unkbyte10 *param_3,char *param_4) {\n  bool bVar1;\n  char cVar2;\n  int iVar3;\n  longdouble lVar4;\n  undefined8 local_58;\n  undefined2 uStack_50;\n  char *local_30;\n  undefined4 local_24;\n  int local_20;\n  undefined8 local_18;\n  undefined2 uStack_10;\n  \n  local_24 = 0;\n  local_18 = SUB108((longdouble)0,0);\n  uStack_10 = (undefined2)((unkuint10)(longdouble)0 >> 0x40);\n  local_20 = 0;\n  bVar1 = false;\n  if (*param_1 == '-') {\n    local_30 = param_1 + 1;\n    *param_4 = '\\x01';\n  }\n  else {\n    *param_4 = '\\0';\n    local_30 = param_1;\n  }\n  *param_2 = local_30;\n  while( true ) {\n    cVar2 = c_isdigit((int)**param_2);\n    if (cVar2 == '\\0') {\n      if ((bVar1) ||\n         (iVar3 = strncmp(*param_2,decimal_point,(long)decimal_point_length), iVar3 == 0)) {\n        if (*param_4 != '\\0') {\n          local_58 = SUB108(-(longdouble)CONCAT28(uStack_10,local_18),0);\n          uStack_50 = (undefined2)((unkuint10)-(longdouble)CONCAT28(uStack_10,local_18) >> 0x40);\n          uStack_10 = uStack_50;\n          local_18 = local_58;\n        }\n        if (param_3 != (unkbyte10 *)0x0) {\n          *param_3 = CONCAT28(uStack_10,local_18);\n        }\n      }\n      else {\n        local_24 = 3;\n      }\n      return local_24;\n    }\n    bVar1 = true;\n    if (((longdouble)0 != (longdouble)CONCAT28(uStack_10,local_18)) || (**param_2 + -0x30 != 0)) {\n      local_20 = local_20 + 1;\n    }\n    if (0x12 < local_20) {\n      local_24 = 1;\n    }\n    if (0x21 < local_20) break;\n    lVar4 = _DAT_00105b60 * (longdouble)CONCAT28(uStack_10,local_18) +\n            (longdouble)(**param_2 + -0x30);\n    local_18 = SUB108(lVar4,0);\n    uStack_10 = (undefined2)((unkuint10)lVar4 >> 0x40);\n    *param_2 = *param_2 + 1;\n    if (((0 < thousands_sep_length) &&\n        (iVar3 = strncmp(*param_2,thousands_sep,(long)thousands_sep_length), iVar3 == 0)) &&\n       (cVar2 = c_isdigit((int)(*param_2)[thousands_sep_length]), cVar2 != '\\0')) {\n      *param_2 = *param_2 + thousands_sep_length;\n    }\n  }\n  return 2;\n}",
+                "globals": [],
+                "externs": [
+                    "SUB108",
+                    "CONCAT28"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simple_strtod_int",
+                        "SUB108",
+                        "c_isdigit",
+                        "strncmp",
+                        "CONCAT28"
+                    ],
+                    "calling_functions": [
+                        "simple_strtod_int",
+                        "simple_strtod_float"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simple_strtod_float",
+                "func_c_signature": "int simple_strtod_float(undefined8 param_1,char **param_2,longdouble *param_3,ulong *param_4)",
+                "decompiled_code": "int simple_strtod_float(undefined8 param_1,char **param_2,longdouble *param_3,ulong *param_4) {\n  longdouble lVar1;\n  int iVar2;\n  int iVar3;\n  long in_FS_OFFSET;\n  longdouble in_ST0;\n  char local_42;\n  char local_41;\n  int local_40;\n  int local_3c;\n  char *local_38;\n  ulong local_30;\n  longdouble local_28;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_40 = 0;\n  if (param_4 != (ulong *)0x0) {\n    *param_4 = 0;\n  }\n  local_40 = simple_strtod_int(param_1,param_2,param_3,&local_42);\n  if (((local_40 == 0) || (iVar3 = local_40, local_40 == 1)) &&\n     (iVar2 = strncmp(*param_2,decimal_point,(long)decimal_point_length), iVar3 = local_40,\n     iVar2 == 0)) {\n    local_28 = (longdouble)0;\n    *param_2 = *param_2 + decimal_point_length;\n    local_3c = simple_strtod_int(*param_2,&local_38,&local_28,&local_41);\n    lVar1 = local_28;\n    if ((local_3c == 0) || (iVar3 = local_3c, local_3c == 1)) {\n      if (local_3c == 1) {\n        local_40 = local_3c;\n      }\n      if (local_41 == '\\0') {\n        local_30 = (long)local_38 - (long)*param_2;\n        powerld(local_30 & 0xffffffff);\n        local_28 = lVar1 / in_ST0;\n        if (param_3 != (longdouble *)0x0) {\n          if (local_42 == '\\0') {\n            *param_3 = local_28 + *param_3;\n          }\n          else {\n            *param_3 = *param_3 - local_28;\n          }\n        }\n        if (param_4 != (ulong *)0x0) {\n          *param_4 = local_30;\n        }\n        *param_2 = local_38;\n        iVar3 = local_40;\n      }\n      else {\n        iVar3 = 3;\n      }\n    }\n  }\n  if (local_10 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return iVar3;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simple_strtod_float",
+                        "simple_strtod_int",
+                        "strncmp",
+                        "powerld",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "simple_strtod_float",
+                        "simple_strtod_human"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simple_strtod_human",
+                "func_c_signature": "int simple_strtod_human(undefined8 param_1,char **param_2,longdouble *param_3,ulong *param_4,\n                       int param_5)",
+                "decompiled_code": "int simple_strtod_human(undefined8 param_1,char **param_2,longdouble *param_3,ulong *param_4,\n                       int param_5) {\n  bool bVar1;\n  char cVar2;\n  int iVar3;\n  int iVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  size_t __n;\n  ulong uVar7;\n  char *pcVar8;\n  longdouble in_ST0;\n  uint local_44;\n  uint local_40;\n  \n  local_44 = 0;\n  local_40 = default_scale_base(param_5);\n  if (dev_debug != '\\0') {\n    uVar5 = quote_n(1,decimal_point);\n    uVar6 = quote_n(0,param_1);\n    fprintf(_stderr,\n            \"simple_strtod_human:\\n  input string: %s\\n  locale decimal-point: %s\\n  MAX_UNSCALED_DIGITS: %d\\n\"\n            ,uVar6,uVar5,0x12);\n  }\n  iVar3 = simple_strtod_float(param_1,param_2,param_3,param_4);\n  if ((iVar3 != 0) && (iVar3 != 1)) {\n    return iVar3;\n  }\n  if (dev_debug != '\\0') {\n    fprintf(_stderr,\"  parsed numeric value: %Lf\\n  input precision = %d\\n\",*param_4 & 0xffffffff);\n  }\n  if (**param_2 != '\\0') {\n    bVar1 = false;\n    if (unit_separator != (char *)0x0) {\n      __n = strlen(unit_separator);\n      iVar4 = strncmp(*param_2,unit_separator,__n);\n      if (iVar4 == 0) {\n        bVar1 = true;\n        *param_2 = *param_2 + __n;\n      }\n    }\n    if (!bVar1) {\n      uVar7 = mcel_scanz(*param_2);\n      iVar4 = c32isblank(uVar7 & 0xffffffff);\n      if ((iVar4 != 0) || (iVar4 = c32isnbspace(uVar7 & 0xffffffff), iVar4 != 0)) {\n        *param_2 = *param_2 + (uVar7 >> 0x28 & 0xff);\n      }\n    }\n    if (**param_2 != '\\0') {\n      cVar2 = valid_suffix((int)**param_2);\n      if (cVar2 == '\\x01') {\n        if (param_5 == 0) {\n          return 4;\n        }\n        local_44 = suffix_power((int)**param_2);\n        *param_2 = *param_2 + 1;\n        if ((param_5 == 1) && (**param_2 == 'i')) {\n          local_40 = 0x400;\n          *param_2 = *param_2 + 1;\n          if (dev_debug != '\\0') {\n            fprintf(_stderr,\"  Auto-scaling, found \\'i\\', switching to base %d\\n\",0x400);\n          }\n        }\n        else if (param_5 == 4) {\n          if (**param_2 != 'i') {\n            return 6;\n          }\n          *param_2 = *param_2 + 1;\n        }\n        *param_4 = 0;\n        pcVar8 = (char *)skip_str_matching(*param_2,newline_or_blank,1);\n        *param_2 = pcVar8;\n      }\n      else {\n        pcVar8 = (char *)skip_str_matching(*param_2,newline_or_blank,1);\n        *param_2 = pcVar8;\n        if (**param_2 != '\\0') {\n          return 5;\n        }\n      }\n    }\n  }\n  powerld(local_44);\n  if (dev_debug != '\\0') {\n    fprintf(_stderr,\"  suffix power=%d^%d = %Lf\\n\",(ulong)local_40,(ulong)local_44);\n  }\n  *param_3 = in_ST0 * *param_3;\n  if (dev_debug != '\\0') {\n    fprintf(_stderr,\"  returning value: %Lf (%LG)\\n\");\n  }\n  return iVar3;\n}",
+                "globals": [],
+                "externs": [
+                    "Lf"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simple_strtod_human",
+                        "default_scale_base",
+                        "quote_n",
+                        "fprintf",
+                        "simple_strtod_float",
+                        "strlen",
+                        "strncmp",
+                        "mcel_scanz",
+                        "c32isblank",
+                        "c32isnbspace",
+                        "valid_suffix",
+                        "suffix_power",
+                        "skip_str_matching",
+                        "powerld",
+                        "Lf"
+                    ],
+                    "calling_functions": [
+                        "simple_strtod_human",
+                        "parse_human_number"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simple_strtod_fatal",
+                "func_c_signature": "void simple_strtod_fatal(undefined4 param_1,undefined8 param_2)",
+                "decompiled_code": "void simple_strtod_fatal(undefined4 param_1,undefined8 param_2) {\n  undefined4 uVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  char *local_28;\n  \n  uVar1 = conv_exit_code;\n  local_28 = (char *)0x0;\n  switch(param_1) {\n  case 2:\n    local_28 = \"value too large to be converted: %s\";\n    break;\n  case 3:\n    local_28 = \"invalid number: %s\";\n    break;\n  case 4:\n    local_28 = \"rejecting suffix in input: %s (consider using --from)\";\n    break;\n  case 5:\n    local_28 = \"invalid suffix in input: %s\";\n    break;\n  case 6:\n    local_28 = \"missing \\'i\\' suffix in input: %s (e.g Ki/Mi/Gi)\";\n  }\n  if (inval_style != 3) {\n    uVar2 = quote(param_2);\n    uVar3 = gettext(local_28);\n    error(uVar1,0,uVar3,uVar2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "s"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simple_strtod_fatal",
+                        "s",
+                        "quote",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "simple_strtod_fatal",
+                        "parse_human_number"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "double_to_human",
+                "func_c_signature": "void double_to_human(uint param_1,char *param_2,size_t param_3,int param_4,int param_5,\n                    undefined4 param_6,undefined8 param_7,undefined8 param_8)",
+                "decompiled_code": "void double_to_human(uint param_1,char *param_2,size_t param_3,int param_4,int param_5,\n                    undefined4 param_6,undefined8 param_7,undefined8 param_8) {\n  int iVar1;\n  char *__format;\n  undefined *puVar2;\n  long lVar3;\n  undefined *puVar4;\n  undefined *puVar5;\n  long in_FS_OFFSET;\n  longdouble in_ST1;\n  longdouble in_ST2;\n  longdouble in_ST3;\n  longdouble in_ST4;\n  longdouble in_ST5;\n  longdouble in_ST6;\n  uint local_68;\n  undefined4 local_64;\n  uint local_60;\n  uint local_5c;\n  undefined8 *local_58;\n  double local_50;\n  char local_48;\n  undefined local_47;\n  undefined8 local_46 [4];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_58 = (undefined8 *)&local_47;\n  local_48 = '%';\n  if (param_5 != 0) {\n    local_58 = local_46;\n    local_47 = 0x27;\n  }\n  if (zero_padding_width != 0) {\n    iVar1 = sprintf((char *)local_58,\"0%d\",(ulong)zero_padding_width);\n    local_58 = (undefined8 *)((long)local_58 + (long)iVar1);\n  }\n  if (dev_debug != '\\0') {\n    fwrite(\"double_to_human:\\n\",1,0x11,_stderr);\n  }\n  if (param_4 == 0) {\n    powerld(param_1);\n    simple_round(param_6);\n    powerld(param_1);\n    if (dev_debug != '\\0') {\n      if (param_5 == 0) {\n        __format = \"  no scaling, returning value: %.*Lf\\n\";\n      }\n      else {\n        __format = \"  no scaling, returning (grouped) value: %\\'.*Lf\\n\";\n      }\n      fprintf(_stderr,__format,(ulong)param_1);\n    }\n    *(undefined4 *)local_58 = 0x664c2a2e;\n    *(undefined4 *)((long)local_58 + 3) = 0x732566;\n    puVar2 = suffix;\n    if (suffix == (undefined *)0x0) {\n      puVar2 = &DAT_00103e04;\n    }\n    snprintf(param_2,param_3,&local_48,(ulong)param_1,puVar2);\n  }\n  else {\n    iVar1 = default_scale_base(param_4);\n    local_50 = (double)iVar1;\n    local_68 = 0;\n    expld((int)local_50,&local_68);\n    if (dev_debug != '\\0') {\n      fprintf(_stderr,\"  scaled value to %Lf * %0.f ^ %d\\n\",local_50,(ulong)local_68);\n    }\n    local_64 = 0;\n    if (user_precision == -1) {\n      in_ST2 = in_ST3;\n      in_ST3 = in_ST4;\n      in_ST4 = in_ST5;\n      in_ST5 = in_ST6;\n      absld();\n      if (in_ST1 < _DAT_00105b60) {\n        local_64 = 1;\n      }\n    }\n    else {\n      lVar3 = user_precision;\n      if ((int)(local_68 * 3) <= user_precision) {\n        lVar3 = (long)(int)(local_68 * 3);\n      }\n      local_64 = (undefined4)lVar3;\n    }\n    powerld(local_64);\n    simple_round(param_6);\n    powerld(local_64);\n    in_ST2 = in_ST2 / in_ST3;\n    param_7 = SUB108(in_ST2,0);\n    param_8._0_2_ = (undefined2)((unkuint10)in_ST2 >> 0x40);\n    absld();\n    if ((longdouble)local_50 <= in_ST4) {\n      param_7 = SUB108(in_ST2 / (longdouble)local_50,0);\n      param_8._0_2_ = (undefined2)((unkuint10)(in_ST2 / (longdouble)local_50) >> 0x40);\n      local_68 = local_68 + 1;\n    }\n    if ((((longdouble)0 == (longdouble)CONCAT28((undefined2)param_8,param_7)) ||\n        (absld(), _DAT_00105b60 <= in_ST5)) || ((int)local_68 < 1)) {\n      local_60 = 0;\n    }\n    else {\n      local_60 = 1;\n    }\n    if (dev_debug != '\\0') {\n      fprintf(_stderr,\"  after rounding, value=%Lf * %0.f ^ %d\\n\",local_50,(ulong)local_68);\n    }\n    *local_58 = 0x73257325664c2a2e;\n    *(undefined8 *)((long)local_58 + 5) = 0x73257325732573;\n    local_5c = local_60;\n    if (user_precision != -1) {\n      local_5c = (uint)user_precision;\n    }\n    puVar2 = suffix;\n    if (suffix == (undefined *)0x0) {\n      puVar2 = &DAT_00103e04;\n    }\n    if ((param_4 == 4) && (0 < (int)local_68)) {\n      iVar1 = 0;\n    }\n    else {\n      iVar1 = 1;\n    }\n    if ((local_68 == 1) && (param_4 == 2)) {\n      puVar4 = &DAT_00104353;\n    }\n    else {\n      puVar4 = (undefined *)suffix_power_char(local_68);\n    }\n    if (((int)local_68 < 1) || (puVar5 = unit_separator, unit_separator == (undefined *)0x0)) {\n      puVar5 = &DAT_00103e04;\n    }\n    snprintf(param_2,param_3,&local_48,(ulong)local_5c,puVar5,puVar4,param_7,\n             CONCAT62(param_8._2_6_,(undefined2)param_8),&DAT_00104351 + iVar1,(short)puVar2);\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "returning",
+                    "SUB108",
+                    "CONCAT28",
+                    "CONCAT62"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "double_to_human",
+                        "sprintf",
+                        "fwrite",
+                        "powerld",
+                        "simple_round",
+                        "returning",
+                        "fprintf",
+                        "snprintf",
+                        "default_scale_base",
+                        "expld",
+                        "absld",
+                        "SUB108",
+                        "CONCAT28",
+                        "suffix_power_char",
+                        "CONCAT62",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "double_to_human",
+                        "prepare_padded_number"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "unit_to_umax",
+                "func_c_signature": "long unit_to_umax(char *param_1)",
+                "decompiled_code": "long unit_to_umax(char *param_1) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  long in_FS_OFFSET;\n  char *local_58;\n  long local_50;\n  char *local_48;\n  char *local_40;\n  undefined1 *local_38;\n  size_t local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_40 = (char *)0x0;\n  local_48 = param_1;\n  local_30 = strlen(param_1);\n  local_58 = (char *)0x0;\n  local_38 = valid_suffixes;\n  if (local_30 == 0) goto LAB_00101616;\n  cVar1 = c_isdigit((int)param_1[local_30 - 1]);\n  if (cVar1 == '\\x01') goto LAB_00101616;\n  local_40 = (char *)xmalloc(local_30 + 2);\n  local_58 = local_40 + (local_30 - 1);\n  memcpy(local_40,param_1,local_30);\n  if ((*local_58 == 'i') && (1 < local_30)) {\n    cVar1 = c_isdigit((int)local_58[-1]);\n    if (cVar1 == '\\x01') goto LAB_001015dd;\n    *local_58 = '\\0';\n  }\n  else {\nLAB_001015dd:\n    local_58[1] = 'B';\n    local_58 = local_58 + 2;\n    *local_58 = '\\0';\n    local_38 = zero_and_valid_suffixes;\n  }\n  local_48 = local_40;\nLAB_00101616:\n  iVar2 = xstrtoumax(local_48,&local_58,10,&local_50,local_38);\n  if (((iVar2 != 0) || (*local_58 != '\\0')) || (local_50 == 0)) {\n    free(local_40);\n    uVar3 = quote(param_1);\n    local_28 = gettext(\"invalid unit size: %s\");\n    error(1,0,local_28,uVar3);\n  }\n  free(local_40);\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return local_50;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "unit_to_umax",
+                        "strlen",
+                        "c_isdigit",
+                        "xmalloc",
+                        "memcpy",
+                        "xstrtoumax",
+                        "free",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "unit_to_umax",
+                        "main"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [NUMBER]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Reformat NUMBER(s), or the numbers from standard input if none are specified.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --debug          print warnings about invalid input\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -d, --delimiter=X    use X instead of whitespace for field delimiter\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --field=FIELDS   replace the numbers in these input fields (default=1);\\n                         see FIELDS below\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --format=FORMAT  use printf style floating-point FORMAT;\\n                         see FORMAT below for details\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --from=UNIT      auto-scale input numbers to UNITs; default is \\'none\\';\\n                         see UNIT below\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --from-unit=N    specify the input unit size (instead of the default 1)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --grouping       use locale-defined grouping of digits, e.g. 1,000,000\\n                         (which means it has no effect in the C/POSIX locale)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --header[=N]     print (without converting) the first N header lines;\\n                         N defaults to 1 if not specified\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --invalid=MODE   failure mode for invalid numbers: MODE can be:\\n                         abort (default), fail, warn, ignore\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --padding=N      pad the output to N characters; positive N will\\n                         right-align; negative N will left-align;\\n                         padding is ignored if the output is wider than N;\\n                         the default is to automatically pad if a whitespace\\n                         is found\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --round=METHOD   use METHOD for rounding when scaling; METHOD can be:\\n                         up, down, from-zero (default), towards-zero, nearest\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --suffix=SUFFIX  add SUFFIX to output numbers, and accept optional\\n                         SUFFIX in input numbers\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --unit-separator=SEP  insert SEP between number and unit on output,\\n                         and accept optional SEP in input numbers\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --to=UNIT        auto-scale output numbers to UNITs; see UNIT below\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --to-unit=N      the output unit size (instead of the default 1)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  -z, --zero-terminated    line delimiter is NUL, not newline\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"\\nUNIT options:\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  none       no auto-scaling is done; suffixes will trigger an error\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  auto       accept optional single/two letter suffix:\\n               1K = 1000, 1k = 1000,\\n               1Ki = 1024,\\n               1M = 1000000,\\n               1Mi = 1048576,\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  si         accept optional single letter suffix:\\n               1k = 1000, 1K = 1000,\\n               1M = 1000000,\\n               ...\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  iec        accept optional single letter suffix:\\n               1K = 1024, 1k = 1024,\\n               1M = 1048576,\\n               ...\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  iec-i      accept optional two-letter suffix:\\n               1Ki = 1024, 1ki = 1024,\\n               1Mi = 1048576,\\n               ...\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nFIELDS supports cut(1) style field ranges:\\n  N    N\\'th field, counted from 1\\n  N-   from N\\'th field, to end of line\\n  N-M  from N\\'th to M\\'th field (inclusive)\\n  -M   from first to M\\'th field (inclusive)\\n  -    all fields\\nMultiple fields/ranges can be separated with commas\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nFORMAT must be suitable for printing one floating-point argument \\'%f\\'.\\nOptional quote (%\\'f) will enable --grouping (if supported by current locale).\\nOptional width value (%10f) will pad output. Optional zero (%010f) width\\nwill zero pad the number. Optional negative values (%-10f) will left align.\\nOptional precision (%.1f) will override the input determined precision.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    uVar2 = _program_name;\n    pcVar3 = (char *)gettext(\n                            \"\\nExit status is 0 if all input numbers were successfully converted.\\nBy default, %s will stop at the first conversion error with exit status 2.\\nWith --invalid=\\'fail\\' a warning is printed for each conversion error\\nand the exit status is 2.  With --invalid=\\'warn\\' each conversion error is\\ndiagnosed, but the exit status is 0.  With --invalid=\\'ignore\\' conversion\\nerrors are not diagnosed and the exit status is 0.\\n\"\n                            );\n    printf(pcVar3,uVar2);\n    uVar2 = _program_name;\n    pcVar3 = (char *)gettext(\n                            \"\\nExamples:\\n  $ %s --to=si 1000\\n            -> \\\"1.0k\\\"\\n  $ %s --to=iec 2048\\n           -> \\\"2.0K\\\"\\n  $ %s --to=iec-i 4096\\n           -> \\\"4.0Ki\\\"\\n  $ echo 1K | %s --from=si\\n           -> \\\"1000\\\"\\n  $ echo 1K | %s --from=iec\\n           -> \\\"1024\\\"\\n  $ df -B1 | %s --header --field 2-4 --to=si\\n  $ ls -l  | %s --header --field 5 --to=iec\\n  $ ls -lh | %s --header --field 5 --from=iec --padding=10\\n  $ ls -lh | %s --header --field 5 --from=iec --format %%10f\\n\"\n                            );\n    printf(pcVar3,uVar2,uVar2,uVar2,uVar2,uVar2,uVar2,uVar2,uVar2,uVar2);\n    emit_ancillary_info(\"numfmt\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "NUMBER",
+                    "fields",
+                    "size",
+                    "n",
+                    "print",
+                    "abort",
+                    "zero",
+                    "cut",
+                    "field",
+                    "grouping",
+                    "value",
+                    "values",
+                    "precision"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "NUMBER",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "fields",
+                        "size",
+                        "n",
+                        "print",
+                        "abort",
+                        "zero",
+                        "cut",
+                        "field",
+                        "quote",
+                        "grouping",
+                        "value",
+                        "values",
+                        "precision",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_format_string",
+                "func_c_signature": "void parse_format_string(long param_1)",
+                "decompiled_code": "void parse_format_string(long param_1) {\n  bool bVar1;\n  char cVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  long lVar5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  undefined *puVar8;\n  long in_FS_OFFSET;\n  long local_90;\n  long local_88;\n  long local_80;\n  size_t local_78;\n  long local_70;\n  long local_68;\n  undefined8 local_60;\n  undefined8 local_58;\n  undefined8 local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  undefined8 local_38;\n  long local_30;\n  \n  local_30 = *(long *)(in_FS_OFFSET + 0x28);\n  local_80 = 0;\n  local_90 = 0;\n  bVar1 = false;\n  for (local_88 = 0;\n      (*(char *)(local_88 + param_1) != '%' || (*(char *)(param_1 + local_88 + 1) == '%'));\n      local_88 = local_88 + lVar5) {\n    if (*(char *)(local_88 + param_1) == '\\0') {\n      uVar3 = quote(param_1);\n      local_60 = gettext(\"format %s has no %% directive\");\n      error(1,0,local_60,uVar3);\n    }\n    local_80 = local_80 + 1;\n    if (*(char *)(local_88 + param_1) == '%') {\n      lVar5 = 2;\n    }\n    else {\n      lVar5 = 1;\n    }\n  }\n  local_88 = local_88 + 1;\n  do {\n    while( true ) {\n      while( true ) {\n        local_78 = strspn((char *)(local_88 + param_1),\" \");\n        local_88 = local_88 + local_78;\n        if (*(char *)(local_88 + param_1) != '\\'') break;\n        grouping = 1;\n        local_88 = local_88 + 1;\n      }\n      if (*(char *)(local_88 + param_1) != '0') break;\n      bVar1 = true;\n      local_88 = local_88 + 1;\n    }\n  } while (local_78 != 0);\n  local_70 = __isoc23_strtoimax(param_1 + local_88,&local_90,10);\n  if (local_70 != 0) {\n    if (((debug != '\\0') && (padding_width != 0)) && ((!bVar1 || (local_70 < 1)))) {\n      local_58 = gettext(\"--format padding overriding --padding\");\n      error(0,0,local_58);\n    }\n    if (local_70 < 0) {\n      padding_width = local_70;\n    }\n    else if (bVar1) {\n      lVar5 = local_70;\n      if (0x7fffffff < local_70) {\n        lVar5 = 0x7fffffff;\n      }\n      zero_padding_width = (undefined4)lVar5;\n    }\n    else {\n      padding_width = local_70;\n    }\n  }\n  local_88 = local_90 - param_1;\n  if (*(char *)(local_88 + param_1) == '\\0') {\n    uVar3 = quote(param_1);\n    local_50 = gettext(\"format %s ends in %%\");\n    error(1,0,local_50,uVar3);\n  }\n  if (*(char *)(local_88 + param_1) == '.') {\n    local_88 = local_88 + 1;\n    piVar4 = __errno_location();\n    *piVar4 = 0;\n    user_precision = __isoc23_strtol(param_1 + local_88,&local_90,10);\n    piVar4 = __errno_location();\n    if ((((*piVar4 == 0x22) || (user_precision < 0)) ||\n        (cVar2 = c_isblank((int)*(char *)(local_88 + param_1)), cVar2 != '\\0')) ||\n       (*(char *)(local_88 + param_1) == '+')) {\n      uVar3 = quote(param_1);\n      local_48 = gettext(\"invalid precision in format %s\");\n      error(1,0,local_48,uVar3);\n    }\n    local_88 = local_90 - param_1;\n  }\n  if (*(char *)(local_88 + param_1) != 'f') {\n    uVar3 = quote(param_1);\n    local_40 = gettext(\"invalid format %s, directive must be %%[0][\\'][-][N][.][N]f\");\n    error(1,0,local_40,uVar3);\n  }\n  local_88 = local_88 + 1;\n  local_68 = local_88;\n  for (; *(char *)(local_88 + param_1) != '\\0'; local_88 = local_88 + lVar5) {\n    if ((*(char *)(local_88 + param_1) == '%') && (*(char *)(param_1 + local_88 + 1) != '%')) {\n      uVar3 = quote(param_1);\n      local_38 = gettext(\"format %s has too many %% directives\");\n      error(1,0,local_38,uVar3);\n    }\n    if (*(char *)(local_88 + param_1) == '%') {\n      lVar5 = 2;\n    }\n    else {\n      lVar5 = 1;\n    }\n  }\n  if (local_80 != 0) {\n    format_str_prefix = (undefined *)ximemdup0(param_1,local_80);\n  }\n  if (*(char *)(local_68 + param_1) != '\\0') {\n    format_str_suffix = (undefined *)xstrdup(local_68 + param_1);\n  }\n  if (dev_debug != '\\0') {\n    puVar8 = format_str_suffix;\n    if (format_str_suffix == (undefined *)0x0) {\n      puVar8 = &DAT_00103e04;\n    }\n    uVar3 = quote_n(2,puVar8);\n    puVar8 = format_str_prefix;\n    if (format_str_prefix == (undefined *)0x0) {\n      puVar8 = &DAT_00103e04;\n    }\n    uVar6 = quote_n(1,puVar8);\n    lVar5 = padding_width;\n    if (grouping == 0) {\n      puVar8 = &DAT_001055e9;\n    }\n    else {\n      puVar8 = &DAT_001055e5;\n    }\n    uVar7 = quote_n(0,param_1);\n    fprintf(_stderr,\n            \"format String:\\n  input: %s\\n  grouping: %s\\n  padding width: %jd\\n  prefix: %s\\n  suffix: %s\\n\"\n            ,uVar7,puVar8,lVar5,uVar6,uVar3);\n  }\n  if (local_30 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_format_string",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "strspn",
+                        "__isoc23_strtoimax",
+                        "__errno_location",
+                        "__isoc23_strtol",
+                        "c_isblank",
+                        "ximemdup0",
+                        "xstrdup",
+                        "quote_n",
+                        "fprintf",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "parse_format_string",
+                        "main"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_human_number",
+                "func_c_signature": "int parse_human_number(undefined8 param_1,undefined8 param_2,undefined8 param_3)",
+                "decompiled_code": "int parse_human_number(undefined8 param_1,undefined8 param_2,undefined8 param_3) {\n  undefined4 uVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  long in_FS_OFFSET;\n  int local_40;\n  char *local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_30 = (char *)0x0;\n  local_40 = simple_strtod_human(param_1,&local_30,param_2,param_3,scale_from);\n  uVar1 = conv_exit_code;\n  if ((local_40 == 0) || (local_40 == 1)) {\n    if ((local_30 != (char *)0x0) && (*local_30 != '\\0')) {\n      if (inval_style != 3) {\n        uVar2 = quote_n(1,local_30);\n        uVar3 = quote_n(0,param_1);\n        local_28 = gettext(\"invalid suffix in input %s: %s\");\n        error(uVar1,0,local_28,uVar3,uVar2);\n      }\n      local_40 = 5;\n    }\n  }\n  else {\n    simple_strtod_fatal(local_40,param_1);\n  }\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return local_40;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_human_number",
+                        "simple_strtod_human",
+                        "quote_n",
+                        "gettext",
+                        "error",
+                        "simple_strtod_fatal",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "parse_human_number",
+                        "process_suffixed_number"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "prepare_padded_number",
+                "func_c_signature": "undefined8 prepare_padded_number(ulong param_1,long *param_2)",
+                "decompiled_code": "undefined8 prepare_padded_number(ulong param_1,long *param_2) {\n  undefined8 uVar1;\n  long in_FS_OFFSET;\n  undefined8 param_7;\n  undefined8 param_8;\n  int local_80;\n  undefined4 local_7c;\n  undefined4 local_78;\n  int local_74;\n  int local_70;\n  undefined4 local_6c;\n  undefined4 local_68;\n  undefined4 local_64;\n  undefined4 local_60;\n  undefined4 local_5c;\n  undefined4 local_58;\n  undefined4 local_54;\n  undefined4 local_50;\n  undefined4 local_4c;\n  long local_48;\n  long local_40;\n  ulong local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  undefined8 local_20;\n  undefined8 local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_38 = user_precision;\n  if (user_precision == 0xffffffffffffffff) {\n    local_38 = param_1;\n  }\n  expld(10,&local_80);\n  if ((scale_to == 0) && (0x12 < local_38 + (long)local_80)) {\n    if (inval_style != 3) {\n      if (local_38 == 0) {\n        local_7c = conv_exit_code;\n        local_28 = gettext(\"value too large to be printed: \\'%Lg\\' (consider using --to)\");\n        local_60 = local_7c;\n        local_5c = 0;\n        error(local_7c,0,local_28);\n      }\n      else {\n        local_78 = conv_exit_code;\n        local_30 = gettext(\n                          \"value/precision too large to be printed: \\'%Lg/%zu\\' (consider using --to)\"\n                          );\n        local_68 = local_78;\n        local_64 = 0;\n        error(local_78,0,local_30,local_38);\n      }\n    }\n    uVar1 = 0;\n  }\n  else if (local_80 < 0x21) {\n    while( true ) {\n      local_74 = double_to_human(local_38 & 0xffffffff,padding_buffer,padding_buffer_size,scale_to,\n                                 grouping,round_style,param_7,param_8);\n      if ((local_74 < 0) ||\n         (local_48 = (long)local_74 - (padding_buffer_size + -1),\n         SBORROW8((long)local_74,padding_buffer_size + -1))) {\n        local_18 = gettext(\"failed to prepare value \\'%Lf\\' for printing\");\n        local_50 = 1;\n        local_4c = 0;\n        error(1,0,local_18);\n      }\n      if (local_48 < 1) break;\n      padding_buffer = xpalloc(padding_buffer,&padding_buffer_size,local_48,0xffffffffffffffff,1);\n    }\n    if (dev_debug != '\\0') {\n      uVar1 = quote(padding_buffer);\n      fprintf(_stderr,\"formatting output:\\n  value: %Lf\\n  humanized: %s\\n\",uVar1);\n    }\n    local_40 = 0;\n    if ((padding_width != 0) && (local_70 = gnu_mbswidth(padding_buffer,3), -1 < local_70)) {\n      if (padding_width < 0) {\n        if (padding_width < -local_70) {\n          local_40 = padding_width + local_70;\n        }\n      }\n      else if (local_70 < padding_width) {\n        local_40 = padding_width - local_70;\n      }\n    }\n    *param_2 = local_40;\n    uVar1 = 1;\n  }\n  else {\n    if (inval_style != 3) {\n      local_6c = conv_exit_code;\n      local_20 = gettext(\"value too large to be printed: \\'%Lg\\' (cannot handle values > 999Q)\");\n      local_58 = local_6c;\n      local_54 = 0;\n      error(local_6c,0,local_20);\n    }\n    uVar1 = 0;\n  }\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [
+                    "SBORROW8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "prepare_padded_number",
+                        "expld",
+                        "gettext",
+                        "error",
+                        "double_to_human",
+                        "SBORROW8",
+                        "xpalloc",
+                        "quote",
+                        "fprintf",
+                        "gnu_mbswidth",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "prepare_padded_number",
+                        "process_field"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_padded_number",
+                "func_c_signature": "void print_padded_number(long param_1)",
+                "decompiled_code": "void print_padded_number(long param_1) {\n  long local_18;\n  long local_10;\n  \n  local_18 = param_1;\n  if (format_str_prefix != (char *)0x0) {\n    fputs_unlocked(format_str_prefix,_stdout);\n  }\n  for (; 0 < local_18; local_18 = local_18 + -1) {\n    putchar_unlocked(0x20);\n  }\n  fputs_unlocked(padding_buffer,_stdout);\n  for (local_10 = param_1; local_10 < 0; local_10 = local_10 + 1) {\n    putchar_unlocked(0x20);\n  }\n  if (format_str_suffix != (char *)0x0) {\n    fputs_unlocked(format_str_suffix,_stdout);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_padded_number",
+                        "fputs_unlocked",
+                        "putchar_unlocked"
+                    ],
+                    "calling_functions": [
+                        "print_padded_number",
+                        "process_field"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_suffixed_number",
+                "func_c_signature": "undefined8\nprocess_suffixed_number(char *param_1,longdouble *param_2,undefined8 param_3,long param_4)",
+                "decompiled_code": "undefined8\nprocess_suffixed_number(char *param_1,longdouble *param_2,undefined8 param_3,long param_4) {\n  char cVar1;\n  int iVar2;\n  size_t sVar3;\n  size_t sVar4;\n  undefined8 uVar5;\n  char *pcVar6;\n  undefined8 uVar7;\n  long in_FS_OFFSET;\n  longdouble lVar8;\n  longdouble lVar9;\n  longdouble local_38;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (suffix != (char *)0x0) {\n    cVar1 = mbs_endswith(param_1,suffix);\n    if (cVar1 == '\\0') {\n      if (dev_debug != '\\0') {\n        fwrite(\"no valid suffix found\\n\",1,0x16,_stderr);\n      }\n    }\n    else {\n      sVar3 = strlen(param_1);\n      sVar4 = strlen(suffix);\n      param_1[sVar3 - sVar4] = '\\0';\n      if (dev_debug != '\\0') {\n        uVar5 = quote(suffix);\n        fprintf(_stderr,\"trimming suffix %s\\n\",uVar5);\n      }\n    }\n  }\n  pcVar6 = (char *)skip_str_matching(param_1,newline_or_blank,1);\n  if (auto_padding != 0) {\n    if ((param_1 < pcVar6) || (1 < param_4)) {\n      iVar2 = gnu_mbswidth(param_1,3);\n      padding_width = (size_t)iVar2;\n    }\n    else {\n      padding_width = 0;\n    }\n    if ((long)padding_width < 0) {\n      padding_width = strlen(param_1);\n    }\n    if (dev_debug != '\\0') {\n      fprintf(_stderr,\"setting Auto-Padding to %jd characters\\n\",padding_width);\n    }\n  }\n  local_38 = (longdouble)0;\n  iVar2 = parse_human_number(pcVar6,&local_38,param_3);\n  if ((iVar2 == 1) && (debug != '\\0')) {\n    uVar5 = quote(pcVar6);\n    uVar7 = gettext(\"large input value %s: possible precision loss\");\n    error(0,0,uVar7,uVar5);\n  }\n  if ((from_unit_size != 1) || (to_unit_size != 1)) {\n    lVar8 = (longdouble)from_unit_size;\n    if (from_unit_size < 0) {\n      lVar8 = _DAT_00105b70 + lVar8;\n    }\n    lVar9 = (longdouble)to_unit_size;\n    if (to_unit_size < 0) {\n      lVar9 = _DAT_00105b70 + lVar9;\n    }\n    local_38 = (local_38 * lVar8) / lVar9;\n  }\n  *param_2 = local_38;\n  if ((iVar2 == 0) || (iVar2 == 1)) {\n    uVar5 = 1;\n  }\n  else {\n    uVar5 = 0;\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return uVar5;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_suffixed_number",
+                        "mbs_endswith",
+                        "fwrite",
+                        "strlen",
+                        "quote",
+                        "fprintf",
+                        "skip_str_matching",
+                        "gnu_mbswidth",
+                        "parse_human_number",
+                        "gettext",
+                        "error",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "process_suffixed_number",
+                        "process_field"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_utf8_charset",
+                "func_c_signature": "undefined4 is_utf8_charset(void)",
+                "decompiled_code": "undefined4 is_utf8_charset(void) {\n  long lVar1;\n  long in_FS_OFFSET;\n  int local_1c;\n  undefined local_18 [8];\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  if (is_utf8_0 == -1) {\n    mbszero(local_18);\n    lVar1 = mbrtoc32(&local_1c,&DAT_0010582e,3,local_18);\n    if ((lVar1 == 3) && (local_1c == 0x27f8)) {\n      is_utf8_0 = 1;\n    }\n    else {\n      is_utf8_0 = 0;\n    }\n  }\n  if (local_10 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return CONCAT31((int3)((uint)is_utf8_0 >> 8),is_utf8_0 != 0);\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT31"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_utf8_charset",
+                        "mbszero",
+                        "mbrtoc32",
+                        "CONCAT31",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "is_utf8_charset",
+                        "mbsmbchr"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "mbsmbchr",
+                "func_c_signature": "void mbsmbchr(char *param_1,byte *param_2)",
+                "decompiled_code": "void mbsmbchr(char *param_1,byte *param_2) {\n  byte bVar1;\n  char cVar2;\n  size_t sVar3;\n  \n  bVar1 = *param_2;\n  if ((bVar1 < 0x30) || (sVar3 = __ctype_get_mb_cur_max(), sVar3 == 1)) {\n    strchr(param_1,(uint)bVar1);\n    return;\n  }\n  cVar2 = is_utf8_charset();\n  if (cVar2 == '\\0') {\n    if (param_2[1] == 0) {\n      mbschr(param_1,bVar1);\n      return;\n    }\n    mbsstr(param_1,param_2);\n    return;\n  }\n  if (-1 < (char)bVar1) {\n    strchr(param_1,(uint)bVar1);\n    return;\n  }\n  strstr(param_1,(char *)param_2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "mbsmbchr",
+                        "__ctype_get_mb_cur_max",
+                        "strchr",
+                        "is_utf8_charset",
+                        "mbschr",
+                        "mbsstr",
+                        "strstr"
+                    ],
+                    "calling_functions": [
+                        "mbsmbchr",
+                        "next_field"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "next_field",
+                "func_c_signature": "char * next_field(char **param_1)",
+                "decompiled_code": "char * next_field(char **param_1) {\n  char *__s;\n  size_t sVar1;\n  undefined8 uVar2;\n  char *local_18;\n  \n  __s = *param_1;\n  if (delimiter == 0) {\n    uVar2 = skip_str_matching(__s,newline_or_blank,1);\n    local_18 = (char *)skip_str_matching(uVar2,newline_or_blank,0);\n  }\n  else {\n    local_18 = (char *)mbsmbchr(__s,delimiter);\n    if (local_18 == (char *)0x0) {\n      sVar1 = strlen(__s);\n      local_18 = __s + sVar1;\n    }\n  }\n  *param_1 = local_18;\n  return __s;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "next_field",
+                        "skip_str_matching",
+                        "mbsmbchr",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "next_field",
+                        "process_line"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "include_field",
+                "func_c_signature": "bool include_field(ulong param_1)",
+                "decompiled_code": "bool include_field(ulong param_1) {\n  bool bVar1;\n  ulong *local_10;\n  \n  local_10 = _frp;\n  if (_frp == (ulong *)0x0) {\n    bVar1 = param_1 == 1;\n  }\n  else {\n    for (; *local_10 != 0xffffffffffffffff; local_10 = local_10 + 2) {\n      if ((*local_10 <= param_1) && (param_1 <= local_10[1])) {\n        return true;\n      }\n    }\n    bVar1 = false;\n  }\n  return bVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "include_field"
+                    ],
+                    "calling_functions": [
+                        "include_field",
+                        "process_field"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_field",
+                "func_c_signature": "char process_field(char *param_1,undefined8 param_2)",
+                "decompiled_code": "char process_field(char *param_1,undefined8 param_2) {\n  char cVar1;\n  int iVar2;\n  long in_FS_OFFSET;\n  char local_39;\n  undefined8 local_38;\n  undefined8 local_30;\n  longdouble local_28;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_28 = (longdouble)0;\n  local_38 = 0;\n  local_39 = '\\x01';\n  cVar1 = include_field(param_2);\n  if (cVar1 == '\\0') {\n    fputs_unlocked(param_1,_stdout);\n  }\n  else {\n    iVar2 = process_suffixed_number(param_1,&local_28,&local_38,param_2);\n    local_39 = iVar2 != 0;\n    if ((bool)local_39) {\n      local_39 = prepare_padded_number(local_38,&local_30);\n    }\n    if (local_39 == '\\0') {\n      fputs_unlocked(param_1,_stdout);\n    }\n    else {\n      print_padded_number(local_30);\n    }\n  }\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return local_39;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_field",
+                        "include_field",
+                        "fputs_unlocked",
+                        "process_suffixed_number",
+                        "prepare_padded_number",
+                        "print_padded_number",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "process_field",
+                        "process_line"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_line",
+                "func_c_signature": "undefined process_line(char *param_1,char param_2)",
+                "decompiled_code": "undefined process_line(char *param_1,char param_2) {\n  char *pcVar1;\n  char cVar2;\n  int iVar3;\n  size_t sVar4;\n  char *local_40;\n  undefined local_32;\n  char local_31;\n  long local_30;\n  undefined8 local_28;\n  ulong local_20;\n  \n  local_30 = 0;\n  local_32 = 1;\n  local_40 = param_1;\n  while( true ) {\n    local_30 = local_30 + 1;\n    local_28 = next_field(&local_40);\n    if (*local_40 == '\\0') break;\n    local_31 = *local_40;\n    *local_40 = '\\0';\n    cVar2 = process_field(local_28,local_30);\n    if (cVar2 != '\\x01') {\n      local_32 = 0;\n    }\n    if (delimiter == (char *)0x0) {\n      fputc_unlocked(0x20,_stdout);\n    }\n    else {\n      fputs_unlocked(delimiter,_stdout);\n    }\n    pcVar1 = local_40;\n    if (delimiter == (char *)0x0) {\n      *local_40 = local_31;\n      local_20 = mcel_scanz(local_40);\n      local_40 = local_40 + (local_20 >> 0x28 & 0xff);\n    }\n    else {\n      sVar4 = strlen(delimiter);\n      if (sVar4 < 2) {\n        sVar4 = 1;\n      }\n      else {\n        sVar4 = strlen(delimiter);\n      }\n      local_40 = pcVar1 + sVar4;\n    }\n  }\n  cVar2 = process_field(local_28,local_30);\n  if (cVar2 != '\\x01') {\n    local_32 = 0;\n  }\n  if (param_2 != '\\0') {\n    putchar_unlocked((uint)line_delim);\n  }\n  iVar3 = ferror_unlocked(_stdout);\n  if (iVar3 != 0) {\n    write_error();\n  }\n  return local_32;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_line",
+                        "next_field",
+                        "process_field",
+                        "fputc_unlocked",
+                        "fputs_unlocked",
+                        "mcel_scanz",
+                        "strlen",
+                        "putchar_unlocked",
+                        "ferror_unlocked",
+                        "write_error"
+                    ],
+                    "calling_functions": [
+                        "process_line",
+                        "main"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "void main(int param_1,undefined8 *param_2) {\n  char cVar1;\n  int iVar2;\n  uint uVar3;\n  char *pcVar4;\n  size_t sVar5;\n  long lVar6;\n  undefined8 uVar7;\n  __ssize_t _Var8;\n  int *piVar9;\n  long in_FS_OFFSET;\n  bool bVar10;\n  uint local_114;\n  int local_110;\n  char *local_a0;\n  __ssize_t local_98;\n  undefined8 local_90;\n  undefined8 local_88;\n  undefined8 local_80;\n  undefined8 local_78;\n  undefined8 local_70;\n  undefined8 local_68;\n  undefined8 local_60;\n  undefined8 local_58;\n  undefined8 local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  undefined8 local_38;\n  undefined8 local_30;\n  ulong local_28;\n  undefined8 local_20;\n  \n  local_20 = *(undefined8 *)(in_FS_OFFSET + 0x28);\n  local_114 = 1;\n  set_program_name(*param_2);\n  pcVar4 = setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  decimal_point = (char *)rpl_nl_langinfo(0x10000);\n  if ((decimal_point == (char *)0x0) || (*decimal_point == '\\0')) {\n    decimal_point = \".\";\n  }\n  sVar5 = strlen(decimal_point);\n  decimal_point_length = (undefined4)sVar5;\n  thousands_sep = (char *)rpl_nl_langinfo(0x10001);\n  if (thousands_sep == (char *)0x0) {\n    thousands_sep = \"\";\n  }\n  sVar5 = strlen(thousands_sep);\n  thousands_sep_length = (int)sVar5;\n  atexit((__func *)&close_stdout);\nLAB_0010308f:\n  do {\n    while( true ) {\n      iVar2 = getopt_long(param_1,param_2,&DAT_0010584c,longopts,0);\n      if (iVar2 == -1) {\n        if ((format_str != (char *)0x0) && (grouping != 0)) {\n          local_70 = gettext(\"--grouping cannot be combined with --format\");\n          error(1,0,local_70);\n        }\n        if ((debug != '\\0') && (pcVar4 == (char *)0x0)) {\n          local_68 = gettext(\"failed to set locale\");\n          error(0,0,local_68);\n        }\n        if (((((debug != '\\0') && (scale_from == 0)) && (scale_to == 0)) &&\n            ((grouping == 0 && (padding_width == 0)))) && (format_str == (char *)0x0)) {\n          local_60 = gettext(\"no conversion option specified\");\n          error(0,0,local_60);\n        }\n        if (((debug != '\\0') && (unit_separator != (char *)0x0)) && (delimiter == (char *)0x0)) {\n          local_58 = gettext(\"field delimiters have higher precedence than unit separators\");\n          error(0,0,local_58);\n        }\n        if (format_str != (char *)0x0) {\n          parse_format_string(format_str);\n        }\n        if (grouping != 0) {\n          if (scale_to != 0) {\n            local_50 = gettext(\"grouping cannot be combined with --to\");\n            error(1,0,local_50);\n          }\n          if ((debug != '\\0') && (thousands_sep_length == 0)) {\n            local_48 = gettext(\"grouping has no effect in this locale\");\n            error(0,0,local_48);\n          }\n        }\n        if ((padding_width == 0) && (delimiter == (char *)0x0)) {\n          auto_padding = 1;\n        }\n        else {\n          auto_padding = 0;\n        }\n        if (inval_style != 0) {\n          conv_exit_code = 0;\n        }\n        if (_optind < param_1) {\n          if ((debug != '\\0') && (header != 0)) {\n            local_40 = gettext(\"--header ignored with command-line input\");\n            error(0,0,local_40);\n          }\n          for (; _optind < param_1; _optind = _optind + 1) {\n            uVar3 = process_line(param_2[_optind],1);\n            local_114 = local_114 & uVar3;\n          }\n        }\n        else {\n          local_a0 = (char *)0x0;\n          local_28 = 0;\n          while ((lVar6 = header + -1, bVar10 = header != 0, header = lVar6, bVar10 &&\n                 (_Var8 = __getdelim(&local_a0,&local_28,(uint)line_delim,_stdin), 0 < _Var8))) {\n            iVar2 = fputs_unlocked(local_a0,_stdout);\n            if (iVar2 == -1) {\n              write_error();\n            }\n          }\n          while (local_98 = __getdelim(&local_a0,&local_28,(uint)line_delim,_stdin), 0 < local_98) {\n            cVar1 = local_a0[local_98 + -1];\n            uVar3 = (uint)line_delim;\n            if ((int)cVar1 == uVar3) {\n              local_a0[local_98 + -1] = '\\0';\n            }\n            uVar3 = process_line(local_a0,(int)cVar1 == uVar3);\n            local_114 = local_114 & uVar3;\n          }\n          iVar2 = ferror_unlocked(_stdin);\n          if (iVar2 != 0) {\n            uVar7 = gettext(\"error reading input\");\n            piVar9 = __errno_location();\n            local_38 = uVar7;\n            error(1,*piVar9,uVar7);\n          }\n        }\n        if ((debug != '\\0') && (local_114 == 0)) {\n          local_30 = gettext(\"failed to convert some of the input numbers\");\n          error(0,0,local_30);\n        }\n        local_110 = 0;\n        if (((local_114 == 0) && (inval_style != 2)) && (inval_style != 3)) {\n          local_110 = 2;\n        }\n                    /* WARNING: Subroutine does not return */\n        exit(local_110);\n      }\n      if (iVar2 < 0x8f) break;\nswitchD_0010313d_caseD_65:\n      usage(1);\n    }\n    if (iVar2 < 100) {\n      if (iVar2 == -0x83) {\nLAB_001035c6:\n        uVar7 = proper_name_lite(\"Assaf Gordon\",\"Assaf Gordon\");\n        version_etc(_stdout,\"numfmt\",\"GNU coreutils\",_Version,uVar7,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar2 == -0x82) {\n        usage(0);\n        goto LAB_001035c6;\n      }\n      goto switchD_0010313d_caseD_65;\n    }\n    switch(iVar2) {\n    case 100:\n      if ((*_optarg != '\\0') &&\n         (local_28 = mcel_scanz(_optarg), _optarg[local_28 >> 0x28 & 0xff] != '\\0')) {\n        local_80 = gettext(\"the delimiter must be a single character\");\n        error(1,0,local_80);\n      }\n      delimiter = _optarg;\n      break;\n    default:\n      goto switchD_0010313d_caseD_65;\n    case 0x7a:\n      line_delim = 0;\n      break;\n    case 0x80:\n      lVar6 = __xargmatch_internal\n                        (\"--from\",_optarg,scale_from_args,scale_from_types,4,_argmatch_die,1);\n      scale_from = *(int *)(scale_from_types + lVar6 * 4);\n      break;\n    case 0x81:\n      from_unit_size = unit_to_umax(_optarg);\n      break;\n    case 0x82:\n      lVar6 = __xargmatch_internal\n                        (&DAT_00105857,_optarg,scale_to_args,scale_to_types,4,_argmatch_die,1);\n      scale_to = *(int *)(scale_to_types + lVar6 * 4);\n      break;\n    case 0x83:\n      to_unit_size = unit_to_umax(_optarg);\n      break;\n    case 0x84:\n      lVar6 = __xargmatch_internal(\"--round\",_optarg,round_args,round_types,4,_argmatch_die,1);\n      round_style = *(undefined4 *)(round_types + lVar6 * 4);\n      break;\n    case 0x85:\n      suffix = _optarg;\n      break;\n    case 0x86:\n      grouping = 1;\n      break;\n    case 0x87:\n      uVar3 = xstrtoimax(_optarg,0,10,&padding_width,&DAT_00103e04);\n      if ((uVar3 < 2) && (padding_width != 0)) break;\n      uVar7 = quote(_optarg);\n      local_90 = gettext(\"invalid padding value %s\");\n      error(1,0,local_90,uVar7);\n    case 0x88:\n      if (_n_frp != 0) {\n        local_88 = gettext(\"multiple field specifications\");\n        error(1,0,local_88);\n      }\n      set_fields(_optarg,1);\n      break;\n    case 0x89:\n      debug = '\\x01';\n      break;\n    case 0x8a:\n      dev_debug = 1;\n      debug = '\\x01';\n      break;\n    case 0x8b:\n      if (_optarg != (char *)0x0) {\n        iVar2 = xstrtoumax(_optarg,0,10,&header,&DAT_00103e04);\n        if ((iVar2 == 0) && (header != 0)) break;\n        uVar7 = quote(_optarg);\n        local_78 = gettext(\"invalid header value %s\");\n        error(1,0,local_78,uVar7);\n      }\n      header = 1;\n      break;\n    case 0x8c:\n      format_str = _optarg;\n      break;\n    case 0x8d:\n      lVar6 = __xargmatch_internal(\"--invalid\",_optarg,inval_args,inval_types,4,_argmatch_die,1);\n      inval_style = *(int *)(inval_types + lVar6 * 4);\n      break;\n    case 0x8e:\n      goto switchD_0010313d_caseD_8e;\n    }\n  } while( true );\nswitchD_0010313d_caseD_8e:\n  unit_separator = _optarg;\n  goto LAB_0010308f;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "rpl_nl_langinfo",
+                        "strlen",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "parse_format_string",
+                        "process_line",
+                        "__getdelim",
+                        "fputs_unlocked",
+                        "write_error",
+                        "ferror_unlocked",
+                        "__errno_location",
+                        "exit",
+                        "usage",
+                        "proper_name_lite",
+                        "version_etc",
+                        "mcel_scanz",
+                        "__xargmatch_internal",
+                        "unit_to_umax",
+                        "xstrtoimax",
+                        "quote",
+                        "set_fields",
+                        "xstrtoumax"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "numfmt_decompiled.c"
+                }
+            }
+        ]
+    }
+}

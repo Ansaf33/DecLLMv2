@@ -1,0 +1,322 @@
+{
+    "file": "CROMU_00039",
+    "decompiled_code": {
+        "packet.c": [
+            {
+                "func_name": "ReceivePacket",
+                "func_c_signature": "uint ReceivePacket(char *param_1)",
+                "decompiled_code": "uint ReceivePacket(char *param_1) {\n  int iVar1;\n  int local_1c;\n  int local_18;\n  byte local_11;\n  uint local_10;\n  \n  for (local_10 = 0; local_10 != 2; local_10 = local_10 + local_1c) {\n    local_18 = receive(0,param_1 + local_10,2 - local_10,&local_1c);\n    if (local_18 < 0) {\n      return 0;\n    }\n    if (local_1c == 0) {\n      return 0;\n    }\n  }\n  if (*param_1 == '\\0') {\n    if ((byte)param_1[1] < 4) {\n      local_10 = 0;\n    }\n    else if (param_1[1] == -1) {\n      local_10 = 0;\n    }\n    else {\n      local_11 = param_1[1] + 2;\n      for (; local_10 != local_11; local_10 = local_10 + local_1c) {\n        iVar1 = receive(0,param_1 + local_10,local_11 - local_10,&local_1c);\n        if (iVar1 < 0) {\n          return 0;\n        }\n        if (local_1c == 0) {\n          return 0;\n        }\n      }\n    }\n  }\n  else {\n    local_10 = 0;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReceivePacket",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "ReceivePacket",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SendError",
+                "func_c_signature": "bool SendError(undefined param_1,undefined param_2)",
+                "decompiled_code": "bool SendError(undefined param_1,undefined param_2) {\n  ssize_t sVar1;\n  size_t in_stack_fffffedc;\n  undefined local_10c;\n  undefined local_10b;\n  undefined local_10a;\n  undefined local_109;\n  undefined local_108;\n  \n  local_109 = param_1;\n  local_108 = param_2;\n  local_10c = 0;\n  local_10b = 3;\n  local_10a = 4;\n  sVar1 = write((int)&local_10c,(void *)0x5,in_stack_fffffedc);\n  return sVar1 == 5;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SendError",
+                        "write"
+                    ],
+                    "calling_functions": [
+                        "SendError",
+                        "SendResponse",
+                        "HandleReadRequest",
+                        "HandleWriteRequest",
+                        "HandlePacket"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SendResponse",
+                "func_c_signature": "uint SendResponse(undefined param_1,int param_2)",
+                "decompiled_code": "uint SendResponse(undefined param_1,int param_2) {\n  size_t sVar1;\n  uint uVar2;\n  ssize_t sVar3;\n  size_t in_stack_fffffedc;\n  undefined local_10c;\n  byte local_10b;\n  undefined local_10a;\n  undefined local_109;\n  char acStack_108 [256];\n  \n  local_109 = param_1;\n  local_10c = 0;\n  local_10a = 3;\n  if (*(char *)(param_2 + 0x80) == '\\x01') {\n    sVar1 = strlen((char *)(param_2 + 0x81));\n    if (0xfc < sVar1) {\n      uVar2 = SendError(param_1,1);\n      return uVar2;\n    }\n    strcpy(acStack_108,(char *)(param_2 + 0x81));\n    sVar1 = strlen((char *)(param_2 + 0x81));\n    local_10b = (char)sVar1 + 2;\n  }\n  else {\n    if (*(char *)(param_2 + 0x80) != '\\x02') {\n      uVar2 = SendError(param_1,4);\n      return uVar2;\n    }\n    in_stack_fffffedc = 4;\n    memcpy(acStack_108,(void *)(param_2 + 0x81),4);\n    local_10b = 6;\n  }\n  sVar3 = write((int)&local_10c,(void *)(local_10b + 2),in_stack_fffffedc);\n  return (uint)(sVar3 == local_10b + 2);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SendResponse",
+                        "strlen",
+                        "SendError",
+                        "strcpy",
+                        "memcpy",
+                        "write"
+                    ],
+                    "calling_functions": [
+                        "SendResponse",
+                        "HandleReadRequest",
+                        "HandleWriteRequest"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandleReadRequest",
+                "func_c_signature": "undefined4 HandleReadRequest(int param_1,uint param_2)",
+                "decompiled_code": "undefined4 HandleReadRequest(int param_1,uint param_2) {\n  uint __n;\n  char *__src;\n  undefined4 uVar1;\n  char local_94 [128];\n  int local_14;\n  byte local_e;\n  undefined local_d;\n  \n  uVar1 = 0x112e2;\n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    local_d = *(undefined *)(param_1 + 3);\n    bzero(local_94,0x80);\n    local_e = *(byte *)(param_1 + 4);\n    if ((uint)local_e == (param_2 & 0xff) - 5) {\n      __n = (uint)local_e;\n      __src = (char *)(param_1 + 5);\n      strncpy(local_94,__src,__n);\n      local_14 = SearchVARS(local_94,__src,__n,uVar1);\n      if (local_14 == 0) {\n        SendError(local_d,4);\n        uVar1 = 0;\n      }\n      else {\n        SendResponse(local_d,local_14);\n        uVar1 = 1;\n      }\n    }\n    else {\n      SendError(local_d,1);\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandleReadRequest",
+                        "bzero",
+                        "strncpy",
+                        "SearchVARS",
+                        "SendError",
+                        "SendResponse"
+                    ],
+                    "calling_functions": [
+                        "HandleReadRequest",
+                        "HandlePacket"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandleWriteRequest",
+                "func_c_signature": "undefined4 HandleWriteRequest(int param_1,uint param_2)",
+                "decompiled_code": "undefined4 HandleWriteRequest(int param_1,uint param_2) {\n  undefined4 uVar1;\n  undefined local_118 [128];\n  undefined local_98 [128];\n  int local_18;\n  byte local_11;\n  undefined local_10;\n  byte local_f;\n  byte local_e;\n  undefined local_d;\n  \n  uVar1 = 0x113d5;\n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    local_d = *(undefined *)(param_1 + 3);\n    local_e = '\\x04';\n    bzero(local_98,0x80);\n    local_f = *(byte *)(param_1 + 4);\n    local_e = local_e + '\\x01';\n    if ((int)(uint)local_f < (int)((param_2 & 0xff) - 7)) {\n      if ((char)local_f < '\\0') {\n        SendError(local_d,1);\n        uVar1 = 0;\n      }\n      else {\n        memcpy(local_98,(void *)(param_1 + 5),(uint)local_f);\n        local_10 = *(undefined *)(param_1 + local_f + 5);\n        local_e = local_e + local_f + '\\x01';\n        bzero(local_118,0x80);\n        local_11 = *(byte *)(param_1 + local_f + 6);\n        local_e = local_e + 1;\n        if ((int)((param_2 & 0xff) - (uint)local_e) < (int)(uint)local_11) {\n          SendError(local_d,1);\n          uVar1 = 0;\n        }\n        else if ((char)local_11 < '\\0') {\n          SendError(local_d,1);\n          uVar1 = 0;\n        }\n        else {\n          memcpy(local_118,(void *)(param_1 + local_f + 7),(uint)local_11);\n          local_18 = UpdateVARSObject(local_98,local_10,local_118,uVar1);\n          if (local_18 == 0) {\n            SendError(local_d,2);\n          }\n          else {\n            SendResponse(local_d,local_18);\n          }\n          uVar1 = 1;\n        }\n      }\n    }\n    else {\n      SendError(local_d,1);\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandleWriteRequest",
+                        "bzero",
+                        "SendError",
+                        "memcpy",
+                        "UpdateVARSObject",
+                        "SendResponse"
+                    ],
+                    "calling_functions": [
+                        "HandleWriteRequest",
+                        "HandlePacket"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandlePacket",
+                "func_c_signature": "undefined4 HandlePacket(int param_1)",
+                "decompiled_code": "undefined4 HandlePacket(int param_1) {\n  byte bVar1;\n  undefined4 uVar2;\n  \n  if (param_1 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    bVar1 = *(char *)(param_1 + 1) + 2;\n    if (bVar1 < 4) {\n      uVar2 = 0;\n    }\n    else {\n      if (*(char *)(param_1 + 2) == '\\x01') {\n        HandleReadRequest(param_1,bVar1);\n      }\n      else if (*(char *)(param_1 + 2) == '\\x02') {\n        HandleWriteRequest(param_1,bVar1);\n      }\n      else {\n        SendError(*(undefined *)(param_1 + 3),3);\n      }\n      uVar2 = 1;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandlePacket",
+                        "HandleReadRequest",
+                        "HandleWriteRequest",
+                        "SendError"
+                    ],
+                    "calling_functions": [
+                        "HandlePacket",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined *puVar2;\n  undefined local_110 [256];\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  puVar2 = local_110;\n  iVar1 = InitVARS();\n  if (iVar1 == 0) {\n    puVar2 = &stack0xfffffee0;\n    puts(\"InitVARS failure\");\n    _terminate();\n  }\n  while( true ) {\n    *(undefined **)(puVar2 + -0x10) = local_110;\n    *(undefined4 *)(puVar2 + -0x14) = 0x119e0;\n    iVar1 = ReceivePacket();\n    if (iVar1 == 0) break;\n    *(undefined **)(puVar2 + -0x10) = local_110;\n    *(undefined4 *)(puVar2 + -0x14) = 0x119f6;\n    HandlePacket();\n  }\n  *(undefined4 *)(puVar2 + -4) = 0x11a01;\n  DestroyVARS();\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "InitVARS",
+                        "puts",
+                        "_terminate",
+                        "ReceivePacket",
+                        "HandlePacket",
+                        "DestroyVARS"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            }
+        ],
+        "vars.c": [
+            {
+                "func_name": "InitVARS",
+                "func_c_signature": "bool InitVARS(void)",
+                "decompiled_code": "bool InitVARS(void) {\n  pVARS = CreateVARSObject(\"system.name\",1,\"CGC CB\");\n  return pVARS != 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitVARS",
+                        "CreateVARSObject"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "InitVARS"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DestroyVARS",
+                "func_c_signature": "undefined4 DestroyVARS(void)",
+                "decompiled_code": "undefined4 DestroyVARS(void) {\n  void *pvVar1;\n  undefined4 uVar2;\n  void *local_10;\n  \n  if (pVARS == (void *)0x0) {\n    uVar2 = 0;\n  }\n  else {\n    local_10 = pVARS;\n    while (local_10 != (void *)0x0) {\n      pvVar1 = *(void **)((int)local_10 + 0x108);\n      free(local_10);\n      local_10 = pvVar1;\n    }\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DestroyVARS",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "DestroyVARS"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SearchVARS",
+                "func_c_signature": "char * SearchVARS(char *param_1)",
+                "decompiled_code": "char * SearchVARS(char *param_1) {\n  int iVar1;\n  char *local_10;\n  \n  if ((pVARS != (char *)0x0) && (param_1 != (char *)0x0)) {\n    for (local_10 = pVARS; local_10 != (char *)0x0; local_10 = *(char **)(local_10 + 0x108)) {\n      iVar1 = strcmp(local_10,param_1);\n      if (iVar1 == 0) {\n        return local_10;\n      }\n    }\n  }\n  return (char *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SearchVARS",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "HandleReadRequest",
+                        "SearchVARS",
+                        "UpdateVARSObject"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CreateVARSObject",
+                "func_c_signature": "void * CreateVARSObject(int param_1,char param_2,int param_3)",
+                "decompiled_code": "void * CreateVARSObject(int param_1,char param_2,int param_3) {\n  undefined *puVar1;\n  undefined auStack_2c [12];\n  char local_20;\n  void *local_10;\n  \n  puVar1 = auStack_2c;\n  local_20 = param_2;\n  if (((param_1 == 0) || (param_3 == 0)) || ((param_2 != '\\x01' && (param_2 != '\\x02')))) {\n    local_10 = (void *)0x0;\n  }\n  else {\n    local_10 = calloc(1,0x10c);\n    if (local_10 == (void *)0x0) {\n      puVar1 = &stack0xffffffc4;\n      _terminate();\n    }\n    *(undefined4 *)(puVar1 + -8) = 0x7f;\n    *(int *)(puVar1 + -0xc) = param_1;\n    *(void **)(puVar1 + -0x10) = local_10;\n    *(undefined4 *)(puVar1 + -0x14) = 0x11b97;\n    strncpy(*(char **)(puVar1 + -0x10),*(char **)(puVar1 + -0xc),*(size_t *)(puVar1 + -8));\n    *(char *)((int)local_10 + 0x80) = local_20;\n    if (local_20 == '\\x01') {\n      *(undefined4 *)(puVar1 + -8) = 0x7f;\n      *(int *)(puVar1 + -0xc) = param_3;\n      *(int *)(puVar1 + -0x10) = (int)local_10 + 0x81;\n      *(undefined4 *)(puVar1 + -0x14) = 0x11bc3;\n      strncpy(*(char **)(puVar1 + -0x10),*(char **)(puVar1 + -0xc),*(size_t *)(puVar1 + -8));\n    }\n    else if (local_20 == '\\x02') {\n      *(undefined4 *)(puVar1 + -8) = 4;\n      *(int *)(puVar1 + -0xc) = param_3;\n      *(int *)(puVar1 + -0x10) = (int)local_10 + 0x81;\n      *(undefined4 *)(puVar1 + -0x14) = 0x11be4;\n      memcpy(*(void **)(puVar1 + -0x10),*(void **)(puVar1 + -0xc),*(size_t *)(puVar1 + -8));\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CreateVARSObject",
+                        "calloc",
+                        "_terminate",
+                        "strncpy",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "InitVARS",
+                        "CreateVARSObject",
+                        "UpdateVARSObject"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InsertVARSObject",
+                "func_c_signature": "undefined4 InsertVARSObject(int param_1)",
+                "decompiled_code": "undefined4 InsertVARSObject(int param_1) {\n  undefined4 uVar1;\n  \n  if ((pVARS == 0) || (param_1 == 0)) {\n    uVar1 = 0;\n  }\n  else {\n    *(undefined4 *)(param_1 + 0x104) = 0;\n    *(int *)(param_1 + 0x108) = pVARS;\n    *(int *)(pVARS + 0x104) = param_1;\n    pVARS = param_1;\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InsertVARSObject"
+                    ],
+                    "calling_functions": [
+                        "InsertVARSObject",
+                        "UpdateVARSObject"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DeleteVARSObject",
+                "func_c_signature": "undefined4 DeleteVARSObject(char *param_1)",
+                "decompiled_code": "undefined4 DeleteVARSObject(char *param_1) {\n  char *__s1;\n  undefined4 uVar1;\n  int iVar2;\n  \n  __s1 = pVARS;\n  if ((pVARS == (char *)0x0) || (param_1 == (char *)0x0)) {\n    uVar1 = 0;\n  }\n  else {\n    do {\n      if (__s1 == (char *)0x0) {\n        return 0;\n      }\n      iVar2 = strcmp(__s1,param_1);\n    } while (iVar2 != 0);\n    if (__s1 == pVARS) {\n      pVARS = *(char **)(__s1 + 0x108);\n      free(__s1);\n      uVar1 = 1;\n    }\n    else {\n      *(undefined4 *)(*(int *)(__s1 + 0x104) + 0x108) = *(undefined4 *)(__s1 + 0x108);\n      if (*(int *)(__s1 + 0x108) != 0) {\n        *(undefined4 *)(*(int *)(__s1 + 0x108) + 0x104) = *(undefined4 *)(__s1 + 0x104);\n      }\n      free(__s1);\n      uVar1 = 1;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DeleteVARSObject",
+                        "strcmp",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "DeleteVARSObject"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            },
+            {
+                "func_name": "UpdateVARSObject",
+                "func_c_signature": "int UpdateVARSObject(int param_1,char param_2,char *param_3)",
+                "decompiled_code": "int UpdateVARSObject(int param_1,char param_2,char *param_3) {\n  int iVar1;\n  int iVar2;\n  undefined4 uVar3;\n  \n  uVar3 = 0x11d45;\n  if (((param_1 == 0) || (param_3 == (char *)0x0)) || ((param_2 != '\\x01' && (param_2 != '\\x02'))))\n  {\n    iVar1 = 0;\n  }\n  else {\n    iVar1 = SearchVARS(param_1);\n    if (iVar1 == 0) {\n      iVar1 = CreateVARSObject(param_1,param_2,param_3,uVar3);\n      if (iVar1 == 0) {\n        iVar1 = 0;\n      }\n      else {\n        iVar2 = InsertVARSObject(iVar1);\n        if (iVar2 == 0) {\n          iVar1 = 0;\n        }\n      }\n    }\n    else if (param_2 == *(char *)(iVar1 + 0x80)) {\n      if (param_2 == '\\x01') {\n        strncpy((char *)(iVar1 + 0x81),param_3,0x7f);\n      }\n      else if (param_2 == '\\x02') {\n        memcpy((void *)(iVar1 + 0x81),param_3,4);\n      }\n    }\n    else {\n      iVar1 = 0;\n    }\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "UpdateVARSObject",
+                        "SearchVARS",
+                        "CreateVARSObject",
+                        "InsertVARSObject",
+                        "strncpy",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "HandleWriteRequest",
+                        "UpdateVARSObject"
+                    ],
+                    "defined_in_file": "CROMU_00039_decompiled.c"
+                }
+            }
+        ]
+    }
+}

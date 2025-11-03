@@ -1,0 +1,226 @@
+{
+    "file": "CROMU_00004",
+    "decompiled_code": {
+        "common.c": [
+            {
+                "func_name": "FindCode",
+                "func_c_signature": "int FindCode(char *param_1)",
+                "decompiled_code": "int FindCode(char *param_1) {\n  int iVar1;\n  int local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (0x5a < local_10) {\n      return -1;\n    }\n    iVar1 = strcmp(l + local_10 * 0x10 + 1,param_1);\n    if (iVar1 == 0) break;\n    local_10 = local_10 + 1;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindCode",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "FindCode",
+                        "InitLang"
+                    ],
+                    "defined_in_file": "CROMU_00004_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitLang",
+                "func_c_signature": "void InitLang(int param_1,char *param_2)",
+                "decompiled_code": "void InitLang(int param_1,char *param_2) {\n  char local_17 [7];\n  int local_10;\n  \n  if (param_1 != 0) {\n    bzero(local_17,7);\n    strncat(local_17,param_2,7);\n    strncat(local_17,\".\",7);\n    local_10 = FindCode(local_17);\n    if (local_10 != -1) {\n      *(undefined1 **)(param_1 + 8) = l + local_10 * 0x10;\n      InitLang(l + local_10 * 0x10,local_17);\n      bzero(local_17,7);\n      strncat(local_17,param_2,7);\n      strncat(local_17,\"-\",7);\n      local_10 = FindCode(local_17);\n      if (local_10 != -1) {\n        *(undefined1 **)(param_1 + 0xc) = l + local_10 * 0x10;\n        InitLang(l + local_10 * 0x10,local_17);\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitLang",
+                        "bzero",
+                        "strncat",
+                        "FindCode"
+                    ],
+                    "calling_functions": [
+                        "InitLang",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00004_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "ParseCode",
+                "func_c_signature": "void ParseCode(int param_1,int param_2)",
+                "decompiled_code": "void ParseCode(int param_1,int param_2) {\n  char cVar1;\n  undefined *puVar2;\n  undefined *puVar3;\n  undefined auStack_1c [4];\n  undefined1 *local_18;\n  int local_14;\n  int local_10;\n  \n  puVar2 = auStack_1c;\n  local_10 = 0;\n  local_14 = 0;\n  local_18 = &lh;\n  do {\n    if (*(char *)(param_1 + local_10) == '\\0') {\n      if (local_18 == (undefined1 *)0x0) {\n        *(char **)(puVar2 + -0x10) = \"unknown character\\n\";\n        *(undefined4 *)(puVar2 + -0x14) = 0x116ee;\n        puts(*(char **)(puVar2 + -0x10));\n        *(undefined4 *)(puVar2 + -0x10) = 6;\n        *(undefined4 *)(puVar2 + -0x14) = 0x116fb;\n        _terminate();\n      }\n      else {\n        *(undefined1 *)(local_14 + param_2) = *local_18;\n      }\n      return;\n    }\n    if (0x3ff < local_14) {\n      *(char **)(puVar2 + -0x10) = \"message too long\\n\";\n      *(undefined4 *)(puVar2 + -0x14) = 0x11502;\n      puts(*(char **)(puVar2 + -0x10));\n      *(undefined4 *)(puVar2 + -0x10) = 6;\n      *(undefined4 *)(puVar2 + -0x14) = 0x1150f;\n      _terminate();\n      puVar2 = puVar2 + -0x10;\n    }\n    cVar1 = *(char *)(param_1 + local_10);\n    if (cVar1 == '|') {\n      if (local_18 == (undefined1 *)0x0) {\n        puVar3 = puVar2 + -0x10;\n        *(char **)(puVar2 + -0x10) = \"unknown character\\n\";\n        *(undefined4 *)(puVar2 + -0x14) = 0x1159d;\n        puts(*(char **)(puVar2 + -0x10));\n        *(undefined4 *)(puVar2 + -0x10) = 6;\n        *(undefined4 *)(puVar2 + -0x14) = 0x115aa;\n        _terminate();\nLAB_000115aa:\n        puVar2 = puVar3;\n        if (local_18 == &lh) {\n          *(undefined *)(param_2 + local_14) = 0x20;\n          local_14 = local_14 + 1;\n        }\n        else {\n          if (local_18 == (undefined1 *)0x0) {\n            puVar2 = puVar3 + -0x10;\n            *(char **)(puVar3 + -0x10) = \"unknown character\\n\";\n            *(undefined4 *)(puVar3 + -0x14) = 0x1161b;\n            puts(*(char **)(puVar3 + -0x10));\n            *(undefined4 *)(puVar3 + -0x10) = 6;\n            *(undefined4 *)(puVar3 + -0x14) = 0x11628;\n            _terminate();\n            goto LAB_00011628;\n          }\n          *(undefined1 *)(local_14 + param_2) = *local_18;\n          local_18 = &lh;\n          *(undefined *)(param_2 + local_14 + 1) = 0x20;\n          local_14 = local_14 + 2;\n        }\n      }\n      else {\n        *(undefined1 *)(local_14 + param_2) = *local_18;\n        local_18 = &lh;\n        local_14 = local_14 + 1;\n      }\n      goto LAB_0001169f;\n    }\n    if (cVar1 < '}') {\n      if (cVar1 != '.') {\n        if (cVar1 < '/') {\n          puVar3 = puVar2;\n          if (cVar1 == '-') goto LAB_00011655;\n          if (cVar1 < '.') {\n            if (cVar1 == '\\n') goto LAB_0001169f;\n            if (cVar1 == ' ') goto LAB_000115aa;\n          }\n        }\n        goto LAB_00011682;\n      }\nLAB_00011628:\n      if (local_18 == (undefined1 *)0x0) {\n        puVar3 = puVar2 + -0x10;\n        *(char **)(puVar2 + -0x10) = \"unknown character\\n\";\n        *(undefined4 *)(puVar2 + -0x14) = 0x11648;\n        puts(*(char **)(puVar2 + -0x10));\n        *(undefined4 *)(puVar2 + -0x10) = 6;\n        *(undefined4 *)(puVar2 + -0x14) = 0x11655;\n        _terminate();\nLAB_00011655:\n        if (local_18 == (undefined1 *)0x0) {\n          puVar2 = puVar3 + -0x10;\n          *(char **)(puVar3 + -0x10) = \"unknown character\\n\";\n          *(undefined4 *)(puVar3 + -0x14) = 0x11675;\n          puts(*(char **)(puVar3 + -0x10));\n          *(undefined4 *)(puVar3 + -0x10) = 6;\n          *(undefined4 *)(puVar3 + -0x14) = 0x11682;\n          _terminate();\n          goto LAB_00011682;\n        }\n        local_18 = *(undefined1 **)(local_18 + 0xc);\n        puVar2 = puVar3;\n      }\n      else {\n        local_18 = *(undefined1 **)(local_18 + 8);\n      }\n    }\n    else {\nLAB_00011682:\n      *(char **)(puVar2 + -0x10) = \"invalid symbol\\n\";\n      *(undefined4 *)(puVar2 + -0x14) = 0x11691;\n      puts(*(char **)(puVar2 + -0x10));\n      *(undefined4 *)(puVar2 + -0x10) = 6;\n      *(undefined4 *)(puVar2 + -0x14) = 0x1169e;\n      _terminate();\n      puVar2 = puVar2 + -0x10;\n    }\nLAB_0001169f:\n    local_10 = local_10 + 1;\n  }",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ParseCode",
+                        "puts",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "ParseCode",
+                        "ParseWav"
+                    ],
+                    "defined_in_file": "CROMU_00004_decompiled.c"
+                }
+            },
+            {
+                "func_name": "recv",
+                "func_c_signature": "ssize_t recv(int __fd,void *__buf,size_t __n,int __flags)",
+                "decompiled_code": "ssize_t recv(int __fd,void *__buf,size_t __n,int __flags) {\n  int iVar1;\n  int local_18;\n  undefined4 local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (__n <= local_10) {\n      *(uint *)__flags = local_10;\n      return 0;\n    }\n    iVar1 = receive(__fd,(int)__buf + local_10,1,&local_18);\n    if (iVar1 != 0) break;\n    if (local_18 != 1) {\n      return -1;\n    }\n    local_10 = local_10 + 1;\n    local_14 = 0;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recv",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "recv",
+                        "ReadWav"
+                    ],
+                    "defined_in_file": "CROMU_00004_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReadWav",
+                "func_c_signature": "int * ReadWav(int *param_1)",
+                "decompiled_code": "int * ReadWav(int *param_1) {\n  ssize_t sVar1;\n  int iVar2;\n  undefined *puVar3;\n  undefined *puVar4;\n  undefined *puVar5;\n  char *apcStackY_70 [17];\n  undefined auStack_1c [4];\n  int local_18;\n  int *local_14;\n  int local_10;\n  \n  puVar3 = auStack_1c;\n  sVar1 = recv(0,param_1,0xc,(int)&local_18);\n  if (sVar1 != 0) {\n    puVar3 = &stack0xffffffd4;\n    puts(\"Read error\\n\");\n    _terminate();\n  }\n  local_14 = param_1;\n  puVar4 = puVar3;\n  if (*param_1 != 0x204d4350) {\n    puVar4 = puVar3 + -0x10;\n    *(char **)(puVar3 + -0x10) = \"Invalid PCM format\\n\";\n    *(undefined4 *)(puVar3 + -0x14) = 0x117d7;\n    puts(*(char **)(puVar3 + -0x10));\n    *(undefined4 *)(puVar3 + -0x10) = 4;\n    *(undefined4 *)(puVar3 + -0x14) = 0x117e4;\n    _terminate();\n  }\n  puVar5 = puVar4;\n  if (0x7fffa < (uint)local_14[2]) {\n    puVar5 = puVar4 + -0x10;\n    *(char **)(puVar4 + -0x10) = \"Invalid PCM length\\n\";\n    *(undefined4 *)(puVar4 + -0x14) = 0x11800;\n    puts(*(char **)(puVar4 + -0x10));\n    *(undefined4 *)(puVar4 + -0x10) = 2;\n    *(undefined4 *)(puVar4 + -0x14) = 0x1180d;\n    _terminate();\n  }\n  puVar4 = puVar5;\n  if (local_14[2] == 0) {\n    puVar4 = puVar5 + -0x10;\n    *(char **)(puVar5 + -0x10) = \"Invalid PCM format\\n\";\n    *(undefined4 *)(puVar5 + -0x14) = 0x11826;\n    puts(*(char **)(puVar5 + -0x10));\n    *(undefined4 *)(puVar5 + -0x10) = 4;\n    *(undefined4 *)(puVar5 + -0x14) = 0x11833;\n    _terminate();\n  }\n  puVar5 = puVar4;\n  if ((uint)(local_14[1] * 8) / (uint)local_14[2] != 0x10) {\n    puVar5 = puVar4 + -0x10;\n    *(char **)(puVar4 + -0x10) = \"Invalid PCM length\\n\";\n    *(undefined4 *)(puVar4 + -0x14) = 0x11863;\n    puts(*(char **)(puVar4 + -0x10));\n    *(undefined4 *)(puVar4 + -0x10) = 2;\n    *(undefined4 *)(puVar4 + -0x14) = 0x11870;\n    _terminate();\n  }\n  for (local_10 = 0; local_10 != local_14[1]; local_10 = local_10 + local_18) {\n    iVar2 = local_14[1];\n    *(int **)(puVar5 + -4) = &local_18;\n    *(int *)(puVar5 + -8) = iVar2 - local_10;\n    *(int *)(puVar5 + -0xc) = local_10 + 0xc + (int)param_1;\n    *(undefined4 *)(puVar5 + -0x10) = 0;\n    *(undefined4 *)(puVar5 + -0x14) = 0x1189a;\n    iVar2 = receive();\n    puVar4 = puVar5;\n    if (iVar2 != 0) {\n      puVar4 = puVar5 + -0x10;\n      *(char **)(puVar5 + -0x10) = \"Read error\\n\";\n      *(undefined4 *)(puVar5 + -0x14) = 0x118b0;\n      puts(*(char **)(puVar5 + -0x10));\n      *(undefined4 *)(puVar5 + -0x10) = 1;\n      *(undefined4 *)(puVar5 + -0x14) = 0x118bd;\n      _terminate();\n    }\n    puVar5 = puVar4;\n    if (local_18 == 0) {\n      puVar5 = puVar4 + -0x10;\n      *(char **)(puVar4 + -0x10) = \"Read error\\n\";\n      *(undefined4 *)(puVar4 + -0x14) = 0x118d3;\n      puts(*(char **)(puVar4 + -0x10));\n      *(undefined4 *)(puVar4 + -0x10) = 1;\n      *(undefined4 *)(puVar4 + -0x14) = 0x118e0;\n      _terminate();\n    }\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReadWav",
+                        "recv",
+                        "puts",
+                        "_terminate",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "ReadWav",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00004_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AssignToBucket",
+                "func_c_signature": "int AssignToBucket(uint param_1)",
+                "decompiled_code": "int AssignToBucket(uint param_1) {\n  int iVar1;\n  int local_10;\n  \n  local_10 = 1;\n  while( true ) {\n    if (3 < local_10) {\n      local_10 = 1;\n      while( true ) {\n        if (3 < local_10) {\n          puts(\"Couldn\\'t find a bucket\\n\");\n          iVar1 = _terminate(6);\n          return iVar1;\n        }\n        if (*(short *)(Bucket + local_10 * 0x10) == 0) break;\n        local_10 = local_10 + 1;\n      }\n      *(undefined2 *)(Bucket + local_10 * 0x10) = 1;\n      *(uint *)(Bucket + local_10 * 0x10 + 4) = param_1;\n      *(undefined4 *)(Bucket + local_10 * 0x10 + 8) = 1;\n      return local_10;\n    }\n    if (((*(short *)(Bucket + local_10 * 0x10) != 0) &&\n        (DAT_000140d8 * (double)(ulonglong)param_1 <\n         (double)(ulonglong)*(uint *)(Bucket + local_10 * 0x10 + 4))) &&\n       ((double)(ulonglong)*(uint *)(Bucket + local_10 * 0x10 + 4) <\n        DAT_000140e0 * (double)(ulonglong)param_1)) break;\n    local_10 = local_10 + 1;\n  }\n  *(int *)(Bucket + local_10 * 0x10 + 8) = *(int *)(Bucket + local_10 * 0x10 + 8) + 1;\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AssignToBucket",
+                        "puts",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "AssignToBucket",
+                        "ParseWav"
+                    ],
+                    "defined_in_file": "CROMU_00004_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CheckLimits",
+                "func_c_signature": "void CheckLimits(int param_1,int param_2,int param_3)",
+                "decompiled_code": "void CheckLimits(int param_1,int param_2,int param_3) {\n  undefined *puVar1;\n  undefined auStack_1c [8];\n  uint local_14;\n  undefined4 uStack_10;\n  \n  puVar1 = auStack_1c;\n  local_14 = *(int *)(Bucket + param_1 * 0x10 + 4) * 3;\n  if (((double)(ulonglong)*(uint *)(Bucket + param_2 * 0x10 + 4) <\n       DAT_000140d8 * (double)(ulonglong)local_14) ||\n     (local_14 = *(int *)(Bucket + param_1 * 0x10 + 4) * 3,\n     DAT_000140e0 * (double)(ulonglong)local_14 <\n     (double)(ulonglong)*(uint *)(Bucket + param_2 * 0x10 + 4))) {\n    uStack_10 = 0;\n    puVar1 = &stack0xffffffd4;\n    puts(\"Too much variance in symbol times\\n\");\n    _terminate();\n  }\n  if ((param_3 != 0) &&\n     ((local_14 = *(int *)(Bucket + param_1 * 0x10 + 4) * 7,\n      (double)(ulonglong)*(uint *)(Bucket + param_3 * 0x10 + 4) <\n      DAT_000140d8 * (double)(ulonglong)local_14 ||\n      (local_14 = *(int *)(Bucket + param_1 * 0x10 + 4) * 7,\n      DAT_000140e0 * (double)(ulonglong)local_14 <\n      (double)(ulonglong)*(uint *)(Bucket + param_3 * 0x10 + 4))))) {\n    uStack_10 = 0;\n    *(char **)(puVar1 + -0x10) = \"Too much variance in symbol times\\n\";\n    *(undefined4 *)(puVar1 + -0x14) = 0x11c20;\n    puts(*(char **)(puVar1 + -0x10));\n    *(undefined4 *)(puVar1 + -0x10) = 6;\n    *(undefined4 *)(puVar1 + -0x14) = 0x11c2d;\n    _terminate();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CheckLimits",
+                        "puts",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "CheckLimits",
+                        "ValidateBuckets"
+                    ],
+                    "defined_in_file": "CROMU_00004_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ValidateBuckets",
+                "func_c_signature": "void ValidateBuckets(void)",
+                "decompiled_code": "void ValidateBuckets(void) {\n  undefined *puVar1;\n  undefined auStack_1c [4];\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  puVar1 = auStack_1c;\n  local_10 = 0;\n  local_14 = 0;\n  local_18 = 0;\n  if (((Bucket._16_2_ == 0) || (Bucket._32_2_ == 0)) || (Bucket._48_2_ == 0)) {\n    if ((Bucket._16_2_ == 0) || (Bucket._32_2_ == 0)) {\n      puts(\"Insufficient symbol diversity\\n\");\n      _terminate();\n      puVar1 = &stack0xffffffd4;\n    }\n    else {\n      local_18 = 0;\n      if ((uint)Bucket._36_4_ < (uint)Bucket._20_4_) {\n        local_14 = 1;\n        local_10 = 2;\n        puVar1 = auStack_1c;\n      }\n      else {\n        local_14 = 2;\n        local_10 = 1;\n        puVar1 = auStack_1c;\n      }\n    }\n  }\n  else if (((uint)Bucket._36_4_ < (uint)Bucket._20_4_) &&\n          ((uint)Bucket._52_4_ < (uint)Bucket._20_4_)) {\n    local_18 = 1;\n    if ((uint)Bucket._52_4_ < (uint)Bucket._36_4_) {\n      local_14 = 2;\n      local_10 = 3;\n      puVar1 = auStack_1c;\n    }\n    else {\n      local_14 = 3;\n      local_10 = 2;\n      puVar1 = auStack_1c;\n    }\n  }\n  else if (((uint)Bucket._20_4_ < (uint)Bucket._36_4_) &&\n          ((uint)Bucket._52_4_ < (uint)Bucket._36_4_)) {\n    local_18 = 2;\n    if ((uint)Bucket._52_4_ < (uint)Bucket._20_4_) {\n      local_14 = 1;\n      local_10 = 3;\n      puVar1 = auStack_1c;\n    }\n    else {\n      local_14 = 3;\n      local_10 = 1;\n    }\n  }\n  else {\n    puVar1 = auStack_1c;\n    if (((uint)Bucket._20_4_ < (uint)Bucket._52_4_) &&\n       (puVar1 = auStack_1c, (uint)Bucket._36_4_ < (uint)Bucket._52_4_)) {\n      local_18 = 3;\n      if ((uint)Bucket._36_4_ < (uint)Bucket._20_4_) {\n        local_14 = 1;\n        local_10 = 2;\n        puVar1 = auStack_1c;\n      }\n      else {\n        local_14 = 2;\n        local_10 = 1;\n        puVar1 = auStack_1c;\n      }\n    }\n  }\n  Bucket[local_18 * 0x10 + 0xc] = 0x20;\n  Bucket[local_18 * 0x10 + 0xd] = 0x20;\n  Bucket[local_14 * 0x10 + 0xc] = 0x2d;\n  Bucket[local_14 * 0x10 + 0xd] = 0x7c;\n  Bucket[local_10 * 0x10 + 0xc] = 0x2e;\n  Bucket[local_10 * 0x10 + 0xd] = 0;\n  *(int *)(puVar1 + -8) = local_18;\n  *(int *)(puVar1 + -0xc) = local_14;\n  *(int *)(puVar1 + -0x10) = local_10;\n  *(undefined4 *)(puVar1 + -0x14) = 0x11ee5;\n  CheckLimits();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ValidateBuckets",
+                        "puts",
+                        "_terminate",
+                        "CheckLimits"
+                    ],
+                    "calling_functions": [
+                        "ValidateBuckets",
+                        "ParseWav"
+                    ],
+                    "defined_in_file": "CROMU_00004_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ParseWav",
+                "func_c_signature": "void ParseWav(int param_1)",
+                "decompiled_code": "void ParseWav(int param_1) {\n  char *pcVar1;\n  undefined *puVar2;\n  char cVar3;\n  int iVar4;\n  char local_c40 [1024];\n  undefined local_840 [1024];\n  char local_440 [1024];\n  int local_40;\n  uint local_3c;\n  short local_36;\n  int local_34;\n  short *local_30;\n  int local_2c;\n  int local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  short *local_10;\n  \n  local_20 = 0;\n  local_28 = 1;\n  bzero(local_440,0x400);\n  bzero(local_840,0x400);\n  local_20 = 0;\n  Bucket._16_2_ = 0;\n  Bucket._32_2_ = 0;\n  Bucket._48_2_ = 0;\n  local_2c = param_1;\n  local_30 = (short *)(param_1 + *(int *)(param_1 + 4) + 0xc);\n  local_10 = (short *)(param_1 + 0xc);\n  local_14 = 0xc;\n  local_18 = 1;\n  local_1c = 0;\n  do {\n    while( true ) {\n      if ((local_30 <= local_10) || (0x3fd < local_20)) {\n        local_34 = (int)local_10 - param_1;\n        local_3c = (uint)((short)((short)(local_34 - local_14) +\n                                 ((ushort)((uint)(local_34 - local_14) >> 0xf) & 1)) >> 1);\n        if (local_18 == 0) {\n          cVar3 = AssignToBucket(local_3c);\n          pcVar1 = local_440 + local_20;\n          local_20 = local_20 + 1;\n          *pcVar1 = cVar3;\n        }\n        ValidateBuckets();\n        local_20 = 0;\n        for (local_24 = 0; local_24 < 0x3ff; local_24 = local_24 + 1) {\n          if (local_440[local_24] != '\\0') {\n            if (local_440[local_24] < '\\0') {\n              iVar4 = (int)local_440[local_24];\n              local_40 = -iVar4;\n              if (Bucket[iVar4 * -0x10 + 0xd] != '\\0') {\n                puVar2 = local_840 + local_20;\n                local_20 = local_20 + 1;\n                *puVar2 = Bucket[iVar4 * -0x10 + 0xd];\n              }\n            }\n            else {\n              local_40 = (int)local_440[local_24];\n              if (Bucket[local_40 * 0x10 + 0xc] != '\\0') {\n                puVar2 = local_840 + local_20;\n                local_20 = local_20 + 1;\n                *puVar2 = Bucket[local_40 * 0x10 + 0xc];\n              }\n            }\n          }\n        }\n        puVar2 = local_840 + local_20;\n        local_20 = local_20 + 1;\n        *puVar2 = 10;\n        ParseCode(local_840,local_c40);\n        puts(local_c40);\n        puts(\"\\n\");\n        return;\n      }\n      local_36 = *local_10;\n      if (((local_36 < -9) || (9 < local_36)) || ((local_18 != 0 && (local_28 == 0)))) break;\n      local_1c = local_1c + 1;\n      if (local_1c < 0x32) {\n        local_10 = local_10 + 1;\n      }\n      else if (local_28 == 0) {\n        local_18 = 1;\n        local_1c = 0;\n        local_34 = (int)local_10 - param_1;\n        local_3c = (local_34 - local_14) - 100U >> 1;\n        local_14 = local_34 + -100;\n        cVar3 = AssignToBucket(local_3c);\n        pcVar1 = local_440 + local_20;\n        local_20 = local_20 + 1;\n        *pcVar1 = cVar3;\nLAB_0001213e:\n        local_10 = local_10 + 1;\n      }\n      else {\n        local_18 = 1;\n        local_1c = 0;\n        local_28 = 0;\n        local_10 = (short *)(param_1 + 0xc);\n        local_14 = 0xc;\n      }\n    }\n    if (((-0xb < local_36) && (local_36 < 0xb)) || ((local_18 == 0 && (local_28 == 0)))) {\n      local_1c = 0;\n      goto LAB_0001213e;\n    }\n    local_1c = local_1c + 1;\n    if (local_1c < 0x32) {\n      local_10 = local_10 + 1;\n    }\n    else {\n      if (local_28 == 0) {\n        local_18 = 0;\n        local_1c = 0;\n        local_34 = (int)local_10 - param_1;\n        local_3c = (local_34 - local_14) - 100U >> 1;\n        local_14 = local_34 + -100;\n        cVar3 = AssignToBucket(local_3c);\n        pcVar1 = local_440 + local_20;\n        local_20 = local_20 + 1;\n        *pcVar1 = -cVar3;\n        goto LAB_0001213e;\n      }\n      local_18 = 0;\n      local_1c = 0;\n      local_28 = 0;\n      local_10 = (short *)(param_1 + 0xc);\n      local_14 = 0xc;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ParseWav",
+                        "bzero",
+                        "AssignToBucket",
+                        "ValidateBuckets",
+                        "ParseCode",
+                        "puts"
+                    ],
+                    "calling_functions": [
+                        "ParseWav",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00004_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  undefined **ppuVar1;\n  int iVar2;\n  undefined *puVar3;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  ppuVar1 = &local_10;\n  do {\n    puVar3 = (undefined *)ppuVar1;\n    *(undefined4 *)(puVar3 + -0x1000) = *(undefined4 *)(puVar3 + -0x1000);\n    ppuVar1 = (undefined **)(puVar3 + -0x1000);\n  } while (puVar3 + -0x1000 != &stack0xffeffff0);\n  *(undefined4 *)(puVar3 + -0x1004) = 0x1231a;\n  iVar2 = *(int *)(puVar3 + -0x1004);\n  *(undefined4 *)(puVar3 + -0x100c) = 0x100000;\n  *(undefined **)(puVar3 + -0x1010) = &stack0xffeffff0;\n  *(undefined4 *)(puVar3 + -0x1014) = 0x12334;\n  bzero(*(void **)(puVar3 + -0x1010),*(size_t *)(puVar3 + -0x100c));\n  *(undefined4 *)(puVar3 + -0x100c) = 0;\n  *(int *)(puVar3 + -0x1010) = iVar2 + 0x42ba;\n  *(undefined4 *)(puVar3 + -0x1014) = 0x12348;\n  InitLang();\n  *(undefined **)(puVar3 + -0x1010) = &stack0xffeffff0;\n  *(undefined4 *)(puVar3 + -0x1014) = 0x1235a;\n  ReadWav();\n  *(undefined **)(puVar3 + -0x1010) = &stack0xffeffff0;\n  *(undefined4 *)(puVar3 + -0x1014) = 0x1236c;\n  ParseWav();\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "bzero",
+                        "InitLang",
+                        "ReadWav",
+                        "ParseWav"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00004_decompiled.c"
+                }
+            }
+        ]
+    }
+}

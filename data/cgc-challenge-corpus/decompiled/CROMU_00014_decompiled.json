@@ -1,0 +1,574 @@
+{
+    "file": "CROMU_00014",
+    "decompiled_code": {
+        "dates.c": [
+            {
+                "func_name": "datetime2time_t",
+                "func_c_signature": "int datetime2time_t(int param_1)",
+                "decompiled_code": "int datetime2time_t(int param_1) {\n  int iVar1;\n  int local_14;\n  uint local_10;\n  \n  local_14 = 0;\n  if (*(uint *)(param_1 + 8) < 0x7b2) {\n    iVar1 = 0;\n  }\n  else {\n    for (local_10 = 0x7b2; local_10 < *(uint *)(param_1 + 8); local_10 = local_10 + 1) {\n      iVar1 = leap_year(local_10);\n      local_14 = local_14 + iVar1 + 0x16d;\n    }\n    iVar1 = (local_14 + *(int *)(param_1 + 0x18) + -1) * 0x15180 + *(int *)(param_1 + 0xc) * 0xe10 +\n            *(int *)(param_1 + 0x10) * 0x3c + *(int *)(param_1 + 0x14);\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "datetime2time_t",
+                        "leap_year"
+                    ],
+                    "calling_functions": [
+                        "datetime2time_t",
+                        "str2datetime"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "time_t2datetime",
+                "func_c_signature": "undefined4 time_t2datetime(uint param_1,uint *param_2)",
+                "decompiled_code": "undefined4 time_t2datetime(uint param_1,uint *param_2) {\n  uint uVar1;\n  bool bVar2;\n  int iVar3;\n  int iVar4;\n  int local_54 [4];\n  undefined4 local_44;\n  undefined4 local_40;\n  undefined4 local_3c;\n  undefined4 local_38;\n  undefined4 local_34;\n  undefined4 local_30;\n  undefined4 local_2c;\n  undefined4 local_28;\n  undefined4 local_24;\n  uint local_20;\n  uint local_1c;\n  uint local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_54[0] = 0;\n  local_54[1] = 0x1f;\n  local_54[2] = 0x3b;\n  local_54[3] = 0x5a;\n  local_44 = 0x78;\n  local_40 = 0x97;\n  local_3c = 0xb5;\n  local_38 = 0xd4;\n  local_34 = 0xf3;\n  local_30 = 0x111;\n  local_2c = 0x130;\n  local_28 = 0x14e;\n  local_24 = 0x16d;\n  local_18 = param_1 % 0x15180;\n  param_2[5] = local_18 % 0x3c;\n  param_2[4] = (local_18 / 0x3c) % 0x3c;\n  param_2[3] = local_18 / 0xe10;\n  local_1c = param_1 / 0x15180;\n  local_14 = 0x7b2;\n  for (local_10 = 0; local_10 <= local_1c; local_10 = local_10 + iVar3 + 0x16d) {\n    iVar3 = leap_year(local_14);\n    local_14 = local_14 + 1;\n  }\n  param_2[2] = local_14 - 1;\n  iVar3 = leap_year(param_2[2]);\n  local_10 = local_10 - (iVar3 + 0x16d);\n  local_20 = (local_1c - local_10) + 1;\n  param_2[6] = local_20;\n  local_14 = 0;\n  while( true ) {\n    iVar3 = local_54[local_14];\n    bVar2 = 1 < (int)local_14;\n    iVar4 = leap_year(param_2[2]);\n    if (local_20 <= iVar4 * (uint)bVar2 + iVar3) break;\n    local_14 = local_14 + 1;\n  }\n  *param_2 = local_14;\n  iVar3 = local_20 - local_54[*param_2 - 1];\n  uVar1 = *param_2;\n  iVar4 = leap_year(param_2[2]);\n  param_2[1] = iVar3 - iVar4 * (uint)(2 < uVar1);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "time_t2datetime",
+                        "leap_year"
+                    ],
+                    "calling_functions": [
+                        "time_t2datetime",
+                        "print_time_t",
+                        "download_dive"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "str2datetime",
+                "func_c_signature": "undefined4 str2datetime(char *param_1,uint *param_2)",
+                "decompiled_code": "undefined4 str2datetime(char *param_1,uint *param_2) {\n  int iVar1;\n  uint uVar2;\n  undefined4 uVar3;\n  uint uVar4;\n  uint uVar5;\n  char *local_10;\n  \n  while (iVar1 = isspace((int)*param_1), iVar1 != 0) {\n    param_1 = param_1 + 1;\n  }\n  local_10 = param_1;\n  uVar2 = atoi(param_1);\n  if ((uVar2 == 0) || (0xc < uVar2)) {\n    uVar3 = 0xfffffffe;\n  }\n  else {\n    for (; (*local_10 != '/' && (*local_10 != '\\0')); local_10 = local_10 + 1) {\n    }\n    local_10 = local_10 + 1;\n    uVar4 = atoi(local_10);\n    if (uVar4 == 0) {\n      uVar3 = 0xfffffffe;\n    }\n    else if ((((((uVar2 == 1) || (uVar2 == 3)) || (uVar2 == 5)) || ((uVar2 == 7 || (uVar2 == 8))))\n             || ((uVar2 == 10 || (uVar2 == 0xc)))) && (0x1f < uVar4)) {\n      uVar3 = 0xfffffffe;\n    }\n    else if ((((uVar2 == 4) || (uVar2 == 6)) || ((uVar2 == 9 || (uVar2 == 0xb)))) && (0x1e < uVar4))\n    {\n      uVar3 = 0xfffffffe;\n    }\n    else {\n      for (; (*local_10 != '/' && (*local_10 != '\\0')); local_10 = local_10 + 1) {\n      }\n      local_10 = local_10 + 1;\n      uVar5 = atoi(local_10);\n      if ((uVar5 < 0x7b2) || (0x802 < uVar5)) {\n        uVar3 = 0xfffffffe;\n      }\n      else if ((uVar2 == 2) && (iVar1 = leap_year(uVar5), iVar1 + 0x1cU < uVar4)) {\n        uVar3 = 0xfffffffe;\n      }\n      else {\n        param_2[2] = uVar5;\n        param_2[1] = uVar4;\n        *param_2 = uVar2;\n        while (iVar1 = isspace((int)*local_10), iVar1 == 0) {\n          local_10 = local_10 + 1;\n        }\n        while (iVar1 = isspace((int)*local_10), iVar1 != 0) {\n          local_10 = local_10 + 1;\n        }\n        uVar2 = atoi(local_10);\n        for (; (*local_10 != ':' && (*local_10 != '\\0')); local_10 = local_10 + 1) {\n        }\n        local_10 = local_10 + 1;\n        uVar4 = atoi(local_10);\n        for (; (*local_10 != ':' && (*local_10 != '\\0')); local_10 = local_10 + 1) {\n        }\n        uVar5 = atoi(local_10 + 1);\n        param_2[3] = uVar2;\n        param_2[4] = uVar4;\n        param_2[5] = uVar5;\n        uVar2 = doy(param_2[2],*param_2,param_2[1]);\n        param_2[6] = uVar2;\n        uVar3 = datetime2time_t(param_2);\n      }\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "str2datetime",
+                        "isspace",
+                        "atoi",
+                        "leap_year",
+                        "doy",
+                        "datetime2time_t"
+                    ],
+                    "calling_functions": [
+                        "str2datetime",
+                        "update_dive",
+                        "log_dives"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_time_t",
+                "func_c_signature": "void print_time_t(undefined4 param_1)",
+                "decompiled_code": "void print_time_t(undefined4 param_1) {\n  undefined4 local_38;\n  undefined4 local_34;\n  undefined4 local_30;\n  undefined4 local_2c;\n  undefined4 local_28;\n  undefined4 local_24;\n  \n  time_t2datetime(param_1,&local_38);\n  printf(\"@d/@d/@d @02d:@02d:@02d\",local_38,local_34,local_30,local_2c,local_28,local_24);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_time_t",
+                        "time_t2datetime",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_time_t"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_datetime",
+                "func_c_signature": "void print_datetime(undefined4 *param_1)",
+                "decompiled_code": "void print_datetime(undefined4 *param_1) {\n  printf(\"@d/@d/@d @02d:@02d:@02d\",*param_1,param_1[1],param_1[2],param_1[3],param_1[4],param_1[5]);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_datetime",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_datetime"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "to_date_str",
+                "func_c_signature": "undefined4 to_date_str(undefined4 *param_1,char *param_2)",
+                "decompiled_code": "undefined4 to_date_str(undefined4 *param_1,char *param_2) {\n  sprintf(param_2,\"@d/@d/@d\",*param_1,param_1[1],param_1[2]);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "to_date_str",
+                        "sprintf"
+                    ],
+                    "calling_functions": [
+                        "to_date_str",
+                        "download_dive"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "to_time_str",
+                "func_c_signature": "undefined4 to_time_str(int param_1,char *param_2)",
+                "decompiled_code": "undefined4 to_time_str(int param_1,char *param_2) {\n  sprintf(param_2,\"@02d:@02d:@02d\",*(undefined4 *)(param_1 + 0xc),*(undefined4 *)(param_1 + 0x10),\n          *(undefined4 *)(param_1 + 0x14));\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "to_time_str",
+                        "sprintf"
+                    ],
+                    "calling_functions": [
+                        "to_time_str",
+                        "download_dive"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "diff_between_dates",
+                "func_c_signature": "undefined4 diff_between_dates(void)",
+                "decompiled_code": "undefined4 diff_between_dates(void) {\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "diff_between_dates"
+                    ],
+                    "calling_functions": [
+                        "diff_between_dates"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "leap_year",
+                "func_c_signature": "undefined4 leap_year(uint param_1)",
+                "decompiled_code": "undefined4 leap_year(uint param_1) {\n  undefined4 uVar1;\n  \n  if (((param_1 == (param_1 / 400) * 400) || (param_1 != (param_1 / 100) * 100)) &&\n     ((param_1 & 3) == 0)) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "leap_year"
+                    ],
+                    "calling_functions": [
+                        "datetime2time_t",
+                        "time_t2datetime",
+                        "str2datetime",
+                        "leap_year",
+                        "doy"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "doy",
+                "func_c_signature": "int doy(undefined4 param_1,uint param_2,int param_3)",
+                "decompiled_code": "int doy(undefined4 param_1,uint param_2,int param_3) {\n  int iVar1;\n  int local_38 [4];\n  undefined4 local_28;\n  undefined4 local_24;\n  undefined4 local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  undefined4 local_14;\n  undefined4 local_10;\n  undefined4 local_c;\n  int local_8;\n  \n  local_38[0] = 0;\n  local_38[1] = 0x1f;\n  local_38[2] = 0x3b;\n  local_38[3] = 0x5a;\n  local_28 = 0x78;\n  local_24 = 0x97;\n  local_20 = 0xb5;\n  local_1c = 0xd4;\n  local_18 = 0xf3;\n  local_14 = 0x111;\n  local_10 = 0x130;\n  local_c = 0x14e;\n  local_8 = param_3 + local_38[param_2 - 1];\n  if (2 < param_2) {\n    iVar1 = leap_year(param_1);\n    local_8 = local_8 + iVar1;\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "doy",
+                        "leap_year"
+                    ],
+                    "calling_functions": [
+                        "str2datetime",
+                        "doy"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            }
+        ],
+        "dive_statistics.c": [
+            {
+                "func_name": "dive_statistics",
+                "func_c_signature": "undefined4 dive_statistics(int param_1)",
+                "decompiled_code": "undefined4 dive_statistics(int param_1) {\n  undefined4 uVar1;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  local_18 = 0;\n  local_1c = 0;\n  local_20 = 0;\n  printf(\"\\n\");\n  if (*(int *)(param_1 + 0x9c) == 0) {\n    printf(\"No dives are logged\\n\");\n    uVar1 = 0xffffffff;\n  }\n  else {\n    for (local_24 = *(int *)(param_1 + 0x9c); local_24 != 0; local_24 = *(int *)(local_24 + 0x7c)) {\n      local_10 = local_10 + 1;\n      if (*(int *)(local_24 + 0x34) != 0) {\n        local_14 = local_14 + *(int *)(local_24 + 0x34);\n        local_18 = local_18 + 1;\n      }\n      if (*(int *)(local_24 + 0x3c) != 0) {\n        local_1c = local_1c + *(int *)(local_24 + 0x3c);\n        local_20 = local_20 + 1;\n      }\n    }\n    printf(\"Dives logged: @d\\n\",local_10);\n    if (local_18 < 1) {\n      printf(\"Average Max Depth: 0\\n\",local_10);\n    }\n    else {\n      local_10 = local_14 / local_18;\n      printf(\"Average Max Depth: @d\\n\",local_10);\n    }\n    if (local_20 < 1) {\n      printf(\"Average Dive Length: 0\\n\",local_10);\n    }\n    else {\n      printf(\"Average Dive Length: @d\\n\",local_1c / local_20);\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dive_statistics",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "dive_statistics"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            }
+        ],
+        "download_dive.c": [
+            {
+                "func_name": "download_dive",
+                "func_c_signature": "undefined4 download_dive(int param_1)",
+                "decompiled_code": "undefined4 download_dive(int param_1) {\n  char *pcVar1;\n  void *pvVar2;\n  int *piVar3;\n  int iVar4;\n  undefined *puVar5;\n  undefined *puVar6;\n  int aiStack_8a0 [9];\n  undefined4 uStack_870;\n  undefined auStack_86c [12];\n  undefined local_860 [28];\n  int local_844;\n  int local_840;\n  int local_83c;\n  undefined local_838 [1024];\n  undefined local_438 [1024];\n  uint local_38;\n  __ssize_t local_34;\n  void *local_30;\n  uint local_2c;\n  int local_28;\n  uint local_24;\n  int local_20;\n  int local_1c;\n  uint local_18;\n  int *local_14;\n  char *local_10;\n  \n  puVar5 = auStack_86c;\n  uStack_870 = 0x11c4d;\n  local_18 = 0;\n  local_1c = 0;\n  local_20 = 0;\n  local_28 = receive_bytes();\n  if (local_28 < 0) {\n    printf(\"received error code \\n\");\n  }\n  else {\n    local_28 = receive_bytes();\n    if (local_28 < 0) {\n      printf(\"received error code or zero sample \\n\");\n    }\n    else {\n      if (*(int *)(param_1 + 0x9c) == 0) {\n        pvVar2 = calloc(1,0x80);\n        *(void **)(param_1 + 0x9c) = pvVar2;\n        puVar5 = auStack_86c;\n        if (*(int *)(param_1 + 0x9c) == 0) {\n          puVar5 = &stack0xfffff784;\n          _terminate();\n        }\n        local_10 = *(char **)(param_1 + 0x9c);\n      }\n      else {\n        for (local_10 = *(char **)(param_1 + 0x9c); *(int *)((int)local_10 + 0x7c) != 0;\n            local_10 = *(char **)((int)local_10 + 0x7c)) {\n        }\n        pvVar2 = calloc(1,0x80);\n        *(void **)((int)local_10 + 0x7c) = pvVar2;\n        if (*(int *)((int)local_10 + 0x7c) == 0) {\n          puVar5 = &stack0xfffff784;\n          _terminate();\n        }\n        local_10 = *(char **)((int)local_10 + 0x7c);\n      }\n      *(undefined4 *)(puVar5 + -0xc) = 0xc;\n      *(undefined4 *)(puVar5 + -0x10) = 1;\n      *(undefined4 *)(puVar5 + -0x14) = 0x11d89;\n      pvVar2 = calloc(*(size_t *)(puVar5 + -0x10),*(size_t *)(puVar5 + -0xc));\n      *(void **)(local_10 + 0x78) = pvVar2;\n      puVar6 = puVar5;\n      if (*(int *)(local_10 + 0x78) == 0) {\n        puVar6 = puVar5 + -0x10;\n        *(undefined4 *)(puVar5 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar5 + -0x14) = 0x11da6;\n        _terminate();\n      }\n      local_14 = *(int **)(local_10 + 0x78);\n      *local_14 = local_840;\n      local_14[1] = local_844;\n      *(undefined **)(puVar6 + -0xc) = local_860;\n      *(int *)(puVar6 + -0x10) = local_840;\n      *(undefined4 *)(puVar6 + -0x14) = 0x11dde;\n      time_t2datetime();\n      puVar5 = puVar6;\n      while( true ) {\n        *(undefined4 *)(puVar5 + -0xc) = 4;\n        *(int **)(puVar5 + -0x10) = &local_83c;\n        *(undefined4 *)(puVar5 + -0x14) = 0x11df2;\n        local_28 = receive_bytes();\n        if (local_28 < 0) break;\n        if (local_83c == 0) {\n          local_14[2] = 0;\n          local_2c = *local_14 - local_840;\n          *(int *)(local_10 + 0x30) = local_840;\n          *(char **)(puVar5 + -0xc) = local_10 + 0x1a;\n          *(undefined **)(puVar5 + -0x10) = local_860;\n          *(undefined4 *)(puVar5 + -0x14) = 0x11eee;\n          to_date_str();\n          *(char **)(puVar5 + -0xc) = local_10 + 0x25;\n          *(undefined **)(puVar5 + -0x10) = local_860;\n          *(undefined4 *)(puVar5 + -0x14) = 0x11f07;\n          to_time_str();\n          *(uint *)(local_10 + 0x3c) = local_2c / 0x3c;\n          iVar4 = *(int *)(local_10 + 0x3c);\n          *(undefined4 *)(puVar5 + -0xc) = 4;\n          *(int *)(puVar5 + -0x10) = iVar4 + 1;\n          *(undefined4 *)(puVar5 + -0x14) = 0x11f31;\n          local_30 = calloc(*(size_t *)(puVar5 + -0x10),*(size_t *)(puVar5 + -0xc));\n          if (local_30 == (void *)0x0) {\n            *(undefined4 *)(puVar5 + -0x10) = 0xffffffff;\n            *(undefined4 *)(puVar5 + -0x14) = 0x11f47;\n            _terminate();\n            puVar5 = puVar5 + -0x10;\n          }\n          local_18 = 0;\n          local_1c = 0;\n          local_20 = 0;\n          for (local_14 = *(int **)(local_10 + 0x78); local_14 != (int *)0x0;\n              local_14 = (int *)local_14[2]) {\n            if (local_18 < (uint)local_14[1]) {\n              local_18 = local_14[1];\n            }\n            local_1c = local_1c + local_14[1];\n            local_20 = local_20 + 1;\n            local_38 = (uint)(*local_14 - local_840) / 0x3c;\n            piVar3 = (int *)((int)local_30 + local_38 * 4);\n            *piVar3 = *piVar3 + 1;\n          }\n          *(undefined4 *)(local_10 + 0x58) = 0;\n          for (local_24 = 0; local_24 < *(int *)(local_10 + 0x3c) + 1U; local_24 = local_24 + 1) {\n            *(int *)(local_10 + 0x58) =\n                 *(int *)((int)local_30 + local_24 * 4) + *(int *)(local_10 + 0x58);\n          }\n          *(void **)(puVar5 + -0x10) = local_30;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12023;\n          free(*(void **)(puVar5 + -0x10));\n          *(uint *)(local_10 + 0x34) = local_18;\n          if (local_20 < 1) {\n            *(undefined4 *)(local_10 + 0x38) = 0;\n          }\n          else {\n            *(int *)(local_10 + 0x38) = local_1c / local_20;\n          }\n          *(char **)(puVar5 + -0x10) = \"Dive Site\";\n          *(undefined4 *)(puVar5 + -0x14) = 0x1205f;\n          printf(*(char **)(puVar5 + -0x10));\n          if (*local_10 != '\\0') {\n            *(char **)(puVar5 + -0xc) = local_10;\n            *(char **)(puVar5 + -0x10) = \" (@s)\";\n            *(undefined4 *)(puVar5 + -0x14) = 0x1207f;\n            printf(*(char **)(puVar5 + -0x10));\n          }\n          *(undefined **)(puVar5 + -0x10) = &DAT_00017130;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12091;\n          printf(*(char **)(puVar5 + -0x10));\n          *(undefined4 *)(puVar5 + -0xc) = 0x1a;\n          *(undefined **)(puVar5 + -0x10) = local_438;\n          *(undefined4 *)(puVar5 + -0x14) = 0x120a5;\n          local_34 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),\n                             *(FILE **)(puVar5 + -8));\n          pcVar1 = local_10;\n          if (local_34 != 0) {\n            *(undefined4 *)(puVar5 + -8) = 0x1a;\n            *(undefined **)(puVar5 + -0xc) = local_438;\n            *(char **)(puVar5 + -0x10) = pcVar1;\n            *(undefined4 *)(puVar5 + -0x14) = 0x120c6;\n            strncpy(*(char **)(puVar5 + -0x10),*(char **)(puVar5 + -0xc),*(size_t *)(puVar5 + -8));\n          }\n          *(undefined **)(puVar5 + -0x10) = &DAT_00017133;\n          *(undefined4 *)(puVar5 + -0x14) = 0x120d8;\n          printf(*(char **)(puVar5 + -0x10));\n          if (local_10[0x1a] != '\\0') {\n            *(char **)(puVar5 + -0xc) = local_10 + 0x1a;\n            *(char **)(puVar5 + -0x10) = \" (@s)\";\n            *(undefined4 *)(puVar5 + -0x14) = 0x120fc;\n            printf(*(char **)(puVar5 + -0x10));\n          }\n          *(undefined **)(puVar5 + -0x10) = &DAT_00017130;\n          *(undefined4 *)(puVar5 + -0x14) = 0x1210e;\n          printf(*(char **)(puVar5 + -0x10));\n          *(undefined4 *)(puVar5 + -0xc) = 0xb;\n          *(undefined **)(puVar5 + -0x10) = local_438;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12122;\n          local_34 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),\n                             *(FILE **)(puVar5 + -8));\n          if (local_34 != 0) {\n            pcVar1 = local_10 + 0x1a;\n            *(__ssize_t *)(puVar5 + -8) = local_34;\n            *(undefined **)(puVar5 + -0xc) = local_438;\n            *(char **)(puVar5 + -0x10) = pcVar1;\n            *(undefined4 *)(puVar5 + -0x14) = 0x12147;\n            strncpy(*(char **)(puVar5 + -0x10),*(char **)(puVar5 + -0xc),*(size_t *)(puVar5 + -8));\n          }\n          *(undefined **)(puVar5 + -0x10) = &DAT_00017138;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12159;\n          printf(*(char **)(puVar5 + -0x10));\n          if (local_10[0x25] != '\\0') {\n            *(char **)(puVar5 + -0xc) = local_10 + 0x25;\n            *(char **)(puVar5 + -0x10) = \" (@s)\";\n            *(undefined4 *)(puVar5 + -0x14) = 0x1217d;\n            printf(*(char **)(puVar5 + -0x10));\n          }\n          *(undefined **)(puVar5 + -0x10) = &DAT_00017130;\n          *(undefined4 *)(puVar5 + -0x14) = 0x1218f;\n          printf(*(char **)(puVar5 + -0x10));\n          *(undefined4 *)(puVar5 + -0xc) = 9;\n          *(undefined **)(puVar5 + -0x10) = local_838;\n          *(undefined4 *)(puVar5 + -0x14) = 0x121a3;\n          local_34 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),\n                             *(FILE **)(puVar5 + -8));\n          if (local_34 != 0) {\n            pcVar1 = local_10 + 0x25;\n            *(__ssize_t *)(puVar5 + -8) = local_34;\n            *(undefined **)(puVar5 + -0xc) = local_838;\n            *(char **)(puVar5 + -0x10) = pcVar1;\n            *(undefined4 *)(puVar5 + -0x14) = 0x121c8;\n            strncpy(*(char **)(puVar5 + -0x10),*(char **)(puVar5 + -0xc),*(size_t *)(puVar5 + -8));\n          }\n          *(char **)(puVar5 + -0x10) = \"Location (area/city)\";\n          *(undefined4 *)(puVar5 + -0x14) = 0x121da;\n          printf(*(char **)(puVar5 + -0x10));\n          if (local_10[0x5c] != '\\0') {\n            *(char **)(puVar5 + -0xc) = local_10 + 0x5c;\n            *(char **)(puVar5 + -0x10) = \" (@s)\";\n            *(undefined4 *)(puVar5 + -0x14) = 0x121fe;\n            printf(*(char **)(puVar5 + -0x10));\n          }\n          *(undefined **)(puVar5 + -0x10) = &DAT_00017130;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12210;\n          printf(*(char **)(puVar5 + -0x10));\n          *(undefined4 *)(puVar5 + -0xc) = 0x1a;\n          *(undefined **)(puVar5 + -0x10) = local_438;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12224;\n          local_34 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),\n                             *(FILE **)(puVar5 + -8));\n          if (local_34 != 0) {\n            pcVar1 = local_10 + 0x5c;\n            *(__ssize_t *)(puVar5 + -8) = local_34;\n            *(undefined **)(puVar5 + -0xc) = local_438;\n            *(char **)(puVar5 + -0x10) = pcVar1;\n            *(undefined4 *)(puVar5 + -0x14) = 0x12249;\n            strncpy(*(char **)(puVar5 + -0x10),*(char **)(puVar5 + -0xc),*(size_t *)(puVar5 + -8));\n          }\n          *(char **)(puVar5 + -0x10) = \"Max Depth in ft\";\n          *(undefined4 *)(puVar5 + -0x14) = 0x1225b;\n          printf(*(char **)(puVar5 + -0x10));\n          if (*(int *)(local_10 + 0x34) != 0) {\n            *(undefined4 *)(puVar5 + -0xc) = *(undefined4 *)(local_10 + 0x34);\n            *(char **)(puVar5 + -0x10) = \" (@d)\";\n            *(undefined4 *)(puVar5 + -0x14) = 0x1227e;\n            printf(*(char **)(puVar5 + -0x10));\n          }\n          *(undefined **)(puVar5 + -0x10) = &DAT_00017130;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12290;\n          printf(*(char **)(puVar5 + -0x10));\n          *(undefined4 *)(puVar5 + -0xc) = 0x400;\n          *(undefined **)(puVar5 + -0x10) = local_438;\n          *(undefined4 *)(puVar5 + -0x14) = 0x122a7;\n          local_34 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),\n                             *(FILE **)(puVar5 + -8));\n          if (local_34 != 0) {\n            *(undefined **)(puVar5 + -0x10) = local_438;\n            *(undefined4 *)(puVar5 + -0x14) = 0x122c2;\n            iVar4 = atoi(*(char **)(puVar5 + -0x10));\n            *(int *)(local_10 + 0x34) = iVar4;\n          }\n          *(char **)(puVar5 + -0x10) = \"Avg Depth in ft\";\n          *(undefined4 *)(puVar5 + -0x14) = 0x122dc;\n          printf(*(char **)(puVar5 + -0x10));\n          if (*(int *)(local_10 + 0x38) != 0) {\n            *(undefined4 *)(puVar5 + -0xc) = *(undefined4 *)(local_10 + 0x38);\n            *(char **)(puVar5 + -0x10) = \" (@d)\";\n            *(undefined4 *)(puVar5 + -0x14) = 0x122ff;\n            printf(*(char **)(puVar5 + -0x10));\n          }\n          *(undefined **)(puVar5 + -0x10) = &DAT_00017130;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12311;\n          printf(*(char **)(puVar5 + -0x10));\n          *(undefined4 *)(puVar5 + -0xc) = 0x400;\n          *(undefined **)(puVar5 + -0x10) = local_438;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12328;\n          local_34 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),\n                             *(FILE **)(puVar5 + -8));\n          if (local_34 != 0) {\n            *(undefined **)(puVar5 + -0x10) = local_438;\n            *(undefined4 *)(puVar5 + -0x14) = 0x12343;\n            iVar4 = atoi(*(char **)(puVar5 + -0x10));\n            *(int *)(local_10 + 0x38) = iVar4;\n          }\n          *(char **)(puVar5 + -0x10) = \"Dive Duration (mins)\";\n          *(undefined4 *)(puVar5 + -0x14) = 0x1235d;\n          printf(*(char **)(puVar5 + -0x10));\n          if (*(int *)(local_10 + 0x3c) != 0) {\n            *(undefined4 *)(puVar5 + -0xc) = *(undefined4 *)(local_10 + 0x3c);\n            *(char **)(puVar5 + -0x10) = \" (@d)\";\n            *(undefined4 *)(puVar5 + -0x14) = 0x12380;\n            printf(*(char **)(puVar5 + -0x10));\n          }\n          *(undefined **)(puVar5 + -0x10) = &DAT_00017130;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12392;\n          printf(*(char **)(puVar5 + -0x10));\n          *(undefined4 *)(puVar5 + -0xc) = 0xd;\n          *(undefined **)(puVar5 + -0x10) = local_438;\n          *(undefined4 *)(puVar5 + -0x14) = 0x123a6;\n          local_34 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),\n                             *(FILE **)(puVar5 + -8));\n          if (local_34 != 0) {\n            *(undefined **)(puVar5 + -0x10) = local_438;\n            *(undefined4 *)(puVar5 + -0x14) = 0x123c1;\n            iVar4 = atoi(*(char **)(puVar5 + -0x10));\n            *(int *)(local_10 + 0x3c) = iVar4;\n          }\n          *(char **)(puVar5 + -0x10) = \"O2 Percentage\";\n          *(undefined4 *)(puVar5 + -0x14) = 0x123db;\n          printf(*(char **)(puVar5 + -0x10));\n          if (*(int *)(local_10 + 0x48) != 0) {\n            *(undefined4 *)(puVar5 + -0xc) = *(undefined4 *)(local_10 + 0x48);\n            *(char **)(puVar5 + -0x10) = \" (@d)\";\n            *(undefined4 *)(puVar5 + -0x14) = 0x123fe;\n            printf(*(char **)(puVar5 + -0x10));\n          }\n          *(undefined **)(puVar5 + -0x10) = &DAT_00017130;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12410;\n          printf(*(char **)(puVar5 + -0x10));\n          *(undefined4 *)(puVar5 + -0xc) = 0xb;\n          *(undefined **)(puVar5 + -0x10) = local_438;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12424;\n          local_34 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),\n                             *(FILE **)(puVar5 + -8));\n          if (local_34 != 0) {\n            *(undefined **)(puVar5 + -0x10) = local_438;\n            *(undefined4 *)(puVar5 + -0x14) = 0x1243f;\n            iVar4 = atoi(*(char **)(puVar5 + -0x10));\n            *(int *)(local_10 + 0x48) = iVar4;\n          }\n          *(char **)(puVar5 + -0x10) = \"Pressure In (psi)\";\n          *(undefined4 *)(puVar5 + -0x14) = 0x12459;\n          printf(*(char **)(puVar5 + -0x10));\n          if (*(int *)(local_10 + 0x40) != 0) {\n            *(undefined4 *)(puVar5 + -0xc) = *(undefined4 *)(local_10 + 0x40);\n            *(char **)(puVar5 + -0x10) = \" (@d)\";\n            *(undefined4 *)(puVar5 + -0x14) = 0x1247c;\n            printf(*(char **)(puVar5 + -0x10));\n          }\n          *(undefined **)(puVar5 + -0x10) = &DAT_00017130;\n          *(undefined4 *)(puVar5 + -0x14) = 0x1248e;\n          printf(*(char **)(puVar5 + -0x10));\n          *(undefined4 *)(puVar5 + -0xc) = 0x14;\n          *(undefined **)(puVar5 + -0x10) = local_438;\n          *(undefined4 *)(puVar5 + -0x14) = 0x124a2;\n          local_34 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),\n                             *(FILE **)(puVar5 + -8));\n          if (local_34 != 0) {\n            *(undefined **)(puVar5 + -0x10) = local_438;\n            *(undefined4 *)(puVar5 + -0x14) = 0x124bd;\n            iVar4 = atoi(*(char **)(puVar5 + -0x10));\n            *(int *)(local_10 + 0x40) = iVar4;\n          }\n          *(char **)(puVar5 + -0x10) = \"Pressure Out (psi)\";\n          *(undefined4 *)(puVar5 + -0x14) = 0x124d7;\n          printf(*(char **)(puVar5 + -0x10));\n          if (*(int *)(local_10 + 0x44) != 0) {\n            *(undefined4 *)(puVar5 + -0xc) = *(undefined4 *)(local_10 + 0x44);\n            *(char **)(puVar5 + -0x10) = \" (@d)\";\n            *(undefined4 *)(puVar5 + -0x14) = 0x124fa;\n            printf(*(char **)(puVar5 + -0x10));\n          }\n          *(undefined **)(puVar5 + -0x10) = &DAT_00017130;\n          *(undefined4 *)(puVar5 + -0x14) = 0x1250c;\n          printf(*(char **)(puVar5 + -0x10));\n          *(undefined4 *)(puVar5 + -0xc) = 0xb;\n          *(undefined **)(puVar5 + -0x10) = local_438;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12520;\n          local_34 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),\n                             *(FILE **)(puVar5 + -8));\n          if (local_34 != 0) {\n            *(undefined **)(puVar5 + -0x10) = local_438;\n            *(undefined4 *)(puVar5 + -0x14) = 0x1253b;\n            iVar4 = atoi(*(char **)(puVar5 + -0x10));\n            *(int *)(local_10 + 0x44) = iVar4;\n          }\n          *(undefined4 *)(local_10 + 0x7c) = 0;\n          return 0;\n        }\n        *(undefined4 *)(puVar5 + -0xc) = 4;\n        *(int **)(puVar5 + -0x10) = &local_844;\n        *(undefined4 *)(puVar5 + -0x14) = 0x11e39;\n        local_28 = receive_bytes();\n        if (local_28 < 0) {\n          *(char **)(puVar5 + -0x10) = \"received error code or zero sample \\n\";\n          *(undefined4 *)(puVar5 + -0x14) = 0x11e54;\n          printf(*(char **)(puVar5 + -0x10));\n          return 0xffffffff;\n        }\n        *(undefined4 *)(puVar5 + -0xc) = 0xc;\n        *(undefined4 *)(puVar5 + -0x10) = 1;\n        *(undefined4 *)(puVar5 + -0x14) = 0x11e6d;\n        pvVar2 = calloc(*(size_t *)(puVar5 + -0x10),*(size_t *)(puVar5 + -0xc));\n        local_14[2] = (int)pvVar2;\n        puVar6 = puVar5;\n        if (local_14[2] == 0) {\n          puVar6 = puVar5 + -0x10;\n          *(undefined4 *)(puVar5 + -0x10) = 0xffffffff;\n          *(undefined4 *)(puVar5 + -0x14) = 0x11e8a;\n          _terminate();\n        }\n        local_14 = (int *)local_14[2];\n        *local_14 = local_83c;\n        local_14[1] = local_844;\n        puVar5 = puVar6;\n      }\n      *(char **)(puVar5 + -0x10) = \"received error code or zero timestamp \\n\";\n      *(undefined4 *)(puVar5 + -0x14) = 0x11e0d;\n      printf(*(char **)(puVar5 + -0x10));\n    }\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [
+                    "Location",
+                    "Duration",
+                    "In",
+                    "Out"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "download_dive",
+                        "receive_bytes",
+                        "printf",
+                        "calloc",
+                        "_terminate",
+                        "time_t2datetime",
+                        "to_date_str",
+                        "to_time_str",
+                        "free",
+                        "getline",
+                        "strncpy",
+                        "Location",
+                        "atoi",
+                        "Duration",
+                        "In",
+                        "Out"
+                    ],
+                    "calling_functions": [
+                        "download_dive"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            }
+        ],
+        "edit_diver.c": [
+            {
+                "func_name": "edit_diver",
+                "func_c_signature": "undefined4 edit_diver(char **param_1)",
+                "decompiled_code": "undefined4 edit_diver(char **param_1) {\n  char **ppcVar1;\n  FILE *in_stack_fffffbdc;\n  char *local_410 [256];\n  __ssize_t local_10;\n  \n  printf(\"First Name\");\n  if (*(char *)((int)param_1 + 0x15) != '\\0') {\n    printf(\" (@s)\",(int)param_1 + 0x15);\n  }\n  printf(\": \");\n  ppcVar1 = (char **)0x15;\n  local_10 = getline(local_410,(size_t *)0x15,in_stack_fffffbdc);\n  if (local_10 != 0) {\n    in_stack_fffffbdc = (FILE *)0x15;\n    ppcVar1 = local_410;\n    strncpy((char *)((int)param_1 + 0x15),(char *)ppcVar1,0x15);\n  }\n  printf(\"Last Name\");\n  if (*(char *)param_1 != '\\0') {\n    ppcVar1 = param_1;\n    printf(\" (@s)\",param_1);\n  }\n  printf(\": \",ppcVar1);\n  ppcVar1 = (char **)0x15;\n  local_10 = getline(local_410,(size_t *)0x15,in_stack_fffffbdc);\n  if (local_10 != 0) {\n    in_stack_fffffbdc = (FILE *)0x15;\n    ppcVar1 = local_410;\n    strncpy((char *)param_1,(char *)ppcVar1,0x15);\n  }\n  printf(\"Street\");\n  if (*(char *)((int)param_1 + 0x3a) != '\\0') {\n    ppcVar1 = (char **)((int)param_1 + 0x3a);\n    printf(\" (@s)\",ppcVar1);\n  }\n  printf(\": \",ppcVar1);\n  ppcVar1 = (char **)0x1e;\n  local_10 = getline(local_410,(size_t *)0x1e,in_stack_fffffbdc);\n  if (local_10 != 0) {\n    in_stack_fffffbdc = (FILE *)0x1e;\n    ppcVar1 = local_410;\n    strncpy((char *)((int)param_1 + 0x3a),(char *)ppcVar1,0x1e);\n  }\n  printf(\"City\");\n  if (*(char *)(param_1 + 0x16) != '\\0') {\n    ppcVar1 = param_1 + 0x16;\n    printf(\" (@s)\",ppcVar1);\n  }\n  printf(\": \",ppcVar1);\n  ppcVar1 = (char **)0x14;\n  local_10 = getline(local_410,(size_t *)0x14,in_stack_fffffbdc);\n  if (local_10 != 0) {\n    in_stack_fffffbdc = (FILE *)0x14;\n    ppcVar1 = local_410;\n    strncpy((char *)(param_1 + 0x16),(char *)ppcVar1,0x14);\n  }\n  printf(\"State\");\n  if (*(char *)(param_1 + 0x1b) != '\\0') {\n    ppcVar1 = param_1 + 0x1b;\n    printf(\" (@s)\",ppcVar1);\n  }\n  printf(\": \",ppcVar1);\n  ppcVar1 = (char **)0x3;\n  local_10 = getline(local_410,(size_t *)0x3,in_stack_fffffbdc);\n  if (local_10 != 0) {\n    in_stack_fffffbdc = (FILE *)0x3;\n    ppcVar1 = local_410;\n    strncpy((char *)(param_1 + 0x1b),(char *)ppcVar1,3);\n  }\n  printf(\"Zip Code\");\n  if (*(char *)((int)param_1 + 0x6f) != '\\0') {\n    ppcVar1 = (char **)((int)param_1 + 0x6f);\n    printf(\" (@s)\",ppcVar1);\n  }\n  printf(\": \",ppcVar1);\n  ppcVar1 = (char **)0xb;\n  local_10 = getline(local_410,(size_t *)0xb,in_stack_fffffbdc);\n  if (local_10 != 0) {\n    in_stack_fffffbdc = (FILE *)0xb;\n    ppcVar1 = local_410;\n    strncpy((char *)((int)param_1 + 0x6f),(char *)ppcVar1,0xb);\n  }\n  printf(\"Phone Number\");\n  if (*(char *)((int)param_1 + 0x2a) != '\\0') {\n    ppcVar1 = (char **)((int)param_1 + 0x2a);\n    printf(\" (@s)\",ppcVar1);\n  }\n  printf(\": \",ppcVar1);\n  ppcVar1 = (char **)0x10;\n  local_10 = getline(local_410,(size_t *)0x10,in_stack_fffffbdc);\n  if (local_10 != 0) {\n    in_stack_fffffbdc = (FILE *)0x10;\n    ppcVar1 = local_410;\n    strncpy((char *)((int)param_1 + 0x2a),(char *)ppcVar1,0x10);\n  }\n  printf(\"PADI Diver Number\");\n  if (*(char *)((int)param_1 + 0x7a) != '\\0') {\n    ppcVar1 = (char **)((int)param_1 + 0x7a);\n    printf(\" (@s)\",ppcVar1);\n  }\n  printf(\": \",ppcVar1);\n  ppcVar1 = (char **)0x14;\n  local_10 = getline(local_410,(size_t *)0x14,in_stack_fffffbdc);\n  if (local_10 != 0) {\n    in_stack_fffffbdc = (FILE *)0x14;\n    ppcVar1 = local_410;\n    strncpy((char *)((int)param_1 + 0x7a),(char *)ppcVar1,0x14);\n  }\n  printf(\"PADI Cert Date\");\n  if (*(char *)((int)param_1 + 0x8e) != '\\0') {\n    ppcVar1 = (char **)((int)param_1 + 0x8e);\n    printf(\" (@s)\",ppcVar1);\n  }\n  printf(\": \",ppcVar1);\n  local_10 = getline(local_410,(size_t *)0xb,in_stack_fffffbdc);\n  if (local_10 != 0) {\n    strncpy((char *)((int)param_1 + 0x8e),(char *)local_410,0xb);\n  }\n  print_diver_info(param_1);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "edit_diver",
+                        "printf",
+                        "getline",
+                        "strncpy",
+                        "print_diver_info"
+                    ],
+                    "calling_functions": [
+                        "edit_diver"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_diver_info",
+                "func_c_signature": "undefined4 print_diver_info(int param_1)",
+                "decompiled_code": "undefined4 print_diver_info(int param_1) {\n  printf(\"\\n\");\n  printf(\"     Name: @s @s\\n\",param_1 + 0x15,param_1);\n  printf(\"  Address: @s\\n\",param_1 + 0x3a);\n  printf(\"     City: @s\\n\",param_1 + 0x58);\n  printf(\"    State: @s\\n\",param_1 + 0x6c);\n  printf(\" Zip Code: @s\\n\",param_1 + 0x6f);\n  printf(\"    Phone: @s\\n\",param_1 + 0x2a);\n  printf(\" PADI Num: @s\\n\",param_1 + 0x7a);\n  printf(\"Cert Date: @s\\n\",param_1 + 0x8e);\n  printf(\"\\n\");\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_diver_info",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "edit_diver",
+                        "print_diver_info"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            }
+        ],
+        "edit_dives.c": [
+            {
+                "func_name": "edit_dives",
+                "func_c_signature": "undefined4 edit_dives(int param_1)",
+                "decompiled_code": "undefined4 edit_dives(int param_1) {\n  FILE *in_stack_fffffbdc;\n  char *local_41c [256];\n  __ssize_t local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = *(int *)(param_1 + 0x9c);\n  local_14 = 1;\n  local_18 = 0;\n  if (local_10 == 0) {\n    printf(\"\\n\");\n    printf(\"Dive Log is empty\\n\");\n  }\n  else {\n    list_dives(param_1);\n    printf(\"\\n\");\n    printf(\"Enter Dive # to edit: \");\n    local_1c = getline(local_41c,(size_t *)0x400,in_stack_fffffbdc);\n    if (local_1c != 0) {\n      local_18 = atoi((char *)local_41c);\n      local_10 = *(int *)(param_1 + 0x9c);\n      local_14 = 1;\n      for (; (local_14 < local_18 && (local_10 != 0)); local_10 = *(int *)(local_10 + 0x7c)) {\n        local_14 = local_14 + 1;\n      }\n      if ((local_14 == local_18) && (local_10 != 0)) {\n        printf(\"Editing dive number @d\\n\",local_18);\n        update_dive(local_10);\n      }\n      else {\n        printf(\"Invalid dive number entered\\n\");\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "edit_dives",
+                        "printf",
+                        "list_dives",
+                        "getline",
+                        "atoi",
+                        "update_dive"
+                    ],
+                    "calling_functions": [
+                        "edit_dives"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "update_dive",
+                "func_c_signature": "undefined4 update_dive(char *param_1)",
+                "decompiled_code": "undefined4 update_dive(char *param_1) {\n  FILE *__stream;\n  undefined4 uVar1;\n  char *pcVar2;\n  FILE *__n;\n  int iVar3;\n  char **ppcVar4;\n  FILE *in_stack_fffff7cc;\n  char local_82c [28];\n  char *local_810 [256];\n  char *local_410 [256];\n  FILE *local_10;\n  \n  printf(\"Dive Site\");\n  if (*param_1 != '\\0') {\n    printf(\" (@s)\",param_1);\n  }\n  printf(\": \");\n  ppcVar4 = (char **)0x1a;\n  local_10 = (FILE *)getline(local_410,(size_t *)0x1a,in_stack_fffff7cc);\n  if (local_10 != (FILE *)0x0) {\n    in_stack_fffff7cc = (FILE *)0x1a;\n    ppcVar4 = local_410;\n    strncpy(param_1,(char *)ppcVar4,0x1a);\n  }\n  printf(\"Date\");\n  if (param_1[0x1a] != '\\0') {\n    ppcVar4 = (char **)(param_1 + 0x1a);\n    printf(\" (@s)\",ppcVar4);\n  }\n  printf(\": \",ppcVar4);\n  ppcVar4 = (char **)0xb;\n  local_10 = (FILE *)getline(local_410,(size_t *)0xb,in_stack_fffff7cc);\n  if (local_10 != (FILE *)0x0) {\n    in_stack_fffff7cc = (FILE *)0xb;\n    ppcVar4 = local_410;\n    strncpy(param_1 + 0x1a,(char *)ppcVar4,0xb);\n  }\n  printf(\"Time\");\n  if (param_1[0x25] != '\\0') {\n    ppcVar4 = (char **)(param_1 + 0x25);\n    printf(\" (@s)\",ppcVar4);\n  }\n  printf(\": \",ppcVar4);\n  local_10 = (FILE *)getline(local_810,(size_t *)0x9,in_stack_fffff7cc);\n  if (local_10 != (FILE *)0x0) {\n    strncpy(param_1 + 0x25,(char *)local_810,9);\n  }\n  strncat((char *)local_410,\" \",1);\n  __stream = (FILE *)strlen((char *)local_810);\n  strncat((char *)local_410,(char *)local_810,(size_t)__stream);\n  pcVar2 = local_82c;\n  uVar1 = str2datetime(local_410,pcVar2);\n  *(undefined4 *)(param_1 + 0x30) = uVar1;\n  printf(\"Location (area/city)\");\n  if (param_1[0x5c] != '\\0') {\n    pcVar2 = param_1 + 0x5c;\n    printf(\" (@s)\",pcVar2);\n  }\n  printf(\": \",pcVar2);\n  ppcVar4 = (char **)0x400;\n  __n = (FILE *)getline(local_410,(size_t *)0x400,__stream);\n  local_10 = __n;\n  if (__n != (FILE *)0x0) {\n    ppcVar4 = local_410;\n    strncpy(param_1 + 0x5c,(char *)ppcVar4,(size_t)__n);\n    __stream = __n;\n  }\n  printf(\"Max Depth in ft\");\n  if (*(int *)(param_1 + 0x34) != 0) {\n    ppcVar4 = *(char ***)(param_1 + 0x34);\n    printf(\" (@d)\",ppcVar4);\n  }\n  printf(\": \",ppcVar4);\n  uVar1 = 0x400;\n  local_10 = (FILE *)getline(local_410,(size_t *)0x400,__stream);\n  if (local_10 != (FILE *)0x0) {\n    iVar3 = atoi((char *)local_410);\n    *(int *)(param_1 + 0x34) = iVar3;\n  }\n  printf(\"Avg Depth in ft\");\n  if (*(int *)(param_1 + 0x38) != 0) {\n    uVar1 = *(undefined4 *)(param_1 + 0x38);\n    printf(\" (@d)\",uVar1);\n  }\n  printf(\": \",uVar1);\n  uVar1 = 0x400;\n  local_10 = (FILE *)getline(local_410,(size_t *)0x400,__stream);\n  if (local_10 != (FILE *)0x0) {\n    iVar3 = atoi((char *)local_410);\n    *(int *)(param_1 + 0x38) = iVar3;\n  }\n  printf(\"Dive Duration (mins)\");\n  if (*(int *)(param_1 + 0x3c) != 0) {\n    uVar1 = *(undefined4 *)(param_1 + 0x3c);\n    printf(\" (@d)\",uVar1);\n  }\n  printf(\": \",uVar1);\n  uVar1 = 0xd;\n  local_10 = (FILE *)getline(local_410,(size_t *)0xd,__stream);\n  if (local_10 != (FILE *)0x0) {\n    iVar3 = atoi((char *)local_410);\n    *(int *)(param_1 + 0x3c) = iVar3;\n  }\n  printf(\"O2 Percentage\");\n  if (*(int *)(param_1 + 0x48) != 0) {\n    uVar1 = *(undefined4 *)(param_1 + 0x48);\n    printf(\" (@d)\",uVar1);\n  }\n  printf(\": \",uVar1);\n  uVar1 = 0xb;\n  local_10 = (FILE *)getline(local_410,(size_t *)0xb,__stream);\n  if (local_10 != (FILE *)0x0) {\n    iVar3 = atoi((char *)local_410);\n    *(int *)(param_1 + 0x48) = iVar3;\n  }\n  printf(\"Pressure In (psi)\");\n  if (*(int *)(param_1 + 0x40) != 0) {\n    uVar1 = *(undefined4 *)(param_1 + 0x40);\n    printf(\" (@d)\",uVar1);\n  }\n  printf(\": \",uVar1);\n  uVar1 = 0x14;\n  local_10 = (FILE *)getline(local_410,(size_t *)0x14,__stream);\n  if (local_10 != (FILE *)0x0) {\n    iVar3 = atoi((char *)local_410);\n    *(int *)(param_1 + 0x40) = iVar3;\n  }\n  printf(\"Pressure Out (psi)\");\n  if (*(int *)(param_1 + 0x44) != 0) {\n    uVar1 = *(undefined4 *)(param_1 + 0x44);\n    printf(\" (@d)\",uVar1);\n  }\n  printf(\": \",uVar1);\n  local_10 = (FILE *)getline(local_410,(size_t *)0xb,__stream);\n  if (local_10 != (FILE *)0x0) {\n    iVar3 = atoi((char *)local_410);\n    *(int *)(param_1 + 0x44) = iVar3;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [
+                    "Location",
+                    "Duration",
+                    "In",
+                    "Out"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "update_dive",
+                        "printf",
+                        "getline",
+                        "strncpy",
+                        "strncat",
+                        "strlen",
+                        "str2datetime",
+                        "Location",
+                        "atoi",
+                        "Duration",
+                        "In",
+                        "Out"
+                    ],
+                    "calling_functions": [
+                        "edit_dives",
+                        "update_dive"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            }
+        ],
+        "log_dive.c": [
+            {
+                "func_name": "log_dives",
+                "func_c_signature": "undefined4 log_dives(int param_1)",
+                "decompiled_code": "undefined4 log_dives(int param_1) {\n  void *pvVar1;\n  size_t sVar2;\n  undefined4 uVar3;\n  int iVar4;\n  undefined *puVar5;\n  undefined auStack_83c [12];\n  undefined local_830 [28];\n  undefined local_814 [1024];\n  undefined local_414 [1024];\n  __ssize_t local_14;\n  char *local_10;\n  \n  puVar5 = auStack_83c;\n  if (*(int *)(param_1 + 0x9c) == 0) {\n    pvVar1 = calloc(1,0x80);\n    *(void **)(param_1 + 0x9c) = pvVar1;\n    puVar5 = auStack_83c;\n    if (*(int *)(param_1 + 0x9c) == 0) {\n      puVar5 = &stack0xfffff7b4;\n      _terminate();\n    }\n    local_10 = *(char **)(param_1 + 0x9c);\n  }\n  else {\n    for (local_10 = *(char **)(param_1 + 0x9c); *(int *)((int)local_10 + 0x7c) != 0;\n        local_10 = *(char **)((int)local_10 + 0x7c)) {\n    }\n    pvVar1 = calloc(1,0x80);\n    *(void **)((int)local_10 + 0x7c) = pvVar1;\n    if (*(int *)((int)local_10 + 0x7c) == 0) {\n      puVar5 = &stack0xfffff7b4;\n      _terminate();\n    }\n    local_10 = *(char **)((int)local_10 + 0x7c);\n  }\n  *(char **)(puVar5 + -0x10) = \"Dive Site\";\n  *(undefined4 *)(puVar5 + -0x14) = 0x132ac;\n  printf(*(char **)(puVar5 + -0x10));\n  if (*local_10 != '\\0') {\n    *(char **)(puVar5 + -0xc) = local_10;\n    *(char **)(puVar5 + -0x10) = \" (@s)\";\n    *(undefined4 *)(puVar5 + -0x14) = 0x132cc;\n    printf(*(char **)(puVar5 + -0x10));\n  }\n  *(undefined **)(puVar5 + -0x10) = &DAT_000173b7;\n  *(undefined4 *)(puVar5 + -0x14) = 0x132de;\n  printf(*(char **)(puVar5 + -0x10));\n  *(undefined4 *)(puVar5 + -0xc) = 0x1a;\n  *(undefined **)(puVar5 + -0x10) = local_414;\n  *(undefined4 *)(puVar5 + -0x14) = 0x132f2;\n  local_14 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),*(FILE **)(puVar5 + -8)\n                    );\n  if (local_14 != 0) {\n    *(undefined4 *)(puVar5 + -8) = 0x1a;\n    *(undefined **)(puVar5 + -0xc) = local_414;\n    *(char **)(puVar5 + -0x10) = local_10;\n    *(undefined4 *)(puVar5 + -0x14) = 0x13313;\n    strncpy(*(char **)(puVar5 + -0x10),*(char **)(puVar5 + -0xc),*(size_t *)(puVar5 + -8));\n  }\n  *(undefined **)(puVar5 + -0x10) = &DAT_000173ba;\n  *(undefined4 *)(puVar5 + -0x14) = 0x13325;\n  printf(*(char **)(puVar5 + -0x10));\n  if (local_10[0x1a] != '\\0') {\n    *(char **)(puVar5 + -0xc) = local_10 + 0x1a;\n    *(char **)(puVar5 + -0x10) = \" (@s)\";\n    *(undefined4 *)(puVar5 + -0x14) = 0x13349;\n    printf(*(char **)(puVar5 + -0x10));\n  }\n  *(undefined **)(puVar5 + -0x10) = &DAT_000173b7;\n  *(undefined4 *)(puVar5 + -0x14) = 0x1335b;\n  printf(*(char **)(puVar5 + -0x10));\n  *(undefined4 *)(puVar5 + -0xc) = 0xb;\n  *(undefined **)(puVar5 + -0x10) = local_414;\n  *(undefined4 *)(puVar5 + -0x14) = 0x1336f;\n  local_14 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),*(FILE **)(puVar5 + -8)\n                    );\n  if (local_14 != 0) {\n    *(__ssize_t *)(puVar5 + -8) = local_14;\n    *(undefined **)(puVar5 + -0xc) = local_414;\n    *(char **)(puVar5 + -0x10) = local_10 + 0x1a;\n    *(undefined4 *)(puVar5 + -0x14) = 0x13394;\n    strncpy(*(char **)(puVar5 + -0x10),*(char **)(puVar5 + -0xc),*(size_t *)(puVar5 + -8));\n  }\n  *(undefined **)(puVar5 + -0x10) = &DAT_000173bf;\n  *(undefined4 *)(puVar5 + -0x14) = 0x133a6;\n  printf(*(char **)(puVar5 + -0x10));\n  if (local_10[0x25] != '\\0') {\n    *(char **)(puVar5 + -0xc) = local_10 + 0x25;\n    *(char **)(puVar5 + -0x10) = \" (@s)\";\n    *(undefined4 *)(puVar5 + -0x14) = 0x133ca;\n    printf(*(char **)(puVar5 + -0x10));\n  }\n  *(undefined **)(puVar5 + -0x10) = &DAT_000173b7;\n  *(undefined4 *)(puVar5 + -0x14) = 0x133dc;\n  printf(*(char **)(puVar5 + -0x10));\n  *(undefined4 *)(puVar5 + -0xc) = 9;\n  *(undefined **)(puVar5 + -0x10) = local_814;\n  *(undefined4 *)(puVar5 + -0x14) = 0x133f0;\n  local_14 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),*(FILE **)(puVar5 + -8)\n                    );\n  if (local_14 != 0) {\n    *(__ssize_t *)(puVar5 + -8) = local_14;\n    *(undefined **)(puVar5 + -0xc) = local_814;\n    *(char **)(puVar5 + -0x10) = local_10 + 0x25;\n    *(undefined4 *)(puVar5 + -0x14) = 0x13415;\n    strncpy(*(char **)(puVar5 + -0x10),*(char **)(puVar5 + -0xc),*(size_t *)(puVar5 + -8));\n  }\n  *(undefined4 *)(puVar5 + -8) = 1;\n  *(undefined **)(puVar5 + -0xc) = &DAT_000173c4;\n  *(undefined **)(puVar5 + -0x10) = local_414;\n  *(undefined4 *)(puVar5 + -0x14) = 0x13430;\n  strncat(*(char **)(puVar5 + -0x10),*(char **)(puVar5 + -0xc),*(size_t *)(puVar5 + -8));\n  *(undefined **)(puVar5 + -0x10) = local_814;\n  *(undefined4 *)(puVar5 + -0x14) = 0x13442;\n  sVar2 = strlen(*(char **)(puVar5 + -0x10));\n  *(size_t *)(puVar5 + -8) = sVar2;\n  *(undefined **)(puVar5 + -0xc) = local_814;\n  *(undefined **)(puVar5 + -0x10) = local_414;\n  *(undefined4 *)(puVar5 + -0x14) = 0x1345c;\n  strncat(*(char **)(puVar5 + -0x10),*(char **)(puVar5 + -0xc),*(size_t *)(puVar5 + -8));\n  *(undefined **)(puVar5 + -0xc) = local_830;\n  *(undefined **)(puVar5 + -0x10) = local_414;\n  *(undefined4 *)(puVar5 + -0x14) = 0x13475;\n  uVar3 = str2datetime();\n  *(undefined4 *)(local_10 + 0x30) = uVar3;\n  *(char **)(puVar5 + -0x10) = \"Location (area/city)\";\n  *(undefined4 *)(puVar5 + -0x14) = 0x1348d;\n  printf(*(char **)(puVar5 + -0x10));\n  if (local_10[0x5c] != '\\0') {\n    *(char **)(puVar5 + -0xc) = local_10 + 0x5c;\n    *(char **)(puVar5 + -0x10) = \" (@s)\";\n    *(undefined4 *)(puVar5 + -0x14) = 0x134b1;\n    printf(*(char **)(puVar5 + -0x10));\n  }\n  *(undefined **)(puVar5 + -0x10) = &DAT_000173b7;\n  *(undefined4 *)(puVar5 + -0x14) = 0x134c3;\n  printf(*(char **)(puVar5 + -0x10));\n  *(undefined4 *)(puVar5 + -0xc) = 0x1a;\n  *(undefined **)(puVar5 + -0x10) = local_414;\n  *(undefined4 *)(puVar5 + -0x14) = 0x134d7;\n  local_14 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),*(FILE **)(puVar5 + -8)\n                    );\n  if (local_14 != 0) {\n    *(__ssize_t *)(puVar5 + -8) = local_14;\n    *(undefined **)(puVar5 + -0xc) = local_414;\n    *(char **)(puVar5 + -0x10) = local_10 + 0x5c;\n    *(undefined4 *)(puVar5 + -0x14) = 0x134fc;\n    strncpy(*(char **)(puVar5 + -0x10),*(char **)(puVar5 + -0xc),*(size_t *)(puVar5 + -8));\n  }\n  *(char **)(puVar5 + -0x10) = \"Max Depth in ft\";\n  *(undefined4 *)(puVar5 + -0x14) = 0x1350e;\n  printf(*(char **)(puVar5 + -0x10));\n  if (*(int *)(local_10 + 0x34) != 0) {\n    *(undefined4 *)(puVar5 + -0xc) = *(undefined4 *)(local_10 + 0x34);\n    *(char **)(puVar5 + -0x10) = \" (@d)\";\n    *(undefined4 *)(puVar5 + -0x14) = 0x13531;\n    printf(*(char **)(puVar5 + -0x10));\n  }\n  *(undefined **)(puVar5 + -0x10) = &DAT_000173b7;\n  *(undefined4 *)(puVar5 + -0x14) = 0x13543;\n  printf(*(char **)(puVar5 + -0x10));\n  *(undefined4 *)(puVar5 + -0xc) = 0x400;\n  *(undefined **)(puVar5 + -0x10) = local_414;\n  *(undefined4 *)(puVar5 + -0x14) = 0x1355a;\n  local_14 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),*(FILE **)(puVar5 + -8)\n                    );\n  if (local_14 != 0) {\n    *(undefined **)(puVar5 + -0x10) = local_414;\n    *(undefined4 *)(puVar5 + -0x14) = 0x13575;\n    iVar4 = atoi(*(char **)(puVar5 + -0x10));\n    *(int *)(local_10 + 0x34) = iVar4;\n  }\n  *(char **)(puVar5 + -0x10) = \"Avg Depth in ft\";\n  *(undefined4 *)(puVar5 + -0x14) = 0x1358f;\n  printf(*(char **)(puVar5 + -0x10));\n  if (*(int *)(local_10 + 0x38) != 0) {\n    *(undefined4 *)(puVar5 + -0xc) = *(undefined4 *)(local_10 + 0x38);\n    *(char **)(puVar5 + -0x10) = \" (@d)\";\n    *(undefined4 *)(puVar5 + -0x14) = 0x135b2;\n    printf(*(char **)(puVar5 + -0x10));\n  }\n  *(undefined **)(puVar5 + -0x10) = &DAT_000173b7;\n  *(undefined4 *)(puVar5 + -0x14) = 0x135c4;\n  printf(*(char **)(puVar5 + -0x10));\n  *(undefined4 *)(puVar5 + -0xc) = 0x400;\n  *(undefined **)(puVar5 + -0x10) = local_414;\n  *(undefined4 *)(puVar5 + -0x14) = 0x135db;\n  local_14 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),*(FILE **)(puVar5 + -8)\n                    );\n  if (local_14 != 0) {\n    *(undefined **)(puVar5 + -0x10) = local_414;\n    *(undefined4 *)(puVar5 + -0x14) = 0x135f6;\n    iVar4 = atoi(*(char **)(puVar5 + -0x10));\n    *(int *)(local_10 + 0x38) = iVar4;\n  }\n  *(char **)(puVar5 + -0x10) = \"Dive Duration (mins)\";\n  *(undefined4 *)(puVar5 + -0x14) = 0x13610;\n  printf(*(char **)(puVar5 + -0x10));\n  if (*(int *)(local_10 + 0x3c) != 0) {\n    *(undefined4 *)(puVar5 + -0xc) = *(undefined4 *)(local_10 + 0x3c);\n    *(char **)(puVar5 + -0x10) = \" (@d)\";\n    *(undefined4 *)(puVar5 + -0x14) = 0x13633;\n    printf(*(char **)(puVar5 + -0x10));\n  }\n  *(undefined **)(puVar5 + -0x10) = &DAT_000173b7;\n  *(undefined4 *)(puVar5 + -0x14) = 0x13645;\n  printf(*(char **)(puVar5 + -0x10));\n  *(undefined4 *)(puVar5 + -0xc) = 0xd;\n  *(undefined **)(puVar5 + -0x10) = local_414;\n  *(undefined4 *)(puVar5 + -0x14) = 0x13659;\n  local_14 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),*(FILE **)(puVar5 + -8)\n                    );\n  if (local_14 != 0) {\n    *(undefined **)(puVar5 + -0x10) = local_414;\n    *(undefined4 *)(puVar5 + -0x14) = 0x13674;\n    iVar4 = atoi(*(char **)(puVar5 + -0x10));\n    *(int *)(local_10 + 0x3c) = iVar4;\n  }\n  *(char **)(puVar5 + -0x10) = \"O2 Percentage\";\n  *(undefined4 *)(puVar5 + -0x14) = 0x1368e;\n  printf(*(char **)(puVar5 + -0x10));\n  if (*(int *)(local_10 + 0x48) != 0) {\n    *(undefined4 *)(puVar5 + -0xc) = *(undefined4 *)(local_10 + 0x48);\n    *(char **)(puVar5 + -0x10) = \" (@d)\";\n    *(undefined4 *)(puVar5 + -0x14) = 0x136b1;\n    printf(*(char **)(puVar5 + -0x10));\n  }\n  *(undefined **)(puVar5 + -0x10) = &DAT_000173b7;\n  *(undefined4 *)(puVar5 + -0x14) = 0x136c3;\n  printf(*(char **)(puVar5 + -0x10));\n  *(undefined4 *)(puVar5 + -0xc) = 0xb;\n  *(undefined **)(puVar5 + -0x10) = local_414;\n  *(undefined4 *)(puVar5 + -0x14) = 0x136d7;\n  local_14 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),*(FILE **)(puVar5 + -8)\n                    );\n  if (local_14 != 0) {\n    *(undefined **)(puVar5 + -0x10) = local_414;\n    *(undefined4 *)(puVar5 + -0x14) = 0x136f2;\n    iVar4 = atoi(*(char **)(puVar5 + -0x10));\n    *(int *)(local_10 + 0x48) = iVar4;\n  }\n  *(char **)(puVar5 + -0x10) = \"Pressure In (psi)\";\n  *(undefined4 *)(puVar5 + -0x14) = 0x1370c;\n  printf(*(char **)(puVar5 + -0x10));\n  if (*(int *)(local_10 + 0x40) != 0) {\n    *(undefined4 *)(puVar5 + -0xc) = *(undefined4 *)(local_10 + 0x40);\n    *(char **)(puVar5 + -0x10) = \" (@d)\";\n    *(undefined4 *)(puVar5 + -0x14) = 0x1372f;\n    printf(*(char **)(puVar5 + -0x10));\n  }\n  *(undefined **)(puVar5 + -0x10) = &DAT_000173b7;\n  *(undefined4 *)(puVar5 + -0x14) = 0x13741;\n  printf(*(char **)(puVar5 + -0x10));\n  *(undefined4 *)(puVar5 + -0xc) = 0x14;\n  *(undefined **)(puVar5 + -0x10) = local_414;\n  *(undefined4 *)(puVar5 + -0x14) = 0x13755;\n  local_14 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),*(FILE **)(puVar5 + -8)\n                    );\n  if (local_14 != 0) {\n    *(undefined **)(puVar5 + -0x10) = local_414;\n    *(undefined4 *)(puVar5 + -0x14) = 0x13770;\n    iVar4 = atoi(*(char **)(puVar5 + -0x10));\n    *(int *)(local_10 + 0x40) = iVar4;\n  }\n  *(char **)(puVar5 + -0x10) = \"Pressure Out (psi)\";\n  *(undefined4 *)(puVar5 + -0x14) = 0x1378a;\n  printf(*(char **)(puVar5 + -0x10));\n  if (*(int *)(local_10 + 0x44) != 0) {\n    *(undefined4 *)(puVar5 + -0xc) = *(undefined4 *)(local_10 + 0x44);\n    *(char **)(puVar5 + -0x10) = \" (@d)\";\n    *(undefined4 *)(puVar5 + -0x14) = 0x137ad;\n    printf(*(char **)(puVar5 + -0x10));\n  }\n  *(undefined **)(puVar5 + -0x10) = &DAT_000173b7;\n  *(undefined4 *)(puVar5 + -0x14) = 0x137bf;\n  printf(*(char **)(puVar5 + -0x10));\n  *(undefined4 *)(puVar5 + -0xc) = 0xb;\n  *(undefined **)(puVar5 + -0x10) = local_414;\n  *(undefined4 *)(puVar5 + -0x14) = 0x137d3;\n  local_14 = getline(*(char ***)(puVar5 + -0x10),*(size_t **)(puVar5 + -0xc),*(FILE **)(puVar5 + -8)\n                    );\n  if (local_14 != 0) {\n    *(undefined **)(puVar5 + -0x10) = local_414;\n    *(undefined4 *)(puVar5 + -0x14) = 0x137ee;\n    iVar4 = atoi(*(char **)(puVar5 + -0x10));\n    *(int *)(local_10 + 0x44) = iVar4;\n  }\n  *(undefined4 *)(local_10 + 0x7c) = 0;\n  return 0;\n}",
+                "globals": [],
+                "externs": [
+                    "Location",
+                    "Duration",
+                    "In",
+                    "Out"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "log_dives",
+                        "calloc",
+                        "_terminate",
+                        "printf",
+                        "getline",
+                        "strncpy",
+                        "strncat",
+                        "strlen",
+                        "str2datetime",
+                        "Location",
+                        "atoi",
+                        "Duration",
+                        "In",
+                        "Out"
+                    ],
+                    "calling_functions": [
+                        "log_dives"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            }
+        ],
+        "menu.c": [
+            {
+                "func_name": "process_menu",
+                "func_c_signature": "undefined4 process_menu(int param_1,int param_2)",
+                "decompiled_code": "undefined4 process_menu(int param_1,int param_2) {\n  int iVar1;\n  FILE *in_stack_ffffffcc;\n  char local_2c;\n  __ssize_t local_14;\n  int local_10;\n  \n  do {\n    do {\n      printf(\"\\n\");\n      for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {\n        in_stack_ffffffcc = *(FILE **)(param_1 + local_10 * 0xc);\n        printf(\"@c - @s\\n\",(int)**(char **)(param_1 + local_10 * 0xc + 4));\n      }\n      printf(\":\");\n      local_14 = getline((char **)&local_2c,(size_t *)0x18,in_stack_ffffffcc);\n    } while (local_14 == 0);\n    printf(\"\\n\");\n    for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {\n      iVar1 = find_char((int)local_2c,*(undefined4 *)(param_1 + local_10 * 0xc + 4));\n      if (iVar1 != 0) {\n        if (*(int *)(param_1 + local_10 * 0xc + 8) == 0) {\n          return 0;\n        }\n        (**(code **)(param_1 + local_10 * 0xc + 8))(logbook);\n        break;\n      }\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_menu",
+                        "printf",
+                        "getline",
+                        "find_char"
+                    ],
+                    "calling_functions": [
+                        "process_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_char",
+                "func_c_signature": "undefined4 find_char(char param_1,char *param_2)",
+                "decompiled_code": "undefined4 find_char(char param_1,char *param_2) {\n  size_t sVar1;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    sVar1 = strlen(param_2);\n    if (sVar1 <= local_10) {\n      return 0;\n    }\n    if (param_1 == param_2[local_10]) break;\n    local_10 = local_10 + 1;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_char",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "process_menu",
+                        "find_char"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            }
+        ],
+        "print_dives.c": [
+            {
+                "func_name": "list_dives",
+                "func_c_signature": "undefined4 list_dives(int param_1)",
+                "decompiled_code": "undefined4 list_dives(int param_1) {\n  undefined4 uVar1;\n  int local_14;\n  int local_10;\n  \n  local_14 = 1;\n  local_10 = *(int *)(param_1 + 0x9c);\n  printf(\"\\n\");\n  if (local_10 == 0) {\n    printf(\"Dive Log is empty\\n\");\n    uVar1 = 0xffffffff;\n  }\n  else {\n    printf(\"Dive# @-10s @-8s @-25s @-25s\\n\",&DAT_00017483,&DAT_0001747e,\"Dive Site\",\"Location\");\n    for (; local_10 != 0; local_10 = *(int *)(local_10 + 0x7c)) {\n      printf(\"@4d: @-10s @-8s @-25s @-25s\\n\",local_14,local_10 + 0x1a,local_10 + 0x25,local_10,\n             local_10 + 0x5c);\n      local_14 = local_14 + 1;\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "list_dives",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "edit_dives",
+                        "list_dives",
+                        "print_dives",
+                        "remove_dives"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_dives",
+                "func_c_signature": "undefined4 print_dives(int param_1)",
+                "decompiled_code": "undefined4 print_dives(int param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  FILE *in_stack_ffffff6c;\n  char *local_80 [25];\n  int local_1c;\n  __ssize_t local_18;\n  int local_14;\n  int local_10;\n  \n  iVar1 = list_dives(param_1);\n  if (iVar1 == -1) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    printf(\"\\n\");\n    printf(\"Enter Dive # to display: \");\n    local_18 = getline(local_80,(size_t *)0x64,in_stack_ffffff6c);\n    if (local_18 == 0) {\n      uVar2 = 0;\n    }\n    else {\n      local_1c = atoi((char *)local_80);\n      local_10 = *(int *)(param_1 + 0x9c);\n      local_14 = 1;\n      for (; (local_14 < local_1c && (local_10 != 0)); local_10 = *(int *)(local_10 + 0x7c)) {\n        local_14 = local_14 + 1;\n      }\n      if ((local_14 == local_1c) && (local_10 != 0)) {\n        printf(\"\\n\");\n        printf(\"          Date: @s\\n\",local_10 + 0x1a);\n        printf(\"          Time: @s\\n\",local_10 + 0x25);\n        printf(\"     Dive Site: @s\\n\",local_10);\n        printf(\"      Location: @s\\n\",local_10 + 0x5c);\n        printf(\"     Max Depth: @d\\n\",*(undefined4 *)(local_10 + 0x34));\n        printf(\"     Avg Depth: @d\\n\",*(undefined4 *)(local_10 + 0x38));\n        printf(\"      Duration: @d\\n\",*(undefined4 *)(local_10 + 0x3c));\n        printf(\"    O2 Percent: @d\\n\",*(undefined4 *)(local_10 + 0x48));\n        printf(\"Start Pressure: @d\\n\",*(undefined4 *)(local_10 + 0x40));\n        printf(\"  End Pressure: @d\\n\",*(undefined4 *)(local_10 + 0x44));\n        printf(\"     Bin Count: @d\\n\",*(undefined4 *)(local_10 + 0x58));\n        printf(\"\\n\");\n      }\n      else {\n        printf(\"Invalid dive number entered\\n\");\n      }\n      uVar2 = 0;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_dives",
+                        "list_dives",
+                        "printf",
+                        "getline",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "print_dives"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            }
+        ],
+        "remove_dives.c": [
+            {
+                "func_name": "remove_dives",
+                "func_c_signature": "undefined4 remove_dives(int param_1)",
+                "decompiled_code": "undefined4 remove_dives(int param_1) {\n  FILE *in_stack_fffffbcc;\n  char *local_42c [256];\n  undefined4 local_2c;\n  void *local_28;\n  __ssize_t local_24;\n  int local_20;\n  int local_1c;\n  void *local_18;\n  void *local_14;\n  void *local_10;\n  \n  local_10 = *(void **)(param_1 + 0x9c);\n  local_1c = 1;\n  local_20 = 0;\n  if (local_10 == (void *)0x0) {\n    printf(\"\\n\");\n    printf(\"Dive Log is empty\\n\");\n  }\n  else {\n    list_dives(param_1);\n    printf(\"\\n\");\n    printf(\"Enter Dive # to delete or blank to abort: \");\n    local_24 = getline(local_42c,(size_t *)0x400,in_stack_fffffbcc);\n    if (local_24 != 0) {\n      local_20 = atoi((char *)local_42c);\n      local_10 = *(void **)(param_1 + 0x9c);\n      if (local_20 == 1) {\n        local_2c = *(undefined4 *)((int)local_10 + 0x7c);\n        local_20 = 1;\n        if (*(int *)((int)local_10 + 0x78) != 0) {\n          local_18 = *(void **)((int)local_10 + 0x78);\n          while (local_18 != (void *)0x0) {\n            local_28 = *(void **)((int)local_18 + 8);\n            free(local_18);\n            local_18 = local_28;\n          }\n        }\n        free(local_10);\n        *(undefined4 *)(param_1 + 0x9c) = local_2c;\n      }\n      else {\n        local_1c = 1;\n        for (; (local_1c < local_20 && (local_10 != (void *)0x0));\n            local_10 = *(void **)((int)local_10 + 0x7c)) {\n          local_1c = local_1c + 1;\n          local_14 = local_10;\n        }\n        if ((local_1c == local_20) && (local_10 != (void *)0x0)) {\n          *(undefined4 *)((int)local_14 + 0x7c) = *(undefined4 *)((int)local_10 + 0x7c);\n          if (*(int *)((int)local_10 + 0x78) != 0) {\n            local_18 = *(void **)((int)local_10 + 0x78);\n            while (local_18 != (void *)0x0) {\n              local_28 = *(void **)((int)local_18 + 8);\n              free(local_18);\n              local_18 = local_28;\n            }\n          }\n          free(local_10);\n        }\n        else {\n          printf(\"Invalid dive number entered\\n\");\n        }\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_dives",
+                        "printf",
+                        "list_dives",
+                        "getline",
+                        "atoi",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "remove_dives"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined **ppuVar2;\n  undefined4 *puVar3;\n  undefined4 local_80 [26];\n  undefined *local_18;\n  \n  local_18 = &stack0x00000004;\n  ppuVar2 = &PTR_s_Change_Diver_Info_0001a000;\n  puVar3 = local_80;\n  for (iVar1 = 0x18; iVar1 != 0; iVar1 = iVar1 + -1) {\n    *puVar3 = *ppuVar2;\n    ppuVar2 = ppuVar2 + 1;\n    puVar3 = puVar3 + 1;\n  }\n  bzero(logbook,0xa0);\n  process_menu(local_80,8);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "bzero",
+                        "process_menu"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "exit_app",
+                "func_c_signature": "void * exit_app(undefined4 param_1)",
+                "decompiled_code": "void * exit_app(undefined4 param_1) {\n  void *__s;\n  int iStack_18;\n  int iStack_14;\n  \n  _terminate(param_1);\n  __s = malloc(iStack_18 * iStack_14);\n  memset(__s,0,iStack_18 * iStack_14);\n  return __s;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "exit_app",
+                        "_terminate",
+                        "malloc",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "exit_app"
+                    ],
+                    "defined_in_file": "CROMU_00014_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,166 @@
+{
+    "file": "KPRCA_00059",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "writeflush",
+                "func_c_signature": "void writeflush(void)",
+                "decompiled_code": "void writeflush(void) {\n  int iVar1;\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (txcnt <= local_10) {\n      txcnt = 0;\n      return;\n    }\n    iVar1 = transmit(txfd,txbuf + local_10,txcnt - local_10,&local_14);\n    if (iVar1 != 0) break;\n    if (local_14 == 0) {\n      txcnt = 0;\n      return;\n    }\n    local_10 = local_10 + local_14;\n  }\n  txcnt = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "writeflush",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "writeflush",
+                        "write",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00059_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write",
+                "func_c_signature": "ssize_t write(int __fd,void *__buf,size_t __n)",
+                "decompiled_code": "ssize_t write(int __fd,void *__buf,size_t __n) {\n  if ((0x400 < __n + txcnt) || (__fd != txfd)) {\n    writeflush();\n  }\n  txfd = __fd;\n  memcpy(txbuf + txcnt,__buf,__n);\n  txcnt = __n + txcnt;\n  return txcnt;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write",
+                        "writeflush",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "write",
+                        "send_error",
+                        "send_aggregate"
+                    ],
+                    "defined_in_file": "KPRCA_00059_decompiled.c"
+                }
+            },
+            {
+                "func_name": "send_error",
+                "func_c_signature": "void send_error(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "void send_error(undefined4 param_1,undefined4 param_2) {\n  undefined local_1d [5];\n  undefined4 local_18;\n  undefined4 local_14;\n  \n  memset(local_1d,0,0x11);\n  local_1d[0] = 0;\n  local_18 = param_1;\n  local_14 = param_2;\n  write(1,local_1d,0x11);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "send_error",
+                        "memset",
+                        "write"
+                    ],
+                    "calling_functions": [
+                        "send_error",
+                        "do_mix",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00059_decompiled.c"
+                }
+            },
+            {
+                "func_name": "send_aggregate",
+                "func_c_signature": "void send_aggregate(undefined4 param_1)",
+                "decompiled_code": "void send_aggregate(undefined4 param_1) {\n  int iVar1;\n  undefined4 local_48;\n  uint local_44;\n  undefined4 local_40;\n  undefined4 local_3c;\n  undefined4 local_38;\n  undefined4 local_34;\n  undefined4 local_30;\n  undefined local_29;\n  undefined4 local_28;\n  undefined4 local_24;\n  undefined4 local_20;\n  undefined4 local_1c;\n  uint local_18;\n  int local_14;\n  int local_10;\n  \n  iVar1 = stateq_empty(g_history);\n  if (iVar1 == 0) {\n    memset(&local_48,0,0x1c);\n    local_48 = param_1;\n    for (local_10 = stateq_length(g_history); local_10 != 0; local_10 = local_10 + -1) {\n      local_14 = stateq_get(g_history,local_10 + -1);\n      local_18 = *(uint *)(local_14 + 4) & ~local_44;\n      if ((local_18 & 1) != 0) {\n        local_40 = *(undefined4 *)(local_14 + 8);\n        local_3c = *(undefined4 *)(local_14 + 0xc);\n        local_38 = *(undefined4 *)(local_14 + 0x10);\n        local_44 = local_44 | 1;\n      }\n      if ((local_18 & 2) != 0) {\n        local_34 = *(undefined4 *)(local_14 + 0x14);\n        local_44 = local_44 | 2;\n      }\n      if ((local_18 & 4) != 0) {\n        local_30 = *(undefined4 *)(local_14 + 0x18);\n        local_44 = local_44 | 4;\n      }\n    }\n    memset(&local_29,0,0x11);\n    local_28 = local_48;\n    if ((local_44 & 2) != 0) {\n      local_29 = 3;\n      local_24 = local_34;\n      write(1,&local_29,0x11);\n    }\n    if ((local_44 & 4) != 0) {\n      local_29 = 4;\n      local_24 = local_30;\n      write(1,&local_29,0x11);\n    }\n    if ((local_44 & 1) != 0) {\n      local_29 = 2;\n      local_24 = local_40;\n      local_20 = local_3c;\n      local_1c = local_38;\n      write(1,&local_29,0x11);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "send_aggregate",
+                        "stateq_empty",
+                        "memset",
+                        "stateq_length",
+                        "stateq_get",
+                        "write"
+                    ],
+                    "calling_functions": [
+                        "send_aggregate",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00059_decompiled.c"
+                }
+            },
+            {
+                "func_name": "calculate_speed",
+                "func_c_signature": "longdouble calculate_speed(int param_1)",
+                "decompiled_code": "longdouble calculate_speed(int param_1) {\n  int *piVar1;\n  float fVar2;\n  float fVar3;\n  float fVar4;\n  int local_10;\n  \n  local_10 = stateq_length(g_history);\n  while( true ) {\n    if (local_10 == 0) {\n      return (longdouble)0;\n    }\n    piVar1 = (int *)stateq_get(g_history,local_10 + -1);\n    if ((*piVar1 != *(int *)(param_1 + 1)) && ((piVar1[1] & 1U) != 0)) break;\n    local_10 = local_10 + -1;\n  }\n  fVar2 = exp2f((float)piVar1[2] - *(float *)(param_1 + 5));\n  fVar3 = exp2f((float)piVar1[3] - *(float *)(param_1 + 9));\n  fVar4 = exp2f((float)piVar1[4] - *(float *)(param_1 + 0xd));\n  fVar2 = sqrtf(fVar4 + fVar3 + fVar2);\n  return (longdouble)fVar2 / (longdouble)(ulonglong)(uint)(*(int *)(param_1 + 1) - *piVar1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "calculate_speed",
+                        "stateq_length",
+                        "stateq_get",
+                        "exp2f",
+                        "sqrtf"
+                    ],
+                    "calling_functions": [
+                        "calculate_speed",
+                        "do_mix"
+                    ],
+                    "defined_in_file": "KPRCA_00059_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_mix",
+                "func_c_signature": "undefined4 do_mix(int param_1,byte *param_2)",
+                "decompiled_code": "undefined4 do_mix(int param_1,byte *param_2) {\n  byte bVar1;\n  int iVar2;\n  int *piVar3;\n  undefined4 uVar4;\n  longdouble lVar5;\n  int local_10;\n  \n  bVar1 = *param_2;\n  if (bVar1 == 4) {\n    if ((*(float *)(param_2 + 5) < 0.0) || (_DAT_0001601c <= *(float *)(param_2 + 5))) {\n      send_error(3,4);\n      return 0;\n    }\n  }\n  else {\n    if (4 < bVar1) {\n      return 0;\n    }\n    if (bVar1 != 2) {\n      if (bVar1 != 3) {\n        return 0;\n      }\n      if ((*(float *)(param_2 + 5) < 0.0) || (DAT_00016018 <= *(float *)(param_2 + 5))) {\n        send_error(3,3);\n        return 0;\n      }\n    }\n  }\n  iVar2 = stateq_empty(g_history);\n  if ((iVar2 == 0) && (piVar3 = (int *)stateq_tail(g_history), *piVar3 != *(int *)(param_2 + 1))) {\n    local_10 = stateq_tail(g_history);\n  }\n  else {\n    iVar2 = stateq_length(g_history);\n    if (iVar2 < 2) {\n      local_10 = 0;\n    }\n    else {\n      iVar2 = stateq_length(g_history);\n      local_10 = stateq_get(g_history,iVar2 + -2);\n    }\n  }\n  if (((local_10 == 0) || (*param_2 != 2)) ||\n     (lVar5 = (longdouble)calculate_speed(param_2), lVar5 <= (longdouble)DAT_00016018)) {\n    bVar1 = *param_2;\n    if (bVar1 == 4) {\n      *(undefined4 *)(param_1 + 0x18) = *(undefined4 *)(param_2 + 5);\n      *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) | 4;\n    }\n    else if (bVar1 < 5) {\n      if (bVar1 == 2) {\n        *(undefined4 *)(param_1 + 8) = *(undefined4 *)(param_2 + 5);\n        *(undefined4 *)(param_1 + 0xc) = *(undefined4 *)(param_2 + 9);\n        *(undefined4 *)(param_1 + 0x10) = *(undefined4 *)(param_2 + 0xd);\n        *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) | 1;\n      }\n      else if (bVar1 == 3) {\n        *(undefined4 *)(param_1 + 0x14) = *(undefined4 *)(param_2 + 5);\n        *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) | 2;\n      }\n    }\n    uVar4 = 1;\n  }\n  else {\n    send_error(3,2);\n    uVar4 = 0;\n  }\n  return uVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_mix",
+                        "send_error",
+                        "stateq_empty",
+                        "stateq_tail",
+                        "stateq_length",
+                        "stateq_get",
+                        "calculate_speed"
+                    ],
+                    "calling_functions": [
+                        "do_mix",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00059_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_hash",
+                "func_c_signature": "int do_hash(void *param_1,size_t param_2)",
+                "decompiled_code": "int do_hash(void *param_1,size_t param_2) {\n  void *__dest;\n  uint local_18;\n  int local_14;\n  uint local_10;\n  \n  __dest = malloc(param_2);\n  local_14 = 0;\n  local_18 = 0x12345678;\n  memcpy(__dest,param_1,param_2);\n  for (local_10 = 0; local_10 < param_2 - 3; local_10 = local_10 + 4) {\n    *(uint *)(local_10 + (int)__dest) = *(uint *)(local_10 + (int)__dest) ^ local_18;\n    local_18 = local_18 ^ local_18 >> 0xd;\n    local_18 = local_18 ^ local_18 << 7;\n    local_18 = local_18 ^ local_18 >> 0x11;\n  }\n  for (local_10 = 0; local_10 < param_2 - 3; local_10 = local_10 + 4) {\n    local_14 = local_14 + *(int *)(local_10 + (int)__dest);\n  }\n  free(__dest);\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_hash",
+                        "malloc",
+                        "memcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "do_hash",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00059_decompiled.c"
+                }
+            }
+        ]
+    }
+}

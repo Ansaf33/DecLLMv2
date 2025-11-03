@@ -1,0 +1,497 @@
+{
+    "file": "env",
+    "decompiled_code": {
+        "env.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [-] [NAME=VALUE]... [COMMAND [ARG]...]\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"Set each NAME to VALUE in the environment and run COMMAND.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  -a, --argv0=ARG      pass ARG as the zeroth argument of COMMAND\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -i, --ignore-environment  start with an empty environment\\n  -0, --null           end each output line with NUL, not newline\\n  -u, --unset=NAME     remove variable from the environment\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  -C, --chdir=DIR      change working directory to DIR\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -S, --split-string=S  process and split S into separate arguments;\\n                        used to pass multiple arguments on shebang lines\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --block-signal[=SIG]    block delivery of SIG signal(s) to COMMAND\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --default-signal[=SIG]  reset handling of SIG signal(s) to the default\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --ignore-signal[=SIG]   set handling of SIG signal(s) to do nothing\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --list-signal-handling  list non default signal handling to standard error\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -v, --debug          print verbose information for each processing step\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nA mere - implies -i.  If no COMMAND, print the resulting environment.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nSIG may be a signal name like \\'PIPE\\', or a signal number like \\'13\\'.\\nWithout SIG, all known signals are included.  Multiple signals can be\\ncomma-separated.  An empty SIG argument is a no-op.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_exec_status(&DAT_00103248);\n    emit_ancillary_info(&DAT_00103248);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "signal"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "signal",
+                        "emit_exec_status",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "parse_signal_action_params",
+                        "parse_block_signal_params",
+                        "main"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "append_unset_var",
+                "func_c_signature": "void append_unset_var(undefined8 param_1)",
+                "decompiled_code": "void append_unset_var(undefined8 param_1) {\n  long lVar1;\n  \n  if (usvars_used == usvars_alloc) {\n    usvars = xpalloc(usvars,&usvars_alloc,1,0xffffffffffffffff,8);\n  }\n  lVar1 = usvars_used * 8;\n  usvars_used = usvars_used + 1;\n  *(undefined8 *)(usvars + lVar1) = param_1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "append_unset_var",
+                        "xpalloc"
+                    ],
+                    "calling_functions": [
+                        "append_unset_var",
+                        "main"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "unset_envvars",
+                "func_c_signature": "void unset_envvars(void)",
+                "decompiled_code": "void unset_envvars(void) {\n  int iVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  long local_28;\n  \n  for (local_28 = 0; local_28 < usvars_used; local_28 = local_28 + 1) {\n    if (dev_debug != '\\0') {\n      fprintf(_stderr,\"unset:    %s\\n\",*(undefined8 *)(usvars + local_28 * 8));\n    }\n    iVar1 = unsetenv(*(char **)(usvars + local_28 * 8));\n    if (iVar1 != 0) {\n      uVar2 = quote(*(undefined8 *)(usvars + local_28 * 8));\n      uVar3 = gettext(\"cannot unset %s\");\n      piVar4 = __errno_location();\n      error(0x7d,*piVar4,uVar3,uVar2);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "unset_envvars",
+                        "fprintf",
+                        "unsetenv",
+                        "quote",
+                        "gettext",
+                        "__errno_location",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "unset_envvars",
+                        "main"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "scan_varname",
+                "func_c_signature": "char * scan_varname(long param_1)",
+                "decompiled_code": "char * scan_varname(long param_1) {\n  char cVar1;\n  char *local_10;\n  \n  if ((*(char *)(param_1 + 1) == '{') &&\n     ((cVar1 = c_isalpha((int)*(char *)(param_1 + 2)), cVar1 != '\\0' ||\n      (*(char *)(param_1 + 2) == '_')))) {\n    for (local_10 = (char *)(param_1 + 3);\n        (cVar1 = c_isalnum((int)*local_10), cVar1 != '\\0' || (*local_10 == '_'));\n        local_10 = local_10 + 1) {\n    }\n    if (*local_10 == '}') {\n      return local_10;\n    }\n  }\n  return (char *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "scan_varname",
+                        "c_isalpha",
+                        "c_isalnum"
+                    ],
+                    "calling_functions": [
+                        "scan_varname",
+                        "extract_varname"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "extract_varname",
+                "func_c_signature": "void * extract_varname(long param_1)",
+                "decompiled_code": "void * extract_varname(long param_1) {\n  long lVar1;\n  size_t __n;\n  void *pvVar2;\n  \n  lVar1 = scan_varname(param_1);\n  if (lVar1 == 0) {\n    pvVar2 = (void *)0x0;\n  }\n  else {\n    __n = (lVar1 - param_1) - 2;\n    if (vnlen <= (long)__n) {\n      free(varname);\n      varname = (void *)xpalloc(0,&vnlen,((lVar1 - param_1) + -1) - vnlen,0xffffffffffffffff,1);\n    }\n    memcpy(varname,(void *)(param_1 + 2),__n);\n    *(undefined *)(__n + (long)varname) = 0;\n    pvVar2 = varname;\n  }\n  return pvVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "extract_varname",
+                        "scan_varname",
+                        "free",
+                        "xpalloc",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "extract_varname",
+                        "build_argv"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "splitbuf_grow",
+                "func_c_signature": "void splitbuf_grow(long *param_1)",
+                "decompiled_code": "void splitbuf_grow(long *param_1) {\n  long lVar1;\n  size_t __n;\n  long lVar2;\n  \n  lVar1 = param_1[2];\n  __n = *(size_t *)((long)*(int *)(param_1 + 1) * 8 + *param_1);\n  lVar2 = xpalloc(*param_1,param_1 + 2,1,0x7fffffff,0x10);\n  *param_1 = lVar2;\n  memmove((void *)(*param_1 + param_1[2] * 8),(void *)(*param_1 + lVar1 * 8),__n);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "splitbuf_grow",
+                        "xpalloc",
+                        "memmove"
+                    ],
+                    "calling_functions": [
+                        "splitbuf_grow",
+                        "splitbuf_append_byte",
+                        "check_start_new_arg"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "splitbuf_append_byte",
+                "func_c_signature": "void splitbuf_append_byte(long *param_1,undefined param_2)",
+                "decompiled_code": "void splitbuf_append_byte(long *param_1,undefined param_2) {\n  ulong uVar1;\n  \n  uVar1 = *(ulong *)((long)*(int *)(param_1 + 1) * 8 + *param_1);\n  if ((ulong)(param_1[2] << 3) <= uVar1) {\n    splitbuf_grow(param_1);\n  }\n  *(undefined *)(*param_1 + uVar1 + param_1[2] * 8) = param_2;\n  *(ulong *)((long)*(int *)(param_1 + 1) * 8 + *param_1) = uVar1 + 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "splitbuf_append_byte",
+                        "splitbuf_grow"
+                    ],
+                    "calling_functions": [
+                        "splitbuf_append_byte",
+                        "check_start_new_arg",
+                        "build_argv"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_start_new_arg",
+                "func_c_signature": "void check_start_new_arg(long *param_1)",
+                "decompiled_code": "void check_start_new_arg(long *param_1) {\n  int iVar1;\n  \n  if (*(char *)((long)param_1 + 0x1c) != '\\0') {\n    splitbuf_append_byte(param_1,0);\n    iVar1 = *(int *)(param_1 + 1);\n    if (param_1[2] <= (long)(iVar1 + *(int *)(param_1 + 3) + 1)) {\n      splitbuf_grow(param_1);\n    }\n    *(undefined8 *)(((long)iVar1 + 1) * 8 + *param_1) = *(undefined8 *)(*param_1 + (long)iVar1 * 8);\n    *(int *)(param_1 + 1) = iVar1 + 1;\n    *(undefined *)((long)param_1 + 0x1c) = 0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_start_new_arg",
+                        "splitbuf_append_byte",
+                        "splitbuf_grow"
+                    ],
+                    "calling_functions": [
+                        "check_start_new_arg",
+                        "build_argv"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "splitbuf_finishup",
+                "func_c_signature": "long splitbuf_finishup(long *param_1)",
+                "decompiled_code": "long splitbuf_finishup(long *param_1) {\n  int iVar1;\n  long lVar2;\n  long lVar3;\n  long lVar4;\n  int local_20;\n  \n  iVar1 = *(int *)(param_1 + 1);\n  lVar2 = *param_1;\n  lVar3 = *param_1;\n  lVar4 = param_1[2];\n  for (local_20 = 1; local_20 < iVar1; local_20 = local_20 + 1) {\n    *(long *)(lVar2 + (long)local_20 * 8) =\n         lVar4 * 8 + lVar3 + *(long *)(lVar2 + (long)local_20 * 8);\n  }\n  return lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "splitbuf_finishup"
+                    ],
+                    "calling_functions": [
+                        "splitbuf_finishup",
+                        "build_argv"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "build_argv",
+                "func_c_signature": "void build_argv(char *param_1,int param_2,undefined4 *param_3)",
+                "decompiled_code": "void build_argv(char *param_1,int param_2,undefined4 *param_3) {\n  bool bVar1;\n  bool bVar2;\n  int iVar3;\n  size_t sVar4;\n  char *pcVar5;\n  undefined8 uVar6;\n  long in_FS_OFFSET;\n  char *local_c0;\n  bool local_ab;\n  bool local_aa;\n  char local_a9;\n  char *local_80;\n  long local_48;\n  undefined4 local_40;\n  long local_38;\n  int local_30;\n  char local_2c;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_ab = false;\n  local_aa = false;\n  local_48 = xnmalloc((long)(param_2 + 2),0x10);\n  local_40 = 1;\n  local_38 = (long)(param_2 + 2);\n  local_2c = '\\x01';\n  *(undefined8 *)(local_48 + 8) = 0;\n  local_c0 = param_1;\n  local_30 = param_2;\n  bVar1 = false;\n  bVar2 = false;\nLAB_00101011:\n  if (*local_c0 == '\\0') {\n    if ((bVar1) || (bVar2)) {\n      uVar6 = gettext(\"no terminating quote in -S string\");\n      error(0x7d,0,uVar6);\n    }\nLAB_00101076:\n    splitbuf_append_byte(&local_48,0);\n    *param_3 = local_40;\n    splitbuf_finishup(&local_48);\n    if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n      __stack_chk_fail();\n    }\n    return;\n  }\n  local_a9 = *local_c0;\n  iVar3 = (int)*local_c0;\n  pcVar5 = local_c0;\n  if (iVar3 < 0x28) {\n    if (iVar3 < 9) goto switchD_00100bb0_caseD_e;\n    switch(iVar3) {\n    case 9:\n    case 10:\n    case 0xb:\n    case 0xc:\n    case 0xd:\n    case 0x20:\n      if ((!bVar2) && (!bVar1)) {\n        local_2c = '\\x01';\n        sVar4 = strspn(local_c0,\" \\t\\n\\v\\f\\r\");\n        local_c0 = local_c0 + sVar4;\n        goto LAB_00101011;\n      }\n      break;\n    case 0x22:\n      if (!bVar2) {\n        local_ab = local_ab == false;\n        check_start_new_arg(&local_48);\n        local_c0 = local_c0 + 1;\n        bVar1 = local_ab;\n        goto LAB_00101011;\n      }\n      break;\n    case 0x23:\n      if (local_2c == '\\x01') goto LAB_00101076;\n      break;\n    case 0x24:\n      if (!bVar2) {\n        pcVar5 = (char *)extract_varname(local_c0);\n        if (pcVar5 == (char *)0x0) {\n          uVar6 = gettext(\"only ${VARNAME} expansion is supported, error at: %s\");\n          error(0x7d,0,uVar6,local_c0);\n        }\n        local_80 = getenv(pcVar5);\n        if (local_80 == (char *)0x0) {\n          if (dev_debug != '\\0') {\n            fprintf(_stderr,\"replacing ${%s} with null string\\n\",pcVar5);\n          }\n        }\n        else {\n          check_start_new_arg(&local_48);\n          if (dev_debug != '\\0') {\n            uVar6 = quote(local_80);\n            fprintf(_stderr,\"expanding ${%s} into %s\\n\",pcVar5,uVar6);\n          }\n          for (; *local_80 != '\\0'; local_80 = local_80 + 1) {\n            splitbuf_append_byte(&local_48,(int)*local_80);\n          }\n        }\n        local_c0 = strchr(local_c0,0x7d);\n        local_c0 = local_c0 + 1;\n        goto LAB_00101011;\n      }\n      break;\n    case 0x27:\n      if (!bVar1) {\n        local_aa = local_aa == false;\n        check_start_new_arg(&local_48);\n        local_c0 = local_c0 + 1;\n        bVar2 = local_aa;\n        goto LAB_00101011;\n      }\n    }\n  }\n  else {\n    if ((iVar3 != 0x5c) || (((bVar2 && (local_c0[1] != '\\\\')) && (local_c0[1] != '\\''))))\n    goto switchD_00100bb0_caseD_e;\n    pcVar5 = local_c0 + 1;\n    local_a9 = *pcVar5;\n    iVar3 = (int)local_a9;\n    if (local_a9 == '\\0') {\n      uVar6 = gettext(\"invalid backslash at end of string in -S\");\n      error(0x7d,0,uVar6);\nswitchD_00100d40_caseD_25:\n      uVar6 = gettext(\"invalid sequence \\'\\\\%c\\' in -S\");\n      error(0x7d,0,uVar6,(int)local_a9);\n      goto switchD_00100bb0_caseD_e;\n    }\n    if (((local_a9 < '\\0') || (0x76 < iVar3)) || (iVar3 < 0x22)) goto switchD_00100d40_caseD_25;\n    switch(iVar3) {\n    case 0x22:\n    case 0x23:\n    case 0x24:\n    case 0x27:\n    case 0x5c:\n      break;\n    default:\n      goto switchD_00100d40_caseD_25;\n    case 0x5f:\n      if (bVar1) {\n        local_a9 = ' ';\n        break;\n      }\n      local_c0 = local_c0 + 2;\n      local_2c = '\\x01';\n      goto LAB_00101011;\n    case 99:\n      if (bVar1) {\n        uVar6 = gettext(\"\\'\\\\c\\' must not appear in double-quoted -S string\");\n        error(0x7d,0,uVar6);\n        goto switchD_00100d40_caseD_66;\n      }\n      goto LAB_00101076;\n    case 0x66:\nswitchD_00100d40_caseD_66:\n      local_a9 = '\\f';\n      break;\n    case 0x6e:\n      local_a9 = '\\n';\n      break;\n    case 0x72:\n      local_a9 = '\\r';\n      break;\n    case 0x74:\n      local_a9 = '\\t';\n      break;\n    case 0x76:\n      local_a9 = '\\v';\n    }\n  }\nswitchD_00100bb0_caseD_e:\n  local_c0 = pcVar5;\n  check_start_new_arg(&local_48);\n  splitbuf_append_byte(&local_48,(int)local_a9);\n  local_c0 = local_c0 + 1;\n  goto LAB_00101011;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "build_argv",
+                        "xnmalloc",
+                        "gettext",
+                        "error",
+                        "splitbuf_append_byte",
+                        "splitbuf_finishup",
+                        "__stack_chk_fail",
+                        "strspn",
+                        "check_start_new_arg",
+                        "extract_varname",
+                        "getenv",
+                        "fprintf",
+                        "quote",
+                        "strchr"
+                    ],
+                    "calling_functions": [
+                        "build_argv",
+                        "parse_split_string"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_split_string",
+                "func_c_signature": "void parse_split_string(undefined8 param_1,int *param_2,int *param_3,long *param_4)",
+                "decompiled_code": "void parse_split_string(undefined8 param_1,int *param_2,int *param_3,long *param_4) {\n  undefined8 uVar1;\n  long in_FS_OFFSET;\n  int local_24;\n  int local_20;\n  int local_1c;\n  undefined8 *local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_1c = *param_3 - *param_2;\n  local_18 = (undefined8 *)build_argv(param_1,local_1c,&local_24);\n  *local_18 = *(undefined8 *)*param_4;\n  if ((dev_debug != '\\0') && (1 < local_24)) {\n    if (dev_debug != '\\0') {\n      uVar1 = quote(param_1);\n      fprintf(_stderr,\"split -S:  %s\\n\",uVar1);\n    }\n    if (dev_debug != '\\0') {\n      uVar1 = quote(local_18[1]);\n      fprintf(_stderr,\" into:    %s\\n\",uVar1);\n    }\n    for (local_20 = 2; local_20 < local_24; local_20 = local_20 + 1) {\n      if (dev_debug != '\\0') {\n        uVar1 = quote(local_18[local_20]);\n        fprintf(_stderr,\"     &    %s\\n\",uVar1);\n      }\n    }\n  }\n  memcpy(local_18 + local_24,(void *)(*param_4 + (long)*param_2 * 8),(long)(local_1c + 1) * 8);\n  *param_3 = local_24 + local_1c;\n  *param_4 = (long)local_18;\n  *param_2 = 0;\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_split_string",
+                        "build_argv",
+                        "quote",
+                        "fprintf",
+                        "memcpy",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "parse_split_string",
+                        "main"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_signal_action_params",
+                "func_c_signature": "void parse_signal_action_params(long param_1,char param_2)",
+                "decompiled_code": "void parse_signal_action_params(long param_1,char param_2) {\n  int iVar1;\n  char *__s;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  undefined4 uVar4;\n  int local_40;\n  char *local_30;\n  \n  if (param_1 == 0) {\n    for (local_40 = 1; local_40 < 0x41; local_40 = local_40 + 1) {\n      if (param_2 == '\\0') {\n        uVar4 = 4;\n      }\n      else {\n        uVar4 = 2;\n      }\n      *(undefined4 *)(signals + (long)local_40 * 4) = uVar4;\n    }\n  }\n  else {\n    __s = (char *)xstrdup(param_1);\n    local_30 = strtok(__s,\",\");\n    while (local_30 != (char *)0x0) {\n      iVar1 = operand2sig(local_30);\n      if (iVar1 == 0) {\n        uVar2 = quote(local_30);\n        uVar3 = gettext(\"%s: invalid signal\");\n        error(0,0,uVar3,uVar2);\n      }\n      if (iVar1 < 1) {\n        usage(_exit_failure);\n      }\n      if (param_2 == '\\0') {\n        uVar4 = 3;\n      }\n      else {\n        uVar4 = 1;\n      }\n      *(undefined4 *)(signals + (long)iVar1 * 4) = uVar4;\n      local_30 = strtok((char *)0x0,\",\");\n    }\n    free(__s);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_signal_action_params",
+                        "xstrdup",
+                        "strtok",
+                        "operand2sig",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "parse_signal_action_params",
+                        "main"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "reset_signal_handlers",
+                "func_c_signature": "void reset_signal_handlers(void)",
+                "decompiled_code": "void reset_signal_handlers(void) {\n  bool bVar1;\n  bool bVar2;\n  int iVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  char *pcVar6;\n  char *pcVar7;\n  long in_FS_OFFSET;\n  uint local_100;\n  int local_fc;\n  sigaction local_d8;\n  char local_38 [24];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  for (local_100 = 1; (int)local_100 < 0x41; local_100 = local_100 + 1) {\n    if (*(int *)(signals + (long)(int)local_100 * 4) != 0) {\n      if ((*(int *)(signals + (long)(int)local_100 * 4) == 2) ||\n         (*(int *)(signals + (long)(int)local_100 * 4) == 4)) {\n        bVar1 = true;\n      }\n      else {\n        bVar1 = false;\n      }\n      if ((*(int *)(signals + (long)(int)local_100 * 4) == 1) ||\n         (*(int *)(signals + (long)(int)local_100 * 4) == 2)) {\n        bVar2 = true;\n      }\n      else {\n        bVar2 = false;\n      }\n      local_fc = sigaction(local_100,(sigaction *)0x0,&local_d8);\n      if ((local_fc != 0) && (!bVar1)) {\n        uVar4 = gettext(\"failed to get signal action for signal %d\");\n        piVar5 = __errno_location();\n        error(0x7d,*piVar5,uVar4,local_100);\n      }\n      if (local_fc == 0) {\n        local_d8.__sigaction_handler._1_7_ = 0;\n        local_d8.__sigaction_handler._0_1_ = !bVar2;\n        local_fc = sigaction(local_100,&local_d8,(sigaction *)0x0);\n        if ((local_fc != 0) && (!bVar1)) {\n          uVar4 = gettext(\"failed to set signal action for signal %d\");\n          piVar5 = __errno_location();\n          error(0x7d,*piVar5,uVar4,local_100);\n        }\n      }\n      if (dev_debug != '\\0') {\n        iVar3 = sig2str(local_100,local_38);\n        if (iVar3 != 0) {\n          snprintf(local_38,0x13,\"SIG%d\",(ulong)local_100);\n        }\n        if (dev_debug != '\\0') {\n          if (local_fc == 0) {\n            pcVar7 = \"\";\n          }\n          else {\n            pcVar7 = \" (failure ignored)\";\n          }\n          if (bVar2) {\n            pcVar6 = \"DEFAULT\";\n          }\n          else {\n            pcVar6 = \"IGNORE\";\n          }\n          fprintf(_stderr,\"Reset signal %s (%d) to %s%s\\n\",local_38,(ulong)local_100,pcVar6,pcVar7);\n        }\n      }\n    }\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "s"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "reset_signal_handlers",
+                        "sigaction",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "sig2str",
+                        "snprintf",
+                        "fprintf",
+                        "s",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "reset_signal_handlers",
+                        "main"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_block_signal_params",
+                "func_c_signature": "void parse_block_signal_params(long param_1,char param_2)",
+                "decompiled_code": "void parse_block_signal_params(long param_1,char param_2) {\n  int __signo;\n  int iVar1;\n  undefined1 *puVar2;\n  char *__s;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  char *local_38;\n  \n  if (param_1 == 0) {\n    if (param_2 == '\\0') {\n      puVar2 = unblock_signals;\n    }\n    else {\n      puVar2 = block_signals;\n    }\n    sigfillset((sigset_t *)puVar2);\n    if (param_2 == '\\0') {\n      puVar2 = block_signals;\n    }\n    else {\n      puVar2 = unblock_signals;\n    }\n    sigemptyset((sigset_t *)puVar2);\n  }\n  else if (sig_mask_changed != '\\x01') {\n    sigemptyset((sigset_t *)block_signals);\n    sigemptyset((sigset_t *)unblock_signals);\n  }\n  sig_mask_changed = 1;\n  if (param_1 != 0) {\n    __s = (char *)xstrdup(param_1);\n    local_38 = strtok(__s,\",\");\n    while (local_38 != (char *)0x0) {\n      __signo = operand2sig(local_38);\n      if (__signo == 0) {\n        uVar3 = quote(local_38);\n        uVar4 = gettext(\"%s: invalid signal\");\n        error(0,0,uVar4,uVar3);\n      }\n      if (__signo < 1) {\n        usage(_exit_failure);\n      }\n      if (param_2 == '\\0') {\n        puVar2 = unblock_signals;\n      }\n      else {\n        puVar2 = block_signals;\n      }\n      iVar1 = sigaddset((sigset_t *)puVar2,__signo);\n      if (iVar1 == -1) {\n        if (param_2 != '\\0') {\n          uVar3 = gettext(\"failed to block signal %d\");\n          piVar5 = __errno_location();\n          error(0x7d,*piVar5,uVar3,__signo);\n          goto LAB_001018ba;\n        }\n      }\n      else {\nLAB_001018ba:\n        if (param_2 == '\\0') {\n          puVar2 = block_signals;\n        }\n        else {\n          puVar2 = unblock_signals;\n        }\n        sigdelset((sigset_t *)puVar2,__signo);\n      }\n      local_38 = strtok((char *)0x0,\",\");\n    }\n    free(__s);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_block_signal_params",
+                        "sigfillset",
+                        "sigemptyset",
+                        "xstrdup",
+                        "strtok",
+                        "operand2sig",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "sigaddset",
+                        "__errno_location",
+                        "sigdelset",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "parse_block_signal_params",
+                        "main"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_signal_proc_mask",
+                "func_c_signature": "void set_signal_proc_mask(void)",
+                "decompiled_code": "void set_signal_proc_mask(void) {\n  int iVar1;\n  undefined8 uVar2;\n  int *piVar3;\n  long in_FS_OFFSET;\n  uint local_e4;\n  char *local_d0;\n  sigset_t local_b8;\n  char local_38 [24];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  sigemptyset(&local_b8);\n  iVar1 = sigprocmask(0,(sigset_t *)0x0,&local_b8);\n  if (iVar1 != 0) {\n    uVar2 = gettext(\"failed to get signal process mask\");\n    piVar3 = __errno_location();\n    error(0x7d,*piVar3,uVar2);\n  }\n  for (local_e4 = 1; (int)local_e4 < 0x41; local_e4 = local_e4 + 1) {\n    iVar1 = sigismember((sigset_t *)block_signals,local_e4);\n    if (iVar1 == 0) {\n      iVar1 = sigismember((sigset_t *)unblock_signals,local_e4);\n      if (iVar1 == 0) {\n        local_d0 = (char *)0x0;\n      }\n      else {\n        sigdelset(&local_b8,local_e4);\n        local_d0 = \"UNBLOCK\";\n      }\n    }\n    else {\n      sigaddset(&local_b8,local_e4);\n      local_d0 = \"BLOCK\";\n    }\n    if ((dev_debug != '\\0') && (local_d0 != (char *)0x0)) {\n      iVar1 = sig2str(local_e4,local_38);\n      if (iVar1 != 0) {\n        snprintf(local_38,0x13,\"SIG%d\",(ulong)local_e4);\n      }\n      if (dev_debug != '\\0') {\n        fprintf(_stderr,\"signal %s (%d) mask set to %s\\n\",local_38,(ulong)local_e4,local_d0);\n      }\n    }\n  }\n  iVar1 = sigprocmask(2,&local_b8,(sigset_t *)0x0);\n  if (iVar1 != 0) {\n    uVar2 = gettext(\"failed to set signal process mask\");\n    piVar3 = __errno_location();\n    error(0x7d,*piVar3,uVar2);\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "s"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_signal_proc_mask",
+                        "sigemptyset",
+                        "sigprocmask",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "sigismember",
+                        "sigdelset",
+                        "sigaddset",
+                        "sig2str",
+                        "snprintf",
+                        "fprintf",
+                        "s",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "set_signal_proc_mask",
+                        "main"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "list_signal_handling",
+                "func_c_signature": "void list_signal_handling(void)",
+                "decompiled_code": "void list_signal_handling(void) {\n  int iVar1;\n  undefined8 uVar2;\n  int *piVar3;\n  char *pcVar4;\n  char *pcVar5;\n  undefined *puVar6;\n  long in_FS_OFFSET;\n  uint local_184;\n  sigset_t local_158;\n  sigaction local_d8;\n  char local_38 [24];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  sigemptyset(&local_158);\n  iVar1 = sigprocmask(0,(sigset_t *)0x0,&local_158);\n  if (iVar1 != 0) {\n    uVar2 = gettext(\"failed to get signal process mask\");\n    piVar3 = __errno_location();\n    error(0x7d,*piVar3,uVar2);\n  }\n  for (local_184 = 1; (int)local_184 < 0x41; local_184 = local_184 + 1) {\n    iVar1 = sigaction(local_184,(sigaction *)0x0,&local_d8);\n    if (iVar1 == 0) {\n      if (local_d8.__sigaction_handler.sa_handler == (__sighandler_t)0x1) {\n        pcVar4 = \"IGNORE\";\n      }\n      else {\n        pcVar4 = \"\";\n      }\n      iVar1 = sigismember(&local_158,local_184);\n      if (iVar1 == 0) {\n        pcVar5 = \"\";\n      }\n      else {\n        pcVar5 = \"BLOCK\";\n      }\n      if ((*pcVar4 == '\\0') || (*pcVar5 == '\\0')) {\n        puVar6 = &DAT_00102be4;\n      }\n      else {\n        puVar6 = &DAT_00103587;\n      }\n      if ((*pcVar4 != '\\0') || (*pcVar5 != '\\0')) {\n        iVar1 = sig2str(local_184,local_38);\n        if (iVar1 != 0) {\n          snprintf(local_38,0x13,\"SIG%d\",(ulong)local_184);\n        }\n        fprintf(_stderr,\"%-10s (%2d): %s%s%s\\n\",local_38,(ulong)local_184,pcVar5,puVar6,pcVar4);\n      }\n    }\n  }\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "list_signal_handling",
+                        "sigemptyset",
+                        "sigprocmask",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "sigaction",
+                        "sigismember",
+                        "sig2str",
+                        "snprintf",
+                        "fprintf",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "list_signal_handling",
+                        "main"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initialize_signals",
+                "func_c_signature": "void initialize_signals(void)",
+                "decompiled_code": "void initialize_signals(void) {\n  int local_c;\n  \n  signals = xmalloc(0x104);\n  for (local_c = 0; local_c < 0x41; local_c = local_c + 1) {\n    *(undefined4 *)(signals + (long)local_c * 4) = 0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initialize_signals",
+                        "xmalloc"
+                    ],
+                    "calling_functions": [
+                        "initialize_signals",
+                        "main"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined8 main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined8 main(int param_1,undefined8 *param_2) {\n  long lVar1;\n  char cVar2;\n  int iVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  char *pcVar7;\n  undefined8 uVar8;\n  undefined8 *local_f8;\n  int local_ec [3];\n  char local_df;\n  char local_de;\n  char local_dd;\n  int local_dc;\n  int local_d8;\n  int local_d4;\n  undefined4 local_d0;\n  undefined4 local_cc;\n  undefined4 local_c8;\n  undefined4 local_c4;\n  undefined4 local_c0;\n  int local_bc;\n  undefined4 local_b8;\n  undefined4 local_b4;\n  undefined4 local_b0;\n  undefined4 local_ac;\n  undefined4 local_a8;\n  undefined4 local_a4;\n  undefined4 local_a0;\n  int local_9c;\n  undefined4 local_98;\n  int local_94;\n  undefined4 local_90;\n  undefined4 local_8c;\n  char *local_88;\n  char *local_80;\n  long *local_78;\n  char *local_70;\n  char *local_68;\n  undefined8 local_60;\n  undefined8 local_58;\n  undefined8 local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  undefined8 local_38;\n  undefined8 local_30;\n  undefined *local_28;\n  undefined8 local_20;\n  \n  local_df = '\\0';\n  local_de = '\\0';\n  local_88 = (char *)0x0;\n  local_80 = (char *)0x0;\n  local_f8 = param_2;\n  local_ec[0] = param_1;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  initialize_exit_failure(0x7d);\n  atexit((__func *)&close_stdout);\n  initialize_signals();\n  do {\n    while( true ) {\n      local_d8 = getopt_long(local_ec[0],local_f8,shortopts,longopts,0);\n      if (local_d8 == -1) {\n        if ((_optind < local_ec[0]) &&\n           (cVar2 = streq(local_f8[_optind],&DAT_0010377f), cVar2 != '\\0')) {\n          local_df = '\\x01';\n          _optind = _optind + 1;\n        }\n        if (local_df == '\\0') {\n          unset_envvars();\n        }\n        else {\n          if (dev_debug != '\\0') {\n            fwrite(\"cleaning environ\\n\",1,0x11,_stderr);\n          }\n          _environ = &dummy_environ_0;\n        }\n        while ((_optind < local_ec[0] &&\n               (local_70 = strchr((char *)local_f8[_optind],0x3d), local_70 != (char *)0x0))) {\n          if (dev_debug != '\\0') {\n            fprintf(_stderr,\"setenv:   %s\\n\",local_f8[_optind]);\n          }\n          iVar3 = putenv((char *)local_f8[_optind]);\n          if (iVar3 != 0) {\n            *local_70 = '\\0';\n            uVar8 = quote(local_f8[_optind]);\n            uVar5 = gettext(\"cannot set %s\");\n            piVar6 = __errno_location();\n            local_bc = *piVar6;\n            local_c0 = 0x7d;\n            local_50 = uVar5;\n            error(0x7d,local_bc,uVar5,uVar8);\n          }\n          _optind = _optind + 1;\n        }\n        local_dd = _optind < local_ec[0];\n        if ((local_de != '\\0') && ((bool)local_dd)) {\n          local_48 = gettext(\"cannot specify --null (-0) with command\");\n          local_b8 = 0;\n          local_b4 = 0;\n          error(0,0,local_48);\n          usage(0x7d);\n        }\n        if ((local_88 != (char *)0x0) && (local_dd != '\\x01')) {\n          local_40 = gettext(\"must specify command with --chdir (-C)\");\n          local_b0 = 0;\n          local_ac = 0;\n          error(0,0,local_40);\n          usage(0x7d);\n        }\n        if ((local_80 != (char *)0x0) && (local_dd != '\\x01')) {\n          local_38 = gettext(\"must specify command with --argv0 (-a)\");\n          local_a8 = 0;\n          local_a4 = 0;\n          error(0,0,local_38);\n          usage(0x7d);\n        }\n        if (local_dd != '\\x01') {\n          local_78 = _environ;\n          while (*local_78 != 0) {\n            if (local_de == '\\0') {\n              uVar8 = 10;\n            }\n            else {\n              uVar8 = 0;\n            }\n            lVar1 = *local_78;\n            local_78 = local_78 + 1;\n            printf(\"%s%c\",lVar1,uVar8);\n          }\n          return 0;\n        }\n        reset_signal_handlers();\n        if (sig_mask_changed != '\\0') {\n          set_signal_proc_mask();\n        }\n        if (report_signal_handling != '\\0') {\n          list_signal_handling();\n        }\n        if (local_88 != (char *)0x0) {\n          if (dev_debug != '\\0') {\n            uVar8 = quotearg_style(4,local_88);\n            fprintf(_stderr,\"chdir:    %s\\n\",uVar8);\n          }\n          iVar3 = chdir(local_88);\n          if (iVar3 != 0) {\n            uVar8 = quotearg_style(4,local_88);\n            uVar5 = gettext(\"cannot change directory to %s\");\n            piVar6 = __errno_location();\n            local_9c = *piVar6;\n            local_a0 = 0x7d;\n            local_30 = uVar5;\n            error(0x7d,local_9c,uVar5,uVar8);\n          }\n        }\n        local_68 = (char *)local_f8[_optind];\n        if (local_80 != (char *)0x0) {\n          if (dev_debug != '\\0') {\n            uVar8 = quotearg_style(4,local_80);\n            fprintf(_stderr,\"argv0:     %s\\n\",uVar8);\n          }\n          local_f8[_optind] = local_80;\n        }\n        if (dev_debug != '\\0') {\n          if (dev_debug != '\\0') {\n            fprintf(_stderr,\"executing: %s\\n\",local_68);\n          }\n          for (local_dc = _optind; local_dc < local_ec[0]; local_dc = local_dc + 1) {\n            if (dev_debug != '\\0') {\n              uVar8 = quote(local_f8[local_dc]);\n              fprintf(_stderr,\"   arg[%d]= %s\\n\",(ulong)(uint)(local_dc - _optind),uVar8);\n            }\n          }\n        }\n        execvp(local_68,(char **)(local_f8 + _optind));\n        piVar6 = __errno_location();\n        if (*piVar6 == 2) {\n          local_d4 = 0x7f;\n        }\n        else {\n          local_d4 = 0x7e;\n        }\n        uVar8 = quote(local_68);\n        piVar6 = __errno_location();\n        local_94 = *piVar6;\n        local_98 = 0;\n        local_28 = &DAT_00103886;\n        error(0,local_94,&DAT_00103886,uVar8);\n        if ((local_d4 == 0x7f) && (pcVar7 = strpbrk(local_68,\" \\t\\n\\v\\f\\r\"), pcVar7 != (char *)0x0))\n        {\n          local_20 = gettext(\"use -[v]S to pass options in shebang lines\");\n          local_90 = 0;\n          local_8c = 0;\n          error(0,0,local_20);\n        }\n                    /* WARNING: Subroutine does not return */\n        exit(local_d4);\n      }\n      if (local_d8 < 0x84) break;\nswitchD_00101f4c_caseD_31:\n      usage(0x7d);\n    }\n    if (local_d8 < 0x30) {\n      if (local_d8 == 0x20) {\nLAB_0010203b:\n        local_58 = gettext(\"invalid option -- \\'%c\\'\");\n        local_c8 = 0;\n        local_c4 = 0;\n        error(0,0,local_58,local_d8);\n        local_60 = gettext(\"use -[v]S to pass options in shebang lines\");\n        local_d0 = 0;\n        local_cc = 0;\n        error(0,0,local_60);\n        usage(0x7d);\n      }\n      else {\n        if ((0x20 < local_d8) || (0xd < local_d8)) goto switchD_00101f4c_caseD_31;\n        if (8 < local_d8) goto LAB_0010203b;\n        if (local_d8 == -0x83) goto LAB_001020df;\n        if (local_d8 != -0x82) goto switchD_00101f4c_caseD_31;\n      }\n      usage(0);\nLAB_001020df:\n      uVar8 = proper_name_lite(\"Assaf Gordon\",\"Assaf Gordon\");\n      uVar5 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n      uVar4 = proper_name_lite(\"Richard Mlynarik\",\"Richard Mlynarik\");\n      version_etc(_stdout,&DAT_00103248,\"GNU coreutils\",_Version,uVar4,uVar5,uVar8,0);\n                    /* WARNING: Subroutine does not return */\n      exit(0);\n    }\n    switch(local_d8) {\n    case 0x30:\n      local_de = '\\x01';\n      break;\n    default:\n      goto switchD_00101f4c_caseD_31;\n    case 0x43:\n      local_88 = _optarg;\n      break;\n    case 0x53:\n      parse_split_string(_optarg,&optind,local_ec,&local_f8);\n      break;\n    case 0x61:\n      local_80 = _optarg;\n      break;\n    case 0x69:\n      local_df = '\\x01';\n      break;\n    case 0x75:\n      append_unset_var(_optarg);\n      break;\n    case 0x76:\n      dev_debug = '\\x01';\n      break;\n    case 0x80:\n      parse_signal_action_params(_optarg,1);\n      parse_block_signal_params(_optarg,0);\n      break;\n    case 0x81:\n      parse_signal_action_params(_optarg,0);\n      break;\n    case 0x82:\n      parse_block_signal_params(_optarg,1);\n      break;\n    case 0x83:\n      report_signal_handling = '\\x01';\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [
+                    "null",
+                    "argv0"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "initialize_exit_failure",
+                        "atexit",
+                        "initialize_signals",
+                        "getopt_long",
+                        "streq",
+                        "unset_envvars",
+                        "fwrite",
+                        "strchr",
+                        "fprintf",
+                        "putenv",
+                        "quote",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "null",
+                        "usage",
+                        "chdir",
+                        "argv0",
+                        "printf",
+                        "reset_signal_handlers",
+                        "set_signal_proc_mask",
+                        "list_signal_handling",
+                        "quotearg_style",
+                        "execvp",
+                        "strpbrk",
+                        "exit",
+                        "proper_name_lite",
+                        "version_etc",
+                        "parse_split_string",
+                        "append_unset_var",
+                        "parse_signal_action_params",
+                        "parse_block_signal_params"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "env_decompiled.c"
+                }
+            }
+        ]
+    }
+}

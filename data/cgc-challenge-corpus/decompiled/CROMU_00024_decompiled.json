@@ -1,0 +1,276 @@
+{
+    "file": "CROMU_00024",
+    "decompiled_code": {
+        "bst.c": [
+            {
+                "func_name": "insert_node",
+                "func_c_signature": "undefined4 insert_node(void **param_1,char *param_2,code *param_3)",
+                "decompiled_code": "undefined4 insert_node(void **param_1,char *param_2,code *param_3) {\n  undefined4 uVar1;\n  void *pvVar2;\n  int iVar3;\n  char *pcVar4;\n  char *pcVar5;\n  char *local_14;\n  char **local_10;\n  \n  if (param_2 == (char *)0x0) {\n    uVar1 = 0xffffffff;\n  }\n  else if (*param_1 == (void *)0x0) {\n    pvVar2 = calloc(1,0x14);\n    *param_1 = pvVar2;\n    if (*param_1 == (void *)0x0) {\n      uVar1 = 0xffffffff;\n    }\n    else {\n      iVar3 = (*param_3)(param_2);\n      if (iVar3 == 0) {\n        uVar1 = 0xffffffff;\n      }\n      else {\n        *(char **)*param_1 = param_2;\n        *(undefined4 *)((int)*param_1 + 8) = 1;\n        *(int *)((int)*param_1 + 4) = iVar3;\n        uVar1 = 0;\n      }\n    }\n  }\n  else {\n    pcVar4 = (char *)(*param_3)(param_2);\n    local_10 = (char **)*param_1;\n    while( true ) {\n      for (; pcVar4 < local_10[1]; local_10 = (char **)local_10[4]) {\n        if (local_10[4] == (char *)0x0) {\n          pcVar5 = (char *)calloc(1,0x14);\n          local_10[4] = pcVar5;\n          if (local_10[4] == (char *)0x0) {\n            return 0xffffffff;\n          }\n          *(char **)local_10[4] = param_2;\n          *(undefined4 *)(local_10[4] + 8) = 1;\n          *(char **)(local_10[4] + 4) = pcVar4;\n          return 0;\n        }\n      }\n      if (pcVar4 <= local_10[1]) {\n        iVar3 = strcmp(*local_10,param_2);\n        if (iVar3 != 0) {\n          for (local_14 = *local_10; *(int *)(local_14 + 0x400) != 0;\n              local_14 = *(char **)(local_14 + 0x400)) {\n          }\n          *(char **)(local_14 + 0x400) = param_2;\n          local_10[2] = local_10[2] + 1;\n        }\n        return 0;\n      }\n      if (local_10[3] == (char *)0x0) break;\n      local_10 = (char **)local_10[3];\n    }\n    pcVar5 = (char *)calloc(1,0x14);\n    local_10[3] = pcVar5;\n    if (local_10[3] == (char *)0x0) {\n      uVar1 = 0xffffffff;\n    }\n    else {\n      *(char **)local_10[3] = param_2;\n      *(undefined4 *)(local_10[3] + 8) = 1;\n      *(char **)(local_10[3] + 4) = pcVar4;\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "insert_node",
+                        "calloc",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "insert_node",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00024_decompiled.c"
+                }
+            },
+            {
+                "func_name": "delete_node",
+                "func_c_signature": "undefined4 delete_node(void **param_1,char *param_2,char *param_3)",
+                "decompiled_code": "undefined4 delete_node(void **param_1,char *param_2,char *param_3) {\n  int iVar1;\n  char *local_20;\n  char *local_1c;\n  char **local_18;\n  char **local_14;\n  char **local_10;\n  \n  if (*param_1 != (void *)0x0) {\n    local_10 = (char **)*param_1;\n    do {\n      if (param_3 == local_10[1]) {\n        if ((char *)0x1 < local_10[2]) {\n          local_1c = *local_10;\n          local_20 = *(char **)(local_1c + 0x400);\n          iVar1 = strcmp(*local_10,param_2);\n          if (iVar1 == 0) {\n            free(local_1c);\n            *local_10 = local_20;\n            local_10[2] = local_10[2] + -1;\n            return 0;\n          }\n          while( true ) {\n            if (local_20 == (char *)0x0) {\n              return 0;\n            }\n            iVar1 = strcmp(local_20,param_2);\n            if (iVar1 == 0) break;\n            local_1c = local_20;\n            local_20 = *(char **)(local_20 + 0x400);\n          }\n          *(undefined4 *)(local_1c + 0x400) = *(undefined4 *)(local_20 + 0x400);\n          local_10[2] = local_10[2] + -1;\n          free(*(void **)(local_20 + 0x400));\n          return 0;\n        }\n        if ((local_10[4] == (char *)0x0) && (local_10[3] == (char *)0x0)) {\n          if (local_10 != (char **)*param_1) {\n            if (param_3 < local_18[1]) {\n              local_18[4] = (char *)0x0;\n            }\n            else {\n              local_18[3] = (char *)0x0;\n            }\n            free(*local_10);\n            free(local_10);\n            return 0;\n          }\n                    /* WARNING: Load size is inaccurate */\n          free(**param_1);\n          free(*param_1);\n          *param_1 = (void *)0x0;\n          return 0;\n        }\n        if ((local_10[4] != (char *)0x0) && (local_10[3] != (char *)0x0)) {\n          local_18 = local_10;\n          for (local_14 = (char **)local_10[4]; local_14[3] != (char *)0x0;\n              local_14 = (char **)local_14[3]) {\n            local_18 = local_14;\n          }\n          free(*local_10);\n          *local_10 = *local_14;\n          if (local_18[1] < local_14[1]) {\n            local_18[3] = local_14[4];\n          }\n          else {\n            local_18[4] = local_14[4];\n          }\n          local_10[1] = local_14[1];\n          local_10[2] = local_14[2];\n          free(local_14);\n          return 0;\n        }\n        if (local_10 != (char **)*param_1) {\n          if (local_10[4] == (char *)0x0) {\n            local_14 = (char **)local_10[3];\n          }\n          else {\n            local_14 = (char **)local_10[4];\n          }\n          if (param_3 < local_18[1]) {\n            local_18[4] = (char *)local_14;\n          }\n          else {\n            local_18[3] = (char *)local_14;\n          }\n          free(*local_10);\n          free(local_10);\n          return 0;\n        }\n                    /* WARNING: Load size is inaccurate */\n        free(**param_1);\n        if (local_10[4] == (char *)0x0) {\n          *param_1 = *(void **)((int)*param_1 + 0xc);\n        }\n        else {\n          *param_1 = *(void **)((int)*param_1 + 0x10);\n        }\n        free(local_10);\n        return 0;\n      }\n      local_18 = local_10;\n      if (param_3 < local_10[1]) {\n        local_10 = (char **)local_10[4];\n      }\n      else {\n        local_10 = (char **)local_10[3];\n      }\n    } while (local_10 != (char **)0x0);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "delete_node",
+                        "strcmp",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "delete_node",
+                        "delete_matches"
+                    ],
+                    "defined_in_file": "CROMU_00024_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_node_by_key",
+                "func_c_signature": "undefined4 find_node_by_key(undefined4 *param_1,uint param_2)",
+                "decompiled_code": "undefined4 find_node_by_key(undefined4 *param_1,uint param_2) {\n  undefined4 *local_8;\n  \n  if (param_1 != (undefined4 *)0x0) {\n    local_8 = param_1;\n    do {\n      if (param_2 == local_8[1]) {\n        return *local_8;\n      }\n      if (param_2 < (uint)local_8[1]) {\n        local_8 = (undefined4 *)local_8[4];\n      }\n      else {\n        local_8 = (undefined4 *)local_8[3];\n      }\n    } while (local_8 != (undefined4 *)0x0);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_node_by_key"
+                    ],
+                    "calling_functions": [
+                        "find_node_by_key",
+                        "find_matches"
+                    ],
+                    "defined_in_file": "CROMU_00024_decompiled.c"
+                }
+            },
+            {
+                "func_name": "walk_tree",
+                "func_c_signature": "undefined4 walk_tree(int *param_1)",
+                "decompiled_code": "undefined4 walk_tree(int *param_1) {\n  int local_10;\n  \n  if (param_1 != (int *)0x0) {\n    if (param_1[4] != 0) {\n      walk_tree(param_1[4]);\n    }\n    for (local_10 = *param_1; local_10 != 0; local_10 = *(int *)(local_10 + 0x400)) {\n      printf(\"@s\\n\",local_10);\n    }\n    if (param_1[3] != 0) {\n      walk_tree(param_1[3]);\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "walk_tree",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "walk_tree",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00024_decompiled.c"
+                }
+            },
+            {
+                "func_name": "make_key_from_name",
+                "func_c_signature": "undefined4 make_key_from_name(undefined4 param_1)",
+                "decompiled_code": "undefined4 make_key_from_name(undefined4 param_1) {\n  undefined4 uVar1;\n  \n  uVar1 = str_token(param_1);\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "make_key_from_name",
+                        "str_token"
+                    ],
+                    "calling_functions": [
+                        "make_key_from_name",
+                        "delete_matches",
+                        "find_matches"
+                    ],
+                    "defined_in_file": "CROMU_00024_decompiled.c"
+                }
+            },
+            {
+                "func_name": "count_bst_stats",
+                "func_c_signature": "undefined4 count_bst_stats(int *param_1,uint *param_2)",
+                "decompiled_code": "undefined4 count_bst_stats(int *param_1,uint *param_2) {\n  undefined4 uVar1;\n  int local_30 [3];\n  int local_24 [4];\n  int local_14;\n  uint local_10;\n  \n  if ((param_1 == (int *)0x0) || (param_2 == (uint *)0x0)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    *param_2 = 0;\n    local_24[0] = 0;\n    local_30[0] = 0;\n    if (param_1[4] != 0) {\n      count_nodes(param_1[4],local_24);\n    }\n    local_14 = local_24[0];\n    if (param_1[3] != 0) {\n      count_nodes(param_1[3],local_30);\n    }\n    local_10 = local_30[0] + local_14;\n    if (*param_1 != 0) {\n      local_10 = local_10 + 1;\n    }\n    *param_2 = local_10;\n    if (local_10 < 2) {\n      param_2[1] = 0;\n      param_2[2] = 0;\n    }\n    else {\n      param_2[1] = (uint)(local_14 * 100) / (local_10 - 1);\n      param_2[2] = (uint)(local_30[0] * 100) / (local_10 - 1);\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "count_bst_stats",
+                        "count_nodes"
+                    ],
+                    "calling_functions": [
+                        "count_bst_stats",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00024_decompiled.c"
+                }
+            },
+            {
+                "func_name": "count_nodes",
+                "func_c_signature": "undefined4 count_nodes(int param_1,int *param_2)",
+                "decompiled_code": "undefined4 count_nodes(int param_1,int *param_2) {\n  if (*(int *)(param_1 + 0x10) != 0) {\n    count_nodes(*(undefined4 *)(param_1 + 0x10),param_2);\n  }\n  *param_2 = *param_2 + 1;\n  if (*(int *)(param_1 + 0xc) != 0) {\n    count_nodes(*(undefined4 *)(param_1 + 0xc),param_2);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "count_nodes"
+                    ],
+                    "calling_functions": [
+                        "count_bst_stats",
+                        "count_nodes"
+                    ],
+                    "defined_in_file": "CROMU_00024_decompiled.c"
+                }
+            }
+        ],
+        "delete_matches.c": [
+            {
+                "func_name": "delete_matches",
+                "func_c_signature": "void delete_matches(undefined4 param_1,undefined4 param_2,int param_3)",
+                "decompiled_code": "void delete_matches(undefined4 param_1,undefined4 param_2,int param_3) {\n  undefined4 uVar1;\n  undefined4 uVar2;\n  \n  uVar2 = 0x11b36;\n  uVar1 = make_key_from_name(*(undefined4 *)(param_3 + 4));\n  delete_node(param_1,*(undefined4 *)(param_3 + 4),uVar1,uVar2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "delete_matches",
+                        "make_key_from_name",
+                        "delete_node"
+                    ],
+                    "calling_functions": [
+                        "delete_matches",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00024_decompiled.c"
+                }
+            }
+        ],
+        "find_matches.c": [
+            {
+                "func_name": "find_matches",
+                "func_c_signature": "void find_matches(undefined4 param_1,undefined4 param_2,int param_3)",
+                "decompiled_code": "void find_matches(undefined4 param_1,undefined4 param_2,int param_3) {\n  undefined4 uVar1;\n  int iVar2;\n  char *local_10;\n  \n  uVar1 = make_key_from_name(*(undefined4 *)(param_3 + 4));\n  local_10 = (char *)find_node_by_key(param_1,uVar1);\n  if (local_10 != (char *)0x0) {\n    for (; local_10 != (char *)0x0; local_10 = *(char **)(local_10 + 0x400)) {\n      iVar2 = strcmp(*(char **)(param_3 + 4),local_10);\n      if (iVar2 == 0) {\n        printf(\"@s\\n\",local_10);\n        return;\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_matches",
+                        "make_key_from_name",
+                        "find_node_by_key",
+                        "strcmp",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "find_matches",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00024_decompiled.c"
+                }
+            }
+        ],
+        "parse.c": [
+            {
+                "func_name": "parse_command",
+                "func_c_signature": "undefined8 parse_command(char *param_1,char param_2,char **param_3)",
+                "decompiled_code": "undefined8 parse_command(char *param_1,char param_2,char **param_3) {\n  char *pcVar1;\n  undefined **ppuVar2;\n  int local_18;\n  char *local_14;\n  size_t local_10;\n  \n  ppuVar2 = &_GLOBAL_OFFSET_TABLE_;\n  if (*param_1 == '\\0') {\n    local_10 = 0xffffffff;\n  }\n  else {\n    local_10 = 1;\n    local_14 = param_1;\n    while (pcVar1 = local_14 + 1, *local_14 != '\\0') {\n      local_14 = pcVar1;\n      if (param_2 == *pcVar1) {\n        local_10 = local_10 + 1;\n      }\n    }\n    pcVar1 = (char *)calloc(local_10,4);\n    *param_3 = pcVar1;\n    ppuVar2 = param_3;\n    if (*param_3 == (char *)0x0) {\n      local_10 = 0xffffffff;\n    }\n    else {\n      local_14 = param_1;\n      for (local_18 = 0; local_18 < (int)local_10; local_18 = local_18 + 1) {\n        ppuVar2 = (undefined **)(*param_3 + local_18 * 4);\n        *ppuVar2 = local_14;\n        for (; (param_2 != *local_14 && (*local_14 != '\\0')); local_14 = local_14 + 1) {\n        }\n        if (*local_14 != '\\0') {\n          *local_14 = '\\0';\n          local_14 = local_14 + 1;\n        }\n      }\n    }\n  }\n  return CONCAT44(ppuVar2,local_10);\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT44"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_command",
+                        "calloc",
+                        "CONCAT44"
+                    ],
+                    "calling_functions": [
+                        "parse_command",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00024_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  size_t sVar1;\n  code *in_stack_fffff7c8;\n  FILE local_830 [13];\n  undefined4 local_2c;\n  undefined4 local_28;\n  undefined4 local_24;\n  undefined4 local_20;\n  char *local_1c;\n  int local_18;\n  __ssize_t local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  do {\n    while( true ) {\n      do {\n        do {\n          local_14 = getline(&local_830[0]._IO_read_ptr,(size_t *)0x800,(FILE *)in_stack_fffff7c8);\n        } while (local_14 == 0);\n        in_stack_fffff7c8 = (code *)local_830;\n        local_18 = parse_command(&local_830[0]._IO_read_ptr,0x2f);\n      } while (local_18 == -1);\n      if ((*(char *)*(int *)local_830[0]._flags == 'a') && (local_18 == 2)) break;\n      if ((*(char *)*(int *)local_830[0]._flags == 'f') && (local_18 == 2)) {\n        in_stack_fffff7c8 = (code *)local_830[0]._flags;\n        find_matches(local_20,2);\n      }\n      else if ((*(char *)*(int *)local_830[0]._flags == 'd') && (local_18 == 2)) {\n        in_stack_fffff7c8 = (code *)local_830[0]._flags;\n        delete_matches(&local_20,2);\n      }\n      else {\n        if (*(char *)*(int *)local_830[0]._flags == 'x') {\n          return 0;\n        }\n        if (*(char *)*(int *)local_830[0]._flags == 'w') {\n          walk_tree(local_20);\n        }\n        else if (*(char *)*(int *)local_830[0]._flags == 's') {\n          bzero(&local_2c,0xc);\n          count_bst_stats(local_20,&local_2c);\n          printf(\"# of Nodes: @d\\n\",local_2c);\n          printf(\"% left nodes: @d\\n\",local_28);\n          printf(\"% right nodes: @d\\n\",local_24);\n        }\n      }\nLAB_00011f3e:\n      free((void *)local_830[0]._flags);\n    }\n    sVar1 = strlen(*(char **)(local_830[0]._flags + 4));\n    if (9 < sVar1) {\n      local_1c = (char *)calloc(1,0x404);\n      if (local_1c == (char *)0x0) {\n        printf(\"Unable to allocate memory\\n\");\n        return 0xffffffff;\n      }\n      strncpy(local_1c,*(char **)(local_830[0]._flags + 4),0x3ff);\n      *(undefined4 *)(local_1c + 0x400) = 0;\n      in_stack_fffff7c8 = make_key_from_name;\n      insert_node(&local_20,local_1c);\n      goto LAB_00011f3e;\n    }\n    free((void *)local_830[0]._flags);\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "getline",
+                        "parse_command",
+                        "find_matches",
+                        "delete_matches",
+                        "walk_tree",
+                        "bzero",
+                        "count_bst_stats",
+                        "printf",
+                        "free",
+                        "strlen",
+                        "calloc",
+                        "strncpy",
+                        "insert_node"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00024_decompiled.c"
+                }
+            }
+        ],
+        "string_token.c": [
+            {
+                "func_name": "str_token",
+                "func_c_signature": "int str_token(char *param_1)",
+                "decompiled_code": "int str_token(char *param_1) {\n  int local_8;\n  \n  if (param_1 == (char *)0x0) {\n    local_8 = 0;\n  }\n  else {\n    local_8 = 0x1505;\n    for (; *param_1 != '\\0'; param_1 = param_1 + 1) {\n      local_8 = (int)*param_1 + local_8 * 0x21;\n    }\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "str_token"
+                    ],
+                    "calling_functions": [
+                        "make_key_from_name",
+                        "str_token"
+                    ],
+                    "defined_in_file": "CROMU_00024_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,291 @@
+{
+    "file": "CROMU_00071",
+    "decompiled_code": {
+        "airports.c": [
+            {
+                "func_name": "showAirports",
+                "func_c_signature": "undefined4 showAirports(char *param_1,char *param_2)",
+                "decompiled_code": "undefined4 showAirports(char *param_1,char *param_2) {\n  undefined4 uVar1;\n  size_t sVar2;\n  int iVar3;\n  char *pcVar4;\n  undefined4 uVar5;\n  char local_1c [4];\n  int local_18;\n  uint local_14;\n  int local_10;\n  \n  local_18 = 0;\n  if (param_1 == (char *)0x0) {\n    uVar1 = 0xfffffffb;\n  }\n  else {\n    local_1c[0] = '\\0';\n    local_14 = 0;\n    while (sVar2 = strlen(param_2), local_14 < sVar2) {\n      if (param_2[local_14] == '/') {\n        sVar2 = strlen(param_2 + local_14 + 1);\n        if (sVar2 != 3) {\n          return 0xfffffffe;\n        }\n        strcpy(local_1c,param_2 + local_14 + 1);\n        break;\n      }\n      local_14 = local_14 + 1;\n    }\n    while (param_1 != (char *)0x0) {\n      if ((local_1c[0] == '\\0') || (iVar3 = strcmp(local_1c,param_1), iVar3 == 0)) {\n        local_18 = 1;\n        pcVar4 = param_1;\n        printf(\"Airport: @s\\n\",param_1);\n        printf(\"Connections: \");\n        iVar3 = *(int *)(param_1 + 8);\n        local_10 = iVar3;\n        if (iVar3 == 0) {\n          printf(\"\\n\\n\",pcVar4);\n          param_1 = *(char **)(param_1 + 0xc);\n        }\n        else {\n          uVar1 = *(undefined4 *)(iVar3 + 8);\n          uVar5 = *(undefined4 *)(iVar3 + 4);\n          printf(\"@s (@d, @d)\",iVar3,uVar5,uVar1);\n          for (local_10 = *(int *)(local_10 + 0xc); local_10 != 0;\n              local_10 = *(int *)(local_10 + 0xc)) {\n            uVar1 = *(undefined4 *)(local_10 + 8);\n            uVar5 = *(undefined4 *)(local_10 + 4);\n            iVar3 = local_10;\n            printf(\", @s (@d, @d)\",local_10,uVar5,uVar1);\n          }\n          printf(\"\\n\\n\",iVar3,uVar5,uVar1);\n          param_1 = *(char **)(param_1 + 0xc);\n        }\n      }\n      else {\n        param_1 = *(char **)(param_1 + 0xc);\n      }\n    }\n    if (local_18 == 0) {\n      uVar1 = 0xfffffff9;\n    }\n    else {\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [
+                    "s"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "showAirports",
+                        "strlen",
+                        "strcpy",
+                        "strcmp",
+                        "printf",
+                        "s"
+                    ],
+                    "calling_functions": [
+                        "showAirports",
+                        "execute_cmd"
+                    ],
+                    "defined_in_file": "CROMU_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "addAirport",
+                "func_c_signature": "undefined4 addAirport(char **param_1,char *param_2)",
+                "decompiled_code": "undefined4 addAirport(char **param_1,char *param_2) {\n  size_t sVar1;\n  int iVar2;\n  undefined4 uVar3;\n  void *pvVar4;\n  FILE *in_stack_ffffff0c;\n  char local_e8 [4];\n  int aiStack_e4 [39];\n  char *local_48 [5];\n  char *local_34;\n  undefined4 local_30;\n  char *local_2c;\n  int local_28;\n  int local_24;\n  int local_20;\n  char *local_1c;\n  char *local_18;\n  int local_14;\n  uint local_10;\n  \n  local_24 = 0;\n  local_10 = 0;\n  while (sVar1 = strlen(param_2), local_10 < sVar1) {\n    if (param_2[local_10] == '/') {\n      local_24 = local_24 + 1;\n    }\n    local_10 = local_10 + 1;\n  }\n  if (local_24 == 0) {\n    getline((char **)&local_30,(size_t *)0x4,in_stack_ffffff0c);\n    iVar2 = check4Code(*param_1,&local_30);\n    if (iVar2 != 0) {\n      printf(\"Duplicate code detected\\n\");\n      return 0xfffffffd;\n    }\n    local_28 = 0;\n    while( true ) {\n      printf(\"Enter airport code for connection:\\n\");\n      getline(&local_34,(size_t *)0x4,in_stack_ffffff0c);\n      if ((char)local_34 == '\\0') break;\n      iVar2 = strcmp((char *)&local_30,(char *)&local_34);\n      if (iVar2 == 0) {\n        printf(\"Illegal connection value\\n\");\n      }\n      else {\n        iVar2 = check4Code(*param_1,&local_34);\n        if (iVar2 == 0) {\n          printf(\"Connecting airport not found\\n\");\n        }\n        else {\n          local_20 = 0;\n          for (local_14 = 0; local_14 < local_28; local_14 = local_14 + 1) {\n            iVar2 = strcmp((char *)&local_34,local_e8 + local_14 * 0x10);\n            if (iVar2 == 0) {\n              local_20 = 1;\n              printf(\"Duplicate connection\\n\");\n              break;\n            }\n          }\n          if (local_20 == 0) {\n            in_stack_ffffff0c = (FILE *)0x4;\n            strncpy(local_e8 + local_28 * 0x10,(char *)&local_34,4);\n            printf(\"Connection cost:\\n\");\n            getline(local_48,(size_t *)0x14,in_stack_ffffff0c);\n            iVar2 = atoi((char *)local_48);\n            *(int *)(local_e8 + local_28 * 0x10 + 4) = iVar2;\n            printf(\"Connection duration:\\n\");\n            getline(local_48,(size_t *)0x14,in_stack_ffffff0c);\n            iVar2 = atoi((char *)local_48);\n            aiStack_e4[local_28 * 4 + 1] = iVar2;\n            local_28 = local_28 + 1;\n          }\n        }\n      }\n    }\n  }\n  else {\n    if ((local_24 < 4) || (local_24 % 3 != 1)) {\n      return 0xfffffffe;\n    }\n    for (local_10 = 0; param_2[local_10] != '/'; local_10 = local_10 + 1) {\n    }\n    local_10 = local_10 + 1;\n    strncpy((char *)&local_30,param_2 + local_10,3);\n    local_30._3_1_ = 0;\n    local_10 = local_10 + 3;\n    iVar2 = check4Code(*param_1,&local_30);\n    if (iVar2 != 0) {\n      return 0xfffffffd;\n    }\n    local_28 = 0;\n    do {\n      if (param_2[local_10] != '/') {\n        return 0xfffffffe;\n      }\n      local_10 = local_10 + 1;\n      strncpy(local_e8 + local_28 * 0x10,param_2 + local_10,3);\n      local_e8[local_28 * 0x10 + 3] = '\\0';\n      iVar2 = check4Code(*param_1,local_e8 + local_28 * 0x10);\n      if (iVar2 == 0) {\n        return 0xfffffffc;\n      }\n      for (local_14 = 0; local_14 < local_28; local_14 = local_14 + 1) {\n        iVar2 = strcmp(local_e8 + local_28 * 0x10,local_e8 + local_14 * 0x10);\n        if (iVar2 == 0) {\n          return 0xfffffffd;\n        }\n      }\n      if (param_2[local_10 + 3] != '/') {\n        return 0xfffffffe;\n      }\n      local_10 = local_10 + 4;\n      iVar2 = atoi(param_2 + local_10);\n      *(int *)(local_e8 + local_28 * 0x10 + 4) = iVar2;\n      for (; param_2[local_10] != '/'; local_10 = local_10 + 1) {\n      }\n      local_10 = local_10 + 1;\n      iVar2 = atoi(param_2 + local_10);\n      aiStack_e4[local_28 * 4 + 1] = iVar2;\n      for (; (param_2[local_10] != '/' && (param_2[local_10] != '\\0')); local_10 = local_10 + 1) {\n      }\n      local_28 = local_28 + 1;\n    } while (param_2[local_10] != '\\0');\n  }\n  local_2c = (char *)malloc(0x10);\n  if (local_2c == (char *)0x0) {\n    uVar3 = 0xffffff9c;\n  }\n  else {\n    strcpy(local_2c,(char *)&local_30);\n    *(undefined4 *)(local_2c + 0xc) = 0;\n    *(undefined4 *)(local_2c + 8) = 0;\n    if (*param_1 == (char *)0x0) {\n      *param_1 = local_2c;\n    }\n    else {\n      for (local_18 = *param_1; *(int *)(local_18 + 0xc) != 0; local_18 = *(char **)(local_18 + 0xc)\n          ) {\n      }\n      *(char **)(local_18 + 0xc) = local_2c;\n    }\n    for (local_10 = 0; (int)local_10 < local_28; local_10 = local_10 + 1) {\n      if (*(int *)(local_2c + 8) == 0) {\n        pvVar4 = malloc(0x10);\n        *(void **)(local_2c + 8) = pvVar4;\n        if (*(int *)(local_2c + 8) == 0) {\n          return 0xffffff9c;\n        }\n        local_1c = *(char **)(local_2c + 8);\n        *(undefined4 *)(local_1c + 0xc) = 0;\n      }\n      else {\n        pvVar4 = malloc(0x10);\n        *(void **)(local_1c + 0xc) = pvVar4;\n        if (*(int *)(local_1c + 0xc) == 0) {\n          return 0xffffff9c;\n        }\n        local_1c = *(char **)(local_1c + 0xc);\n        *(undefined4 *)(local_1c + 0xc) = 0;\n      }\n      strncpy(local_1c,local_e8 + local_10 * 0x10,4);\n      *(undefined4 *)(local_1c + 4) = *(undefined4 *)(local_e8 + local_10 * 0x10 + 4);\n      *(int *)(local_1c + 8) = aiStack_e4[local_10 * 4 + 1];\n    }\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "addAirport",
+                        "strlen",
+                        "getline",
+                        "check4Code",
+                        "printf",
+                        "strcmp",
+                        "strncpy",
+                        "atoi",
+                        "malloc",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "addAirport",
+                        "execute_cmd"
+                    ],
+                    "defined_in_file": "CROMU_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "deleteAirport",
+                "func_c_signature": "undefined4 deleteAirport(char **param_1,char *param_2)",
+                "decompiled_code": "undefined4 deleteAirport(char **param_1,char *param_2) {\n  undefined4 uVar1;\n  size_t sVar2;\n  int iVar3;\n  FILE *in_stack_ffffffcc;\n  char local_28;\n  uint local_24;\n  int local_20;\n  char *local_1c;\n  char *local_18;\n  char *local_14;\n  char *local_10;\n  \n  if (*param_1 == (char *)0x0) {\n    uVar1 = 0xfffffffb;\n  }\n  else {\n    local_28 = '\\0';\n    local_24 = 0;\n    while (sVar2 = strlen(param_2), local_24 < sVar2) {\n      if (param_2[local_24] == '/') {\n        strcpy(&local_28,param_2 + local_24 + 1);\n        sVar2 = strlen(&local_28);\n        if (sVar2 != 3) {\n          return 0xfffffffe;\n        }\n        break;\n      }\n      local_24 = local_24 + 1;\n    }\n    if (local_28 == '\\0') {\n      printf(\"Enter airport code for deletion:\\n\");\n      getline((char **)&local_28,(size_t *)0x4,in_stack_ffffffcc);\n      if (local_28 == '\\0') {\n        return 0xfffffffa;\n      }\n    }\n    iVar3 = strcmp(*param_1,&local_28);\n    if (iVar3 == 0) {\n      local_10 = *param_1;\n      local_18 = *(char **)(local_10 + 8);\n      while (local_18 != (char *)0x0) {\n        *(undefined4 *)(local_10 + 8) = *(undefined4 *)(local_18 + 0xc);\n        free(local_18);\n        local_18 = *(char **)(local_10 + 8);\n      }\n      *param_1 = *(char **)(*param_1 + 0xc);\n      free(local_10);\n    }\n    else {\n      local_10 = *(char **)(*param_1 + 0xc);\n      local_14 = *param_1;\n      local_20 = 0;\n      for (; local_10 != (char *)0x0; local_10 = *(char **)(local_10 + 0xc)) {\n        iVar3 = strcmp(local_10,&local_28);\n        if (iVar3 == 0) {\n          local_20 = 1;\n          break;\n        }\n        local_14 = local_10;\n      }\n      if (local_20 == 0) {\n        return 0xfffffffc;\n      }\n      *(undefined4 *)(local_14 + 0xc) = *(undefined4 *)(local_10 + 0xc);\n      free(local_10);\n    }\n    local_14 = *param_1;\n    while (local_14 != (char *)0x0) {\n      if (*(int *)(local_14 + 8) == 0) {\n        local_14 = *(char **)(local_14 + 0xc);\n      }\n      else {\n        iVar3 = strcmp(*(char **)(local_14 + 8),&local_28);\n        if (iVar3 == 0) {\n          local_18 = *(char **)(local_14 + 8);\n          *(undefined4 *)(local_14 + 8) = *(undefined4 *)(*(int *)(local_14 + 8) + 0xc);\n          free(local_18);\n          local_14 = *(char **)(local_14 + 0xc);\n        }\n        else {\n          local_1c = *(char **)(local_14 + 8);\n          for (local_18 = *(char **)(local_1c + 0xc); local_18 != (char *)0x0;\n              local_18 = *(char **)(local_18 + 0xc)) {\n            iVar3 = strcmp(local_18,&local_28);\n            if (iVar3 == 0) {\n              *(undefined4 *)(local_1c + 0xc) = *(undefined4 *)(local_18 + 0xc);\n              free(local_18);\n              break;\n            }\n            local_1c = local_18;\n          }\n          local_14 = *(char **)(local_14 + 0xc);\n        }\n      }\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "deleteAirport",
+                        "strlen",
+                        "strcpy",
+                        "printf",
+                        "getline",
+                        "strcmp",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "deleteAirport",
+                        "execute_cmd"
+                    ],
+                    "defined_in_file": "CROMU_00071_decompiled.c"
+                }
+            }
+        ],
+        "commands.c": [
+            {
+                "func_name": "execute_cmd",
+                "func_c_signature": "undefined4 execute_cmd(undefined4 *param_1,char *param_2)",
+                "decompiled_code": "undefined4 execute_cmd(undefined4 *param_1,char *param_2) {\n  int iVar1;\n  undefined4 local_10;\n  \n  iVar1 = atoi(param_2);\n  switch(iVar1) {\n  default:\n    local_10 = 0;\n    break;\n  case 1:\n    local_10 = showAirports(*param_1,param_2);\n    break;\n  case 2:\n    local_10 = addAirport(param_1,param_2);\n    break;\n  case 3:\n    local_10 = deleteAirport(param_1,param_2);\n    break;\n  case 0xd:\n    local_10 = 0xffffff9d;\n    break;\n  case 0xf:\n    local_10 = findRoutes(*param_1,param_2);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "execute_cmd",
+                        "atoi",
+                        "showAirports",
+                        "addAirport",
+                        "deleteAirport",
+                        "findRoutes"
+                    ],
+                    "calling_functions": [
+                        "execute_cmd",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00071_decompiled.c"
+                }
+            }
+        ],
+        "findroute.c": [
+            {
+                "func_name": "findRoutes",
+                "func_c_signature": "undefined4 findRoutes(char *param_1,char *param_2)",
+                "decompiled_code": "undefined4 findRoutes(char *param_1,char *param_2) {\n  undefined4 uVar1;\n  size_t sVar2;\n  int iVar3;\n  char local_3c [3];\n  undefined local_39;\n  char local_38 [3];\n  undefined local_35;\n  int local_34;\n  int local_30;\n  int local_2c;\n  char *local_28;\n  char *local_24;\n  char *local_20;\n  char *local_1c;\n  int local_18;\n  uint local_14;\n  int local_10;\n  \n  if (param_1 == (char *)0x0) {\n    uVar1 = 0xfffffffb;\n  }\n  else {\n    local_2c = 0;\n    local_18 = 0;\n    local_14 = 0;\n    while (sVar2 = strlen(param_2), local_14 < sVar2) {\n      if (param_2[local_14] == '/') {\n        local_18 = local_18 + 1;\n      }\n      local_14 = local_14 + 1;\n    }\n    if (local_18 < 2) {\n      uVar1 = 0xfffffffe;\n    }\n    else {\n      for (local_10 = 0; param_2[local_10] != '/'; local_10 = local_10 + 1) {\n      }\n      local_10 = local_10 + 1;\n      strncpy(local_38,param_2 + local_10,3);\n      local_35 = 0;\n      iVar3 = check4Code(param_1,local_38);\n      if (iVar3 == 0) {\n        uVar1 = 0xfffffffc;\n      }\n      else if (param_2[local_10 + 3] == '/') {\n        local_10 = local_10 + 4;\n        strncpy(local_3c,param_2 + local_10,3);\n        local_39 = 0;\n        iVar3 = check4Code(param_1,local_3c);\n        if (iVar3 == 0) {\n          uVar1 = 0xfffffffc;\n        }\n        else {\n          local_1c = param_1;\n          while ((local_1c != (char *)0x0 && (iVar3 = strcmp(local_1c,local_38), iVar3 != 0))) {\n            local_1c = *(char **)(local_1c + 0xc);\n          }\n          if (local_1c == (char *)0x0) {\n            uVar1 = 0xfffffffc;\n          }\n          else {\n            local_20 = *(char **)(local_1c + 8);\n            while (local_20 != (char *)0x0) {\n              local_30 = *(int *)(local_20 + 4);\n              local_34 = *(int *)(local_20 + 8);\n              iVar3 = strcmp(local_20,local_3c);\n              if (iVar3 == 0) {\n                local_2c = 1;\n                printf(\"@s - @s: (@d, @d)\\n\",local_38,local_3c,local_30,local_34);\n                local_20 = *(char **)(local_20 + 0xc);\n              }\n              else {\n                local_24 = param_1;\n                while ((local_24 != (char *)0x0 && (iVar3 = strcmp(local_20,local_24), iVar3 != 0)))\n                {\n                  local_24 = *(char **)(local_24 + 0xc);\n                }\n                if (local_24 == (char *)0x0) {\n                  return 0xfffffffc;\n                }\n                for (local_28 = *(char **)(local_24 + 8); local_28 != (char *)0x0;\n                    local_28 = *(char **)(local_28 + 0xc)) {\n                  iVar3 = strcmp(local_28,local_3c);\n                  if (iVar3 == 0) {\n                    local_2c = 1;\n                    printf(\"@s - @s - @s: (@d, @d)\\n\",local_38,local_20,local_3c,\n                           *(int *)(local_28 + 4) + local_30,*(int *)(local_28 + 8) + local_34);\n                    break;\n                  }\n                }\n                local_20 = *(char **)(local_20 + 0xc);\n              }\n            }\n            printf(\"\\n\");\n            if (local_2c == 0) {\n              uVar1 = 0xfffffff9;\n            }\n            else {\n              uVar1 = 0;\n            }\n          }\n        }\n      }\n      else {\n        uVar1 = 0xfffffffe;\n      }\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "findRoutes",
+                        "strlen",
+                        "strncpy",
+                        "check4Code",
+                        "strcmp",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "execute_cmd",
+                        "findRoutes"
+                    ],
+                    "defined_in_file": "CROMU_00071_decompiled.c"
+                }
+            }
+        ],
+        "load_database.c": [
+            {
+                "func_name": "loadDB",
+                "func_c_signature": "undefined4 loadDB(char **param_1)",
+                "decompiled_code": "undefined4 loadDB(char **param_1) {\n  undefined4 uVar1;\n  char *pcVar2;\n  void *pvVar3;\n  int iVar4;\n  char local_34 [4];\n  char *local_30;\n  uint local_2c;\n  uint local_28;\n  byte local_21;\n  undefined *local_20;\n  char *local_1c;\n  char *local_18;\n  uint local_14;\n  int local_10;\n  \n  if (*param_1 == (char *)0x0) {\n    local_20 = &DAT_4347c000;\n    local_10 = 1;\n    local_21 = (DAT_4347c000 & 0xf) + 5;\n    pcVar2 = (char *)malloc(0x10);\n    *param_1 = pcVar2;\n    if (*param_1 == (char *)0x0) {\n      uVar1 = 0xffffffff;\n    }\n    else {\n      local_18 = *param_1;\n      for (local_14 = 0; local_14 < local_21; local_14 = local_14 + 1) {\n        do {\n          makeAirportCode(local_20 + local_10,local_34);\n          local_10 = local_10 + 3;\n          iVar4 = check4Code(*param_1,local_34);\n        } while (iVar4 == -1);\n        strcpy(local_18,local_34);\n        if (local_14 < local_21 - 1) {\n          pvVar3 = malloc(0x10);\n          *(void **)(local_18 + 0xc) = pvVar3;\n          if (*(int *)(local_18 + 0xc) == 0) {\n            return 0xffffffff;\n          }\n          local_18 = *(char **)(local_18 + 0xc);\n        }\n        else {\n          *(undefined4 *)(local_18 + 0xc) = 0;\n        }\n      }\n      for (local_18 = *param_1; local_18 != (char *)0x0; local_18 = *(char **)(local_18 + 0xc)) {\n        local_28 = (byte)((byte)local_20[local_10] % (local_21 >> 1)) + 1;\n        local_10 = local_10 + 1;\n        pvVar3 = malloc(0x10);\n        *(void **)(local_18 + 8) = pvVar3;\n        if (*(int *)(local_18 + 8) == 0) {\n          return 0xffffffff;\n        }\n        local_1c = *(char **)(local_18 + 8);\n        local_14 = 0;\n        do {\n          local_2c = (uint)((byte)local_20[local_10] % local_21);\n          local_10 = local_10 + 1;\n          local_30 = (char *)findAirportCodebyNumber(*param_1,local_2c);\n          iVar4 = check4ConnectionCode(*(undefined4 *)(local_18 + 8),local_30);\n          if (iVar4 == -1) {\n            strcpy(local_1c,local_30);\n            *(uint *)(local_1c + 4) = (uint)(byte)local_20[local_10];\n            *(uint *)(local_1c + 8) = (uint)(byte)local_20[local_10 + 1];\n            local_10 = local_10 + 2;\n            local_14 = local_14 + 1;\n            if (local_14 < local_28) {\n              pvVar3 = malloc(0x10);\n              *(void **)(local_1c + 0xc) = pvVar3;\n              if (*(int *)(local_1c + 0xc) == 0) {\n                return 0xffffffff;\n              }\n              local_1c = *(char **)(local_1c + 0xc);\n            }\n          }\n        } while (local_14 < local_28);\n      }\n      uVar1 = 0;\n    }\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "loadDB",
+                        "malloc",
+                        "makeAirportCode",
+                        "check4Code",
+                        "strcpy",
+                        "findAirportCodebyNumber",
+                        "check4ConnectionCode"
+                    ],
+                    "calling_functions": [
+                        "loadDB",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "makeAirportCode",
+                "func_c_signature": "void makeAirportCode(int param_1,int param_2)",
+                "decompiled_code": "void makeAirportCode(int param_1,int param_2) {\n  int local_8;\n  \n  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {\n    *(byte *)(local_8 + param_2) = *(byte *)(param_1 + local_8) % 0x1a + 0x41;\n  }\n  *(undefined *)(param_2 + local_8) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "makeAirportCode"
+                    ],
+                    "calling_functions": [
+                        "loadDB",
+                        "makeAirportCode"
+                    ],
+                    "defined_in_file": "CROMU_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check4Code",
+                "func_c_signature": "undefined4 check4Code(char *param_1,char *param_2)",
+                "decompiled_code": "undefined4 check4Code(char *param_1,char *param_2) {\n  if (param_1 != (char *)0x0) {\n    for (; param_1 != (char *)0x0; param_1 = *(char **)(param_1 + 0xc)) {\n      if (((*param_2 == *param_1) && (param_2[1] == param_1[1])) && (param_2[2] == param_1[2])) {\n        return 0xffffffff;\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check4Code"
+                    ],
+                    "calling_functions": [
+                        "addAirport",
+                        "findRoutes",
+                        "loadDB",
+                        "check4Code"
+                    ],
+                    "defined_in_file": "CROMU_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check4ConnectionCode",
+                "func_c_signature": "int check4ConnectionCode(char *param_1,char *param_2)",
+                "decompiled_code": "int check4ConnectionCode(char *param_1,char *param_2) {\n  int local_8;\n  \n  local_8 = 0;\n  while( true ) {\n    if (param_1 == (char *)0x0) {\n      return -1;\n    }\n    if (((*param_1 == *param_2) && (param_1[1] == param_2[1])) && (param_1[2] == param_2[2])) break;\n    local_8 = local_8 + 1;\n    param_1 = *(char **)(param_1 + 0xc);\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check4ConnectionCode"
+                    ],
+                    "calling_functions": [
+                        "loadDB",
+                        "check4ConnectionCode"
+                    ],
+                    "defined_in_file": "CROMU_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "findAirportCodebyNumber",
+                "func_c_signature": "int findAirportCodebyNumber(int param_1,int param_2)",
+                "decompiled_code": "int findAirportCodebyNumber(int param_1,int param_2) {\n  int local_8;\n  \n  local_8 = 0;\n  for (; (local_8 < param_2 && (param_1 != 0)); param_1 = *(int *)(param_1 + 0xc)) {\n    local_8 = local_8 + 1;\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "findAirportCodebyNumber"
+                    ],
+                    "calling_functions": [
+                        "loadDB",
+                        "findAirportCodebyNumber"
+                    ],
+                    "defined_in_file": "CROMU_00071_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined *puVar2;\n  undefined auStack_b0 [2];\n  undefined local_ae [150];\n  int local_18;\n  undefined4 local_14;\n  undefined *puStack_10;\n  \n  puStack_10 = &stack0x00000004;\n  local_14 = check_db();\n  printf(\"Database checksum: @d\\n\");\n  iVar1 = loadDB();\n  puVar2 = auStack_b0;\n  if (iVar1 == -1) {\n    _terminate();\n    puVar2 = &stack0xffffff40;\n  }\n  do {\n    *(undefined4 *)(puVar2 + -0xc) = 0x96;\n    *(undefined **)(puVar2 + -0x10) = local_ae;\n    *(undefined4 *)(puVar2 + -0x14) = 0x12592;\n    getline(*(char ***)(puVar2 + -0x10),*(size_t **)(puVar2 + -0xc),*(FILE **)(puVar2 + -8));\n    *(undefined **)(puVar2 + -0xc) = local_ae;\n    *(undefined4 **)(puVar2 + -0x10) = &airports;\n    *(undefined4 *)(puVar2 + -0x14) = 0x125ab;\n    local_18 = execute_cmd();\n    if (local_18 < 1) {\n      if (local_18 < -7) {\n        if (local_18 == -100) {\n          *(char **)(puVar2 + -0x10) = \"TERMINATING\\n\";\n          *(undefined4 *)(puVar2 + -0x14) = 0x1269b;\n          printf(*(char **)(puVar2 + -0x10));\n          *(undefined4 *)(puVar2 + -0x10) = 0xffffffff;\n          *(undefined4 *)(puVar2 + -0x14) = 0x126a8;\n          _terminate();\n          puVar2 = puVar2 + -0x10;\n        }\n        else if (local_18 != -99) goto _L3;\n        *(undefined **)(puVar2 + -0x10) = &DAT_0001519b;\n        *(undefined4 *)(puVar2 + -0x14) = 0x126b7;\n        printf(*(char **)(puVar2 + -0x10));\n      }\n      else {\n        switch(local_18) {\n        case 0:\n          *(undefined **)(puVar2 + -0x10) = &DAT_0001519b;\n          *(undefined4 *)(puVar2 + -0x14) = 0x12606;\n          printf(*(char **)(puVar2 + -0x10));\n          break;\n        case -7:\n          *(char **)(puVar2 + -0x10) = \"NO RESULTS\\n\";\n          *(undefined4 *)(puVar2 + -0x14) = 0x12687;\n          printf(*(char **)(puVar2 + -0x10));\n          break;\n        case -6:\n          *(char **)(puVar2 + -0x10) = \"COMMAND TERMINATED\\n\";\n          *(undefined4 *)(puVar2 + -0x14) = 0x12673;\n          printf(*(char **)(puVar2 + -0x10));\n          break;\n        case -5:\n          *(char **)(puVar2 + -0x10) = \"EMPTY DB\\n\";\n          *(undefined4 *)(puVar2 + -0x14) = 0x1265f;\n          printf(*(char **)(puVar2 + -0x10));\n          break;\n        case -4:\n          *(char **)(puVar2 + -0x10) = \"UNKNOWN AIRPORT\\n\";\n          *(undefined4 *)(puVar2 + -0x14) = 0x1264b;\n          printf(*(char **)(puVar2 + -0x10));\n          break;\n        case -3:\n          *(char **)(puVar2 + -0x10) = \"AIRPORT CODE EXISTS\\n\";\n          *(undefined4 *)(puVar2 + -0x14) = 0x12634;\n          printf(*(char **)(puVar2 + -0x10));\n          break;\n        case -2:\n          *(char **)(puVar2 + -0x10) = \"BAD COMMAND FORMAT\\n\";\n          *(undefined4 *)(puVar2 + -0x14) = 0x1261d;\n          printf(*(char **)(puVar2 + -0x10));\n          break;\n        default:\n          goto _L3;\n        }\n      }\n    }\n    else {\n_L3:\n      *(char **)(puVar2 + -0x10) = \"UNSPECIFIED ERROR\\n\";\n      *(undefined4 *)(puVar2 + -0x14) = 0x126cb;\n      printf(*(char **)(puVar2 + -0x10));\n    }\n    if (local_18 == -99) {\n      *(undefined4 *)(puVar2 + -0x10) = 0;\n      *(code **)(puVar2 + -0x14) = check_db;\n      _terminate();\n      *(undefined **)(puVar2 + -0x14) = &stack0xfffffff8;\n      *(undefined4 *)(puVar2 + -0x28) = 0x126ef;\n      *(undefined4 *)(puVar2 + -0x1c) = 0;\n      *(undefined4 *)(puVar2 + -0x18) = 0;\n      while (*(int *)(puVar2 + -0x18) < 0x1000) {\n        *(uint *)(puVar2 + -0x1c) =\n             *(int *)(puVar2 + -0x1c) + (uint)(byte)(&DAT_4347c000)[*(int *)(puVar2 + -0x18)];\n        *(int *)(puVar2 + -0x18) = *(int *)(puVar2 + -0x18) + 1;\n      }\n      return *(undefined4 *)(puVar2 + -0x1c);\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "check_db",
+                        "printf",
+                        "loadDB",
+                        "_terminate",
+                        "getline",
+                        "execute_cmd"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00071_decompiled.c"
+                }
+            }
+        ],
+        "utility.c": [
+            {
+                "func_name": "check_db",
+                "func_c_signature": "int check_db(void)",
+                "decompiled_code": "int check_db(void) {\n  int local_c;\n  int local_8;\n  \n  local_c = 0;\n  for (local_8 = 0; local_8 < 0x1000; local_8 = local_8 + 1) {\n    local_c = local_c + (uint)(byte)(&DAT_4347c000)[local_8];\n  }\n  return local_c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_db"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "check_db"
+                    ],
+                    "defined_in_file": "CROMU_00071_decompiled.c"
+                }
+            }
+        ]
+    }
+}

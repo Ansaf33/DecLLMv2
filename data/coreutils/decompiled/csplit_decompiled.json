@@ -1,0 +1,1084 @@
+{
+    "file": "csplit",
+    "decompiled_code": {
+        "csplit.c": [
+            {
+                "func_name": "cleanup",
+                "func_c_signature": "void cleanup(EVP_PKEY_CTX *ctx)",
+                "decompiled_code": "void cleanup(EVP_PKEY_CTX *ctx) {\n  long in_FS_OFFSET;\n  sigset_t local_98;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  close_output_file();\n  sigprocmask(0,(sigset_t *)&caught_signals,&local_98);\n  delete_all_files(0);\n  sigprocmask(2,&local_98,(sigset_t *)0x0);\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cleanup",
+                        "close_output_file",
+                        "sigprocmask",
+                        "delete_all_files",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "cleanup",
+                        "cleanup_fatal"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cleanup_fatal",
+                "func_c_signature": "void cleanup_fatal(EVP_PKEY_CTX *param_1)",
+                "decompiled_code": "void cleanup_fatal(EVP_PKEY_CTX *param_1) {\n  cleanup(param_1);\n                    /* WARNING: Subroutine does not return */\n  exit(1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cleanup_fatal",
+                        "cleanup",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "cleanup_fatal",
+                        "xalloc_die",
+                        "read_input",
+                        "write_to_file",
+                        "handle_line_error",
+                        "regexp_error",
+                        "process_regexp",
+                        "create_output_file",
+                        "close_output_file",
+                        "save_line_to_file",
+                        "extract_regexp",
+                        "parse_patterns",
+                        "main"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "xalloc_die",
+                "func_c_signature": "void xalloc_die(void)",
+                "decompiled_code": "void xalloc_die(void) {\n  undefined8 uVar1;\n  \n  uVar1 = gettext(\"memory exhausted\");\n  error(0,0,&DAT_00103500,uVar1);\n                    /* WARNING: Subroutine does not return */\n  cleanup_fatal();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "xalloc_die",
+                        "gettext",
+                        "error",
+                        "cleanup_fatal"
+                    ],
+                    "calling_functions": [
+                        "xalloc_die",
+                        "load_buffer",
+                        "parse_patterns",
+                        "max_out",
+                        "main"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "interrupt_handler",
+                "func_c_signature": "void interrupt_handler(int param_1)",
+                "decompiled_code": "void interrupt_handler(int param_1) {\n  delete_all_files(1);\n  signal(param_1,(__sighandler_t)0x0);\n  raise(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "interrupt_handler",
+                        "delete_all_files",
+                        "signal",
+                        "raise"
+                    ],
+                    "calling_functions": [
+                        "interrupt_handler"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "save_to_hold_area",
+                "func_c_signature": "void save_to_hold_area(undefined8 param_1,undefined8 param_2)",
+                "decompiled_code": "void save_to_hold_area(undefined8 param_1,undefined8 param_2) {\n  free(hold_area);\n  hold_area = (void *)param_1;\n  hold_count = param_2;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "save_to_hold_area",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "save_to_hold_area",
+                        "record_line_starts"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_input",
+                "func_c_signature": "long read_input(undefined8 param_1,long param_2)",
+                "decompiled_code": "long read_input(undefined8 param_1,long param_2) {\n  long lVar1;\n  undefined8 uVar2;\n  int *piVar3;\n  \n  if (param_2 == 0) {\n    lVar1 = 0;\n  }\n  else {\n    lVar1 = safe_read(0,param_1,param_2);\n    if (lVar1 == 0) {\n      have_read_eof = 1;\n    }\n    if (lVar1 < 0) {\n      uVar2 = gettext(\"read error\");\n      piVar3 = __errno_location();\n      error(0,*piVar3,uVar2);\n                    /* WARNING: Subroutine does not return */\n      cleanup_fatal();\n    }\n  }\n  return lVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_input",
+                        "safe_read",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "cleanup_fatal"
+                    ],
+                    "calling_functions": [
+                        "read_input",
+                        "load_buffer"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clear_line_control",
+                "func_c_signature": "void clear_line_control(undefined8 *param_1)",
+                "decompiled_code": "void clear_line_control(undefined8 *param_1) {\n  *param_1 = 0;\n  param_1[1] = 0;\n  param_1[2] = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clear_line_control"
+                    ],
+                    "calling_functions": [
+                        "clear_line_control",
+                        "new_line_control"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "new_line_control",
+                "func_c_signature": "long new_line_control(void)",
+                "decompiled_code": "long new_line_control(void) {\n  long lVar1;\n  \n  lVar1 = xmalloc(0x520);\n  *(undefined8 *)(lVar1 + 0x518) = 0;\n  clear_line_control(lVar1);\n  return lVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "new_line_control",
+                        "xmalloc",
+                        "clear_line_control"
+                    ],
+                    "calling_functions": [
+                        "new_line_control",
+                        "keep_new_line"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "keep_new_line",
+                "func_c_signature": "void keep_new_line(long param_1,long param_2,long param_3)",
+                "decompiled_code": "void keep_new_line(long param_1,long param_2,long param_3) {\n  long lVar1;\n  long *plVar2;\n  undefined8 uVar3;\n  \n  if (*(long *)(param_1 + 0x30) == 0) {\n    uVar3 = new_line_control();\n    *(undefined8 *)(param_1 + 0x38) = uVar3;\n    *(undefined8 *)(param_1 + 0x30) = *(undefined8 *)(param_1 + 0x38);\n  }\n  if (**(long **)(param_1 + 0x38) == 0x50) {\n    lVar1 = *(long *)(param_1 + 0x38);\n    uVar3 = new_line_control();\n    *(undefined8 *)(lVar1 + 0x518) = uVar3;\n    *(undefined8 *)(param_1 + 0x38) = *(undefined8 *)(*(long *)(param_1 + 0x38) + 0x518);\n  }\n  plVar2 = *(long **)(param_1 + 0x38);\n  plVar2[(plVar2[1] + 1) * 2 + 2] = param_2;\n  plVar2[(plVar2[1] + 1) * 2 + 1] = param_3;\n  *plVar2 = *plVar2 + 1;\n  plVar2[1] = plVar2[1] + 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "keep_new_line",
+                        "new_line_control"
+                    ],
+                    "calling_functions": [
+                        "keep_new_line",
+                        "record_line_starts"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "record_line_starts",
+                "func_c_signature": "long record_line_starts(long param_1)",
+                "decompiled_code": "long record_line_starts(long param_1) {\n  undefined *puVar1;\n  undefined *puVar2;\n  long lVar3;\n  undefined8 uVar4;\n  undefined *local_38;\n  long local_30;\n  \n  if (*(long *)(param_1 + 8) == 0) {\n    local_30 = 0;\n  }\n  else {\n    local_30 = 0;\n    local_38 = *(undefined **)(param_1 + 0x28);\n    puVar1 = local_38 + *(long *)(param_1 + 8);\n    *puVar1 = 10;\n    while( true ) {\n      puVar2 = (undefined *)rawmemchr(local_38,10);\n      if (puVar2 == puVar1) break;\n      keep_new_line(param_1,local_38,puVar2 + (1 - (long)local_38));\n      local_38 = puVar2 + 1;\n      local_30 = local_30 + 1;\n    }\n    lVar3 = (long)puVar1 - (long)local_38;\n    if (lVar3 != 0) {\n      if (have_read_eof == '\\0') {\n        uVar4 = ximemdup(local_38,lVar3);\n        save_to_hold_area(uVar4,lVar3);\n      }\n      else {\n        keep_new_line(param_1,local_38,lVar3);\n        local_30 = local_30 + 1;\n      }\n    }\n    *(long *)(param_1 + 0x20) = local_30;\n    *(long *)(param_1 + 0x10) = last_line_number + 1;\n    *(undefined8 *)(param_1 + 0x18) = *(undefined8 *)(param_1 + 0x10);\n    last_line_number = local_30 + last_line_number;\n  }\n  return local_30;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "record_line_starts",
+                        "rawmemchr",
+                        "keep_new_line",
+                        "ximemdup",
+                        "save_to_hold_area"
+                    ],
+                    "calling_functions": [
+                        "record_line_starts",
+                        "load_buffer"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free_buffer",
+                "func_c_signature": "void free_buffer(void *param_1)",
+                "decompiled_code": "void free_buffer(void *param_1) {\n  void *pvVar1;\n  void *local_18;\n  \n  local_18 = *(void **)((long)param_1 + 0x30);\n  while (local_18 != (void *)0x0) {\n    pvVar1 = *(void **)((long)local_18 + 0x518);\n    free(local_18);\n    local_18 = pvVar1;\n  }\n  free(*(void **)((long)param_1 + 0x28));\n  free(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_buffer",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "free_buffer",
+                        "load_buffer",
+                        "remove_line"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "save_buffer",
+                "func_c_signature": "void save_buffer(long param_1)",
+                "decompiled_code": "void save_buffer(long param_1) {\n  long lVar1;\n  long local_10;\n  \n  *(undefined8 *)(param_1 + 0x40) = 0;\n  *(undefined8 *)(param_1 + 0x38) = *(undefined8 *)(param_1 + 0x30);\n  lVar1 = param_1;\n  if (head != 0) {\n    for (local_10 = head; *(long *)(local_10 + 0x40) != 0; local_10 = *(long *)(local_10 + 0x40)) {\n    }\n    *(long *)(local_10 + 0x40) = param_1;\n    lVar1 = head;\n  }\n  head = lVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "save_buffer"
+                    ],
+                    "calling_functions": [
+                        "save_buffer",
+                        "load_buffer"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "load_buffer",
+                "func_c_signature": "undefined8 load_buffer(void)",
+                "decompiled_code": "undefined8 load_buffer(void) {\n  long lVar1;\n  long lVar2;\n  undefined8 uVar3;\n  size_t sVar4;\n  long *plVar5;\n  long lVar6;\n  long in_FS_OFFSET;\n  long local_38;\n  long local_30;\n  void *local_28;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  if (have_read_eof == '\\0') {\n    sVar4 = hold_count;\n    if ((long)hold_count < 0x1ffe) {\n      sVar4 = 0x1ffe;\n    }\n    local_38 = sVar4 + 1;\n    do {\n      plVar5 = (long *)get_new_buffer(local_38);\n      lVar2 = *plVar5;\n      local_28 = (void *)plVar5[5];\n      local_30 = lVar2;\n      if (hold_count != 0) {\n        local_28 = mempcpy(local_28,hold_area,hold_count);\n        plVar5[1] = plVar5[1] + hold_count;\n        local_30 = lVar2 - hold_count;\n        hold_count = 0;\n      }\n      lVar6 = read_input(local_28,local_30 + -1);\n      plVar5[1] = plVar5[1] + lVar6;\n      lVar6 = record_line_starts(plVar5);\n      if (lVar6 != 0) {\n        save_buffer(plVar5);\n        uVar3 = 1;\n        goto LAB_00100a6c;\n      }\n      free_buffer(plVar5);\n      if (have_read_eof != '\\0') {\n        uVar3 = 0;\n        goto LAB_00100a6c;\n      }\n      local_38 = lVar2 + (lVar2 >> 1);\n    } while (!SCARRY8(lVar2,lVar2 >> 1));\n    uVar3 = xalloc_die();\n  }\n  else {\n    uVar3 = 0;\n  }\nLAB_00100a6c:\n  if (lVar1 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return uVar3;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "load_buffer",
+                        "get_new_buffer",
+                        "mempcpy",
+                        "read_input",
+                        "record_line_starts",
+                        "save_buffer",
+                        "free_buffer",
+                        "SCARRY8",
+                        "xalloc_die",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "load_buffer",
+                        "get_first_line_in_buffer",
+                        "remove_line",
+                        "find_line"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_first_line_in_buffer",
+                "func_c_signature": "undefined8 get_first_line_in_buffer(void)",
+                "decompiled_code": "undefined8 get_first_line_in_buffer(void) {\n  char cVar1;\n  \n  if ((head == 0) && (cVar1 = load_buffer(), cVar1 != '\\x01')) {\n    return 0;\n  }\n  return *(undefined8 *)(head + 0x18);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_first_line_in_buffer",
+                        "load_buffer"
+                    ],
+                    "calling_functions": [
+                        "get_first_line_in_buffer",
+                        "write_to_file",
+                        "process_line_count"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove_line",
+                "func_c_signature": "long * remove_line(void)",
+                "decompiled_code": "long * remove_line(void) {\n  long *plVar1;\n  char cVar2;\n  long *plVar3;\n  \n  if (prev_buf_3 != 0) {\n    free_buffer(prev_buf_3);\n    prev_buf_3 = 0;\n  }\n  if ((head == 0) && (cVar2 = load_buffer(), cVar2 != '\\x01')) {\n    plVar3 = (long *)0x0;\n  }\n  else {\n    if (current_line < *(long *)(head + 0x18)) {\n      current_line = *(long *)(head + 0x18);\n    }\n    *(long *)(head + 0x18) = *(long *)(head + 0x18) + 1;\n    plVar1 = *(long **)(head + 0x38);\n    plVar3 = plVar1 + (plVar1[2] + 1) * 2 + 1;\n    plVar1[2] = plVar1[2] + 1;\n    if ((plVar1[2] == *plVar1) &&\n       ((*(long *)(head + 0x38) = plVar1[0xa3], *(long *)(head + 0x38) == 0 ||\n        (**(long **)(head + 0x38) == 0)))) {\n      prev_buf_3 = head;\n      head = *(long *)(head + 0x40);\n    }\n  }\n  return plVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_line",
+                        "free_buffer",
+                        "load_buffer"
+                    ],
+                    "calling_functions": [
+                        "remove_line",
+                        "write_to_file",
+                        "dump_rest_of_file",
+                        "process_line_count",
+                        "process_regexp"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_line",
+                "func_c_signature": "long find_line(long param_1)",
+                "decompiled_code": "long find_line(long param_1) {\n  char cVar1;\n  long lVar2;\n  long local_20;\n  long local_18;\n  long local_10;\n  \n  if ((head == 0) && (cVar1 = load_buffer(), cVar1 != '\\x01')) {\n    return 0;\n  }\n  if (param_1 < *(long *)(head + 0x10)) {\n    lVar2 = 0;\n  }\n  else {\n    for (local_20 = head; *(long *)(local_20 + 0x20) + *(long *)(local_20 + 0x10) <= param_1;\n        local_20 = *(long *)(local_20 + 0x40)) {\n      if ((*(long *)(local_20 + 0x40) == 0) && (cVar1 = load_buffer(), cVar1 != '\\x01')) {\n        return 0;\n      }\n    }\n    local_18 = *(long *)(local_20 + 0x30);\n    for (local_10 = param_1 - *(long *)(local_20 + 0x10); 0x4f < local_10;\n        local_10 = local_10 + -0x50) {\n      local_18 = *(long *)(local_18 + 0x518);\n    }\n    lVar2 = local_18 + (local_10 + 1) * 0x10 + 8;\n  }\n  return lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_line",
+                        "load_buffer"
+                    ],
+                    "calling_functions": [
+                        "find_line",
+                        "no_more_lines",
+                        "process_regexp"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "no_more_lines",
+                "func_c_signature": "bool no_more_lines(void)",
+                "decompiled_code": "bool no_more_lines(void) {\n  long lVar1;\n  \n  lVar1 = find_line(current_line + 1);\n  return lVar1 == 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "no_more_lines",
+                        "find_line"
+                    ],
+                    "calling_functions": [
+                        "no_more_lines",
+                        "process_line_count"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_input_file",
+                "func_c_signature": "void set_input_file(undefined8 param_1)",
+                "decompiled_code": "void set_input_file(undefined8 param_1) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  \n  cVar1 = streq(param_1,&DAT_0010350e);\n  if (cVar1 != '\\x01') {\n    iVar2 = fd_reopen(0,param_1,0,0);\n    if (iVar2 < 0) {\n      uVar3 = quotearg_style(4,param_1);\n      uVar4 = gettext(\"cannot open %s for reading\");\n      piVar5 = __errno_location();\n      error(1,*piVar5,uVar4,uVar3);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_input_file",
+                        "streq",
+                        "fd_reopen",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "set_input_file",
+                        "parse_patterns",
+                        "main"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write_to_file",
+                "func_c_signature": "void write_to_file(long param_1,char param_2,int param_3)",
+                "decompiled_code": "void write_to_file(long param_1,char param_2,int param_3) {\n  long lVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  long lVar4;\n  long local_48;\n  \n  lVar1 = get_first_line_in_buffer();\n  if ((lVar1 != 0) && (lVar1 <= param_1)) {\n    local_48 = 0;\n    while( true ) {\n      if (param_1 - lVar1 <= local_48) {\n        return;\n      }\n      lVar4 = remove_line();\n      if (lVar4 == 0) break;\n      if (param_2 != '\\x01') {\n        save_line_to_file(lVar4);\n      }\n      local_48 = local_48 + 1;\n    }\n    uVar2 = quote(*(undefined8 *)(global_argv + (long)param_3 * 8));\n    uVar3 = gettext(\"%s: line number out of range\");\n    error(0,0,uVar3,uVar2);\n                    /* WARNING: Subroutine does not return */\n    cleanup_fatal();\n  }\n  uVar2 = quote(*(undefined8 *)(global_argv + (long)param_3 * 8));\n  uVar3 = gettext(\"%s: line number out of range\");\n  error(0,0,uVar3,uVar2);\n                    /* WARNING: Subroutine does not return */\n  cleanup_fatal();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_to_file",
+                        "get_first_line_in_buffer",
+                        "remove_line",
+                        "save_line_to_file",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "cleanup_fatal"
+                    ],
+                    "calling_functions": [
+                        "write_to_file",
+                        "process_regexp"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dump_rest_of_file",
+                "func_c_signature": "void dump_rest_of_file(void)",
+                "decompiled_code": "void dump_rest_of_file(void) {\n  long lVar1;\n  \n  while( true ) {\n    lVar1 = remove_line();\n    if (lVar1 == 0) break;\n    save_line_to_file(lVar1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dump_rest_of_file",
+                        "remove_line",
+                        "save_line_to_file"
+                    ],
+                    "calling_functions": [
+                        "dump_rest_of_file",
+                        "regexp_error",
+                        "process_regexp",
+                        "split_file"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_line_error",
+                "func_c_signature": "void handle_line_error(long param_1,long param_2)",
+                "decompiled_code": "void handle_line_error(long param_1,long param_2) {\n  undefined8 uVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  long in_FS_OFFSET;\n  undefined local_38 [24];\n  undefined8 local_20;\n  \n  local_20 = *(undefined8 *)(in_FS_OFFSET + 0x28);\n  uVar1 = imaxtostr(*(undefined8 *)(param_1 + 8),local_38);\n  uVar2 = quote(uVar1);\n  uVar1 = _program_name;\n  pcVar3 = (char *)gettext(\"%s: %s: line number out of range\");\n  fprintf(_stderr,pcVar3,uVar1,uVar2);\n  if (param_2 == 0) {\n    fputc(10,_stderr);\n  }\n  else {\n    pcVar3 = (char *)gettext(\" on repetition %jd\\n\");\n    fprintf(_stderr,pcVar3,param_2);\n  }\n                    /* WARNING: Subroutine does not return */\n  cleanup_fatal();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_line_error",
+                        "imaxtostr",
+                        "quote",
+                        "gettext",
+                        "fprintf",
+                        "fputc",
+                        "cleanup_fatal"
+                    ],
+                    "calling_functions": [
+                        "handle_line_error",
+                        "process_line_count"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_line_count",
+                "func_c_signature": "void process_line_count(long param_1,long param_2)",
+                "decompiled_code": "void process_line_count(long param_1,long param_2) {\n  long lVar1;\n  char cVar2;\n  long lVar3;\n  long local_20;\n  \n  lVar1 = *(long *)(param_1 + 8);\n  create_output_file();\n  cVar2 = no_more_lines();\n  if ((cVar2 != '\\0') && (suppress_matched != '\\0')) {\n    handle_line_error(param_1,param_2);\n  }\n  local_20 = get_first_line_in_buffer();\n  if (local_20 == 0) {\n    handle_line_error(param_1,param_2);\n  }\n  while( true ) {\n    if (lVar1 * (param_2 + 1) <= local_20) break;\n    lVar3 = remove_line();\n    if (lVar3 == 0) {\n      handle_line_error(param_1,param_2);\n    }\n    save_line_to_file(lVar3);\n    local_20 = local_20 + 1;\n  }\n  close_output_file();\n  if (suppress_matched != '\\0') {\n    remove_line();\n  }\n  cVar2 = no_more_lines();\n  if ((cVar2 != '\\0') && (suppress_matched != '\\x01')) {\n    handle_line_error(param_1,param_2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_line_count",
+                        "create_output_file",
+                        "no_more_lines",
+                        "handle_line_error",
+                        "get_first_line_in_buffer",
+                        "remove_line",
+                        "save_line_to_file",
+                        "close_output_file"
+                    ],
+                    "calling_functions": [
+                        "process_line_count",
+                        "split_file"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "regexp_error",
+                "func_c_signature": "void regexp_error(long param_1,long param_2,char param_3)",
+                "decompiled_code": "void regexp_error(long param_1,long param_2,char param_3) {\n  undefined8 uVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = quote(*(undefined8 *)((long)*(int *)(param_1 + 0x18) * 8 + global_argv));\n  uVar1 = _program_name;\n  pcVar3 = (char *)gettext(\"%s: %s: match not found\");\n  fprintf(_stderr,pcVar3,uVar1,uVar2);\n  if (param_2 == 0) {\n    fputc(10,_stderr);\n  }\n  else {\n    pcVar3 = (char *)gettext(\" on repetition %jd\\n\");\n    fprintf(_stderr,pcVar3,param_2);\n  }\n  if (param_3 != '\\x01') {\n    dump_rest_of_file();\n    close_output_file();\n  }\n                    /* WARNING: Subroutine does not return */\n  cleanup_fatal();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "regexp_error",
+                        "quote",
+                        "gettext",
+                        "fprintf",
+                        "fputc",
+                        "dump_rest_of_file",
+                        "close_output_file",
+                        "cleanup_fatal"
+                    ],
+                    "calling_functions": [
+                        "regexp_error",
+                        "process_regexp"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_regexp",
+                "func_c_signature": "void process_regexp(long *param_1,undefined8 param_2)",
+                "decompiled_code": "void process_regexp(long *param_1,undefined8 param_2) {\n  char cVar1;\n  int iVar2;\n  long *plVar3;\n  undefined8 uVar4;\n  long lVar5;\n  long local_30;\n  \n  cVar1 = *(char *)((long)param_1 + 0x1d);\n  if (cVar1 != '\\x01') {\n    create_output_file();\n  }\n  if (*param_1 < 0) {\n    do {\n      current_line = current_line + 1;\n      plVar3 = (long *)find_line(current_line);\n      if (plVar3 == (long *)0x0) {\n        if (*(char *)((long)param_1 + 0x1c) != '\\0') {\n          if (cVar1 != '\\x01') {\n            dump_rest_of_file();\n            close_output_file();\n          }\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        regexp_error(param_1,param_2,cVar1);\n      }\n      local_30 = *plVar3;\n      if (*(char *)(plVar3[1] + local_30 + -1) == '\\n') {\n        local_30 = local_30 + -1;\n      }\n      iVar2 = re_search((re_pattern_buffer *)(param_1 + 4),(char *)plVar3[1],(int)local_30,0,\n                        (int)local_30,(re_registers *)0x0);\n      if (iVar2 == -2) {\n        uVar4 = gettext(\"error in regular expression search\");\n        error(0,0,uVar4);\n                    /* WARNING: Subroutine does not return */\n        cleanup_fatal();\n      }\n    } while (iVar2 == -1);\n  }\n  else {\n    while( true ) {\n      current_line = current_line + 1;\n      plVar3 = (long *)find_line(current_line);\n      if (plVar3 == (long *)0x0) {\n        if (*(char *)((long)param_1 + 0x1c) != '\\0') {\n          if (cVar1 != '\\x01') {\n            dump_rest_of_file();\n            close_output_file();\n          }\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        regexp_error(param_1,param_2,cVar1);\n      }\n      local_30 = *plVar3;\n      if (*(char *)(plVar3[1] + local_30 + -1) == '\\n') {\n        local_30 = local_30 + -1;\n      }\n      iVar2 = re_search((re_pattern_buffer *)(param_1 + 4),(char *)plVar3[1],(int)local_30,0,\n                        (int)local_30,(re_registers *)0x0);\n      if (iVar2 == -2) {\n        uVar4 = gettext(\"error in regular expression search\");\n        error(0,0,uVar4);\n                    /* WARNING: Subroutine does not return */\n        cleanup_fatal();\n      }\n      if (iVar2 != -1) break;\n      uVar4 = remove_line();\n      if (cVar1 != '\\x01') {\n        save_line_to_file(uVar4);\n      }\n    }\n  }\n  lVar5 = current_line + *param_1;\n  write_to_file(lVar5,cVar1,*(undefined4 *)(param_1 + 3));\n  if (cVar1 != '\\x01') {\n    close_output_file();\n  }\n  if (0 < *param_1) {\n    current_line = lVar5;\n  }\n  if (suppress_matched != '\\0') {\n    remove_line();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_regexp",
+                        "create_output_file",
+                        "find_line",
+                        "dump_rest_of_file",
+                        "close_output_file",
+                        "exit",
+                        "regexp_error",
+                        "re_search",
+                        "gettext",
+                        "error",
+                        "cleanup_fatal",
+                        "remove_line",
+                        "save_line_to_file",
+                        "write_to_file"
+                    ],
+                    "calling_functions": [
+                        "process_regexp",
+                        "split_file"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "split_file",
+                "func_c_signature": "void split_file(void)",
+                "decompiled_code": "void split_file(void) {\n  long local_18;\n  long local_10;\n  \n  for (local_18 = 0; local_18 < control_used; local_18 = local_18 + 1) {\n    if (*(char *)(local_18 * 0x60 + controls + 0x1e) == '\\0') {\n      for (local_10 = 0;\n          (*(char *)(local_18 * 0x60 + controls + 0x1c) != '\\0' ||\n          (local_10 <= *(long *)(local_18 * 0x60 + controls + 0x10))); local_10 = local_10 + 1) {\n        process_line_count(controls + local_18 * 0x60,local_10);\n      }\n    }\n    else {\n      for (local_10 = 0;\n          (*(char *)(local_18 * 0x60 + controls + 0x1c) != '\\0' ||\n          (local_10 <= *(long *)(local_18 * 0x60 + controls + 0x10))); local_10 = local_10 + 1) {\n        process_regexp(controls + local_18 * 0x60,local_10);\n      }\n    }\n  }\n  create_output_file();\n  dump_rest_of_file();\n  close_output_file();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "split_file",
+                        "process_line_count",
+                        "process_regexp",
+                        "create_output_file",
+                        "dump_rest_of_file",
+                        "close_output_file"
+                    ],
+                    "calling_functions": [
+                        "split_file",
+                        "parse_patterns",
+                        "main"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "make_filename",
+                "func_c_signature": "char * make_filename(uint param_1)",
+                "decompiled_code": "char * make_filename(uint param_1) {\n  uint uVar1;\n  char *pcVar2;\n  char *__format;\n  size_t sVar3;\n  \n  strcpy(filename_space,prefix);\n  __format = suffix;\n  pcVar2 = filename_space;\n  uVar1 = digits;\n  if (suffix == (char *)0x0) {\n    sVar3 = strlen(prefix);\n    sprintf(pcVar2 + sVar3,\"%0*d\",(ulong)uVar1,(ulong)param_1);\n  }\n  else {\n    sVar3 = strlen(prefix);\n    sprintf(pcVar2 + sVar3,__format,(ulong)param_1);\n  }\n  return filename_space;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "make_filename",
+                        "strcpy",
+                        "strlen",
+                        "sprintf"
+                    ],
+                    "calling_functions": [
+                        "make_filename",
+                        "create_output_file",
+                        "delete_all_files"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_output_file",
+                "func_c_signature": "void create_output_file(void)",
+                "decompiled_code": "void create_output_file(void) {\n  int iVar1;\n  int *piVar2;\n  undefined8 uVar3;\n  long in_FS_OFFSET;\n  bool bVar4;\n  int local_b0;\n  sigset_t local_98;\n  long local_10;\n  \n  iVar1 = files_created;\n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  output_filename = make_filename(files_created);\n  if (iVar1 == 0x7fffffff) {\n    bVar4 = false;\n    local_b0 = 0x4b;\n  }\n  else {\n    sigprocmask(0,(sigset_t *)&caught_signals,&local_98);\n    output_stream = fopen_safer(output_filename,&DAT_001035c0);\n    bVar4 = output_stream != 0;\n    piVar2 = __errno_location();\n    local_b0 = *piVar2;\n    files_created = iVar1 + (uint)bVar4;\n    sigprocmask(2,&local_98,(sigset_t *)0x0);\n  }\n  if (!bVar4) {\n    uVar3 = quotearg_n_style_colon(0,3,output_filename);\n    error(0,local_b0,&DAT_00103500,uVar3);\n                    /* WARNING: Subroutine does not return */\n    cleanup_fatal();\n  }\n  bytes_written = 0;\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_output_file",
+                        "make_filename",
+                        "sigprocmask",
+                        "fopen_safer",
+                        "__errno_location",
+                        "quotearg_n_style_colon",
+                        "error",
+                        "cleanup_fatal",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "process_line_count",
+                        "process_regexp",
+                        "split_file",
+                        "create_output_file"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "delete_all_files",
+                "func_c_signature": "void delete_all_files(char param_1)",
+                "decompiled_code": "void delete_all_files(char param_1) {\n  int iVar1;\n  char *__name;\n  int *piVar2;\n  undefined8 uVar3;\n  int local_34;\n  \n  if (remove_files == '\\x01') {\n    local_34 = files_created;\n    while (local_34 = local_34 + -1, -1 < local_34) {\n      __name = (char *)make_filename(local_34);\n      iVar1 = unlink(__name);\n      if (iVar1 != 0) {\n        piVar2 = __errno_location();\n        if ((*piVar2 != 2) && (param_1 != '\\x01')) {\n          uVar3 = quotearg_n_style_colon(0,3,__name);\n          piVar2 = __errno_location();\n          error(0,*piVar2,&DAT_00103500,uVar3);\n        }\n      }\n    }\n    files_created = 0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "delete_all_files",
+                        "make_filename",
+                        "unlink",
+                        "__errno_location",
+                        "quotearg_n_style_colon",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "cleanup",
+                        "interrupt_handler",
+                        "delete_all_files"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "close_output_file",
+                "func_c_signature": "void close_output_file(void)",
+                "decompiled_code": "void close_output_file(void) {\n  int iVar1;\n  int iVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  long in_FS_OFFSET;\n  sigset_t local_a8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (output_stream != (FILE *)0x0) {\n    iVar1 = ferror_unlocked(output_stream);\n    if (iVar1 != 0) {\n      uVar3 = quotearg_style(4,output_filename);\n      uVar4 = gettext(\"write error for %s\");\n      error(0,0,uVar4,uVar3);\n      output_stream = (FILE *)0x0;\n                    /* WARNING: Subroutine does not return */\n      cleanup_fatal();\n    }\n    iVar1 = rpl_fclose(output_stream);\n    if (iVar1 != 0) {\n      uVar3 = quotearg_n_style_colon(0,3,output_filename);\n      piVar5 = __errno_location();\n      error(0,*piVar5,&DAT_00103500,uVar3);\n      output_stream = (FILE *)0x0;\n                    /* WARNING: Subroutine does not return */\n      cleanup_fatal();\n    }\n    if ((bytes_written == 0) && (elide_empty_files != '\\0')) {\n      sigprocmask(0,(sigset_t *)&caught_signals,&local_a8);\n      iVar2 = unlink(output_filename);\n      piVar5 = __errno_location();\n      iVar1 = *piVar5;\n      files_created = files_created + -1;\n      sigprocmask(2,&local_a8,(sigset_t *)0x0);\n      if ((iVar2 != 0) && (iVar1 != 2)) {\n        uVar3 = quotearg_n_style_colon(0,3,output_filename);\n        error(0,iVar1,&DAT_00103500,uVar3);\n      }\n    }\n    else if (suppress_count != '\\x01') {\n      fprintf(_stdout,\"%jd\\n\",bytes_written);\n    }\n    output_stream = (FILE *)0x0;\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "close_output_file",
+                        "ferror_unlocked",
+                        "quotearg_style",
+                        "gettext",
+                        "error",
+                        "cleanup_fatal",
+                        "rpl_fclose",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "sigprocmask",
+                        "unlink",
+                        "fprintf",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "cleanup",
+                        "process_line_count",
+                        "regexp_error",
+                        "process_regexp",
+                        "split_file",
+                        "close_output_file"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "save_line_to_file",
+                "func_c_signature": "void save_line_to_file(size_t *param_1)",
+                "decompiled_code": "void save_line_to_file(size_t *param_1) {\n  size_t sVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  \n  sVar1 = fwrite_unlocked((void *)param_1[1],1,*param_1,output_stream);\n  if (sVar1 != *param_1) {\n    uVar2 = quotearg_style(4,output_filename);\n    uVar3 = gettext(\"write error for %s\");\n    piVar4 = __errno_location();\n    error(0,*piVar4,uVar3,uVar2);\n    output_stream = (FILE *)0x0;\n                    /* WARNING: Subroutine does not return */\n    cleanup_fatal();\n  }\n  bytes_written = bytes_written + *param_1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "save_line_to_file",
+                        "fwrite_unlocked",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "cleanup_fatal"
+                    ],
+                    "calling_functions": [
+                        "write_to_file",
+                        "dump_rest_of_file",
+                        "process_line_count",
+                        "process_regexp",
+                        "save_line_to_file"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "new_control_record",
+                "func_c_signature": "undefined8 * new_control_record(void)",
+                "decompiled_code": "undefined8 * new_control_record(void) {\n  undefined8 *puVar1;\n  \n  if (control_used == control_allocated_2) {\n    controls = xpalloc(controls,&control_allocated_2,1,0xffffffffffffffff,0x60);\n  }\n  puVar1 = (undefined8 *)(control_used * 0x60 + controls);\n  control_used = control_used + 1;\n  *(undefined *)((long)puVar1 + 0x1e) = 0;\n  puVar1[2] = 0;\n  *(undefined *)((long)puVar1 + 0x1c) = 0;\n  puVar1[1] = 0;\n  *puVar1 = 0;\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "new_control_record",
+                        "xpalloc"
+                    ],
+                    "calling_functions": [
+                        "new_control_record",
+                        "extract_regexp",
+                        "parse_patterns"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_for_offset",
+                "func_c_signature": "void check_for_offset(undefined8 param_1,undefined8 param_2,undefined8 param_3)",
+                "decompiled_code": "void check_for_offset(undefined8 param_1,undefined8 param_2,undefined8 param_3) {\n  int iVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  \n  iVar1 = xstrtoimax(param_3,0,10,param_1,&DAT_00103454);\n  if (iVar1 != 0) {\n    uVar2 = quote(param_2);\n    uVar3 = gettext(\"%s: integer expected after delimiter\");\n    error(1,0,uVar3,uVar2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_for_offset",
+                        "xstrtoimax",
+                        "quote",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "check_for_offset",
+                        "extract_regexp"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_repeat_count",
+                "func_c_signature": "void parse_repeat_count(int param_1,long param_2,char *param_3)",
+                "decompiled_code": "void parse_repeat_count(int param_1,long param_2,char *param_3) {\n  int iVar1;\n  size_t sVar2;\n  undefined8 uVar3;\n  long in_FS_OFFSET;\n  long local_40;\n  char *local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  sVar2 = strlen(param_3);\n  local_38 = param_3 + (sVar2 - 1);\n  if (*local_38 != '}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_repeat_count",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "parse_repeat_count",
+                        "parse_patterns"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "extract_regexp",
+                "func_c_signature": "long extract_regexp(undefined4 param_1,undefined param_2,char *param_3)",
+                "decompiled_code": "long extract_regexp(undefined4 param_1,undefined param_2,char *param_3) {\n  char cVar1;\n  char *pcVar2;\n  undefined8 uVar3;\n  long lVar4;\n  char *pcVar5;\n  undefined8 uVar6;\n  \n  cVar1 = *param_3;\n  pcVar2 = strrchr(param_3 + 1,(int)cVar1);\n  if (pcVar2 == (char *)0x0) {\n    uVar3 = gettext(\"%s: closing delimiter \\'%c\\' missing\");\n    error(1,0,uVar3,param_3,(int)cVar1);\n  }\n  lVar4 = new_control_record();\n  *(undefined4 *)(lVar4 + 0x18) = param_1;\n  *(undefined *)(lVar4 + 0x1d) = param_2;\n  *(undefined *)(lVar4 + 0x1e) = 1;\n  *(undefined8 *)(lVar4 + 0x20) = 0;\n  *(undefined8 *)(lVar4 + 0x28) = 0;\n  uVar3 = xmalloc(0x100);\n  *(undefined8 *)(lVar4 + 0x40) = uVar3;\n  *(undefined8 *)(lVar4 + 0x48) = 0;\n  _re_syntax_options = 0x2c6;\n  pcVar5 = re_compile_pattern(param_3 + 1,(size_t)(pcVar2 + (-1 - (long)param_3)),\n                              (re_pattern_buffer *)(lVar4 + 0x20));\n  if (pcVar5 != (char *)0x0) {\n    uVar3 = quote(param_3);\n    uVar6 = gettext(\"%s: invalid regular expression: %s\");\n    error(0,0,uVar6,uVar3,pcVar5);\n                    /* WARNING: Subroutine does not return */\n    cleanup_fatal();\n  }\n  if (pcVar2[1] != '\\0') {\n    check_for_offset(lVar4,param_3,pcVar2 + 1);\n  }\n  return lVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "extract_regexp",
+                        "strrchr",
+                        "gettext",
+                        "error",
+                        "new_control_record",
+                        "xmalloc",
+                        "re_compile_pattern",
+                        "quote",
+                        "cleanup_fatal",
+                        "check_for_offset"
+                    ],
+                    "calling_functions": [
+                        "extract_regexp",
+                        "parse_patterns"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_patterns",
+                "func_c_signature": "void parse_patterns(int param_1,int param_2,long param_3)",
+                "decompiled_code": "void parse_patterns(int param_1,int param_2,long param_3) {\n  ulong uVar1;\n  int iVar2;\n  undefined8 uVar3;\n  long in_FS_OFFSET;\n  int local_74;\n  ulong local_50;\n  long local_48;\n  undefined8 local_40;\n  undefined8 local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  for (local_74 = param_2; local_74 < param_1; local_74 = local_74 + 1) {\n    if ((**(char **)(param_3 + (long)local_74 * 8) == '/') ||\n       (**(char **)(param_3 + (long)local_74 * 8) == '%')) {\n      local_48 = extract_regexp(local_74,**(char **)(param_3 + (long)local_74 * 8) == '%',\n                                *(undefined8 *)(param_3 + (long)local_74 * 8));\n    }\n    else {\n      local_48 = new_control_record();\n      *(int *)(local_48 + 0x18) = local_74;\n      iVar2 = xstrtoumax(*(undefined8 *)(param_3 + (long)local_74 * 8),0,10,&local_50,&DAT_00103454)\n      ;\n      if ((iVar2 != 0) || ((long)local_50 < 0)) {\n        uVar3 = quote(*(undefined8 *)(param_3 + (long)local_74 * 8));\n        local_40 = gettext(\"%s: invalid pattern\");\n        error(1,0,local_40,uVar3);\n      }\n      if (local_50 == 0) {\n        uVar3 = *(undefined8 *)(param_3 + (long)local_74 * 8);\n        local_38 = gettext(\"%s: line number must be greater than zero\");\n        error(1,0,local_38,uVar3);\n      }\n      uVar1 = last_val_1;\n      if (local_50 < last_val_1) {\n        uVar3 = quote(*(undefined8 *)(param_3 + (long)local_74 * 8));\n        local_30 = gettext(\"line number %s is smaller than preceding line number, %jd\");\n        error(1,0,local_30,uVar3,uVar1);\n      }\n      if (local_50 == last_val_1) {\n        uVar3 = quote(*(undefined8 *)(param_3 + (long)local_74 * 8));\n        local_28 = gettext(\"warning: line number %s is the same as preceding line number\");\n        error(0,0,local_28,uVar3);\n      }\n      last_val_1 = local_50;\n      *(ulong *)(local_48 + 8) = local_50;\n    }\n    if ((local_74 + 1 < param_1) && (**(char **)(param_3 + ((long)local_74 + 1) * 8) == '{')) {\n      local_74 = local_74 + 1;\n      parse_repeat_count(local_74,local_48,*(undefined8 *)(param_3 + (long)local_74 * 8));\n    }\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}\n\n// Function: get_format_flags\nlong get_format_flags(long param_1,uint *param_2)\n\n{\n  char cVar1;\n  uint local_14;\n  long local_10;\n  \n  local_14 = 0;\n  local_10 = 0;\n  do {\n    cVar1 = *(char *)(param_1 + local_10);\n    if (cVar1 != '0') {\n      if ('0' < cVar1) goto LAB_00102551;\n      if (cVar1 != '-') {\n        if ('-' < cVar1) {\nLAB_00102551:\n          *param_2 = local_14;\n          return local_10;\n        }\n        if (cVar1 == '#') {\n          local_14 = local_14 | 2;\n        }\n        else {\n          if (cVar1 != '\\'') goto LAB_00102551;\n          local_14 = local_14 | 1;\n        }\n      }\n    }\n    local_10 = local_10 + 1;\n  } while( true );\n}\n\n// Function: check_format_conv_type\nvoid check_format_conv_type(byte *param_1,uint param_2)\n\n{\n  byte bVar1;\n  ushort **ppuVar2;\n  undefined8 uVar3;\n  ulong uVar4;\n  undefined8 uVar5;\n  uint local_5c;\n  \n  bVar1 = *param_1;\n  local_5c = 1;\n  if (bVar1 == 0) {\n    uVar5 = gettext(\"missing conversion specifier in suffix\");\n    error(1,0,uVar5);\n  }\n  else if ((bVar1 < 0x79) && (0x57 < bVar1)) {\n    uVar4 = 1L << (bVar1 + 0xa8 & 0x3f);\n    if ((uVar4 & 0x100800001) != 0) {\n      local_5c = 2;\n      goto LAB_001026f0;\n    }\n    if ((uVar4 & 0x21000) != 0) goto LAB_001026f0;\n    if ((uVar4 & 0x20000000) != 0) {\n      *param_1 = 100;\n      goto LAB_001026f0;\n    }\n  }\n  ppuVar2 = __ctype_b_loc();\n  if (((*ppuVar2)[bVar1] & 0x4000) != 0) {\n    uVar5 = gettext(\"invalid conversion specifier in suffix: %c\");\n    error(1,0,uVar5,bVar1);\n  }\n  uVar5 = gettext(\"invalid conversion specifier in suffix: \\\\%.3o\");\n  error(1,0,uVar5,bVar1);\nLAB_001026f0:\n  if ((~local_5c & param_2) != 0) {\n    if ((~local_5c & param_2 & 2) == 0) {\n      uVar5 = 0x27;\n    }\n    else {\n      uVar5 = 0x23;\n    }\n    uVar3 = gettext(\"invalid flags in conversion specification: %%%c%c\");\n    error(1,0,uVar3,uVar5,bVar1);\n  }\n  return;\n}\n\n// Function: max_out\nlong max_out(char *param_1)\n\n{\n  bool bVar1;\n  char cVar2;\n  long lVar3;\n  long in_FS_OFFSET;\n  undefined4 local_40;\n  int local_3c;\n  undefined4 local_38;\n  undefined4 local_34;\n  undefined4 local_30;\n  undefined4 local_2c;\n  char *local_28;\n  undefined8 local_20;\n  undefined8 local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  bVar1 = false;\n  for (local_28 = param_1; *local_28 != '\\0'; local_28 = local_28 + 1) {\n    if ((*local_28 == '%') && (local_28 = local_28 + 1, *local_28 != '%')) {\n      if (bVar1) {\n        local_20 = gettext(\"too many %% conversion specifications in suffix\");\n        local_38 = 1;\n        local_34 = 0;\n        error(1,0,local_20);\n      }\n      bVar1 = true;\n      lVar3 = get_format_flags(local_28,&local_40);\n      local_28 = local_28 + lVar3;\n      while (cVar2 = c_isdigit((int)*local_28), cVar2 != '\\0') {\n        local_28 = local_28 + 1;\n      }\n      if (*local_28 == '.') {\n        do {\n          local_28 = local_28 + 1;\n          cVar2 = c_isdigit((int)*local_28);\n        } while (cVar2 != '\\0');\n      }\n      check_format_conv_type(local_28,local_40);\n    }\n  }\n  if (!bVar1) {\n    local_18 = gettext(\"missing %% conversion specification in suffix\");\n    local_30 = 1;\n    local_2c = 0;\n    error(1,0,local_18);\n  }\n  local_3c = snprintf((char *)0x0,0,param_1,0x7fffffff);\n  if (local_3c < 0) {\n    xalloc_die();\n  }\n  if (local_10 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return (long)local_3c;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}\n\n// Function: main\n/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */\n\nundefined8 main(int param_1,undefined8 *param_2)\n\n{\n  int iVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  size_t sVar4;\n  long lVar5;\n  int *piVar6;\n  long in_FS_OFFSET;\n  int local_108;\n  sigaction local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  controls = 0;\n  control_used = 0;\n  suppress_count = 0;\n  remove_files = 1;\n  suppress_matched = 0;\n  prefix = \"xx\";\n  global_argv = param_2;\n  do {\n    while( true ) {\n      iVar1 = getopt_long(param_1,param_2,\"f:b:kn:sqz\",longopts,0);\n      if (iVar1 == -1) {\n        if (param_1 - _optind < 2) {\n          if (_optind < param_1) {\n            uVar2 = quote(param_2[(long)param_1 + -1]);\n            uVar3 = gettext(\"missing operand after %s\");\n            error(0,0,uVar3,uVar2);\n          }\n          else {\n            uVar2 = gettext(\"missing operand\");\n            error(0,0,uVar2);\n          }\n          usage(1);\n        }\n        sVar4 = strlen(prefix);\n        if (suffix == (char *)0x0) {\n          if (digits < 0xb) {\n            lVar5 = 0xb;\n          }\n          else {\n            lVar5 = (long)(int)digits;\n          }\n        }\n        else {\n          lVar5 = max_out(suffix);\n        }\n        if (SCARRY8(sVar4,lVar5 + 1)) {\n          xalloc_die();\n        }\n        filename_space = ximalloc(sVar4 + lVar5 + 1);\n        lVar5 = (long)_optind;\n        _optind = _optind + 1;\n        set_input_file(param_2[lVar5]);\n        parse_patterns(param_1,_optind,param_2);\n        sigemptyset((sigset_t *)&caught_signals);\n        for (local_108 = 0; local_108 < 0xb; local_108 = local_108 + 1) {\n          sigaction(*(int *)(sig_0 + (long)local_108 * 4),(sigaction *)0x0,&local_b8);\n          if (local_b8.__sigaction_handler.sa_handler != (__sighandler_t)0x1) {\n            sigaddset((sigset_t *)&caught_signals,*(int *)(sig_0 + (long)local_108 * 4));\n          }\n        }\n        local_b8.__sigaction_handler.sa_handler = interrupt_handler;\n        local_b8.sa_mask.__val[0] = caught_signals;\n        local_b8.sa_mask.__val[1] = DAT_00103268;\n        local_b8.sa_mask.__val[2] = DAT_00103270;\n        local_b8.sa_mask.__val[3] = DAT_00103278;\n        local_b8.sa_mask.__val[4] = DAT_00103280;\n        local_b8.sa_mask.__val[5] = DAT_00103288;\n        local_b8.sa_mask.__val[6] = DAT_00103290;\n        local_b8.sa_mask.__val[7] = DAT_00103298;\n        local_b8.sa_mask.__val[8] = DAT_001032a0;\n        local_b8.sa_mask.__val[9] = DAT_001032a8;\n        local_b8.sa_mask.__val[10] = DAT_001032b0;\n        local_b8.sa_mask.__val[11] = DAT_001032b8;\n        local_b8.sa_mask.__val[12] = DAT_001032c0;\n        local_b8.sa_mask.__val[13] = DAT_001032c8;\n        local_b8.sa_mask.__val[14] = DAT_001032d0;\n        local_b8.sa_mask.__val[15] = DAT_001032d8;\n        local_b8.sa_flags = 0;\n        for (local_108 = 0; local_108 < 0xb; local_108 = local_108 + 1) {\n          iVar1 = sigismember((sigset_t *)&caught_signals,*(int *)(sig_0 + (long)local_108 * 4));\n          if (iVar1 != 0) {\n            sigaction(*(int *)(sig_0 + (long)local_108 * 4),&local_b8,(sigaction *)0x0);\n          }\n        }\n        split_file();\n        iVar1 = close(0);\n        if (iVar1 == 0) {\n          if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n            return 0;\n          }\n                    /* WARNING: Subroutine does not return */\n          __stack_chk_fail();\n        }\n        uVar2 = gettext(\"read error\");\n        piVar6 = __errno_location();\n        error(0,*piVar6,uVar2);\n                    /* WARNING: Subroutine does not return */\n        cleanup_fatal();\n      }\n      if (iVar1 < 0x81) break;\nswitchD_00102a4f_caseD_63:\n      usage(1);\n    }\n    if (iVar1 < 0x62) {\n      if (iVar1 == -0x83) {\nLAB_00102afb:\n        uVar2 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n        uVar3 = proper_name_lite(\"Stuart Kemp\",\"Stuart Kemp\");\n        version_etc(_stdout,\"csplit\",\"GNU coreutils\",_Version,uVar3,uVar2,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar1 == -0x82) {\n        usage(0);\n        goto LAB_00102afb;\n      }\n      goto switchD_00102a4f_caseD_63;\n    }\n    switch(iVar1) {\n    case 0x62:\n      suffix = _optarg;\n      break;\n    default:\n      goto switchD_00102a4f_caseD_63;\n    case 0x66:\n      prefix = _optarg;\n      break;\n    case 0x6b:\n      remove_files = 0;\n      break;\n    case 0x6e:\n      uVar2 = gettext(\"invalid number\");\n      digits = xdectoimax(_optarg,0,0x7fffffff,&DAT_00103454,uVar2,0);\n      break;\n    case 0x71:\n    case 0x73:\n      suppress_count = 1;\n      break;\n    case 0x7a:\n      elide_empty_files = 1;\n      break;\n    case 0x80:\n      suppress_matched = 1;\n    }\n  } while( true );\n}\n\n// Function: usage\n/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */\n\nvoid usage(int param_1)\n\n{\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... FILE PATTERN...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Output pieces of FILE separated by PATTERN(s) to files \\'xx00\\', \\'xx01\\', ...,\\nand output byte counts of each piece to standard output.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"\\nRead standard input if FILE is -\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -b, --suffix-format=FORMAT  use sprintf FORMAT instead of %02d\\n  -f, --prefix=PREFIX        use PREFIX instead of \\'xx\\'\\n  -k, --keep-files           do not remove output files on errors\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --suppress-matched     suppress the lines matching PATTERN\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -n, --digits=DIGITS        use specified number of digits instead of 2\\n  -s, --quiet, --silent      do not print counts of output file sizes\\n  -z, --elide-empty-files    suppress empty output files\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nEach PATTERN may be:\\n  INTEGER            copy up to but not including specified line number\\n  /REGEXP/[OFFSET]   copy up to but not including a matching line\\n  %REGEXP%[OFFSET]   skip to, but not including a matching line\\n  {INTEGER}          repeat the previous pattern specified number of times\\n  {*}                repeat the previous pattern as many times as possible\\n\\nA line OFFSET is an integer optionally preceded by \\'+\\' or \\'-\\'\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"csplit\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}\n\n// Function: <EXTERNAL>::gettext\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid gettext(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::fputs_unlocked\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint fputs_unlocked(char *__s,FILE *__stream)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::streq\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid streq(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::emit_bug_reporting_address\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid emit_bug_reporting_address(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::setlocale\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nchar * setlocale(int __category,char *__locale)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::strncmp\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint strncmp(char *__s1,char *__s2,size_t __n)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::printf\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint printf(char *__format,...)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::__stack_chk_fail\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid __stack_chk_fail(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::sigprocmask\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint sigprocmask(int __how,sigset_t *__set,sigset_t *__oset)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::exit\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nvoid exit(int __status)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::error\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid error(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::signal\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\n__sighandler_t signal(int __sig,__sighandler_t __handler)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::raise\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint raise(int __sig)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::free\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nvoid free(void *__ptr)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::safe_read\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid safe_read(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::__errno_location\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint * __errno_location(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::xmalloc\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid xmalloc(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::rawmemchr\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nvoid * rawmemchr(void *__s,int __c)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::ximemdup\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid ximemdup(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::xpalloc\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid xpalloc(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::mempcpy\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nvoid * mempcpy(void *__dest,void *__src,size_t __n)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::fd_reopen\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid fd_reopen(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::quotearg_style\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid quotearg_style(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::quote\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid quote(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::imaxtostr\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid imaxtostr(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::fprintf\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint fprintf(FILE *__stream,char *__format,...)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::fputc\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint fputc(int __c,FILE *__stream)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::re_search\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint re_search(re_pattern_buffer *__buffer,char *__string,int __length,int __start,int __range,\n             re_registers *__regs)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::strcpy\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nchar * strcpy(char *__dest,char *__src)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::strlen\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nsize_t strlen(char *__s)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::sprintf\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint sprintf(char *__s,char *__format,...)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::fopen_safer\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid fopen_safer(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::quotearg_n_style_colon\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid quotearg_n_style_colon(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::unlink\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint unlink(char *__name)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::ferror_unlocked\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint ferror_unlocked(FILE *__stream)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::rpl_fclose\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid rpl_fclose(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::fwrite_unlocked\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nsize_t fwrite_unlocked(void *__ptr,size_t __size,size_t __n,FILE *__stream)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::xstrtoimax\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid xstrtoimax(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::xstrtoumax\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid xstrtoumax(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::strrchr\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nchar * strrchr(char *__s,int __c)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::re_compile_pattern\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nchar * re_compile_pattern(char *__pattern,size_t __length,re_pattern_buffer *__buffer)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::__ctype_b_loc\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nushort ** __ctype_b_loc(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::c_isdigit\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid c_isdigit(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::snprintf\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint snprintf(char *__s,size_t __maxlen,char *__format,...)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::set_program_name\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid set_program_name(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::bindtextdomain\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid bindtextdomain(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::textdomain\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid textdomain(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::atexit\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint atexit(__func *__func)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::xdectoimax\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid xdectoimax(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::proper_name_lite\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid proper_name_lite(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::version_etc\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid version_etc(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::getopt_long\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid getopt_long(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::ximalloc\n/* WARNING: Control flow encountered bad instruction data */\n\nvoid ximalloc(void)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::sigemptyset\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint sigemptyset(sigset_t *__set)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::sigaction\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint sigaction(int __sig,sigaction *__act,sigaction *__oact)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::sigaddset\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint sigaddset(sigset_t *__set,int __signo)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::sigismember\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint sigismember(sigset_t *__set,int __signo)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}\n\n// Function: <EXTERNAL>::close\n/* WARNING: Control flow encountered bad instruction data */\n/* WARNING: Unknown calling convention -- yet parameter storage is locked */\n\nint close(int __fd)\n\n{\n                    /* WARNING: Bad instruction - Truncating control flow here */\n  halt_baddata();\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8",
+                    "PATTERN",
+                    "halt_baddata"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_patterns",
+                        "extract_regexp",
+                        "new_control_record",
+                        "xstrtoumax",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "parse_repeat_count",
+                        "__stack_chk_fail",
+                        "get_format_flags",
+                        "check_format_conv_type",
+                        "__ctype_b_loc",
+                        "max_out",
+                        "c_isdigit",
+                        "snprintf",
+                        "xalloc_die",
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "usage",
+                        "strlen",
+                        "SCARRY8",
+                        "ximalloc",
+                        "set_input_file",
+                        "sigemptyset",
+                        "sigaction",
+                        "sigaddset",
+                        "sigismember",
+                        "split_file",
+                        "close",
+                        "__errno_location",
+                        "cleanup_fatal",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "xdectoimax",
+                        "printf",
+                        "PATTERN",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "halt_baddata",
+                        "streq",
+                        "emit_bug_reporting_address",
+                        "strncmp",
+                        "sigprocmask",
+                        "signal",
+                        "raise",
+                        "free",
+                        "safe_read",
+                        "xmalloc",
+                        "rawmemchr",
+                        "ximemdup",
+                        "xpalloc",
+                        "mempcpy",
+                        "fd_reopen",
+                        "quotearg_style",
+                        "imaxtostr",
+                        "fputc",
+                        "re_search",
+                        "strcpy",
+                        "sprintf",
+                        "fopen_safer",
+                        "quotearg_n_style_colon",
+                        "unlink",
+                        "ferror_unlocked",
+                        "rpl_fclose",
+                        "fwrite_unlocked",
+                        "xstrtoimax",
+                        "strrchr",
+                        "re_compile_pattern"
+                    ],
+                    "calling_functions": [
+                        "parse_patterns",
+                        "main"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_format_flags",
+                "func_c_signature": "long get_format_flags(long param_1,uint *param_2)",
+                "decompiled_code": "long get_format_flags(long param_1,uint *param_2) {\n  char cVar1;\n  uint local_14;\n  long local_10;\n  \n  local_14 = 0;\n  local_10 = 0;\n  do {\n    cVar1 = *(char *)(param_1 + local_10);\n    if (cVar1 != '0') {\n      if ('0' < cVar1) goto LAB_00102551;\n      if (cVar1 != '-') {\n        if ('-' < cVar1) {\nLAB_00102551:\n          *param_2 = local_14;\n          return local_10;\n        }\n        if (cVar1 == '#') {\n          local_14 = local_14 | 2;\n        }\n        else {\n          if (cVar1 != '\\'') goto LAB_00102551;\n          local_14 = local_14 | 1;\n        }\n      }\n    }\n    local_10 = local_10 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_format_flags"
+                    ],
+                    "calling_functions": [
+                        "parse_patterns",
+                        "get_format_flags",
+                        "max_out"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_format_conv_type",
+                "func_c_signature": "void check_format_conv_type(byte *param_1,uint param_2)",
+                "decompiled_code": "void check_format_conv_type(byte *param_1,uint param_2) {\n  byte bVar1;\n  ushort **ppuVar2;\n  undefined8 uVar3;\n  ulong uVar4;\n  undefined8 uVar5;\n  uint local_5c;\n  \n  bVar1 = *param_1;\n  local_5c = 1;\n  if (bVar1 == 0) {\n    uVar5 = gettext(\"missing conversion specifier in suffix\");\n    error(1,0,uVar5);\n  }\n  else if ((bVar1 < 0x79) && (0x57 < bVar1)) {\n    uVar4 = 1L << (bVar1 + 0xa8 & 0x3f);\n    if ((uVar4 & 0x100800001) != 0) {\n      local_5c = 2;\n      goto LAB_001026f0;\n    }\n    if ((uVar4 & 0x21000) != 0) goto LAB_001026f0;\n    if ((uVar4 & 0x20000000) != 0) {\n      *param_1 = 100;\n      goto LAB_001026f0;\n    }\n  }\n  ppuVar2 = __ctype_b_loc();\n  if (((*ppuVar2)[bVar1] & 0x4000) != 0) {\n    uVar5 = gettext(\"invalid conversion specifier in suffix: %c\");\n    error(1,0,uVar5,bVar1);\n  }\n  uVar5 = gettext(\"invalid conversion specifier in suffix: \\\\%.3o\");\n  error(1,0,uVar5,bVar1);\nLAB_001026f0:\n  if ((~local_5c & param_2) != 0) {\n    if ((~local_5c & param_2 & 2) == 0) {\n      uVar5 = 0x27;\n    }\n    else {\n      uVar5 = 0x23;\n    }\n    uVar3 = gettext(\"invalid flags in conversion specification: %%%c%c\");\n    error(1,0,uVar3,uVar5,bVar1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_format_conv_type",
+                        "gettext",
+                        "error",
+                        "__ctype_b_loc"
+                    ],
+                    "calling_functions": [
+                        "parse_patterns",
+                        "check_format_conv_type",
+                        "max_out"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "max_out",
+                "func_c_signature": "long max_out(char *param_1)",
+                "decompiled_code": "long max_out(char *param_1) {\n  bool bVar1;\n  char cVar2;\n  long lVar3;\n  long in_FS_OFFSET;\n  undefined4 local_40;\n  int local_3c;\n  undefined4 local_38;\n  undefined4 local_34;\n  undefined4 local_30;\n  undefined4 local_2c;\n  char *local_28;\n  undefined8 local_20;\n  undefined8 local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  bVar1 = false;\n  for (local_28 = param_1; *local_28 != '\\0'; local_28 = local_28 + 1) {\n    if ((*local_28 == '%') && (local_28 = local_28 + 1, *local_28 != '%')) {\n      if (bVar1) {\n        local_20 = gettext(\"too many %% conversion specifications in suffix\");\n        local_38 = 1;\n        local_34 = 0;\n        error(1,0,local_20);\n      }\n      bVar1 = true;\n      lVar3 = get_format_flags(local_28,&local_40);\n      local_28 = local_28 + lVar3;\n      while (cVar2 = c_isdigit((int)*local_28), cVar2 != '\\0') {\n        local_28 = local_28 + 1;\n      }\n      if (*local_28 == '.') {\n        do {\n          local_28 = local_28 + 1;\n          cVar2 = c_isdigit((int)*local_28);\n        } while (cVar2 != '\\0');\n      }\n      check_format_conv_type(local_28,local_40);\n    }\n  }\n  if (!bVar1) {\n    local_18 = gettext(\"missing %% conversion specification in suffix\");\n    local_30 = 1;\n    local_2c = 0;\n    error(1,0,local_18);\n  }\n  local_3c = snprintf((char *)0x0,0,param_1,0x7fffffff);\n  if (local_3c < 0) {\n    xalloc_die();\n  }\n  if (local_10 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return (long)local_3c;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "max_out",
+                        "gettext",
+                        "error",
+                        "get_format_flags",
+                        "c_isdigit",
+                        "check_format_conv_type",
+                        "snprintf",
+                        "xalloc_die",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "parse_patterns",
+                        "max_out",
+                        "main"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined8 main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined8 main(int param_1,undefined8 *param_2) {\n  int iVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  size_t sVar4;\n  long lVar5;\n  int *piVar6;\n  long in_FS_OFFSET;\n  int local_108;\n  sigaction local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  controls = 0;\n  control_used = 0;\n  suppress_count = 0;\n  remove_files = 1;\n  suppress_matched = 0;\n  prefix = \"xx\";\n  global_argv = param_2;\n  do {\n    while( true ) {\n      iVar1 = getopt_long(param_1,param_2,\"f:b:kn:sqz\",longopts,0);\n      if (iVar1 == -1) {\n        if (param_1 - _optind < 2) {\n          if (_optind < param_1) {\n            uVar2 = quote(param_2[(long)param_1 + -1]);\n            uVar3 = gettext(\"missing operand after %s\");\n            error(0,0,uVar3,uVar2);\n          }\n          else {\n            uVar2 = gettext(\"missing operand\");\n            error(0,0,uVar2);\n          }\n          usage(1);\n        }\n        sVar4 = strlen(prefix);\n        if (suffix == (char *)0x0) {\n          if (digits < 0xb) {\n            lVar5 = 0xb;\n          }\n          else {\n            lVar5 = (long)(int)digits;\n          }\n        }\n        else {\n          lVar5 = max_out(suffix);\n        }\n        if (SCARRY8(sVar4,lVar5 + 1)) {\n          xalloc_die();\n        }\n        filename_space = ximalloc(sVar4 + lVar5 + 1);\n        lVar5 = (long)_optind;\n        _optind = _optind + 1;\n        set_input_file(param_2[lVar5]);\n        parse_patterns(param_1,_optind,param_2);\n        sigemptyset((sigset_t *)&caught_signals);\n        for (local_108 = 0; local_108 < 0xb; local_108 = local_108 + 1) {\n          sigaction(*(int *)(sig_0 + (long)local_108 * 4),(sigaction *)0x0,&local_b8);\n          if (local_b8.__sigaction_handler.sa_handler != (__sighandler_t)0x1) {\n            sigaddset((sigset_t *)&caught_signals,*(int *)(sig_0 + (long)local_108 * 4));\n          }\n        }\n        local_b8.__sigaction_handler.sa_handler = interrupt_handler;\n        local_b8.sa_mask.__val[0] = caught_signals;\n        local_b8.sa_mask.__val[1] = DAT_00103268;\n        local_b8.sa_mask.__val[2] = DAT_00103270;\n        local_b8.sa_mask.__val[3] = DAT_00103278;\n        local_b8.sa_mask.__val[4] = DAT_00103280;\n        local_b8.sa_mask.__val[5] = DAT_00103288;\n        local_b8.sa_mask.__val[6] = DAT_00103290;\n        local_b8.sa_mask.__val[7] = DAT_00103298;\n        local_b8.sa_mask.__val[8] = DAT_001032a0;\n        local_b8.sa_mask.__val[9] = DAT_001032a8;\n        local_b8.sa_mask.__val[10] = DAT_001032b0;\n        local_b8.sa_mask.__val[11] = DAT_001032b8;\n        local_b8.sa_mask.__val[12] = DAT_001032c0;\n        local_b8.sa_mask.__val[13] = DAT_001032c8;\n        local_b8.sa_mask.__val[14] = DAT_001032d0;\n        local_b8.sa_mask.__val[15] = DAT_001032d8;\n        local_b8.sa_flags = 0;\n        for (local_108 = 0; local_108 < 0xb; local_108 = local_108 + 1) {\n          iVar1 = sigismember((sigset_t *)&caught_signals,*(int *)(sig_0 + (long)local_108 * 4));\n          if (iVar1 != 0) {\n            sigaction(*(int *)(sig_0 + (long)local_108 * 4),&local_b8,(sigaction *)0x0);\n          }\n        }\n        split_file();\n        iVar1 = close(0);\n        if (iVar1 == 0) {\n          if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n            return 0;\n          }\n                    /* WARNING: Subroutine does not return */\n          __stack_chk_fail();\n        }\n        uVar2 = gettext(\"read error\");\n        piVar6 = __errno_location();\n        error(0,*piVar6,uVar2);\n                    /* WARNING: Subroutine does not return */\n        cleanup_fatal();\n      }\n      if (iVar1 < 0x81) break;\nswitchD_00102a4f_caseD_63:\n      usage(1);\n    }\n    if (iVar1 < 0x62) {\n      if (iVar1 == -0x83) {\nLAB_00102afb:\n        uVar2 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n        uVar3 = proper_name_lite(\"Stuart Kemp\",\"Stuart Kemp\");\n        version_etc(_stdout,\"csplit\",\"GNU coreutils\",_Version,uVar3,uVar2,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar1 == -0x82) {\n        usage(0);\n        goto LAB_00102afb;\n      }\n      goto switchD_00102a4f_caseD_63;\n    }\n    switch(iVar1) {\n    case 0x62:\n      suffix = _optarg;\n      break;\n    default:\n      goto switchD_00102a4f_caseD_63;\n    case 0x66:\n      prefix = _optarg;\n      break;\n    case 0x6b:\n      remove_files = 0;\n      break;\n    case 0x6e:\n      uVar2 = gettext(\"invalid number\");\n      digits = xdectoimax(_optarg,0,0x7fffffff,&DAT_00103454,uVar2,0);\n      break;\n    case 0x71:\n    case 0x73:\n      suppress_count = 1;\n      break;\n    case 0x7a:\n      elide_empty_files = 1;\n      break;\n    case 0x80:\n      suppress_matched = 1;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "strlen",
+                        "max_out",
+                        "SCARRY8",
+                        "xalloc_die",
+                        "ximalloc",
+                        "set_input_file",
+                        "parse_patterns",
+                        "sigemptyset",
+                        "sigaction",
+                        "sigaddset",
+                        "sigismember",
+                        "split_file",
+                        "close",
+                        "__stack_chk_fail",
+                        "__errno_location",
+                        "cleanup_fatal",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "xdectoimax"
+                    ],
+                    "calling_functions": [
+                        "parse_patterns",
+                        "main"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... FILE PATTERN...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Output pieces of FILE separated by PATTERN(s) to files \\'xx00\\', \\'xx01\\', ...,\\nand output byte counts of each piece to standard output.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"\\nRead standard input if FILE is -\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -b, --suffix-format=FORMAT  use sprintf FORMAT instead of %02d\\n  -f, --prefix=PREFIX        use PREFIX instead of \\'xx\\'\\n  -k, --keep-files           do not remove output files on errors\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --suppress-matched     suppress the lines matching PATTERN\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -n, --digits=DIGITS        use specified number of digits instead of 2\\n  -s, --quiet, --silent      do not print counts of output file sizes\\n  -z, --elide-empty-files    suppress empty output files\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nEach PATTERN may be:\\n  INTEGER            copy up to but not including specified line number\\n  /REGEXP/[OFFSET]   copy up to but not including a matching line\\n  %REGEXP%[OFFSET]   skip to, but not including a matching line\\n  {INTEGER}          repeat the previous pattern specified number of times\\n  {*}                repeat the previous pattern as many times as possible\\n\\nA line OFFSET is an integer optionally preceded by \\'+\\' or \\'-\\'\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"csplit\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "PATTERN"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "PATTERN",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "parse_patterns",
+                        "main",
+                        "usage"
+                    ],
+                    "defined_in_file": "csplit_decompiled.c"
+                }
+            }
+        ]
+    }
+}

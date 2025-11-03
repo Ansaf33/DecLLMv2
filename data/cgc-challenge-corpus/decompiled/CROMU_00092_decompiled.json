@@ -1,0 +1,661 @@
+{
+    "file": "CROMU_00092",
+    "decompiled_code": {
+        "alarm.c": [
+            {
+                "func_name": "IsDeviceInAlarm",
+                "func_c_signature": "undefined4 IsDeviceInAlarm(byte param_1)",
+                "decompiled_code": "undefined4 IsDeviceInAlarm(byte param_1) {\n  byte bVar1;\n  char *pcVar2;\n  \n  bVar1 = Devices[(uint)param_1 * 8];\n  if (bVar1 == 6) {\n    if (**(char **)(Devices + (uint)param_1 * 8 + 4) == '\\x01') {\n      return 1;\n    }\n    return 0;\n  }\n  if (bVar1 < 7) {\n    if (bVar1 == 5) {\n      if ((*(byte **)(Devices + (uint)param_1 * 8 + 4))[1] <\n          **(byte **)(Devices + (uint)param_1 * 8 + 4)) {\n        return 1;\n      }\n      return 0;\n    }\n    if (bVar1 < 6) {\n      if (bVar1 == 3) {\n        pcVar2 = *(char **)(Devices + (uint)param_1 * 8 + 4);\n        if (*pcVar2 == '\\0') {\n          if (pcVar2[1] == '\\0') {\n            return 0;\n          }\n          return 1;\n        }\n        if (*pcVar2 != '\\x01') {\n          return 0;\n        }\n        if (pcVar2[1] == '\\x01') {\n          return 0;\n        }\n        return 1;\n      }\n      if (bVar1 == 4) {\n        if (**(char **)(Devices + (uint)param_1 * 8 + 4) == '\\x01') {\n          return 1;\n        }\n        return 0;\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "IsDeviceInAlarm"
+                    ],
+                    "calling_functions": [
+                        "IsDeviceInAlarm",
+                        "ProcessAlarms"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InvertAlarmState",
+                "func_c_signature": "void InvertAlarmState(char param_1)",
+                "decompiled_code": "void InvertAlarmState(char param_1) {\n  char *pcVar1;\n  byte local_6;\n  byte local_5;\n  \n  for (local_5 = 0; -1 < (char)local_5; local_5 = local_5 + 1) {\n    if ((Devices[(uint)local_5 * 8] == '\\a') &&\n       (pcVar1 = *(char **)(Devices + (uint)local_5 * 8 + 4), pcVar1 != (char *)0x0)) {\n      for (local_6 = 0; -1 < (char)local_6; local_6 = local_6 + 1) {\n        if (param_1 == pcVar1[local_6 + 2]) {\n          *pcVar1 = *pcVar1 == '\\0';\n        }\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InvertAlarmState"
+                    ],
+                    "calling_functions": [
+                        "InvertAlarmState",
+                        "UpdateDevice"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ProcessAlarms",
+                "func_c_signature": "void ProcessAlarms(void)",
+                "decompiled_code": "void ProcessAlarms(void) {\n  char *pcVar1;\n  bool bVar2;\n  char cVar3;\n  byte local_e;\n  byte local_d;\n  \n  for (local_d = 0; -1 < (char)local_d; local_d = local_d + 1) {\n    if ((Devices[(uint)local_d * 8] == '\\a') &&\n       (pcVar1 = *(char **)(Devices + (uint)local_d * 8 + 4), pcVar1 != (char *)0x0)) {\n      cVar3 = pcVar1[1];\n      if (*pcVar1 == '\\x01') {\n        bVar2 = false;\n        for (local_e = 0; -1 < (char)local_e; local_e = local_e + 1) {\n          cVar3 = IsDeviceInAlarm(pcVar1[local_e + 2]);\n          if (cVar3 != '\\0') {\n            bVar2 = true;\n          }\n        }\n        if ((pcVar1[1] == '\\0') && (bVar2)) {\n          pcVar1[1] = '\\x01';\n          SendResp(10,(uint)local_d * 8 + 0x18262);\n        }\n      }\n      else {\n        pcVar1[1] = '\\0';\n        if (cVar3 == '\\x01') {\n          SendResp(0xb,(uint)local_d * 8 + 0x18262);\n        }\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ProcessAlarms",
+                        "IsDeviceInAlarm",
+                        "SendResp"
+                    ],
+                    "calling_functions": [
+                        "ProcessAlarms",
+                        "DeleteDevice",
+                        "AddDeviceToAlarm",
+                        "UpdateDevice"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            }
+        ],
+        "device.c": [
+            {
+                "func_name": "NewDeviceId",
+                "func_c_signature": "short NewDeviceId(void)",
+                "decompiled_code": "short NewDeviceId(void) {\n  uint uVar1;\n  char cVar2;\n  short local_e;\n  \n  uVar1 = *(uint *)(MagicPage + (uint)MagicIndex * 4);\n  local_e = (short)uVar1 + (short)(uVar1 / 0xfffe) * 2;\n  MagicIndex = (ushort)((MagicIndex + 1) % 0x400);\n  do {\n    if (local_e != 0) {\n      cVar2 = FindDeviceId(local_e);\n      if (cVar2 == -0x80) {\n        return local_e;\n      }\n    }\n    uVar1 = *(uint *)(MagicPage + (uint)MagicIndex * 4);\n    local_e = (short)uVar1 + (short)(uVar1 / 0xfffe) * 2;\n    MagicIndex = (ushort)((MagicIndex + 1) % 0x400);\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "NewDeviceId",
+                        "FindDeviceId"
+                    ],
+                    "calling_functions": [
+                        "NewDeviceId",
+                        "NewGenericDevice",
+                        "NewContact",
+                        "NewMotion",
+                        "NewHeat",
+                        "NewSmoke"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FindAvailableDevice",
+                "func_c_signature": "byte FindAvailableDevice(void)",
+                "decompiled_code": "byte FindAvailableDevice(void) {\n  byte local_5;\n  \n  local_5 = 1;\n  while( true ) {\n    if ((char)local_5 < '\\0') {\n      return 0x81;\n    }\n    if (Devices[(uint)local_5 * 8] == '\\0') break;\n    local_5 = local_5 + 1;\n  }\n  return local_5;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindAvailableDevice"
+                    ],
+                    "calling_functions": [
+                        "FindAvailableDevice",
+                        "RecvCommand"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FindDeviceId",
+                "func_c_signature": "byte FindDeviceId(short param_1)",
+                "decompiled_code": "byte FindDeviceId(short param_1) {\n  byte local_5;\n  \n  local_5 = 0;\n  while ((-1 < (char)local_5 &&\n         ((Devices[(uint)local_5 * 8] == '\\0' ||\n          (param_1 != *(short *)(Devices + (uint)local_5 * 8 + 2)))))) {\n    local_5 = local_5 + 1;\n  }\n  return local_5;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindDeviceId"
+                    ],
+                    "calling_functions": [
+                        "NewDeviceId",
+                        "FindDeviceId",
+                        "DeleteDevice",
+                        "GrantAccess",
+                        "AddDeviceToAlarm",
+                        "UpdateDevice",
+                        "ListValidAlarmCodes"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "NewGenericDevice",
+                "func_c_signature": "undefined2 NewGenericDevice(undefined param_1,uint param_2)",
+                "decompiled_code": "undefined2 NewGenericDevice(undefined param_1,uint param_2) {\n  undefined2 uVar1;\n  \n  uVar1 = NewDeviceId();\n  Devices[(param_2 & 0xff) * 8] = param_1;\n  *(undefined2 *)(Devices + (param_2 & 0xff) * 8 + 2) = uVar1;\n  *(undefined4 *)(Devices + (param_2 & 0xff) * 8 + 4) = 0;\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "NewGenericDevice",
+                        "NewDeviceId"
+                    ],
+                    "calling_functions": [
+                        "NewGenericDevice",
+                        "RecvCommand"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "NewContact",
+                "func_c_signature": "undefined2 NewContact(uint param_1)",
+                "decompiled_code": "undefined2 NewContact(uint param_1) {\n  int iVar1;\n  undefined *puVar2;\n  size_t __size;\n  undefined local_16;\n  undefined local_15 [7];\n  undefined2 local_e;\n  \n  local_e = NewDeviceId();\n  iVar1 = ReadBytes(local_15,1);\n  if (iVar1 == 0) {\n    local_e = 0;\n  }\n  else {\n    __size = 1;\n    iVar1 = ReadBytes(&local_16);\n    if (iVar1 == 0) {\n      local_e = 0;\n    }\n    else {\n      Devices[(param_1 & 0xff) * 8] = 3;\n      *(undefined2 *)(Devices + (param_1 & 0xff) * 8 + 2) = local_e;\n      puVar2 = (undefined *)calloc(2,__size);\n      if (puVar2 == (undefined *)0x0) {\n        local_e = 0;\n      }\n      else {\n        *puVar2 = local_15[0];\n        puVar2[1] = local_16;\n        *(undefined **)(Devices + (param_1 & 0xff) * 8 + 4) = puVar2;\n      }\n    }\n  }\n  return local_e;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "NewContact",
+                        "NewDeviceId",
+                        "ReadBytes",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "NewContact",
+                        "RecvCommand"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "NewMotion",
+                "func_c_signature": "undefined2 NewMotion(uint param_1)",
+                "decompiled_code": "undefined2 NewMotion(uint param_1) {\n  int iVar1;\n  undefined *puVar2;\n  size_t __size;\n  undefined local_15 [7];\n  undefined2 local_e;\n  \n  local_e = NewDeviceId();\n  __size = 1;\n  iVar1 = ReadBytes(local_15);\n  if (iVar1 == 0) {\n    local_e = 0;\n  }\n  else {\n    Devices[(param_1 & 0xff) * 8] = 4;\n    *(undefined2 *)(Devices + (param_1 & 0xff) * 8 + 2) = local_e;\n    puVar2 = (undefined *)calloc(1,__size);\n    if (puVar2 == (undefined *)0x0) {\n      local_e = 0;\n    }\n    else {\n      *puVar2 = local_15[0];\n      *(undefined **)(Devices + (param_1 & 0xff) * 8 + 4) = puVar2;\n    }\n  }\n  return local_e;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "NewMotion",
+                        "NewDeviceId",
+                        "ReadBytes",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "NewMotion",
+                        "RecvCommand"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "NewHeat",
+                "func_c_signature": "undefined2 NewHeat(uint param_1)",
+                "decompiled_code": "undefined2 NewHeat(uint param_1) {\n  int iVar1;\n  undefined *puVar2;\n  size_t __size;\n  undefined local_16;\n  undefined local_15 [7];\n  undefined2 local_e;\n  \n  local_e = NewDeviceId();\n  iVar1 = ReadBytes(local_15,1);\n  if (iVar1 == 0) {\n    local_e = 0;\n  }\n  else {\n    __size = 1;\n    iVar1 = ReadBytes(&local_16);\n    if (iVar1 == 0) {\n      local_e = 0;\n    }\n    else {\n      Devices[(param_1 & 0xff) * 8] = 5;\n      *(undefined2 *)(Devices + (param_1 & 0xff) * 8 + 2) = local_e;\n      puVar2 = (undefined *)calloc(2,__size);\n      if (puVar2 == (undefined *)0x0) {\n        local_e = 0;\n      }\n      else {\n        *puVar2 = local_15[0];\n        puVar2[1] = local_16;\n        *(undefined **)(Devices + (param_1 & 0xff) * 8 + 4) = puVar2;\n      }\n    }\n  }\n  return local_e;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "NewHeat",
+                        "NewDeviceId",
+                        "ReadBytes",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "NewHeat",
+                        "RecvCommand"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "NewSmoke",
+                "func_c_signature": "undefined2 NewSmoke(uint param_1)",
+                "decompiled_code": "undefined2 NewSmoke(uint param_1) {\n  int iVar1;\n  undefined *puVar2;\n  size_t __size;\n  undefined local_15 [7];\n  undefined2 local_e;\n  \n  local_e = NewDeviceId();\n  __size = 1;\n  iVar1 = ReadBytes(local_15);\n  if (iVar1 == 0) {\n    local_e = 0;\n  }\n  else {\n    Devices[(param_1 & 0xff) * 8] = 6;\n    *(undefined2 *)(Devices + (param_1 & 0xff) * 8 + 2) = local_e;\n    puVar2 = (undefined *)calloc(1,__size);\n    if (puVar2 == (undefined *)0x0) {\n      local_e = 0;\n    }\n    else {\n      *puVar2 = local_15[0];\n      *(undefined **)(Devices + (param_1 & 0xff) * 8 + 4) = puVar2;\n    }\n  }\n  return local_e;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "NewSmoke",
+                        "NewDeviceId",
+                        "ReadBytes",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "NewSmoke",
+                        "RecvCommand"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DeleteDevice",
+                "func_c_signature": "undefined4 DeleteDevice(undefined2 param_1)",
+                "decompiled_code": "undefined4 DeleteDevice(undefined2 param_1) {\n  byte bVar1;\n  undefined4 uVar2;\n  byte local_e;\n  byte local_d;\n  \n  bVar1 = FindDeviceId(param_1);\n  if (bVar1 == 0x80) {\n    uVar2 = 0;\n  }\n  else {\n    for (local_d = 0; -1 < (char)local_d; local_d = local_d + 1) {\n      if ((Devices[(uint)local_d * 8] == '\\a') && (*(int *)(Devices + (uint)local_d * 8 + 4) != 0))\n      {\n        for (local_e = 0; -1 < (char)local_e; local_e = local_e + 1) {\n          if (bVar1 == *(byte *)(*(int *)(Devices + (uint)local_d * 8 + 4) + 2 + (uint)local_e)) {\n            *(undefined *)(*(int *)(Devices + (uint)local_d * 8 + 4) + 2 + (uint)local_e) = 0;\n            break;\n          }\n        }\n      }\n    }\n    ProcessAlarms();\n    Devices[(uint)bVar1 * 8] = 0;\n    *(undefined2 *)(Devices + (uint)bVar1 * 8 + 2) = 0;\n    if (*(int *)(Devices + (uint)bVar1 * 8 + 4) != 0) {\n      free(*(void **)(Devices + (uint)bVar1 * 8 + 4));\n      *(undefined4 *)(Devices + (uint)bVar1 * 8 + 4) = 0;\n    }\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DeleteDevice",
+                        "FindDeviceId",
+                        "ProcessAlarms",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "DeleteDevice",
+                        "RecvCommand"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GrantAccess",
+                "func_c_signature": "undefined4 GrantAccess(undefined2 param_1,byte param_2)",
+                "decompiled_code": "undefined4 GrantAccess(undefined2 param_1,byte param_2) {\n  byte bVar1;\n  undefined4 uVar2;\n  int iVar3;\n  size_t in_stack_ffffffc8;\n  byte local_12;\n  byte local_11;\n  void *local_10;\n  \n  bVar1 = FindDeviceId(param_1);\n  if (bVar1 == 0x80) {\n    uVar2 = 0;\n  }\n  else if ((Devices[(uint)bVar1 * 8] == '\\x01') || (Devices[(uint)bVar1 * 8] == '\\x02')) {\n    if (param_2 < 0x81) {\n      if (Users[(uint)param_2 * 0x86] == '\\0') {\n        uVar2 = 0;\n      }\n      else {\n        if (*(int *)(Devices + (uint)bVar1 * 8 + 4) == 0) {\n          local_10 = calloc(0x1000,in_stack_ffffffc8);\n          if (local_10 == (void *)0x0) {\n            return 0;\n          }\n          *(void **)(Devices + (uint)bVar1 * 8 + 4) = local_10;\n        }\n        else {\n          local_10 = *(void **)(Devices + (uint)bVar1 * 8 + 4);\n        }\n        local_12 = 0x80;\n        for (local_11 = 0; -1 < (char)local_11; local_11 = local_11 + 1) {\n          if ((*(char *)((int)local_10 + (uint)local_11 * 0x20) == '\\0') && (local_12 == 0x80)) {\n            local_12 = local_11;\n          }\n          iVar3 = strcmp((char *)((int)local_10 + (uint)local_11 * 0x20),\n                         Users + (uint)param_2 * 0x86 + 0x60);\n          if ((iVar3 == 0) ||\n             (iVar3 = strcmp((char *)((int)local_10 + (uint)local_11 * 0x20),\n                             Users + (uint)param_2 * 0x86 + 0x66), iVar3 == 0)) {\n            return 1;\n          }\n        }\n        if (local_12 == 0x80) {\n          uVar2 = 0;\n        }\n        else {\n          if (Devices[(uint)bVar1 * 8] == '\\x01') {\n            strcpy((char *)((int)local_10 + (uint)local_12 * 0x20),\n                   Users + (uint)param_2 * 0x86 + 0x60);\n            *(undefined *)((int)local_10 + (uint)local_12 * 0x20 + 5) = 0;\n          }\n          else if (Devices[(uint)bVar1 * 8] == '\\x02') {\n            strcpy((char *)((int)local_10 + (uint)local_12 * 0x20),\n                   Users + (uint)param_2 * 0x86 + 0x66);\n            *(undefined *)((int)local_10 + (uint)local_12 * 0x20 + 0x1f) = 0;\n          }\n          uVar2 = 1;\n        }\n      }\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  else {\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GrantAccess",
+                        "FindDeviceId",
+                        "calloc",
+                        "strcmp",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "GrantAccess",
+                        "RecvCommand"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "RevokeAccess",
+                "func_c_signature": "undefined4 RevokeAccess(uint param_1)",
+                "decompiled_code": "undefined4 RevokeAccess(uint param_1) {\n  int iVar1;\n  int iVar2;\n  byte local_e;\n  byte local_d;\n  \n  for (local_d = 0; -1 < (char)local_d; local_d = local_d + 1) {\n    if (((Devices[(uint)local_d * 8] == '\\x01') || (Devices[(uint)local_d * 8] == '\\x02')) &&\n       (*(int *)(Devices + (uint)local_d * 8 + 4) != 0)) {\n      iVar1 = *(int *)(Devices + (uint)local_d * 8 + 4);\n      for (local_e = 0; -1 < (char)local_e; local_e = local_e + 1) {\n        iVar2 = strcmp((char *)(iVar1 + (uint)local_e * 0x20),Users + (param_1 & 0xff) * 0x86 + 0x60\n                      );\n        if ((iVar2 == 0) ||\n           (iVar2 = strcmp((char *)(iVar1 + (uint)local_e * 0x20),\n                           Users + (param_1 & 0xff) * 0x86 + 0x66), iVar2 == 0)) {\n          *(undefined *)(iVar1 + (uint)local_e * 0x20) = 0;\n        }\n      }\n    }\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "RevokeAccess",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "RevokeAccess",
+                        "DelUser"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AddDeviceToAlarm",
+                "func_c_signature": "undefined4 AddDeviceToAlarm(undefined2 param_1,undefined2 param_2)",
+                "decompiled_code": "undefined4 AddDeviceToAlarm(undefined2 param_1,undefined2 param_2) {\n  char cVar1;\n  byte bVar2;\n  undefined4 uVar3;\n  size_t in_stack_ffffffc8;\n  byte local_12;\n  byte local_11;\n  void *local_10;\n  \n  cVar1 = FindDeviceId(param_1);\n  if (cVar1 == -0x80) {\n    uVar3 = 0;\n  }\n  else {\n    bVar2 = FindDeviceId(param_2);\n    if (bVar2 == 0x80) {\n      uVar3 = 0;\n    }\n    else {\n      if (*(int *)(Devices + (uint)bVar2 * 8 + 4) == 0) {\n        local_10 = calloc(0x82,in_stack_ffffffc8);\n        if (local_10 == (void *)0x0) {\n          return 0;\n        }\n        *(void **)(Devices + (uint)bVar2 * 8 + 4) = local_10;\n      }\n      else {\n        local_10 = *(void **)(Devices + (uint)bVar2 * 8 + 4);\n      }\n      local_11 = 0x80;\n      for (local_12 = 0; -1 < (char)local_12; local_12 = local_12 + 1) {\n        if ((*(char *)((int)local_10 + local_12 + 2) == '\\0') && (local_11 == 0x80)) {\n          local_11 = local_12;\n        }\n        if (cVar1 == *(char *)((int)local_10 + local_12 + 2)) {\n          return 1;\n        }\n      }\n      if (local_11 == 0x80) {\n        uVar3 = 0;\n      }\n      else {\n        *(char *)((int)local_10 + local_11 + 2) = cVar1;\n        ProcessAlarms();\n        uVar3 = 1;\n      }\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AddDeviceToAlarm",
+                        "FindDeviceId",
+                        "calloc",
+                        "ProcessAlarms"
+                    ],
+                    "calling_functions": [
+                        "AddDeviceToAlarm",
+                        "RecvCommand"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "IsValidCredential",
+                "func_c_signature": "undefined4 IsValidCredential(byte param_1,char *param_2)",
+                "decompiled_code": "undefined4 IsValidCredential(byte param_1,char *param_2) {\n  int iVar1;\n  int iVar2;\n  byte local_d;\n  \n  if ((((param_1 != 0) && (-1 < (char)param_1)) && (param_2 != (char *)0x0)) &&\n     (((Devices[(uint)param_1 * 8] == '\\x01' || (Devices[(uint)param_1 * 8] == '\\x02')) &&\n      (*(int *)(Devices + (uint)param_1 * 8 + 4) != 0)))) {\n    iVar1 = *(int *)(Devices + (uint)param_1 * 8 + 4);\n    for (local_d = 0; -1 < (char)local_d; local_d = local_d + 1) {\n      iVar2 = strcmp((char *)(iVar1 + (uint)local_d * 0x20),param_2);\n      if (iVar2 == 0) {\n        return 1;\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "IsValidCredential",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "IsValidCredential",
+                        "UpdateDevice"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "UpdateDevice",
+                "func_c_signature": "undefined4 UpdateDevice(undefined2 param_1)",
+                "decompiled_code": "undefined4 UpdateDevice(undefined2 param_1) {\n  char cVar1;\n  undefined4 uVar2;\n  int iVar3;\n  undefined local_48;\n  undefined local_47;\n  undefined local_46 [31];\n  undefined local_27;\n  undefined local_26 [5];\n  undefined local_21;\n  int local_20;\n  undefined *local_1c;\n  undefined *local_18;\n  undefined *local_14;\n  byte local_d;\n  \n  local_d = FindDeviceId(param_1);\n  if (local_d == 0x80) {\n    uVar2 = 0;\n  }\n  else {\n    switch(Devices[(uint)local_d * 8]) {\n    default:\n      return 0;\n    case 1:\n      iVar3 = ReadBytes(local_26,5);\n      if (iVar3 == 0) {\n        return 0;\n      }\n      local_21 = 0;\n      cVar1 = IsValidCredential(local_d,local_26);\n      if (cVar1 != '\\0') {\n        InvertAlarmState(local_d);\n        ProcessAlarms();\n      }\n      break;\n    case 2:\n      iVar3 = ReadBytes(local_46,0x1f);\n      if (iVar3 == 0) {\n        return 0;\n      }\n      local_27 = 0;\n      cVar1 = IsValidCredential(local_d,local_46);\n      if (cVar1 != '\\0') {\n        InvertAlarmState(local_d);\n        ProcessAlarms();\n      }\n      break;\n    case 3:\n      iVar3 = ReadBytes(&local_47,1);\n      if (iVar3 == 0) {\n        return 0;\n      }\n      if (*(int *)(Devices + (uint)local_d * 8 + 4) == 0) {\n        return 0;\n      }\n      local_20 = *(int *)(Devices + (uint)local_d * 8 + 4);\n      *(undefined *)(local_20 + 1) = local_47;\n      ProcessAlarms();\n      break;\n    case 4:\n      iVar3 = ReadBytes(&local_47,1);\n      if (iVar3 == 0) {\n        return 0;\n      }\n      if (*(int *)(Devices + (uint)local_d * 8 + 4) == 0) {\n        return 0;\n      }\n      local_1c = *(undefined **)(Devices + (uint)local_d * 8 + 4);\n      *local_1c = local_47;\n      ProcessAlarms();\n      break;\n    case 5:\n      iVar3 = ReadBytes(&local_48,1);\n      if (iVar3 == 0) {\n        return 0;\n      }\n      if (*(int *)(Devices + (uint)local_d * 8 + 4) == 0) {\n        return 0;\n      }\n      local_18 = *(undefined **)(Devices + (uint)local_d * 8 + 4);\n      *local_18 = local_48;\n      ProcessAlarms();\n      break;\n    case 6:\n      iVar3 = ReadBytes(&local_47,1);\n      if (iVar3 == 0) {\n        return 0;\n      }\n      if (*(int *)(Devices + (uint)local_d * 8 + 4) == 0) {\n        return 0;\n      }\n      local_14 = *(undefined **)(Devices + (uint)local_d * 8 + 4);\n      *local_14 = local_47;\n      ProcessAlarms();\n    }\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "UpdateDevice",
+                        "FindDeviceId",
+                        "ReadBytes",
+                        "IsValidCredential",
+                        "InvertAlarmState",
+                        "ProcessAlarms"
+                    ],
+                    "calling_functions": [
+                        "UpdateDevice",
+                        "RecvCommand"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SortCodes",
+                "func_c_signature": "void SortCodes(int param_1)",
+                "decompiled_code": "void SortCodes(int param_1) {\n  undefined local_34 [32];\n  int local_14;\n  byte local_e;\n  char local_d;\n  \n  local_d = '\\0';\n  while (local_d == '\\0') {\n    local_d = '\\x01';\n    for (local_e = 0; local_e < 0x7f; local_e = local_e + 1) {\n      local_14 = strcmp((char *)(param_1 + (uint)local_e * 0x20),\n                        (char *)((local_e + 1) * 0x20 + param_1));\n      if (0 < local_14) {\n        memcpy(local_34,(void *)(param_1 + (local_e + 1) * 0x20),0x20);\n        memcpy((void *)(param_1 + (local_e + 1) * 0x20),(void *)((uint)local_e * 0x20 + param_1),\n               0x20);\n        memcpy((void *)((uint)local_e * 0x20 + param_1),local_34,0x20);\n        local_d = '\\0';\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SortCodes",
+                        "strcmp",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "SortCodes",
+                        "ListValidAlarmCodes"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ListValidAlarmCodes",
+                "func_c_signature": "undefined4 ListValidAlarmCodes(undefined2 param_1)",
+                "decompiled_code": "undefined4 ListValidAlarmCodes(undefined2 param_1) {\n  undefined4 uVar1;\n  size_t in_stack_ffffffc8;\n  char local_15;\n  void *local_14;\n  byte local_e;\n  byte local_d;\n  \n  local_15 = '\\0';\n  local_e = FindDeviceId(param_1);\n  if (local_e == 0x80) {\n    uVar1 = 0;\n  }\n  else if ((Devices[(uint)local_e * 8] == '\\x01') || (Devices[(uint)local_e * 8] == '\\x02')) {\n    if (*(int *)(Devices + (uint)local_e * 8 + 4) == 0) {\n      SendBytes(&local_15,1);\n      SendResp(3,0);\n      uVar1 = 1;\n    }\n    else {\n      local_14 = calloc(0x1000,in_stack_ffffffc8);\n      if (local_14 == (void *)0x0) {\n        uVar1 = 0;\n      }\n      else {\n        memcpy(local_14,*(void **)(Devices + (uint)local_e * 8 + 4),0x1000);\n        SortCodes(local_14);\n        for (local_d = 0; -1 < (char)local_d; local_d = local_d + 1) {\n          if (*(char *)((int)local_14 + (uint)local_d * 0x20) != '\\0') {\n            local_15 = local_15 + '\\x01';\n          }\n        }\n        SendBytes(&local_15,1);\n        for (local_d = 0; -1 < (char)local_d; local_d = local_d + 1) {\n          if (*(char *)((int)local_14 + (uint)local_d * 0x20) != '\\0') {\n            SendBytes((void *)((int)local_14 + (uint)local_d * 0x20),0x20);\n          }\n        }\n        SendResp(3,0);\n        free(local_14);\n        uVar1 = 1;\n      }\n    }\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ListValidAlarmCodes",
+                        "FindDeviceId",
+                        "SendBytes",
+                        "SendResp",
+                        "calloc",
+                        "memcpy",
+                        "SortCodes",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "ListValidAlarmCodes",
+                        "RecvCommand"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            }
+        ],
+        "io.c": [
+            {
+                "func_name": "ReadBytes",
+                "func_c_signature": "uint ReadBytes(int param_1,uint param_2)",
+                "decompiled_code": "uint ReadBytes(int param_1,uint param_2) {\n  int iVar1;\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  while ((local_10 < param_2 &&\n         (iVar1 = receive(0,param_1 + local_10,param_2 - local_10,&local_14), iVar1 == 0))) {\n    if (local_14 == 0) {\n      return 0;\n    }\n    local_10 = local_10 + local_14;\n  }\n  if (local_10 != param_2) {\n    local_10 = 0;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReadBytes",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "NewContact",
+                        "NewMotion",
+                        "NewHeat",
+                        "NewSmoke",
+                        "UpdateDevice",
+                        "ReadBytes",
+                        "RecvCommand",
+                        "AddUser",
+                        "DelUser"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SendBytes",
+                "func_c_signature": "uint SendBytes(int param_1,uint param_2)",
+                "decompiled_code": "uint SendBytes(int param_1,uint param_2) {\n  int iVar1;\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  while ((local_10 < param_2 &&\n         (iVar1 = transmit(1,param_1 + local_10,param_2 - local_10,&local_14), iVar1 == 0))) {\n    if (local_14 == 0) {\n      return 0;\n    }\n    local_10 = local_10 + local_14;\n  }\n  if (local_10 != param_2) {\n    local_10 = 0;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SendBytes",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "ListValidAlarmCodes",
+                        "SendBytes",
+                        "SendResp"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SendResp",
+                "func_c_signature": "undefined4 SendResp(undefined param_1,int param_2)",
+                "decompiled_code": "undefined4 SendResp(undefined param_1,int param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined local_20 [18];\n  undefined2 local_e [5];\n  \n  local_20[0] = param_1;\n  iVar1 = SendBytes(local_20,1);\n  if (iVar1 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    if (param_2 == 0) {\n      local_e[0] = 0;\n      iVar1 = SendBytes(local_e,2);\n      if (iVar1 == 0) {\n        return 0;\n      }\n    }\n    else {\n      iVar1 = SendBytes(param_2,2);\n      if (iVar1 == 0) {\n        return 0;\n      }\n    }\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SendResp",
+                        "SendBytes"
+                    ],
+                    "calling_functions": [
+                        "ProcessAlarms",
+                        "ListValidAlarmCodes",
+                        "SendResp",
+                        "RecvCommand"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "RecvCommand",
+                "func_c_signature": "undefined4 RecvCommand(void)",
+                "decompiled_code": "undefined4 RecvCommand(void) {\n  char cVar1;\n  int iVar2;\n  undefined local_35;\n  undefined2 local_34;\n  short local_32;\n  undefined local_30 [33];\n  byte local_f;\n  char local_e;\n  undefined local_d;\n  \n  local_d = 0x81;\n  iVar2 = ReadBytes(&local_f,1);\n  if (iVar2 == 0) {\n    return 0;\n  }\n  switch(local_f) {\n  case 0:\n    cVar1 = AddUser();\n    if (cVar1 == '\\0') {\n      SendResp(2,0);\n      return 1;\n    }\n    SendResp(3,0);\n    break;\n  case 1:\n    cVar1 = DelUser();\n    if (cVar1 == '\\0') {\n      SendResp(4,0);\n      return 1;\n    }\n    SendResp(3,0);\n    break;\n  case 2:\n    iVar2 = ReadBytes(local_30,1);\n    if (iVar2 == 0) {\n      return 0;\n    }\n    local_e = FindAvailableDevice();\n    if (local_e < '\\0') {\n      SendResp(0,0);\n      return 0;\n    }\n    switch(local_30[0]) {\n    default:\n      SendResp(5,0);\n      break;\n    case 1:\n      local_32 = NewGenericDevice(local_30[0],local_e);\n      if (local_32 == 0) {\n        SendResp(5,0);\n        return 0;\n      }\n      break;\n    case 2:\n      local_32 = NewGenericDevice(local_30[0],local_e);\n      if (local_32 == 0) {\n        SendResp(5,0);\n        return 0;\n      }\n      break;\n    case 3:\n      local_32 = NewContact(local_e);\n      if (local_32 == 0) {\n        SendResp(5,0);\n        return 0;\n      }\n      break;\n    case 4:\n      local_32 = NewMotion(local_e);\n      if (local_32 == 0) {\n        SendResp(5,0);\n        return 0;\n      }\n      break;\n    case 5:\n      local_32 = NewHeat(local_e);\n      if (local_32 == 0) {\n        SendResp(5,0);\n        return 0;\n      }\n      break;\n    case 6:\n      local_32 = NewSmoke(local_e);\n      if (local_32 == 0) {\n        SendResp(5,0);\n        return 0;\n      }\n      break;\n    case 7:\n      local_32 = NewGenericDevice(local_30[0],local_e);\n      if (local_32 == 0) {\n        SendResp(5,0);\n        return 1;\n      }\n    }\n    SendResp(3,&local_32);\n    break;\n  case 3:\n    iVar2 = ReadBytes(&local_32,2);\n    if (iVar2 == 0) {\n      return 0;\n    }\n    cVar1 = DeleteDevice(local_32);\n    if (cVar1 == '\\0') {\n      SendResp(6,0);\n      return 1;\n    }\n    SendResp(3,0);\n    break;\n  case 4:\n    SendResp(3,0);\n    return 0;\n  case 5:\n    iVar2 = ReadBytes(&local_32,2);\n    if (iVar2 == 0) {\n      return 0;\n    }\n    iVar2 = ReadBytes(&local_35,1);\n    if (iVar2 == 0) {\n      return 0;\n    }\n    cVar1 = GrantAccess(local_32,local_35);\n    if (cVar1 == '\\0') {\n      SendResp(7,0);\n      return 1;\n    }\n    SendResp(3,0);\n    break;\n  case 6:\n    iVar2 = ReadBytes(&local_32,2);\n    if (iVar2 == 0) {\n      return 0;\n    }\n    cVar1 = UpdateDevice(local_32);\n    if (cVar1 == '\\0') {\n      SendResp(8,0);\n      return 1;\n    }\n    SendResp(3,0);\n    break;\n  case 7:\n    iVar2 = ReadBytes(&local_32,2);\n    if (iVar2 == 0) {\n      return 0;\n    }\n    iVar2 = ReadBytes(&local_34,2);\n    if (iVar2 == 0) {\n      return 0;\n    }\n    cVar1 = AddDeviceToAlarm(local_32,local_34);\n    if (cVar1 == '\\0') {\n      SendResp(9,0);\n      return 0;\n    }\n    SendResp(3,0);\n    break;\n  case 8:\n    iVar2 = ReadBytes(&local_32,2);\n    if (iVar2 == 0) {\n      return 0;\n    }\n    cVar1 = ListValidAlarmCodes(local_32);\n    if (cVar1 == '\\0') {\n      SendResp(0,0);\n      return 0;\n    }\n    break;\n  default:\n    SendResp(0,0);\n    return 1;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "RecvCommand",
+                        "ReadBytes",
+                        "AddUser",
+                        "SendResp",
+                        "DelUser",
+                        "FindAvailableDevice",
+                        "NewGenericDevice",
+                        "NewContact",
+                        "NewMotion",
+                        "NewHeat",
+                        "NewSmoke",
+                        "DeleteDevice",
+                        "GrantAccess",
+                        "UpdateDevice",
+                        "AddDeviceToAlarm",
+                        "ListValidAlarmCodes"
+                    ],
+                    "calling_functions": [
+                        "RecvCommand",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  char cVar1;\n  \n  do {\n    cVar1 = RecvCommand();\n  } while (cVar1 != '\\0');\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "RecvCommand"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            }
+        ],
+        "user.c": [
+            {
+                "func_name": "FindUsername",
+                "func_c_signature": "byte FindUsername(char *param_1)",
+                "decompiled_code": "byte FindUsername(char *param_1) {\n  int iVar1;\n  byte local_d;\n  \n  local_d = 0;\n  while ((-1 < (char)local_d && (iVar1 = strcmp(Users + (uint)local_d * 0x86,param_1), iVar1 != 0)))\n  {\n    local_d = local_d + 1;\n  }\n  return local_d;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindUsername",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "FindUsername",
+                        "AddUser",
+                        "DelUser"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FindCode",
+                "func_c_signature": "undefined4 FindCode(char *param_1)",
+                "decompiled_code": "undefined4 FindCode(char *param_1) {\n  int iVar1;\n  byte local_d;\n  \n  local_d = 0;\n  while( true ) {\n    if ((char)local_d < '\\0') {\n      return 0;\n    }\n    iVar1 = strcmp(Users + (uint)local_d * 0x86 + 0x60,param_1);\n    if (iVar1 == 0) break;\n    iVar1 = strcmp(Users + (uint)local_d * 0x86 + 0x66,param_1);\n    if (iVar1 == 0) {\n      return 1;\n    }\n    local_d = local_d + 1;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindCode",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "FindCode",
+                        "AddUser"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FindAvailableUser",
+                "func_c_signature": "uint FindAvailableUser(void)",
+                "decompiled_code": "uint FindAvailableUser(void) {\n  uint uVar1;\n  byte local_5;\n  \n  local_5 = 0;\n  while ((-1 < (char)local_5 && (Users[(uint)local_5 * 0x86] != '\\0'))) {\n    local_5 = local_5 + 1;\n  }\n  if (local_5 == 0x80) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    uVar1 = (uint)local_5;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindAvailableUser"
+                    ],
+                    "calling_functions": [
+                        "FindAvailableUser",
+                        "AddUser"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AddUser",
+                "func_c_signature": "undefined4 AddUser(void)",
+                "decompiled_code": "undefined4 AddUser(void) {\n  char cVar1;\n  int iVar2;\n  size_t sVar3;\n  undefined local_93 [96];\n  char acStack_33 [6];\n  char acStack_2d [32];\n  char local_d;\n  \n  iVar2 = ReadBytes(local_93,0x86);\n  if ((iVar2 != 0) && (NumUsers < 0x81)) {\n    local_d = FindAvailableUser();\n    cVar1 = FindUsername(local_93);\n    if (((cVar1 == -0x80) &&\n        (((sVar3 = strlen(acStack_33), sVar3 == 5 && (sVar3 = strlen(acStack_2d), sVar3 == 0x1f)) &&\n         (cVar1 = FindCode(acStack_33), cVar1 == '\\0')))) &&\n       (cVar1 = FindCode(acStack_2d), cVar1 == '\\0')) {\n      memcpy(Users + local_d * 0x86,local_93,0x86);\n      NumUsers = NumUsers + 1;\n      return 1;\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AddUser",
+                        "ReadBytes",
+                        "FindAvailableUser",
+                        "FindUsername",
+                        "strlen",
+                        "FindCode",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "RecvCommand",
+                        "AddUser"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DelUser",
+                "func_c_signature": "undefined4 DelUser(void)",
+                "decompiled_code": "undefined4 DelUser(void) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined local_2d [31];\n  undefined local_e;\n  byte local_d;\n  \n  bzero(local_2d,0x20);\n  iVar1 = ReadBytes(local_2d,0x20);\n  if (iVar1 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    local_e = 0;\n    local_d = FindUsername(local_2d);\n    if (local_d == 0x80) {\n      uVar2 = 0;\n    }\n    else {\n      RevokeAccess(local_d);\n      bzero(Users + (uint)local_d * 0x86,0x86);\n      NumUsers = NumUsers + -1;\n      uVar2 = 1;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DelUser",
+                        "bzero",
+                        "ReadBytes",
+                        "FindUsername",
+                        "RevokeAccess"
+                    ],
+                    "calling_functions": [
+                        "RecvCommand",
+                        "DelUser"
+                    ],
+                    "defined_in_file": "CROMU_00092_decompiled.c"
+                }
+            }
+        ]
+    }
+}

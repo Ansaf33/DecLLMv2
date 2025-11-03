@@ -1,0 +1,214 @@
+{
+    "file": "NRFIN_00034",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "append_to_path",
+                "func_c_signature": "char * append_to_path(char *param_1,char *param_2)",
+                "decompiled_code": "char * append_to_path(char *param_1,char *param_2) {\n  size_t sVar1;\n  char *__dest;\n  \n  sVar1 = strlen(param_1);\n  __dest = (char *)realloc(param_1,sVar1 + 0x12);\n  if (__dest == (char *)0x0) {\n    free(param_1);\n    __dest = (char *)0x0;\n  }\n  else {\n    strcat(__dest,\"/\");\n    strncat(__dest,param_2,0x10);\n    __dest[sVar1 + 0x11] = '\\0';\n  }\n  return __dest;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "append_to_path",
+                        "strlen",
+                        "realloc",
+                        "free",
+                        "strcat",
+                        "strncat"
+                    ],
+                    "calling_functions": [
+                        "append_to_path",
+                        "do_cd",
+                        "do_read",
+                        "do_write",
+                        "do_ln",
+                        "do_rm"
+                    ],
+                    "defined_in_file": "NRFIN_00034_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_cron",
+                "func_c_signature": "void do_cron(void)",
+                "decompiled_code": "void do_cron(void) {\n  int iVar1;\n  code *local_24;\n  int local_20;\n  int local_1c;\n  code *local_18;\n  int local_14;\n  int local_10;\n  \n  local_18 = (code *)0x0;\n  local_1c = *(int *)(crond + 0x20);\n  if (local_1c == 0) {\n    local_10 = 0;\n  }\n  else {\n    local_10 = local_1c + -0x24;\n  }\n  do {\n    if (local_10 == 0) {\n      return;\n    }\n    if (*(int *)(local_10 + 0x14) == 0) {\n      local_14 = local_10;\nLAB_00011110:\n      iVar1 = allocate(*(undefined4 *)(local_14 + 0x1c),1,&local_24);\n      if (iVar1 == 0) {\n        memcpy(local_24,*(void **)(local_14 + 0x20),*(size_t *)(local_14 + 0x1c));\n        local_18 = local_24;\n        (*local_24)();\n        deallocate(local_24,*(undefined4 *)(local_10 + 0x1c));\n      }\n    }\n    else {\n      local_14 = lookup_file(&vfs,*(undefined4 *)(local_10 + 0x20),1);\n      if (local_14 != 0) goto LAB_00011110;\n    }\n    local_20 = *(int *)(local_10 + 0x24);\n    if (local_20 == 0) {\n      local_10 = 0;\n    }\n    else {\n      local_10 = local_20 + -0x24;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_cron",
+                        "allocate",
+                        "memcpy",
+                        "deallocate",
+                        "lookup_file"
+                    ],
+                    "calling_functions": [
+                        "do_cron",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00034_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_cd",
+                "func_c_signature": "undefined4 do_cd(void)",
+                "decompiled_code": "undefined4 do_cd(void) {\n  int iVar1;\n  undefined local_29 [16];\n  undefined local_19;\n  int local_18;\n  void *local_14;\n  undefined4 local_10;\n  \n  local_10 = 0xffffffff;\n  iVar1 = read_all(0,local_29,0x10);\n  if (iVar1 == 0x10) {\n    local_19 = 0;\n    local_14 = (void *)get_path_from_dir(&vfs,pwd);\n    if (local_14 == (void *)0x0) {\n      local_10 = 0xffffffff;\n    }\n    else {\n      local_14 = (void *)append_to_path(local_14,local_29);\n      if ((local_14 != (void *)0x0) && (local_18 = lookup_dir(&vfs,local_14,1), local_18 != 0)) {\n        local_10 = 0;\n        pwd = local_18;\n      }\n      free(local_14);\n    }\n  }\n  else {\n    local_10 = 0xffffffff;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_cd",
+                        "read_all",
+                        "get_path_from_dir",
+                        "append_to_path",
+                        "lookup_dir",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "do_cd",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00034_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_read",
+                "func_c_signature": "undefined4 do_read(void)",
+                "decompiled_code": "undefined4 do_read(void) {\n  int iVar1;\n  undefined4 local_30;\n  undefined local_29 [16];\n  undefined local_19;\n  int local_18;\n  void *local_14;\n  undefined4 local_10;\n  \n  local_10 = 0xffffffff;\n  iVar1 = read_all(0,local_29,0x10);\n  if (iVar1 == 0x10) {\n    local_19 = 0;\n    local_14 = (void *)get_path_from_dir(&vfs,pwd);\n    if (local_14 == (void *)0x0) {\n      local_10 = 0xffffffff;\n    }\n    else {\n      local_14 = (void *)append_to_path(local_14,local_29);\n      if (((local_14 != (void *)0x0) && (local_18 = lookup_file(&vfs,local_14,1), local_18 != 0)) &&\n         (iVar1 = read_file(&vfs,1000,local_14,&local_30), iVar1 == 0)) {\n        write_all(1,local_30,*(undefined4 *)(local_18 + 0x1c));\n        local_10 = 0;\n      }\n      free(local_14);\n    }\n  }\n  else {\n    local_10 = 0xffffffff;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_read",
+                        "read_all",
+                        "get_path_from_dir",
+                        "append_to_path",
+                        "lookup_file",
+                        "read_file",
+                        "write_all",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "do_read",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00034_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_write",
+                "func_c_signature": "undefined4 do_write(void)",
+                "decompiled_code": "undefined4 do_write(void) {\n  int iVar1;\n  uint uVar2;\n  uint *__size;\n  uint local_34;\n  undefined local_2d [16];\n  undefined local_1d;\n  int local_1c;\n  void *local_18;\n  void *local_14;\n  undefined4 local_10;\n  \n  local_10 = 0xffffffff;\n  iVar1 = read_all(0,local_2d,0x10);\n  if (iVar1 == 0x10) {\n    local_1d = 0;\n    __size = &local_34;\n    iVar1 = read_all(0,__size,4);\n    if (iVar1 == 4) {\n      if (local_34 < 0xff9) {\n        local_14 = calloc(local_34,(size_t)__size);\n        if (local_14 == (void *)0x0) {\n          local_10 = 0xffffffff;\n        }\n        else {\n          uVar2 = read_all(0,local_14,local_34);\n          if ((uVar2 == local_34) &&\n             (local_18 = (void *)get_path_from_dir(&vfs,pwd), local_18 != (void *)0x0)) {\n            local_18 = (void *)append_to_path(local_18,local_2d);\n            if ((local_18 != (void *)0x0) &&\n               ((local_1c = create_file(&vfs,local_18), local_1c != 0 &&\n                (iVar1 = write_file(&vfs,1000,local_18,local_14,local_34), iVar1 == 0)))) {\n              free(local_18);\n              return 0;\n            }\n            free(local_18);\n          }\n          free(local_14);\n        }\n      }\n      else {\n        local_10 = 0xffffffff;\n      }\n    }\n    else {\n      local_10 = 0xffffffff;\n    }\n  }\n  else {\n    local_10 = 0xffffffff;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_write",
+                        "read_all",
+                        "calloc",
+                        "get_path_from_dir",
+                        "append_to_path",
+                        "create_file",
+                        "write_file",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "do_write",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00034_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_ln",
+                "func_c_signature": "undefined4 do_ln(void)",
+                "decompiled_code": "undefined4 do_ln(void) {\n  int iVar1;\n  uint uVar2;\n  uint *__size;\n  uint local_30;\n  undefined local_29 [16];\n  undefined local_19;\n  void *local_18;\n  void *local_14;\n  undefined4 local_10;\n  \n  local_10 = 0xffffffff;\n  iVar1 = read_all(0,local_29,0x10);\n  if (iVar1 == 0x10) {\n    local_19 = 0;\n    __size = &local_30;\n    iVar1 = read_all(0,__size,4);\n    if (iVar1 == 4) {\n      if (local_30 < 0xff9) {\n        local_14 = calloc(local_30 + 1,(size_t)__size);\n        if (local_14 == (void *)0x0) {\n          local_10 = 0xffffffff;\n        }\n        else {\n          uVar2 = read_all(0,local_14,local_30);\n          if ((uVar2 == local_30) &&\n             (local_18 = (void *)get_path_from_dir(&vfs,pwd), local_18 != (void *)0x0)) {\n            local_18 = (void *)append_to_path(local_18,local_29);\n            if ((local_18 != (void *)0x0) &&\n               (iVar1 = create_symlink(&vfs,1000,local_18,local_14), iVar1 == 0)) {\n              local_10 = 0;\n            }\n            free(local_18);\n          }\n          free(local_14);\n        }\n      }\n      else {\n        local_10 = 0xffffffff;\n      }\n    }\n    else {\n      local_10 = 0xffffffff;\n    }\n  }\n  else {\n    local_10 = 0xffffffff;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_ln",
+                        "read_all",
+                        "calloc",
+                        "get_path_from_dir",
+                        "append_to_path",
+                        "create_symlink",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "do_ln",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00034_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_rm",
+                "func_c_signature": "undefined4 do_rm(void)",
+                "decompiled_code": "undefined4 do_rm(void) {\n  int iVar1;\n  undefined local_29 [16];\n  undefined local_19;\n  int local_18;\n  void *local_14;\n  undefined4 local_10;\n  \n  local_10 = 0xffffffff;\n  iVar1 = read_all(0,local_29,0x10);\n  if (iVar1 == 0x10) {\n    local_19 = 0;\n    local_14 = (void *)get_path_from_dir(&vfs,pwd);\n    if (local_14 == (void *)0x0) {\n      local_10 = 0xffffffff;\n    }\n    else {\n      local_14 = (void *)append_to_path(local_14,local_29);\n      if (((local_14 != (void *)0x0) && (local_18 = lookup_file(&vfs,local_14,1), local_18 != 0)) &&\n         (iVar1 = delete_file(&vfs,1000,local_18), iVar1 == 0)) {\n        local_10 = 0;\n      }\n      free(local_14);\n    }\n  }\n  else {\n    local_10 = 0xffffffff;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_rm",
+                        "read_all",
+                        "get_path_from_dir",
+                        "append_to_path",
+                        "lookup_file",
+                        "delete_file",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "do_rm",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00034_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined4 local_18;\n  uint local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  vfs_init(&vfs);\n  create_dir(&vfs,&DAT_00014002);\n  crond = create_dir(&vfs,\"/etc/crond\");\n  create_dir(&vfs,\"/home\");\n  pwd = create_dir(&vfs,\"/home/user\");\n  *(undefined4 *)(pwd + 0x10) = 1000;\nswitchD_00011802_caseD_5:\n  do {\n    do_cron();\n    iVar1 = read_all(0,&local_14,4);\n  } while (iVar1 != 4);\n  switch(local_14) {\n  case 0:\n    local_18 = do_cd();\n    break;\n  case 1:\n    local_18 = do_read();\n    break;\n  case 2:\n    local_18 = do_write();\n    break;\n  case 3:\n    local_18 = do_ln();\n    break;\n  case 4:\n    local_18 = do_rm();\n    break;\n  default:\n    goto switchD_00011802_caseD_6;\n  case 0xbad1abe1:\n    goto switchD_00011802_caseD_5;\n  }\n  write_all(1,&local_18,4);\n  goto switchD_00011802_caseD_5;\nswitchD_00011802_caseD_6:\n  vfs_destroy(&vfs);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "vfs_init",
+                        "create_dir",
+                        "do_cron",
+                        "read_all",
+                        "do_cd",
+                        "do_read",
+                        "do_write",
+                        "do_ln",
+                        "do_rm",
+                        "write_all",
+                        "vfs_destroy"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "NRFIN_00034_decompiled.c"
+                }
+            }
+        ]
+    }
+}

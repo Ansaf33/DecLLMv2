@@ -1,0 +1,93 @@
+{
+    "file": "sync",
+    "decompiled_code": {
+        "sync.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION] [FILE]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Synchronize cached writes to persistent storage\\n\\nIf one or more files are specified, sync only them,\\nor their containing file systems.\\n\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  -d, --data             sync only file data, no unneeded metadata\\n\")\n    ;\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -f, --file-system      sync the file systems that contain the files\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(&DAT_00100c41);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "sync_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sync_arg",
+                "func_c_signature": "char sync_arg(uint param_1,char *param_2)",
+                "decompiled_code": "char sync_arg(uint param_1,char *param_2) {\n  uint uVar1;\n  int iVar2;\n  int *piVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  char local_6d;\n  int local_6c;\n  int local_68;\n  \n  local_6d = '\\x01';\n  local_6c = open(param_2,0x800);\n  if (local_6c < 0) {\n    piVar3 = __errno_location();\n    iVar2 = *piVar3;\n    local_6c = open(param_2,0x801);\n    if (local_6c < 0) {\n      uVar4 = quotearg_style(4,param_2);\n      uVar5 = gettext(\"error opening %s\");\n      error(0,iVar2,uVar5,uVar4);\n      return '\\0';\n    }\n  }\n  uVar1 = rpl_fcntl(local_6c,3);\n  if ((uVar1 == 0xffffffff) || (iVar2 = rpl_fcntl(local_6c,4,uVar1 & 0xfffff7ff), iVar2 < 0)) {\n    uVar4 = quotearg_style(4,param_2);\n    uVar5 = gettext(\"couldn\\'t reset non-blocking mode %s\");\n    piVar3 = __errno_location();\n    error(0,*piVar3,uVar5,uVar4);\n    local_6d = '\\0';\n  }\n  if (local_6d != '\\0') {\n    local_68 = -1;\n    if (param_1 == 2) {\n      local_68 = syncfs(local_6c);\n    }\n    else if (param_1 < 3) {\n      if (param_1 == 0) {\n        local_68 = fsync(local_6c);\n      }\n      else if (param_1 == 1) {\n        local_68 = fdatasync(local_6c);\n      }\n    }\n    if (local_68 < 0) {\n      uVar4 = quotearg_style(4,param_2);\n      uVar5 = gettext(\"error syncing %s\");\n      piVar3 = __errno_location();\n      error(0,*piVar3,uVar5,uVar4);\n      local_6d = '\\0';\n    }\n  }\n  iVar2 = close(local_6c);\n  if (iVar2 < 0) {\n    uVar4 = quotearg_style(4,param_2);\n    uVar5 = gettext(\"failed to close %s\");\n    piVar3 = __errno_location();\n    error(0,*piVar3,uVar5,uVar4);\n    local_6d = '\\0';\n  }\n  return local_6d;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sync_arg",
+                        "open",
+                        "__errno_location",
+                        "quotearg_style",
+                        "gettext",
+                        "error",
+                        "rpl_fcntl",
+                        "syncfs",
+                        "fsync",
+                        "fdatasync",
+                        "close"
+                    ],
+                    "calling_functions": [
+                        "sync_arg",
+                        "main"
+                    ],
+                    "defined_in_file": "sync_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  bool bVar2;\n  bool bVar3;\n  byte bVar4;\n  int iVar5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  bool local_42;\n  int local_40;\n  \n  bVar2 = false;\n  bVar3 = false;\n  local_42 = true;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  do {\n    while( true ) {\n      while( true ) {\n        iVar5 = getopt_long(param_1,param_2,&DAT_00100ce5,long_options,0);\n        if (iVar5 == -1) {\n          bVar1 = _optind < param_1;\n          if ((bVar2) && (bVar3)) {\n            uVar7 = gettext(\"cannot specify both --data and --file-system\");\n            error(1,0,uVar7);\n          }\n          if ((!bVar1) && (bVar2)) {\n            uVar7 = gettext(\"--data needs at least one argument\");\n            error(1,0,uVar7);\n          }\n          if (bVar1) {\n            if (bVar3) {\n              local_40 = 2;\n            }\n            else if (bVar2) {\n              local_40 = 1;\n            }\n            else {\n              local_40 = 0;\n            }\n          }\n          else {\n            local_40 = 3;\n          }\n          if (local_40 == 3) {\n            sync();\n          }\n          else {\n            for (; _optind < param_1; _optind = _optind + 1) {\n              bVar4 = sync_arg(local_40,param_2[_optind]);\n              local_42 = (bVar4 & local_42) != 0;\n            }\n          }\n          return local_42 ^ 1;\n        }\n        if (iVar5 != 0x66) break;\n        bVar3 = true;\n      }\n      if (iVar5 < 0x67) break;\nLAB_0010077b:\n      usage(1);\n    }\n    if (iVar5 != 100) {\n      if (iVar5 < 0x65) {\n        if (iVar5 == -0x83) {\nLAB_001006fd:\n          uVar7 = proper_name_lite(\"Giuseppe Scrivano\",\"Giuseppe Scrivano\");\n          uVar6 = proper_name_lite(\"Jim Meyering\",\"Jim Meyering\");\n          version_etc(_stdout,&DAT_00100c41,\"GNU coreutils\",_Version,uVar6,uVar7,0);\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (iVar5 == -0x82) {\n          usage(0);\n          goto LAB_001006fd;\n        }\n      }\n      goto LAB_0010077b;\n    }\n    bVar2 = true;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "sync",
+                        "sync_arg",
+                        "usage",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "sync_decompiled.c"
+                }
+            }
+        ]
+    }
+}

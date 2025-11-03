@@ -1,0 +1,187 @@
+{
+    "file": "pathchk",
+    "decompiled_code": {
+        "pathchk.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... NAME...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Diagnose invalid or non-portable file names.\\n\\n  -p                  check for most POSIX systems\\n  -P                  check for empty names and leading \\\"-\\\"\\n      --portability   check for all POSIX systems (equivalent to -p -P)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"pathchk\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "systems"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "systems",
+                        "fputs_unlocked",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "pathchk_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  byte bVar1;\n  int iVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  bool local_2f;\n  undefined local_2e;\n  undefined local_2d;\n  \n  local_2f = true;\n  local_2e = 0;\n  local_2d = 0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\nLAB_001004f4:\n  while( true ) {\n    iVar2 = getopt_long(param_1,param_2,&DAT_001012a8,longopts,0);\n    if (iVar2 == -1) {\n      if (param_1 != _optind) goto LAB_001005c5;\n      uVar5 = gettext(\"missing operand\");\n      error(0,0,uVar5);\n      usage(1);\n      do {\n        bVar1 = validate_file_name(param_2[_optind],local_2e,local_2d);\n        local_2f = (bVar1 & local_2f) != 0;\n        _optind = _optind + 1;\nLAB_001005c5:\n      } while (_optind < param_1);\n      return local_2f ^ 1;\n    }\n    if (iVar2 != 0x80) break;\n    local_2e = 1;\n    local_2d = 1;\n  }\n  if (iVar2 < 0x81) {\n    if (iVar2 == 0x70) {\n      local_2e = 1;\n      goto LAB_001004f4;\n    }\n    if (0x70 < iVar2) goto LAB_001004ea;\n    if (iVar2 == 0x50) {\n      local_2d = 1;\n      goto LAB_001004f4;\n    }\n    if (iVar2 < 0x51) {\n      if (iVar2 == -0x83) {\nLAB_00100453:\n        uVar5 = proper_name_lite(\"Jim Meyering\",\"Jim Meyering\");\n        uVar3 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n        uVar4 = proper_name_lite(\"Paul Eggert\",\"Paul Eggert\");\n        version_etc(_stdout,\"pathchk\",\"GNU coreutils\",_Version,uVar4,uVar3,uVar5,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar2 == -0x82) {\n        usage(0);\n        goto LAB_00100453;\n      }\n    }\n  }\nLAB_001004ea:\n  usage(1);\n  goto LAB_001004f4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "validate_file_name",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "pathchk_decompiled.c"
+                }
+            },
+            {
+                "func_name": "no_leading_hyphen",
+                "func_c_signature": "undefined8 no_leading_hyphen(char *param_1)",
+                "decompiled_code": "undefined8 no_leading_hyphen(char *param_1) {\n  undefined8 uVar1;\n  undefined8 uVar2;\n  char *local_28;\n  \n  local_28 = param_1;\n  while( true ) {\n    local_28 = strchr(local_28,0x2d);\n    if (local_28 == (char *)0x0) {\n      return 1;\n    }\n    if ((local_28 == param_1) || (local_28[-1] == '/')) break;\n    local_28 = local_28 + 1;\n  }\n  uVar1 = quotearg_style(4,param_1);\n  uVar2 = gettext(\"leading \\'-\\' in a component of file name %s\");\n  error(0,0,uVar2,uVar1);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "no_leading_hyphen",
+                        "strchr",
+                        "quotearg_style",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "no_leading_hyphen",
+                        "validate_file_name"
+                    ],
+                    "defined_in_file": "pathchk_decompiled.c"
+                }
+            },
+            {
+                "func_name": "portable_chars_only",
+                "func_c_signature": "undefined8 portable_chars_only(char *param_1,long param_2)",
+                "decompiled_code": "undefined8 portable_chars_only(char *param_1,long param_2) {\n  size_t sVar1;\n  char *pcVar2;\n  ulong uVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  long in_FS_OFFSET;\n  undefined local_28 [8];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  sVar1 = strspn(param_1,\"/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-\");\n  pcVar2 = param_1 + sVar1;\n  if (*pcVar2 == '\\0') {\n    uVar4 = 1;\n  }\n  else {\n    mbszero(local_28);\n    uVar3 = rpl_mbrlen(pcVar2,param_2 - sVar1,local_28);\n    uVar4 = quotearg_n_style(0,4,param_1);\n    if (0x10 < uVar3) {\n      uVar3 = 1;\n    }\n    uVar5 = quotearg_n_style_mem(1,8,pcVar2,uVar3);\n    uVar6 = gettext(\"non-portable character %s in file name %s\");\n    error(0,0,uVar6,uVar5,uVar4);\n    uVar4 = 0;\n  }\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return uVar4;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "portable_chars_only",
+                        "strspn",
+                        "mbszero",
+                        "rpl_mbrlen",
+                        "quotearg_n_style",
+                        "quotearg_n_style_mem",
+                        "gettext",
+                        "error",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "portable_chars_only",
+                        "validate_file_name"
+                    ],
+                    "defined_in_file": "pathchk_decompiled.c"
+                }
+            },
+            {
+                "func_name": "component_start",
+                "func_c_signature": "char * component_start(char *param_1)",
+                "decompiled_code": "char * component_start(char *param_1) {\n  char *local_10;\n  \n  for (local_10 = param_1; *local_10 == '/'; local_10 = local_10 + 1) {\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "component_start"
+                    ],
+                    "calling_functions": [
+                        "component_start",
+                        "validate_file_name"
+                    ],
+                    "defined_in_file": "pathchk_decompiled.c"
+                }
+            },
+            {
+                "func_name": "component_len",
+                "func_c_signature": "long component_len(long param_1)",
+                "decompiled_code": "long component_len(long param_1) {\n  long local_10;\n  \n  for (local_10 = 1;\n      (*(char *)(local_10 + param_1) != '/' && (*(char *)(local_10 + param_1) != '\\0'));\n      local_10 = local_10 + 1) {\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "component_len"
+                    ],
+                    "calling_functions": [
+                        "component_len",
+                        "validate_file_name"
+                    ],
+                    "defined_in_file": "pathchk_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_file_name",
+                "func_c_signature": "undefined8 validate_file_name(char *param_1,char param_2,char param_3)",
+                "decompiled_code": "undefined8 validate_file_name(char *param_1,char param_2,char param_3) {\n  bool bVar1;\n  char cVar2;\n  int iVar3;\n  size_t sVar4;\n  undefined8 uVar5;\n  char *pcVar6;\n  undefined8 uVar7;\n  ulong uVar8;\n  int *piVar9;\n  long lVar10;\n  long in_FS_OFFSET;\n  char local_174;\n  char *local_140;\n  long local_138;\n  long local_130;\n  long local_128;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  sVar4 = strlen(param_1);\n  bVar1 = false;\n  if ((param_3 == '\\0') || (cVar2 = no_leading_hyphen(param_1), cVar2 == '\\x01')) {\n    if (((param_2 == '\\0') && (param_3 == '\\0')) || (sVar4 != 0)) {\n      if (param_2 == '\\0') {\n        iVar3 = lstat(param_1,&local_b8);\n        if (iVar3 == 0) {\n          bVar1 = true;\n        }\n        else {\n          piVar9 = __errno_location();\n          if ((*piVar9 != 2) || (sVar4 == 0)) {\n            uVar5 = quotearg_n_style_colon(0,3,param_1);\n            piVar9 = __errno_location();\n            error(0,*piVar9,&DAT_00101372,uVar5);\n            uVar5 = 0;\n            goto LAB_00100f35;\n          }\n        }\n      }\n      else {\n        cVar2 = portable_chars_only(param_1,sVar4);\n        if (cVar2 != '\\x01') {\n          uVar5 = 0;\n          goto LAB_00100f35;\n        }\n      }\n      if ((param_2 != '\\0') || ((!bVar1 && (0xff < (long)sVar4)))) {\n        if (param_2 == '\\0') {\n          if (*param_1 == '/') {\n            pcVar6 = \"/\";\n          }\n          else {\n            pcVar6 = \".\";\n          }\n          piVar9 = __errno_location();\n          *piVar9 = 0;\n          local_138 = pathconf(pcVar6,4);\n          if ((local_138 < 0) && (piVar9 = __errno_location(), *piVar9 != 0)) {\n            uVar5 = gettext(\"%s: unable to determine maximum file name length\");\n            piVar9 = __errno_location();\n            error(0,*piVar9,uVar5,pcVar6);\n            uVar5 = 0;\n            goto LAB_00100f35;\n          }\n        }\n        else {\n          local_138 = 0x100;\n        }\n        if (local_138 <= (long)sVar4) {\n          uVar5 = quotearg_style(4,param_1);\n          uVar7 = gettext(\"limit %td exceeded by length %td of file name %s\");\n          error(0,0,uVar7,local_138 + -1,sVar4,uVar5);\n          uVar5 = 0;\n          goto LAB_00100f35;\n        }\n      }\n      local_174 = param_2;\n      if ((param_2 != '\\x01') && (local_140 = param_1, !bVar1)) {\n        while (local_140 = (char *)component_start(local_140), *local_140 != '\\0') {\n          uVar8 = component_len(local_140);\n          if (0xe < uVar8) {\n            local_174 = '\\x01';\n            break;\n          }\n          local_140 = local_140 + uVar8;\n        }\n      }\n      if (local_174 != '\\0') {\n        local_130 = 0xe;\n        if (param_2 == '\\0') {\n          local_128 = 0;\n          local_140 = param_1;\n        }\n        else {\n          local_128 = 0xe;\n          local_140 = param_1;\n        }\n        while (local_140 = (char *)component_start(local_140), *local_140 != '\\0') {\n          if (local_128 == 0) {\n            pcVar6 = param_1;\n            if (local_140 == param_1) {\n              pcVar6 = \".\";\n            }\n            cVar2 = *local_140;\n            piVar9 = __errno_location();\n            *piVar9 = 0;\n            *local_140 = '\\0';\n            lVar10 = pathconf(pcVar6,3);\n            *local_140 = cVar2;\n            if (lVar10 < 0) {\n              piVar9 = __errno_location();\n              if (*piVar9 == 0) {\n                local_130 = 0x7fffffffffffffff;\n                lVar10 = local_130;\n              }\n              else {\n                if (*piVar9 != 2) {\n                  *local_140 = '\\0';\n                  uVar5 = quotearg_n_style_colon(0,3,pcVar6);\n                  piVar9 = __errno_location();\n                  error(0,*piVar9,&DAT_00101372,uVar5);\n                  *local_140 = cVar2;\n                  uVar5 = 0;\n                  goto LAB_00100f35;\n                }\n                local_128 = local_130;\n                lVar10 = local_130;\n              }\n            }\n          }\n          else {\n            local_130 = local_128;\n            lVar10 = local_130;\n          }\n          local_130 = lVar10;\n          lVar10 = component_len(local_140);\n          if (local_130 < lVar10) {\n            cVar2 = local_140[lVar10];\n            local_140[lVar10] = '\\0';\n            uVar5 = quote(local_140);\n            uVar7 = gettext(\"limit %td exceeded by length %td of file name component %s\");\n            error(0,0,uVar7,local_130,lVar10,uVar5);\n            local_140[lVar10] = cVar2;\n            uVar5 = 0;\n            goto LAB_00100f35;\n          }\n          local_140 = local_140 + lVar10;\n        }\n      }\n      uVar5 = 1;\n    }\n    else {\n      uVar5 = gettext(\"empty file name\");\n      error(0,0,uVar5);\n      uVar5 = 0;\n    }\n  }\n  else {\n    uVar5 = 0;\n  }\nLAB_00100f35:\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return uVar5;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_file_name",
+                        "strlen",
+                        "no_leading_hyphen",
+                        "lstat",
+                        "__errno_location",
+                        "quotearg_n_style_colon",
+                        "error",
+                        "portable_chars_only",
+                        "pathconf",
+                        "gettext",
+                        "quotearg_style",
+                        "component_start",
+                        "component_len",
+                        "quote",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "validate_file_name"
+                    ],
+                    "defined_in_file": "pathchk_decompiled.c"
+                }
+            }
+        ]
+    }
+}

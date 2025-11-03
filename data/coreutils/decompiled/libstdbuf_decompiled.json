@@ -1,0 +1,34 @@
+{
+    "file": "libstdbuf",
+    "decompiled_code": {
+        "libstdbuf.c": [
+            {
+                "func_name": "apply_mode",
+                "func_c_signature": "void apply_mode(FILE *param_1,undefined8 param_2,char *param_3)",
+                "decompiled_code": "void apply_mode(FILE *param_1,undefined8 param_2,char *param_3) {\n  int iVar1;\n  char *pcVar2;\n  long in_FS_OFFSET;\n  int local_34;\n  char *local_30;\n  char *local_28;\n  size_t local_20;\n  char *local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_28 = (char *)0x0;\n  local_20 = 0;\n  local_18 = getenv(param_3);\n  if (local_18 == (char *)0x0) goto LAB_00100196;\n  if (*local_18 == '0') {\n    local_34 = 2;\n  }\n  else if (*local_18 == 'L') {\n    local_34 = 1;\n  }\n  else {\n    local_34 = 0;\n    local_20 = __isoc23_strtoul(local_18,&local_30,10);\n    if ((local_20 == 0) || (*local_30 != '\\0')) {\n      pcVar2 = (char *)gettext(\"invalid buffering mode %s for %s\\n\");\n      fprintf(_stderr,pcVar2,local_18,param_2);\n      goto LAB_00100196;\n    }\n    if ((long)local_20 < 0) {\n      local_28 = (char *)0x0;\n    }\n    else {\n      local_28 = (char *)malloc(local_20);\n    }\n    if (local_28 == (char *)0x0) {\n      pcVar2 = (char *)gettext(\"failed to allocate a %lu byte stdio buffer\\n\");\n      fprintf(_stderr,pcVar2,local_20);\n      goto LAB_00100196;\n    }\n  }\n  iVar1 = setvbuf(param_1,local_28,local_34,local_20);\n  if (iVar1 != 0) {\n    pcVar2 = (char *)gettext(\"could not set buffering of %s to mode %s\\n\");\n    fprintf(_stderr,pcVar2,param_2,local_18);\n    free(local_28);\n  }\nLAB_00100196:\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "apply_mode",
+                        "getenv",
+                        "__isoc23_strtoul",
+                        "gettext",
+                        "fprintf",
+                        "malloc",
+                        "setvbuf",
+                        "free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "apply_mode",
+                        "stdbuf"
+                    ],
+                    "defined_in_file": "libstdbuf_decompiled.c"
+                }
+            }
+        ]
+    }
+}

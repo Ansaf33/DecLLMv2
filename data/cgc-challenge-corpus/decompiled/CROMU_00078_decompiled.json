@@ -1,0 +1,567 @@
+{
+    "file": "CROMU_00078",
+    "decompiled_code": {
+        "3dc.c": [
+            {
+                "func_name": "Push",
+                "func_c_signature": "void Push(int param_1,void *param_2)",
+                "decompiled_code": "void Push(int param_1,void *param_2) {\n  void *__dest;\n  uint local_10;\n  \n  if ((param_2 != (void *)0x0) && (param_1 != 0)) {\n    __dest = malloc(10);\n    memcpy(__dest,param_2,10);\n    for (local_10 = 0; local_10 < 0x19a; local_10 = local_10 + 1) {\n      if (*(int *)(param_1 + local_10 * 4) == 0) {\n        *(void **)(local_10 * 4 + param_1) = __dest;\n        return;\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "Push",
+                        "malloc",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "Push",
+                        "ReadFile"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "RunTask",
+                "func_c_signature": "void RunTask(int param_1,code *param_2,short param_3)",
+                "decompiled_code": "void RunTask(int param_1,code *param_2,short param_3) {\n  short local_10;\n  short local_e;\n  \n  local_e = 0x199;\n  local_10 = 0;\n  while (local_e != 0) {\n    (*param_2)(*(undefined4 *)(param_1 + local_10 * 4),(int)param_3);\n    local_10 = local_10 + 1;\n    local_e = local_e + -1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "RunTask"
+                    ],
+                    "calling_functions": [
+                        "RunTask",
+                        "menu"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReadFile",
+                "func_c_signature": "void ReadFile(undefined4 param_1)",
+                "decompiled_code": "void ReadFile(undefined4 param_1) {\n  undefined uVar1;\n  undefined2 uVar2;\n  undefined2 *__ptr;\n  int local_10;\n  \n  local_10 = 0x1000;\n  seed_prng(_DAT_4347c000);\n  while (0 < local_10) {\n    __ptr = (undefined2 *)malloc(10);\n    uVar2 = prng();\n    *__ptr = uVar2;\n    uVar2 = prng();\n    __ptr[1] = uVar2;\n    uVar2 = prng();\n    __ptr[2] = uVar2;\n    uVar1 = prng();\n    *(undefined *)(__ptr + 3) = uVar1;\n    uVar1 = prng();\n    *(undefined *)((int)__ptr + 7) = uVar1;\n    uVar1 = prng();\n    *(undefined *)(__ptr + 4) = uVar1;\n    uVar1 = prng();\n    *(undefined *)((int)__ptr + 9) = uVar1;\n    Push(param_1,__ptr);\n    local_10 = local_10 + -10;\n    free(__ptr);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReadFile",
+                        "seed_prng",
+                        "malloc",
+                        "prng",
+                        "Push",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "ReadFile",
+                        "menu"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "NewFile",
+                "func_c_signature": "void NewFile(int param_1,int param_2)",
+                "decompiled_code": "void NewFile(int param_1,int param_2) {\n  void *__dest;\n  ushort local_10;\n  ushort local_e;\n  \n  printf(\"Please submit your new file data ($d bytes):\\n\",0xffa);\n  receive_bytes(param_2,0xffa);\n  local_10 = 0;\n  for (local_e = 0; local_e < 0xffa; local_e = local_e + 10) {\n    __dest = *(void **)(param_1 + (uint)local_10 * 4);\n    memcpy(__dest,(void *)((uint)local_e + param_2),2);\n    memcpy((void *)((int)__dest + 2),(void *)((uint)(ushort)(local_e + 2) + param_2),2);\n    memcpy((void *)((int)__dest + 4),(void *)((uint)(ushort)(local_e + 4) + param_2),2);\n    memcpy((void *)((int)__dest + 6),(void *)((uint)(ushort)(local_e + 6) + param_2),1);\n    memcpy((void *)((int)__dest + 7),(void *)((uint)(ushort)(local_e + 7) + param_2),1);\n    memcpy((void *)((int)__dest + 8),(void *)((uint)(ushort)(local_e + 8) + param_2),1);\n    memcpy((void *)((int)__dest + 9),(void *)((uint)(ushort)(local_e + 9) + param_2),1);\n    local_10 = local_10 + 1;\n  }\n  printf(\"New file loaded\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "data"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "NewFile",
+                        "printf",
+                        "data",
+                        "receive_bytes",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "NewFile",
+                        "menu"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ShowPixel",
+                "func_c_signature": "void ShowPixel(short *param_1)",
+                "decompiled_code": "void ShowPixel(short *param_1) {\n  printf(\"XYZ:  ($d, $d, $d)\\n\",(int)*param_1,(int)param_1[1],(int)param_1[2]);\n  printf(\"RGBA: (#$02x$02x$02x$02x)\\n\",(uint)*(byte *)(param_1 + 3),\n         (uint)*(byte *)((int)param_1 + 7),(uint)*(byte *)(param_1 + 4),\n         (uint)*(byte *)((int)param_1 + 9));\n  printf(\"\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ShowPixel",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "ShowPixel",
+                        "menu"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CheckFile",
+                "func_c_signature": "void CheckFile(int param_1,short param_2)",
+                "decompiled_code": "void CheckFile(int param_1,short param_2) {\n  int local_20;\n  \n  if (param_1 != 0) {\n    for (local_20 = 0; local_20 < param_2; local_20 = local_20 + 1) {\n      printf(\"XYZ:  ($d, $d, $d)\\n\",(int)**(short **)(param_1 + local_20 * 4),\n             (int)*(short *)(*(int *)(param_1 + local_20 * 4) + 2),\n             (int)*(short *)(*(int *)(param_1 + local_20 * 4) + 4));\n      printf(\"RGBA: (#$02x$02x$02x$02x)\\n\",(uint)*(byte *)(*(int *)(param_1 + local_20 * 4) + 6),\n             (uint)*(byte *)(*(int *)(param_1 + local_20 * 4) + 7),\n             (uint)*(byte *)(*(int *)(param_1 + local_20 * 4) + 8),\n             (uint)*(byte *)(*(int *)(param_1 + local_20 * 4) + 9));\n      printf(\"\\n\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CheckFile",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "CheckFile",
+                        "menu"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "RotateX",
+                "func_c_signature": "void RotateX(int param_1,short param_2)",
+                "decompiled_code": "void RotateX(int param_1,short param_2) {\n  short sVar1;\n  short sVar2;\n  double dVar3;\n  double dVar4;\n  \n  sVar1 = degree_to_radian((int)param_2);\n  dVar4 = (double)sVar1;\n  dVar3 = cos(dVar4);\n  sVar1 = multiply((double)*(short *)(param_1 + 2),dVar3);\n  dVar3 = sin(dVar4);\n  sVar2 = multiply((double)*(short *)(param_1 + 4),dVar3);\n  *(short *)(param_1 + 2) = sVar1 - sVar2;\n  dVar3 = sin(dVar4);\n  sVar1 = multiply((double)*(short *)(param_1 + 2),dVar3);\n  dVar4 = cos(dVar4);\n  sVar2 = multiply((double)*(short *)(param_1 + 4),dVar4);\n  *(short *)(param_1 + 4) = sVar2 + sVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "RotateX",
+                        "degree_to_radian",
+                        "cos",
+                        "multiply",
+                        "sin"
+                    ],
+                    "calling_functions": [
+                        "RotateX"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "RotateY",
+                "func_c_signature": "void RotateY(short *param_1,short param_2)",
+                "decompiled_code": "void RotateY(short *param_1,short param_2) {\n  short sVar1;\n  short sVar2;\n  double dVar3;\n  double dVar4;\n  \n  sVar1 = degree_to_radian((int)param_2);\n  dVar4 = (double)sVar1;\n  dVar3 = sin(dVar4);\n  sVar1 = multiply((double)param_1[2],dVar3);\n  dVar3 = cos(dVar4);\n  sVar2 = multiply((double)*param_1,dVar3);\n  *param_1 = sVar2 + sVar1;\n  dVar3 = cos(dVar4);\n  sVar1 = multiply((double)param_1[2],dVar3);\n  dVar4 = sin(dVar4);\n  sVar2 = multiply((double)*param_1,dVar4);\n  param_1[2] = sVar1 - sVar2;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "RotateY",
+                        "degree_to_radian",
+                        "sin",
+                        "multiply",
+                        "cos"
+                    ],
+                    "calling_functions": [
+                        "RotateY"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "RotateZ",
+                "func_c_signature": "void RotateZ(short *param_1,short param_2)",
+                "decompiled_code": "void RotateZ(short *param_1,short param_2) {\n  short sVar1;\n  short sVar2;\n  double dVar3;\n  double dVar4;\n  \n  sVar1 = degree_to_radian((int)param_2);\n  dVar4 = (double)sVar1;\n  dVar3 = cos(dVar4);\n  sVar1 = multiply((double)*param_1,dVar3);\n  dVar3 = sin(dVar4);\n  sVar2 = multiply((double)param_1[1],dVar3);\n  *param_1 = sVar1 - sVar2;\n  dVar3 = sin(dVar4);\n  sVar1 = multiply((double)*param_1,dVar3);\n  dVar4 = cos(dVar4);\n  sVar2 = multiply((double)param_1[1],dVar4);\n  param_1[1] = sVar2 + sVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "RotateZ",
+                        "degree_to_radian",
+                        "cos",
+                        "multiply",
+                        "sin"
+                    ],
+                    "calling_functions": [
+                        "RotateZ"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SkewX",
+                "func_c_signature": "void SkewX(short *param_1,short param_2)",
+                "decompiled_code": "void SkewX(short *param_1,short param_2) {\n  *param_1 = param_2 + *param_1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SkewX"
+                    ],
+                    "calling_functions": [
+                        "SkewX"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SkewY",
+                "func_c_signature": "void SkewY(int param_1,short param_2)",
+                "decompiled_code": "void SkewY(int param_1,short param_2) {\n  *(short *)(param_1 + 2) = param_2 + *(short *)(param_1 + 2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SkewY"
+                    ],
+                    "calling_functions": [
+                        "SkewY"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SkewZ",
+                "func_c_signature": "void SkewZ(int param_1,short param_2)",
+                "decompiled_code": "void SkewZ(int param_1,short param_2) {\n  *(short *)(param_1 + 4) = param_2 + *(short *)(param_1 + 4);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SkewZ"
+                    ],
+                    "calling_functions": [
+                        "SkewZ"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "Scale",
+                "func_c_signature": "void Scale(short *param_1,short param_2)",
+                "decompiled_code": "void Scale(short *param_1,short param_2) {\n  double dVar1;\n  short sVar2;\n  int iVar3;\n  int iVar4;\n  int iVar5;\n  \n  if ((0 < param_2) && (param_2 < 0xc9)) {\n    sVar2 = divide((double)param_2,DAT_00016070);\n    dVar1 = (double)sVar2;\n    iVar3 = multiply((double)*param_1,dVar1);\n    iVar4 = multiply((double)param_1[1],dVar1);\n    iVar5 = multiply((double)param_1[2],dVar1);\n    if (iVar3 < 0x10000) {\n      *param_1 = (short)iVar3;\n    }\n    else if (*param_1 < 0) {\n      *param_1 = -0x8000;\n    }\n    else {\n      *param_1 = 0x7fff;\n    }\n    if (iVar4 < 0x10000) {\n      param_1[1] = (short)iVar4;\n    }\n    else if (param_1[1] < 0) {\n      param_1[1] = -0x8000;\n    }\n    else {\n      param_1[1] = 0x7fff;\n    }\n    if (iVar5 < 0x10000) {\n      param_1[2] = (short)iVar5;\n    }\n    else if (param_1[2] < 0) {\n      param_1[2] = -0x8000;\n    }\n    else {\n      param_1[2] = 0x7fff;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "Scale",
+                        "divide",
+                        "multiply"
+                    ],
+                    "calling_functions": [
+                        "Scale"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "Brightness",
+                "func_c_signature": "void Brightness(int param_1,short param_2)",
+                "decompiled_code": "void Brightness(int param_1,short param_2) {\n  short sVar1;\n  short sVar2;\n  \n  if ((-0x100 < param_2) && (param_2 < 0x100)) {\n    sVar1 = param_2 + (ushort)*(byte *)(param_1 + 6);\n    sVar2 = param_2 + (ushort)*(byte *)(param_1 + 7);\n    param_2 = param_2 + (ushort)*(byte *)(param_1 + 8);\n    if (sVar1 < 0x100) {\n      if (sVar1 < 0) {\n        *(undefined *)(param_1 + 6) = 0;\n      }\n      else {\n        *(char *)(param_1 + 6) = (char)sVar1;\n      }\n    }\n    else {\n      *(undefined *)(param_1 + 6) = 0xff;\n    }\n    if (sVar2 < 0x100) {\n      if (sVar2 < 0) {\n        *(undefined *)(param_1 + 7) = 0;\n      }\n      else {\n        *(char *)(param_1 + 7) = (char)sVar2;\n      }\n    }\n    else {\n      *(undefined *)(param_1 + 7) = 0xff;\n    }\n    if (param_2 < 0x100) {\n      if (param_2 < 0) {\n        *(undefined *)(param_1 + 8) = 0;\n      }\n      else {\n        *(char *)(param_1 + 8) = (char)param_2;\n      }\n    }\n    else {\n      *(undefined *)(param_1 + 8) = 0xff;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "Brightness"
+                    ],
+                    "calling_functions": [
+                        "Brightness"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "Opacity",
+                "func_c_signature": "void Opacity(int param_1,undefined param_2)",
+                "decompiled_code": "void Opacity(int param_1,undefined param_2) {\n  *(undefined *)(param_1 + 9) = param_2;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "Opacity"
+                    ],
+                    "calling_functions": [
+                        "Opacity"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "multiply",
+                "func_c_signature": "int multiply(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)",
+                "decompiled_code": "int multiply(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4) {\n  return (int)ROUND((double)CONCAT44(param_2,param_1) * (double)CONCAT44(param_4,param_3));\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND",
+                    "CONCAT44"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "multiply",
+                        "ROUND",
+                        "CONCAT44"
+                    ],
+                    "calling_functions": [
+                        "RotateX",
+                        "RotateY",
+                        "RotateZ",
+                        "Scale",
+                        "multiply",
+                        "degree_to_radian"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "divide",
+                "func_c_signature": "short divide(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)",
+                "decompiled_code": "short divide(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4) {\n  return (short)ROUND((double)CONCAT44(param_2,param_1) / (double)CONCAT44(param_4,param_3));\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND",
+                    "CONCAT44"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "divide",
+                        "ROUND",
+                        "CONCAT44"
+                    ],
+                    "calling_functions": [
+                        "Scale",
+                        "divide",
+                        "degree_to_radian"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "degree_to_radian",
+                "func_c_signature": "void degree_to_radian(short param_1)",
+                "decompiled_code": "void degree_to_radian(short param_1) {\n  short sVar1;\n  \n  sVar1 = divide(_DAT_00016080,DAT_00016078);\n  multiply((double)param_1,(double)sVar1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "degree_to_radian",
+                        "divide",
+                        "multiply"
+                    ],
+                    "calling_functions": [
+                        "RotateX",
+                        "RotateY",
+                        "RotateZ",
+                        "degree_to_radian"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cosine",
+                "func_c_signature": "longdouble cosine(short param_1)",
+                "decompiled_code": "longdouble cosine(short param_1) {\n  double dVar1;\n  \n  dVar1 = cos((double)param_1);\n  return (longdouble)dVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cosine",
+                        "cos"
+                    ],
+                    "calling_functions": [
+                        "cosine"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sine",
+                "func_c_signature": "longdouble sine(short param_1)",
+                "decompiled_code": "longdouble sine(short param_1) {\n  double dVar1;\n  \n  dVar1 = sin((double)param_1);\n  return (longdouble)dVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sine",
+                        "sin"
+                    ],
+                    "calling_functions": [
+                        "sine"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            }
+        ],
+        "compress.c": [
+            {
+                "func_name": "ClosestMatch",
+                "func_c_signature": "byte ClosestMatch(char param_1,short param_2)",
+                "decompiled_code": "byte ClosestMatch(char param_1,short param_2) {\n  byte bVar1;\n  int iVar2;\n  int local_10;\n  byte local_b;\n  byte local_a;\n  byte local_9;\n  \n  local_9 = 0xff;\n  if ((param_1 == '\\0') || (param_1 == '\\x02')) {\n    bVar1 = 8;\n  }\n  else {\n    bVar1 = 4;\n  }\n  local_b = bVar1;\n  for (local_10 = 0; local_10 < (int)(uint)bVar1; local_10 = local_10 + 1) {\n    if ((param_1 == '\\0') || (param_1 == '\\x02')) {\n      iVar2 = (int)param_2 - *(int *)(red_blue + local_10 * 4);\n      if (iVar2 < 1) {\n        iVar2 = -iVar2;\n      }\n      local_a = (byte)iVar2;\n    }\n    else {\n      iVar2 = (int)param_2 - *(int *)(green + local_10 * 4);\n      if (iVar2 < 1) {\n        iVar2 = -iVar2;\n      }\n      local_a = (byte)iVar2;\n    }\n    if (local_a < local_9) {\n      local_9 = local_a;\n      local_b = (byte)local_10;\n    }\n  }\n  return local_b;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ClosestMatch"
+                    ],
+                    "calling_functions": [
+                        "ClosestMatch",
+                        "Compress"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "Compress",
+                "func_c_signature": "void Compress(int param_1,int param_2,void *param_3)",
+                "decompiled_code": "void Compress(int param_1,int param_2,void *param_3) {\n  char cVar1;\n  uint uVar2;\n  ushort local_1e;\n  char local_1b;\n  ushort local_1a;\n  void *local_18;\n  undefined local_11;\n  int local_10;\n  \n  if (param_1 != 0) {\n    local_1b = '\\0';\n    local_11 = 0;\n    local_18 = (void *)0x0;\n    local_1a = 0xb2f;\n    local_10 = 0;\n    for (local_1e = 0; local_1e < local_1a; local_1e = local_1e + 1) {\n      local_1b = '\\0';\n      local_18 = *(void **)(param_1 + local_10 * 4);\n      local_10 = local_10 + 1;\n      uVar2 = ClosestMatch(0,*(undefined *)((int)local_18 + 6));\n      local_1b = local_1b + (char)((uVar2 & 0xff) << 5);\n      uVar2 = ClosestMatch(1,*(undefined *)((int)local_18 + 7));\n      local_1b = local_1b + (char)((uVar2 & 0xff) << 3);\n      cVar1 = ClosestMatch(2,*(undefined *)((int)local_18 + 8));\n      local_1b = local_1b + cVar1;\n      memcpy((void *)(param_2 + (uint)local_1e),local_18,2);\n      local_1e = local_1e + 2;\n      memcpy((void *)(param_2 + (uint)local_1e),(void *)((int)local_18 + 2),2);\n      local_1e = local_1e + 2;\n      memcpy((void *)(param_2 + (uint)local_1e),(void *)((int)local_18 + 4),2);\n      local_1e = local_1e + 2;\n      memcpy((void *)((uint)local_1e + param_2),&local_1b,1);\n    }\n    memcpy(param_3,&local_1e,2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "Compress",
+                        "ClosestMatch",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "Compress",
+                        "menu"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "Decompress",
+                "func_c_signature": "void Decompress(int param_1,int param_2,ushort *param_3)",
+                "decompiled_code": "void Decompress(int param_1,int param_2,ushort *param_3) {\n  int iVar1;\n  int local_1c;\n  byte local_18;\n  byte local_17;\n  byte local_16;\n  byte local_15;\n  undefined4 local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  local_1c = 0;\n  local_14 = 0;\n  while (local_10 < *param_3) {\n    memcpy((void *)(param_2 + local_1c),(void *)(param_1 + local_10),2);\n    local_1c = local_1c + 2;\n    local_10 = local_10 + 2;\n    memcpy((void *)(param_2 + local_1c),(void *)(param_1 + local_10),2);\n    local_1c = local_1c + 2;\n    local_10 = local_10 + 2;\n    memcpy((void *)(param_2 + local_1c),(void *)(param_1 + local_10),2);\n    iVar1 = local_10 + 2;\n    local_10 = local_10 + 3;\n    local_15 = *(byte *)(iVar1 + param_1);\n    local_16 = local_15 >> 5;\n    local_17 = local_15 >> 3 & 3;\n    local_18 = local_15 & 7;\n    *(char *)(local_1c + 2 + param_2) = (char)*(undefined4 *)(red_blue + (uint)local_16 * 4);\n    *(char *)(local_1c + 3 + param_2) = (char)*(undefined4 *)(green + (uint)local_17 * 4);\n    iVar1 = local_1c + 5;\n    *(char *)(local_1c + 4 + param_2) = (char)*(undefined4 *)(red_blue + (uint)local_18 * 4);\n    local_1c = local_1c + 6;\n    *(undefined *)(iVar1 + param_2) = 0xff;\n  }\n  memcpy(param_3,&local_1c,2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "Decompress",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "Decompress",
+                        "menu"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "WriteOut",
+                "func_c_signature": "void WriteOut(int param_1,int param_2,ushort param_3)",
+                "decompiled_code": "void WriteOut(int param_1,int param_2,ushort param_3) {\n  int iVar1;\n  ushort local_10;\n  ushort local_e;\n  \n  if (param_1 != 0) {\n    local_10 = 0;\n    for (local_e = 0; local_e < param_3; local_e = local_e + 10) {\n      iVar1 = *(int *)(param_1 + (uint)local_10 * 4);\n      memcpy((void *)(iVar1 + 6),(void *)((uint)(ushort)(local_e + 6) + param_2),1);\n      memcpy((void *)(iVar1 + 7),(void *)((uint)(ushort)(local_e + 7) + param_2),1);\n      memcpy((void *)(iVar1 + 8),(void *)((uint)(ushort)(local_e + 8) + param_2),1);\n      *(undefined *)(iVar1 + 9) = 0xff;\n      local_10 = local_10 + 1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "WriteOut",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "WriteOut",
+                        "menu"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "menu",
+                "func_c_signature": "void menu(void)",
+                "decompiled_code": "void menu(void) {\n  ushort local_2826;\n  undefined local_2824 [3072];\n  undefined local_1c24 [3072];\n  undefined local_1024 [4096];\n  ushort local_24;\n  char local_22;\n  byte local_21;\n  void *local_20;\n  void *local_1c;\n  void *local_18;\n  ushort local_14;\n  char local_11;\n  int local_10;\n  \n  local_10 = 0;\n  local_2826 = 0;\n  local_11 = '\\0';\n  local_14 = 0x199;\n  local_18 = malloc(0x664);\n  memset(local_18,0,(uint)local_14 << 2);\n  ReadFile(local_18);\n  do {\n    if (local_21 == 0) {\n      free(local_18);\n      return;\n    }\n    receive_bytes(&local_21,1);\n                    /* WARNING: Could not find normalized switch variable to match jumptable */\n    switch(local_21) {\n    case 1:\n      printf(\"NEW_FILE selected\\n\");\n      memset(local_1024,0,0x1000);\n      NewFile(local_18,local_1024);\n      break;\n    case 2:\n      printf(\"CHECK_FILE selected\\n\");\n      CheckFile(local_18,0x199);\n      break;\n    case 3:\n      printf(\"SKEW_IMAGE selected\\n\");\n      receive_bytes(&local_22,1);\n      receive_bytes(&local_24,2);\n      if (local_22 != '\\x02') {\n        if (local_22 < '\\x03') {\n          if (local_22 == '\\0') {\n            RunTask(local_18,SkewX,(int)(short)local_24);\n            break;\n          }\n          if (local_22 == '\\x01') {\n            RunTask(local_18,SkewY,(int)(short)local_24);\n            break;\n          }\n        }\n        printf(\"Incorrect coordinate provided.\\n\");\n        break;\n      }\n      RunTask(local_18,SkewZ,(int)(short)local_24);\n      break;\n    case 4:\n      printf(\"ROTATE_IMAGE selected\\n\");\n      receive_bytes(&local_22,1);\n      receive_bytes(&local_24,2);\n      if (local_22 != '\\x02') {\n        if (local_22 < '\\x03') {\n          if (local_22 == '\\0') {\n            RunTask(local_18,RotateX,(int)(short)local_24);\n            break;\n          }\n          if (local_22 == '\\x01') {\n            RunTask(local_18,RotateY,(int)(short)local_24);\n            break;\n          }\n        }\n        printf(\"Incorrect coordinate provided.\\n\");\n        break;\n      }\n      RunTask(local_18,RotateZ,(int)(short)local_24);\n      break;\n    case 5:\n      printf(\"BRIGHTNESS selected\\n\");\n      receive_bytes(&local_24,2);\n      RunTask(local_18,Brightness,(int)(short)local_24);\n      break;\n    case 6:\n      printf(\"OPACITY selected\\n\");\n      receive_bytes(&local_24,1);\n      RunTask(local_18,Opacity,(int)(short)local_24);\n      break;\n    case 7:\n      printf(\"COMPRESS selected\\n\");\n      Compress(local_18,local_2824,&local_2826);\n      local_11 = '\\0';\n      break;\n    case 8:\n      printf(\"DECOMPRESS selected\\n\");\n      if (local_2826 == 0) {\n        printf(\"No compressed data.\\n\");\n      }\n      else if (local_11 == '\\0') {\n        local_20 = malloc(0xffa);\n        Decompress(local_2824,local_20,&local_2826);\n        WriteOut(local_18,local_20,local_2826);\n        memcpy(local_1c24,local_20,(uint)local_2826);\n        free(local_20);\n        local_11 = '\\x01';\n      }\n      else {\n        printf(\"You have already decompressed the latest data.\\n\");\n      }\n      break;\n    case 9:\n      printf(\"SHOW_PIXEL selected\\n\");\n      printf(\"Select the pixel to view:\\n\");\n      receive_bytes(&local_24,2);\n      if (local_24 < local_14) {\n        local_1c = malloc(10);\n        memcpy(local_1c,*(void **)((int)local_18 + (uint)local_24 * 4),10);\n        ShowPixel(local_1c);\n        local_10 = *(int *)((int)local_18 + (uint)local_24 * 4);\n        free(local_1c);\n      }\n      else if (local_10 == 0) {\n        printf(\"No pixel to show.\\n\\n\\n\\n\");\n      }\n      else {\n        printf(\"Out of range. Showing last displayed pixel.\\n\");\n        ShowPixel(local_10);\n      }\n      break;\n    case 10:\n      printf(\"SCALE_IMAGE selected\\n\");\n      receive_bytes(&local_24,2);\n      RunTask(local_18,Scale,(int)(short)local_24);\n      break;\n    case 0xb:\n      printf(\"EXIT selected\\n\");\n      local_21 = 0;\n      free(local_18);\n      return;\n    default:\n      printf(\"UNKNOWN command\\n\");\n      local_21 = 0;\n      free(local_18);\n      return;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "menu",
+                        "malloc",
+                        "memset",
+                        "ReadFile",
+                        "free",
+                        "receive_bytes",
+                        "printf",
+                        "NewFile",
+                        "CheckFile",
+                        "RunTask",
+                        "Compress",
+                        "Decompress",
+                        "WriteOut",
+                        "memcpy",
+                        "ShowPixel"
+                    ],
+                    "calling_functions": [
+                        "menu",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  undefined *puVar1;\n  \n  puVar1 = &stack0x00000004;\n  printf(\"3D Coordinates (3DC) Image File Format Tools\\n\");\n  menu(puVar1);\n  return 0;\n}",
+                "globals": [],
+                "externs": [
+                    "Coordinates"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "printf",
+                        "Coordinates",
+                        "menu"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00078_decompiled.c"
+                }
+            }
+        ]
+    }
+}

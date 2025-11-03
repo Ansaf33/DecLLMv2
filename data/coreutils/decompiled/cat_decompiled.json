@@ -1,0 +1,216 @@
+{
+    "file": "cat",
+    "decompiled_code": {
+        "cat.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [FILE]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"Concatenate FILE(s) to standard output.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_stdin_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\n  -A, --show-all           equivalent to -vET\\n  -b, --number-nonblank    number nonempty output lines, overrides -n\\n  -e                       equivalent to -vE\\n  -E, --show-ends          display $ at end of each line\\n  -n, --number             number all output lines\\n  -s, --squeeze-blank      suppress repeated empty output lines\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -t                       equivalent to -vT\\n  -T, --show-tabs          display TAB characters as ^I\\n  -u                       (ignored)\\n  -v, --show-nonprinting   use ^ and M- notation, except for LFD and TAB\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    uVar2 = _program_name;\n    pcVar3 = (char *)gettext(\n                            \"\\nExamples:\\n  %s f - g  Output f\\'s contents, then standard input, then g\\'s contents.\\n  %s        Copy standard input to standard output.\\n\"\n                            );\n    printf(pcVar3,uVar2,uVar2);\n    emit_ancillary_info(&DAT_00101fc9);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "FILE",
+                    "u"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "FILE",
+                        "fputs_unlocked",
+                        "emit_stdin_note",
+                        "u",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "cat_decompiled.c"
+                }
+            },
+            {
+                "func_name": "next_line_num",
+                "func_c_signature": "void next_line_num(void)",
+                "decompiled_code": "void next_line_num(void) {\n  char *pcVar1;\n  char cVar2;\n  char *local_10;\n  \n  local_10 = line_num_end;\n  do {\n    cVar2 = *local_10;\n    *local_10 = cVar2 + '\\x01';\n    if (cVar2 < '9') {\n      return;\n    }\n    pcVar1 = local_10 + -1;\n    *local_10 = '0';\n    local_10 = pcVar1;\n  } while (line_num_start <= pcVar1);\n  if (line_num_start < line_buf + 1) {\n    line_buf[0] = 0x3e;\n  }\n  else {\n    line_num_start = line_num_start + -1;\n    *line_num_start = '1';\n  }\n  if (line_num_start < line_num_print) {\n    line_num_print = line_num_print + -1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "next_line_num"
+                    ],
+                    "calling_functions": [
+                        "next_line_num",
+                        "cat"
+                    ],
+                    "defined_in_file": "cat_decompiled.c"
+                }
+            },
+            {
+                "func_name": "simple_cat",
+                "func_c_signature": "undefined8 simple_cat(void *param_1,size_t param_2)",
+                "decompiled_code": "undefined8 simple_cat(void *param_1,size_t param_2) {\n  ssize_t sVar1;\n  undefined8 uVar2;\n  int *piVar3;\n  long lVar4;\n  \n  while( true ) {\n    sVar1 = read(input_desc,param_1,param_2);\n    if (sVar1 < 0) {\n      uVar2 = quotearg_n_style_colon(0,3,infile);\n      piVar3 = __errno_location();\n      error(0,*piVar3,&DAT_00101fcd,uVar2);\n      return 0;\n    }\n    if (sVar1 == 0) break;\n    lVar4 = full_write(1,param_1,sVar1);\n    if (sVar1 != lVar4) {\n      write_error();\n    }\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "simple_cat",
+                        "read",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "full_write",
+                        "write_error"
+                    ],
+                    "calling_functions": [
+                        "simple_cat",
+                        "main"
+                    ],
+                    "defined_in_file": "cat_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write_pending",
+                "func_c_signature": "void write_pending(long param_1,long *param_2)",
+                "decompiled_code": "void write_pending(long param_1,long *param_2) {\n  long lVar1;\n  long lVar2;\n  \n  lVar1 = *param_2 - param_1;\n  if (0 < lVar1) {\n    lVar2 = full_write(1,param_1,lVar1);\n    if (lVar1 != lVar2) {\n      write_error();\n    }\n    *param_2 = param_1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_pending",
+                        "full_write",
+                        "write_error"
+                    ],
+                    "calling_functions": [
+                        "write_pending",
+                        "cat"
+                    ],
+                    "defined_in_file": "cat_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cat",
+                "func_c_signature": "undefined8\ncat(byte *param_1,size_t param_2,byte *param_3,long param_4,char param_5,char param_6,char param_7,\n   char param_8,char param_9,char param_10)",
+                "decompiled_code": "undefined8\ncat(byte *param_1,size_t param_2,byte *param_3,long param_4,char param_5,char param_6,char param_7,\n   char param_8,char param_9,char param_10) {\n  byte *pbVar1;\n  bool bVar2;\n  int iVar3;\n  long lVar4;\n  int *piVar5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  long in_FS_OFFSET;\n  byte local_7b;\n  int local_78;\n  int local_74;\n  undefined4 local_70;\n  int local_6c;\n  undefined4 local_68;\n  int local_64;\n  byte *local_60;\n  byte *local_58;\n  byte *local_50;\n  byte *local_48;\n  size_t local_40;\n  ssize_t local_38;\n  undefined8 local_30;\n  undefined *local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_74 = newlines2;\n  bVar2 = true;\n  local_50 = param_1 + 1;\n  local_60 = param_3;\n  local_58 = param_1;\nLAB_00100817:\n  do {\n    pbVar1 = param_3;\n    if (param_3 + param_4 <= local_60) {\n      do {\n        local_48 = pbVar1;\n        lVar4 = full_write(1,local_48,param_4);\n        if (param_4 != lVar4) {\n          write_error();\n        }\n        local_48 = local_48 + param_4;\n        local_40 = (long)local_60 - (long)local_48;\n        pbVar1 = local_48;\n      } while (param_4 <= (long)local_40);\n      memmove(param_3,local_48,local_40);\n      local_60 = param_3 + local_40;\n    }\n    if (local_58 < local_50) {\n      local_78 = 0;\n      if ((bVar2) && (iVar3 = ioctl(input_desc,0x541b,&local_78), iVar3 < 0)) {\n        piVar5 = __errno_location();\n        if (((*piVar5 != 0x5f) &&\n            (((piVar5 = __errno_location(), *piVar5 != 0x19 &&\n              (piVar5 = __errno_location(), *piVar5 != 0x16)) &&\n             (piVar5 = __errno_location(), *piVar5 != 0x13)))) &&\n           (piVar5 = __errno_location(), *piVar5 != 0x26)) {\n          uVar7 = quotearg_style(4,infile);\n          uVar6 = gettext(\"cannot do ioctl on %s\");\n          piVar5 = __errno_location();\n          local_6c = *piVar5;\n          local_70 = 0;\n          local_30 = uVar6;\n          error(0,local_6c,uVar6,uVar7);\n          uVar7 = 0;\n          goto LAB_00100e23;\n        }\n        bVar2 = false;\n      }\n      if (local_78 == 0) {\n        write_pending(param_3,&local_60);\n      }\n      local_38 = read(input_desc,param_1,param_2);\n      if (local_38 < 0) {\n        uVar7 = quotearg_n_style_colon(0,3,infile);\n        piVar5 = __errno_location();\n        local_64 = *piVar5;\n        local_68 = 0;\n        local_28 = &DAT_00101fcd;\n        error(0,local_64,&DAT_00101fcd,uVar7);\n        write_pending(param_3,&local_60);\n        uVar7 = 0;\n        goto LAB_00100e23;\n      }\n      if (local_38 == 0) {\n        write_pending(param_3,&local_60);\n        uVar7 = 1;\nLAB_00100e23:\n        if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n          newlines2 = local_74;\n                    /* WARNING: Subroutine does not return */\n          __stack_chk_fail();\n        }\n        newlines2 = local_74;\n        return uVar7;\n      }\n      local_58 = param_1 + local_38;\n      *local_58 = 10;\n      local_50 = param_1;\nLAB_00100b93:\n      local_7b = *local_50;\n    }\n    else {\n      local_74 = local_74 + 1;\n      if (local_74 < 1) {\nLAB_00100b3c:\n        if (param_9 != '\\0') {\n          if (pending_cr != '\\0') {\n            pbVar1 = local_60 + 1;\n            *local_60 = 0x5e;\n            local_60 = local_60 + 2;\n            *pbVar1 = 0x4d;\n            pending_cr = '\\0';\n          }\n          *local_60 = 0x24;\n          local_60 = local_60 + 1;\n        }\n        *local_60 = 10;\n        local_60 = local_60 + 1;\n        goto LAB_00100b93;\n      }\n      if ((local_74 < 2) || (local_74 = 2, param_10 == '\\0')) {\n        if ((param_7 != '\\0') && (param_8 != '\\x01')) {\n          next_line_num();\n          local_60 = (byte *)stpcpy((char *)local_60,line_num_print);\n        }\n        goto LAB_00100b3c;\n      }\n      local_7b = *local_50;\n    }\n    local_50 = local_50 + 1;\n    if (local_7b != 10) {\n      if (pending_cr != '\\0') {\n        *local_60 = 0xd;\n        pending_cr = '\\0';\n        local_60 = local_60 + 1;\n      }\n      if ((-1 < local_74) && (param_7 != '\\0')) {\n        next_line_num();\n        local_60 = (byte *)stpcpy((char *)local_60,line_num_print);\n      }\n      if (param_5 == '\\0') {\n        do {\n          if ((local_7b == 9) && (param_6 != '\\0')) {\n            *local_60 = 0x5e;\n            local_60[1] = 0x49;\n            local_60 = local_60 + 2;\n          }\n          else {\n            if (local_7b == 10) goto LAB_00100e1e;\n            if (((local_7b == 0xd) && (*local_50 == 10)) && (param_9 != '\\0')) {\n              if (local_50 == local_58) {\n                pending_cr = '\\x01';\n              }\n              else {\n                *local_60 = 0x5e;\n                local_60[1] = 0x4d;\n                local_60 = local_60 + 2;\n              }\n            }\n            else {\n              *local_60 = local_7b;\n              local_60 = local_60 + 1;\n            }\n          }\n          local_7b = *local_50;\n          local_50 = local_50 + 1;\n        } while( true );\n      }\n      do {\n        if (local_7b < 0x20) {\n          if ((local_7b == 9) && (param_6 != '\\x01')) {\n            *local_60 = 9;\n            local_60 = local_60 + 1;\n          }\n          else {\n            if (local_7b == 10) goto LAB_00100e1e;\n            pbVar1 = local_60 + 1;\n            *local_60 = 0x5e;\n            local_60 = local_60 + 2;\n            *pbVar1 = local_7b + 0x40;\n          }\n        }\n        else if (local_7b < 0x7f) {\n          *local_60 = local_7b;\n          local_60 = local_60 + 1;\n        }\n        else if (local_7b == 0x7f) {\n          *local_60 = 0x5e;\n          local_60[1] = 0x3f;\n          local_60 = local_60 + 2;\n        }\n        else {\n          *local_60 = 0x4d;\n          pbVar1 = local_60 + 2;\n          local_60[1] = 0x2d;\n          if (local_7b < 0xa0) {\n            *pbVar1 = 0x5e;\n            local_60[3] = local_7b - 0x40;\n            local_60 = local_60 + 4;\n          }\n          else if (local_7b == 0xff) {\n            *pbVar1 = 0x5e;\n            local_60[3] = 0x3f;\n            local_60 = local_60 + 4;\n          }\n          else {\n            *pbVar1 = local_7b + 0x80;\n            local_60 = local_60 + 3;\n          }\n        }\n        local_7b = *local_50;\n        local_50 = local_50 + 1;\n      } while( true );\n    }\n  } while( true );\nLAB_00100e1e:\n  local_74 = -1;\n  goto LAB_00100817;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cat",
+                        "full_write",
+                        "write_error",
+                        "memmove",
+                        "ioctl",
+                        "__errno_location",
+                        "quotearg_style",
+                        "gettext",
+                        "error",
+                        "write_pending",
+                        "read",
+                        "quotearg_n_style_colon",
+                        "__stack_chk_fail",
+                        "next_line_num",
+                        "stpcpy"
+                    ],
+                    "calling_functions": [
+                        "cat",
+                        "main"
+                    ],
+                    "defined_in_file": "cat_decompiled.c"
+                }
+            },
+            {
+                "func_name": "copy_cat",
+                "func_c_signature": "ulong copy_cat(void)",
+                "decompiled_code": "ulong copy_cat(void) {\n  char cVar1;\n  long lVar2;\n  int *piVar3;\n  undefined8 uVar4;\n  byte local_31;\n  \n  local_31 = 0;\n  while (lVar2 = rpl_copy_file_range(input_desc,0,1,0,0x7fffffffc0000000,0), lVar2 != -1) {\n    if (lVar2 == 0) {\n      return (ulong)local_31;\n    }\n    local_31 = 1;\n  }\n  piVar3 = __errno_location();\n  if (*piVar3 != 0x26) {\n    piVar3 = __errno_location();\n    cVar1 = is_ENOTSUP(*piVar3);\n    if ((((cVar1 == '\\0') && (piVar3 = __errno_location(), *piVar3 != 0x16)) &&\n        (piVar3 = __errno_location(), *piVar3 != 9)) &&\n       (((piVar3 = __errno_location(), *piVar3 != 0x12 &&\n         (piVar3 = __errno_location(), *piVar3 != 0x1a)) &&\n        (piVar3 = __errno_location(), *piVar3 != 1)))) {\n      uVar4 = quotearg_n_style_colon(0,3,infile);\n      piVar3 = __errno_location();\n      error(0,*piVar3,&DAT_00101fcd,uVar4);\n      return 0xffffffff;\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copy_cat",
+                        "rpl_copy_file_range",
+                        "__errno_location",
+                        "is_ENOTSUP",
+                        "quotearg_n_style_colon",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "copy_cat",
+                        "main"
+                    ],
+                    "defined_in_file": "cat_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  ulong uVar2;\n  ulong uVar3;\n  char cVar4;\n  byte bVar5;\n  int iVar6;\n  uint uVar7;\n  undefined8 uVar8;\n  int *piVar9;\n  long lVar10;\n  long lVar11;\n  long lVar12;\n  __off_t _Var13;\n  __off_t _Var14;\n  undefined8 uVar15;\n  long lVar16;\n  long in_FS_OFFSET;\n  bool bVar17;\n  char local_182;\n  undefined local_181;\n  char local_180;\n  char local_17f;\n  char local_17e;\n  char local_17d;\n  bool local_17c;\n  uint local_174;\n  int local_170;\n  long local_130;\n  undefined8 local_128;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  bVar1 = false;\n  local_182 = '\\0';\n  local_181 = 0;\n  local_180 = '\\0';\n  local_17f = '\\0';\n  local_17e = '\\0';\n  local_17d = '\\0';\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\nLAB_001011c7:\n  iVar6 = getopt_long(param_1,param_2,\"benstuvAET\",long_options_0,0);\n  if (iVar6 != -1) {\n    if (iVar6 < 0x77) {\n      if (iVar6 < 0x41) {\n        if (iVar6 == -0x83) {\nLAB_0010113e:\n          uVar8 = proper_name_lite(\"Richard M. Stallman\",\"Richard M. Stallman\");\n          uVar15 = proper_name_lite(\"Torbjorn Granlund\",&DAT_00102012);\n          version_etc(_stdout,&DAT_00101fc9,\"GNU coreutils\",_Version,uVar15,uVar8,0);\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (iVar6 == -0x82) {\n          usage(0);\n          goto LAB_0010113e;\n        }\n        goto switchD_001010a2_caseD_42;\n      }\n      goto code_r0x00101082;\n    }\n    goto switchD_001010a2_caseD_42;\n  }\n  iVar6 = fstat(1,&local_b8);\n  if (iVar6 < 0) {\n    uVar8 = gettext(\"standard output\");\n    piVar9 = __errno_location();\n    error(1,*piVar9,uVar8);\n  }\n  lVar10 = io_blksize(&local_b8);\n  uVar3 = local_b8.st_ino;\n  uVar2 = local_b8.st_dev;\n  local_174 = 0xfffffffe;\n  uVar7 = local_b8.st_mode & 0xf000;\n  if (((local_182 != '\\x01') && (local_17f != '\\x01')) && (local_180 != '\\x01')) {\n    xset_binary_mode(1,0);\n  }\n  infile = \"-\";\n  local_170 = _optind;\n  local_17c = true;\n  iVar6 = getpagesize();\n  lVar11 = (long)iVar6;\n  do {\n    if (local_170 < param_1) {\n      infile = (char *)param_2[local_170];\n    }\n    cVar4 = streq(infile,&DAT_00102060);\n    if (cVar4 == '\\0') {\n      input_desc = open(infile,0);\n      if (-1 < input_desc) goto LAB_00101448;\n      uVar8 = quotearg_n_style_colon(0,3,infile);\n      piVar9 = __errno_location();\n      error(0,*piVar9,&DAT_00101fcd,uVar8);\n      local_17c = false;\n    }\n    else {\n      bVar1 = true;\n      input_desc = 0;\nLAB_00101448:\n      iVar6 = fstat(input_desc,&local_b8);\n      if (iVar6 < 0) {\n        uVar8 = quotearg_n_style_colon(0,3,infile);\n        piVar9 = __errno_location();\n        error(0,*piVar9,&DAT_00101fcd,uVar8);\n        local_17c = false;\n      }\n      else {\n        lVar12 = io_blksize(&local_b8);\n        fdadvise(input_desc,0,0,2);\n        if ((((local_b8.st_mode & 0xf000) != 0x1000) && ((local_b8.st_mode & 0xf000) != 0xc000)) &&\n           (((uVar3 ^ local_b8.st_ino | local_b8.st_dev ^ uVar2) == 0 &&\n            (_Var13 = lseek(input_desc,0,1), -1 < _Var13)))) {\n          if ((int)local_174 < -1) {\n            local_174 = rpl_fcntl(1,3);\n          }\n          if (((int)local_174 < 0) || ((local_174 & 0x400) == 0)) {\n            iVar6 = 1;\n          }\n          else {\n            iVar6 = 2;\n          }\n          _Var14 = lseek(1,0,iVar6);\n          if (_Var13 < _Var14) {\n            uVar8 = quotearg_n_style_colon(0,3,infile);\n            uVar15 = gettext(\"%s: input file is output file\");\n            error(0,0,uVar15,uVar8);\n            local_17c = false;\n            goto LAB_0010190e;\n          }\n        }\n        if ((((local_182 == '\\x01') || (local_17f == '\\x01')) || (local_17e == '\\x01')) ||\n           ((local_17d == '\\x01' || (local_180 == '\\x01')))) {\n          local_128 = xalignalloc(lVar11,lVar12 + 1);\n          local_130 = lVar12 * 4;\n          if ((SEXT816(local_130) != SEXT816(lVar12) * SEXT816(4)) ||\n             ((bVar17 = SCARRY8(lVar10,local_130), local_130 = lVar10 + local_130, bVar17 ||\n              (bVar17 = SCARRY8(local_130,0x13), local_130 = local_130 + 0x13, bVar17)))) {\n            xalloc_die();\n          }\n          uVar8 = xalignalloc(lVar11,local_130);\n          bVar5 = cat(local_128,lVar12,uVar8,lVar10,local_17e,local_17d,local_182,local_181,\n                      local_17f,local_180);\n          local_17c = (bVar5 & local_17c) != 0;\n          alignfree(uVar8);\n        }\n        else {\n          if ((uVar7 == 0x8000) && ((local_b8.st_mode & 0xf000) == 0x8000)) {\n            iVar6 = copy_cat();\n          }\n          else {\n            iVar6 = 0;\n          }\n          if (iVar6 == 0) {\n            lVar16 = lVar10;\n            if (lVar10 <= lVar12) {\n              lVar16 = lVar12;\n            }\n            local_128 = xalignalloc(lVar11,lVar16);\n            bVar5 = simple_cat(local_128,lVar16);\n            local_17c = (bVar5 & local_17c) != 0;\n          }\n          else {\n            local_128 = 0;\n            local_17c = (0 < iVar6 & local_17c) != 0;\n          }\n        }\n        alignfree(local_128);\n      }\nLAB_0010190e:\n      if ((cVar4 != '\\x01') && (iVar6 = close(input_desc), iVar6 < 0)) {\n        uVar8 = quotearg_n_style_colon(0,3,infile);\n        piVar9 = __errno_location();\n        error(0,*piVar9,&DAT_00101fcd,uVar8);\n        local_17c = false;\n      }\n    }\n    local_170 = local_170 + 1;\n    if (param_1 <= local_170) {\n      if ((pending_cr != '\\0') && (lVar10 = full_write(1,&DAT_00102080,1), lVar10 != 1)) {\n        write_error();\n      }\n      if ((bVar1) && (iVar6 = close(0), iVar6 < 0)) {\n        uVar8 = gettext(\"closing standard input\");\n        piVar9 = __errno_location();\n        error(1,*piVar9,uVar8);\n      }\n      if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n        return local_17c ^ 1;\n      }\n                    /* WARNING: Subroutine does not return */\n      __stack_chk_fail();\n    }\n  } while( true );\ncode_r0x00101082:\n  switch(iVar6) {\n  case 0x41:\n    local_17e = '\\x01';\n    local_17f = '\\x01';\n    local_17d = '\\x01';\n    break;\n  default:\nswitchD_001010a2_caseD_42:\n    usage(1);\n    break;\n  case 0x45:\n    local_17f = '\\x01';\n    break;\n  case 0x54:\n    local_17d = '\\x01';\n    break;\n  case 0x62:\n    local_182 = '\\x01';\n    local_181 = 1;\n    break;\n  case 0x65:\n    local_17f = '\\x01';\n    local_17e = '\\x01';\n    break;\n  case 0x6e:\n    local_182 = '\\x01';\n    break;\n  case 0x73:\n    local_180 = '\\x01';\n    break;\n  case 0x74:\n    local_17d = '\\x01';\n    local_17e = '\\x01';\n    break;\n  case 0x75:\n    break;\n  case 0x76:\n    local_17e = '\\x01';\n  }\n  goto LAB_001011c7;\n}",
+                "globals": [],
+                "externs": [
+                    "SEXT816",
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage",
+                        "fstat",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "io_blksize",
+                        "xset_binary_mode",
+                        "getpagesize",
+                        "streq",
+                        "open",
+                        "quotearg_n_style_colon",
+                        "fdadvise",
+                        "lseek",
+                        "rpl_fcntl",
+                        "xalignalloc",
+                        "SEXT816",
+                        "SCARRY8",
+                        "xalloc_die",
+                        "cat",
+                        "alignfree",
+                        "copy_cat",
+                        "simple_cat",
+                        "close",
+                        "full_write",
+                        "write_error",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "cat_decompiled.c"
+                }
+            }
+        ]
+    }
+}

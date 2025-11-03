@@ -1,0 +1,242 @@
+{
+    "file": "pwd",
+    "decompiled_code": {
+        "pwd.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"Print the full filename of the current working directory.\\n\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -L, --logical   use PWD from environment, even if it contains symlinks\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  -P, --physical  resolve all symlinks\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"\\nIf no option is specified, -P is assumed.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pcVar3 = (char *)gettext(\n                            \"\\nYour shell may have its own version of %s, which usually supersedes\\nthe version described here.  Please refer to your shell\\'s documentation\\nfor details about the options it supports.\\n\"\n                            );\n    printf(pcVar3,&DAT_001015b9);\n    emit_ancillary_info(&DAT_001015b9);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "pwd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "file_name_free",
+                "func_c_signature": "void file_name_free(void **param_1)",
+                "decompiled_code": "void file_name_free(void **param_1) {\n  free(*param_1);\n  free(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "file_name_free",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "file_name_free",
+                        "main"
+                    ],
+                    "defined_in_file": "pwd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "file_name_init",
+                "func_c_signature": "long * file_name_init(void)",
+                "decompiled_code": "long * file_name_init(void) {\n  long *plVar1;\n  long lVar2;\n  \n  plVar1 = (long *)xmalloc(0x18);\n  plVar1[1] = 0x2000;\n  lVar2 = xmalloc(0x2000);\n  *plVar1 = lVar2;\n  plVar1[2] = *plVar1 + 0x1fff;\n  *(undefined *)plVar1[2] = 0;\n  return plVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "file_name_init",
+                        "xmalloc"
+                    ],
+                    "calling_functions": [
+                        "file_name_init",
+                        "main"
+                    ],
+                    "defined_in_file": "pwd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "file_name_prepend",
+                "func_c_signature": "void file_name_prepend(void **param_1,void *param_2,ulong param_3)",
+                "decompiled_code": "void file_name_prepend(void **param_1,void *param_2,ulong param_3) {\n  void *pvVar1;\n  void *pvVar2;\n  ulong uVar3;\n  \n  uVar3 = (long)param_1[2] - (long)*param_1;\n  if (uVar3 < param_3 + 1) {\n    pvVar2 = param_1[1];\n    pvVar1 = (void *)xpalloc(0,param_1 + 1,(param_3 - uVar3) + 1,0xffffffffffffffff,1);\n    pvVar2 = memcpy((void *)((long)pvVar1 + ((long)param_1[1] - uVar3)),param_1[2],\n                    (long)pvVar2 - uVar3);\n    param_1[2] = pvVar2;\n    free(*param_1);\n    *param_1 = pvVar1;\n  }\n  param_1[2] = (void *)(~param_3 + (long)param_1[2]);\n  *(undefined *)param_1[2] = 0x2f;\n  memcpy((void *)((long)param_1[2] + 1),param_2,param_3);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "file_name_prepend",
+                        "xpalloc",
+                        "memcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "file_name_prepend",
+                        "find_dir_entry",
+                        "robust_getcwd"
+                    ],
+                    "defined_in_file": "pwd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "nth_parent",
+                "func_c_signature": "void * nth_parent(ulong param_1)",
+                "decompiled_code": "void * nth_parent(ulong param_1) {\n  void *pvVar1;\n  void *local_20;\n  ulong local_18;\n  \n  pvVar1 = (void *)xnmalloc(3,param_1);\n  local_20 = pvVar1;\n  for (local_18 = 0; local_18 < param_1; local_18 = local_18 + 1) {\n    memcpy(local_20,&DAT_001015bd,3);\n    local_20 = (void *)((long)local_20 + 3);\n  }\n  *(undefined *)((long)local_20 + -1) = 0;\n  return pvVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "nth_parent",
+                        "xnmalloc",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "nth_parent",
+                        "find_dir_entry"
+                    ],
+                    "defined_in_file": "pwd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_dir_entry",
+                "func_c_signature": "void find_dir_entry(__dev_t *param_1,undefined8 param_2,undefined8 param_3)",
+                "decompiled_code": "void find_dir_entry(__dev_t *param_1,undefined8 param_2,undefined8 param_3) {\n  char cVar1;\n  bool bVar2;\n  int iVar3;\n  int iVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  int *piVar7;\n  __dev_t *p_Var8;\n  size_t sVar9;\n  long in_FS_OFFSET;\n  bool bVar10;\n  DIR *local_188;\n  __dev_t local_180;\n  stat local_148;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_188 = opendir(\"..\");\n  if (local_188 == (DIR *)0x0) {\n    uVar5 = nth_parent(param_3);\n    uVar5 = quote(uVar5);\n    uVar6 = gettext(\"cannot open directory %s\");\n    piVar7 = __errno_location();\n    error(1,*piVar7,uVar6,uVar5);\n  }\n  iVar3 = dirfd(local_188);\n  if (iVar3 < 0) {\n    iVar4 = chdir(\"..\");\n    cVar1 = (char)((uint)iVar4 >> 0x18);\n  }\n  else {\n    iVar4 = fchdir(iVar3);\n    cVar1 = (char)((uint)iVar4 >> 0x18);\n  }\n  if (cVar1 < '\\0') {\n    uVar5 = nth_parent(param_3);\n    uVar5 = quote(uVar5);\n    uVar6 = gettext(\"failed to chdir to %s\");\n    piVar7 = __errno_location();\n    error(1,*piVar7,uVar6,uVar5);\n  }\n  if (iVar3 < 0) {\n    iVar3 = stat(\".\",&local_148);\n    cVar1 = (char)((uint)iVar3 >> 0x18);\n  }\n  else {\n    iVar3 = fstat(iVar3,&local_148);\n    cVar1 = (char)((uint)iVar3 >> 0x18);\n  }\n  if (cVar1 < '\\0') {\n    uVar5 = nth_parent(param_3);\n    uVar5 = quote(uVar5);\n    uVar6 = gettext(\"failed to stat %s\");\n    piVar7 = __errno_location();\n    error(1,*piVar7,uVar6,uVar5);\n  }\n  bVar10 = local_148.st_dev == *param_1;\n  bVar2 = false;\n  do {\n    do {\n      piVar7 = __errno_location();\n      *piVar7 = 0;\n      p_Var8 = (__dev_t *)readdir_ignoring_dot_and_dotdot(local_188);\n      if (p_Var8 == (__dev_t *)0x0) {\n        piVar7 = __errno_location();\n        if (*piVar7 != 0) {\n          piVar7 = __errno_location();\n          iVar3 = *piVar7;\n          closedir(local_188);\n          piVar7 = __errno_location();\n          *piVar7 = iVar3;\n          local_188 = (DIR *)0x0;\n        }\n        goto LAB_00100a52;\n      }\n      local_180 = *p_Var8;\n      if ((local_180 != 0) && (bVar10)) goto LAB_001009d9;\n      iVar3 = lstat((char *)((long)p_Var8 + 0x13),&local_b8);\n    } while (iVar3 < 0);\n    local_180 = local_b8.st_ino;\nLAB_001009d9:\n    if ((local_180 == param_1[1]) && ((bVar10 || (local_b8.st_dev == *param_1)))) {\n      sVar9 = strlen((char *)((long)p_Var8 + 0x13));\n      file_name_prepend(param_2,(long)p_Var8 + 0x13,sVar9);\n      bVar2 = true;\nLAB_00100a52:\n      if ((local_188 == (DIR *)0x0) || (iVar3 = closedir(local_188), iVar3 != 0)) {\n        uVar5 = nth_parent(param_3);\n        uVar5 = quote(uVar5);\n        uVar6 = gettext(\"reading directory %s\");\n        piVar7 = __errno_location();\n        error(1,*piVar7,uVar6,uVar5);\n      }\n      if (!bVar2) {\n        uVar5 = nth_parent(param_3);\n        uVar5 = quote(uVar5);\n        uVar6 = gettext(\"couldn\\'t find directory entry in %s with matching i-node\");\n        error(1,0,uVar6,uVar5);\n      }\n      *param_1 = local_148.st_dev;\n      param_1[1] = local_148.st_ino;\n      param_1[2] = local_148.st_nlink;\n      param_1[3] = local_148._24_8_;\n      param_1[4] = local_148._32_8_;\n      param_1[5] = local_148.st_rdev;\n      param_1[6] = local_148.st_size;\n      param_1[7] = local_148.st_blksize;\n      param_1[8] = local_148.st_blocks;\n      param_1[9] = local_148.st_atim.tv_sec;\n      param_1[10] = local_148.st_atim.tv_nsec;\n      param_1[0xb] = local_148.st_mtim.tv_sec;\n      param_1[0xc] = local_148.st_mtim.tv_nsec;\n      param_1[0xd] = local_148.st_ctim.tv_sec;\n      param_1[0xe] = local_148.st_ctim.tv_nsec;\n      param_1[0xf] = local_148.__unused[0];\n      param_1[0x10] = local_148.__unused[1];\n      param_1[0x11] = local_148.__unused[2];\n      if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n        return;\n      }\n                    /* WARNING: Subroutine does not return */\n      __stack_chk_fail();\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_dir_entry",
+                        "opendir",
+                        "nth_parent",
+                        "quote",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "dirfd",
+                        "chdir",
+                        "fchdir",
+                        "stat",
+                        "fstat",
+                        "readdir_ignoring_dot_and_dotdot",
+                        "closedir",
+                        "lstat",
+                        "strlen",
+                        "file_name_prepend",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "find_dir_entry",
+                        "robust_getcwd"
+                    ],
+                    "defined_in_file": "pwd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "robust_getcwd",
+                "func_c_signature": "void robust_getcwd(long param_1)",
+                "decompiled_code": "void robust_getcwd(long param_1) {\n  int iVar1;\n  ulong *puVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  long in_FS_OFFSET;\n  long local_e8;\n  undefined local_c8 [16];\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_e8 = 1;\n  puVar2 = (ulong *)get_root_dev_ino(local_c8);\n  if (puVar2 == (ulong *)0x0) {\n    uVar3 = quotearg_style(4,&DAT_00101659);\n    uVar4 = gettext(\"failed to get attributes of %s\");\n    piVar5 = __errno_location();\n    error(1,*piVar5,uVar4,uVar3);\n  }\n  iVar1 = stat(\".\",&local_b8);\n  if (iVar1 < 0) {\n    uVar3 = quotearg_style(4,&DAT_001015f3);\n    uVar4 = gettext(\"failed to stat %s\");\n    piVar5 = __errno_location();\n    error(1,*piVar5,uVar4,uVar3);\n  }\n  while ((*puVar2 ^ local_b8.st_ino | local_b8.st_dev ^ puVar2[1]) != 0) {\n    find_dir_entry(&local_b8,param_1,local_e8);\n    local_e8 = local_e8 + 1;\n  }\n  if (**(char **)(param_1 + 0x10) == '\\0') {\n    file_name_prepend(param_1,&DAT_0010130c,0);\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "robust_getcwd",
+                        "get_root_dev_ino",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "stat",
+                        "find_dir_entry",
+                        "file_name_prepend",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "robust_getcwd",
+                        "main"
+                    ],
+                    "defined_in_file": "pwd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "logical_getcwd",
+                "func_c_signature": "char * logical_getcwd(void)",
+                "decompiled_code": "char * logical_getcwd(void) {\n  char cVar1;\n  int iVar2;\n  char *__file;\n  char *pcVar3;\n  long in_FS_OFFSET;\n  char *local_148;\n  stat local_138;\n  stat local_a8;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  __file = getenv(\"PWD\");\n  if ((__file == (char *)0x0) || (local_148 = __file, *__file != '/')) {\n    __file = (char *)0x0;\n  }\n  else {\n    while (pcVar3 = strstr(local_148,\"/.\"), pcVar3 != (char *)0x0) {\n      if (((pcVar3[2] == '\\0') || (pcVar3[2] == '/')) ||\n         ((pcVar3[2] == '.' && ((pcVar3[3] == '\\0' || (pcVar3[3] == '/')))))) {\n        __file = (char *)0x0;\n        goto LAB_00100fae;\n      }\n      local_148 = pcVar3 + 1;\n    }\n    iVar2 = stat(__file,&local_138);\n    if (((iVar2 != 0) || (iVar2 = stat(\".\",&local_a8), iVar2 != 0)) ||\n       (cVar1 = psame_inode(&local_138,&local_a8), cVar1 == '\\0')) {\n      __file = (char *)0x0;\n    }\n  }\nLAB_00100fae:\n  if (local_10 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return __file;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "logical_getcwd",
+                        "getenv",
+                        "strstr",
+                        "stat",
+                        "psame_inode",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "logical_getcwd",
+                        "main"
+                    ],
+                    "defined_in_file": "pwd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined8 main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined8 main(int param_1,undefined8 *param_2) {\n  int iVar1;\n  char *pcVar2;\n  undefined8 uVar3;\n  long lVar4;\n  bool bVar5;\n  \n  pcVar2 = getenv(\"POSIXLY_CORRECT\");\n  bVar5 = pcVar2 != (char *)0x0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  do {\n    while( true ) {\n      while( true ) {\n        iVar1 = getopt_long(param_1,param_2,&DAT_001016ae,longopts,0);\n        if (iVar1 == -1) {\n          if (_optind < param_1) {\n            uVar3 = gettext(\"ignoring non-option arguments\");\n            error(0,0,uVar3);\n          }\n          if ((bVar5) && (pcVar2 = (char *)logical_getcwd(), pcVar2 != (char *)0x0)) {\n            puts(pcVar2);\n          }\n          else {\n            pcVar2 = (char *)xgetcwd();\n            if (pcVar2 == (char *)0x0) {\n              lVar4 = file_name_init();\n              robust_getcwd(lVar4);\n              puts(*(char **)(lVar4 + 0x10));\n              file_name_free(lVar4);\n            }\n            else {\n              puts(pcVar2);\n              free(pcVar2);\n            }\n          }\n          return 0;\n        }\n        if (iVar1 != 0x50) break;\n        bVar5 = false;\n      }\n      if (iVar1 < 0x51) break;\nLAB_00101120:\n      usage(1);\n    }\n    if (iVar1 != 0x4c) {\n      if (iVar1 < 0x4d) {\n        if (iVar1 == -0x83) {\nLAB_001010c5:\n          uVar3 = proper_name_lite(\"Jim Meyering\",\"Jim Meyering\");\n          version_etc(_stdout,&DAT_001015b9,\"GNU coreutils\",_Version,uVar3,0);\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (iVar1 == -0x82) {\n          usage(0);\n          goto LAB_001010c5;\n        }\n      }\n      goto LAB_00101120;\n    }\n    bVar5 = true;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "getenv",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "logical_getcwd",
+                        "puts",
+                        "xgetcwd",
+                        "file_name_init",
+                        "robust_getcwd",
+                        "file_name_free",
+                        "free",
+                        "usage",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "pwd_decompiled.c"
+                }
+            }
+        ]
+    }
+}

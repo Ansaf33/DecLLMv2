@@ -1,0 +1,151 @@
+{
+    "file": "cp-hash",
+    "decompiled_code": {
+        "cp-hash.c": [
+            {
+                "func_name": "src_to_dest_hash",
+                "func_c_signature": "ulong src_to_dest_hash(ulong *param_1,ulong param_2)",
+                "decompiled_code": "ulong src_to_dest_hash(ulong *param_1,ulong param_2) {\n  return *param_1 % param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "src_to_dest_hash"
+                    ],
+                    "calling_functions": [
+                        "src_to_dest_hash"
+                    ],
+                    "defined_in_file": "cp-hash_decompiled.c"
+                }
+            },
+            {
+                "func_name": "src_to_dest_compare",
+                "func_c_signature": "undefined8 src_to_dest_compare(ulong *param_1,ulong *param_2)",
+                "decompiled_code": "undefined8 src_to_dest_compare(ulong *param_1,ulong *param_2) {\n  ulong uVar1;\n  \n  uVar1 = *param_2 ^ *param_1 | param_1[1] ^ param_2[1];\n  return CONCAT71((int7)(uVar1 >> 8),uVar1 == 0);\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT71"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "src_to_dest_compare",
+                        "CONCAT71"
+                    ],
+                    "calling_functions": [
+                        "src_to_dest_compare"
+                    ],
+                    "defined_in_file": "cp-hash_decompiled.c"
+                }
+            },
+            {
+                "func_name": "src_to_dest_free",
+                "func_c_signature": "void src_to_dest_free(void *param_1)",
+                "decompiled_code": "void src_to_dest_free(void *param_1) {\n  free(*(void **)((long)param_1 + 0x10));\n  free(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "src_to_dest_free",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "src_to_dest_free",
+                        "forget_created",
+                        "remember_copied"
+                    ],
+                    "defined_in_file": "cp-hash_decompiled.c"
+                }
+            },
+            {
+                "func_name": "forget_created",
+                "func_c_signature": "void forget_created(undefined8 param_1,undefined8 param_2)",
+                "decompiled_code": "void forget_created(undefined8 param_1,undefined8 param_2) {\n  long lVar1;\n  long in_FS_OFFSET;\n  undefined8 local_28;\n  undefined8 local_20;\n  undefined8 local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_18 = 0;\n  local_28 = param_1;\n  local_20 = param_2;\n  lVar1 = hash_remove(src_to_dest,&local_28);\n  if (lVar1 != 0) {\n    src_to_dest_free(lVar1);\n  }\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "forget_created",
+                        "hash_remove",
+                        "src_to_dest_free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "forget_created"
+                    ],
+                    "defined_in_file": "cp-hash_decompiled.c"
+                }
+            },
+            {
+                "func_name": "src_to_dest_lookup",
+                "func_c_signature": "undefined8 src_to_dest_lookup(undefined8 param_1,undefined8 param_2)",
+                "decompiled_code": "undefined8 src_to_dest_lookup(undefined8 param_1,undefined8 param_2) {\n  long lVar1;\n  undefined8 uVar2;\n  long in_FS_OFFSET;\n  undefined8 local_28;\n  undefined8 local_20;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_28 = param_1;\n  local_20 = param_2;\n  lVar1 = hash_lookup(src_to_dest,&local_28);\n  if (lVar1 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = *(undefined8 *)(lVar1 + 0x10);\n  }\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "src_to_dest_lookup",
+                        "hash_lookup",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "src_to_dest_lookup"
+                    ],
+                    "defined_in_file": "cp-hash_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remember_copied",
+                "func_c_signature": "undefined8 remember_copied(undefined8 param_1,undefined8 param_2,undefined8 param_3)",
+                "decompiled_code": "undefined8 remember_copied(undefined8 param_1,undefined8 param_2,undefined8 param_3) {\n  undefined8 *puVar1;\n  undefined8 uVar2;\n  undefined8 *puVar3;\n  \n  puVar1 = (undefined8 *)xmalloc(0x18);\n  uVar2 = xstrdup(param_1);\n  puVar1[2] = uVar2;\n  *puVar1 = param_2;\n  puVar1[1] = param_3;\n  puVar3 = (undefined8 *)hash_insert(src_to_dest,puVar1);\n  if (puVar3 == (undefined8 *)0x0) {\n    xalloc_die();\n  }\n  if (puVar3 == puVar1) {\n    uVar2 = 0;\n  }\n  else {\n    src_to_dest_free(puVar1);\n    uVar2 = puVar3[2];\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remember_copied",
+                        "xmalloc",
+                        "xstrdup",
+                        "hash_insert",
+                        "xalloc_die",
+                        "src_to_dest_free"
+                    ],
+                    "calling_functions": [
+                        "remember_copied"
+                    ],
+                    "defined_in_file": "cp-hash_decompiled.c"
+                }
+            },
+            {
+                "func_name": "hash_init",
+                "func_c_signature": "void hash_init(void)",
+                "decompiled_code": "void hash_init(void) {\n  src_to_dest = hash_initialize(0x67,0,0x100000,src_to_dest_compare,src_to_dest_free);\n  if (src_to_dest == 0) {\n    xalloc_die();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "hash_init",
+                        "hash_initialize",
+                        "xalloc_die"
+                    ],
+                    "calling_functions": [
+                        "hash_init"
+                    ],
+                    "defined_in_file": "cp-hash_decompiled.c"
+                }
+            }
+        ]
+    }
+}

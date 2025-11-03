@@ -49,12 +49,3 @@ with open(args[0], "w") as output_file:
         # print decompiled_function.getDecompiledFunction().getC()
         output_file.write(decompiled_function.getDecompiledFunction().getC())
         
-        
-
-
-def main():
-    print(create_whitelist_functions("CADET_00001"))
-    
-    
-if __name__ == "__main__":
-    main()

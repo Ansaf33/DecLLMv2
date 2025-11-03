@@ -1,0 +1,187 @@
+{
+    "file": "KPRCA_00017",
+    "decompiled_code": {
+        "main.c": [
+            {
+                "func_name": "read_until",
+                "func_c_signature": "int read_until(undefined4 param_1,char *param_2,uint param_3,char param_4)",
+                "decompiled_code": "int read_until(undefined4 param_1,char *param_2,uint param_3,char param_4) {\n  char *pcVar1;\n  char cVar2;\n  int iVar3;\n  int local_18;\n  char *local_14;\n  uint local_10;\n  \n  local_14 = param_2;\n  local_10 = 0;\n  while ((((local_10 < param_3 && (iVar3 = receive(param_1,local_14,1,&local_18), iVar3 == 0)) &&\n          (local_18 != 0)) &&\n         (pcVar1 = local_14 + 1, cVar2 = *local_14, local_14 = pcVar1, param_4 != cVar2))) {\n    local_10 = local_10 + 1;\n  }\n  local_14[-1] = '\\0';\n  return (int)local_14 - (int)param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_until",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "read_until",
+                        "parse_input",
+                        "record_winner",
+                        "new_challenge"
+                    ],
+                    "defined_in_file": "KPRCA_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_input",
+                "func_c_signature": "int parse_input(char *param_1)",
+                "decompiled_code": "int parse_input(char *param_1) {\n  char cVar1;\n  int iVar2;\n  \n  iVar2 = read_until(0,param_1,0x80,10);\n  if (iVar2 < 1) {\n                    /* WARNING: Subroutine does not return */\n    exit(0);\n  }\n  cVar1 = *param_1;\n  if (cVar1 == '?') {\n    return 1;\n  }\n  if (cVar1 < '@') {\n    if (cVar1 == '+') {\n      return 0;\n    }\n    if (cVar1 == '/') {\n      return 2;\n    }\n  }\n  iVar2 = isalpha((int)*param_1);\n  if (iVar2 == 0) {\n    iVar2 = 9;\n  }\n  else {\n    iVar2 = tolower((int)*param_1);\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_input",
+                        "read_until",
+                        "exit",
+                        "isalpha",
+                        "tolower"
+                    ],
+                    "calling_functions": [
+                        "parse_input",
+                        "play_game"
+                    ],
+                    "defined_in_file": "KPRCA_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "banner",
+                "func_c_signature": "void banner(void)",
+                "decompiled_code": "void banner(void) {\n  char *pcVar1;\n  char local_818 [2048];\n  int local_18;\n  int local_14;\n  uint local_10;\n  \n  local_18 = 0;\n  memset(local_818,0,0x800);\n  for (local_14 = 0; local_14 < 2; local_14 = local_14 + 1) {\n    for (local_10 = 0; (int)local_10 < 0x21; local_10 = local_10 + 1) {\n      if ((local_10 & 1) == 0) {\n        pcVar1 = local_818 + local_18;\n        local_18 = local_18 + 1;\n        *pcVar1 = '_';\n      }\n      else {\n        pcVar1 = local_818 + local_18;\n        local_18 = local_18 + 1;\n        *pcVar1 = '-';\n      }\n    }\n    pcVar1 = local_818 + local_18;\n    local_18 = local_18 + 1;\n    *pcVar1 = '\\n';\n  }\n  strcpy(local_818 + local_18,\"     Sh41l w3 p14y a g4m3?\\n\");\n  local_18 = local_18 + 0x1b;\n  for (local_14 = 0; local_14 < 2; local_14 = local_14 + 1) {\n    for (local_10 = 0; (int)local_10 < 0x21; local_10 = local_10 + 1) {\n      if ((local_10 & 1) == 0) {\n        pcVar1 = local_818 + local_18;\n        local_18 = local_18 + 1;\n        *pcVar1 = '_';\n      }\n      else {\n        pcVar1 = local_818 + local_18;\n        local_18 = local_18 + 1;\n        *pcVar1 = '-';\n      }\n    }\n    pcVar1 = local_818 + local_18;\n    local_18 = local_18 + 1;\n    *pcVar1 = '\\n';\n  }\n  fdprintf(1,&DAT_000140d9,local_818);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "banner",
+                        "memset",
+                        "strcpy",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "banner",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "record_winner",
+                "func_c_signature": "void record_winner(void)",
+                "decompiled_code": "void record_winner(void) {\n  int iVar1;\n  undefined local_80c [2047];\n  undefined local_d;\n  \n  fdprintf(1,\"###### Good Work! ######\\n\");\n  fdprintf(1,\"# Leave your comment!! #\\n\");\n  fdprintf(1,\"########################\\n\");\n  fdprintf(1,\"Comment: \");\n  iVar1 = read_until(0,local_80c,0x800,10);\n  if (0 < iVar1) {\n    local_d = 0;\n    fdprintf(1,\"You wrote: %s\\n\",local_80c);\n    total = total + 1;\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(0);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "record_winner",
+                        "fdprintf",
+                        "read_until",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "record_winner",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "new_challenge",
+                "func_c_signature": "void new_challenge(int param_1)",
+                "decompiled_code": "void new_challenge(int param_1) {\n  int iVar1;\n  ulong uVar2;\n  size_t __n;\n  char local_34 [32];\n  uint local_14;\n  ushort local_e;\n  \n  fdprintf(1,\"\\n@ @ @ @ @  New Challenge  @ @ @ @ @\\n\");\n  fdprintf(1,\"Seed? \");\n  iVar1 = read_until(0,local_34,0x20,10);\n  if (iVar1 < 1) {\n                    /* WARNING: Subroutine does not return */\n    exit(0);\n  }\n  uVar2 = strtoul(local_34,(char **)0x0,10);\n  local_e = (ushort)(uVar2 >> 0x10) & 0xff | (ushort)(uVar2 << 8);\n  if (local_e == 0) {\n    local_e = 0xace1;\n  }\n  local_14 = (uint)(local_e >> 1) |\n             ((ushort)(local_e >> 5 ^ local_e >> 2 ^ local_e ^ local_e >> 3) & 1) << 0xf;\n  memset((void *)(param_1 + 8),0,0x14);\n  memset((void *)(param_1 + 0x1c),0,0x14);\n  strcpy((char *)(param_1 + 8),*(char **)(words + (local_14 % 0x14) * 4));\n  __n = strlen(*(char **)(words + (local_14 % 0x14) * 4));\n  memset((void *)(param_1 + 0x1c),0x5f,__n);\n  *(undefined4 *)(param_1 + 0x30) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "new_challenge",
+                        "fdprintf",
+                        "read_until",
+                        "exit",
+                        "strtoul",
+                        "memset",
+                        "strcpy",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "new_challenge"
+                    ],
+                    "defined_in_file": "KPRCA_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "quit_game",
+                "func_c_signature": "void quit_game(void)",
+                "decompiled_code": "void quit_game(void) {\n  fdprintf(1,\"\\n * * * * Thank you for playing! You\\'ve won %d times! * * * *\\n\",total);\n                    /* WARNING: Subroutine does not return */\n  exit(0);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "quit_game",
+                        "fdprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "quit_game"
+                    ],
+                    "defined_in_file": "KPRCA_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "play_game",
+                "func_c_signature": "void play_game(void)",
+                "decompiled_code": "void play_game(void) {\n  char cVar1;\n  size_t sVar2;\n  char local_cc [128];\n  code *local_4c;\n  code *local_48;\n  char local_44 [20];\n  char local_30 [20];\n  int local_1c;\n  int local_18;\n  int local_14;\n  uint local_10;\n  \nLAB_0001152a:\n  while ((local_18 = 0, win != 0 || (sVar2 = strlen(local_44), sVar2 == 0))) {\nLAB_000115cc:\n    if (local_48 == (code *)0x0) {\n      local_48 = new_challenge;\n    }\n    if (local_4c == (code *)0x0) {\n      local_4c = quit_game;\n    }\n    (*local_48)(&local_4c);\n    win = 0;\n  }\n  fdprintf(1,\"[[[ Your challenge: %s ]]]\\n\",local_30);\n  fdprintf(1,\"Guess a letter: \");\n  cVar1 = parse_input(local_cc);\n  if (cVar1 == '\\t') {\n    local_18 = 1;\n  }\n  else {\n    if (cVar1 < '\\n') {\n      if (cVar1 == '\\x02') {\n        if (local_4c == (code *)0x0) {\n          local_4c = quit_game;\n        }\n        (*local_4c)();\n        goto LAB_0001167b;\n      }\n      if (cVar1 < '\\x03') {\n        if (cVar1 == '\\0') goto LAB_000115cc;\n        if (cVar1 == '\\x01') {\n          local_1c = 0;\n          sVar2 = strlen(local_44);\n          memset(local_30,0x5f,sVar2);\n          fdprintf(1,\"\\n^^^^^ RESET ^^^^^\\n\\n\");\n          goto LAB_0001152a;\n        }\n      }\n    }\n    local_1c = local_1c + 1;\n  }\nLAB_0001167b:\n  if (local_18 == 0) {\n    local_14 = 0;\n    local_10 = 0;\n    while (sVar2 = strlen(local_44), local_10 < sVar2) {\n      if (local_cc[0] == local_44[local_10]) {\n        local_30[local_10] = local_cc[0];\n        local_14 = 1;\n      }\n      local_10 = local_10 + 1;\n    }\n    if (local_14 != 0) {\n      local_14 = 0;\n      local_10 = 0;\n      while (sVar2 = strlen(local_30), local_10 < sVar2) {\n        if (local_30[local_10] == '_') {\n          local_14 = 1;\n        }\n        local_10 = local_10 + 1;\n      }\n      if (local_14 == 0) {\n        fdprintf(1,\">>> You got it!! \\\"%s\\\" (%d tries) <<<\\n\",local_44,local_1c);\n        win = 1;\n        return;\n      }\n    }\n  }\n  goto LAB_0001152a;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "play_game",
+                        "strlen",
+                        "fdprintf",
+                        "parse_input",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "play_game",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(void)",
+                "decompiled_code": "void main(void) {\n  fdprintf(1,\"\\nWelcome to HackMan v13.37\\n\\n\");\n  do {\n    if (win == 0) {\n      banner();\n    }\n    else {\n      record_winner();\n    }\n    play_game();\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "fdprintf",
+                        "banner",
+                        "record_winner",
+                        "play_game"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "KPRCA_00017_decompiled.c"
+                }
+            }
+        ]
+    }
+}

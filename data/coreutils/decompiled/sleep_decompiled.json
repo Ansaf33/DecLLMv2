@@ -1,0 +1,87 @@
+{
+    "file": "sleep",
+    "decompiled_code": {
+        "sleep.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\n                            \"Usage: %s NUMBER[SUFFIX]...\\n  or:  %s OPTION\\nPause for NUMBER seconds, where NUMBER is an integer or floating-point.\\nSUFFIX may be \\'s\\',\\'m\\',\\'h\\', or \\'d\\', for seconds, minutes, hours, days.\\nWith multiple arguments, pause for the sum of their values.\\n\\n\"\n                            );\n    printf(pcVar3,uVar2,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"sleep\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "sleep_decompiled.c"
+                }
+            },
+            {
+                "func_name": "apply_suffix",
+                "func_c_signature": "undefined8 apply_suffix(double *param_1,char param_2)",
+                "decompiled_code": "undefined8 apply_suffix(double *param_1,char param_2) {\n  undefined8 uVar1;\n  double dVar2;\n  int local_c;\n  \n  if (param_2 == 's') {\nLAB_00100389:\n    local_c = 1;\nLAB_001003b4:\n    dVar2 = (double)dtimespec_bound(*param_1 * (double)local_c,0);\n    *param_1 = dVar2;\n    uVar1 = 1;\n  }\n  else {\n    if (param_2 < 't') {\n      if (param_2 == 'm') {\n        local_c = 0x3c;\n        goto LAB_001003b4;\n      }\n      if (param_2 < 'n') {\n        if (param_2 == 'h') {\n          local_c = 0xe10;\n          goto LAB_001003b4;\n        }\n        if (param_2 < 'i') {\n          if (param_2 == '\\0') goto LAB_00100389;\n          if (param_2 == 'd') {\n            local_c = 0x15180;\n            goto LAB_001003b4;\n          }\n        }\n      }\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "apply_suffix",
+                        "dtimespec_bound"
+                    ],
+                    "calling_functions": [
+                        "apply_suffix",
+                        "main"
+                    ],
+                    "defined_in_file": "sleep_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined8 main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined8 main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  char cVar2;\n  int iVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  long in_FS_OFFSET;\n  int local_74;\n  char *local_58;\n  double local_50;\n  double local_48;\n  undefined8 local_40;\n  undefined8 local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_48 = 0.0;\n  bVar1 = true;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  uVar4 = proper_name_lite(\"Paul Eggert\",\"Paul Eggert\");\n  uVar5 = proper_name_lite(\"Jim Meyering\",\"Jim Meyering\");\n  parse_gnu_standard_options_only\n            (param_1,param_2,\"sleep\",\"GNU coreutils\",_Version,1,usage,uVar5,uVar4,0);\n  if (param_1 == 1) {\n    local_38 = gettext(\"missing operand\");\n    error(0,0,local_38);\n    usage(1);\n  }\n  local_74 = _optind;\n  do {\n    if (param_1 <= local_74) {\n      if (!bVar1) {\n        usage(1);\n      }\n      iVar3 = xnanosleep(local_48);\n      if (iVar3 != 0) {\n        uVar4 = gettext(\"cannot read realtime clock\");\n        piVar6 = __errno_location();\n        local_28 = uVar4;\n        error(1,*piVar6,uVar4);\n      }\n      if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n        __stack_chk_fail();\n      }\n      return 0;\n    }\n    piVar6 = __errno_location();\n    *piVar6 = 0;\n    local_40 = cl_strtod(param_2[local_74],&local_58);\n    piVar6 = __errno_location();\n    local_50 = (double)dtimespec_bound(local_40,*piVar6);\n    if ((char *)param_2[local_74] == local_58) {\nLAB_00100618:\n      uVar4 = quote(param_2[local_74]);\n      local_30 = gettext(\"invalid time interval %s\");\n      error(0,0,local_30,uVar4);\n      bVar1 = false;\n    }\n    else {\n      if ((local_50 < 0.0) || ((*local_58 != '\\0' && (local_58[1] != '\\0')))) goto LAB_00100618;\n      cVar2 = apply_suffix(&local_50,(int)*local_58);\n      if (cVar2 != '\\x01') goto LAB_00100618;\n    }\n    local_48 = (double)dtimespec_bound(local_50 + local_48,0);\n    local_74 = local_74 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "proper_name_lite",
+                        "parse_gnu_standard_options_only",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "xnanosleep",
+                        "__errno_location",
+                        "__stack_chk_fail",
+                        "cl_strtod",
+                        "dtimespec_bound",
+                        "quote",
+                        "apply_suffix"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "sleep_decompiled.c"
+                }
+            }
+        ]
+    }
+}

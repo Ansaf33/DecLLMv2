@@ -1,0 +1,304 @@
+{
+    "file": "NRFIN_00021",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "nextRecord",
+                "func_c_signature": "undefined4 nextRecord(short *param_1)",
+                "decompiled_code": "undefined4 nextRecord(short *param_1) {\n  ssize_t sVar1;\n  undefined4 uVar2;\n  \n  sVar1 = recv(0,param_1,4,0x1100c);\n  if (sVar1 < 0) {\n    _terminate(2);\n  }\n  if (*param_1 == 0) {\n    uVar2 = 0;\n  }\n  else if (((*param_1 == 0) || (param_1[1] == 0)) || (*param_1 == -1)) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "nextRecord",
+                        "recv",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "nextRecord",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "squareRoot",
+                "func_c_signature": "longdouble squareRoot(float param_1)",
+                "decompiled_code": "longdouble squareRoot(float param_1) {\n  float fVar1;\n  double dVar2;\n  float local_1c;\n  float local_18;\n  float local_14;\n  float local_10;\n  \n  local_10 = 0.0;\n  local_18 = param_1;\n  local_14 = param_1;\n  local_1c = -1.0;\n  fVar1 = local_10;\n  while (local_10 = fVar1, dVar2 = fabs((double)(local_1c - local_18)), DAT_00013020 <= dVar2) {\n    local_1c = local_18;\n    local_18 = (local_14 + local_10) / DAT_0001301c;\n    fVar1 = local_18;\n    if (param_1 < local_18 * local_18) {\n      local_14 = local_18;\n      fVar1 = local_10;\n    }\n  }\n  return (longdouble)local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "squareRoot",
+                        "fabs"
+                    ],
+                    "calling_functions": [
+                        "squareRoot",
+                        "addRecordToDataset"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "addRecordToDataset",
+                "func_c_signature": "void addRecordToDataset(int *param_1,uint param_2)",
+                "decompiled_code": "void addRecordToDataset(int *param_1,uint param_2) {\n  float fVar1;\n  float fVar2;\n  longdouble lVar3;\n  \n  *param_1 = *param_1 + 1;\n  fVar2 = (float)(param_2 & 0xffff) / (float)(param_2 >> 0x10);\n  fVar1 = (float)param_1[1];\n  param_1[1] = (int)((fVar2 - fVar1) / (float)*param_1 + fVar1);\n  param_1[2] = (int)((fVar2 - (float)param_1[1]) * (fVar2 - fVar1) + (float)param_1[2]);\n  param_1[3] = (int)((float)param_1[2] / (float)*param_1);\n  lVar3 = (longdouble)squareRoot(param_1[3]);\n  param_1[4] = (int)(float)lVar3;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "addRecordToDataset",
+                        "squareRoot"
+                    ],
+                    "calling_functions": [
+                        "addRecordToDataset",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getNextFreeEntry",
+                "func_c_signature": "char * getNextFreeEntry(int param_1)",
+                "decompiled_code": "char * getNextFreeEntry(int param_1) {\n  int *piVar1;\n  int iStack_3c;\n  undefined4 uStack_38;\n  int iStack_34;\n  undefined4 uStack_30;\n  undefined auStack_2c [12];\n  char *local_20;\n  int local_1c;\n  uint local_18;\n  int local_14;\n  int local_10;\n  \n  piVar1 = (int *)auStack_2c;\n  uStack_30 = 0x111e6;\n  local_10 = 0;\n  while( true ) {\n    if ((int)(uint)*(ushort *)(param_1 + 6) <= local_10) {\n      local_14 = *(int *)(param_1 + 8);\n      local_18 = (uint)*(ushort *)(param_1 + 6);\n      *(ushort *)(param_1 + 6) = *(ushort *)(param_1 + 6) * 0x40 + 1;\n      iStack_34 = param_1 + 8;\n      iStack_3c = (uint)*(ushort *)(param_1 + 6) * 6;\n      uStack_38 = 0;\n      local_1c = allocate();\n      if (local_1c != 0) {\n        piVar1 = &iStack_3c;\n        iStack_3c = 3;\n        _terminate();\n      }\n      for (local_10 = 0; local_10 < (int)local_18; local_10 = local_10 + 1) {\n        *(undefined *)(*(int *)(param_1 + 8) + local_10 * 6) =\n             *(undefined *)(local_10 * 6 + local_14);\n        *(undefined2 *)(*(int *)(param_1 + 8) + local_10 * 6 + 4) =\n             *(undefined2 *)(local_10 * 6 + local_14 + 4);\n        *(undefined2 *)(*(int *)(param_1 + 8) + local_10 * 6 + 2) =\n             *(undefined2 *)(local_10 * 6 + local_14 + 2);\n      }\n      *(uint *)((int)piVar1 + -0xc) = local_18 * 6;\n      *(int *)((int)piVar1 + -0x10) = local_14;\n      *(undefined4 *)((int)piVar1 + -0x14) = 0x1134d;\n      local_1c = deallocate();\n      if (local_1c != 0) {\n        *(undefined4 *)((int)piVar1 + -0x10) = 4;\n        *(undefined4 *)((int)piVar1 + -0x14) = 0x11363;\n        _terminate();\n      }\n      return (char *)(local_18 * 6 + *(int *)(param_1 + 8));\n    }\n    local_20 = (char *)(local_10 * 6 + *(int *)(param_1 + 8));\n    if (*local_20 == '\\0') break;\n    local_10 = local_10 + 1;\n  }\n  return local_20;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getNextFreeEntry",
+                        "allocate",
+                        "_terminate",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "getNextFreeEntry",
+                        "addStockToPortfolio"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "addStockToPortfolio",
+                "func_c_signature": "void addStockToPortfolio(undefined4 param_1,undefined2 param_2,undefined4 param_3)",
+                "decompiled_code": "void addStockToPortfolio(undefined4 param_1,undefined2 param_2,undefined4 param_3) {\n  undefined *puVar1;\n  \n  puVar1 = (undefined *)getNextFreeEntry(param_3);\n  *puVar1 = (undefined)param_1;\n  *(undefined2 *)(puVar1 + 4) = param_2;\n  *(undefined2 *)(puVar1 + 2) = param_1._2_2_;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "addStockToPortfolio",
+                        "getNextFreeEntry"
+                    ],
+                    "calling_functions": [
+                        "addStockToPortfolio",
+                        "buyStock"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "buyStock",
+                "func_c_signature": "void buyStock(undefined param_1,uint param_2,ushort *param_3)",
+                "decompiled_code": "void buyStock(undefined param_1,uint param_2,ushort *param_3) {\n  short sVar1;\n  undefined4 local_12;\n  \n  if (param_2 <= *param_3) {\n    local_12 = CONCAT31(local_12._1_3_,param_1);\n    sVar1 = (short)param_2;\n    local_12 = CONCAT22(sVar1,(undefined2)local_12);\n    addStockToPortfolio(local_12,sVar1,param_3,0x113cb);\n    *param_3 = *param_3 - sVar1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT31",
+                    "CONCAT22"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "buyStock",
+                        "CONCAT31",
+                        "CONCAT22",
+                        "addStockToPortfolio"
+                    ],
+                    "calling_functions": [
+                        "buyStock",
+                        "tradeStocks"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "findMostExpensiveStock",
+                "func_c_signature": "char * findMostExpensiveStock(char param_1,int param_2)",
+                "decompiled_code": "char * findMostExpensiveStock(char param_1,int param_2) {\n  ushort uVar1;\n  char *pcVar2;\n  int local_c;\n  char *local_8;\n  \n  local_8 = (char *)0x0;\n  uVar1 = 0;\n  for (local_c = 0;\n      ((*(short *)(param_2 + 6) != 0 && (*(short *)(local_c * 6 + *(int *)(param_2 + 8) + 4) != 0))\n      && (local_c < (int)(uint)*(ushort *)(param_2 + 6))); local_c = local_c + 1) {\n    pcVar2 = (char *)(local_c * 6 + *(int *)(param_2 + 8));\n    if ((param_1 == *pcVar2) && (uVar1 < *(ushort *)(pcVar2 + 4))) {\n      uVar1 = *(ushort *)(pcVar2 + 4);\n      local_8 = pcVar2;\n    }\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "findMostExpensiveStock"
+                    ],
+                    "calling_functions": [
+                        "findMostExpensiveStock",
+                        "sellStock"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sellStock",
+                "func_c_signature": "void sellStock(char param_1,short param_2,short *param_3)",
+                "decompiled_code": "void sellStock(char param_1,short param_2,short *param_3) {\n  undefined *puVar1;\n  \n  if (param_3[3] != 0) {\n    puVar1 = (undefined *)findMostExpensiveStock((int)param_1,param_3);\n    if (puVar1 != (undefined *)0x0) {\n      *param_3 = param_2 + *param_3;\n      *puVar1 = 0;\n      *(undefined2 *)(puVar1 + 4) = 0;\n      *(undefined2 *)(puVar1 + 2) = 0;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sellStock",
+                        "findMostExpensiveStock"
+                    ],
+                    "calling_functions": [
+                        "sellStock",
+                        "tradeStocks",
+                        "sellAllStock"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "tradeStocks",
+                "func_c_signature": "void tradeStocks(uint param_1,undefined4 param_2,float param_3,undefined4 param_4,undefined4 param_5\n                ,float param_6,undefined4 param_7)",
+                "decompiled_code": "void tradeStocks(uint param_1,undefined4 param_2,float param_3,undefined4 param_4,undefined4 param_5\n                ,float param_6,undefined4 param_7) {\n  float fVar1;\n  undefined4 uVar2;\n  \n  uVar2 = 0x11553;\n  fVar1 = (float)(param_1 & 0xffff) / (float)(uint)param_1._2_2_;\n  if (param_6 + param_3 < fVar1) {\n    uVar2 = param_7;\n    sellStock(0x58,(undefined2)param_1,param_7);\n    buyStock(0x59,param_1._2_2_,param_7);\n  }\n  if (fVar1 < param_3 - param_6) {\n    sellStock(0x59,param_1._2_2_,param_7,uVar2);\n    buyStock(0x58,(undefined2)param_1,param_7);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "tradeStocks",
+                        "sellStock",
+                        "buyStock"
+                    ],
+                    "calling_functions": [
+                        "tradeStocks",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sendGoalNotification",
+                "func_c_signature": "void sendGoalNotification(void)",
+                "decompiled_code": "void sendGoalNotification(void) {\n  size_t sVar1;\n  int iVar2;\n  \n  sVar1 = strlen(\"You doubled your money!\\n\");\n  iVar2 = transmit_all(1,\"You doubled your money!\\n\",sVar1);\n  if (iVar2 != 0) {\n    _terminate(1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sendGoalNotification",
+                        "strlen",
+                        "transmit_all",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "sendGoalNotification",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sellAllStock",
+                "func_c_signature": "void sellAllStock(undefined4 param_1,int param_2)",
+                "decompiled_code": "void sellAllStock(undefined4 param_1,int param_2) {\n  int local_c;\n  \n  local_c = 0;\n  while (*(short *)(local_c * 6 + *(int *)(param_2 + 8) + 4) != 0) {\n    sellStock((int)*(char *)(local_c * 6 + *(int *)(param_2 + 8)),\n              *(undefined2 *)(local_c * 6 + *(int *)(param_2 + 8) + 2),param_2);\n    local_c = local_c + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sellAllStock",
+                        "sellStock"
+                    ],
+                    "calling_functions": [
+                        "sellAllStock",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "updateStockValues",
+                "func_c_signature": "void updateStockValues(undefined4 param_1,int param_2)",
+                "decompiled_code": "void updateStockValues(undefined4 param_1,int param_2) {\n  char *pcVar1;\n  int local_8;\n  \n  local_8 = 0;\n  while (*(short *)(local_8 * 6 + *(int *)(param_2 + 8) + 4) != 0) {\n    pcVar1 = (char *)(local_8 * 6 + *(int *)(param_2 + 8));\n    *(short *)(param_2 + 2) = *(short *)(param_2 + 2) - *(short *)(pcVar1 + 2);\n    if (*pcVar1 == 'X') {\n      *(undefined2 *)(pcVar1 + 2) = (undefined2)param_1;\n    }\n    if (*pcVar1 == 'Y') {\n      *(undefined2 *)(pcVar1 + 2) = param_1._2_2_;\n    }\n    *(short *)(param_2 + 2) = *(short *)(param_2 + 2) + *(short *)(pcVar1 + 2);\n    local_8 = local_8 + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "updateStockValues"
+                    ],
+                    "calling_functions": [
+                        "updateStockValues",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initPortfolio",
+                "func_c_signature": "void initPortfolio(undefined2 *param_1,undefined2 param_2)",
+                "decompiled_code": "void initPortfolio(undefined2 *param_1,undefined2 param_2) {\n  int iVar1;\n  \n  *param_1 = param_2;\n  param_1[1] = *param_1;\n  param_1[2] = param_1[1] * 2;\n  param_1[3] = 0x10;\n  iVar1 = allocate((uint)(ushort)param_1[3] * 6,0,param_1 + 4,0x1178b);\n  if (iVar1 != 0) {\n    _terminate(3);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initPortfolio",
+                        "allocate",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "initPortfolio",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  uint local_38;\n  short local_34;\n  ushort local_32;\n  ushort local_30;\n  int local_28;\n  undefined4 local_24;\n  undefined4 local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  int local_14;\n  undefined *local_c;\n  \n  local_c = &stack0x00000004;\n  local_28 = 0;\n  do {\n    while( true ) {\n      local_14 = nextRecord(&local_38);\n      if (local_14 == -1) {\n        return 0;\n      }\n      if (local_14 != 0) break;\n      initPortfolio(&local_34,local_38 >> 0x10);\n    }\n    if (100 < local_28) {\n      updateStockValues(local_38,&local_34);\n      if (local_30 <= local_32) {\n        sellAllStock(local_38,&local_34);\n        sendGoalNotification();\n      }\n      if (local_34 == 0) {\n        if (local_32 == 0) {\n          return 0;\n        }\n        sellAllStock(local_38,&local_34);\n      }\n      tradeStocks(local_38,local_28,local_24,local_20,local_1c,local_18,&local_34);\n    }\n    addRecordToDataset(&local_28,local_38);\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "nextRecord",
+                        "initPortfolio",
+                        "updateStockValues",
+                        "sellAllStock",
+                        "sendGoalNotification",
+                        "tradeStocks",
+                        "addRecordToDataset"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "NRFIN_00021_decompiled.c"
+                }
+            }
+        ]
+    }
+}

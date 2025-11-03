@@ -1,0 +1,535 @@
+{
+    "file": "KPRCA_00071",
+    "decompiled_code": {
+        "board.c": [
+            {
+                "func_name": "create_board",
+                "func_c_signature": "void * create_board(void)",
+                "decompiled_code": "void * create_board(void) {\n  void *pvVar1;\n  \n  pvVar1 = malloc(0x14);\n  clear_board(pvVar1);\n  return pvVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_board",
+                        "malloc",
+                        "clear_board"
+                    ],
+                    "calling_functions": [
+                        "create_board",
+                        "ttt"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clear_board",
+                "func_c_signature": "void clear_board(void *param_1)",
+                "decompiled_code": "void clear_board(void *param_1) {\n  memset(param_1,0,9);\n  *(undefined4 *)((int)param_1 + 0xc) = 0;\n  *(undefined4 *)((int)param_1 + 0x10) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clear_board",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "create_board",
+                        "clear_board"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_winning_board",
+                "func_c_signature": "undefined4 check_winning_board(char *param_1)",
+                "decompiled_code": "undefined4 check_winning_board(char *param_1) {\n  char cVar1;\n  undefined4 uVar2;\n  \n  cVar1 = *param_1;\n  if ((((cVar1 == '\\0') ||\n       ((((cVar1 != param_1[1] || (cVar1 != param_1[2])) &&\n         ((cVar1 != param_1[4] || (cVar1 != param_1[8])))) &&\n        ((cVar1 != param_1[3] || (cVar1 != param_1[6])))))) &&\n      ((cVar1 = param_1[1], cVar1 == '\\0' || ((cVar1 != param_1[4] || (cVar1 != param_1[7])))))) &&\n     ((((cVar1 = param_1[2], cVar1 == '\\0' ||\n        (((cVar1 != param_1[5] || (cVar1 != param_1[8])) &&\n         ((cVar1 != param_1[4] || (cVar1 != param_1[6])))))) &&\n       (((cVar1 = param_1[3], cVar1 == '\\0' || (cVar1 != param_1[4])) || (cVar1 != param_1[5])))) &&\n      (((cVar1 = param_1[6], cVar1 == '\\0' || (cVar1 != param_1[7])) || (cVar1 != param_1[8])))))) {\n    if (*(int *)(param_1 + 0xc) == 9) {\n      *(undefined4 *)(param_1 + 0x10) = 0x20;\n      uVar2 = *(undefined4 *)(param_1 + 0x10);\n    }\n    else {\n      uVar2 = 2;\n    }\n  }\n  else {\n    if (cVar1 == -0x40) {\n      uVar2 = 8;\n    }\n    else {\n      uVar2 = 0x10;\n    }\n    *(undefined4 *)(param_1 + 0x10) = uVar2;\n    uVar2 = *(undefined4 *)(param_1 + 0x10);\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_winning_board"
+                    ],
+                    "calling_functions": [
+                        "check_winning_board",
+                        "do_move"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_move",
+                "func_c_signature": "undefined4 do_move(int param_1,int param_2,int param_3,undefined param_4)",
+                "decompiled_code": "undefined4 do_move(int param_1,int param_2,int param_3,undefined param_4) {\n  undefined4 uVar1;\n  \n  if (*(int *)(param_1 + 0xc) < 9) {\n    if ((((param_3 < 0) || (param_2 < 0)) || (2 < param_3)) || (2 < param_2)) {\n      uVar1 = 0;\n    }\n    else if (*(char *)(param_3 + param_1 + param_2 * 3) == '\\0') {\n      *(undefined *)(param_3 + param_1 + param_2 * 3) = param_4;\n      *(int *)(param_1 + 0xc) = *(int *)(param_1 + 0xc) + 1;\n      uVar1 = check_winning_board(param_1);\n    }\n    else {\n      uVar1 = 0;\n    }\n  }\n  else {\n    uVar1 = 4;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_move",
+                        "check_winning_board"
+                    ],
+                    "calling_functions": [
+                        "do_move",
+                        "find_minmax",
+                        "computer_move",
+                        "player_move"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "undo_move",
+                "func_c_signature": "undefined4 undo_move(int param_1,int param_2,int param_3)",
+                "decompiled_code": "undefined4 undo_move(int param_1,int param_2,int param_3) {\n  undefined4 uVar1;\n  \n  if ((((param_3 < 0) || (param_2 < 0)) || (3 < param_3)) || (3 < param_2)) {\n    uVar1 = 0;\n  }\n  else if (*(char *)(param_3 + param_1 + param_2 * 3) == '\\0') {\n    uVar1 = 0;\n  }\n  else {\n    *(undefined *)(param_3 + param_1 + param_2 * 3) = 0;\n    *(int *)(param_1 + 0xc) = *(int *)(param_1 + 0xc) + -1;\n    *(undefined4 *)(param_1 + 0x10) = 0;\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "undo_move"
+                    ],
+                    "calling_functions": [
+                        "undo_move",
+                        "find_minmax"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_board",
+                "func_c_signature": "void print_board(int param_1)",
+                "decompiled_code": "void print_board(int param_1) {\n  char cVar1;\n  undefined *local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  do {\n    if (2 < local_10) {\n      return;\n    }\n    printf(\"|\");\n    for (local_14 = 0; local_14 < 3; local_14 = local_14 + 1) {\n      cVar1 = *(char *)(local_14 + param_1 + local_10 * 3);\n      if (cVar1 == '@') {\n        local_18 = &DAT_00016004;\n      }\n      else if (cVar1 < 'A') {\n        if (cVar1 == -0x40) {\n          local_18 = &DAT_00016002;\n        }\n        else {\n          if (cVar1 != '\\0') goto LAB_000113f2;\n          local_18 = &DAT_00016006;\n        }\n      }\n      else {\nLAB_000113f2:\n        local_18 = &DAT_00016008;\n      }\n      printf(\"%s|\",local_18);\n    }\n    printf(\"\\n\");\n    local_10 = local_10 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_board",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_board",
+                        "ttt"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            }
+        ],
+        "hi_lo_game.c": [
+            {
+                "func_name": "set_bits_high",
+                "func_c_signature": "uint set_bits_high(uint param_1)",
+                "decompiled_code": "uint set_bits_high(uint param_1) {\n  int local_8;\n  \n  local_8 = 0;\n  for (; param_1 != 0; param_1 = param_1 >> 1) {\n    local_8 = local_8 + 1;\n  }\n  for (; local_8 != 0; local_8 = local_8 + -1) {\n    param_1 = param_1 << 1 | 1;\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_bits_high"
+                    ],
+                    "calling_functions": [
+                        "set_bits_high",
+                        "get_random"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_random",
+                "func_c_signature": "uint get_random(uint *param_1)",
+                "decompiled_code": "uint get_random(uint *param_1) {\n  char *__nptr;\n  long lVar1;\n  int iVar2;\n  uint local_14;\n  uint local_10;\n  \n  iVar2 = idx % 0x400;\n  local_10 = 0x10000;\n  idx = iVar2 + 1;\n  local_14 = *(uint *)(iVar2 * 4 + secret);\n  __nptr = (char *)malloc(0x100);\n  while (0xffff < (int)local_10) {\n    printf(\"Enter max value (Default=%d): \",0xffff);\n    iVar2 = freaduntil(__nptr,0x100,10,stdin);\n    if (iVar2 != -1) {\n      lVar1 = strtol(__nptr,(char **)0x0,10);\n      local_10 = set_bits_high(lVar1);\n    }\n  }\n  if (local_10 == 0) {\n    local_10 = 0xffff;\n  }\n  else {\n    printf(\"We\\'ve changed the max value to %d.\\n\",local_10);\n    printf(\"Keep in mind only the games using the default max value are scored.\\n\");\n  }\n  if (local_10 < local_14) {\n    local_14 = local_14 & local_10;\n  }\n  free(__nptr);\n  *param_1 = local_10;\n  return local_14;\n}",
+                "globals": [],
+                "externs": [
+                    "value"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_random",
+                        "malloc",
+                        "printf",
+                        "value",
+                        "freaduntil",
+                        "strtol",
+                        "set_bits_high",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "get_random",
+                        "play_hi_lo"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "play_hi_lo",
+                "func_c_signature": "undefined4 play_hi_lo(void)",
+                "decompiled_code": "undefined4 play_hi_lo(void) {\n  int iVar1;\n  float fVar2;\n  ulonglong local_3c;\n  uint local_24;\n  char *local_20;\n  int local_1c;\n  long local_18;\n  size_t local_14;\n  int local_10;\n  \n  local_14 = 0x100;\n  local_18 = 0;\n  local_1c = get_random(&local_24);\n  local_3c = (ulonglong)local_24;\n  fVar2 = log2f((float)local_3c);\n  local_3c._0_4_ = (int)(longlong)ROUND(fVar2 + 1.0);\n  local_10 = (int)local_3c;\n  local_20 = (char *)malloc(local_14);\n  do {\n    do {\n      if (local_10 == 0) {\n        printf(\"Sorry, you lost. Try practicing with a lower max value.\\n\");\n        free(local_20);\n        return 0;\n      }\n      printf(\"Guess the number [%d guesses left]: \",local_10);\n      iVar1 = freaduntil(local_20,local_14,10,stdin);\n    } while (iVar1 == -1);\n    local_18 = strtol(local_20,(char **)0x0,10);\n    if (local_18 < local_1c) {\n      printf(\"Too Low\\n\");\n    }\n    else {\n      if (local_18 <= local_1c) {\n        printf(\"You won!\\n\");\n        free(local_20);\n        if (local_24 == 0xffff) {\n          return 1000;\n        }\n        return 0;\n      }\n      printf(\"Too High\\n\");\n    }\n    local_10 = local_10 + -1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "play_hi_lo",
+                        "get_random",
+                        "log2f",
+                        "ROUND",
+                        "malloc",
+                        "printf",
+                        "free",
+                        "freaduntil",
+                        "strtol"
+                    ],
+                    "calling_functions": [
+                        "play_hi_lo",
+                        "hi_lo"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "terminator",
+                "func_c_signature": "void terminator(void)",
+                "decompiled_code": "void terminator(void) {\n  printf(\"The system goes online August 4th, 1997.\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "terminator",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "terminator"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "hal",
+                "func_c_signature": "void hal(void)",
+                "decompiled_code": "void hal(void) {\n  printf(\"Dave, my mind is going. I can feel it... I can feel it\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "hal",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "hal"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "collosus",
+                "func_c_signature": "void collosus(void)",
+                "decompiled_code": "void collosus(void) {\n  printf(\"Where is Doctor Forbin?\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "collosus",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "collosus"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "score_to_l_code",
+                "func_c_signature": "uint score_to_l_code(uint param_1)",
+                "decompiled_code": "uint score_to_l_code(uint param_1) {\n  return param_1 ^ 0xdeadbeef;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "score_to_l_code"
+                    ],
+                    "calling_functions": [
+                        "score_to_l_code",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ttt",
+                "func_c_signature": "void ttt(int param_1,int param_2)",
+                "decompiled_code": "void ttt(int param_1,int param_2) {\n  int iVar1;\n  int iVar2;\n  \n  iVar1 = create_board();\n  printf(\"You\\'re playing 3 in a row. Good luck!\\n\");\n  if (param_2 == -0x40) {\n    print_board(iVar1);\n  }\n  while (*(int *)(iVar1 + 0x10) == 0) {\n    if (param_2 == -0x40) {\n      do {\n        iVar2 = player_move(iVar1);\n      } while (iVar2 == 0);\n    }\n    else if (param_2 == 0x40) {\n      do {\n        iVar2 = computer_move(iVar1);\n      } while (iVar2 == 0);\n    }\n    printf(\"\\n\");\n    print_board(iVar1);\n    param_2 = -param_2;\n  }\n  if (*(int *)(iVar1 + 0x10) == 0x20) {\n    *(int *)(param_1 + 0x2c) = *(int *)(param_1 + 0x2c) + 1;\n    printf(\"It\\'s a tie!\\n\");\n  }\n  else if (*(int *)(iVar1 + 0x10) == 0x10) {\n    *(undefined4 *)(param_1 + 0x2c) = 0;\n    printf(\"You lost.\\n\");\n  }\n  else if (*(int *)(iVar1 + 0x10) == 8) {\n    *(int *)(param_1 + 0x20) = *(int *)(param_1 + 0x20) + 1;\n    *(int *)(param_1 + 0x1c) = *(int *)(param_1 + 0x1c) + 1000000;\n    printf(\"You won!\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ttt",
+                        "create_board",
+                        "printf",
+                        "print_board",
+                        "player_move",
+                        "computer_move"
+                    ],
+                    "calling_functions": [
+                        "ttt",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rps",
+                "func_c_signature": "void rps(int param_1)",
+                "decompiled_code": "void rps(int param_1) {\n  int iVar1;\n  \n  iVar1 = play_rps();\n  if (iVar1 == 1000) {\n    *(int *)(param_1 + 0x24) = *(int *)(param_1 + 0x24) + 1;\n  }\n  *(int *)(param_1 + 0x1c) = *(int *)(param_1 + 0x1c) + iVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rps",
+                        "play_rps"
+                    ],
+                    "calling_functions": [
+                        "rps",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "hi_lo",
+                "func_c_signature": "void hi_lo(int param_1)",
+                "decompiled_code": "void hi_lo(int param_1) {\n  int iVar1;\n  \n  iVar1 = play_hi_lo();\n  if (iVar1 != 0) {\n    *(int *)(param_1 + 0x1c) = *(int *)(param_1 + 0x1c) + iVar1;\n    *(int *)(param_1 + 0x28) = *(int *)(param_1 + 0x28) + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "hi_lo",
+                        "play_hi_lo"
+                    ],
+                    "calling_functions": [
+                        "hi_lo",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "player_print_stats",
+                "func_c_signature": "void player_print_stats(int param_1)",
+                "decompiled_code": "void player_print_stats(int param_1) {\n  printf(\"---%s\\'s stats---\\n\",param_1);\n  printf(\"Current Score: %d\\n\",*(undefined4 *)(param_1 + 0x1c));\n  printf(\"Number of Three in a row draws: %d\\n\",*(undefined4 *)(param_1 + 0x2c));\n  printf(\"Number of Three in a row wins: %d\\n\",*(undefined4 *)(param_1 + 0x20));\n  printf(\"Number of Hammer, Sheet, Sheers wins: %d\\n\",*(undefined4 *)(param_1 + 0x24));\n  printf(\"Number of Guess my number wins: %d\\n\",*(undefined4 *)(param_1 + 0x28));\n  printf(\"\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "player_print_stats",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "player_print_stats"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "reset_player",
+                "func_c_signature": "void reset_player(void *param_1)",
+                "decompiled_code": "void reset_player(void *param_1) {\n  memset(param_1,0,0x18);\n  *(undefined4 *)((int)param_1 + 0x1c) = 0;\n  *(undefined4 *)((int)param_1 + 0x2c) = 0;\n  *(undefined4 *)((int)param_1 + 0x24) = 0;\n  *(undefined4 *)((int)param_1 + 0x28) = 0;\n  *(undefined4 *)((int)param_1 + 0x20) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "reset_player",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "reset_player",
+                        "init_player"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_player",
+                "func_c_signature": "void init_player(char *param_1)",
+                "decompiled_code": "void init_player(char *param_1) {\n  int iVar1;\n  char local_31 [33];\n  long local_10;\n  \n  reset_player(param_1);\n  local_10 = 0;\n  do {\n    do {\n      do {\n        printf(\"Flair 1 = Terminator\\n\");\n        printf(\"Flair 2 = 2001\\n\");\n        printf(\"Flair 3 = Collosus\\n\");\n        printf(\"Enter player information: [name,flair]\\n\");\n        iVar1 = freaduntil(local_31,0x21,0x2c,stdin);\n      } while (iVar1 == -1);\n      strcpy(param_1,local_31);\n      iVar1 = freaduntil(local_31,0x21,10,stdin);\n    } while (iVar1 == -1);\n    local_10 = strtol(local_31,(char **)0x0,10);\n    if (local_10 == 3) {\n      *(code **)(param_1 + 0x18) = collosus;\n      *(undefined4 *)(param_1 + 0x30) = 1;\n    }\n    else if (local_10 < 4) {\n      if (local_10 == 1) {\n        *(code **)(param_1 + 0x18) = terminator;\n        *(undefined4 *)(param_1 + 0x30) = 1;\n      }\n      else if (local_10 == 2) {\n        *(code **)(param_1 + 0x18) = hal;\n        *(undefined4 *)(param_1 + 0x30) = 1;\n      }\n    }\n  } while (*(int *)(param_1 + 0x30) == 0);\n  if (*(int *)(param_1 + 0x34) == 0) {\n    *(code **)(param_1 + 0x34) = player_print_stats;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_player",
+                        "reset_player",
+                        "printf",
+                        "freaduntil",
+                        "strcpy",
+                        "strtol"
+                    ],
+                    "calling_functions": [
+                        "init_player",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  bool bVar1;\n  bool bVar2;\n  void *pvVar3;\n  char *__nptr;\n  int iVar4;\n  long lVar5;\n  void *pvVar6;\n  void *local_28;\n  void *local_20;\n  void *local_1c;\n  \n  pvVar6 = (void *)0x38;\n  pvVar3 = calloc(1,0x38);\n  local_28 = (void *)0x100;\n  __nptr = (char *)malloc(0x100);\n  bVar2 = false;\n  bVar1 = false;\n  local_1c = (void *)0x0;\n  local_20 = (void *)0x0;\n  do {\n    while( true ) {\n      while( true ) {\n        while( true ) {\n          if (bVar2) {\n            printf(\"Exited\\n\",pvVar6);\n            return 0;\n          }\n          if (bVar1) break;\n          printf(\"1. Register New Player\\n\",pvVar6);\n          printf(\"2. Exit\\n\");\n          printf(\"> \");\n          pvVar6 = local_28;\n          iVar4 = freaduntil(__nptr,0x100,10,stdin);\n          if (iVar4 != -1) {\n            pvVar6 = (void *)0x0;\n            lVar5 = strtol(__nptr,(char **)0x0,10);\n            if (lVar5 == 1) {\n              init_player(pvVar3);\n              bVar1 = true;\n              pvVar6 = pvVar3;\n              printf(\"\\nWelcome to WarGames, %s. It\\'s just you vs. me\\n\",pvVar3);\n              local_1c = (void *)0xffffffc0;\n            }\n            else if (lVar5 == 2) {\n              bVar2 = true;\n            }\n          }\n        }\n        (**(code **)((int)pvVar3 + 0x34))(pvVar3);\n        printf(\"Choose a game to play:\\n\",pvVar6);\n        printf(\"--Easy--\\n\");\n        printf(\"1. Hammer, Sheet, Sheers\\n\");\n        printf(\"--Medium--\\n\");\n        printf(\"2. Guess my number\\n\");\n        printf(\"--Impossible--\\n\");\n        printf(\"3. Three in a row\\n\");\n        printf(\"4. Give up\\n\\n\");\n        printf(\"Shall we play a game?\\n\");\n        printf(\"Game # \");\n        pvVar6 = local_28;\n        iVar4 = freaduntil(__nptr,0x100,10,stdin);\n        if (iVar4 != -1) break;\n        printf(\"Invalid Game\\n\");\n      }\n      pvVar6 = (void *)0x0;\n      lVar5 = strtol(__nptr,(char **)0x0,10);\n      if (lVar5 != 4) break;\n      bVar1 = false;\n      pvVar6 = pvVar3;\n      printf(\"See you next time, %s\\n\",pvVar3);\n    }\n    if (lVar5 < 5) {\n      if (lVar5 == 3) {\n        pvVar6 = local_1c;\n        ttt(pvVar3);\n        local_1c = (void *)-(int)local_1c;\n      }\n      else {\n        if (3 < lVar5) goto LAB_00012226;\n        if (lVar5 == 1) {\n          rps(pvVar3);\n        }\n        else {\n          if (lVar5 != 2) goto LAB_00012226;\n          hi_lo(pvVar3);\n        }\n      }\n    }\n    else {\nLAB_00012226:\n      printf(\"Invalid Game\\n\");\n    }\n    if (((100 < *(int *)((int)pvVar3 + 0x2c)) && (*(int *)((int)pvVar3 + 0x24) != 0)) &&\n       (*(int *)((int)pvVar3 + 0x28) != 0)) {\n      printf(\"I\\'ve been beat. I realize now - the only winning move is not to play\\n\",pvVar6);\n      printf(\"What say you?\\n\",pvVar3);\n      if (local_20 == (void *)0x0) {\n        local_20 = (void *)score_to_l_code(*(undefined4 *)((int)pvVar3 + 0x1c));\n      }\n      (**(code **)((int)pvVar3 + 0x18))();\n      pvVar6 = local_20;\n      printf(\"Just in time. I was able to brute force the l-code. l-code = %d\\n\",local_20);\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "calloc",
+                        "malloc",
+                        "printf",
+                        "freaduntil",
+                        "strtol",
+                        "init_player",
+                        "ttt",
+                        "rps",
+                        "hi_lo",
+                        "score_to_l_code"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            }
+        ],
+        "rps.c": [
+            {
+                "func_name": "play_rps",
+                "func_c_signature": "undefined4 play_rps(void)",
+                "decompiled_code": "undefined4 play_rps(void) {\n  char *__s1;\n  byte bVar1;\n  int iVar2;\n  byte local_d;\n  \n  iVar2 = idx % 0x1000;\n  idx = iVar2 + 1;\n  bVar1 = *(byte *)(iVar2 + secret) % 3;\n  local_d = 8;\n  __s1 = (char *)malloc(0x100);\n  while (local_d == 8) {\n    printf(\"Choose [HAMMER, SHEET, SHEERS]: \");\n    iVar2 = freaduntil(__s1,0x100,10,stdin);\n    if (iVar2 != -1) {\n      iVar2 = strcmp(__s1,\"HAMMER\");\n      if (iVar2 == 0) {\n        local_d = 0;\n      }\n      else {\n        iVar2 = strcmp(__s1,\"SHEET\");\n        if (iVar2 == 0) {\n          local_d = 1;\n        }\n        else {\n          iVar2 = strcmp(__s1,\"SHEERS\");\n          if (iVar2 == 0) {\n            local_d = 2;\n          }\n          else {\n            local_d = 8;\n          }\n        }\n      }\n    }\n  }\n  free(__s1);\n  if (local_d != 2) {\n    if (2 < local_d) {\n      return 0;\n    }\n    if (local_d == 0) {\n      printf(\"HAMMER v \");\n      if (bVar1 == 2) {\n        printf(\"SHEERS\\n\");\n        printf(\"You Win!\\n\");\n        return 1000;\n      }\n      if (bVar1 < 3) {\n        if (bVar1 == 0) {\n          printf(\"HAMMER\\n\");\n          printf(\"It\\'s a tie!\\n\");\n          return 0;\n        }\n        if (bVar1 == 1) {\n          printf(\"SHEET\\n\");\n          printf(\"You Lose.\\n\");\n          return 0;\n        }\n      }\n    }\n    else if (local_d != 1) {\n      return 0;\n    }\n    printf(\"SHEET v \");\n    if (bVar1 == 2) {\n      printf(\"SHEERS\\n\");\n      printf(\"You Lose.\\n\");\n      return 0;\n    }\n    if (bVar1 < 3) {\n      if (bVar1 == 0) {\n        printf(\"HAMMER\\n\");\n        printf(\"You Win!\\n\");\n        return 1000;\n      }\n      if (bVar1 == 1) {\n        printf(\"SHEET\\n\");\n        printf(\"It\\'s a tie!\\n\");\n        return 0;\n      }\n    }\n  }\n  printf(\"SHEERS v \");\n  if (bVar1 == 2) {\n    printf(\"SHEERS\\n\");\n    printf(\"It\\'s a tie!\\n\");\n    return 0;\n  }\n  if (bVar1 < 3) {\n    if (bVar1 == 0) {\n      printf(\"HAMMER\\n\");\n      printf(\"You Lose.\\n\");\n      return 0;\n    }\n    if (bVar1 == 1) {\n      printf(\"SHEET\\n\");\n      printf(\"You Win!\\n\");\n      return 1000;\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "play_rps",
+                        "malloc",
+                        "printf",
+                        "freaduntil",
+                        "strcmp",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "rps",
+                        "play_rps"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            }
+        ],
+        "ttt_move.c": [
+            {
+                "func_name": "find_minmax",
+                "func_c_signature": "int find_minmax(int param_1,int param_2,int param_3,int *param_4,int *param_5)",
+                "decompiled_code": "int find_minmax(int param_1,int param_2,int param_3,int *param_4,int *param_5) {\n  uint uVar1;\n  int iVar2;\n  int iVar3;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  if ((param_3 == 0x40) && (*(int *)(param_1 + 0xc) == 0)) {\n    uVar1 = *(uint *)(idx * 4 + secret) & 3;\n    idx = (idx + 1) % 0x400;\n    if (uVar1 == 3) {\n      *param_4 = 2;\n      *param_5 = 2;\n    }\n    else if (uVar1 < 4) {\n      if (uVar1 == 2) {\n        *param_4 = 2;\n        *param_5 = 0;\n      }\n      else if (uVar1 < 3) {\n        if (uVar1 == 0) {\n          *param_4 = 0;\n          *param_5 = 0;\n        }\n        else if (uVar1 == 1) {\n          *param_4 = 0;\n          *param_5 = 2;\n        }\n      }\n    }\n    local_1c = 10;\n  }\n  else {\n    iVar3 = 0;\n    local_14 = 0;\n    local_18 = 0;\n    if (param_3 == 0x40) {\n      local_1c = -1000;\n    }\n    else {\n      local_1c = 1000;\n    }\n    for (local_20 = 0; local_20 < 3; local_20 = local_20 + 1) {\n      for (local_24 = 0; local_24 < 3; local_24 = local_24 + 1) {\n        if (*(char *)(local_24 + param_1 + local_20 * 3) == '\\0') {\n          iVar3 = do_move(param_1,local_20,local_24,param_3,iVar3);\n          if (iVar3 == 8) {\n            local_10 = param_2 + -10;\n          }\n          else if (iVar3 == 0x10) {\n            local_10 = 10 - param_2;\n          }\n          else if (iVar3 == 0x20) {\n            local_10 = 0;\n          }\n          else {\n            if (iVar3 != 2) {\n              return -10000;\n            }\n            local_10 = find_minmax(param_1,param_2 + 1,-param_3,param_4,param_5);\n          }\n          iVar2 = undo_move(param_1,local_20,local_24);\n          if (iVar2 != 1) {\n            return -10000;\n          }\n          if (param_3 == 0x40) {\n            if (local_1c < local_10) {\n              local_1c = local_10;\n              local_14 = local_20;\n              local_18 = local_24;\n            }\n          }\n          else if ((param_3 == -0x40) && (local_10 < local_1c)) {\n            local_1c = local_10;\n            local_14 = local_20;\n            local_18 = local_24;\n          }\n        }\n      }\n    }\n    *param_4 = local_14;\n    *param_5 = local_18;\n  }\n  return local_1c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_minmax",
+                        "do_move",
+                        "undo_move"
+                    ],
+                    "calling_functions": [
+                        "find_minmax",
+                        "computer_move"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "computer_move",
+                "func_c_signature": "void computer_move(undefined4 param_1)",
+                "decompiled_code": "void computer_move(undefined4 param_1) {\n  undefined4 local_14;\n  undefined4 local_10 [2];\n  \n  local_10[0] = 0xffffffff;\n  local_14 = 0xffffffff;\n  find_minmax(param_1,0,0x40,&local_14,local_10);\n  do_move(param_1,local_14,local_10[0],0x40);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "computer_move",
+                        "find_minmax",
+                        "do_move"
+                    ],
+                    "calling_functions": [
+                        "ttt",
+                        "computer_move"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            },
+            {
+                "func_name": "player_move",
+                "func_c_signature": "undefined4 player_move(undefined4 param_1)",
+                "decompiled_code": "undefined4 player_move(undefined4 param_1) {\n  char *__nptr;\n  int iVar1;\n  long lVar2;\n  long lVar3;\n  undefined4 uVar4;\n  undefined4 uVar5;\n  \n  uVar5 = 0;\n  uVar4 = 0;\n  __nptr = (char *)malloc(0x100);\n  printf(\"Enter move [y,x]: \");\n  iVar1 = freaduntil(__nptr,0x100,0x2c,stdin,__nptr,uVar4,uVar5);\n  if (iVar1 != -1) {\n    lVar2 = strtol(__nptr,(char **)0x0,10);\n    iVar1 = freaduntil(__nptr,0x100,10,stdin,__nptr,lVar2,uVar5);\n    if (iVar1 != -1) {\n      lVar3 = strtol(__nptr,(char **)0x0,10);\n      free(__nptr);\n      uVar4 = do_move(param_1,lVar2,lVar3,0xffffffc0);\n      return uVar4;\n    }\n  }\n  free(__nptr);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "player_move",
+                        "malloc",
+                        "printf",
+                        "freaduntil",
+                        "strtol",
+                        "free",
+                        "do_move"
+                    ],
+                    "calling_functions": [
+                        "ttt",
+                        "player_move"
+                    ],
+                    "defined_in_file": "KPRCA_00071_decompiled.c"
+                }
+            }
+        ]
+    }
+}

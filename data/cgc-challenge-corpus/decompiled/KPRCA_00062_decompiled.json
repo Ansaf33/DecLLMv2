@@ -1,0 +1,1406 @@
+{
+    "file": "KPRCA_00062",
+    "decompiled_code": {
+        "calendar.c": [
+            {
+                "func_name": "view_day",
+                "func_c_signature": "void view_day(int param_1,undefined4 param_2)",
+                "decompiled_code": "void view_day(int param_1,undefined4 param_2) {\n  int iVar1;\n  char cVar2;\n  undefined4 *puVar3;\n  undefined4 local_24 [4];\n  int local_14;\n  undefined4 *local_10;\n  \n  get_date_str(local_24,&param_2);\n  local_10 = *(undefined4 **)(param_1 + 4);\n  local_14 = 0;\n  puVar3 = local_24;\n  printf(\"Viewing Calendar Appointments for %s\\n\",puVar3);\n  for (; local_10 != (undefined4 *)0x0; local_10 = (undefined4 *)*local_10) {\n    puVar3 = &param_2;\n    local_14 = compare_date(local_10[1] + 0x188,puVar3);\n    if (0 < local_14) break;\n    iVar1 = local_10[1];\n    puVar3 = *(undefined4 **)(iVar1 + 0x18c);\n    cVar2 = date_within(*(undefined4 *)(iVar1 + 0x188),puVar3,*(undefined4 *)(iVar1 + 400),param_2);\n    if (cVar2 != '\\0') {\n      printf(\"------------------------\\n\");\n      print_event(local_10[1]);\n    }\n  }\n  printf(\"------------------------\\n\",puVar3);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "view_day",
+                        "get_date_str",
+                        "printf",
+                        "compare_date",
+                        "date_within",
+                        "print_event"
+                    ],
+                    "calling_functions": [
+                        "view_day"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "view_month",
+                "func_c_signature": "void view_month(int param_1,undefined4 param_2)",
+                "decompiled_code": "void view_month(int param_1,undefined4 param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  undefined local_28 [16];\n  undefined4 local_18;\n  undefined4 local_14;\n  undefined4 *local_10;\n  \n  get_date_str(local_28,&param_2);\n  local_10 = *(undefined4 **)(param_1 + 4);\n  local_14 = 0;\n  uVar1 = get_month(&param_2);\n  iVar2 = (int)(short)param_2;\n  local_18 = uVar1;\n  printf(\"Viewing Monthly Calendar for %s %d\\n\",uVar1,iVar2);\n  for (; local_10 != (undefined4 *)0x0; local_10 = (undefined4 *)*local_10) {\n    if ((param_2._2_1_ <= *(char *)(local_10[1] + 0x18a)) &&\n       (*(char *)(local_10[1] + 400) <= param_2._2_1_)) {\n      printf(\"------------------------\\n\",uVar1,iVar2);\n      print_event(local_10[1]);\n    }\n  }\n  printf(\"------------------------\\n\",uVar1,iVar2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "view_month",
+                        "get_date_str",
+                        "get_month",
+                        "printf",
+                        "print_event"
+                    ],
+                    "calling_functions": [
+                        "view_month"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "calc_agenda_lookahead",
+                "func_c_signature": "undefined4 * calc_agenda_lookahead(undefined4 *param_1,undefined4 param_2)",
+                "decompiled_code": "undefined4 * calc_agenda_lookahead(undefined4 *param_1,undefined4 param_2) {\n  char cVar1;\n  undefined4 local_c;\n  \n  local_c._0_2_ = (short)param_2;\n  cVar1 = param_2._2_1_ + '\\x03';\n  local_c._0_3_ = CONCAT12(cVar1,(short)local_c);\n  if ('\\f' < cVar1) {\n    local_c._0_3_ = CONCAT12(cVar1 % '\\f',(short)local_c + 1);\n  }\n  *param_1 = local_c;\n  return param_1;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT12"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "calc_agenda_lookahead",
+                        "CONCAT12"
+                    ],
+                    "calling_functions": [
+                        "calc_agenda_lookahead",
+                        "view_agenda"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "view_agenda",
+                "func_c_signature": "void view_agenda(int *param_1,undefined4 param_2)",
+                "decompiled_code": "void view_agenda(int *param_1,undefined4 param_2) {\n  bool bVar1;\n  int iVar2;\n  undefined local_34 [4];\n  undefined local_30 [16];\n  undefined4 local_20;\n  int local_1c;\n  undefined4 *local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  get_date_str(local_30,&param_2);\n  calc_agenda_lookahead(local_34,param_2);\n  local_18 = (undefined4 *)param_1[1];\n  local_1c = 0;\n  local_20 = get_month(&param_2);\n  printf(\"Agenda View\\n\");\n  while ((iVar2 = local_10 + 1, bVar1 = local_10 < *param_1, local_10 = iVar2, bVar1 &&\n         (local_14 < 8))) {\n    local_1c = compare_date(local_18[1] + 0x188,&param_2);\n    if (local_1c < 0) {\n      local_18 = (undefined4 *)*local_18;\n    }\n    else {\n      iVar2 = compare_date(local_18[1] + 0x188,local_34);\n      if (0 < iVar2) break;\n      printf(\"------------------------\\n\");\n      print_event(local_18[1]);\n      local_14 = local_14 + 1;\n      local_18 = (undefined4 *)*local_18;\n    }\n  }\n  printf(\"------------------------\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "view_agenda",
+                        "get_date_str",
+                        "calc_agenda_lookahead",
+                        "get_month",
+                        "printf",
+                        "compare_date",
+                        "print_event"
+                    ],
+                    "calling_functions": [
+                        "view_agenda"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_calendar_event",
+                "func_c_signature": "bool add_calendar_event(int *param_1,undefined4 param_2)",
+                "decompiled_code": "bool add_calendar_event(int *param_1,undefined4 param_2) {\n  char cVar1;\n  \n  cVar1 = insert_in_order(param_1 + 1,param_2,compare_event_dates);\n  if (cVar1 != '\\0') {\n    *param_1 = *param_1 + 1;\n  }\n  return cVar1 != '\\0';\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_calendar_event",
+                        "insert_in_order"
+                    ],
+                    "calling_functions": [
+                        "add_calendar_event",
+                        "add_user_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove_calendar_event",
+                "func_c_signature": "bool remove_calendar_event(int *param_1,undefined4 param_2)",
+                "decompiled_code": "bool remove_calendar_event(int *param_1,undefined4 param_2) {\n  char cVar1;\n  \n  param_2 = pop(param_1 + 1,param_2,compare_events);\n  cVar1 = delete_event(&param_2);\n  if (cVar1 != '\\0') {\n    *param_1 = *param_1 + -1;\n  }\n  return cVar1 != '\\0';\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_calendar_event",
+                        "pop",
+                        "delete_event"
+                    ],
+                    "calling_functions": [
+                        "remove_calendar_event",
+                        "remove_user_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            }
+        ],
+        "datetime.c": [
+            {
+                "func_name": "is_valid_date",
+                "func_c_signature": "undefined4 is_valid_date(ushort *param_1)",
+                "decompiled_code": "undefined4 is_valid_date(ushort *param_1) {\n  undefined4 uVar1;\n  uint uVar2;\n  \n  if (((((param_1 == (ushort *)0x0) || ((short)*param_1 < 0x7df)) || (0x7e9 < (short)*param_1)) ||\n      ((*(char *)(param_1 + 1) < '\\x01' || ('\\f' < *(char *)(param_1 + 1))))) ||\n     (*(char *)((int)param_1 + 3) < '\\x01')) {\n    return 0;\n  }\n  if (*(byte *)(param_1 + 1) < 0xd) {\n    uVar2 = 1 << (*(byte *)(param_1 + 1) & 0x1f);\n    if ((uVar2 & 0x15aa) == 0) {\n      if ((uVar2 & 0xa50) == 0) {\n        if ((uVar2 & 4) == 0) goto LAB_0001188c;\n        if ((*param_1 != (ushort)(((short)*param_1 / 400) * 400)) && ((*param_1 & 3) == 0)) {\n          if ('\\x1d' < *(char *)((int)param_1 + 3)) {\n            return 0;\n          }\n          if ('\\x1c' < *(char *)((int)param_1 + 3)) {\n            return 0;\n          }\n        }\n      }\n      else if ('\\x1e' < *(char *)((int)param_1 + 3)) {\n        return 0;\n      }\n    }\n    else if ('\\x1f' < *(char *)((int)param_1 + 3)) {\n      return 0;\n    }\n    uVar1 = 1;\n  }\n  else {\nLAB_0001188c:\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_valid_date"
+                    ],
+                    "calling_functions": [
+                        "is_valid_date",
+                        "set_date",
+                        "set_datetime",
+                        "strtodate"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_valid_time",
+                "func_c_signature": "undefined4 is_valid_time(char *param_1)",
+                "decompiled_code": "undefined4 is_valid_time(char *param_1) {\n  undefined4 uVar1;\n  \n  if ((((param_1 == (char *)0x0) || (*param_1 < '\\0')) || ('\\x17' < *param_1)) ||\n     ((param_1[1] < '\\0' || (';' < param_1[1])))) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_valid_time"
+                    ],
+                    "calling_functions": [
+                        "is_valid_time",
+                        "set_datetime",
+                        "strtotime"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_date",
+                "func_c_signature": "undefined4 set_date(undefined4 *param_1,undefined param_2,undefined param_3,undefined2 param_4)",
+                "decompiled_code": "undefined4 set_date(undefined4 *param_1,undefined param_2,undefined param_3,undefined2 param_4) {\n  char cVar1;\n  undefined4 uVar2;\n  undefined4 local_8;\n  \n  if (param_1 == (undefined4 *)0x0) {\n    uVar2 = 0;\n  }\n  else {\n    local_8 = CONCAT13(param_3,CONCAT12(param_2,param_4));\n    cVar1 = is_valid_date(&local_8);\n    if (cVar1 == '\\0') {\n      uVar2 = 0;\n    }\n    else {\n      *param_1 = local_8;\n      uVar2 = 1;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT13",
+                    "CONCAT12"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_date",
+                        "CONCAT13",
+                        "CONCAT12",
+                        "is_valid_date"
+                    ],
+                    "calling_functions": [
+                        "set_date"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_time",
+                "func_c_signature": "undefined4 set_time(char *param_1,char param_2,char param_3)",
+                "decompiled_code": "undefined4 set_time(char *param_1,char param_2,char param_3) {\n  undefined4 uVar1;\n  \n  if ((((param_1 == (char *)0x0) || (param_2 < '\\0')) || ('\\x17' < param_2)) ||\n     ((param_3 < '\\0' || (';' < param_3)))) {\n    uVar1 = 0;\n  }\n  else {\n    *param_1 = param_2;\n    param_1[1] = param_3;\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_time"
+                    ],
+                    "calling_functions": [
+                        "set_time",
+                        "add_user_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_datetime",
+                "func_c_signature": "undefined4 set_datetime(undefined4 *param_1,undefined4 param_2,undefined2 param_3)",
+                "decompiled_code": "undefined4 set_datetime(undefined4 *param_1,undefined4 param_2,undefined2 param_3) {\n  char cVar1;\n  \n  if (((param_1 != (undefined4 *)0x0) && (cVar1 = is_valid_date(&param_2), cVar1 != '\\0')) &&\n     (cVar1 = is_valid_time(&param_3), cVar1 != '\\0')) {\n    *param_1 = param_2;\n    *(undefined2 *)(param_1 + 1) = param_3;\n    return 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_datetime",
+                        "is_valid_date",
+                        "is_valid_time"
+                    ],
+                    "calling_functions": [
+                        "set_datetime",
+                        "set_duration"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_duration",
+                "func_c_signature": "undefined4\nset_duration(int param_1,undefined4 param_2,undefined2 param_3,undefined4 param_4,undefined2 param_5\n            )",
+                "decompiled_code": "undefined4\nset_duration(int param_1,undefined4 param_2,undefined2 param_3,undefined4 param_4,undefined2 param_5\n            ) {\n  char cVar1;\n  int iVar2;\n  undefined4 uVar3;\n  \n  uVar3 = 0x11a15;\n  if (param_1 == 0) {\n    uVar3 = 0;\n  }\n  else {\n    iVar2 = compare_date(&param_2,&param_4);\n    if (iVar2 < 0) {\n      cVar1 = set_datetime(param_1,param_2,param_3,uVar3);\n      if (cVar1 == '\\0') {\n        uVar3 = 0;\n      }\n      else {\n        cVar1 = set_datetime(param_1 + 6,param_4,param_5,uVar3);\n        if (cVar1 == '\\0') {\n          uVar3 = 0;\n        }\n        else {\n          uVar3 = 1;\n        }\n      }\n    }\n    else {\n      uVar3 = 0;\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_duration",
+                        "compare_date",
+                        "set_datetime"
+                    ],
+                    "calling_functions": [
+                        "set_duration"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "compare_date",
+                "func_c_signature": "undefined4 compare_date(short *param_1,short *param_2)",
+                "decompiled_code": "undefined4 compare_date(short *param_1,short *param_2) {\n  undefined4 uVar1;\n  \n  if ((param_1 == (short *)0x0) || (param_2 == (short *)0x0)) {\n    uVar1 = 0xffffffff;\n  }\n  else if (*param_1 < *param_2) {\n    uVar1 = 0xffffffff;\n  }\n  else if (*param_2 < *param_1) {\n    uVar1 = 1;\n  }\n  else if (*(char *)(param_1 + 1) < *(char *)(param_2 + 1)) {\n    uVar1 = 0xffffffff;\n  }\n  else if (*(char *)(param_2 + 1) < *(char *)(param_1 + 1)) {\n    uVar1 = 1;\n  }\n  else if (*(char *)((int)param_1 + 3) < *(char *)((int)param_2 + 3)) {\n    uVar1 = 0xffffffff;\n  }\n  else if (*(char *)((int)param_2 + 3) < *(char *)((int)param_1 + 3)) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "compare_date"
+                    ],
+                    "calling_functions": [
+                        "view_day",
+                        "view_agenda",
+                        "set_duration",
+                        "compare_date",
+                        "compare_datetime",
+                        "date_within",
+                        "compare_event_dates",
+                        "add_user_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "compare_time",
+                "func_c_signature": "undefined4 compare_time(char *param_1,char *param_2)",
+                "decompiled_code": "undefined4 compare_time(char *param_1,char *param_2) {\n  undefined4 uVar1;\n  \n  if ((param_1 == (char *)0x0) || (param_2 == (char *)0x0)) {\n    uVar1 = 0xffffffff;\n  }\n  else if (*param_1 < *param_2) {\n    uVar1 = 0xffffffff;\n  }\n  else if (*param_2 < *param_1) {\n    uVar1 = 1;\n  }\n  else if (param_1[1] < param_2[1]) {\n    uVar1 = 0xffffffff;\n  }\n  else if (param_2[1] < param_1[1]) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "compare_time"
+                    ],
+                    "calling_functions": [
+                        "compare_time",
+                        "compare_datetime",
+                        "add_user_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "compare_datetime",
+                "func_c_signature": "int compare_datetime(int param_1,int param_2)",
+                "decompiled_code": "int compare_datetime(int param_1,int param_2) {\n  int iVar1;\n  \n  iVar1 = compare_date(param_1,param_2);\n  if (iVar1 == 0) {\n    iVar1 = compare_time(param_1 + 4,param_2 + 4);\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "compare_datetime",
+                        "compare_date",
+                        "compare_time"
+                    ],
+                    "calling_functions": [
+                        "compare_datetime",
+                        "durations_overlap",
+                        "datetime_within"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "durations_overlap",
+                "func_c_signature": "undefined4 durations_overlap(void)",
+                "decompiled_code": "undefined4 durations_overlap(void) {\n  int iVar1;\n  int iVar2;\n  undefined4 uVar3;\n  \n  iVar1 = compare_datetime(&stack0x00000004,&stack0x00000016);\n  iVar2 = compare_datetime(&stack0x0000000a,&stack0x00000010);\n  if ((iVar1 == -1) && (iVar2 == 1)) {\n    uVar3 = 1;\n  }\n  else {\n    iVar1 = compare_datetime(&stack0x00000010,&stack0x0000000a);\n    iVar2 = compare_datetime(&stack0x00000016,&stack0x00000004);\n    if ((iVar1 == -1) && (iVar2 == 1)) {\n      uVar3 = 1;\n    }\n    else {\n      uVar3 = 0;\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "durations_overlap",
+                        "compare_datetime"
+                    ],
+                    "calling_functions": [
+                        "durations_overlap"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "date_within",
+                "func_c_signature": "undefined4 date_within(void)",
+                "decompiled_code": "undefined4 date_within(void) {\n  int iVar1;\n  int iVar2;\n  undefined4 uVar3;\n  \n  iVar1 = compare_date(&stack0x00000004,&stack0x00000010);\n  iVar2 = compare_date(&stack0x0000000a,&stack0x00000010);\n  if ((iVar1 < 1) && (-1 < iVar2)) {\n    uVar3 = 1;\n  }\n  else {\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "date_within",
+                        "compare_date"
+                    ],
+                    "calling_functions": [
+                        "view_day",
+                        "date_within"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "datetime_within",
+                "func_c_signature": "undefined4 datetime_within(void)",
+                "decompiled_code": "undefined4 datetime_within(void) {\n  int iVar1;\n  int iVar2;\n  undefined4 uVar3;\n  \n  iVar1 = compare_datetime(&stack0x00000004,&stack0x00000010);\n  iVar2 = compare_datetime(&stack0x0000000a,&stack0x00000010);\n  if ((iVar1 == -1) && (iVar2 == 1)) {\n    uVar3 = 1;\n  }\n  else {\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "datetime_within",
+                        "compare_datetime"
+                    ],
+                    "calling_functions": [
+                        "datetime_within"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "strtodate",
+                "func_c_signature": "undefined4 strtodate(char *param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 strtodate(char *param_1,undefined4 *param_2) {\n  char cVar1;\n  size_t sVar2;\n  long lVar3;\n  undefined4 local_1c;\n  char *local_18;\n  char *local_14;\n  char *local_10;\n  \n  if (((param_1 == (char *)0x0) || (param_2 == (undefined4 *)0x0)) ||\n     (sVar2 = strlen(param_1), sVar2 < 8)) {\n    return 0;\n  }\n  memset(&local_1c,0,4);\n  local_10 = strsep(&param_1,\"-\");\n  if (local_10 == (char *)0x0) {\n    return 0;\n  }\n  local_14 = strsep(&param_1,\"-\");\n  if (local_14 == (char *)0x0) {\n    return 0;\n  }\n  local_18 = strsep(&param_1,\"-\");\n  if (local_18 == (char *)0x0) {\n    return 0;\n  }\n  lVar3 = strtol(local_18,(char **)0x0,10);\n  local_1c = CONCAT22(local_1c._2_2_,(short)lVar3);\n  lVar3 = strtol(local_10,(char **)0x0,10);\n  local_1c._0_3_ = CONCAT12((char)lVar3,(undefined2)local_1c);\n  lVar3 = strtol(local_14,(char **)0x0,10);\n  local_1c = CONCAT13((char)lVar3,(undefined3)local_1c);\n  cVar1 = is_valid_date(&local_1c);\n  if (cVar1 != '\\0') {\n    *param_2 = local_1c;\n    return 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT22",
+                    "CONCAT12",
+                    "CONCAT13"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strtodate",
+                        "strlen",
+                        "memset",
+                        "strsep",
+                        "strtol",
+                        "CONCAT22",
+                        "CONCAT12",
+                        "CONCAT13",
+                        "is_valid_date"
+                    ],
+                    "calling_functions": [
+                        "strtodate",
+                        "change_cur_date",
+                        "change_view_date",
+                        "add_user_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "strtotime",
+                "func_c_signature": "undefined4 strtotime(char *param_1,undefined2 *param_2)",
+                "decompiled_code": "undefined4 strtotime(char *param_1,undefined2 *param_2) {\n  char cVar1;\n  size_t sVar2;\n  long lVar3;\n  undefined2 local_1e;\n  char *local_1c;\n  char *local_18;\n  uint local_14;\n  uint local_10;\n  \n  if (((param_1 == (char *)0x0) || (param_2 == (undefined2 *)0x0)) ||\n     (sVar2 = strlen(param_1), sVar2 < 4)) {\n    return 0;\n  }\n  local_18 = strsep(&param_1,\":\");\n  if (local_18 == (char *)0x0) {\n    return 0;\n  }\n  local_1c = strsep(&param_1,\"-\");\n  if (local_1c == (char *)0x0) {\n    return 0;\n  }\n  lVar3 = strtol(local_18,(char **)0x0,10);\n  local_1e = CONCAT11(local_1e._1_1_,(char)lVar3);\n  lVar3 = strtol(local_1c,(char **)0x0,10);\n  local_1e = CONCAT11((char)lVar3,(char)local_1e);\n  if ((char)local_1e == '\\0') {\n    local_10 = 0;\n    while (sVar2 = strlen(local_18), local_10 < sVar2) {\n      if (local_18[local_10] != '0') {\n        return 0;\n      }\n      local_10 = local_10 + 1;\n    }\n  }\n  if (local_1e._1_1_ == '\\0') {\n    local_14 = 0;\n    while (sVar2 = strlen(local_1c), local_14 < sVar2) {\n      if (local_1c[local_14] != '0') {\n        return 0;\n      }\n      local_14 = local_14 + 1;\n    }\n  }\n  cVar1 = is_valid_time(&local_1e);\n  if (cVar1 != '\\0') {\n    *param_2 = local_1e;\n    return 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT11"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strtotime",
+                        "strlen",
+                        "strsep",
+                        "strtol",
+                        "CONCAT11",
+                        "is_valid_time"
+                    ],
+                    "calling_functions": [
+                        "strtotime",
+                        "add_user_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_date",
+                "func_c_signature": "void print_date(short *param_1)",
+                "decompiled_code": "void print_date(short *param_1) {\n  printf(\"%d-%d-%d\",(int)*(char *)(param_1 + 1),(int)*(char *)((int)param_1 + 3),(int)*param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_date",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_date",
+                        "user_menu",
+                        "calendar_menu"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_date_str",
+                "func_c_signature": "void get_date_str(char *param_1,short *param_2)",
+                "decompiled_code": "void get_date_str(char *param_1,short *param_2) {\n  sprintf(param_1,\"%d-%d-%d\",(int)*(char *)(param_2 + 1),(int)*(char *)((int)param_2 + 3),\n          (int)*param_2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_date_str",
+                        "sprintf"
+                    ],
+                    "calling_functions": [
+                        "view_day",
+                        "view_month",
+                        "view_agenda",
+                        "get_date_str",
+                        "print_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_month",
+                "func_c_signature": "char * get_month(int param_1)",
+                "decompiled_code": "char * get_month(int param_1) {\n  char *pcVar1;\n  \n  if (param_1 == 0) {\n    pcVar1 = \"Undefined Month\";\n  }\n  else {\n    switch(*(undefined *)(param_1 + 2)) {\n    default:\n      pcVar1 = \"Undefined Month\";\n      break;\n    case 1:\n      pcVar1 = \"January\";\n      break;\n    case 2:\n      pcVar1 = \"Februrary\";\n      break;\n    case 3:\n      pcVar1 = \"March\";\n      break;\n    case 4:\n      pcVar1 = \"April\";\n      break;\n    case 5:\n      pcVar1 = \"May\";\n      break;\n    case 6:\n      pcVar1 = \"June\";\n      break;\n    case 7:\n      pcVar1 = \"July\";\n      break;\n    case 8:\n      pcVar1 = \"August\";\n      break;\n    case 9:\n      pcVar1 = \"Septempber\";\n      break;\n    case 10:\n      pcVar1 = \"October\";\n      break;\n    case 0xb:\n      pcVar1 = \"November\";\n      break;\n    case 0xc:\n      pcVar1 = \"December\";\n    }\n  }\n  return pcVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_month"
+                    ],
+                    "calling_functions": [
+                        "view_month",
+                        "view_agenda",
+                        "get_month"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_time",
+                "func_c_signature": "void print_time(char *param_1)",
+                "decompiled_code": "void print_time(char *param_1) {\n  undefined *local_10;\n  \n  local_10 = &DAT_00018120;\n  if ('\\t' < param_1[1]) {\n    local_10 = &DAT_00018122;\n  }\n  printf(\"%d:%s%d\",(int)*param_1,local_10,(int)param_1[1]);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_time",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_time"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_time_str",
+                "func_c_signature": "void get_time_str(char *param_1,char *param_2)",
+                "decompiled_code": "void get_time_str(char *param_1,char *param_2) {\n  undefined *local_10;\n  \n  local_10 = &DAT_00018120;\n  if ('\\t' < param_2[1]) {\n    local_10 = &DAT_00018122;\n  }\n  sprintf(param_1,\"%d:%s%d\",(int)*param_2,local_10,(int)param_2[1]);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_time_str",
+                        "sprintf"
+                    ],
+                    "calling_functions": [
+                        "get_time_str",
+                        "print_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            }
+        ],
+        "event.c": [
+            {
+                "func_name": "create_event",
+                "func_c_signature": "int * create_event(int param_1,char *param_2,char *param_3,int *param_4,undefined param_5)",
+                "decompiled_code": "int * create_event(int param_1,char *param_2,char *param_3,int *param_4,undefined param_5) {\n  int iVar1;\n  size_t sVar2;\n  int *piVar3;\n  \n  if ((((param_1 != 0) && (param_2 != (char *)0x0)) && (sVar2 = strlen(param_2), sVar2 != 0)) &&\n     (((param_3 != (char *)0x0 && (sVar2 = strlen(param_3), sVar2 != 0)) && (param_4 != (int *)0x0))\n     )) {\n    piVar3 = (int *)malloc(0x198);\n    iVar1 = g_event_id + 1;\n    *piVar3 = g_event_id;\n    g_event_id = iVar1;\n    piVar3[1] = param_1;\n    strcpy((char *)(piVar3 + 2),param_2);\n    strcpy((char *)(piVar3 + 0x22),param_3);\n    piVar3[0x62] = *param_4;\n    piVar3[99] = param_4[1];\n    piVar3[100] = param_4[2];\n    *(undefined *)(piVar3 + 0x65) = param_5;\n    return piVar3;\n  }\n  return (int *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_event",
+                        "strlen",
+                        "malloc",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "create_event",
+                        "add_user_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "delete_event",
+                "func_c_signature": "bool delete_event(void **param_1)",
+                "decompiled_code": "bool delete_event(void **param_1) {\n  void *pvVar1;\n  \n  pvVar1 = *param_1;\n  if (pvVar1 != (void *)0x0) {\n    free(*param_1);\n    *param_1 = (void *)0x0;\n  }\n  return pvVar1 != (void *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "delete_event",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "remove_calendar_event",
+                        "delete_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "compare_events",
+                "func_c_signature": "undefined4 compare_events(int *param_1,int *param_2)",
+                "decompiled_code": "undefined4 compare_events(int *param_1,int *param_2) {\n  undefined4 uVar1;\n  \n  if ((param_1 == (int *)0x0) || (param_2 == (int *)0x0)) {\n    uVar1 = 0xffffffff;\n  }\n  else if (*param_1 < *param_2) {\n    uVar1 = 0xffffffff;\n  }\n  else if (*param_1 == *param_2) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "compare_events"
+                    ],
+                    "calling_functions": [
+                        "compare_events"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "compare_event_dates",
+                "func_c_signature": "undefined4 compare_event_dates(int param_1,int param_2)",
+                "decompiled_code": "undefined4 compare_event_dates(int param_1,int param_2) {\n  undefined4 uVar1;\n  \n  if ((param_1 == 0) || (param_2 == 0)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    uVar1 = compare_date(param_1 + 0x188,param_2 + 0x188);\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "compare_event_dates",
+                        "compare_date"
+                    ],
+                    "calling_functions": [
+                        "compare_event_dates"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_event_from_list",
+                "func_c_signature": "undefined4 find_event_from_list(int param_1,uint param_2,int *param_3,undefined4 param_4)",
+                "decompiled_code": "undefined4 find_event_from_list(int param_1,uint param_2,int *param_3,undefined4 param_4) {\n  undefined4 uVar1;\n  long local_1ac [102];\n  undefined4 local_14;\n  char *local_10;\n  \n  if ((param_1 == 0) || (param_2 < 2)) {\n    uVar1 = 0;\n  }\n  else {\n    local_10 = (char *)0x0;\n    local_14 = 0;\n    local_10 = (char *)q_and_a(\"Enter eventid: \",10,param_1,param_2,param_3,1);\n    if (local_10 == (char *)0x0) {\n      uVar1 = 0;\n    }\n    else if (*param_3 == 0) {\n      local_1ac[0] = strtol(local_10,(char **)0x0,10);\n      free(local_10);\n      uVar1 = find(param_4,local_1ac,compare_events);\n    }\n    else {\n      free(local_10);\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_event_from_list",
+                        "q_and_a",
+                        "strtol",
+                        "free",
+                        "find"
+                    ],
+                    "calling_functions": [
+                        "find_event_from_list",
+                        "remove_user_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_event",
+                "func_c_signature": "void print_event(undefined4 *param_1)",
+                "decompiled_code": "void print_event(undefined4 *param_1) {\n  undefined4 *puVar1;\n  undefined local_24 [8];\n  undefined local_1c [20];\n  \n  puVar1 = param_1 + 2;\n  printf(\"Event ID: %d - %s\\n\",*param_1,puVar1);\n  printf(\"About the event: %s\\n\",param_1 + 0x22);\n  if (*(char *)(param_1 + 0x65) == '\\0') {\n    get_date_str(local_1c,param_1 + 0x62);\n    get_time_str(local_24,param_1 + 99);\n    printf(\"Starts %s @ %s\\n\",local_1c,local_24);\n    get_date_str(local_1c,(int)param_1 + 0x18e);\n    get_time_str(local_24,(int)param_1 + 0x192);\n    printf(\"Ends %s @ %s\\n\",local_1c,local_24);\n  }\n  else {\n    get_date_str(local_1c,param_1 + 0x62);\n    printf(\"Starts %s\\n\",local_1c,puVar1);\n    get_date_str(local_1c,(int)param_1 + 0x18e);\n    printf(\"Ends %s\\n\",local_1c);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_event",
+                        "printf",
+                        "get_date_str",
+                        "get_time_str"
+                    ],
+                    "calling_functions": [
+                        "view_day",
+                        "view_month",
+                        "view_agenda",
+                        "print_event",
+                        "add_user_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            }
+        ],
+        "list.c": [
+            {
+                "func_name": "create_node",
+                "func_c_signature": "undefined4 * create_node(undefined4 param_1)",
+                "decompiled_code": "undefined4 * create_node(undefined4 param_1) {\n  undefined4 *puVar1;\n  \n  puVar1 = (undefined4 *)malloc(8);\n  if (puVar1 == (undefined4 *)0x0) {\n    puVar1 = (undefined4 *)0x0;\n  }\n  else {\n    *puVar1 = 0;\n    puVar1[1] = param_1;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_node",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "create_node",
+                        "insert",
+                        "insert_in_order",
+                        "append"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "insert",
+                "func_c_signature": "undefined4 insert(int **param_1,int param_2)",
+                "decompiled_code": "undefined4 insert(int **param_1,int param_2) {\n  undefined4 uVar1;\n  int **ppiVar2;\n  \n  if (param_2 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    ppiVar2 = (int **)create_node(param_2);\n    if (ppiVar2 == (int **)0x0) {\n      uVar1 = 0;\n    }\n    else {\n      if (*param_1 != (int *)0x0) {\n        *ppiVar2 = *param_1;\n      }\n      *param_1 = (int *)ppiVar2;\n      uVar1 = 1;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "insert",
+                        "create_node"
+                    ],
+                    "calling_functions": [
+                        "insert"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "insert_in_order",
+                "func_c_signature": "undefined4 insert_in_order(int **param_1,int param_2,code *param_3)",
+                "decompiled_code": "undefined4 insert_in_order(int **param_1,int param_2,code *param_3) {\n  undefined4 uVar1;\n  int iVar2;\n  int **local_18;\n  int **local_14;\n  int **local_10;\n  \n  if (param_2 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    local_14 = (int **)create_node(param_2);\n    if (local_14 == (int **)0x0) {\n      uVar1 = 0;\n    }\n    else if (*param_1 == (int *)0x0) {\n      *param_1 = (int *)local_14;\n      uVar1 = 1;\n    }\n    else {\n      local_10 = (int **)*param_1;\n      for (local_18 = (int **)*param_1; local_18 != (int **)0x0; local_18 = (int **)*local_18) {\n        iVar2 = (*param_3)(param_2,local_18[1]);\n        if (iVar2 < 1) {\n          if ((int **)*param_1 == local_18) {\n            *local_14 = *param_1;\n            *param_1 = (int *)local_14;\n            return 1;\n          }\n          *local_14 = (int *)local_18;\n          *local_10 = (int *)local_14;\n          return 1;\n        }\n        if (*local_18 == (int *)0x0) {\n          uVar1 = append(&local_18,param_2);\n          return uVar1;\n        }\n        local_10 = local_18;\n      }\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "insert_in_order",
+                        "create_node",
+                        "append"
+                    ],
+                    "calling_functions": [
+                        "add_calendar_event",
+                        "insert_in_order",
+                        "add_user",
+                        "add_user_to_list"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "append",
+                "func_c_signature": "undefined4 append(int **param_1,int param_2)",
+                "decompiled_code": "undefined4 append(int **param_1,int param_2) {\n  undefined4 uVar1;\n  int *piVar2;\n  int **local_10;\n  \n  if (param_2 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    piVar2 = (int *)create_node(param_2);\n    if (piVar2 == (int *)0x0) {\n      uVar1 = 0;\n    }\n    else if (*param_1 == (int *)0x0) {\n      *param_1 = piVar2;\n      uVar1 = 1;\n    }\n    else {\n      for (local_10 = (int **)*param_1; *local_10 != (int *)0x0; local_10 = (int **)*local_10) {\n      }\n      *local_10 = piVar2;\n      uVar1 = 1;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "append",
+                        "create_node"
+                    ],
+                    "calling_functions": [
+                        "insert_in_order",
+                        "append"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "popfront",
+                "func_c_signature": "int * popfront(int **param_1)",
+                "decompiled_code": "int * popfront(int **param_1) {\n  int **__ptr;\n  int *piVar1;\n  \n  if (*param_1 == (int *)0x0) {\n    piVar1 = (int *)0x0;\n  }\n  else {\n    __ptr = (int **)*param_1;\n    *param_1 = *__ptr;\n    *__ptr = (int *)0x0;\n    piVar1 = __ptr[1];\n    free(__ptr);\n  }\n  return piVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "popfront",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "popfront",
+                        "clear_list"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "popback",
+                "func_c_signature": "undefined4 popback(int **param_1)",
+                "decompiled_code": "undefined4 popback(int **param_1) {\n  int **local_14;\n  int **local_10;\n  \n  if (*param_1 != (int *)0x0) {\n    local_10 = (int **)*param_1;\n    local_14 = (int **)0x0;\n    for (; *local_10 != (int *)0x0; local_10 = (int **)*local_10) {\n      local_14 = local_10;\n    }\n    if (local_14 == (int **)0x0) {\n      *param_1 = (int *)0x0;\n    }\n    else {\n      *local_14 = (int *)0x0;\n    }\n    free(local_10);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "popback",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "popback"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find",
+                "func_c_signature": "undefined4 find(undefined4 *param_1,int param_2,code *param_3)",
+                "decompiled_code": "undefined4 find(undefined4 *param_1,int param_2,code *param_3) {\n  int iVar1;\n  undefined4 *local_10;\n  \n  if ((param_1 != (undefined4 *)0x0) && (param_2 != 0)) {\n    for (local_10 = param_1; (local_10 != (undefined4 *)0x0 && (local_10[1] != 0));\n        local_10 = (undefined4 *)*local_10) {\n      iVar1 = (*param_3)(param_2,local_10[1]);\n      if (iVar1 == 0) {\n        return local_10[1];\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find"
+                    ],
+                    "calling_functions": [
+                        "find_event_from_list",
+                        "find",
+                        "find_user_from_list"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "pop",
+                "func_c_signature": "int * pop(int **param_1,int param_2,code *param_3)",
+                "decompiled_code": "int * pop(int **param_1,int param_2,code *param_3) {\n  int *piVar1;\n  int iVar2;\n  int **local_14;\n  int **local_10;\n  \n  if ((param_1 != (int **)0x0) && (param_2 != 0)) {\n    local_14 = (int **)*param_1;\n    for (local_10 = (int **)*param_1; local_10 != (int **)0x0; local_10 = (int **)*local_10) {\n      iVar2 = (*param_3)(param_2,local_10[1]);\n      if (iVar2 == 0) {\n        if (local_10 == (int **)*param_1) {\n          *param_1 = *local_10;\n        }\n        else {\n          *local_14 = *local_10;\n        }\n        piVar1 = local_10[1];\n        free(local_10);\n        return piVar1;\n      }\n      local_14 = local_10;\n    }\n  }\n  return (int *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "pop",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "remove_calendar_event",
+                        "pop",
+                        "remove_user"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print",
+                "func_c_signature": "undefined ** print(undefined4 *param_1,code *param_2)",
+                "decompiled_code": "undefined ** print(undefined4 *param_1,code *param_2) {\n  undefined **ppuVar1;\n  undefined4 *local_10;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  if (param_1 != (undefined4 *)0x0) {\n    for (local_10 = param_1; local_10 != (undefined4 *)0x0; local_10 = (undefined4 *)*local_10) {\n      (*param_2)(local_10[1]);\n    }\n    ppuVar1 = (undefined **)0x0;\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print"
+                    ],
+                    "calling_functions": [
+                        "print",
+                        "print_user_list"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "add_user",
+                "func_c_signature": "bool add_user(void)",
+                "decompiled_code": "bool add_user(void) {\n  char cVar1;\n  size_t sVar2;\n  int local_24;\n  int local_20;\n  int local_1c;\n  void *local_18;\n  char *local_14;\n  int local_10;\n  \n  local_20 = 1;\n  local_10 = 0;\n  local_14 = (char *)0x0;\n  local_18 = (void *)0x0;\n  local_1c = 0;\n  do {\n    if (local_20 == 0) {\n      local_18 = (void *)q_and_a(\"Enter a short \\\"about me\\\" section.: \",0x200,line,0x800,&local_20,\n                                 0);\n      if (local_20 == 0) {\n        local_24 = create_user(local_14,local_18);\n        cVar1 = insert_in_order(&g_all_users,local_24,compare_users);\n        if (cVar1 == '\\0') {\n          if (local_24 != 0) {\n            delete_user(&local_24);\n          }\n          printf(\"Cannot add user at this time\\n\");\n        }\n        else {\n          printf(\"Successfully added user\\n\");\n          g_num_users = g_num_users + 1;\n        }\n      }\n      break;\n    }\n    local_1c = find_user_from_list(line,0x800,&local_20,g_all_users,g_num_users);\n    if (local_20 == -1) break;\n    if (local_20 == 0) {\n      if (((local_1c != 0) || (sVar2 = strlen(line), sVar2 == 0)) ||\n         (sVar2 = strlen(line), 0x80 < sVar2)) {\n        local_20 = 1;\n        goto LAB_00012b7e;\n      }\n      local_14 = strdup(line);\n    }\n    else {\nLAB_00012b7e:\n      printf(\"Try again\\n\");\n    }\n    local_10 = local_10 + 1;\n  } while (local_10 != 5);\n  if (local_14 != (char *)0x0) {\n    free(local_14);\n  }\n  if (local_18 != (void *)0x0) {\n    free(local_18);\n  }\n  return local_20 != -1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_user",
+                        "q_and_a",
+                        "create_user",
+                        "insert_in_order",
+                        "delete_user",
+                        "printf",
+                        "find_user_from_list",
+                        "strlen",
+                        "strdup",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "add_user"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove_user",
+                "func_c_signature": "undefined4 remove_user(void)",
+                "decompiled_code": "undefined4 remove_user(void) {\n  char cVar1;\n  undefined4 uVar2;\n  int iVar3;\n  int local_14;\n  int local_10 [2];\n  \n  local_10[0] = 1;\n  local_14 = find_user_from_list(line,0x800,local_10,g_all_users,g_num_users);\n  if (local_10[0] == -1) {\n    uVar2 = 0;\n  }\n  else if (local_14 == 0) {\n    printf(\"User not found\\n\");\n    uVar2 = 1;\n  }\n  else {\n    local_14 = pop(&g_all_users,local_14,compare_users);\n    iVar3 = compare_users(local_14,g_cur_user);\n    if (iVar3 == 0) {\n      g_cur_user = 0;\n    }\n    cVar1 = delete_user(&local_14);\n    if (cVar1 != '\\0') {\n      printf(\"Suceessfully deleted user\\n\");\n      g_num_users = g_num_users + -1;\n    }\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_user",
+                        "find_user_from_list",
+                        "printf",
+                        "pop",
+                        "compare_users",
+                        "delete_user"
+                    ],
+                    "calling_functions": [
+                        "remove_user"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_current_user",
+                "func_c_signature": "undefined4 set_current_user(void)",
+                "decompiled_code": "undefined4 set_current_user(void) {\n  int iVar1;\n  undefined4 uVar2;\n  int local_14;\n  int local_10;\n  \n  local_14 = 1;\n  local_10 = 0;\n  print_user_list(\"------All Users------\\n\",g_all_users);\n  printf(\"Entering a username will set it as the current user\\n\");\n  local_10 = find_user_from_list(line,0x800,&local_14,g_all_users,g_num_users);\n  if (local_14 == -1) {\n    uVar2 = 0;\n  }\n  else {\n    iVar1 = local_10;\n    if (local_10 == 0) {\n      printf(\"User not set\\n\");\n      iVar1 = g_cur_user;\n    }\n    g_cur_user = iVar1;\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_current_user",
+                        "print_user_list",
+                        "printf",
+                        "find_user_from_list"
+                    ],
+                    "calling_functions": [
+                        "set_current_user"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "change_cur_date",
+                "func_c_signature": "undefined4 change_cur_date(void)",
+                "decompiled_code": "undefined4 change_cur_date(void) {\n  char cVar1;\n  undefined4 uVar2;\n  int local_14;\n  void *local_10;\n  \n  local_14 = 1;\n  local_10 = (void *)0x0;\n  local_10 = (void *)q_and_a(\"Enter new date (MM-DD-YYYY): \",10,line,0x800,&local_14,1);\n  if (local_14 == -1) {\n    uVar2 = 0;\n  }\n  else {\n    if (local_10 == (void *)0x0) {\n      printf(\"Try again\\n\");\n    }\n    else {\n      cVar1 = strtodate(local_10,0x1c000);\n      if (cVar1 == '\\0') {\n        printf(\"Date not changed\\n\");\n      }\n      else {\n        printf(\"Date successfully changed\\n\");\n        g_view_date = g_cur_date;\n      }\n      free(local_10);\n    }\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [
+                    "date"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "change_cur_date",
+                        "q_and_a",
+                        "date",
+                        "printf",
+                        "strtodate",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "change_cur_date"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "change_view_date",
+                "func_c_signature": "undefined4 change_view_date(void)",
+                "decompiled_code": "undefined4 change_view_date(void) {\n  char cVar1;\n  undefined4 uVar2;\n  int local_14;\n  void *local_10;\n  \n  local_14 = 1;\n  local_10 = (void *)0x0;\n  local_10 = (void *)q_and_a(\"Enter date to view (MM-DD-YYYY): \",10,line,0x800,&local_14,1);\n  if (local_14 == -1) {\n    uVar2 = 0;\n  }\n  else {\n    if (local_10 == (void *)0x0) {\n      printf(\"Try again\\n\");\n    }\n    else {\n      cVar1 = strtodate(local_10,&g_view_date);\n      if (cVar1 == '\\0') {\n        printf(\"Date not changed\\n\");\n      }\n      else {\n        printf(\"Successfully changed calendar view date\\n\");\n      }\n      free(local_10);\n    }\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [
+                    "view"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "change_view_date",
+                        "q_and_a",
+                        "view",
+                        "printf",
+                        "strtodate",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "change_view_date"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_user_event",
+                "func_c_signature": "undefined4 add_user_event(int param_1)",
+                "decompiled_code": "undefined4 add_user_event(int param_1) {\n  char cVar1;\n  size_t sVar2;\n  int iVar3;\n  char local_68 [32];\n  undefined4 local_48;\n  undefined2 local_44;\n  undefined4 local_42;\n  undefined2 local_3e;\n  undefined2 local_3c;\n  undefined2 local_3a;\n  undefined4 local_38;\n  undefined4 local_34;\n  int local_30;\n  void *local_2c;\n  void *local_28;\n  char local_21;\n  char *local_20;\n  char *local_1c;\n  char *local_18;\n  int local_14;\n  int local_10;\n  \n  if (param_1 == 0) {\n    printf(\"Must set a user first\\n\");\n    return 1;\n  }\n  local_30 = 1;\n  local_10 = 0;\n  local_14 = 0;\n  local_1c = (char *)0x0;\n  local_20 = (char *)0x0;\n  local_21 = '\\0';\n  local_28 = (void *)0x0;\n  do {\n    if (local_10 != 0) {\n      do {\n        if (local_14 != 0) {\n          while (local_1c == (char *)0x0) {\n            local_1c = (char *)q_and_a(\"Start Date (MM-DD-YYYY): \",10,line,0x800,&local_30,0);\n            if (local_30 == -1) {\n              return 0;\n            }\n            local_18 = strdup(local_1c);\n            cVar1 = strtodate(local_1c,&local_34);\n            if (cVar1 == '\\0') {\n              if (local_1c != (char *)0x0) {\n                free(local_18);\n                local_18 = (char *)0x0;\n                free(local_1c);\n                local_1c = (char *)0x0;\n              }\n              printf(\"Try again\\n\");\n            }\n          }\n          free(local_1c);\n          local_1c = (char *)0x0;\n          while (local_1c == (char *)0x0) {\n            sprintf(local_68,\"End Date (MM-DD-YYYY) [%s]: \",local_18);\n            local_1c = (char *)q_and_a(local_68,10,line,0x800,&local_30,1);\n            if (local_30 == -1) {\n              return 0;\n            }\n            if ((local_1c == (char *)0x0) || (sVar2 = strlen(local_1c), sVar2 != 0)) {\n              cVar1 = strtodate(local_1c,&local_38);\n              if ((cVar1 == '\\0') || (iVar3 = compare_date(&local_38,&local_34), iVar3 < 0)) {\n                if (local_1c != (char *)0x0) {\n                  free(local_1c);\n                  local_1c = (char *)0x0;\n                }\n                printf(\"Try again\\n\");\n              }\n            }\n            else {\n              local_38 = local_34;\n            }\n          }\n          free(local_18);\n          local_18 = (char *)0x0;\n          free(local_1c);\n          local_1c = (char *)0x0;\n          while (local_20 == (char *)0x0) {\n            local_20 = (char *)q_and_a(\"All day event? (y/n) [n]: \",0x800,line,0x800,&local_30,1);\n            if (local_30 == -1) {\n              return 0;\n            }\n            if ((local_20 == (char *)0x0) || (sVar2 = strlen(local_20), sVar2 != 0)) {\n              if (local_20 != (char *)0x0) {\n                if (local_30 == 0) {\n                  if ((*local_20 == 'y') || (*local_20 == 'Y')) {\n                    local_21 = '\\x01';\n                  }\n                }\n                else {\n                  free(local_20);\n                  local_20 = (char *)0x0;\n                }\n              }\n            }\n            else {\n              local_21 = '\\0';\n            }\n          }\n          free(local_20);\n          local_20 = (char *)0x0;\n          if (local_21 == '\\0') {\n            while (local_28 == (void *)0x0) {\n              local_28 = (void *)q_and_a(\"Start Time (HH:MM): \",5,line,0x800,&local_30,0);\n              if (local_30 == -1) {\n                return 0;\n              }\n              cVar1 = strtotime(local_28,&local_3a);\n              if (cVar1 == '\\0') {\n                if (local_28 != (void *)0x0) {\n                  free(local_28);\n                  local_28 = (void *)0x0;\n                }\n                printf(\"Try again\\n\");\n              }\n            }\n            free(local_28);\n            local_28 = (void *)0x0;\n            while (local_28 == (void *)0x0) {\n              sprintf(local_68,\"End time (HH:MM): \",0);\n              local_28 = (void *)q_and_a(local_68,5,line,0x800,&local_30,0);\n              if (local_30 == -1) {\n                return 0;\n              }\n              cVar1 = strtotime(local_28,&local_3c);\n              if ((cVar1 == '\\0') ||\n                 ((iVar3 = compare_date(&local_34,&local_38), iVar3 == 0 &&\n                  (iVar3 = compare_time(&local_3c,&local_3a), iVar3 < 1)))) {\n                if (local_28 != (void *)0x0) {\n                  free(local_28);\n                  local_28 = (void *)0x0;\n                }\n                printf(\"Try again\\n\");\n              }\n            }\n            free(local_28);\n            local_28 = (void *)0x0;\n          }\n          else {\n            set_time(&local_3a,0,0);\n            set_time(&local_3c,0x17,0x3b);\n          }\n          local_48 = local_34;\n          local_44 = local_3a;\n          local_42 = local_38;\n          local_3e = local_3c;\n          local_2c = (void *)create_event(param_1,local_10,local_14,&local_48,local_21);\n          cVar1 = add_calendar_event(param_1 + 0x284,local_2c);\n          if (cVar1 == '\\0') {\n            if (local_2c != (void *)0x0) {\n              free(local_2c);\n              local_2c = (void *)0x0;\n            }\n            printf(\"Could not add event\\n\");\n          }\n          else {\n            print_event(local_2c);\n          }\n          return 1;\n        }\n        local_14 = q_and_a(\"Event Description: \",0x100,line,0x800,&local_30,0);\n      } while (local_30 != -1);\n      return 0;\n    }\n    local_10 = q_and_a(\"Event Name: \",0x80,line,0x800,&local_30,0);\n  } while (local_30 != -1);\n  return 0;\n}",
+                "globals": [],
+                "externs": [
+                    "Date",
+                    "Time",
+                    "time"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_user_event",
+                        "printf",
+                        "q_and_a",
+                        "Date",
+                        "strdup",
+                        "strtodate",
+                        "free",
+                        "sprintf",
+                        "strlen",
+                        "compare_date",
+                        "Time",
+                        "strtotime",
+                        "time",
+                        "compare_time",
+                        "set_time",
+                        "create_event",
+                        "add_calendar_event",
+                        "print_event"
+                    ],
+                    "calling_functions": [
+                        "add_user_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove_user_event",
+                "func_c_signature": "undefined4 remove_user_event(int param_1)",
+                "decompiled_code": "undefined4 remove_user_event(int param_1) {\n  char cVar1;\n  undefined4 uVar2;\n  int local_14;\n  int local_10;\n  \n  local_14 = 1;\n  local_10 = find_event_from_list(line,0x800,&local_14,*(undefined4 *)(g_cur_user + 0x288));\n  if (local_14 == -1) {\n    uVar2 = 0;\n  }\n  else if (local_10 == 0) {\n    printf(\"Event not found\\n\");\n    uVar2 = 1;\n  }\n  else {\n    cVar1 = remove_calendar_event(param_1 + 0x284,local_10);\n    if (cVar1 == '\\0') {\n      printf(\"Could not remove event\\n\");\n    }\n    else {\n      printf(\"Successfully removed event\\n\");\n    }\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_user_event",
+                        "find_event_from_list",
+                        "printf",
+                        "remove_calendar_event"
+                    ],
+                    "calling_functions": [
+                        "remove_user_event"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "user_menu",
+                "func_c_signature": "undefined4 user_menu(void)",
+                "decompiled_code": "undefined4 user_menu(void) {\n  size_t sVar1;\n  int iVar2;\n  undefined4 uVar3;\n  uint local_14;\n  undefined *local_10;\n  \n  local_14 = 0;\n  if (g_cur_user != 0) {\n    sVar1 = strlen((char *)(g_cur_user + 4));\n    if (sVar1 != 0) {\n      local_10 = (undefined *)(g_cur_user + 4);\n      goto LAB_000136c1;\n    }\n  }\n  local_10 = &DAT_0001842d;\nLAB_000136c1:\n  printf(\"Options:\\n\");\n  printf(\"1. View users\\n\");\n  printf(\"2. Add user\\n\");\n  printf(\"3. Remove user\\n\");\n  printf(\"4. Set user\\n\");\n  printf(\"5. View Calendar\\n\");\n  printf(\"6. Change Date\\n\");\n  printf(\"7. Exit\\n\");\n  printf(\"---Current User is *%s*---\\n\",local_10);\n  printf(\"---Today\\'s date is \");\n  print_date(0x1c000);\n  printf(\"---\\n\");\n  printf(\"Selection: \");\n  iVar2 = readnum(line,0x800,&local_14);\n  if (iVar2 == -1) {\n    uVar3 = 0;\n  }\n  else {\n    if (local_14 < 8) {\n                    /* WARNING: Could not recover jumptable at 0x000137e9. Too many branches */\n                    /* WARNING: Treating indirect jump as call */\n      uVar3 = (*(code *)((int)&_GLOBAL_OFFSET_TABLE_ + *(int *)(&DAT_000184e4 + local_14 * 4)))();\n      return uVar3;\n    }\n    printf(\"Try again\\n\");\n    uVar3 = 1;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "user_menu",
+                        "strlen",
+                        "printf",
+                        "print_date",
+                        "readnum"
+                    ],
+                    "calling_functions": [
+                        "user_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "calendar_menu",
+                "func_c_signature": "undefined4 calendar_menu(undefined *param_1)",
+                "decompiled_code": "undefined4 calendar_menu(undefined *param_1) {\n  size_t sVar1;\n  int iVar2;\n  undefined4 uVar3;\n  uint local_14;\n  int local_10;\n  \n  local_14 = 0;\n  if ((g_cur_user == 0) || (sVar1 = strlen((char *)(g_cur_user + 4)), sVar1 == 0)) {\n    printf(\"Must select a user before viewing a calendar\\n\");\n    *param_1 = 0;\n    return 1;\n  }\n  local_10 = g_cur_user + 4;\n  printf(\"Options:\\n\");\n  printf(\"1. View Day\\n\");\n  printf(\"2. View Month\\n\");\n  printf(\"3. View Agenda\\n\");\n  printf(\"4. Change Date\\n\");\n  printf(\"5. Change View Date\\n\");\n  printf(\"6. Add Calendar Event\\n\");\n  printf(\"7. Remove Calendar Event\\n\");\n  printf(\"8. Return to User Selection\\n\");\n  printf(\"---Current User is *%s*---\\n\",local_10);\n  printf(\"---Today\\'s date is \");\n  print_date(0x1c000);\n  printf(\"---\\n\");\n  printf(\"---Calendar view date is \");\n  print_date(&g_view_date);\n  printf(\"---\\n\");\n  printf(\"Selection: \");\n  iVar2 = readnum(line,0x800,&local_14);\n  if (iVar2 == -1) {\n    return 0;\n  }\n  if (8 < local_14) {\n    printf(\"Try again\\n\");\n    return 1;\n  }\n                    /* WARNING: Could not recover jumptable at 0x00013a38. Too many branches */\n                    /* WARNING: Treating indirect jump as call */\n  uVar3 = (*(code *)((int)&_GLOBAL_OFFSET_TABLE_ + *(int *)(&DAT_000185ec + local_14 * 4)))();\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "calendar_menu",
+                        "strlen",
+                        "printf",
+                        "print_date",
+                        "readnum"
+                    ],
+                    "calling_functions": [
+                        "calendar_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_seed",
+                "func_c_signature": "void check_seed(void)",
+                "decompiled_code": "void check_seed(void) {\n  FILE *__s;\n  int local_10 [2];\n  \n  __s = (FILE *)0x13b14;\n  local_10[0] = 0;\n  fread(local_10,4,(size_t)stdin,(FILE *)0x13b14);\n  if (_DAT_4347c000 == local_10[0]) {\n    fwrite(&DAT_4347c000,0x1000,(size_t)stdout,__s);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_seed",
+                        "fread",
+                        "fwrite"
+                    ],
+                    "calling_functions": [
+                        "check_seed",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  char local_1d;\n  undefined4 local_1c;\n  undefined4 local_18;\n  char local_11;\n  undefined *local_c;\n  \n  local_c = &stack0x00000004;\n  local_18 = 0;\n  local_1c = 1;\n  local_1d = '\\0';\n  local_11 = '\\x01';\n  check_seed();\n  while (local_11 != '\\0') {\n    if (local_1d == '\\0') {\n      local_11 = user_menu(&local_1d);\n    }\n    else {\n      local_11 = calendar_menu(&local_1d);\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "check_seed",
+                        "user_menu",
+                        "calendar_menu"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            }
+        ],
+        "read.c": [
+            {
+                "func_name": "readline",
+                "func_c_signature": "undefined4 readline(int param_1,uint param_2)",
+                "decompiled_code": "undefined4 readline(int param_1,uint param_2) {\n  undefined4 uVar1;\n  size_t sVar2;\n  FILE *__stream;\n  uint local_10;\n  \n  __stream = (FILE *)0x13bf2;\n  if ((param_1 == 0) || (param_2 < 2)) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {\n      sVar2 = fread((void *)(local_10 + param_1),1,(size_t)stdin,__stream);\n      if (sVar2 != 1) {\n        fflush((FILE *)stdout);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (*(char *)(local_10 + param_1) == '\\n') {\n        *(undefined *)(local_10 + param_1) = 0;\n        break;\n      }\n    }\n    if (local_10 == param_2) {\n      uVar1 = 1;\n    }\n    else {\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readline",
+                        "fread",
+                        "fflush",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "readline",
+                        "readnum",
+                        "q_and_a"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "readnum",
+                "func_c_signature": "int readnum(char *param_1,undefined4 param_2,long *param_3)",
+                "decompiled_code": "int readnum(char *param_1,undefined4 param_2,long *param_3) {\n  int iVar1;\n  long lVar2;\n  \n  iVar1 = readline(param_1,param_2);\n  if (iVar1 == 0) {\n    lVar2 = strtol(param_1,(char **)0x0,10);\n    *param_3 = lVar2;\n  }\n  else {\n    *param_3 = 0;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readnum",
+                        "readline",
+                        "strtol"
+                    ],
+                    "calling_functions": [
+                        "user_menu",
+                        "calendar_menu",
+                        "readnum"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "q_and_a",
+                "func_c_signature": "char * q_and_a(int param_1,uint param_2,char *param_3,uint param_4,int *param_5,char param_6)",
+                "decompiled_code": "char * q_and_a(int param_1,uint param_2,char *param_3,uint param_4,int *param_5,char param_6) {\n  int iVar1;\n  size_t sVar2;\n  char *local_10;\n  \n  local_10 = (char *)0x0;\n  *param_5 = 1;\n  if (((param_1 == 0) || (param_3 == (char *)0x0)) || (param_4 < param_2)) {\n    local_10 = (char *)0x0;\n  }\n  else {\n    while (*param_5 != 0) {\n      printf(\"%s\",param_1);\n      iVar1 = readline(param_3,param_4);\n      *param_5 = iVar1;\n      if (*param_5 == -1) {\n        return (char *)0x0;\n      }\n      if (*param_5 == 0) {\n        sVar2 = strlen(param_3);\n        if ((param_2 < sVar2) || ((param_6 == '\\0' && (sVar2 = strlen(param_3), sVar2 == 0)))) {\n          *param_5 = 1;\n          goto LAB_00013dd1;\n        }\n        local_10 = strdup(param_3);\n      }\n      else {\nLAB_00013dd1:\n        printf(\"Try again\\n\");\n      }\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "q_and_a",
+                        "printf",
+                        "readline",
+                        "strlen",
+                        "strdup"
+                    ],
+                    "calling_functions": [
+                        "find_event_from_list",
+                        "add_user",
+                        "change_cur_date",
+                        "change_view_date",
+                        "add_user_event",
+                        "q_and_a",
+                        "find_user_from_list"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            }
+        ],
+        "user.c": [
+            {
+                "func_name": "create_user",
+                "func_c_signature": "int * create_user(char *param_1,char *param_2)",
+                "decompiled_code": "int * create_user(char *param_1,char *param_2) {\n  int iVar1;\n  size_t sVar2;\n  int *piVar3;\n  \n  if ((((param_1 != (char *)0x0) && (sVar2 = strlen(param_1), sVar2 != 0)) &&\n      (param_2 != (char *)0x0)) && (sVar2 = strlen(param_2), sVar2 != 0)) {\n    piVar3 = (int *)calloc(1,0x28c);\n    iVar1 = g_user_id + 1;\n    *piVar3 = g_user_id;\n    g_user_id = iVar1;\n    strcpy((char *)(piVar3 + 1),param_1);\n    strcpy((char *)(piVar3 + 0x21),param_2);\n    piVar3[0xa1] = 0;\n    piVar3[0xa2] = 0;\n    return piVar3;\n  }\n  return (int *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_user",
+                        "strlen",
+                        "calloc",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "add_user",
+                        "create_user"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "delete_user",
+                "func_c_signature": "bool delete_user(void **param_1)",
+                "decompiled_code": "bool delete_user(void **param_1) {\n  void *pvVar1;\n  \n  pvVar1 = *param_1;\n  if (pvVar1 != (void *)0x0) {\n    free(*param_1);\n    *param_1 = (void *)0x0;\n  }\n  return pvVar1 != (void *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "delete_user",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "add_user",
+                        "remove_user",
+                        "delete_user"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "compare_users",
+                "func_c_signature": "int compare_users(int param_1,int param_2)",
+                "decompiled_code": "int compare_users(int param_1,int param_2) {\n  int iVar1;\n  \n  if ((param_1 == 0) || (param_2 == 0)) {\n    iVar1 = -1;\n  }\n  else {\n    iVar1 = strcmp((char *)(param_1 + 4),(char *)(param_2 + 4));\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "compare_users",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "remove_user",
+                        "compare_users"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_user",
+                "func_c_signature": "void print_user(undefined4 *param_1)",
+                "decompiled_code": "void print_user(undefined4 *param_1) {\n  printf(\"User id = %d\\n\",*param_1);\n  printf(\"Username is \\\"%s\\\"\\n\",param_1 + 1);\n  printf(\"About %s: %s\\n\",param_1 + 1,param_1 + 0x21);\n  printf(\"---------------------\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_user",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_user"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_simple",
+                "func_c_signature": "void print_simple(undefined4 *param_1)",
+                "decompiled_code": "void print_simple(undefined4 *param_1) {\n  printf(\"Id=%d, username=%s\\n\",*param_1,param_1 + 1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_simple",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_simple"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clear_list",
+                "func_c_signature": "void clear_list(undefined4 param_1)",
+                "decompiled_code": "void clear_list(undefined4 param_1) {\n  void *local_10;\n  \n  local_10 = (void *)popfront(param_1);\n  while (local_10 != (void *)0x0) {\n    free(local_10);\n    local_10 = (void *)popfront(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clear_list",
+                        "popfront",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "clear_list"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_user_from_list",
+                "func_c_signature": "undefined4\nfind_user_from_list(int param_1,uint param_2,int *param_3,undefined4 *param_4,int param_5)",
+                "decompiled_code": "undefined4\nfind_user_from_list(int param_1,uint param_2,int *param_3,undefined4 *param_4,int param_5) {\n  undefined4 uVar1;\n  int iVar2;\n  undefined local_2ac [4];\n  char acStack_2a8 [648];\n  undefined4 local_20;\n  char *local_1c;\n  undefined4 *local_18;\n  int local_14;\n  undefined4 *local_10;\n  \n  if ((param_1 == 0) || (param_2 < 2)) {\n    uVar1 = 0;\n  }\n  else {\n    local_18 = param_4;\n    local_1c = (char *)0x0;\n    local_20 = 0;\n    local_1c = (char *)q_and_a(\"Enter username: \",param_2,param_1,param_2,param_3,1);\n    if (local_1c == (char *)0x0) {\n      uVar1 = 0;\n    }\n    else if (*param_3 == 0) {\n      if (param_5 < 0x65) {\n        local_10 = param_4;\n        for (local_14 = 0; local_14 < param_5; local_14 = local_14 + 1) {\n          iVar2 = strcmp(local_1c,(char *)(local_10[1] + 4));\n          if (iVar2 == 0) {\n            free(local_1c);\n            return local_10[1];\n          }\n          local_10 = (undefined4 *)*local_10;\n        }\n        free(local_1c);\n        uVar1 = 0;\n      }\n      else {\n        strcpy(acStack_2a8,local_1c);\n        free(local_1c);\n        local_1c = (char *)0x0;\n        uVar1 = find(local_18,local_2ac,compare_users);\n      }\n    }\n    else {\n      free(local_1c);\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_user_from_list",
+                        "q_and_a",
+                        "strcmp",
+                        "free",
+                        "strcpy",
+                        "find"
+                    ],
+                    "calling_functions": [
+                        "add_user",
+                        "remove_user",
+                        "set_current_user",
+                        "find_user_from_list",
+                        "add_user_to_list"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_user_to_list",
+                "func_c_signature": "undefined4\nadd_user_to_list(undefined4 param_1,undefined4 param_2,int *param_3,undefined4 param_4,\n                undefined4 param_5)",
+                "decompiled_code": "undefined4\nadd_user_to_list(undefined4 param_1,undefined4 param_2,int *param_3,undefined4 param_4,\n                undefined4 param_5) {\n  char cVar1;\n  int iVar2;\n  undefined4 uVar3;\n  undefined4 uVar4;\n  undefined4 uVar5;\n  int local_10;\n  \n  uVar3 = 0x141c2;\n  *param_3 = 1;\n  local_10 = 0;\n  uVar5 = 0;\n  uVar4 = 0;\n  while( true ) {\n    if (*param_3 == 0) {\n      return 0;\n    }\n    iVar2 = find_user_from_list(param_1,param_2,param_3,param_4,1000);\n    if (*param_3 == -1) break;\n    if ((*param_3 == 0) && (iVar2 != 0)) {\n      cVar1 = insert_in_order(param_5,iVar2,compare_users,uVar3,iVar2,uVar4,uVar5);\n      if (cVar1 == '\\0') {\n        *param_3 = 1;\n      }\n      return 1;\n    }\n    printf(\"Try again\\n\");\n    local_10 = local_10 + 1;\n    if (local_10 == 5) {\n      return 0;\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_user_to_list",
+                        "find_user_from_list",
+                        "insert_in_order",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "add_user_to_list"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_user_list",
+                "func_c_signature": "void print_user_list(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "void print_user_list(undefined4 param_1,undefined4 param_2) {\n  printf(\"%s\",param_1);\n  print(param_2,print_user);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_user_list",
+                        "printf",
+                        "print"
+                    ],
+                    "calling_functions": [
+                        "set_current_user",
+                        "print_user_list"
+                    ],
+                    "defined_in_file": "KPRCA_00062_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -20,8 +20,8 @@ with open(CONFIG_PATH, "r") as f:
     config = yaml.safe_load(f)
           
 def main():
-  compiled_dir_path = config["paths"]["cgc_compiled_dir"]
-  decompiled_dir_path = config["paths"]["cgc_decompiled_dir"]
+  compiled_dir_path = config["paths"]["coreutils_compiled_dir"]
+  decompiled_dir_path = config["paths"]["coreutils_decompiled_dir"]
 
   # iterate through every file in compiled_dir_path
   ghidra = Ghidra()
@@ -36,9 +36,9 @@ def main():
       # type = Dict[str,List[Dict]] -> c_file, functions: List[Dict]
       filtered_content = {}
       # get whitelists
-      whitelisted_functions = get_cgc_whitelist_functions(file)
-      # only those functions in whitelisted_functions must be present in the filtered_content
+      whitelisted_functions = get_coreutils_whitelist_functions(file)
       '''
+      only those functions in whitelisted_functions must be present in the filtered_content
       whitelisted
       { c_file : [func1, func2, ... ], c_file2: [ ... ] }
       data
@@ -53,17 +53,7 @@ def main():
               filtered_content[c_file] = []
             filtered_content[c_file].append(function)
             break
-      
-      
-      
-          
-          
-        
-        
-        
-      
-      #print(filtered_content)
-      
+            
       # write to json file
       with open(json_file, "w") as jf:
         json.dump({

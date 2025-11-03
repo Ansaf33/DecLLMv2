@@ -1,0 +1,443 @@
+{
+    "file": "KPRCA_00015",
+    "decompiled_code": {
+        "main.c": [
+            {
+                "func_name": "send",
+                "func_c_signature": "ssize_t send(int __fd,void *__buf,size_t __n,int __flags)",
+                "decompiled_code": "ssize_t send(int __fd,void *__buf,size_t __n,int __flags) {\n  void *pvVar1;\n  \n  pvVar1 = (void *)writeall(1,__fd,__buf,0x1102b);\n  return (uint)(pvVar1 != __buf);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "send",
+                        "writeall"
+                    ],
+                    "calling_functions": [
+                        "send",
+                        "send_error",
+                        "handle_issue",
+                        "handle_purchase",
+                        "handle_recharge",
+                        "handle_balance",
+                        "handle_history",
+                        "handle_refund",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_fully",
+                "func_c_signature": "undefined4 read_fully(int param_1,uint param_2)",
+                "decompiled_code": "undefined4 read_fully(int param_1,uint param_2) {\n  int iVar1;\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (param_2 <= local_10) {\n      return 0;\n    }\n    iVar1 = receive(0,param_1 + local_10,param_2 - local_10,&local_14);\n    if (iVar1 != 0) break;\n    if (local_14 == 0) {\n      return 1;\n    }\n    local_10 = local_10 + local_14;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_fully",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "read_fully",
+                        "read_data",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "send_error",
+                "func_c_signature": "void send_error(undefined param_1,char *param_2)",
+                "decompiled_code": "void send_error(undefined param_1,char *param_2) {\n  size_t in_stack_ffffff8c;\n  size_t __n;\n  int __flags;\n  undefined4 local_5f;\n  char acStack_5b [64];\n  undefined4 local_1b;\n  undefined4 local_17;\n  undefined2 local_13;\n  undefined uStack_11;\n  undefined4 uStack_10;\n  \n  __flags = 0x110d5;\n  local_1b = pkthdr;\n  local_17 = DAT_00016024;\n  local_13 = (undefined2)DAT_00016028;\n  uStack_10 = CONCAT31((undefined3)uRam0001602c,DAT_00016028._3_1_);\n  uStack_11 = param_1;\n  send((int)&local_1b,(void *)0xf,in_stack_ffffff8c,0x110d5);\n  local_5f = 0x40;\n  __n = 0x40;\n  strncpy(acStack_5b,param_2,0x40);\n  send((int)&local_5f,(void *)0x44,__n,__flags);\n  if (transaction != 0) {\n    *(undefined *)(transaction + 10) = param_1;\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(0);\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT31"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "send_error",
+                        "CONCAT31",
+                        "send",
+                        "strncpy",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "send_error",
+                        "handle_issue",
+                        "handle_purchase",
+                        "handle_recharge",
+                        "handle_balance",
+                        "handle_history",
+                        "handle_refund",
+                        "process_ops",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "enlarge_transactions_array",
+                "func_c_signature": "undefined4 enlarge_transactions_array(uint param_1)",
+                "decompiled_code": "undefined4 enlarge_transactions_array(uint param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  undefined4 local_10 [2];\n  \n  if (transactions_length < param_1) {\n    if (param_1 < 0x55556) {\n      iVar2 = allocate(0x800000,0,local_10);\n      if (iVar2 == 0) {\n        transactions_array = local_10[0];\n        transactions_length = 0x55555;\n        uVar1 = 0;\n      }\n      else {\n        uVar1 = 1;\n      }\n    }\n    else {\n      uVar1 = 1;\n    }\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "enlarge_transactions_array",
+                        "allocate"
+                    ],
+                    "calling_functions": [
+                        "enlarge_transactions_array",
+                        "new_transaction",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "next_card_id",
+                "func_c_signature": "int next_card_id(void)",
+                "decompiled_code": "int next_card_id(void) {\n  int iVar1;\n  \n  iVar1 = next_1;\n  next_1 = next_1 + 1;\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "next_card_id"
+                    ],
+                    "calling_functions": [
+                        "next_card_id",
+                        "handle_issue"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "next_auth_code",
+                "func_c_signature": "uint next_auth_code(void)",
+                "decompiled_code": "uint next_auth_code(void) {\n  uint uVar1;\n  \n  uVar1 = next_0;\n  next_0 = (next_0 << 3 ^ next_0 >> 0x11) * 0x7a69;\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "next_auth_code"
+                    ],
+                    "calling_functions": [
+                        "next_auth_code",
+                        "handle_issue"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lookup_card",
+                "func_c_signature": "int * lookup_card(int param_1)",
+                "decompiled_code": "int * lookup_card(int param_1) {\n  int *local_8;\n  \n  local_8 = card_info_list;\n  while( true ) {\n    if (local_8 == (int *)0x0) {\n      return (int *)0x0;\n    }\n    if (param_1 == *local_8) break;\n    local_8 = (int *)local_8[3];\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lookup_card"
+                    ],
+                    "calling_functions": [
+                        "lookup_card",
+                        "handle_purchase",
+                        "handle_recharge",
+                        "handle_balance",
+                        "handle_refund",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_issue",
+                "func_c_signature": "bool handle_issue(void)",
+                "decompiled_code": "bool handle_issue(void) {\n  undefined4 uVar1;\n  bool bVar2;\n  size_t __n;\n  int __flags;\n  undefined4 local_23;\n  undefined4 local_1f;\n  undefined local_1b;\n  undefined local_1a;\n  undefined local_19;\n  undefined4 local_18;\n  undefined4 *local_14;\n  undefined4 *local_10;\n  \n  local_10 = (undefined4 *)transaction[5];\n  local_14 = (undefined4 *)malloc(0x10);\n  bVar2 = local_14 != (undefined4 *)0x0;\n  if (bVar2) {\n    uVar1 = next_card_id();\n    *local_14 = uVar1;\n    __flags = 0x112f0;\n    uVar1 = next_auth_code();\n    local_14[1] = uVar1;\n    local_14[2] = *local_10;\n    local_14[3] = card_info_list;\n    card_info_list = local_14;\n    __n = 0xf;\n    memset(&local_23,0,0xf);\n    local_23 = *local_14;\n    local_1f = local_14[1];\n    local_1b = 0;\n    local_1a = 4;\n    local_19 = 0;\n    local_18 = transaction[3];\n    transaction[4] = *local_14;\n    *transaction = local_14[1];\n    send((int)&local_23,(void *)0xf,__n,__flags);\n  }\n  else {\n    send_error(3,\"Failed to allocate memory.\");\n  }\n  return !bVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_issue",
+                        "malloc",
+                        "next_card_id",
+                        "next_auth_code",
+                        "memset",
+                        "send",
+                        "send_error"
+                    ],
+                    "calling_functions": [
+                        "handle_issue",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_data",
+                "func_c_signature": "undefined4 read_data(int param_1)",
+                "decompiled_code": "undefined4 read_data(int param_1) {\n  void *pvVar1;\n  int iVar2;\n  uint local_14;\n  size_t local_10;\n  \n  switch(DAT_00016028._1_1_) {\n  case '\\0':\n    local_10 = 0xe;\n    break;\n  case '\\x01':\n    local_10 = 10;\n    break;\n  case '\\x02':\n    local_10 = 0;\n    break;\n  case '\\x03':\n  case '\\x04':\n    local_10 = 4;\n    break;\n  case '\\x05':\n    local_10 = 8;\n    break;\n  default:\n    return 1;\n  }\n  if (local_10 == 0) {\n    *(undefined4 *)(param_1 + 0x14) = 0;\n  }\n  else {\n    pvVar1 = malloc(local_10);\n    *(void **)(param_1 + 0x14) = pvVar1;\n    if ((*(int *)(param_1 + 0x14) == 0) ||\n       (iVar2 = read_fully(*(undefined4 *)(param_1 + 0x14),local_10), iVar2 != 0))\n    goto LAB_000114e9;\n  }\n  local_14 = 0;\n  if (DAT_00016028._1_1_ == '\\0') {\n    local_14 = (uint)*(byte *)(*(int *)(param_1 + 0x14) + 0xd);\n  }\n  else if (DAT_00016028._1_1_ == '\\x01') {\n    local_14 = (uint)*(byte *)(*(int *)(param_1 + 0x14) + 9);\n  }\n  if (local_14 == 0) {\n    return 0;\n  }\n  pvVar1 = realloc(*(void **)(param_1 + 0x14),local_10 + local_14);\n  if (pvVar1 != (void *)0x0) {\n    *(void **)(param_1 + 0x14) = pvVar1;\n    iVar2 = read_fully(local_10 + *(int *)(param_1 + 0x14),local_14);\n    if (iVar2 == 0) {\n      return 0;\n    }\n  }\nLAB_000114e9:\n  free(*(void **)(param_1 + 0x14));\n  *(undefined4 *)(param_1 + 0x14) = 0;\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_data",
+                        "malloc",
+                        "read_fully",
+                        "realloc",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "read_data",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "new_transaction",
+                "func_c_signature": "undefined4 * new_transaction(void)",
+                "decompiled_code": "undefined4 * new_transaction(void) {\n  int iVar1;\n  undefined4 *__s;\n  \n  iVar1 = enlarge_transactions_array(transactions_idx + 10);\n  if (iVar1 == 0) {\n    __s = (undefined4 *)(transactions_idx * 0x18 + transactions_array);\n    transactions_idx = transactions_idx + 1;\n    memset(__s,0,0x18);\n    __s[3] = __s;\n    *(undefined *)(__s + 2) = DAT_00016028._1_1_;\n    *(undefined *)((int)__s + 9) = (undefined)DAT_00016028;\n    *(undefined *)((int)__s + 10) = 0;\n    __s[4] = pkthdr;\n    *__s = DAT_00016024;\n  }\n  else {\n    __s = (undefined4 *)0x0;\n  }\n  return __s;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "new_transaction",
+                        "enlarge_transactions_array",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "new_transaction",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lookup_transaction",
+                "func_c_signature": "uint lookup_transaction(uint param_1)",
+                "decompiled_code": "uint lookup_transaction(uint param_1) {\n  if ((param_1 < transactions_array) || (transactions_idx * 0x18 + transactions_array <= param_1)) {\n    param_1 = 0;\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lookup_transaction"
+                    ],
+                    "calling_functions": [
+                        "lookup_transaction",
+                        "handle_refund",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_purchase",
+                "func_c_signature": "bool handle_purchase(void)",
+                "decompiled_code": "bool handle_purchase(void) {\n  bool bVar1;\n  size_t __n;\n  int __flags;\n  undefined4 local_23;\n  undefined4 local_1f;\n  undefined2 local_1b;\n  undefined uStack_19;\n  undefined4 uStack_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = *(int *)(transaction + 0x14);\n  __flags = *(int *)(transaction + 0x10);\n  __n = 0x11635;\n  local_14 = lookup_card();\n  bVar1 = *(uint *)(local_14 + 8) < *(uint *)(local_10 + 4);\n  if (bVar1) {\n    send_error(5,\"Insuffient funds for purchase.\");\n  }\n  else {\n    *(int *)(local_14 + 8) = *(int *)(local_14 + 8) - *(int *)(local_10 + 4);\n    *(undefined *)(transaction + 9) = 2;\n    *(undefined *)(transaction + 10) = 0;\n    *(undefined4 *)(transaction + 4) = *(undefined4 *)(local_10 + 8);\n    local_23 = pkthdr;\n    local_1f = DAT_00016024;\n    local_1b = (undefined2)DAT_00016028;\n    uStack_18 = CONCAT31((undefined3)uRam0001602c,DAT_00016028._3_1_);\n    uStack_19 = 0;\n    send((int)&local_23,(void *)0xf,__n,__flags);\n  }\n  return bVar1;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT31"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_purchase",
+                        "lookup_card",
+                        "send_error",
+                        "CONCAT31",
+                        "send"
+                    ],
+                    "calling_functions": [
+                        "handle_purchase",
+                        "process_ops"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_recharge",
+                "func_c_signature": "bool handle_recharge(void)",
+                "decompiled_code": "bool handle_recharge(void) {\n  bool bVar1;\n  size_t __n;\n  int __flags;\n  undefined4 local_23;\n  undefined4 local_1f;\n  undefined2 local_1b;\n  undefined uStack_19;\n  undefined4 uStack_18;\n  int local_14;\n  uint *local_10;\n  \n  local_10 = *(uint **)(transaction + 0x14);\n  __flags = *(int *)(transaction + 0x10);\n  __n = 0x1170d;\n  local_14 = lookup_card();\n  bVar1 = ~*(uint *)(local_14 + 8) < *local_10;\n  if (bVar1) {\n    send_error(6,\"Unable to recharge card. Balance near max.\");\n  }\n  else {\n    *(uint *)(local_14 + 8) = *(int *)(local_14 + 8) + *local_10;\n    *(undefined *)(transaction + 9) = 2;\n    *(undefined *)(transaction + 10) = 0;\n    *(uint *)(transaction + 4) = local_10[1];\n    local_23 = pkthdr;\n    local_1f = DAT_00016024;\n    local_1b = (undefined2)DAT_00016028;\n    uStack_18 = CONCAT31((undefined3)uRam0001602c,DAT_00016028._3_1_);\n    uStack_19 = 0;\n    send((int)&local_23,(void *)0xf,__n,__flags);\n  }\n  return bVar1;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT31"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_recharge",
+                        "lookup_card",
+                        "send_error",
+                        "CONCAT31",
+                        "send"
+                    ],
+                    "calling_functions": [
+                        "handle_recharge",
+                        "process_ops"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_balance",
+                "func_c_signature": "bool handle_balance(void)",
+                "decompiled_code": "bool handle_balance(void) {\n  int iVar1;\n  void *pvVar2;\n  bool bVar3;\n  size_t sVar4;\n  int __flags;\n  undefined4 local_23;\n  undefined4 local_1f;\n  undefined2 local_1b;\n  undefined uStack_19;\n  undefined4 uStack_18;\n  undefined4 *local_14;\n  int local_10;\n  \n  __flags = *(int *)(transaction + 0x10);\n  sVar4 = 0x117da;\n  local_10 = lookup_card();\n  iVar1 = transaction;\n  pvVar2 = malloc(4);\n  *(void **)(iVar1 + 0x14) = pvVar2;\n  bVar3 = *(int *)(transaction + 0x14) != 0;\n  if (bVar3) {\n    local_23 = pkthdr;\n    local_1f = DAT_00016024;\n    local_1b = (undefined2)DAT_00016028;\n    uStack_18 = CONCAT31((undefined3)uRam0001602c,DAT_00016028._3_1_);\n    uStack_19 = 0;\n    send((int)&local_23,(void *)0xf,sVar4,__flags);\n    local_14 = *(undefined4 **)(transaction + 0x14);\n    sVar4 = 4;\n    memset(local_14,0,4);\n    *local_14 = *(undefined4 *)(local_10 + 8);\n    send((int)local_14,(void *)0x4,sVar4,__flags);\n    *(undefined *)(transaction + 9) = 2;\n    *(undefined *)(transaction + 10) = 0;\n  }\n  else {\n    send_error(3,\"Failed to allocate memory.\");\n  }\n  return !bVar3;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT31"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_balance",
+                        "lookup_card",
+                        "malloc",
+                        "CONCAT31",
+                        "send",
+                        "memset",
+                        "send_error"
+                    ],
+                    "calling_functions": [
+                        "handle_balance",
+                        "process_ops"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_history",
+                "func_c_signature": "undefined4 handle_history(void)",
+                "decompiled_code": "undefined4 handle_history(void) {\n  undefined4 uVar1;\n  size_t in_stack_ffffffbc;\n  size_t __n;\n  int __flags;\n  undefined local_36;\n  undefined local_35;\n  undefined local_34;\n  undefined4 local_33;\n  undefined4 local_2f;\n  undefined4 local_2b;\n  undefined4 local_27;\n  undefined2 local_23;\n  undefined uStack_21;\n  undefined4 uStack_20;\n  int local_1c;\n  uint *local_18;\n  uint local_14;\n  uint local_10;\n  \n  __flags = 0x118bf;\n  local_18 = *(uint **)(transaction + 0x14);\n  local_10 = 0;\n  for (local_14 = 0; local_14 < transactions_idx; local_14 = local_14 + 1) {\n    if ((*(char *)(local_14 * 0x18 + transactions_array + 9) == '\\x03') &&\n       (*(int *)(local_14 * 0x18 + transactions_array + 0x10) == *(int *)(transaction + 0x10))) {\n      local_10 = local_10 + 1;\n    }\n  }\n  if (local_10 < *local_18) {\n    *local_18 = local_10;\n  }\n  if (local_10 == 0) {\n    send_error(8,\"No matching transaction history.\");\n    uVar1 = 1;\n  }\n  else {\n    local_2b = pkthdr;\n    local_27 = DAT_00016024;\n    local_23 = (undefined2)DAT_00016028;\n    uStack_20 = CONCAT31((undefined3)uRam0001602c,DAT_00016028._3_1_);\n    uStack_21 = 0;\n    send((int)&local_2b,(void *)0xf,in_stack_ffffffbc,0x118bf);\n    send((int)local_18,(void *)0x4,in_stack_ffffffbc,__flags);\n    local_14 = transactions_idx;\n    for (; (local_14 != 0 && (local_10 != 0)); local_10 = local_10 - 1) {\n      for (; ((*(char *)(local_14 * 0x18 + transactions_array + -0xf) != '\\x03' ||\n              (*(int *)(local_14 * 0x18 + transactions_array + 0x10) == *(int *)(transaction + 0x10)\n              )) && (local_14 != 0)); local_14 = local_14 - 1) {\n      }\n      if (local_14 == 0) break;\n      local_1c = local_14 * 0x18 + -0x18 + transactions_array;\n      __n = 0xb;\n      memset(&local_36,0,0xb);\n      local_36 = *(undefined *)(local_1c + 8);\n      local_35 = *(undefined *)(local_1c + 9);\n      local_34 = *(undefined *)(local_1c + 10);\n      local_33 = *(undefined4 *)(local_1c + 0x10);\n      local_2f = *(undefined4 *)(local_1c + 0xc);\n      send((int)&local_36,(void *)0xb,__n,__flags);\n      local_14 = local_14 - 1;\n    }\n    *(undefined *)(transaction + 9) = 2;\n    *(undefined *)(transaction + 10) = 0;\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT31"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_history",
+                        "send_error",
+                        "CONCAT31",
+                        "send",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "handle_history",
+                        "process_ops"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_refund",
+                "func_c_signature": "undefined4 handle_refund(void)",
+                "decompiled_code": "undefined4 handle_refund(void) {\n  undefined4 uVar1;\n  size_t __n;\n  int __flags;\n  undefined4 local_2b;\n  undefined4 local_27;\n  undefined2 local_23;\n  undefined uStack_21;\n  undefined4 uStack_20;\n  int *local_1c;\n  int local_18;\n  int local_14;\n  int *local_10;\n  \n  local_10 = *(int **)(transaction + 0x14);\n  local_14 = lookup_card(*(undefined4 *)(transaction + 0x10));\n  __flags = local_10[1];\n  __n = 0x11afe;\n  local_18 = lookup_transaction();\n  if ((((local_18 == 0) || (*(char *)(local_18 + 8) != '\\0')) || (*(char *)(local_18 + 9) != '\\x03')\n      ) || (*(char *)(local_18 + 10) != '\\0')) {\n    send_error(0x12,\"Unknown Error.\");\n    uVar1 = 1;\n  }\n  else {\n    local_1c = *(int **)(local_18 + 0x14);\n    if (*local_1c == *local_10) {\n      if (~*(uint *)(local_14 + 8) < (uint)local_1c[1]) {\n        send_error(7,\"Unable to refund card. Balance near max.\");\n        uVar1 = 1;\n      }\n      else {\n        *(int *)(local_14 + 8) = *(int *)(local_14 + 8) + local_1c[1];\n        *(undefined *)(transaction + 9) = 2;\n        *(undefined *)(transaction + 10) = 0;\n        *(int *)(transaction + 4) = local_1c[2];\n        *(undefined *)(local_18 + 9) = 4;\n        local_2b = pkthdr;\n        local_27 = DAT_00016024;\n        local_23 = (undefined2)DAT_00016028;\n        uStack_20 = CONCAT31((undefined3)uRam0001602c,DAT_00016028._3_1_);\n        uStack_21 = 0;\n        send((int)&local_2b,(void *)0xf,__n,__flags);\n        uVar1 = 0;\n      }\n    }\n    else {\n      send_error(0x12,\"Unknown Error.\");\n      uVar1 = 1;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT31"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_refund",
+                        "lookup_card",
+                        "lookup_transaction",
+                        "send_error",
+                        "CONCAT31",
+                        "send"
+                    ],
+                    "calling_functions": [
+                        "handle_refund",
+                        "process_ops"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_ops",
+                "func_c_signature": "undefined4 process_ops(void)",
+                "decompiled_code": "undefined4 process_ops(void) {\n  undefined4 uVar1;\n  \n  if (DAT_00016028._1_1_ == '\\0') {\n    uVar1 = handle_purchase();\n  }\n  else if (DAT_00016028._1_1_ == '\\x01') {\n    uVar1 = handle_recharge();\n  }\n  else if (DAT_00016028._1_1_ == '\\x02') {\n    uVar1 = handle_balance();\n  }\n  else if (DAT_00016028._1_1_ == '\\x03') {\n    uVar1 = handle_history();\n  }\n  else if (DAT_00016028._1_1_ == '\\x05') {\n    uVar1 = handle_refund();\n  }\n  else {\n    send_error(9,\"Invalid OP_CODE.\");\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_ops",
+                        "handle_purchase",
+                        "handle_recharge",
+                        "handle_balance",
+                        "handle_history",
+                        "handle_refund",
+                        "send_error"
+                    ],
+                    "calling_functions": [
+                        "process_ops",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  size_t in_stack_ffffffa8;\n  int __flags;\n  int local_49;\n  int local_45;\n  undefined2 local_41;\n  undefined uStack_3f;\n  int iStack_3e;\n  int local_3a;\n  int local_36;\n  undefined2 local_32;\n  undefined uStack_30;\n  int iStack_2f;\n  int local_2b;\n  int local_27;\n  undefined2 local_23;\n  undefined uStack_21;\n  int iStack_20;\n  int local_1c;\n  int *local_18;\n  int *local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  __flags = 0x11ccc;\n  local_14 = (int *)0x0;\n  enlarge_transactions_array(10);\nLAB_00011ce6:\n  iVar1 = read_fully(&pkthdr,0xf);\n  if (iVar1 != 0) {\n    return 0;\n  }\n  transaction = (int *)0x0;\n  if ((local_14 == (int *)0x0) || (*local_14 == ram0x0001602b)) {\n    local_18 = (int *)lookup_transaction(ram0x0001602b);\n    if (DAT_00016028._1_1_ == '\\x04') {\n      if ((char)DAT_00016028 == '\\0') {\n        __flags = 0x11d6e;\n        transaction = (int *)new_transaction();\n        if (transaction == (int *)0x0) {\n          send_error(3,\"Failed to allocate memory.\");\n        }\n        else {\n          iVar1 = read_data(transaction);\n          if (iVar1 == 0) {\n            __flags = 0x11dcb;\n            iVar1 = handle_issue();\n            if (iVar1 == 0) {\n              local_14 = transaction + 3;\n              goto LAB_00011ce6;\n            }\n          }\n          else {\n            send_error(0x12,\"Unknown Error.\");\n          }\n        }\n      }\n      else {\n        if (((char)DAT_00016028 == '\\x03') && (local_18 != (int *)0x0)) {\n          local_14 = (int *)0x0;\n          if ((local_18[4] != pkthdr) || (*local_18 != DAT_00016024)) {\n            transaction = local_18;\n            send_error(0xd,\"Transaction has not completed INIT.\");\n            goto LAB_000120dd;\n          }\n          local_2b = pkthdr;\n          local_27 = DAT_00016024;\n          local_23 = 0x403;\n          iStack_20 = ram0x0001602b;\n          uStack_21 = 0;\n          transaction = local_18;\n          send((int)&local_2b,(void *)0xf,in_stack_ffffffa8,__flags);\n          *(undefined *)((int)transaction + 9) = 3;\n          goto LAB_00011ce6;\n        }\n        send_error(0xd,\"Transaction has not completed INIT.\");\n      }\n    }\n    else if (local_18 == (int *)0x0) {\n      if ((char)DAT_00016028 == '\\x01') {\n        local_1c = lookup_card(pkthdr);\n        if ((local_1c == 0) || (*(int *)(local_1c + 4) != DAT_00016024)) {\n          send_error(0x10,\"Invalid card or auth code.\");\n          goto LAB_000120dd;\n        }\n        __flags = 0x11f10;\n        transaction = (int *)new_transaction();\n        local_3a = pkthdr;\n        local_36 = DAT_00016024;\n        local_32 = CONCAT11(DAT_00016028._1_1_,(char)DAT_00016028);\n        uStack_30 = 0;\n        iStack_2f = transaction[3];\n        send((int)&local_3a,(void *)0xf,in_stack_ffffffa8,__flags);\n        local_14 = transaction + 3;\n        goto LAB_00011ce6;\n      }\n      send_error(0xc,\"Transaction has not completed AUTH.\");\n    }\n    else {\n      if (((DAT_00016028._1_1_ != *(char *)(local_18 + 2)) || (pkthdr != local_18[4])) ||\n         (DAT_00016024 != *local_18)) {\n        send_error(0x12,\"Unknown Error.\");\n        goto LAB_000120dd;\n      }\n      if ((char)DAT_00016028 != '\\x02') {\n        if ((char)DAT_00016028 != '\\x03') {\n          transaction = local_18;\n          send_error(10,\"Invalid PKT_TYPE.\");\n          goto LAB_000120dd;\n        }\n        local_14 = (int *)0x0;\n        if (*(char *)((int)local_18 + 9) != '\\x02') {\n          transaction = local_18;\n          send_error(0xe,\"Transaction has not completed OPS.\");\n          goto LAB_000120dd;\n        }\n        transaction = local_18;\n        *(undefined *)((int)local_18 + 9) = 3;\n        local_49 = pkthdr;\n        local_45 = DAT_00016024;\n        local_41 = CONCAT11(DAT_00016028._1_1_,(char)DAT_00016028);\n        iStack_3e = ram0x0001602b;\n        uStack_3f = 0;\n        send((int)&local_49,(void *)0xf,in_stack_ffffffa8,__flags);\n        goto LAB_00011ce6;\n      }\n      if (*(char *)((int)local_18 + 9) != '\\x01') {\n        transaction = local_18;\n        send_error(0xc,\"Transaction has not completed AUTH.\");\n        goto LAB_000120dd;\n      }\n      transaction = local_18;\n      iVar1 = read_data(local_18);\n      if (iVar1 == 0) {\n        __flags = 0x1203e;\n        iVar1 = process_ops();\n        if (iVar1 == 0) goto LAB_00011ce6;\n      }\n      else {\n        send_error(0x12,\"Unknown Error.\");\n      }\n    }\n  }\n  else {\n    send_error(0xf,\"Card or transaction not found.\");\n  }\nLAB_000120dd:\n  local_14 = (int *)0x0;\n  goto LAB_00011ce6;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT11"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "enlarge_transactions_array",
+                        "read_fully",
+                        "lookup_transaction",
+                        "new_transaction",
+                        "send_error",
+                        "read_data",
+                        "handle_issue",
+                        "send",
+                        "lookup_card",
+                        "CONCAT11",
+                        "process_ops"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "KPRCA_00015_decompiled.c"
+                }
+            }
+        ]
+    }
+}

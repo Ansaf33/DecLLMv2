@@ -1,0 +1,273 @@
+{
+    "file": "NRFIN_00012",
+    "decompiled_code": {
+        "process.c": [
+            {
+                "func_name": "process_next_dgram",
+                "func_c_signature": "undefined4 process_next_dgram(void)",
+                "decompiled_code": "undefined4 process_next_dgram(void) {\n  uint uVar1;\n  int iVar2;\n  undefined4 uVar3;\n  undefined4 **ppuVar4;\n  undefined *puVar5;\n  undefined4 *apuStack_50 [13];\n  undefined auStack_1c [12];\n  undefined4 *local_10;\n  \n  puVar5 = auStack_1c;\n  apuStack_50[12] = (undefined4 *)0x1100c;\n  local_10 = (undefined4 *)0x0;\n  apuStack_50[9] = (undefined4 *)0x0;\n  iVar2 = recvdgram();\n  if (iVar2 < 0) {\n    apuStack_50[9] = curpkt;\n    apuStack_50[10] = (undefined4 *)&DAT_00013000;\n    create_resp_pkt();\n    apuStack_50[11] = (undefined4 *)*curpkt;\n    apuStack_50[10] = curpkt;\n    apuStack_50[9] = (undefined4 *)0x1;\n    iVar2 = senddgram();\n    ppuVar4 = (undefined4 **)auStack_1c;\n    if (iVar2 < 0) {\n      apuStack_50[9] = (undefined4 *)0x1a;\n      _terminate();\n      ppuVar4 = apuStack_50 + 9;\n    }\n    puVar5 = (undefined *)((int)ppuVar4 + -0x10);\n    *(undefined4 *)((int)ppuVar4 + -0x10) = 0x19;\n    *(undefined4 *)((int)ppuVar4 + -0x14) = 0x1107e;\n    _terminate();\n  }\n  uVar1 = curpkt[1];\n  if (uVar1 == 2) {\n    *(undefined4 *)(puVar5 + -4) = 0x110b7;\n    local_10 = (undefined4 *)do_rand();\n  }\n  else {\n    if (2 < uVar1) {\n      return 0xffffffff;\n    }\n    if (uVar1 == 0) {\n      *(undefined4 *)(puVar5 + -4) = 0x110a3;\n      local_10 = (undefined4 *)do_put();\n    }\n    else {\n      if (uVar1 != 1) {\n        return 0xffffffff;\n      }\n      *(undefined4 *)(puVar5 + -4) = 0x110ad;\n      local_10 = (undefined4 *)do_get();\n    }\n  }\n  if (local_10 == (undefined4 *)0x0) {\n    uVar3 = 0xfffffffe;\n  }\n  else {\n    *(undefined4 *)(puVar5 + -8) = *local_10;\n    *(undefined4 **)(puVar5 + -0xc) = local_10;\n    *(undefined4 *)(puVar5 + -0x10) = 1;\n    *(undefined4 *)(puVar5 + -0x14) = 0x110e3;\n    iVar2 = senddgram();\n    if (iVar2 < 0) {\n      *(undefined4 *)(puVar5 + -0x10) = 0x1a;\n      *(undefined4 *)(puVar5 + -0x14) = 0x110f4;\n      _terminate();\n    }\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_next_dgram",
+                        "recvdgram",
+                        "create_resp_pkt",
+                        "senddgram",
+                        "_terminate",
+                        "do_rand",
+                        "do_put",
+                        "do_get"
+                    ],
+                    "calling_functions": [
+                        "process_next_dgram",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_put",
+                "func_c_signature": "int do_put(void)",
+                "decompiled_code": "int do_put(void) {\n  char *__s;\n  size_t sVar1;\n  size_t sVar2;\n  int iVar3;\n  uint local_10;\n  \n  qss[curpkt + 0x27e7] = 0;\n  if (numentries < 0x800) {\n    __s = (char *)(curpkt + 8);\n    sVar1 = strlen(__s);\n    if (sVar1 < 0x80) {\n      sVar1 = strlen(__s);\n      sVar2 = strlen(__s + sVar1 + 1);\n      if (sVar2 < 0x100) {\n        for (local_10 = 0; local_10 < 0x800; local_10 = local_10 + 1) {\n          if ((qss[local_10 * 0x180] != '\\0') &&\n             (iVar3 = streq(curpkt + 8,qss + local_10 * 0x180), iVar3 != 0)) {\n            return 0;\n          }\n        }\n        strcpy(qss + numentries * 0x180,__s);\n        strcpy(qss + numentries * 0x180 + 0x80,__s + sVar1 + 1);\n        numentries = numentries + 1;\n        create_resp_pkt(curpkt,\"Information upload complete.\");\n        iVar3 = curpkt;\n      }\n      else {\n        iVar3 = 0;\n      }\n    }\n    else {\n      iVar3 = 0;\n    }\n  }\n  else {\n    iVar3 = 0;\n  }\n  return iVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_put",
+                        "strlen",
+                        "streq",
+                        "strcpy",
+                        "create_resp_pkt"
+                    ],
+                    "calling_functions": [
+                        "process_next_dgram",
+                        "do_put"
+                    ],
+                    "defined_in_file": "NRFIN_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getrand",
+                "func_c_signature": "undefined8 getrand(undefined4 param_1)",
+                "decompiled_code": "undefined8 getrand(undefined4 param_1) {\n  long lVar1;\n  int iVar2;\n  uint **ppuVar3;\n  uint *puStack_3c;\n  char *pcStack_38;\n  undefined4 uStack_34;\n  undefined4 uStack_30;\n  undefined auStack_2c [4];\n  uint local_28;\n  int local_24;\n  undefined4 local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  uint local_14;\n  undefined4 local_10;\n  \n  uStack_30 = 0x1129a;\n  local_20 = 1;\n  local_1c = 2;\n  local_18 = 3;\n  local_14 = 4;\n  local_10 = 5;\n  uStack_34 = 0;\n  pcStack_38 = (char *)param_1;\n  puStack_3c = &local_28;\n  lVar1 = random();\n  if (lVar1 != 0) {\n    uStack_34 = 0x15;\n    pcStack_38 = \"The essence of chaos.\";\n    puStack_3c = (uint *)0x1;\n    iVar2 = sendline();\n    ppuVar3 = (uint **)auStack_2c;\n    if (iVar2 < 0) {\n      puStack_3c = (uint *)0x6;\n      _terminate();\n      ppuVar3 = &puStack_3c;\n    }\n    *(undefined4 *)((int)ppuVar3 + -0x10) = 0x13;\n    *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11309;\n    _terminate();\n  }\n  return CONCAT44(local_24 + (uint)CARRY4(local_28,local_14),local_28 + local_14);\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT44",
+                    "CARRY4"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getrand",
+                        "random",
+                        "sendline",
+                        "_terminate",
+                        "CONCAT44",
+                        "CARRY4"
+                    ],
+                    "calling_functions": [
+                        "getrand",
+                        "do_rand"
+                    ],
+                    "defined_in_file": "NRFIN_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "easteregg",
+                "func_c_signature": "int easteregg(void)",
+                "decompiled_code": "int easteregg(void) {\n  char *pcVar1;\n  char cVar2;\n  char *local_10;\n  \n  local_10 = (char *)(curpkt + 7);\n  do {\n    pcVar1 = local_10 + 1;\n    cVar2 = *local_10;\n    local_10 = pcVar1;\n  } while (cVar2 != 'B');\n  do {\n    pcVar1 = local_10 + 1;\n    cVar2 = *local_10;\n    local_10 = pcVar1;\n  } while (cVar2 == 'B');\n  strcpy(pcVar1,\"If you do things right, people won\\'t be sure that you\\'ve done anything at all...\"\n        );\n  return curpkt;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "easteregg",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "easteregg",
+                        "do_rand"
+                    ],
+                    "defined_in_file": "NRFIN_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_rand",
+                "func_c_signature": "int do_rand(void)",
+                "decompiled_code": "int do_rand(void) {\n  int iVar1;\n  longlong lVar2;\n  uint local_10;\n  \n  local_10 = 4;\n  if (numentries == 0) {\n    iVar1 = 0;\n  }\n  else {\n    if (*(char *)(curpkt + 8) != '\\0') {\n      local_10 = str2uint(curpkt + 8);\n    }\n    if (local_10 < 9) {\n      lVar2 = getrand(local_10);\n      if ((lVar2 == 0x3127a1b73) && (iVar1 = startswith(curpkt + 10,\"0101010101010101\"), iVar1 != 0)\n         ) {\n        iVar1 = easteregg();\n      }\n      else {\n        create_resp_pkt(curpkt,(0U % numentries) * 0x180 + 0x150a0);\n        iVar1 = curpkt;\n      }\n    }\n    else {\n      iVar1 = 0;\n    }\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_rand",
+                        "str2uint",
+                        "getrand",
+                        "startswith",
+                        "easteregg",
+                        "create_resp_pkt"
+                    ],
+                    "calling_functions": [
+                        "process_next_dgram",
+                        "do_rand"
+                    ],
+                    "defined_in_file": "NRFIN_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_get",
+                "func_c_signature": "int do_get(void)",
+                "decompiled_code": "int do_get(void) {\n  int iVar1;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (numentries <= local_10) {\n      create_resp_pkt(curpkt,\"Not found.\");\n      return curpkt;\n    }\n    iVar1 = streq(curpkt + 8,qss + local_10 * 0x180);\n    if (iVar1 != 0) break;\n    local_10 = local_10 + 1;\n  }\n  create_resp_pkt(curpkt,local_10 * 0x180 + 0x150a0);\n  return curpkt;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_get",
+                        "create_resp_pkt",
+                        "streq"
+                    ],
+                    "calling_functions": [
+                        "process_next_dgram",
+                        "do_get"
+                    ],
+                    "defined_in_file": "NRFIN_00012_decompiled.c"
+                }
+            }
+        ],
+        "proto.c": [
+            {
+                "func_name": "recvmsg",
+                "func_c_signature": "ssize_t recvmsg(int __fd,msghdr *__message,int __flags)",
+                "decompiled_code": "ssize_t recvmsg(int __fd,msghdr *__message,int __flags) {\n  void *__n;\n  void *pvVar1;\n  void *in_stack_00000010;\n  int __flags_00;\n  \n  __flags_00 = 0x118d3;\n  if ((uint)__flags < 8) {\n    __n = (void *)0xfffffffd;\n  }\n  else {\n    __n = (void *)recv(__fd,__message,8,0x118d3);\n    if (__n == (void *)0x8) {\n      __n = __message->msg_name;\n      if (((uint)__flags < __n) || (__n < in_stack_00000010)) {\n        __n = (void *)0xffffffff;\n      }\n      else {\n        pvVar1 = (void *)recv(__fd,&__message->msg_iov,(size_t)__n,__flags_00);\n        if (pvVar1 != __n) {\n          __n = (void *)0xfffffffe;\n        }\n      }\n    }\n  }\n  return (ssize_t)__n;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recvmsg",
+                        "recv"
+                    ],
+                    "calling_functions": [
+                        "recvmsg",
+                        "recvdgram"
+                    ],
+                    "defined_in_file": "NRFIN_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "senddgram",
+                "func_c_signature": "int senddgram(undefined4 param_1,undefined4 *param_2)",
+                "decompiled_code": "int senddgram(undefined4 param_1,undefined4 *param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  \n  uVar2 = 0x11972;\n  iVar1 = sendall(param_1,param_2,8,0x11972);\n  if (iVar1 == 8) {\n    iVar1 = sendall(param_1,param_2 + 2,*param_2,uVar2);\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "senddgram",
+                        "sendall"
+                    ],
+                    "calling_functions": [
+                        "process_next_dgram",
+                        "senddgram",
+                        "recvdgram",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "recvdgram",
+                "func_c_signature": "undefined4 recvdgram(void)",
+                "decompiled_code": "undefined4 recvdgram(void) {\n  byte bVar1;\n  undefined4 uVar2;\n  ssize_t sVar3;\n  int iVar4;\n  byte *pbVar5;\n  int iVar6;\n  undefined *puVar7;\n  undefined *puVar8;\n  undefined *puVar9;\n  undefined auStack_1781c [2068];\n  undefined auStack_17008 [94192];\n  undefined4 local_18;\n  ushort local_12;\n  ushort local_10;\n  ushort local_e;\n  \n  puVar9 = &stack0xfffffff8;\n  do {\n    puVar7 = puVar9;\n    *(undefined4 *)(puVar7 + -0x1000) = *(undefined4 *)(puVar7 + -0x1000);\n    puVar9 = puVar7 + -0x1000;\n  } while (puVar7 + -0x1000 != auStack_17008);\n  *(undefined4 *)(puVar7 + -0x1818) = 0x119dd;\n  iVar6 = *(int *)(puVar7 + -0x1818);\n  local_e = 0;\n  local_10 = 0;\n  local_12 = 0;\n  local_18 = 5;\n  *(undefined4 *)(puVar7 + -0x181c) = 0x17800;\n  *(undefined4 *)(puVar7 + -0x1820) = 0;\n  *(undefined **)(puVar7 + -0x1824) = auStack_1781c;\n  *(undefined4 *)(puVar7 + -0x1828) = 0x11a1a;\n  memset(*(void **)(puVar7 + -0x1824),*(int *)(puVar7 + -0x1820),*(size_t *)(puVar7 + -0x181c));\n  uVar2 = *(undefined4 *)(qss + iVar6 + 0xae623);\n  *(undefined4 *)(puVar7 + -0x181c) = 0x17808;\n  *(undefined4 *)(puVar7 + -0x1820) = 0;\n  *(undefined4 *)(puVar7 + -0x1824) = uVar2;\n  *(undefined4 *)(puVar7 + -0x1828) = 0x11a35;\n  memset(*(void **)(puVar7 + -0x1824),*(int *)(puVar7 + -0x1820),*(size_t *)(puVar7 + -0x181c));\n  puVar8 = puVar7 + -0x1814;\n  do {\n    uVar2 = *(undefined4 *)(qss + iVar6 + 0xae623);\n    *(undefined4 *)(puVar8 + -4) = 0;\n    *(undefined4 *)(puVar8 + -8) = 0x180;\n    *(undefined4 *)(puVar8 + -0xc) = uVar2;\n    *(undefined4 *)(puVar8 + -0x10) = 0;\n    *(undefined4 *)(puVar8 + -0x14) = 0x11a4f;\n    sVar3 = recvmsg(*(int *)(puVar8 + -0x10),*(msghdr **)(puVar8 + -0xc),*(int *)(puVar8 + -8));\n    if (sVar3 < 0) {\n      uVar2 = *(undefined4 *)(qss + iVar6 + 0xae623);\n      *(int *)(puVar8 + -0xc) = iVar6 + 0x16c8;\n      *(undefined4 *)(puVar8 + -0x10) = uVar2;\n      *(undefined4 *)(puVar8 + -0x14) = 0x11a6e;\n      create_resp_pkt();\n      uVar2 = *(undefined4 *)(qss + iVar6 + 0xae623);\n      *(undefined4 *)(puVar8 + -8) = **(undefined4 **)(qss + iVar6 + 0xae623);\n      *(undefined4 *)(puVar8 + -0xc) = uVar2;\n      *(undefined4 *)(puVar8 + -0x10) = 1;\n      *(undefined4 *)(puVar8 + -0x14) = 0x11a8f;\n      iVar4 = senddgram();\n      puVar9 = puVar8;\n      if (iVar4 < 0) {\n        *(undefined4 *)(puVar8 + -0x10) = 0x1a;\n        *(undefined4 *)(puVar8 + -0x14) = 0x11aa0;\n        _terminate();\n        puVar9 = puVar8 + -0x10;\n      }\n      puVar8 = puVar9 + -0x10;\n      *(undefined4 *)(puVar9 + -0x10) = 0x18;\n      *(undefined4 *)(puVar9 + -0x14) = 0x11aaa;\n      _terminate();\n    }\n    if ((*(int *)(*(int *)(qss + iVar6 + 0xae623) + 4) != 4) && (local_e == 0)) {\n      return 0;\n    }\n    if (*(int *)(*(int *)(qss + iVar6 + 0xae623) + 4) != 4) {\n      return 0xffffffff;\n    }\n    if (**(int **)(qss + iVar6 + 0xae623) != 0x180) {\n      return 0xfffffffe;\n    }\n    iVar4 = *(int *)(qss + iVar6 + 0xae623);\n    pbVar5 = (byte *)(iVar4 + 8);\n    if (local_12 != *pbVar5) {\n      return 0xfffffffd;\n    }\n    if (*pbVar5 == 0) {\n      local_10 = *(byte *)(iVar4 + 9) + 1;\n      if (local_10 < 2) {\n        return 0xfffffffc;\n      }\n      local_18 = *(undefined4 *)(iVar4 + 0xc);\n      local_e = local_10;\n    }\n    if (local_e == 0) {\n      return 0xfffffffb;\n    }\n    if (local_10 != (ushort)(*(byte *)(iVar4 + 9) + 1)) {\n      return 0xfffffffa;\n    }\n    bVar1 = *pbVar5;\n    *(undefined4 *)(puVar8 + -8) = 0x178;\n    *(int *)(puVar8 + -0xc) = iVar4 + 0x10;\n    *(undefined **)(puVar8 + -0x10) = auStack_1781c + (uint)bVar1 * 0x178;\n    *(undefined4 *)(puVar8 + -0x14) = 0x11bc0;\n    memcpy(*(void **)(puVar8 + -0x10),*(void **)(puVar8 + -0xc),*(size_t *)(puVar8 + -8));\n    local_e = local_e - 1;\n    local_12 = local_12 + 1;\n  } while (local_e != 0);\n  *(undefined4 *)(*(int *)(qss + iVar6 + 0xae623) + 4) = local_18;\n  iVar4 = *(int *)(qss + iVar6 + 0xae623);\n  *(undefined4 *)(puVar8 + -8) = 0x17800;\n  *(undefined **)(puVar8 + -0xc) = auStack_1781c;\n  *(int *)(puVar8 + -0x10) = iVar4 + 8;\n  *(undefined4 *)(puVar8 + -0x14) = 0x11c12;\n  memcpy(*(void **)(puVar8 + -0x10),*(void **)(puVar8 + -0xc),*(size_t *)(puVar8 + -8));\n  **(int **)(qss + iVar6 + 0xae623) = (uint)local_10 * 0x100 + 0x80;\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recvdgram",
+                        "memset",
+                        "recvmsg",
+                        "create_resp_pkt",
+                        "senddgram",
+                        "_terminate",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "process_next_dgram",
+                        "recvdgram"
+                    ],
+                    "defined_in_file": "NRFIN_00012_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_resp_pkt",
+                "func_c_signature": "void create_resp_pkt(undefined4 *param_1,char *param_2)",
+                "decompiled_code": "void create_resp_pkt(undefined4 *param_1,char *param_2) {\n  memset(param_1,0,0x17808);\n  strcpy((char *)(param_1 + 2),param_2);\n  param_1[1] = 3;\n  *param_1 = 0x100;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_resp_pkt",
+                        "memset",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "process_next_dgram",
+                        "do_put",
+                        "do_rand",
+                        "do_get",
+                        "recvdgram",
+                        "create_resp_pkt",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00012_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(void)",
+                "decompiled_code": "void main(void) {\n  int iVar1;\n  size_t sVar2;\n  int iVar3;\n  code **ppcVar4;\n  undefined *puVar5;\n  undefined *puVar6;\n  undefined *puVar7;\n  int aiStack_b0 [9];\n  char *apcStack_8c [2];\n  size_t asStack_84 [5];\n  ushort auStack_70 [4];\n  code *apcStack_68 [2];\n  int aiStack_60 [13];\n  char *pcStack_2c;\n  undefined4 *puStack_28;\n  undefined4 uStack_24;\n  undefined auStack_20 [12];\n  int local_14;\n  undefined *puStack_10;\n  \n  puStack_10 = &stack0x00000004;\n  ppcVar4 = (code **)auStack_20;\n  puVar5 = auStack_20;\n  uStack_24 = 0x11ca2;\n  local_14 = 0;\n  puStack_28 = &curpkt;\n  pcStack_2c = (char *)0x0;\n  aiStack_60[12] = 0x17808;\n  iVar1 = allocate();\n  if (iVar1 != 0) {\n    puStack_28 = (undefined4 *)0xc;\n    pcStack_2c = \"Clever girl.\";\n    aiStack_60[12] = 1;\n    iVar1 = sendline();\n    if (iVar1 < 0) {\n      ppcVar4 = apcStack_68 + 0xe;\n      aiStack_60[12] = 6;\n      _terminate();\n    }\n    puVar5 = (undefined *)((int)ppcVar4 + -0x10);\n    *(undefined4 *)((int)ppcVar4 + -0x10) = 9;\n    *(undefined4 *)((int)ppcVar4 + -0x14) = 0x11cfa;\n    _terminate();\n  }\n  do {\n    *(undefined4 *)(puVar5 + -4) = 0x11cff;\n    local_14 = process_next_dgram();\n  } while (-1 < local_14);\n  *(undefined **)(puVar5 + -0xc) = &DAT_000130b7;\n  *(undefined4 **)(puVar5 + -0x10) = curpkt;\n  *(undefined4 *)(puVar5 + -0x14) = 0x11d20;\n  create_resp_pkt();\n  *(undefined4 *)(puVar5 + -8) = *curpkt;\n  *(undefined4 **)(puVar5 + -0xc) = curpkt;\n  *(undefined4 *)(puVar5 + -0x10) = 1;\n  *(undefined4 *)(puVar5 + -0x14) = 0x11d41;\n  iVar1 = senddgram();\n  puVar7 = puVar5;\n  if (iVar1 < 0) {\n    *(undefined4 *)(puVar5 + -0x10) = 0x1a;\n    *(undefined4 *)(puVar5 + -0x14) = 0x11d52;\n    _terminate();\n    puVar7 = puVar5 + -0x10;\n  }\n  *(int *)(puVar7 + -0x10) = local_14;\n  *(code **)(puVar7 + -0x14) = promptc;\n  _terminate();\n  *(undefined **)(puVar7 + -0x14) = &stack0xfffffff8;\n  *(undefined ***)(puVar7 + -0x18) = &_GLOBAL_OFFSET_TABLE_;\n  *(undefined4 *)(puVar7 + -0x30) = 0x11d6a;\n  iVar3 = *(int *)(puVar7 + -0x30);\n  *(short *)(puVar7 + -0x20) = (short)*(undefined4 *)(puVar7 + -8);\n  *(undefined4 *)(puVar7 + -0x3c) = *(undefined4 *)(puVar7 + -4);\n  *(undefined4 *)(puVar7 + -0x40) = 0x11d82;\n  sVar2 = strlen(*(char **)(puVar7 + -0x3c));\n  *(size_t *)(puVar7 + -0x34) = sVar2;\n  *(undefined4 *)(puVar7 + -0x38) = *(undefined4 *)(puVar7 + -4);\n  *(undefined4 *)(puVar7 + -0x3c) = 1;\n  *(undefined4 *)(puVar7 + -0x40) = 0x11d93;\n  iVar1 = sendall();\n  puVar6 = puVar7 + -0x2c;\n  if (iVar1 < 0) {\n    *(undefined4 *)(puVar7 + -0x3c) = 3;\n    *(undefined4 *)(puVar7 + -0x40) = 0x11da4;\n    _terminate();\n    puVar6 = puVar7 + -0x3c;\n  }\n  *(uint *)(puVar6 + -8) = (uint)*(ushort *)(puVar7 + -0x20);\n  *(undefined4 *)(puVar6 + -0xc) = *(undefined4 *)(puVar7 + -0xc);\n  *(undefined4 *)(puVar6 + -0x10) = 0;\n  *(undefined4 *)(puVar6 + -0x14) = 0x11db6;\n  iVar1 = recvline();\n  if (iVar1 < 0) {\n    *(undefined4 *)(puVar6 + -8) = 0x1e;\n    *(int *)(puVar6 + -0xc) = iVar3 + 0x1352;\n    *(undefined4 *)(puVar6 + -0x10) = 1;\n    *(undefined4 *)(puVar6 + -0x14) = 0x11dd0;\n    iVar1 = sendline();\n    puVar7 = puVar6;\n    if (iVar1 < 0) {\n      *(undefined4 *)(puVar6 + -0x10) = 6;\n      *(undefined4 *)(puVar6 + -0x14) = 0x11de1;\n      _terminate();\n      puVar7 = puVar6 + -0x10;\n    }\n    *(undefined4 *)(puVar7 + -0x10) = 2;\n    *(undefined4 *)(puVar7 + -0x14) = 0x11deb;\n    _terminate();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "allocate",
+                        "sendline",
+                        "_terminate",
+                        "process_next_dgram",
+                        "create_resp_pkt",
+                        "senddgram",
+                        "strlen",
+                        "sendall",
+                        "recvline"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00012_decompiled.c"
+                }
+            }
+        ]
+    }
+}

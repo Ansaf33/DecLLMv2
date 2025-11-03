@@ -1,0 +1,498 @@
+{
+    "file": "CROMU_00003",
+    "decompiled_code": {
+        "yolodex.c": [
+            {
+                "func_name": "put",
+                "func_c_signature": "void put(char *param_1)",
+                "decompiled_code": "void put(char *param_1) {\n  size_t sVar1;\n  \n  sVar1 = strlen(param_1);\n  transmit(1,param_1,sVar1,0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "put",
+                        "strlen",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "put",
+                        "printContact",
+                        "promptAdd",
+                        "findContact",
+                        "editUser",
+                        "promptShow"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validateName",
+                "func_c_signature": "undefined4 validateName(char *param_1)",
+                "decompiled_code": "undefined4 validateName(char *param_1) {\n  undefined4 uVar1;\n  \n  if ((*param_1 < 'A') || ('Z' < *param_1)) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validateName"
+                    ],
+                    "calling_functions": [
+                        "validateName",
+                        "createContact",
+                        "editUser"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validatePhone",
+                "func_c_signature": "undefined4 validatePhone(char *param_1)",
+                "decompiled_code": "undefined4 validatePhone(char *param_1) {\n  char *pcVar1;\n  undefined4 uVar2;\n  char *local_c;\n  int local_8;\n  \n  local_c = param_1 + 1;\n  if (*param_1 == '(') {\n    for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {\n      if ((*local_c < '0') || ('9' < *local_c)) {\n        return 0;\n      }\n      local_c = local_c + 1;\n    }\n    if (*local_c == ')') {\n      pcVar1 = local_c;\n      for (local_8 = 0; local_c = pcVar1 + 1, local_8 < 3; local_8 = local_8 + 1) {\n        if ((*local_c < '0') || ('9' < *local_c)) {\n          return 0;\n        }\n        pcVar1 = local_c;\n      }\n      if (*local_c == '-') {\n        local_c = pcVar1 + 2;\n        for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {\n          if ((*local_c < '0') || ('9' < *local_c)) {\n            return 0;\n          }\n          local_c = local_c + 1;\n        }\n        uVar2 = 1;\n      }\n      else {\n        uVar2 = 0;\n      }\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  else {\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validatePhone"
+                    ],
+                    "calling_functions": [
+                        "validatePhone",
+                        "createContact",
+                        "editUser"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "createContact",
+                "func_c_signature": "void * createContact(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined2 param_4,\n                    undefined param_5,undefined param_6)",
+                "decompiled_code": "void * createContact(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined2 param_4,\n                    undefined param_5,undefined param_6) {\n  int iVar1;\n  size_t sVar2;\n  undefined *puVar3;\n  undefined auStack_2c [4];\n  undefined local_28;\n  undefined local_24;\n  undefined2 local_20;\n  void *local_10;\n  \n  puVar3 = auStack_2c;\n  local_20 = param_4;\n  local_24 = param_5;\n  local_28 = param_6;\n  local_10 = (void *)0x0;\n  local_10 = calloc(1,100);\n  if (local_10 == (void *)0x0) {\n    puVar3 = &stack0xffffffc4;\n    puts(\"Couldn\\'t allocate contact.  Something\\'s wrong.\");\n    _terminate();\n  }\n  *(undefined4 *)(puVar3 + -0x10) = param_1;\n  *(undefined4 *)(puVar3 + -0x14) = 0x111d1;\n  iVar1 = validateName();\n  if (iVar1 == 0) {\n    *(char **)(puVar3 + -0x10) = \"Invalid first name.  Must begin with a capital letter.\";\n    *(undefined4 *)(puVar3 + -0x14) = 0x1121c;\n    puts(*(char **)(puVar3 + -0x10));\n    *(void **)(puVar3 + -0x10) = local_10;\n    *(undefined4 *)(puVar3 + -0x14) = 0x1122a;\n    free(*(void **)(puVar3 + -0x10));\n    local_10 = (void *)0x0;\n  }\n  else {\n    *(undefined4 *)(puVar3 + -0x10) = param_1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x111e3;\n    sVar2 = strlen(*(char **)(puVar3 + -0x10));\n    *(size_t *)(puVar3 + -8) = sVar2;\n    *(undefined4 *)(puVar3 + -0xc) = param_1;\n    *(void **)(puVar3 + -0x10) = local_10;\n    *(undefined4 *)(puVar3 + -0x14) = 0x111f6;\n    memcpy(*(void **)(puVar3 + -0x10),*(void **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n    *(undefined4 *)(puVar3 + -0x10) = param_2;\n    *(undefined4 *)(puVar3 + -0x14) = 0x11204;\n    iVar1 = validateName();\n    if (iVar1 == 0) {\n      *(char **)(puVar3 + -0x10) = \"Invalid last name.  Must begin with a capital letter.\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11289;\n      puts(*(char **)(puVar3 + -0x10));\n      *(void **)(puVar3 + -0x10) = local_10;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11297;\n      free(*(void **)(puVar3 + -0x10));\n      local_10 = (void *)0x0;\n    }\n    else {\n      *(undefined4 *)(puVar3 + -0x10) = param_2;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11249;\n      sVar2 = strlen(*(char **)(puVar3 + -0x10));\n      *(size_t *)(puVar3 + -8) = sVar2;\n      *(undefined4 *)(puVar3 + -0xc) = param_2;\n      *(int *)(puVar3 + -0x10) = (int)local_10 + 0x20;\n      *(undefined4 *)(puVar3 + -0x14) = 0x1125f;\n      memcpy(*(void **)(puVar3 + -0x10),*(void **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n      *(undefined4 *)(puVar3 + -0x10) = param_3;\n      *(undefined4 *)(puVar3 + -0x14) = 0x1126d;\n      iVar1 = validatePhone();\n      if (iVar1 == 0) {\n        *(char **)(puVar3 + -0x10) = \"Invalid phone number...must look like (nnn)nnn-nnnn\";\n        *(undefined4 *)(puVar3 + -0x14) = 0x1132c;\n        puts(*(char **)(puVar3 + -0x10));\n        *(void **)(puVar3 + -0x10) = local_10;\n        *(undefined4 *)(puVar3 + -0x14) = 0x1133a;\n        free(*(void **)(puVar3 + -0x10));\n        local_10 = (void *)0x0;\n      }\n      else {\n        *(undefined4 *)(puVar3 + -0x10) = param_3;\n        *(undefined4 *)(puVar3 + -0x14) = 0x112b6;\n        sVar2 = strlen(*(char **)(puVar3 + -0x10));\n        *(size_t *)(puVar3 + -8) = sVar2;\n        *(undefined4 *)(puVar3 + -0xc) = param_3;\n        *(int *)(puVar3 + -0x10) = (int)local_10 + 0x40;\n        *(undefined4 *)(puVar3 + -0x14) = 0x112cc;\n        memcpy(*(void **)(puVar3 + -0x10),*(void **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n        *(undefined2 *)((int)local_10 + 0x50) = local_20;\n        *(undefined *)((int)local_10 + 0x52) = local_24;\n        *(undefined *)((int)local_10 + 0x53) = local_28;\n        *(undefined4 *)((int)local_10 + 0x54) = cookie;\n        *(undefined4 *)((int)local_10 + 0x58) = 0;\n        *(undefined4 *)((int)local_10 + 0x60) = 0;\n        *(undefined4 *)((int)local_10 + 0x5c) = 0;\n      }\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [
+                    "like"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "createContact",
+                        "calloc",
+                        "puts",
+                        "_terminate",
+                        "validateName",
+                        "free",
+                        "strlen",
+                        "memcpy",
+                        "validatePhone",
+                        "like"
+                    ],
+                    "calling_functions": [
+                        "createContact",
+                        "initYolodex",
+                        "promptAdd"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "insert",
+                "func_c_signature": "void insert(int param_1)",
+                "decompiled_code": "void insert(int param_1) {\n  int local_8;\n  \n  if (head == 0) {\n    head = param_1;\n  }\n  else {\n    for (local_8 = head; *(int *)(local_8 + 0x60) != 0; local_8 = *(int *)(local_8 + 0x60)) {\n    }\n    *(int *)(local_8 + 0x60) = param_1;\n    *(int *)(param_1 + 0x5c) = local_8;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "insert"
+                    ],
+                    "calling_functions": [
+                        "insert",
+                        "initYolodex",
+                        "promptAdd"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove",
+                "func_c_signature": "int remove(char *__filename)",
+                "decompiled_code": "int remove(char *__filename) {\n  if ((*(int *)(__filename + 0x60) == 0) && (*(int *)(__filename + 0x5c) == 0)) {\n    head = 0;\n  }\n  else {\n    if (*(int *)(__filename + 0x5c) == 0) {\n      head = *(undefined4 *)(__filename + 0x60);\n      *(undefined4 *)(*(int *)(__filename + 0x60) + 0x5c) = 0;\n    }\n    else {\n      *(undefined4 *)(*(int *)(__filename + 0x5c) + 0x60) = *(undefined4 *)(__filename + 0x60);\n    }\n    if (*(int *)(__filename + 0x60) == 0) {\n      *(undefined4 *)(*(int *)(__filename + 0x5c) + 0x60) = 0;\n    }\n    else {\n      *(undefined4 *)(*(int *)(__filename + 0x60) + 0x5c) = *(undefined4 *)(__filename + 0x5c);\n    }\n    *(undefined4 *)(__filename + 0x60) = 0;\n    *(undefined4 *)(__filename + 0x5c) = 0;\n  }\n  return (int)__filename;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove"
+                    ],
+                    "calling_functions": [
+                        "remove",
+                        "sortYolodex",
+                        "promptDel"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "printGender",
+                "func_c_signature": "void printGender(char param_1)",
+                "decompiled_code": "void printGender(char param_1) {\n  if (param_1 == 'T') {\n    puts(\"Trans-Gender\");\n    return;\n  }\n  if (param_1 < 'U') {\n    if (param_1 == 'F') {\n      puts(\"Female\");\n      return;\n    }\n    if (param_1 == 'M') {\n      puts(\"Male\");\n      return;\n    }\n  }\n  puts(\"Other\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "printGender",
+                        "puts"
+                    ],
+                    "calling_functions": [
+                        "printGender",
+                        "promptShow"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "printContact",
+                "func_c_signature": "void printContact(char *param_1)",
+                "decompiled_code": "void printContact(char *param_1) {\n  put(\"First Name: \\t\");\n  puts(param_1);\n  put(\"Last Name: \\t\");\n  puts(param_1 + 0x20);\n  put(\"Phone Number: \\t\");\n  puts(param_1 + 0x40);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "printContact",
+                        "put",
+                        "puts"
+                    ],
+                    "calling_functions": [
+                        "printContact",
+                        "printList"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "printList",
+                "func_c_signature": "void printList(void)",
+                "decompiled_code": "void printList(void) {\n  int local_10;\n  \n  local_10 = head;\n  if (head == 0) {\n    puts(\"Empty yolodex.\");\n  }\n  for (; local_10 != 0; local_10 = *(int *)(local_10 + 0x60)) {\n    puts(\"========================================\");\n    printContact(local_10);\n  }\n  puts(\"========================================\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "printList",
+                        "puts",
+                        "printContact"
+                    ],
+                    "calling_functions": [
+                        "printList",
+                        "inputLoop"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sortYolodex",
+                "func_c_signature": "void sortYolodex(void)",
+                "decompiled_code": "void sortYolodex(void) {\n  int iVar1;\n  int local_20;\n  char *local_1c;\n  char *local_18;\n  char *local_14;\n  char *local_c;\n  \n  local_1c = (char *)0x0;\n  do {\n    local_14 = head;\n    local_c = head;\n    if (head == (char *)0x0) {\n      head = local_1c;\n      return;\n    }\n    for (; local_c != (char *)0x0; local_c = *(char **)(local_c + 0x60)) {\n      local_20 = 0;\n      while( true ) {\n        if ((local_14[local_20 + 0x20] == '\\0') || (local_c[local_20 + 0x20] == '\\0'))\n        goto LAB_0001168c;\n        if (local_c[local_20 + 0x20] < local_14[local_20 + 0x20]) break;\n        if (local_14[local_20 + 0x20] != local_c[local_20 + 0x20]) goto LAB_0001168c;\n        local_20 = local_20 + 1;\n      }\n      local_14 = local_c;\nLAB_0001168c:\n      if ((local_c[local_20 + 0x20] == '\\0') && (local_14[local_20 + 0x20] != '\\0')) {\n        local_14 = local_c;\n      }\n    }\n    iVar1 = remove(local_14);\n    if (local_1c == (char *)0x0) {\n      local_1c = local_14;\n    }\n    else {\n      for (local_18 = local_1c; *(int *)(local_18 + 0x60) != 0;\n          local_18 = *(char **)(local_18 + 0x60)) {\n      }\n      *(int *)(local_18 + 0x60) = iVar1;\n      *(char **)(iVar1 + 0x5c) = local_18;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sortYolodex",
+                        "remove"
+                    ],
+                    "calling_functions": [
+                        "sortYolodex",
+                        "inputLoop"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initYolodex",
+                "func_c_signature": "void initYolodex(void)",
+                "decompiled_code": "void initYolodex(void) {\n  undefined4 uVar1;\n  \n  head = createContact(\"Robert\",\"Morris\",\"(617)253-5982\",0x80cc,0x4d,0x79);\n  uVar1 = createContact(\"Chareth\",\"Cutestory\",\"(123)456-7890\",0x1092,0x4d,0x6e);\n  insert(uVar1);\n  uVar1 = createContact(&DAT_000141af,\"Berners-Lee\",\"(638)844-2074\",0x194,0x4d,0x79);\n  insert(uVar1);\n  uVar1 = createContact(\"Pwnies\",\"McPwn\",\"(222)223-1337\",0x7a69,0x46,0x79);\n  insert(uVar1);\n  uVar1 = createContact(\"Jenny\",\"Fakename\",\"(555)867-5309\",0x7a69,0x46,0x6e);\n  insert(uVar1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initYolodex",
+                        "createContact",
+                        "insert"
+                    ],
+                    "calling_functions": [
+                        "initYolodex",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "recvUntil",
+                "func_c_signature": "int recvUntil(char *param_1,int param_2,char param_3)",
+                "decompiled_code": "int recvUntil(char *param_1,int param_2,char param_3) {\n  undefined *puVar1;\n  undefined *puVar2;\n  char *apcStack_40 [4];\n  int *piStack_30;\n  undefined auStack_2c [12];\n  char local_20;\n  int local_14;\n  char *local_10;\n  \n  local_20 = param_3;\n  local_10 = param_1;\n  puVar2 = auStack_2c;\n  do {\n    if (param_2 == 0) {\nLAB_000118c5:\n      return (int)local_10 - (int)param_1;\n    }\n    *(int **)(puVar2 + -4) = &local_14;\n    *(undefined4 *)(puVar2 + -8) = 1;\n    *(char **)(puVar2 + -0xc) = local_10;\n    *(undefined4 *)(puVar2 + -0x10) = 0;\n    *(undefined4 *)(puVar2 + -0x14) = 0x1188d;\n    receive();\n    puVar1 = puVar2;\n    if (local_14 == 0) {\n      puVar1 = puVar2 + -0x10;\n      *(undefined4 *)(puVar2 + -0x10) = 0xffffffff;\n      *(undefined4 *)(puVar2 + -0x14) = 0x118a1;\n      _terminate();\n    }\n    if (local_20 == *local_10) {\n      *local_10 = '\\0';\n      goto LAB_000118c5;\n    }\n    local_10 = local_10 + 1;\n    puVar2 = puVar1;\n    param_2 = param_2 + -1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recvUntil",
+                        "receive",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "recvUntil",
+                        "promptAdd",
+                        "findContact",
+                        "editUser",
+                        "promptShow",
+                        "inputLoop"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "promptAdd",
+                "func_c_signature": "void promptAdd(void)",
+                "decompiled_code": "void promptAdd(void) {\n  int iVar1;\n  undefined *puVar2;\n  undefined auStack_7c [11];\n  char local_71;\n  char local_6f [8];\n  undefined local_67 [16];\n  undefined local_57 [32];\n  undefined local_37 [32];\n  char local_17;\n  undefined2 local_16;\n  int local_14;\n  char local_d;\n  \n  memset(local_67,0,0x10);\n  memset(local_6f,0,8);\n  puVar2 = auStack_7c;\n  local_14 = 0;\n  while (local_14 == 0) {\n    put();\n    recvUntil();\n    put();\n    recvUntil();\n    put();\n    recvUntil();\n    put();\n    memset(local_6f,0,8);\n    recvUntil();\n    iVar1 = atoi(local_6f);\n    local_16 = (undefined2)iVar1;\n    put();\n    recvUntil();\n    local_17 = local_71;\n    local_d = '?';\n    while (local_d == '?') {\n      put();\n      recvUntil();\n      if ((local_71 == 'n') || (local_71 == 'y')) {\n        local_d = local_71;\n      }\n      else {\n        puts(\"Please enter y or n for hacker.\");\n      }\n    }\n    local_14 = createContact(local_37,local_57,local_67,local_16);\n  }\n  if (*(int *)(local_14 + 0x54) != cookie) {\n    puVar2 = &stack0xffffff74;\n    puts(\"Contact corruption detected.\");\n    _terminate();\n  }\n  *(int *)(puVar2 + -0x10) = local_14;\n  *(undefined4 *)(puVar2 + -0x14) = 0x11ac3;\n  insert();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "promptAdd",
+                        "memset",
+                        "put",
+                        "recvUntil",
+                        "atoi",
+                        "puts",
+                        "createContact",
+                        "_terminate",
+                        "insert"
+                    ],
+                    "calling_functions": [
+                        "promptAdd",
+                        "inputLoop"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "findContact",
+                "func_c_signature": "char * findContact(void)",
+                "decompiled_code": "char * findContact(void) {\n  int iVar1;\n  char local_54 [32];\n  char local_34 [32];\n  char *local_14;\n  char *local_10;\n  \n  local_14 = (char *)0x0;\n  put(\"First: \");\n  recvUntil(local_34,0x20,10);\n  put(\"Last: \");\n  recvUntil(local_54,0x20,10);\n  local_10 = head;\n  while( true ) {\n    if (local_10 == (char *)0x0) {\n      return local_14;\n    }\n    iVar1 = strcmp(local_34,local_10);\n    if ((iVar1 == 0) && (iVar1 = strcmp(local_54,local_10 + 0x20), iVar1 == 0)) break;\n    local_10 = *(char **)(local_10 + 0x60);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "findContact",
+                        "put",
+                        "recvUntil",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "findContact",
+                        "promptDel",
+                        "promptEdit",
+                        "promptShow"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "promptDel",
+                "func_c_signature": "void promptDel(void)",
+                "decompiled_code": "void promptDel(void) {\n  char *__filename;\n  void *__ptr;\n  \n  __filename = (char *)findContact();\n  if (__filename == (char *)0x0) {\n    puts(\"No such contact found.\");\n  }\n  else {\n    __ptr = (void *)remove(__filename);\n    free(__ptr);\n    puts(\"Contact removed.\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "promptDel",
+                        "findContact",
+                        "puts",
+                        "remove",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "promptDel",
+                        "inputLoop"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "editUser",
+                "func_c_signature": "void editUser(void *param_1)",
+                "decompiled_code": "void editUser(void *param_1) {\n  int iVar1;\n  size_t sVar2;\n  char local_34 [8];\n  char local_2c [36];\n  \n  if (param_1 != (void *)0x0) {\n    puts(\"Updating fields.  Send just a newline to keep old data.\");\n    put(\"New first name: \");\n    recvUntil(local_2c,0x20,10);\n    if ((local_2c[0] != '\\0') && (iVar1 = validateName(local_2c), iVar1 == 0)) {\n      puts(\"Not a legal first name.  Stopping edit.\");\n      return;\n    }\n    if (local_2c[0] != '\\0') {\n      memset(param_1,0,0x20);\n      sVar2 = strlen(local_2c);\n      memcpy(param_1,local_2c,sVar2);\n    }\n    put(\"New last name: \");\n    recvUntil(local_2c,0x20,10);\n    if ((local_2c[0] != '\\0') && (iVar1 = validateName(local_2c), iVar1 == 0)) {\n      puts(\"Not a legal last name.  Stopping edit.\");\n      return;\n    }\n    if (local_2c[0] != '\\0') {\n      memset((void *)((int)param_1 + 0x20),0,0x20);\n      sVar2 = strlen(local_2c);\n      memcpy((void *)((int)param_1 + 0x20),local_2c,sVar2);\n    }\n    put(\"New phone number: \");\n    recvUntil(local_2c,0xe,10);\n    if ((local_2c[0] != '\\0') && (iVar1 = validatePhone(local_2c), iVar1 == 0)) {\n      puts(\"Not a legal phone number.  Stopping edit.\");\n      return;\n    }\n    if (local_2c[0] != '\\0') {\n      memset((void *)((int)param_1 + 0x40),0,0x10);\n      sVar2 = strlen(local_2c);\n      memcpy((void *)((int)param_1 + 0x40),local_2c,sVar2);\n    }\n    put(\"New office number: \");\n    recvUntil(local_2c,6,10);\n    if (local_2c[0] != '\\0') {\n      memcpy(local_34,local_2c,5);\n      iVar1 = atoi(local_34);\n      *(short *)((int)param_1 + 0x50) = (short)iVar1;\n    }\n    put(\"New gender: \");\n    recvUntil(local_2c,2,10);\n    if (local_2c[0] != '\\0') {\n      *(char *)((int)param_1 + 0x52) = local_2c[0];\n    }\n    put(\"Is the user a hacker? \");\n    recvUntil(local_2c,2,10);\n    if (local_2c[0] != '\\0') {\n      *(char *)((int)param_1 + 0x53) = local_2c[0];\n    }\n  }\n  if (*(int *)((int)param_1 + 0x54) != cookie) {\n    puts(\"Contact corruption detected.\");\n    _terminate(0xffffffff);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "editUser",
+                        "puts",
+                        "put",
+                        "recvUntil",
+                        "validateName",
+                        "memset",
+                        "strlen",
+                        "memcpy",
+                        "validatePhone",
+                        "atoi",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "editUser",
+                        "promptEdit"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "promptEdit",
+                "func_c_signature": "void promptEdit(void)",
+                "decompiled_code": "void promptEdit(void) {\n  undefined local_38 [40];\n  int local_10;\n  \n  memset(local_38,0,8);\n  local_10 = findContact();\n  if (local_10 == 0) {\n    puts(\"No such contact.\");\n  }\n  else {\n    editUser(local_10);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "promptEdit",
+                        "memset",
+                        "findContact",
+                        "puts",
+                        "editUser"
+                    ],
+                    "calling_functions": [
+                        "promptEdit",
+                        "inputLoop"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "promptShow",
+                "func_c_signature": "void promptShow(void)",
+                "decompiled_code": "void promptShow(void) {\n  char local_1a [2];\n  char local_18 [8];\n  char *local_10;\n  \n  local_10 = (char *)findContact();\n  if (local_10 == (char *)0x0) {\n    puts(\"No such contact.\");\n  }\n  else {\n    memset(local_1a,0,2);\n    local_1a[0] = 's';\n    while (local_1a[0] != 'q') {\n      memset(local_18,0,6);\n      puts(\"****************************************\");\n      put(\"First name:\\t\");\n      puts(local_10);\n      put(\"Last name:\\t\");\n      puts(local_10 + 0x20);\n      put(\"Phone num:\\t\");\n      puts(local_10 + 0x40);\n      itoa(local_18,*(undefined2 *)(local_10 + 0x50),6);\n      put(\"Office Number:\\t\");\n      puts(local_18);\n      put(\"Gender:\\t\\t\");\n      printGender((int)local_10[0x52]);\n      if (local_10[0x53] == 'y') {\n        puts(\"[\\x1b[31m!\\x1b[0m]This user known to be a hacker[\\x1b[31m!\\x1b[0m]\");\n      }\n      puts(\"****************************************\");\n      recvUntil(local_1a,2,10);\n      if ((int)local_1a[0] - 100U < 0xe) {\n                    /* WARNING: Could not recover jumptable at 0x000120e8. Too many branches */\n                    /* WARNING: Treating indirect jump as call */\n        (*(code *)((int)&_GLOBAL_OFFSET_TABLE_ +\n                  *(int *)(&UNK_000144b8 + ((int)local_1a[0] - 100U) * 4)))();\n        return;\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "promptShow",
+                        "findContact",
+                        "puts",
+                        "memset",
+                        "put",
+                        "itoa",
+                        "printGender",
+                        "recvUntil"
+                    ],
+                    "calling_functions": [
+                        "promptShow",
+                        "inputLoop"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initCookies",
+                "func_c_signature": "void initCookies(void)",
+                "decompiled_code": "void initCookies(void) {\n  undefined4 uVar1;\n  int *piVar2;\n  int local_18;\n  undefined4 local_14;\n  undefined4 local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  piVar2 = &local_18;\n  uVar1 = 4;\n  random();\n  if (local_18 != 4) {\n    puts(\"Couldn\\'t get 4 random bytes.  Panic!\");\n    _terminate(0xffffffff,uVar1,piVar2);\n  }\n  cookie = cookie | 0x10204080;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initCookies",
+                        "random",
+                        "puts",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "initCookies",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "inputLoop",
+                "func_c_signature": "void inputLoop(void)",
+                "decompiled_code": "void inputLoop(void) {\n  undefined *puVar1;\n  char *apcStack_30 [2];\n  int aiStack_28 [3];\n  undefined auStack_1c [14];\n  char local_e [6];\n  \n  puVar1 = auStack_1c;\n  do {\n    *(undefined4 *)(puVar1 + -8) = 2;\n    *(undefined4 *)(puVar1 + -0xc) = 0;\n    *(char **)(puVar1 + -0x10) = local_e;\n    *(undefined4 *)(puVar1 + -0x14) = 0x12271;\n    memset(*(void **)(puVar1 + -0x10),*(int *)(puVar1 + -0xc),*(size_t *)(puVar1 + -8));\n    *(undefined4 *)(puVar1 + -8) = 10;\n    *(undefined4 *)(puVar1 + -0xc) = 2;\n    *(char **)(puVar1 + -0x10) = local_e;\n    *(undefined4 *)(puVar1 + -0x14) = 0x12284;\n    recvUntil();\n    switch(local_e[0]) {\n    case '@':\n      *(undefined4 *)(puVar1 + -4) = 0x122a9;\n      promptAdd();\n      break;\n    case 'A':\n      *(undefined4 *)(puVar1 + -4) = 0x122b0;\n      promptDel();\n      break;\n    case 'B':\n      *(undefined4 *)(puVar1 + -4) = 0x122b7;\n      promptEdit();\n      break;\n    case 'C':\n      *(undefined4 *)(puVar1 + -4) = 0x122e8;\n      promptShow();\n      break;\n    case 'E':\n      *(undefined4 *)(puVar1 + -4) = 0x122e1;\n      sortYolodex();\n      break;\n    case 'F':\n      *(char **)(puVar1 + -0x10) = \"Thank you for using the yolodex.\";\n      *(undefined4 *)(puVar1 + -0x14) = 0x122c8;\n      puts(*(char **)(puVar1 + -0x10));\n      *(undefined4 *)(puVar1 + -0x10) = 0;\n      *(undefined4 *)(puVar1 + -0x14) = 0x122d5;\n      _terminate();\n      puVar1 = puVar1 + -0x10;\n    case 'D':\n      *(undefined4 *)(puVar1 + -4) = 0x122da;\n      printList();\n      break;\n    default:\n      *(char **)(puVar1 + -0x10) = \"Unrecognized Command.\";\n      *(undefined4 *)(puVar1 + -0x14) = 0x122f9;\n      puts(*(char **)(puVar1 + -0x10));\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "inputLoop",
+                        "memset",
+                        "recvUntil",
+                        "promptAdd",
+                        "promptDel",
+                        "promptEdit",
+                        "promptShow",
+                        "sortYolodex",
+                        "puts",
+                        "_terminate",
+                        "printList"
+                    ],
+                    "calling_functions": [
+                        "inputLoop",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  undefined4 uVar1;\n  \n  initCookies(&stack0x00000004);\n  puts(\"Welcome to the yolodex.\");\n  initYolodex();\n  inputLoop();\n  uVar1 = 0;\n  _terminate();\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "initCookies",
+                        "puts",
+                        "initYolodex",
+                        "inputLoop",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "CROMU_00003_decompiled.c"
+                }
+            }
+        ]
+    }
+}

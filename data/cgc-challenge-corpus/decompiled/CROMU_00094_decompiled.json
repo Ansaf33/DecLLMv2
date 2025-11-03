@@ -1,0 +1,449 @@
+{
+    "file": "CROMU_00094",
+    "decompiled_code": {
+        "linkedlist.c": [
+            {
+                "func_name": "NewList",
+                "func_c_signature": "undefined4 * NewList(undefined4 param_1)",
+                "decompiled_code": "undefined4 * NewList(undefined4 param_1) {\n  undefined4 *puVar1;\n  size_t in_stack_ffffffd8;\n  \n  puVar1 = (undefined4 *)calloc(8,in_stack_ffffffd8);\n  *puVar1 = param_1;\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "NewList",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "NewList",
+                        "CreateServer",
+                        "InitializeSimulation"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AddToList",
+                "func_c_signature": "undefined4 AddToList(int *param_1,int param_2,int param_3)",
+                "decompiled_code": "undefined4 AddToList(int *param_1,int param_2,int param_3) {\n  undefined4 uVar1;\n  int *piVar2;\n  size_t in_stack_ffffffd8;\n  int local_10;\n  \n  if (param_1 == (int *)0x0) {\n    uVar1 = 0xffffffff;\n  }\n  else if (param_2 == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else if (param_3 == *param_1) {\n    piVar2 = (int *)calloc(0x10,in_stack_ffffffd8);\n    piVar2[1] = param_3;\n    *piVar2 = param_2;\n    if (param_1[1] == 0) {\n      param_1[1] = (int)piVar2;\n      uVar1 = 1;\n    }\n    else {\n      for (local_10 = param_1[1]; *(int *)(local_10 + 0xc) != 0; local_10 = *(int *)(local_10 + 0xc)\n          ) {\n      }\n      *(int **)(local_10 + 0xc) = piVar2;\n      piVar2[2] = local_10;\n      uVar1 = 1;\n    }\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AddToList",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "AddToList",
+                        "AddInstanceToServer",
+                        "InitializeSimulation"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "RemoveFromList",
+                "func_c_signature": "undefined4 RemoveFromList(int param_1,int param_2)",
+                "decompiled_code": "undefined4 RemoveFromList(int param_1,int param_2) {\n  void *__ptr;\n  undefined4 uVar1;\n  int *local_14;\n  int *local_10;\n  \n  if (param_1 == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else if (param_2 == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else if (param_2 == **(int **)(param_1 + 4)) {\n    __ptr = *(void **)(param_1 + 4);\n    *(undefined4 *)(param_1 + 4) = *(undefined4 *)(*(int *)(param_1 + 4) + 0xc);\n    *(undefined4 *)(*(int *)(param_1 + 4) + 8) = 0;\n    free(__ptr);\n    uVar1 = 1;\n  }\n  else {\n    local_10 = *(int **)(param_1 + 4);\n    for (local_14 = *(int **)(*(int *)(param_1 + 4) + 0xc);\n        (local_14 != (int *)0x0 && (param_2 != *local_14)); local_14 = (int *)local_14[3]) {\n      local_10 = local_14;\n    }\n    if (local_14 == (int *)0x0) {\n      uVar1 = 0xffffffff;\n    }\n    else {\n      local_10[3] = local_14[3];\n      if (local_10[3] != 0) {\n        *(int **)(local_10[3] + 8) = local_10;\n      }\n      uVar1 = 1;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "RemoveFromList",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "RemoveFromList"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DumpList",
+                "func_c_signature": "void DumpList(undefined4 *param_1)",
+                "decompiled_code": "void DumpList(undefined4 *param_1) {\n  undefined4 *local_14;\n  int local_10;\n  \n  if (param_1 == (undefined4 *)0x0) {\n    printf(\"Empty List\\n\");\n  }\n  else {\n    printf(\"List Type: $x\\n\",*param_1);\n    local_10 = 0;\n    for (local_14 = (undefined4 *)param_1[1]; local_14 != (undefined4 *)0x0;\n        local_14 = (undefined4 *)local_14[3]) {\n      printf(\"$d) $s\\n\",local_10,*local_14);\n      local_10 = local_10 + 1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DumpList",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "DumpList"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            }
+        ],
+        "query.c": [
+            {
+                "func_name": "DestroyQuery",
+                "func_c_signature": "undefined4 DestroyQuery(void *param_1)",
+                "decompiled_code": "undefined4 DestroyQuery(void *param_1) {\n  if (param_1 != (void *)0x0) {\n    if (*(int *)((int)param_1 + 4) != 0) {\n      free(*(void **)((int)param_1 + 4));\n    }\n    free(param_1);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DestroyQuery",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "DestroyQuery",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ParseQuery",
+                "func_c_signature": "undefined * ParseQuery(undefined *param_1)",
+                "decompiled_code": "undefined * ParseQuery(undefined *param_1) {\n  undefined *puVar1;\n  size_t sVar2;\n  void *pvVar3;\n  size_t in_stack_ffffffd8;\n  \n  if (param_1 == (undefined *)0x0) {\n    puVar1 = (undefined *)0x0;\n  }\n  else {\n    puVar1 = (undefined *)calloc(8,in_stack_ffffffd8);\n    *puVar1 = *param_1;\n    sVar2 = strlen(param_1 + 1);\n    *(short *)(puVar1 + 2) = (short)sVar2;\n    pvVar3 = calloc(*(ushort *)(puVar1 + 2) + 1,in_stack_ffffffd8);\n    *(void **)(puVar1 + 4) = pvVar3;\n    strcpy(*(char **)(puVar1 + 4),param_1 + 1);\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ParseQuery",
+                        "calloc",
+                        "strlen",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "ParseQuery",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            }
+        ],
+        "response.c": [
+            {
+                "func_name": "DestroyResponse",
+                "func_c_signature": "undefined4 DestroyResponse(void *param_1)",
+                "decompiled_code": "undefined4 DestroyResponse(void *param_1) {\n  if (param_1 != (void *)0x0) {\n    if (*(int *)((int)param_1 + 4) != 0) {\n      free(*(void **)((int)param_1 + 4));\n    }\n    free(param_1);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DestroyResponse",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "DestroyResponse",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GenerateBlankResponse",
+                "func_c_signature": "void * GenerateBlankResponse(void)",
+                "decompiled_code": "void * GenerateBlankResponse(void) {\n  void *pvVar1;\n  size_t in_stack_ffffffd8;\n  \n  pvVar1 = calloc(8,in_stack_ffffffd8);\n  return pvVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GenerateBlankResponse",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "GenerateBlankResponse",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AddToResponse",
+                "func_c_signature": "undefined4 AddToResponse(ushort *param_1,char *param_2)",
+                "decompiled_code": "undefined4 AddToResponse(ushort *param_1,char *param_2) {\n  undefined4 uVar1;\n  char *__dest;\n  size_t in_stack_ffffffd8;\n  char *local_14;\n  size_t local_10;\n  \n  if (param_2 == (char *)0x0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    local_10 = strlen(param_2);\n    if (*(int *)(param_1 + 2) != 0) {\n      local_10 = local_10 + *param_1;\n    }\n    __dest = (char *)calloc(local_10 + 1,in_stack_ffffffd8);\n    local_14 = __dest;\n    if (*(int *)(param_1 + 2) != 0) {\n      strncpy(__dest,*(char **)(param_1 + 2),(uint)*param_1);\n      local_14 = __dest + *param_1;\n    }\n    strcpy(local_14,param_2);\n    free(*(void **)(param_1 + 2));\n    *(char **)(param_1 + 2) = __dest;\n    *param_1 = (ushort)local_10;\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AddToResponse",
+                        "strlen",
+                        "calloc",
+                        "strncpy",
+                        "strcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "AddToResponse",
+                        "QueryOne",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DumpResponse",
+                "func_c_signature": "undefined4 DumpResponse(ushort *param_1)",
+                "decompiled_code": "undefined4 DumpResponse(ushort *param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == (ushort *)0x0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    printf(\"Response Length: $d\\n\",(uint)*param_1);\n    printf(\"Response Data: $s\\n\",*(undefined4 *)(param_1 + 2));\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DumpResponse",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "DumpResponse"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SendResponse",
+                "func_c_signature": "undefined4 SendResponse(ushort *param_1)",
+                "decompiled_code": "undefined4 SendResponse(ushort *param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  uint uVar3;\n  undefined local_d [5];\n  \n  if (param_1 == (ushort *)0x0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    local_d[0] = 5;\n    iVar2 = SendBytes(local_d,1);\n    if (iVar2 == 1) {\n      iVar2 = SendBytes(param_1,2);\n      if (iVar2 == 2) {\n        uVar3 = SendBytes(*(undefined4 *)(param_1 + 2),*param_1);\n        if (uVar3 == *param_1) {\n          iVar2 = SendBytes(&DAT_0001504b,1);\n          if (iVar2 == 1) {\n            uVar1 = 0;\n          }\n          else {\n            uVar1 = 0xffffffff;\n          }\n        }\n        else {\n          uVar1 = 0xffffffff;\n        }\n      }\n      else {\n        uVar1 = 0xffffffff;\n      }\n    }\n    else {\n      uVar1 = 0xffffffff;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SendResponse",
+                        "SendBytes"
+                    ],
+                    "calling_functions": [
+                        "SendResponse",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "GetNextAdminPort",
+                "func_c_signature": "int GetNextAdminPort(void)",
+                "decompiled_code": "int GetNextAdminPort(void) {\n  adminPortOffset = (adminPortOffset + 4) % 0x1000;\n  return adminPortOffset;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GetNextAdminPort"
+                    ],
+                    "calling_functions": [
+                        "GetNextAdminPort",
+                        "CreateInstance"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CreateServer",
+                "func_c_signature": "undefined4 * CreateServer(undefined4 param_1)",
+                "decompiled_code": "undefined4 * CreateServer(undefined4 param_1) {\n  undefined4 *puVar1;\n  undefined4 uVar2;\n  size_t in_stack_ffffffd8;\n  \n  puVar1 = (undefined4 *)calloc(8,in_stack_ffffffd8);\n  uVar2 = GenerateRandomString(param_1);\n  *puVar1 = uVar2;\n  uVar2 = NewList(2);\n  puVar1[1] = uVar2;\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CreateServer",
+                        "calloc",
+                        "GenerateRandomString",
+                        "NewList"
+                    ],
+                    "calling_functions": [
+                        "CreateServer",
+                        "InitializeSimulation"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CreateInstance",
+                "func_c_signature": "undefined4 * CreateInstance(undefined4 param_1)",
+                "decompiled_code": "undefined4 * CreateInstance(undefined4 param_1) {\n  undefined4 *puVar1;\n  undefined4 uVar2;\n  size_t in_stack_ffffffd8;\n  \n  puVar1 = (undefined4 *)calloc(0x1c,in_stack_ffffffd8);\n  uVar2 = GenerateRandomString(param_1);\n  *puVar1 = uVar2;\n  uVar2 = GenerateRandomNumber(0,0xffff);\n  puVar1[2] = uVar2;\n  uVar2 = GetNextAdminPort();\n  puVar1[3] = uVar2;\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CreateInstance",
+                        "calloc",
+                        "GenerateRandomString",
+                        "GenerateRandomNumber",
+                        "GetNextAdminPort"
+                    ],
+                    "calling_functions": [
+                        "CreateInstance",
+                        "InitializeSimulation"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AddInstanceToServer",
+                "func_c_signature": "void AddInstanceToServer(int param_1,int param_2)",
+                "decompiled_code": "void AddInstanceToServer(int param_1,int param_2) {\n  AddToList(*(undefined4 *)(param_1 + 4),param_2,2,0x119df);\n  *(int *)(param_2 + 4) = param_1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AddInstanceToServer",
+                        "AddToList"
+                    ],
+                    "calling_functions": [
+                        "AddInstanceToServer",
+                        "InitializeSimulation"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FindServer",
+                "func_c_signature": "char ** FindServer(char *param_1)",
+                "decompiled_code": "char ** FindServer(char *param_1) {\n  char **ppcVar1;\n  int iVar2;\n  int *local_10;\n  \n  local_10 = *(int **)(serverList + 4);\n  while( true ) {\n    do {\n      if (local_10 == (int *)0x0) {\n        return (char **)0x0;\n      }\n      ppcVar1 = (char **)*local_10;\n    } while (ppcVar1 == (char **)0x0);\n    iVar2 = strcmp(*ppcVar1,param_1);\n    if (iVar2 == 0) break;\n    local_10 = (int *)local_10[3];\n  }\n  return ppcVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindServer",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "FindServer",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FindInstance",
+                "func_c_signature": "char ** FindInstance(char *param_1)",
+                "decompiled_code": "char ** FindInstance(char *param_1) {\n  char **ppcVar1;\n  int iVar2;\n  int *local_14;\n  int *local_10;\n  \n  local_10 = *(int **)(serverList + 4);\n  do {\n    do {\n      if (local_10 == (int *)0x0) {\n        return (char **)0x0;\n      }\n    } while (*local_10 == 0);\n    local_14 = *(int **)(*(int *)(*local_10 + 4) + 4);\n    while (local_14 != (int *)0x0) {\n      ppcVar1 = (char **)*local_14;\n      if (ppcVar1 != (char **)0x0) {\n        iVar2 = strcmp(*ppcVar1,param_1);\n        if (iVar2 == 0) {\n          return ppcVar1;\n        }\n        local_14 = (int *)local_14[3];\n      }\n    }\n    local_10 = (int *)local_10[3];\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindInstance",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "FindInstance",
+                        "QueryOne",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitializeSimulation",
+                "func_c_signature": "void InitializeSimulation(void)",
+                "decompiled_code": "void InitializeSimulation(void) {\n  int iVar1;\n  int iVar2;\n  undefined4 uVar3;\n  int iVar4;\n  int iVar5;\n  undefined4 uVar6;\n  int local_14;\n  int local_10;\n  \n  adminPortOffset = 0;\n  serverList = NewList(1);\n  iVar1 = GenerateRandomNumber(10,0x20);\n  iVar2 = GenerateRandomNumber(0x22,0x40);\n  for (local_10 = 0; local_10 < iVar1; local_10 = local_10 + 1) {\n    uVar3 = CreateServer(iVar2 - local_10);\n    AddToList(serverList,uVar3,1);\n    iVar4 = GenerateRandomNumber(1,0xf);\n    iVar5 = GenerateRandomNumber(0x20,0x40);\n    for (local_14 = 0; local_14 < iVar4; local_14 = local_14 + 1) {\n      uVar6 = CreateInstance(iVar5 - local_14);\n      AddInstanceToServer(uVar3,uVar6);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitializeSimulation",
+                        "NewList",
+                        "GenerateRandomNumber",
+                        "CreateServer",
+                        "AddToList",
+                        "CreateInstance",
+                        "AddInstanceToServer"
+                    ],
+                    "calling_functions": [
+                        "InitializeSimulation",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "QueryOne",
+                "func_c_signature": "void QueryOne(int param_1,undefined4 param_2)",
+                "decompiled_code": "void QueryOne(int param_1,undefined4 param_2) {\n  char local_60 [12];\n  char local_54 [64];\n  undefined4 *local_14;\n  int local_10;\n  \n  for (local_10 = 0; local_10 < 0x40; local_10 = local_10 + 1) {\n    local_54[local_10] = (char)local_10;\n  }\n  printf(\"Query One\\n\");\n  strcpy(local_54,*(char **)(param_1 + 4));\n  local_14 = (undefined4 *)FindInstance(local_54);\n  if (local_14 == (undefined4 *)0x0) {\n    printf(\"Not found\\n\");\n  }\n  else {\n    AddToResponse(param_2,\"instance:\");\n    AddToResponse(param_2,*local_14);\n    AddToResponse(param_2,&DAT_0001506d);\n    AddToResponse(param_2,&DAT_0001506f);\n    sprintf(local_60,\"$d\",local_14[2]);\n    AddToResponse(param_2,local_60);\n    AddToResponse(param_2,&DAT_0001506d);\n    AddToResponse(param_2,\"server:\");\n    AddToResponse(param_2,*(undefined4 *)local_14[1]);\n    AddToResponse(param_2,&DAT_0001506d);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "QueryOne",
+                        "printf",
+                        "strcpy",
+                        "FindInstance",
+                        "AddToResponse",
+                        "sprintf"
+                    ],
+                    "calling_functions": [
+                        "QueryOne",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  byte bVar1;\n  int iVar2;\n  undefined *puVar3;\n  undefined *puVar4;\n  undefined auStack_490 [4];\n  undefined local_48c [64];\n  undefined local_44c [12];\n  undefined local_440 [1024];\n  undefined4 *local_40;\n  undefined4 *local_3c;\n  int local_38;\n  undefined4 local_34;\n  ushort local_2e;\n  int local_2c;\n  uint local_28;\n  undefined4 local_24;\n  byte *local_20;\n  int local_1c;\n  int *local_18;\n  int *local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  puVar4 = auStack_490;\n  InitializeRandomness();\n  InitializeSimulation();\n  while( true ) {\n    do {\n      *(undefined4 *)(puVar4 + -8) = 10;\n      *(undefined4 *)(puVar4 + -0xc) = 0x400;\n      *(undefined **)(puVar4 + -0x10) = local_440;\n      *(undefined4 *)(puVar4 + -0x14) = 0x11dbc;\n      local_1c = ReceiveUntil();\n      if (local_1c < 0) {\n        return 0;\n      }\n    } while (local_1c == 0);\n    *(undefined **)(puVar4 + -0x10) = local_440;\n    *(undefined4 *)(puVar4 + -0x14) = 0x11de5;\n    local_20 = (byte *)ParseQuery();\n    *(undefined4 *)(puVar4 + -4) = 0x11df0;\n    local_24 = GenerateBlankResponse();\n    bVar1 = *local_20;\n    if (bVar1 == 4) break;\n    if (4 < bVar1) {\nLAB_00012094:\n      *(char **)(puVar4 + -0x10) = \"Invalid Query\\n\";\n      *(undefined4 *)(puVar4 + -0x14) = 0x120a3;\n      printf(*(char **)(puVar4 + -0x10));\n      *(undefined4 *)(puVar4 + -0x10) = 0;\n      *(undefined4 *)(puVar4 + -0x14) = 0x120b0;\n      _terminate();\n      puVar4 = puVar4 + -0x10;\n      goto LAB_000120b0;\n    }\n    if (bVar1 == 3) {\n      *(undefined4 *)(puVar4 + -0xc) = local_24;\n      *(byte **)(puVar4 + -0x10) = local_20;\n      *(undefined4 *)(puVar4 + -0x14) = 0x11f6d;\n      QueryOne();\n      goto LAB_000120b0;\n    }\n    if (3 < bVar1) goto LAB_00012094;\n    if (bVar1 == 1) {\n      *(char **)(puVar4 + -0x10) = \"Query All\\n\";\n      *(undefined4 *)(puVar4 + -0x14) = 0x11e42;\n      printf(*(char **)(puVar4 + -0x10));\n      local_14 = *(int **)(serverList + 4);\n      while (local_14 != (int *)0x0) {\n        local_40 = (undefined4 *)*local_14;\n        if (local_40 != (undefined4 *)0x0) {\n          *(char **)(puVar4 + -0xc) = \"server:\";\n          *(undefined4 *)(puVar4 + -0x10) = local_24;\n          *(undefined4 *)(puVar4 + -0x14) = 0x11e75;\n          AddToResponse();\n          *(undefined4 *)(puVar4 + -0xc) = *local_40;\n          *(undefined4 *)(puVar4 + -0x10) = local_24;\n          *(undefined4 *)(puVar4 + -0x14) = 0x11e89;\n          AddToResponse();\n          *(undefined **)(puVar4 + -0xc) = &DAT_0001506d;\n          *(undefined4 *)(puVar4 + -0x10) = local_24;\n          *(undefined4 *)(puVar4 + -0x14) = 0x11e9e;\n          AddToResponse();\n          local_14 = (int *)local_14[3];\n        }\n      }\n      goto LAB_000120b0;\n    }\n    if (bVar1 != 2) goto LAB_00012094;\n    *(char **)(puVar4 + -0x10) = \"Query Server\\n\";\n    *(undefined4 *)(puVar4 + -0x14) = 0x11ec7;\n    printf(*(char **)(puVar4 + -0x10));\n    local_34 = *(undefined4 *)(local_20 + 4);\n    *(undefined4 *)(puVar4 + -0x10) = local_34;\n    *(undefined4 *)(puVar4 + -0x14) = 0x11ede;\n    local_38 = FindServer();\n    if (local_38 != 0) {\n      local_18 = *(int **)(*(int *)(local_38 + 4) + 4);\n      while (local_18 != (int *)0x0) {\n        local_3c = (undefined4 *)*local_18;\n        if (local_3c != (undefined4 *)0x0) {\n          *(char **)(puVar4 + -0xc) = \"instance:\";\n          *(undefined4 *)(puVar4 + -0x10) = local_24;\n          *(undefined4 *)(puVar4 + -0x14) = 0x11f1c;\n          AddToResponse();\n          *(undefined4 *)(puVar4 + -0xc) = *local_3c;\n          *(undefined4 *)(puVar4 + -0x10) = local_24;\n          *(undefined4 *)(puVar4 + -0x14) = 0x11f30;\n          AddToResponse();\n          *(undefined **)(puVar4 + -0xc) = &DAT_0001506d;\n          *(undefined4 *)(puVar4 + -0x10) = local_24;\n          *(undefined4 *)(puVar4 + -0x14) = 0x11f45;\n          AddToResponse();\n          local_18 = (int *)local_18[3];\n        }\n      }\nLAB_000120b0:\n      *(undefined4 *)(puVar4 + -0x10) = local_24;\n      *(undefined4 *)(puVar4 + -0x14) = 0x120bb;\n      SendResponse();\n      *(byte **)(puVar4 + -0x10) = local_20;\n      *(undefined4 *)(puVar4 + -0x14) = 0x120c9;\n      local_20 = (byte *)DestroyQuery();\n      *(undefined4 *)(puVar4 + -0x10) = local_24;\n      *(undefined4 *)(puVar4 + -0x14) = 0x120da;\n      local_24 = DestroyResponse();\n    }\n  }\n  *(char **)(puVar4 + -0x10) = \"Query Admin\\n\";\n  *(undefined4 *)(puVar4 + -0x14) = 0x11f84;\n  printf(*(char **)(puVar4 + -0x10));\n  local_28 = (uint)**(byte **)(local_20 + 4);\n  puVar3 = puVar4;\n  if (local_28 != 1) {\n    puVar3 = puVar4 + -0x10;\n    *(char **)(puVar4 + -0x10) = \"Invalid Query\\n\";\n    *(undefined4 *)(puVar4 + -0x14) = 0x11fab;\n    printf(*(char **)(puVar4 + -0x10));\n    *(undefined4 *)(puVar4 + -0x10) = 0;\n    *(undefined4 *)(puVar4 + -0x14) = 0x11fb8;\n    _terminate();\n  }\n  iVar2 = *(int *)(local_20 + 4);\n  *(undefined4 *)(puVar3 + -8) = 0x40;\n  *(int *)(puVar3 + -0xc) = iVar2 + 1;\n  *(undefined **)(puVar3 + -0x10) = local_48c;\n  *(undefined4 *)(puVar3 + -0x14) = 0x11fd3;\n  strncpy(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n  *(undefined **)(puVar3 + -0x10) = local_48c;\n  *(undefined4 *)(puVar3 + -0x14) = 0x11fe5;\n  local_2c = FindInstance();\n  puVar4 = puVar3;\n  if (local_2c == 0) {\n    *(char **)(puVar3 + -0x10) = \"Instance Not Found\\n\";\n    *(undefined4 *)(puVar3 + -0x14) = 0x12000;\n    printf(*(char **)(puVar3 + -0x10));\n    *(undefined4 *)(puVar3 + -0x10) = 0;\n    *(undefined4 *)(puVar3 + -0x14) = 0x1200d;\n    _terminate();\n    puVar4 = puVar3 + -0x10;\n  }\n  *(char **)(puVar4 + -0xc) = \"admin:\";\n  *(undefined4 *)(puVar4 + -0x10) = local_24;\n  *(undefined4 *)(puVar4 + -0x14) = 0x1201f;\n  AddToResponse();\n  *(undefined4 *)(puVar4 + -8) = 0xc;\n  *(undefined4 *)(puVar4 + -0xc) = 0;\n  *(undefined **)(puVar4 + -0x10) = local_44c;\n  *(undefined4 *)(puVar4 + -0x14) = 0x12035;\n  memset(*(void **)(puVar4 + -0x10),*(int *)(puVar4 + -0xc),*(size_t *)(puVar4 + -8));\n  local_2e = *(ushort *)(&DAT_4347c000 + *(int *)(local_2c + 0xc));\n  *(uint *)(puVar4 + -8) = (uint)local_2e;\n  *(undefined **)(puVar4 + -0xc) = &DAT_000150cf;\n  *(undefined **)(puVar4 + -0x10) = local_44c;\n  *(undefined4 *)(puVar4 + -0x14) = 0x12065;\n  sprintf(*(char **)(puVar4 + -0x10),*(char **)(puVar4 + -0xc));\n  *(undefined **)(puVar4 + -0xc) = local_44c;\n  *(undefined4 *)(puVar4 + -0x10) = local_24;\n  *(undefined4 *)(puVar4 + -0x14) = 0x1207a;\n  AddToResponse();\n  *(undefined **)(puVar4 + -0xc) = &DAT_0001506d;\n  *(undefined4 *)(puVar4 + -0x10) = local_24;\n  *(undefined4 *)(puVar4 + -0x14) = 0x1208f;\n  AddToResponse();\n  goto LAB_000120b0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "InitializeRandomness",
+                        "InitializeSimulation",
+                        "ReceiveUntil",
+                        "ParseQuery",
+                        "GenerateBlankResponse",
+                        "printf",
+                        "_terminate",
+                        "QueryOne",
+                        "AddToResponse",
+                        "FindServer",
+                        "SendResponse",
+                        "DestroyQuery",
+                        "DestroyResponse",
+                        "strncpy",
+                        "FindInstance",
+                        "memset",
+                        "sprintf"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00094_decompiled.c"
+                }
+            }
+        ]
+    }
+}

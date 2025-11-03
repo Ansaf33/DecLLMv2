@@ -1,0 +1,262 @@
+{
+    "file": "tsort",
+    "decompiled_code": {
+        "tsort.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\n                            \"Usage: %s [OPTION] [FILE]\\nWrite totally ordered list consistent with the partial ordering in FILE.\\n\"\n                            );\n    printf(pcVar3,uVar2);\n    emit_stdin_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(&DAT_00101474);\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"tsort\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "emit_stdin_note",
+                        "fputs_unlocked",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "tsort_decompiled.c"
+                }
+            },
+            {
+                "func_name": "new_item",
+                "func_c_signature": "undefined8 * new_item(long param_1)",
+                "decompiled_code": "undefined8 * new_item(long param_1) {\n  undefined8 *puVar1;\n  undefined8 uVar2;\n  \n  puVar1 = (undefined8 *)xzalloc(0x38);\n  if (param_1 != 0) {\n    uVar2 = xstrdup(param_1);\n    *puVar1 = uVar2;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "new_item",
+                        "xzalloc",
+                        "xstrdup"
+                    ],
+                    "calling_functions": [
+                        "new_item",
+                        "search_item",
+                        "tsort"
+                    ],
+                    "defined_in_file": "tsort_decompiled.c"
+                }
+            },
+            {
+                "func_name": "search_item",
+                "func_c_signature": "char ** search_item(char **param_1,char *param_2)",
+                "decompiled_code": "char ** search_item(char **param_1,char *param_2) {\n  char cVar1;\n  int iVar2;\n  char *pcVar3;\n  char **ppcVar4;\n  int local_38;\n  char **local_30;\n  char **local_28;\n  char **local_20;\n  char **local_18;\n  char **local_10;\n  \n  if (param_1[2] == (char *)0x0) {\n    pcVar3 = (char *)new_item(param_2);\n    param_1[2] = pcVar3;\n    local_30 = (char **)param_1[2];\n  }\n  else {\n    local_30 = (char **)param_1[2];\n    local_18 = local_30;\n    local_10 = param_1;\n    while (iVar2 = strcmp(param_2,*local_30), iVar2 != 0) {\n      if (iVar2 < 0) {\n        local_28 = (char **)local_30[1];\n      }\n      else {\n        local_28 = (char **)local_30[2];\n      }\n      if (local_28 == (char **)0x0) {\n        ppcVar4 = (char **)new_item(param_2);\n        if (iVar2 < 0) {\n          local_30[1] = (char *)ppcVar4;\n        }\n        else {\n          local_30[2] = (char *)ppcVar4;\n        }\n        iVar2 = strcmp(param_2,*local_18);\n        if (iVar2 < 0) {\n          local_30 = (char **)local_18[1];\n          local_38 = -1;\n          local_20 = local_30;\n        }\n        else {\n          if (iVar2 < 1) {\n                    /* WARNING: Subroutine does not return */\n            __assert_fail(\"0 < a\",\n                          \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/tsort.c\"\n                          ,0xa6,\"search_item\");\n          }\n          local_30 = (char **)local_18[2];\n          local_38 = 1;\n          local_20 = local_30;\n        }\n        while (local_30 != ppcVar4) {\n          iVar2 = strcmp(param_2,*local_30);\n          if (iVar2 < 0) {\n            *(char *)(local_30 + 3) = -1;\n            local_30 = (char **)local_30[1];\n          }\n          else {\n            if (iVar2 < 1) {\n                    /* WARNING: Subroutine does not return */\n              __assert_fail(\"0 < cmp\",\n                            \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/tsort.c\"\n                            ,0xb5,\"search_item\");\n            }\n            *(char *)(local_30 + 3) = '\\x01';\n            local_30 = (char **)local_30[2];\n          }\n        }\n        cVar1 = (char)local_38;\n        if ((*(char *)(local_18 + 3) != '\\0') && ((int)*(char *)(local_18 + 3) != -local_38)) {\n          if (local_38 == *(char *)(local_20 + 3)) {\n            local_30 = local_20;\n            if (local_38 < 0) {\n              local_18[1] = local_20[2];\n              local_20[2] = (char *)local_18;\n            }\n            else {\n              local_18[2] = local_20[1];\n              local_20[1] = (char *)local_18;\n            }\n            *(char *)(local_20 + 3) = '\\0';\n            *(char *)(local_18 + 3) = *(char *)(local_20 + 3);\n          }\n          else {\n            if (local_38 < 0) {\n              local_30 = (char **)local_20[2];\n              local_20[2] = local_30[1];\n              local_30[1] = (char *)local_20;\n              local_18[1] = local_30[2];\n              local_30[2] = (char *)local_18;\n            }\n            else {\n              local_30 = (char **)local_20[1];\n              local_20[1] = local_30[2];\n              local_30[2] = (char *)local_20;\n              local_18[2] = local_30[1];\n              local_30[1] = (char *)local_18;\n            }\n            *(char *)(local_18 + 3) = '\\0';\n            *(char *)(local_20 + 3) = '\\0';\n            if (local_38 == *(char *)(local_30 + 3)) {\n              *(char *)(local_18 + 3) = -cVar1;\n            }\n            else if ((int)*(char *)(local_30 + 3) == -local_38) {\n              *(char *)(local_20 + 3) = cVar1;\n            }\n            *(char *)(local_30 + 3) = '\\0';\n          }\n          if (local_18 == (char **)local_10[2]) {\n            local_10[2] = (char *)local_30;\n            return ppcVar4;\n          }\n          local_10[1] = (char *)local_30;\n          return ppcVar4;\n        }\n        *(char *)(local_18 + 3) = cVar1 + *(char *)(local_18 + 3);\n        return ppcVar4;\n      }\n      if (*(char *)(local_28 + 3) != '\\0') {\n        local_10 = local_30;\n        local_18 = local_28;\n      }\n      local_30 = local_28;\n    }\n  }\n  return local_30;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "search_item",
+                        "new_item",
+                        "strcmp",
+                        "__assert_fail"
+                    ],
+                    "calling_functions": [
+                        "search_item",
+                        "tsort"
+                    ],
+                    "defined_in_file": "tsort_decompiled.c"
+                }
+            },
+            {
+                "func_name": "record_relation",
+                "func_c_signature": "void record_relation(undefined8 *param_1,undefined8 *param_2)",
+                "decompiled_code": "void record_relation(undefined8 *param_1,undefined8 *param_2) {\n  char cVar1;\n  undefined8 *puVar2;\n  \n  cVar1 = streq(*param_1,*param_2);\n  if (cVar1 != '\\x01') {\n    param_2[4] = param_2[4] + 1;\n    puVar2 = (undefined8 *)xmalloc(0x10);\n    *puVar2 = param_2;\n    puVar2[1] = param_1[6];\n    param_1[6] = puVar2;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "record_relation",
+                        "streq",
+                        "xmalloc"
+                    ],
+                    "calling_functions": [
+                        "record_relation",
+                        "tsort"
+                    ],
+                    "defined_in_file": "tsort_decompiled.c"
+                }
+            },
+            {
+                "func_name": "count_items",
+                "func_c_signature": "undefined8 count_items(void)",
+                "decompiled_code": "undefined8 count_items(void) {\n  n_strings = n_strings + 1;\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "count_items"
+                    ],
+                    "calling_functions": [
+                        "count_items"
+                    ],
+                    "defined_in_file": "tsort_decompiled.c"
+                }
+            },
+            {
+                "func_name": "scan_zeros",
+                "func_c_signature": "undefined8 scan_zeros(long param_1)",
+                "decompiled_code": "undefined8 scan_zeros(long param_1) {\n  long lVar1;\n  long lVar2;\n  \n  lVar1 = head;\n  lVar2 = zeros;\n  if (((*(long *)(param_1 + 0x20) == 0) && (*(char *)(param_1 + 0x19) != '\\x01')) &&\n     (lVar1 = param_1, lVar2 = param_1, head != 0)) {\n    *(long *)(zeros + 0x28) = param_1;\n    lVar1 = head;\n    lVar2 = param_1;\n  }\n  zeros = lVar2;\n  head = lVar1;\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "scan_zeros"
+                    ],
+                    "calling_functions": [
+                        "scan_zeros"
+                    ],
+                    "defined_in_file": "tsort_decompiled.c"
+                }
+            },
+            {
+                "func_name": "detect_loop",
+                "func_c_signature": "undefined8 detect_loop(undefined8 *param_1)",
+                "decompiled_code": "undefined8 detect_loop(undefined8 *param_1) {\n  long *__ptr;\n  undefined8 *puVar1;\n  long **local_30;\n  \n  puVar1 = loop;\n  if ((param_1[4] != 0) && (puVar1 = param_1, loop != (undefined8 *)0x0)) {\n    for (local_30 = (long **)(param_1 + 6); puVar1 = loop, *local_30 != (long *)0x0;\n        local_30 = (long **)(*local_30 + 1)) {\n      if ((undefined8 *)**local_30 == loop) {\n        if (param_1[5] == 0) {\n          param_1[5] = loop;\n          loop = param_1;\n          return 0;\n        }\n        goto LAB_001009e9;\n      }\n    }\n  }\n  loop = puVar1;\n  return 0;\nLAB_001009e9:\n  if (loop == (undefined8 *)0x0) {\nLAB_00100a24:\n    while (loop != (undefined8 *)0x0) {\n      puVar1 = (undefined8 *)loop[5];\n      loop[5] = 0;\n      loop = puVar1;\n    }\n    return 1;\n  }\n  puVar1 = (undefined8 *)loop[5];\n  error(0,0,&DAT_00101545,*loop);\n  if (param_1 == loop) {\n    __ptr = *local_30;\n    *(long *)(*__ptr + 0x20) = *(long *)(*__ptr + 0x20) + -1;\n    *local_30 = (long *)__ptr[1];\n    free(__ptr);\n    goto LAB_00100a24;\n  }\n  loop[5] = 0;\n  loop = puVar1;\n  goto LAB_001009e9;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "detect_loop",
+                        "error",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "detect_loop"
+                    ],
+                    "defined_in_file": "tsort_decompiled.c"
+                }
+            },
+            {
+                "func_name": "recurse_tree",
+                "func_c_signature": "undefined8 recurse_tree(long param_1,code *param_2)",
+                "decompiled_code": "undefined8 recurse_tree(long param_1,code *param_2) {\n  char cVar1;\n  undefined8 uVar2;\n  \n  if ((*(long *)(param_1 + 8) == 0) && (*(long *)(param_1 + 0x10) == 0)) {\n    uVar2 = (*param_2)(param_1);\n  }\n  else {\n    if ((*(long *)(param_1 + 8) != 0) &&\n       (cVar1 = recurse_tree(*(undefined8 *)(param_1 + 8),param_2), cVar1 != '\\0')) {\n      return 1;\n    }\n    cVar1 = (*param_2)(param_1);\n    if (cVar1 == '\\0') {\n      if ((*(long *)(param_1 + 0x10) != 0) &&\n         (cVar1 = recurse_tree(*(undefined8 *)(param_1 + 0x10),param_2), cVar1 != '\\0')) {\n        return 1;\n      }\n      uVar2 = 0;\n    }\n    else {\n      uVar2 = 1;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recurse_tree"
+                    ],
+                    "calling_functions": [
+                        "recurse_tree",
+                        "walk_tree"
+                    ],
+                    "defined_in_file": "tsort_decompiled.c"
+                }
+            },
+            {
+                "func_name": "walk_tree",
+                "func_c_signature": "void walk_tree(long param_1,undefined8 param_2)",
+                "decompiled_code": "void walk_tree(long param_1,undefined8 param_2) {\n  if (*(long *)(param_1 + 0x10) != 0) {\n    recurse_tree(*(undefined8 *)(param_1 + 0x10),param_2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "walk_tree",
+                        "recurse_tree"
+                    ],
+                    "calling_functions": [
+                        "walk_tree",
+                        "tsort"
+                    ],
+                    "defined_in_file": "tsort_decompiled.c"
+                }
+            },
+            {
+                "func_name": "tsort",
+                "func_c_signature": "void tsort(undefined8 param_1)",
+                "decompiled_code": "void tsort(undefined8 param_1) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  long lVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  undefined8 uVar7;\n  long in_FS_OFFSET;\n  byte local_b2;\n  long local_80;\n  long *local_78;\n  undefined local_38 [8];\n  undefined8 local_30;\n  undefined8 local_20;\n  \n  local_20 = *(undefined8 *)(in_FS_OFFSET + 0x28);\n  local_b2 = 1;\n  local_80 = 0;\n  cVar1 = streq(param_1,&DAT_00101548);\n  uVar3 = new_item(0);\n  if ((cVar1 != '\\x01') && (lVar4 = freopen_safer(param_1,&DAT_0010154a,_stdin), lVar4 == 0)) {\n    uVar5 = quotearg_n_style_colon(0,3,param_1);\n    piVar6 = __errno_location();\n    error(1,*piVar6,&DAT_00101545,uVar5);\n  }\n  fadvise(_stdin,2);\n  init_tokenbuffer(local_38);\n  lVar4 = local_80;\n  while( true ) {\n    local_80 = lVar4;\n    lVar4 = readtoken(_stdin,&DAT_0010154c,3,local_38);\n    if (lVar4 == -1) {\n      iVar2 = ferror_unlocked(_stdin);\n      if (iVar2 == 0) {\n        if (local_80 != 0) {\n          uVar5 = quotearg_n_style_colon(0,3,param_1);\n          uVar7 = gettext(\"%s: input contains an odd number of tokens\");\n          error(1,0,uVar7,uVar5);\n        }\n        walk_tree(uVar3,count_items);\n        while (n_strings != 0) {\n          walk_tree(uVar3,scan_zeros);\n          for (; head != (char **)0x0; head = (char **)head[5]) {\n            local_78 = (long *)head[6];\n            puts(*head);\n            *(undefined *)((long)head + 0x19) = 1;\n            n_strings = n_strings + -1;\n            for (; local_78 != (long *)0x0; local_78 = (long *)local_78[1]) {\n              *(long *)(*local_78 + 0x20) = *(long *)(*local_78 + 0x20) + -1;\n              if (*(long *)(*local_78 + 0x20) == 0) {\n                *(long *)(zeros + 0x28) = *local_78;\n                zeros = *local_78;\n              }\n            }\n          }\n          if (n_strings != 0) {\n            uVar5 = quotearg_n_style_colon(0,3,param_1);\n            uVar7 = gettext(\"%s: input contains a loop:\");\n            error(0,0,uVar7,uVar5);\n            local_b2 = 0;\n            do {\n              walk_tree(uVar3,detect_loop);\n            } while (loop != 0);\n          }\n        }\n        iVar2 = rpl_fclose(_stdin);\n        if (iVar2 != 0) {\n          if (cVar1 == '\\0') {\n            uVar3 = quotearg_n_style_colon(0,3,param_1);\n          }\n          else {\n            uVar3 = gettext(\"standard input\");\n          }\n          piVar6 = __errno_location();\n          error(1,*piVar6,&DAT_00101545,uVar3);\n        }\n                    /* WARNING: Subroutine does not return */\n        exit((uint)(local_b2 ^ 1));\n      }\n      uVar5 = quotearg_n_style_colon(0,3,param_1);\n      uVar7 = gettext(\"%s: read error\");\n      piVar6 = __errno_location();\n      error(1,*piVar6,uVar7,uVar5);\n    }\n    if (lVar4 == 0) break;\n    lVar4 = search_item(uVar3,local_30);\n    if (local_80 != 0) {\n      record_relation(local_80,lVar4);\n      local_80 = 0;\n      lVar4 = local_80;\n    }\n  }\n                    /* WARNING: Subroutine does not return */\n  __assert_fail(\"len != 0\",\n                \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/tsort.c\",\n                0x1ca,\"tsort\");\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "tsort",
+                        "streq",
+                        "new_item",
+                        "freopen_safer",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "fadvise",
+                        "init_tokenbuffer",
+                        "readtoken",
+                        "ferror_unlocked",
+                        "gettext",
+                        "walk_tree",
+                        "puts",
+                        "rpl_fclose",
+                        "exit",
+                        "search_item",
+                        "record_relation",
+                        "__assert_fail"
+                    ],
+                    "calling_functions": [
+                        "tsort",
+                        "main"
+                    ],
+                    "defined_in_file": "tsort_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "void main(int param_1,undefined8 *param_2) {\n  int iVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  undefined *puVar4;\n  \n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  do {\n    do {\n      iVar1 = getopt_long(param_1,param_2,&DAT_001015d5,long_options_0,0);\n      if (iVar1 == -1) {\n        if (1 < param_1 - _optind) {\n          uVar2 = quote(param_2[(long)_optind + 1]);\n          uVar3 = gettext(\"extra operand %s\");\n          error(0,0,uVar3,uVar2);\n          usage(1);\n        }\n        if (param_1 == _optind) {\n          puVar4 = &DAT_00101548;\n        }\n        else {\n          puVar4 = (undefined *)param_2[_optind];\n        }\n                    /* WARNING: Subroutine does not return */\n        tsort(puVar4);\n      }\n    } while (iVar1 == 0x77);\n    if (iVar1 < 0x78) {\n      if (iVar1 == -0x83) {\nLAB_00101128:\n        uVar2 = proper_name_lite(\"Mark Kettenis\",\"Mark Kettenis\");\n        version_etc(_stdout,\"tsort\",\"GNU coreutils\",_Version,uVar2,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar1 == -0x82) {\n        usage(0);\n        goto LAB_00101128;\n      }\n    }\n    usage(1);\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "tsort",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "tsort_decompiled.c"
+                }
+            }
+        ]
+    }
+}

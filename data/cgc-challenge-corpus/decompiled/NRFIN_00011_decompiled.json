@@ -1,0 +1,99 @@
+{
+    "file": "NRFIN_00011",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "random_alpha_lower",
+                "func_c_signature": "void random_alpha_lower(int param_1,uint param_2)",
+                "decompiled_code": "void random_alpha_lower(int param_1,uint param_2) {\n  int iVar1;\n  uint uVar2;\n  long lVar3;\n  undefined *puVar4;\n  undefined auStack_2c [12];\n  uint local_20;\n  undefined *local_1c;\n  int local_18;\n  undefined4 local_14;\n  uint local_10;\n  \n  local_14 = 0;\n  local_20 = 0;\n  local_18 = param_2 - 1;\n  uVar2 = ((param_2 + 0xf) / 0x10) * 0x10;\n  for (puVar4 = auStack_2c; puVar4 != auStack_2c + -(uVar2 & 0xfffff000); puVar4 = puVar4 + -0x1000)\n  {\n    *(undefined4 *)(puVar4 + -4) = *(undefined4 *)(puVar4 + -4);\n  }\n  iVar1 = -(uVar2 & 0xfff);\n  local_1c = puVar4 + iVar1;\n  if ((uVar2 & 0xfff) != 0) {\n    *(undefined4 *)(puVar4 + ((uVar2 & 0xfff) - 4) + iVar1) =\n         *(undefined4 *)(puVar4 + ((uVar2 & 0xfff) - 4) + iVar1);\n    local_1c = puVar4 + iVar1;\n  }\n  do {\n    *(uint **)(puVar4 + iVar1 + -8) = &local_20;\n    *(uint *)(puVar4 + iVar1 + -0xc) = param_2;\n    *(undefined **)(puVar4 + iVar1 + -0x10) = local_1c;\n    *(undefined4 *)(puVar4 + iVar1 + -0x14) = 0x110a7;\n    lVar3 = random();\n    if (lVar3 == 0) break;\n  } while (param_2 != local_20);\n  for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {\n    *(byte *)(param_1 + local_10) = (byte)local_1c[local_10] % 0x1a + 0x61;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "random_alpha_lower",
+                        "random"
+                    ],
+                    "calling_functions": [
+                        "random_alpha_lower",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "canonicalize_path",
+                "func_c_signature": "undefined4 canonicalize_path(char *param_1,char *param_2,int param_3)",
+                "decompiled_code": "undefined4 canonicalize_path(char *param_1,char *param_2,int param_3) {\n  char *pcVar1;\n  uint __n;\n  char *local_18;\n  char *local_14;\n  undefined4 local_10;\n  \n  local_10 = 0;\n  pcVar1 = (char *)strpos(param_2,&DAT_00012000);\n  local_18 = pcVar1;\n  if (pcVar1 == (char *)0x0) {\n    local_18 = param_2 + param_3;\n  }\n  if ((uint)((int)local_18 - (int)param_2) < 0x101) {\n    strncat(param_1,param_2,(int)local_18 - (int)param_2);\n    if (pcVar1 != (char *)0x0) {\n      while( true ) {\n        local_14 = pcVar1 + 2;\n        pcVar1 = (char *)strpos(local_14,&DAT_00012000);\n        if (pcVar1 == (char *)0x0) break;\n        if (0x100 < (uint)((int)pcVar1 - (int)local_14)) {\n          return 0xf;\n        }\n        strncat(param_1,local_14,(int)pcVar1 - (int)local_14);\n      }\n      if (local_14 < param_2 + param_3) {\n        __n = (int)(param_2 + param_3) - (int)local_14;\n        if (__n < 0x101) {\n          strncat(param_1,local_14,__n);\n        }\n        else {\n          local_10 = 0xf;\n        }\n      }\n    }\n  }\n  else {\n    local_10 = 0xf;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "canonicalize_path",
+                        "strpos",
+                        "strncat"
+                    ],
+                    "calling_functions": [
+                        "canonicalize_path",
+                        "request_document"
+                    ],
+                    "defined_in_file": "NRFIN_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "request_document",
+                "func_c_signature": "int request_document(char *param_1,uint param_2)",
+                "decompiled_code": "int request_document(char *param_1,uint param_2) {\n  size_t sVar1;\n  int iVar2;\n  uint uVar3;\n  int iVar4;\n  undefined *puVar5;\n  undefined4 *puVar6;\n  byte bVar7;\n  undefined auStack_14c [12];\n  undefined4 local_140;\n  undefined4 local_13c [63];\n  int local_40;\n  ushort local_3a;\n  uint local_38;\n  undefined *local_34;\n  int local_30;\n  int local_2c;\n  int local_28;\n  int local_24;\n  int local_20;\n  \n  bVar7 = 0;\n  local_20 = 0;\n  local_38 = 0;\n  if (param_2 < 0x3e9) {\n    sVar1 = strlen(param_1);\n    local_20 = transmit_with_term(1,param_1,sVar1,0);\n    if (local_20 == 0) {\n      local_3a = 0;\n      local_20 = receive_all(0,&local_3a,2,0);\n      if (((local_20 == 0) && (iVar2 = recv_until_delim(0,buf_recv_tmp,0xffff), -1 < iVar2)) &&\n         (iVar2 = strcmp(param_1,buf_recv_tmp), iVar2 == 0)) {\n        local_40 = 0;\n        local_20 = allocate(local_3a + 1,0,&local_40);\n        if (local_20 == 0) {\n          local_20 = receive_with_term(0,local_40,local_3a,&local_38);\n          if ((local_20 == 0) && (local_3a == local_38)) {\n            local_24 = local_40;\n            local_28 = 0;\n            do {\n              do {\n                local_24 = strpos(local_24,&DAT_00012004);\n                if (local_24 == 0) {\n                  local_24 = 0;\n                  goto LAB_00011531;\n                }\n                sVar1 = strlen(\"$SRC$\\x06\");\n                local_24 = local_24 + sVar1;\n                local_28 = strpos(local_24,&DAT_0001200b);\n              } while (local_28 == 0);\n              local_30 = local_28 - local_24;\n              local_2c = local_30 + 1;\n              uVar3 = ((local_30 + 0x10U) / 0x10) * 0x10;\n              for (puVar5 = auStack_14c; puVar5 != auStack_14c + -(uVar3 & 0xfffff000);\n                  puVar5 = puVar5 + -0x1000) {\n                *(undefined4 *)(puVar5 + -4) = *(undefined4 *)(puVar5 + -4);\n              }\n              iVar2 = -(uVar3 & 0xfff);\n              if ((uVar3 & 0xfff) != 0) {\n                *(undefined4 *)(puVar5 + ((uVar3 & 0xfff) - 4) + iVar2) =\n                     *(undefined4 *)(puVar5 + ((uVar3 & 0xfff) - 4) + iVar2);\n              }\n              local_34 = puVar5 + iVar2;\n              *(int *)(puVar5 + iVar2 + -8) = local_2c + -1;\n              *(int *)(puVar5 + iVar2 + -0xc) = local_24;\n              *(undefined **)(puVar5 + iVar2 + -0x10) = local_34;\n              *(undefined4 *)(puVar5 + iVar2 + -0x14) = 0x11492;\n              strncpy(*(char **)(puVar5 + iVar2 + -0x10),*(char **)(puVar5 + iVar2 + -0xc),\n                      *(size_t *)(puVar5 + iVar2 + -8));\n              local_34[local_2c + -1] = 6;\n              local_140 = 6;\n              puVar6 = local_13c;\n              for (iVar4 = 0x3f; iVar4 != 0; iVar4 = iVar4 + -1) {\n                *puVar6 = 0;\n                puVar6 = puVar6 + (uint)bVar7 * -2 + 1;\n              }\n              *(int *)(puVar5 + iVar2 + -8) = local_2c;\n              *(undefined **)(puVar5 + iVar2 + -0xc) = local_34;\n              *(undefined4 **)(puVar5 + iVar2 + -0x10) = &local_140;\n              *(undefined4 *)(puVar5 + iVar2 + -0x14) = 0x114d5;\n              local_20 = canonicalize_path();\n              if (local_20 != 0) break;\n              param_2 = param_2 + 1;\n              *(uint *)(puVar5 + iVar2 + -0xc) = param_2;\n              *(undefined4 **)(puVar5 + iVar2 + -0x10) = &local_140;\n              *(undefined4 *)(puVar5 + iVar2 + -0x14) = 0x114f7;\n              local_20 = request_document();\n            } while (local_20 == 0);\n          }\nLAB_00011531:\n          deallocate(local_40,local_3a + 1);\n        }\n      }\n    }\n  }\n  else {\n    local_20 = 0x10;\n  }\n  return local_20;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "request_document",
+                        "strlen",
+                        "transmit_with_term",
+                        "receive_all",
+                        "recv_until_delim",
+                        "strcmp",
+                        "allocate",
+                        "receive_with_term",
+                        "strpos",
+                        "strncpy",
+                        "canonicalize_path",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "request_document",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(void)",
+                "decompiled_code": "void main(void) {\n  undefined local_24 [15];\n  undefined local_15;\n  undefined4 local_14;\n  undefined *local_c;\n  \n  local_c = &stack0x00000004;\n  local_14 = 0;\n  random_alpha_lower(local_24,0x10);\n  local_15 = 6;\n  request_document(local_24,0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "random_alpha_lower",
+                        "request_document"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "NRFIN_00011_decompiled.c"
+                }
+            }
+        ]
+    }
+}

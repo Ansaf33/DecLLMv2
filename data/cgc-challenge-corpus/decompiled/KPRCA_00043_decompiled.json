@@ -1,0 +1,284 @@
+{
+    "file": "KPRCA_00043",
+    "decompiled_code": {
+        "bloomy.c": [
+            {
+                "func_name": "bloomy_new",
+                "func_c_signature": "void ** bloomy_new(void *param_1,void *param_2,void *param_3,void *param_4)",
+                "decompiled_code": "void ** bloomy_new(void *param_1,void *param_2,void *param_3,void *param_4) {\n  void **__s;\n  void *pvVar1;\n  \n  if (param_1 != (void *)0x0) {\n    __s = (void **)malloc(0x14);\n    if (__s != (void **)0x0) {\n      memset(__s,0,0x14);\n      __s[1] = param_1;\n      pvVar1 = malloc((size_t)param_1);\n      *__s = pvVar1;\n      if (*__s != (void *)0x0) {\n        memset(*__s,0,(size_t)param_1);\n        __s[2] = param_2;\n        __s[3] = param_3;\n        __s[4] = param_4;\n        return __s;\n      }\n    }\n    bloomy_free(__s);\n  }\n  return (void **)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bloomy_new",
+                        "malloc",
+                        "memset",
+                        "bloomy_free"
+                    ],
+                    "calling_functions": [
+                        "bloomy_new",
+                        "init"
+                    ],
+                    "defined_in_file": "KPRCA_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "bloomy_free",
+                "func_c_signature": "void bloomy_free(void **param_1)",
+                "decompiled_code": "void bloomy_free(void **param_1) {\n  if (param_1 != (void **)0x0) {\n    if (*param_1 != (void *)0x0) {\n      free(*param_1);\n    }\n    free(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bloomy_free",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "bloomy_new",
+                        "bloomy_free"
+                    ],
+                    "defined_in_file": "KPRCA_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "bloomy_check",
+                "func_c_signature": "undefined4 bloomy_check(int *param_1,char *param_2)",
+                "decompiled_code": "undefined4 bloomy_check(int *param_1,char *param_2) {\n  code *pcVar1;\n  undefined4 uVar2;\n  size_t sVar3;\n  uint uVar4;\n  uint local_10;\n  \n  if ((param_1 == (int *)0x0) || (*param_1 == 0)) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {\n      if (param_1[local_10 + 2] != 0) {\n        pcVar1 = (code *)param_1[local_10 + 2];\n        sVar3 = strlen(param_2);\n        uVar4 = (*pcVar1)(param_2,sVar3);\n        if (((byte)(1 << ((byte)(uVar4 % (uint)param_1[1]) & 7)) &\n            *(byte *)(*param_1 + (uVar4 % (uint)param_1[1] >> 3))) == 0) {\n          return 0;\n        }\n      }\n    }\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bloomy_check",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "bloomy_check",
+                        "submit_lyrics"
+                    ],
+                    "defined_in_file": "KPRCA_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "bloomy_add",
+                "func_c_signature": "void bloomy_add(int *param_1,char *param_2)",
+                "decompiled_code": "void bloomy_add(int *param_1,char *param_2) {\n  code *pcVar1;\n  size_t sVar2;\n  uint uVar3;\n  uint uVar4;\n  uint local_20;\n  \n  for (local_20 = 0; local_20 < 3; local_20 = local_20 + 1) {\n    if (param_1[local_20 + 2] != 0) {\n      pcVar1 = (code *)param_1[local_20 + 2];\n      sVar2 = strlen(param_2);\n      uVar3 = (*pcVar1)(param_2,sVar2);\n      uVar4 = uVar3 % (uint)param_1[1] >> 3;\n      *(byte *)(uVar4 + *param_1) =\n           *(byte *)(*param_1 + uVar4) | (byte)(1 << ((byte)(uVar3 % (uint)param_1[1]) & 7));\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bloomy_add",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "bloomy_add",
+                        "init"
+                    ],
+                    "defined_in_file": "KPRCA_00043_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "submit_lyrics",
+                "func_c_signature": "undefined4 submit_lyrics(char *param_1,size_t param_2)",
+                "decompiled_code": "undefined4 submit_lyrics(char *param_1,size_t param_2) {\n  int iVar1;\n  size_t sVar2;\n  char *local_a8;\n  char local_a4 [128];\n  char *local_24;\n  size_t local_20;\n  int local_1c;\n  char *local_18;\n  int local_14;\n  uint local_10;\n  \n  local_14 = 0;\n  local_1c = 0;\n  local_20 = param_2;\n  local_18 = param_1;\n  memset(param_1,0,param_2);\n  do {\n    iVar1 = read_until(0,local_a4,0x80,10);\n    if (iVar1 < 0) {\n      return 0;\n    }\n    iVar1 = strcmp(local_a4,\"EOF\");\n    if (iVar1 == 0) {\n      *local_18 = '\\0';\n      return 1;\n    }\n    local_14 = 1;\n    local_a8 = local_a4;\n    while (local_24 = strsep(&local_a8,\" \"), local_24 != (char *)0x0) {\n      local_1c = bloomy_check(bloomy,local_24);\n      if (local_1c == 1) {\n        for (local_10 = 0; local_10 < 0x21; local_10 = local_10 + 1) {\n          iVar1 = strcmp(*(char **)(depressing_words + local_10 * 4),local_24);\n          if (iVar1 == 0) {\n            fdprintf(1,\"depressing word detected.\\n\");\n            return 0;\n          }\n        }\n        if (local_14 == 0) {\n          strcat(local_18,\" \");\n          local_18 = local_18 + 1;\n          param_2 = param_2 - 1;\n        }\n        strcat(local_18,local_24);\n        sVar2 = strlen(local_24);\n        local_18 = local_18 + sVar2;\n        sVar2 = strlen(local_24);\n        param_2 = param_2 - sVar2;\n      }\n      else {\n        if (local_1c != 0) {\n          return 0;\n        }\n        sVar2 = strlen(local_24);\n        if (param_2 - 1 <= sVar2) {\n          *local_18 = '\\0';\n          return 1;\n        }\n        if (local_14 == 0) {\n          strcat(local_18,\" \");\n          local_18 = local_18 + 1;\n          param_2 = param_2 - 1;\n        }\n        strcat(local_18,local_24);\n        sVar2 = strlen(local_24);\n        local_18 = local_18 + sVar2;\n        sVar2 = strlen(local_24);\n        param_2 = param_2 - sVar2;\n      }\n      local_14 = 0;\n    }\n    sVar2 = strlen(param_1);\n    if (sVar2 < local_20) {\n      strcat(local_18,\"\\n\");\n      local_18 = local_18 + 1;\n      param_2 = param_2 - 1;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "submit_lyrics",
+                        "memset",
+                        "read_until",
+                        "strcmp",
+                        "strsep",
+                        "bloomy_check",
+                        "fdprintf",
+                        "strcat",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "submit_lyrics",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_menu",
+                "func_c_signature": "void print_menu(void)",
+                "decompiled_code": "void print_menu(void) {\n  fdprintf(1,\"1. Submit lyrics\\n\");\n  fdprintf(1,\"2. View lyrics\\n\");\n  fdprintf(1,\"-3. Quit\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_menu",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "print_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init",
+                "func_c_signature": "int init(EVP_PKEY_CTX *ctx)",
+                "decompiled_code": "int init(EVP_PKEY_CTX *ctx) {\n  uint local_10;\n  \n  bloomy = bloomy_new(0x80,moomoo,yooyoo,geegee);\n  if (bloomy == 0) {\n                    /* WARNING: Subroutine does not return */\n    exit(-1);\n  }\n  for (local_10 = 0; local_10 < 0x21; local_10 = local_10 + 1) {\n    bloomy_add(bloomy,*(undefined4 *)(depressing_words + local_10 * 4));\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init",
+                        "bloomy_new",
+                        "exit",
+                        "bloomy_add"
+                    ],
+                    "calling_functions": [
+                        "init",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  long lVar2;\n  undefined *puVar3;\n  EVP_PKEY_CTX *in_stack_fffff7e0;\n  undefined local_819 [2048];\n  char local_19 [8];\n  char local_11;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_11 = '\\0';\n  fdprintf(1,\"~=~=~=~= Bloomy Sunday =~=~=~=~\\n\");\n  init(in_stack_fffff7e0);\n  do {\n    print_menu();\n    fdprintf(1,&DAT_00014185);\n    iVar1 = read_until(0,local_19,8,10);\n    if (iVar1 < 0) {\n      fdprintf(1,\"fail\\n\");\n      return 0xffffffff;\n    }\n    puVar3 = (undefined *)0xa;\n    lVar2 = strtol(local_19,(char **)0x0,10);\n    if (lVar2 == 2) {\n      if (local_11 == '\\0') {\n        fdprintf(1,\"not good.\\n\");\n      }\n      else {\n        puVar3 = local_819;\n        fdprintf(1,&DAT_00014193,puVar3);\n      }\n    }\n    else {\n      if (lVar2 < 3) {\n        if (lVar2 == -3) {\n          fdprintf(1,\"Don\\'t let the sadness grow.\\n\\n\");\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (lVar2 == 1) {\n          local_11 = submit_lyrics(local_819,0x800);\n          goto LAB_00011a48;\n        }\n      }\n      fdprintf(1,\"Nope!\\n\");\n    }\nLAB_00011a48:\n    fdprintf(1,&DAT_00014134,puVar3);\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "fdprintf",
+                        "init",
+                        "print_menu",
+                        "read_until",
+                        "strtol",
+                        "exit",
+                        "submit_lyrics"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00043_decompiled.c"
+                }
+            }
+        ],
+        "moomoo.c": [
+            {
+                "func_name": "geegee",
+                "func_c_signature": "int geegee(int param_1,uint param_2)",
+                "decompiled_code": "int geegee(int param_1,uint param_2) {\n  int local_c;\n  uint local_8;\n  \n  local_c = 0;\n  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {\n    local_c = local_c * 0x807f + (uint)*(byte *)(param_1 + local_8);\n  }\n  return local_c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "geegee"
+                    ],
+                    "calling_functions": [
+                        "geegee"
+                    ],
+                    "defined_in_file": "KPRCA_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "yooyoo",
+                "func_c_signature": "int yooyoo(int param_1,uint param_2)",
+                "decompiled_code": "int yooyoo(int param_1,uint param_2) {\n  int local_c;\n  uint local_8;\n  \n  local_c = 0x72b;\n  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {\n    local_c = (uint)*(byte *)(param_1 + local_8) + local_c * 0x25;\n  }\n  return local_c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "yooyoo"
+                    ],
+                    "calling_functions": [
+                        "yooyoo"
+                    ],
+                    "defined_in_file": "KPRCA_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "moomoo",
+                "func_c_signature": "uint moomoo(int param_1,uint param_2)",
+                "decompiled_code": "uint moomoo(int param_1,uint param_2) {\n  int iVar1;\n  byte *pbVar2;\n  uint uVar3;\n  uint local_10;\n  uint local_c;\n  uint local_8;\n  \n  local_8 = 0x41414141;\n  for (local_10 = 0; local_10 < param_2 >> 2; local_10 = local_10 + 1) {\n    iVar1 = *(int *)(param_1 + local_10 * 4);\n    local_8 = local_8 ^ (iVar1 * 0x5d398000 | (uint)(iVar1 * 0x15d2e9cc) >> 0x13) * 0x395378b1;\n    local_8 = (local_8 << 0xf | local_8 >> 0x11) * 7 + 0x46b6456e;\n  }\n  pbVar2 = (byte *)(param_1 + (param_2 & 0xfffffffc));\n  local_c = 0;\n  if (param_2 < 4) {\n    local_c = (uint)pbVar2[2] << 0x10;\n  }\n  if (param_2 < 3) {\n    local_c = local_c ^ (uint)pbVar2[1] << 8;\n  }\n  if (param_2 < 2) {\n    local_8 = local_8 ^ ((*pbVar2 ^ local_c) * 0x5d398000 | (*pbVar2 ^ local_c) * 0x15d2e9cc >> 0x13\n                        ) * 0x395378b1;\n  }\n  uVar3 = (local_8 ^ param_2 ^ (local_8 ^ param_2) >> 0xd) * -0x495341a8;\n  uVar3 = (uVar3 ^ uVar3 >> 0x10) * 0x35ea2b2c;\n  return uVar3 ^ uVar3 >> 0xd;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "moomoo"
+                    ],
+                    "calling_functions": [
+                        "moomoo"
+                    ],
+                    "defined_in_file": "KPRCA_00043_decompiled.c"
+                }
+            }
+        ],
+        "readuntil.c": [
+            {
+                "func_name": "read_until",
+                "func_c_signature": "int read_until(undefined4 param_1,char *param_2,uint param_3,char param_4)",
+                "decompiled_code": "int read_until(undefined4 param_1,char *param_2,uint param_3,char param_4) {\n  int iVar1;\n  int local_18;\n  char *local_14;\n  uint local_10;\n  \n  local_14 = param_2;\n  local_10 = 0;\n  do {\n    if (param_3 <= local_10) {\nLAB_00011cfd:\n      local_14[-1] = '\\0';\n      return (int)local_14 - (int)param_2;\n    }\n    iVar1 = receive(param_1,local_14,1,&local_18);\n    if ((iVar1 != 0) || (local_18 == 0)) {\n      return -1;\n    }\n    if ((param_4 == *local_14) || (*local_14 == '\\0')) {\n      local_14 = local_14 + 1;\n      goto LAB_00011cfd;\n    }\n    local_14 = local_14 + 1;\n    local_10 = local_10 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_until",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "submit_lyrics",
+                        "main",
+                        "read_until"
+                    ],
+                    "defined_in_file": "KPRCA_00043_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_n",
+                "func_c_signature": "int read_n(undefined4 param_1,int param_2,uint param_3)",
+                "decompiled_code": "int read_n(undefined4 param_1,int param_2,uint param_3) {\n  int iVar1;\n  int local_18;\n  int local_14;\n  uint local_10;\n  \n  local_14 = param_2;\n  for (local_10 = 0; local_10 < param_3; local_10 = local_10 + 1) {\n    iVar1 = receive(param_1,local_14,1,&local_18);\n    if ((iVar1 != 0) || (local_18 == 0)) break;\n    local_14 = local_14 + 1;\n  }\n  return local_14 - param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_n",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "read_n"
+                    ],
+                    "defined_in_file": "KPRCA_00043_decompiled.c"
+                }
+            }
+        ]
+    }
+}

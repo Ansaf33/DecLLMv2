@@ -1,0 +1,1083 @@
+{
+    "file": "NRFIN_00014",
+    "decompiled_code": {
+        "account.c": [
+            {
+                "func_name": "transaction_iterator",
+                "func_c_signature": "undefined4 transaction_iterator(int param_1)",
+                "decompiled_code": "undefined4 transaction_iterator(int param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == 0) {\n    if (last == 0) {\n      uVar1 = 0;\n    }\n    else {\n      last = *(int *)(last + 4);\n      if (last == 0) {\n        uVar1 = 0;\n      }\n      else {\n        uVar1 = *(undefined4 *)(last + 8);\n      }\n    }\n  }\n  else {\n    last = get_head(*(undefined4 *)(param_1 + 0x10));\n    uVar1 = *(undefined4 *)(last + 8);\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "transaction_iterator",
+                        "get_head"
+                    ],
+                    "calling_functions": [
+                        "transaction_iterator",
+                        "process_client_history"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lazy_account_init",
+                "func_c_signature": "void lazy_account_init(void)",
+                "decompiled_code": "void lazy_account_init(void) {\n  if (ACCOUNTS == 0) {\n    init_account_register();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lazy_account_init",
+                        "init_account_register"
+                    ],
+                    "calling_functions": [
+                        "lazy_account_init",
+                        "create_account",
+                        "get_account"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "alloc_txn_head",
+                "func_c_signature": "void alloc_txn_head(void)",
+                "decompiled_code": "void alloc_txn_head(void) {\n  malloc(0xc);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "alloc_txn_head",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "alloc_txn_head",
+                        "open_txn"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "vendor_calc",
+                "func_c_signature": "int vendor_calc(int param_1)",
+                "decompiled_code": "int vendor_calc(int param_1) {\n  return *(byte *)(param_1 + 5) - 4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "vendor_calc"
+                    ],
+                    "calling_functions": [
+                        "vendor_calc",
+                        "get_log_data_sz"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "packet_sz_by_op_code",
+                "func_c_signature": "undefined4 packet_sz_by_op_code(undefined4 param_1,int param_2)",
+                "decompiled_code": "undefined4 packet_sz_by_op_code(undefined4 param_1,int param_2) {\n  undefined4 uVar1;\n  \n  switch(param_1) {\n  case 0:\n    if (param_2 == 0) {\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = 0xe;\n    }\n    break;\n  case 1:\n    if (param_2 == 0) {\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = 10;\n    }\n    break;\n  case 2:\n    if (param_2 == 1) {\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = 4;\n    }\n    break;\n  case 3:\n    uVar1 = 4;\n    break;\n  case 4:\n    if (param_2 == 0) {\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = 4;\n    }\n    break;\n  case 5:\n    if (param_2 == 0) {\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = 8;\n    }\n    break;\n  default:\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "packet_sz_by_op_code"
+                    ],
+                    "calling_functions": [
+                        "packet_sz_by_op_code",
+                        "get_log_data_sz",
+                        "get_ops_data_sz"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_log_data_sz",
+                "func_c_signature": "int get_log_data_sz(undefined4 param_1,int param_2)",
+                "decompiled_code": "int get_log_data_sz(undefined4 param_1,int param_2) {\n  int iVar1;\n  int iVar2;\n  \n  switch(param_1) {\n  case 0:\n    iVar1 = packet_sz_by_op_code(param_1,1);\n    iVar2 = vendor_calc(param_2 + 8);\n    iVar2 = iVar2 + iVar1;\n    break;\n  case 1:\n    iVar1 = packet_sz_by_op_code(param_1,1);\n    iVar2 = vendor_calc(param_2 + 4);\n    iVar2 = iVar2 + iVar1;\n    break;\n  case 2:\n    iVar2 = 4;\n    break;\n  case 3:\n    iVar2 = 4;\n    break;\n  case 4:\n    iVar2 = 4;\n    break;\n  case 5:\n    iVar2 = 8;\n    break;\n  default:\n    iVar2 = 0;\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_log_data_sz",
+                        "packet_sz_by_op_code",
+                        "vendor_calc"
+                    ],
+                    "calling_functions": [
+                        "get_log_data_sz"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_ops_data_sz",
+                "func_c_signature": "void get_ops_data_sz(int param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void get_ops_data_sz(int param_1,undefined4 param_2,undefined4 param_3) {\n  packet_sz_by_op_code(*(undefined *)(param_1 + 9),param_3);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_ops_data_sz",
+                        "packet_sz_by_op_code"
+                    ],
+                    "calling_functions": [
+                        "get_ops_data_sz",
+                        "get_size_of_data_for_pkt"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_size_of_data_for_pkt",
+                "func_c_signature": "int get_size_of_data_for_pkt(int param_1,int *param_2,undefined4 param_3)",
+                "decompiled_code": "int get_size_of_data_for_pkt(int param_1,int *param_2,undefined4 param_3) {\n  byte bVar1;\n  int iVar2;\n  \n  if (*(char *)(param_1 + 10) == '\\0') {\n    bVar1 = *(byte *)(param_1 + 8);\n    if (bVar1 == 3) {\n      iVar2 = 0;\n    }\n    else {\n      if (bVar1 < 4) {\n        if (bVar1 == 2) {\n          iVar2 = get_ops_data_sz(param_1,param_2,param_3);\n          return iVar2;\n        }\n        if (bVar1 < 3) {\n          if (bVar1 == 0) {\n            if ((*(char *)(param_1 + 9) == '\\x04') && (*(int *)(param_1 + 0xc) == 0)) {\n              return 4;\n            }\n            return 0;\n          }\n          if (bVar1 == 1) {\n            return 0;\n          }\n        }\n      }\n      iVar2 = 0;\n    }\n  }\n  else {\n    iVar2 = *param_2 + 4;\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_size_of_data_for_pkt",
+                        "get_ops_data_sz"
+                    ],
+                    "calling_functions": [
+                        "get_size_of_data_for_pkt",
+                        "get_size_of_data_for_pkt_head_only"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_size_of_data_for_pkt_head_only",
+                "func_c_signature": "void get_size_of_data_for_pkt_head_only(int param_1,undefined4 param_2)",
+                "decompiled_code": "void get_size_of_data_for_pkt_head_only(int param_1,undefined4 param_2) {\n  get_size_of_data_for_pkt(param_1,param_1 + 0x10,param_2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_size_of_data_for_pkt_head_only",
+                        "get_size_of_data_for_pkt"
+                    ],
+                    "calling_functions": [
+                        "get_size_of_data_for_pkt_head_only",
+                        "recv_pack_and_data"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_transaction",
+                "func_c_signature": "int get_transaction(int param_1,int param_2)",
+                "decompiled_code": "int get_transaction(int param_1,int param_2) {\n  int local_10;\n  \n  local_10 = get_head(*(undefined4 *)(param_1 + 0x10));\n  while( true ) {\n    if (local_10 == 0) {\n      ERRNO = 0xf;\n      return 0;\n    }\n    if (param_2 == *(int *)(*(int *)(local_10 + 8) + 4)) break;\n    local_10 = *(int *)(local_10 + 4);\n  }\n  return *(int *)(local_10 + 8);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_transaction",
+                        "get_head"
+                    ],
+                    "calling_functions": [
+                        "get_transaction",
+                        "add_transaction_log_entry",
+                        "get_acct_txn_reg",
+                        "process_client_refund_op",
+                        "process_client_fin"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "finalize_transaction",
+                "func_c_signature": "undefined4 finalize_transaction(char *param_1)",
+                "decompiled_code": "undefined4 finalize_transaction(char *param_1) {\n  undefined4 uVar1;\n  \n  *param_1 = *param_1 + -1;\n  if (*param_1 < '\\x02') {\n    *(undefined4 *)(param_1 + 0x10) = 3;\n    uVar1 = 0;\n  }\n  else {\n    ERRNO = 0xff;\n    uVar1 = 0xf;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "finalize_transaction"
+                    ],
+                    "calling_functions": [
+                        "finalize_transaction",
+                        "process_client_history",
+                        "process_client_fin"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "open_txn",
+                "func_c_signature": "undefined * open_txn(int param_1,void *param_2)",
+                "decompiled_code": "undefined * open_txn(int param_1,void *param_2) {\n  int iVar1;\n  void *pvVar2;\n  undefined4 uVar3;\n  undefined *puVar4;\n  \n  iVar1 = alloc_txn_head();\n  pvVar2 = malloc(0x18);\n  *(void **)(iVar1 + 8) = pvVar2;\n  puVar4 = *(undefined **)(iVar1 + 8);\n  *puVar4 = 1;\n  uVar3 = register_transaction();\n  *(undefined4 *)(puVar4 + 4) = uVar3;\n  *(undefined4 *)((int)param_2 + 0xc) = *(undefined4 *)(puVar4 + 4);\n  pvVar2 = malloc(0x10);\n  *(void **)(puVar4 + 0xc) = pvVar2;\n  if (*(int *)(puVar4 + 0xc) == 0) {\n    puVar4 = (undefined *)0x0;\n  }\n  else {\n    memcpy(*(void **)(puVar4 + 0xc),param_2,0x10);\n    add_node(*(undefined4 *)(param_1 + 0x10),iVar1);\n  }\n  return puVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "open_txn",
+                        "alloc_txn_head",
+                        "malloc",
+                        "register_transaction",
+                        "memcpy",
+                        "add_node"
+                    ],
+                    "calling_functions": [
+                        "open_txn",
+                        "generate_new_init_and_init_resp",
+                        "process_client_auth"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove_transaction_log_entry",
+                "func_c_signature": "void * remove_transaction_log_entry(int param_1,int param_2)",
+                "decompiled_code": "void * remove_transaction_log_entry(int param_1,int param_2) {\n  void *__ptr;\n  int local_10;\n  \n  local_10 = get_head(*(undefined4 *)(param_1 + 0x10));\n  while( true ) {\n    if (local_10 == 0) {\n      ERRNO = 0xf;\n      return (void *)0x0;\n    }\n    __ptr = *(void **)(local_10 + 8);\n    if (*(int *)((int)__ptr + 4) == *(int *)(param_2 + 4)) break;\n    local_10 = *(int *)(local_10 + 4);\n  }\n  if (*(int *)((int)__ptr + 0xc) != 0) {\n    free(*(void **)((int)__ptr + 0xc));\n  }\n  if (*(int *)((int)__ptr + 8) != 0) {\n    free(*(void **)((int)__ptr + 0x14));\n  }\n  free(__ptr);\n  remove_node(*(undefined4 *)(param_1 + 0x10),local_10);\n  return __ptr;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_transaction_log_entry",
+                        "get_head",
+                        "free",
+                        "remove_node"
+                    ],
+                    "calling_functions": [
+                        "remove_transaction_log_entry",
+                        "process_client_refund_op"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_transaction_log_entry",
+                "func_c_signature": "int add_transaction_log_entry(undefined4 param_1,void **param_2)",
+                "decompiled_code": "int add_transaction_log_entry(undefined4 param_1,void **param_2) {\n  void *pvVar1;\n  void *__src;\n  int iVar2;\n  void *pvVar3;\n  \n  pvVar1 = *param_2;\n  __src = param_2[2];\n  iVar2 = get_transaction(param_1,*(undefined4 *)((int)pvVar1 + 0xc));\n  if (iVar2 == 0) {\n    iVar2 = 0;\n  }\n  else {\n    if (*(int *)(iVar2 + 0xc) == 0) {\n      pvVar3 = malloc(0x10);\n      *(void **)(iVar2 + 0xc) = pvVar3;\n    }\n    if (*(int *)(iVar2 + 0xc) == 0) {\n      iVar2 = 0;\n    }\n    else {\n      memcpy(*(void **)(iVar2 + 0xc),pvVar1,0x10);\n      pvVar1 = param_2[1];\n      *(void **)(iVar2 + 8) = pvVar1;\n      if (pvVar1 != (void *)0x0) {\n        pvVar3 = malloc((size_t)pvVar1);\n        *(void **)(iVar2 + 0x14) = pvVar3;\n        if (__src == (void *)0x0) {\n          iVar2 = 0;\n        }\n        else {\n          memcpy(*(void **)(iVar2 + 0x14),__src,(size_t)pvVar1);\n        }\n      }\n    }\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_transaction_log_entry",
+                        "get_transaction",
+                        "malloc",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "add_transaction_log_entry",
+                        "generate_new_init_and_init_resp",
+                        "process_client_history",
+                        "process_client_balance",
+                        "process_client_refund_op",
+                        "process_client_recharge_op",
+                        "process_client_purchase_op"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_ll_heap",
+                "func_c_signature": "undefined4 * init_ll_heap(void)",
+                "decompiled_code": "undefined4 * init_ll_heap(void) {\n  undefined4 *puVar1;\n  \n  puVar1 = (undefined4 *)malloc(8);\n  if (puVar1 == (undefined4 *)0x0) {\n    puVar1 = (undefined4 *)0x0;\n  }\n  else {\n    *puVar1 = 0;\n    puVar1[1] = 0;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_ll_heap",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "init_ll_heap",
+                        "create_account"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_account",
+                "func_c_signature": "int create_account(undefined4 param_1,undefined4 param_2,undefined4 *param_3)",
+                "decompiled_code": "int create_account(undefined4 param_1,undefined4 param_2,undefined4 *param_3) {\n  void *pvVar1;\n  undefined4 *puVar2;\n  int iVar3;\n  undefined4 uVar4;\n  \n  uVar4 = *param_3;\n  lazy_account_init();\n  pvVar1 = malloc(0xc);\n  puVar2 = (undefined4 *)malloc(0x14);\n  if ((puVar2 == (undefined4 *)0x0) || (pvVar1 == (void *)0x0)) {\n    iVar3 = 3;\n  }\n  else {\n    *puVar2 = param_1;\n    puVar2[1] = param_2;\n    puVar2[2] = uVar4;\n    puVar2[3] = uVar4;\n    uVar4 = init_ll_heap();\n    puVar2[4] = uVar4;\n    if (puVar2[4] == 0) {\n      iVar3 = 3;\n    }\n    else {\n      *(undefined4 **)((int)pvVar1 + 8) = puVar2;\n      iVar3 = add_node(*ACCOUNTS,pvVar1);\n      if (iVar3 == 0) {\n        iVar3 = 0;\n      }\n    }\n  }\n  return iVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_account",
+                        "lazy_account_init",
+                        "malloc",
+                        "init_ll_heap",
+                        "add_node"
+                    ],
+                    "calling_functions": [
+                        "create_account",
+                        "generate_new_init_and_init_resp"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_account",
+                "func_c_signature": "int * get_account(int param_1,int param_2)",
+                "decompiled_code": "int * get_account(int param_1,int param_2) {\n  int *local_14;\n  int local_10;\n  \n  lazy_account_init();\n  local_10 = get_head(*ACCOUNTS);\n  if (local_10 != 0) {\n    local_14 = *(int **)(local_10 + 8);\n    while (local_14 != (int *)0x0) {\n      if (param_1 == *local_14) {\n        if (param_2 != local_14[1]) {\n          ERRNO = 0xc;\n          return (int *)0x0;\n        }\n        return local_14;\n      }\n      local_10 = *(int *)(local_10 + 4);\n      if (local_10 == 0) break;\n      local_14 = *(int **)(local_10 + 8);\n    }\n    ERRNO = 0xf;\n  }\n  return (int *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_account",
+                        "lazy_account_init",
+                        "get_head"
+                    ],
+                    "calling_functions": [
+                        "get_account",
+                        "check_auth_packet",
+                        "generate_new_init_and_init_resp",
+                        "get_acct_txn_reg",
+                        "process_client_history",
+                        "process_client_fin"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_account_register",
+                "func_c_signature": "void init_account_register(void)",
+                "decompiled_code": "void init_account_register(void) {\n  undefined4 *puVar1;\n  undefined4 uVar2;\n  \n  puVar1 = (undefined4 *)malloc(8);\n  uVar2 = init_ll();\n  *puVar1 = uVar2;\n  ACCOUNTS = puVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_account_register",
+                        "malloc",
+                        "init_ll"
+                    ],
+                    "calling_functions": [
+                        "lazy_account_init",
+                        "init_account_register"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            }
+        ],
+        "multipass.c": [
+            {
+                "func_name": "check_auth_packet",
+                "func_c_signature": "void check_auth_packet(undefined4 *param_1)",
+                "decompiled_code": "void check_auth_packet(undefined4 *param_1) {\n  undefined4 uVar1;\n  undefined4 *puVar2;\n  undefined4 auStack_1c [3];\n  undefined4 uStack_10;\n  undefined auStack_c [4];\n  \n  puVar2 = (undefined4 *)auStack_c;\n  uStack_10 = 0x11b64;\n  if (*(char *)(param_1 + 2) != '\\x01') {\n    puVar2 = auStack_1c;\n    auStack_1c[0] = 10;\n    _terminate();\n  }\n  uVar1 = *param_1;\n  *(undefined4 *)((int)puVar2 + -0xc) = param_1[1];\n  *(undefined4 *)((int)puVar2 + -0x10) = uVar1;\n  *(undefined4 *)((int)puVar2 + -0x14) = 0x11b98;\n  get_account();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_auth_packet",
+                        "_terminate",
+                        "get_account"
+                    ],
+                    "calling_functions": [
+                        "check_auth_packet",
+                        "process_client_auth"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "verify_init",
+                "func_c_signature": "int verify_init(EVP_PKEY_CTX *ctx)",
+                "decompiled_code": "int verify_init(EVP_PKEY_CTX *ctx) {\n  int iVar1;\n  \n  if (ctx == (EVP_PKEY_CTX *)0x0) {\n    iVar1 = 10;\n  }\n  else if (ctx[8] == (EVP_PKEY_CTX)0x0) {\n    if (ctx[9] == (EVP_PKEY_CTX)0x0) {\n      iVar1 = 0;\n    }\n    else {\n      iVar1 = 9;\n    }\n  }\n  else {\n    iVar1 = 10;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "verify_init"
+                    ],
+                    "calling_functions": [
+                        "verify_init"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "alloc_new_pkt",
+                "func_c_signature": "void * alloc_new_pkt(int param_1)",
+                "decompiled_code": "void * alloc_new_pkt(int param_1) {\n  void *pvVar1;\n  \n  pvVar1 = calloc(1,param_1 + 0x10);\n  return pvVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "alloc_new_pkt",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "alloc_new_pkt",
+                        "init_resp_structs"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "register_card_id",
+                "func_c_signature": "int register_card_id(void)",
+                "decompiled_code": "int register_card_id(void) {\n  int iVar1;\n  \n  iVar1 = NEXT_CARD_ID;\n  NEXT_CARD_ID = NEXT_CARD_ID + 1;\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "register_card_id"
+                    ],
+                    "calling_functions": [
+                        "register_card_id",
+                        "generate_new_init_and_init_resp"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "register_transaction",
+                "func_c_signature": "int register_transaction(void)",
+                "decompiled_code": "int register_transaction(void) {\n  int iVar1;\n  \n  iVar1 = NEXT_TXN_ID;\n  NEXT_TXN_ID = NEXT_TXN_ID + 1;\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "register_transaction"
+                    ],
+                    "calling_functions": [
+                        "open_txn",
+                        "register_transaction"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "register_auth_code",
+                "func_c_signature": "int register_auth_code(void)",
+                "decompiled_code": "int register_auth_code(void) {\n  int iVar1;\n  \n  iVar1 = NEXT_AUTH_CODE;\n  NEXT_AUTH_CODE = NEXT_AUTH_CODE + 1;\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "register_auth_code"
+                    ],
+                    "calling_functions": [
+                        "register_auth_code",
+                        "generate_new_init_and_init_resp"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_resp_structs",
+                "func_c_signature": "void init_resp_structs(void)",
+                "decompiled_code": "void init_resp_structs(void) {\n  undefined *puVar1;\n  undefined auStack_c [4];\n  \n  RESP_PAD = malloc(0xc);\n  RESP_PACKET = alloc_new_pkt();\n  puVar1 = auStack_c;\n  if (RESP_PACKET == 0) {\n    _terminate();\n    puVar1 = &stack0xffffffe4;\n  }\n  if (RESP_PAD == (void *)0x0) {\n    *(undefined4 *)(puVar1 + -0x10) = 10;\n    *(undefined4 *)(puVar1 + -0x14) = 0x11d09;\n    _terminate();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_resp_structs",
+                        "malloc",
+                        "alloc_new_pkt",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "init_resp_structs",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clear_gen_pkt",
+                "func_c_signature": "int clear_gen_pkt(int param_1)",
+                "decompiled_code": "int clear_gen_pkt(int param_1) {\n  int iVar1;\n  uint local_8;\n  \n  iVar1 = RESP_PACKET;\n  for (local_8 = 0; local_8 < param_1 + 0x10U; local_8 = local_8 + 1) {\n    *(undefined *)(iVar1 + local_8) = 0;\n  }\n  return RESP_PACKET;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clear_gen_pkt"
+                    ],
+                    "calling_functions": [
+                        "clear_gen_pkt",
+                        "create_basic_packet_head"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clear_pad",
+                "func_c_signature": "undefined4 * clear_pad(void)",
+                "decompiled_code": "undefined4 * clear_pad(void) {\n  *RESP_PAD = 0;\n  RESP_PAD[1] = 0;\n  RESP_PAD[2] = 0;\n  return RESP_PAD;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clear_pad"
+                    ],
+                    "calling_functions": [
+                        "clear_pad",
+                        "create_basic_response"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_basic_packet_head",
+                "func_c_signature": "undefined4 *\ncreate_basic_packet_head\n          (undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)",
+                "decompiled_code": "undefined4 *\ncreate_basic_packet_head\n          (undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4) {\n  undefined4 *puVar1;\n  \n  puVar1 = (undefined4 *)clear_gen_pkt(param_4);\n  if (puVar1 == (undefined4 *)0x0) {\n    ERRNO = 3;\n    puVar1 = (undefined4 *)0x0;\n  }\n  else {\n    *puVar1 = param_1;\n    puVar1[1] = param_2;\n    puVar1[3] = param_3;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_basic_packet_head",
+                        "clear_gen_pkt"
+                    ],
+                    "calling_functions": [
+                        "create_basic_packet_head",
+                        "create_basic_response",
+                        "create_auth_resp"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_basic_response",
+                "func_c_signature": "int * create_basic_response\n                (undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined param_4,\n                undefined param_5,undefined param_6,int param_7)",
+                "decompiled_code": "int * create_basic_response\n                (undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined param_4,\n                undefined param_5,undefined param_6,int param_7) {\n  int iVar1;\n  int *piVar2;\n  \n  iVar1 = create_basic_packet_head(param_1,param_2,param_3,param_7);\n  if (iVar1 == 0) {\n    piVar2 = (int *)0x0;\n  }\n  else {\n    piVar2 = (int *)clear_pad();\n    if (piVar2 == (int *)0x0) {\n      piVar2 = (int *)0x0;\n    }\n    else {\n      *(undefined *)(iVar1 + 8) = param_4;\n      *(undefined *)(iVar1 + 9) = param_5;\n      *(undefined *)(iVar1 + 10) = param_6;\n      if (param_7 == 0) {\n        piVar2[2] = 0;\n      }\n      else {\n        piVar2[2] = iVar1 + 0x10;\n      }\n      *piVar2 = iVar1;\n      piVar2[1] = param_7;\n    }\n  }\n  return piVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_basic_response",
+                        "create_basic_packet_head",
+                        "clear_pad"
+                    ],
+                    "calling_functions": [
+                        "create_basic_response",
+                        "generate_new_init_and_init_resp",
+                        "process_client_history",
+                        "process_client_balance",
+                        "process_client_refund_op",
+                        "process_client_recharge_op",
+                        "generate_error",
+                        "process_client_purchase_op",
+                        "create_auth_resp",
+                        "process_client_fin"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "generate_new_init_and_init_resp",
+                "func_c_signature": "undefined4 generate_new_init_and_init_resp(int *param_1)",
+                "decompiled_code": "undefined4 generate_new_init_and_init_resp(int *param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined4 uVar3;\n  int iVar4;\n  \n  iVar1 = *param_1;\n  iVar4 = param_1[2];\n  if (iVar4 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = register_card_id();\n    uVar3 = register_auth_code();\n    iVar4 = create_account(uVar2,uVar3,iVar4);\n    if (iVar4 == 0) {\n      iVar4 = get_account(uVar2,uVar3);\n      if (iVar4 == 0) {\n        uVar2 = 0;\n      }\n      else {\n        open_txn(iVar4,iVar1);\n        *(undefined4 *)*param_1 = uVar2;\n        *(undefined4 *)(*param_1 + 4) = uVar3;\n        iVar4 = add_transaction_log_entry(iVar4,param_1);\n        if (iVar4 == 0) {\n          uVar2 = 0;\n        }\n        else {\n          uVar2 = create_basic_response(uVar2,uVar3,*(undefined4 *)(iVar1 + 0xc),0,4,0,0);\n        }\n      }\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "generate_new_init_and_init_resp",
+                        "register_card_id",
+                        "register_auth_code",
+                        "create_account",
+                        "get_account",
+                        "open_txn",
+                        "add_transaction_log_entry",
+                        "create_basic_response"
+                    ],
+                    "calling_functions": [
+                        "generate_new_init_and_init_resp",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "error_out_and_free_txn",
+                "func_c_signature": "undefined4 error_out_and_free_txn(void *param_1,int param_2)",
+                "decompiled_code": "undefined4 error_out_and_free_txn(void *param_1,int param_2) {\n  if (param_2 != 0) {\n    ERRNO = param_2;\n  }\n  free(param_1);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "error_out_and_free_txn",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "error_out_and_free_txn",
+                        "process_client_recharge_op",
+                        "process_client_purchase_op"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_acct_txn_reg",
+                "func_c_signature": "int * get_acct_txn_reg(undefined4 param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "int * get_acct_txn_reg(undefined4 param_1,undefined4 param_2,undefined4 param_3) {\n  int iVar1;\n  int *piVar2;\n  int iVar3;\n  \n  iVar1 = get_account(param_1,param_2);\n  if (iVar1 == 0) {\n    ERRNO = 0xf;\n    piVar2 = (int *)0x0;\n  }\n  else {\n    iVar3 = get_transaction(iVar1,param_3);\n    if (iVar3 == 0) {\n      ERRNO = 0xf;\n      piVar2 = (int *)0x0;\n    }\n    else {\n      piVar2 = (int *)malloc(8);\n      if (piVar2 == (int *)0x0) {\n        ERRNO = 3;\n        piVar2 = (int *)0x0;\n      }\n      else {\n        *piVar2 = iVar1;\n        piVar2[1] = iVar3;\n      }\n    }\n  }\n  return piVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_acct_txn_reg",
+                        "get_account",
+                        "get_transaction",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "get_acct_txn_reg",
+                        "process_client_history",
+                        "process_client_balance",
+                        "process_client_refund_op",
+                        "process_client_recharge_op",
+                        "process_client_purchase_op"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "calc_payload_sz",
+                "func_c_signature": "undefined4 calc_payload_sz(int param_1)",
+                "decompiled_code": "undefined4 calc_payload_sz(int param_1) {\n  undefined4 uVar1;\n  \n  if ((*(char *)(param_1 + 8) == '\\x02') && (*(char *)(param_1 + 9) == '\\x02')) {\n    uVar1 = 4;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "calc_payload_sz"
+                    ],
+                    "calling_functions": [
+                        "calc_payload_sz"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_payload",
+                "func_c_signature": "int get_payload(int param_1)",
+                "decompiled_code": "int get_payload(int param_1) {\n  return param_1 + 0x10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_payload"
+                    ],
+                    "calling_functions": [
+                        "get_payload",
+                        "process_client_balance",
+                        "generate_error"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_client_history",
+                "func_c_signature": "int * process_client_history(int **param_1,int *param_2)",
+                "decompiled_code": "int * process_client_history(int **param_1,int *param_2) {\n  uint *puVar1;\n  int iVar2;\n  int iVar3;\n  uint *puVar4;\n  size_t __n;\n  undefined4 uVar5;\n  int iVar6;\n  undefined4 *puVar7;\n  int *piVar8;\n  int iVar9;\n  undefined4 uVar10;\n  int local_28;\n  int local_24;\n  uint local_20;\n  uint *local_1c;\n  int local_18;\n  uint local_14;\n  int local_10;\n  \n  uVar10 = 0x120c8;\n  piVar8 = *param_1;\n  puVar1 = (uint *)param_1[2];\n  iVar2 = *piVar8;\n  iVar9 = piVar8[1];\n  iVar3 = piVar8[3];\n  uVar5 = get_account(iVar2,iVar9);\n  iVar6 = add_transaction_log_entry(uVar5,param_1);\n  puVar7 = (undefined4 *)get_acct_txn_reg(iVar2,iVar9,iVar3,uVar10);\n  if (puVar7 == (undefined4 *)0x0) {\n    return (int *)0x0;\n  }\n  local_10 = 0;\n  local_14 = 0;\n  local_18 = transaction_iterator(*puVar7);\n  do {\n    if ((local_18 == 0) || (local_18 == 0)) break;\n    if (iVar2 == **(int **)(local_18 + 0xc)) {\n      local_10 = local_10 + *(int *)(local_18 + 8);\n      if (*puVar1 <= local_14) break;\n      local_14 = local_14 + 1;\n    }\n    local_18 = transaction_iterator(0);\n  } while( true );\n  piVar8 = (int *)create_basic_response(iVar2,iVar9,iVar3,2,3,0,local_14 * 0xc + local_10 + 4);\n  if (piVar8 == (int *)0x0) {\n    return (int *)0x0;\n  }\n  puVar4 = (uint *)piVar8[2];\n  *(undefined *)(*piVar8 + 9) = 3;\n  local_1c = puVar4 + 1;\n  local_20 = 0;\n  *(undefined4 *)(iVar6 + 0x10) = 2;\n  local_24 = 0;\n  local_28 = transaction_iterator(*puVar7);\n  do {\n    if ((local_28 == 0) || (local_28 == 0)) goto LAB_00012356;\n    if (iVar2 == **(int **)(local_28 + 0xc)) {\n      if (*puVar1 <= local_20) {\nLAB_00012356:\n        *param_2 = local_24 + 4;\n        piVar8[1] = local_24 + 4;\n        *puVar4 = local_14;\n        finalize_transaction(iVar6);\n        return piVar8;\n      }\n      *(undefined *)local_1c = *(undefined *)(*(int *)(local_28 + 0xc) + 9);\n      *(char *)((int)local_1c + 1) = (char)*(undefined4 *)(local_28 + 0x10);\n      *(undefined *)((int)local_1c + 2) = *(undefined *)(*(int *)(local_28 + 0xc) + 10);\n      local_1c[1] = **(uint **)(local_28 + 0xc);\n      local_1c[2] = *(uint *)(*(int *)(local_28 + 0xc) + 0xc);\n      __n = *(size_t *)(local_28 + 8);\n      memcpy(local_1c + 3,*(void **)(local_28 + 0x14),__n);\n      local_20 = local_20 + 1;\n      iVar9 = __n + 0xc;\n      local_24 = local_24 + iVar9;\n      local_1c = (uint *)((int)local_1c + iVar9);\n    }\n    local_28 = transaction_iterator(0);\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_client_history",
+                        "get_account",
+                        "add_transaction_log_entry",
+                        "get_acct_txn_reg",
+                        "transaction_iterator",
+                        "create_basic_response",
+                        "finalize_transaction",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "process_client_history",
+                        "ops_delegate"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_client_balance",
+                "func_c_signature": "undefined4 * process_client_balance(int *param_1)",
+                "decompiled_code": "undefined4 * process_client_balance(int *param_1) {\n  undefined4 uVar1;\n  undefined4 uVar2;\n  undefined4 uVar3;\n  int *__ptr;\n  undefined4 *puVar4;\n  undefined4 *puVar5;\n  \n  puVar5 = (undefined4 *)*param_1;\n  uVar1 = *puVar5;\n  uVar2 = puVar5[1];\n  uVar3 = puVar5[3];\n  __ptr = (int *)get_acct_txn_reg(uVar1,uVar2,uVar3);\n  if (__ptr == (int *)0x0) {\n    puVar4 = (undefined4 *)0x0;\n  }\n  else {\n    puVar4 = (undefined4 *)create_basic_response(uVar1,uVar2,uVar3,2,2,0,4);\n    puVar5 = (undefined4 *)get_payload(*puVar4);\n    if (puVar5 == (undefined4 *)0x0) {\n      ERRNO = 0x12;\n      puVar4 = (undefined4 *)0x0;\n    }\n    else {\n      *puVar5 = *(undefined4 *)(*__ptr + 0xc);\n      add_transaction_log_entry(*__ptr,puVar4);\n      free(__ptr);\n    }\n  }\n  return puVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_client_balance",
+                        "get_acct_txn_reg",
+                        "create_basic_response",
+                        "get_payload",
+                        "add_transaction_log_entry",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "process_client_balance",
+                        "ops_delegate"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_client_refund_op",
+                "func_c_signature": "undefined4 process_client_refund_op(int *param_1)",
+                "decompiled_code": "undefined4 process_client_refund_op(int *param_1) {\n  undefined4 *puVar1;\n  int *piVar2;\n  undefined4 uVar3;\n  undefined4 uVar4;\n  int *__ptr;\n  undefined4 uVar5;\n  int iVar6;\n  uint uVar7;\n  \n  puVar1 = (undefined4 *)*param_1;\n  piVar2 = (int *)param_1[2];\n  uVar5 = *puVar1;\n  uVar3 = puVar1[1];\n  uVar4 = puVar1[3];\n  __ptr = (int *)get_acct_txn_reg(uVar5,uVar3,uVar4);\n  if (__ptr == (int *)0x0) {\n    uVar5 = 0;\n  }\n  else {\n    iVar6 = get_transaction(*__ptr,piVar2[1]);\n    if (iVar6 == 0) {\n      ERRNO = 0xf;\n      uVar5 = 0;\n    }\n    else if (**(int **)(iVar6 + 0x14) == *piVar2) {\n      uVar7 = (*(int **)(iVar6 + 0x14))[1] + *(int *)(*__ptr + 0xc);\n      if (uVar7 < *(uint *)(*__ptr + 0xc)) {\n        ERRNO = 7;\n        uVar5 = 0;\n      }\n      else {\n        *(uint *)(*__ptr + 0xc) = uVar7;\n        add_transaction_log_entry(*__ptr,param_1);\n        remove_transaction_log_entry(*__ptr,iVar6);\n        free(__ptr);\n        uVar5 = create_basic_response(uVar5,uVar3,uVar4,2,5,0,0);\n      }\n    }\n    else {\n      ERRNO = 0xf;\n      uVar5 = 0;\n    }\n  }\n  return uVar5;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_client_refund_op",
+                        "get_acct_txn_reg",
+                        "get_transaction",
+                        "add_transaction_log_entry",
+                        "remove_transaction_log_entry",
+                        "free",
+                        "create_basic_response"
+                    ],
+                    "calling_functions": [
+                        "process_client_refund_op",
+                        "ops_delegate"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_client_recharge_op",
+                "func_c_signature": "undefined4 process_client_recharge_op(int *param_1)",
+                "decompiled_code": "undefined4 process_client_recharge_op(int *param_1) {\n  int *piVar1;\n  undefined4 *puVar2;\n  undefined4 uVar3;\n  undefined4 uVar4;\n  int *__ptr;\n  undefined4 uVar5;\n  uint uVar6;\n  \n  piVar1 = (int *)param_1[2];\n  puVar2 = (undefined4 *)*param_1;\n  uVar5 = *puVar2;\n  uVar3 = puVar2[1];\n  uVar4 = puVar2[3];\n  __ptr = (int *)get_acct_txn_reg(uVar5,uVar3,uVar4,0x125da);\n  if (__ptr == (int *)0x0) {\n    uVar5 = 0;\n  }\n  else if (*(byte *)(piVar1 + 2) < 7) {\n    uVar6 = *(int *)(*__ptr + 0xc) + *piVar1;\n    if (uVar6 < *(uint *)(*__ptr + 0xc)) {\n      uVar5 = error_out_and_free_txn(__ptr,6);\n    }\n    else {\n      *(uint *)(*__ptr + 0xc) = uVar6;\n      add_transaction_log_entry(*__ptr,param_1);\n      free(__ptr);\n      uVar5 = create_basic_response(uVar5,uVar3,uVar4,2,1,0,0);\n    }\n  }\n  else {\n    uVar5 = error_out_and_free_txn(__ptr,0xb);\n  }\n  return uVar5;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_client_recharge_op",
+                        "get_acct_txn_reg",
+                        "error_out_and_free_txn",
+                        "add_transaction_log_entry",
+                        "free",
+                        "create_basic_response"
+                    ],
+                    "calling_functions": [
+                        "process_client_recharge_op",
+                        "ops_delegate"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "generate_error",
+                "func_c_signature": "undefined4 * generate_error(undefined4 *param_1)",
+                "decompiled_code": "undefined4 * generate_error(undefined4 *param_1) {\n  byte bVar1;\n  byte bVar2;\n  undefined4 uVar3;\n  size_t *psVar4;\n  size_t **ppsVar5;\n  undefined4 auStack_3c [3];\n  undefined4 uStack_30;\n  size_t *local_2c;\n  undefined4 local_28;\n  undefined4 *local_24;\n  int local_20;\n  size_t local_1c;\n  undefined4 local_18;\n  undefined4 local_14;\n  undefined4 local_10;\n  \n  ppsVar5 = &local_2c;\n  uStack_30 = 0x126da;\n  local_10 = *param_1;\n  local_14 = param_1[1];\n  local_18 = param_1[3];\n  if (ERRNO == 3) {\n    ppsVar5 = (size_t **)auStack_3c;\n    auStack_3c[0] = 1;\n    _terminate();\n  }\n  *(undefined4 *)((int)ppsVar5 + -0x10) = *(undefined4 *)(ERROR_MSGS + ERRNO * 4);\n  *(undefined4 *)((int)ppsVar5 + -0x14) = 0x12729;\n  local_1c = strlen(*(char **)((int)ppsVar5 + -0x10));\n  local_20 = local_1c + 4;\n  bVar1 = *(byte *)((int)param_1 + 9);\n  bVar2 = *(byte *)(param_1 + 2);\n  *(int *)((int)ppsVar5 + -8) = local_20;\n  *(int *)((int)ppsVar5 + -0xc) = ERRNO;\n  *(uint *)((int)ppsVar5 + -0x10) = (uint)bVar1;\n  *(uint *)((int)ppsVar5 + -0x14) = (uint)bVar2;\n  *(undefined4 *)((int)ppsVar5 + -0x18) = local_18;\n  *(undefined4 *)((int)ppsVar5 + -0x1c) = local_14;\n  *(undefined4 *)((int)ppsVar5 + -0x20) = local_10;\n  *(undefined4 *)((int)ppsVar5 + -0x24) = 0x1276b;\n  local_24 = (undefined4 *)create_basic_response();\n  local_28 = *local_24;\n  *(undefined4 *)((int)ppsVar5 + -0x10) = local_28;\n  *(undefined4 *)((int)ppsVar5 + -0x14) = 0x12784;\n  psVar4 = (size_t *)get_payload();\n  local_2c = psVar4;\n  *psVar4 = local_1c;\n  uVar3 = *(undefined4 *)(ERROR_MSGS + ERRNO * 4);\n  *(size_t *)((int)ppsVar5 + -8) = local_1c;\n  *(undefined4 *)((int)ppsVar5 + -0xc) = uVar3;\n  *(size_t **)((int)ppsVar5 + -0x10) = psVar4 + 1;\n  *(undefined4 *)((int)ppsVar5 + -0x14) = 0x127b4;\n  memcpy(*(void **)((int)ppsVar5 + -0x10),*(void **)((int)ppsVar5 + -0xc),\n         *(size_t *)((int)ppsVar5 + -8));\n  return local_24;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "generate_error",
+                        "_terminate",
+                        "strlen",
+                        "create_basic_response",
+                        "get_payload",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "generate_error",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_client_purchase_op",
+                "func_c_signature": "undefined4 process_client_purchase_op(int *param_1)",
+                "decompiled_code": "undefined4 process_client_purchase_op(int *param_1) {\n  undefined4 *puVar1;\n  int iVar2;\n  undefined4 uVar3;\n  undefined4 uVar4;\n  int *__ptr;\n  undefined4 uVar5;\n  \n  puVar1 = (undefined4 *)*param_1;\n  iVar2 = param_1[2];\n  uVar5 = *puVar1;\n  uVar3 = puVar1[1];\n  uVar4 = puVar1[3];\n  __ptr = (int *)get_acct_txn_reg(uVar5,uVar3,uVar4,0x127cb);\n  if (__ptr == (int *)0x0) {\n    uVar5 = 0;\n  }\n  else if (*(byte *)(iVar2 + 0xc) < 7) {\n    if (*(uint *)(*__ptr + 0xc) < *(uint *)(iVar2 + 4)) {\n      uVar5 = error_out_and_free_txn(__ptr,5);\n    }\n    else {\n      *(int *)(*__ptr + 0xc) = *(int *)(*__ptr + 0xc) - *(int *)(iVar2 + 4);\n      add_transaction_log_entry(*__ptr,param_1);\n      free(__ptr);\n      uVar5 = create_basic_response(uVar5,uVar3,uVar4,2,0,0,0);\n    }\n  }\n  else {\n    uVar5 = error_out_and_free_txn(__ptr,0xb);\n  }\n  return uVar5;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_client_purchase_op",
+                        "get_acct_txn_reg",
+                        "error_out_and_free_txn",
+                        "add_transaction_log_entry",
+                        "free",
+                        "create_basic_response"
+                    ],
+                    "calling_functions": [
+                        "process_client_purchase_op",
+                        "ops_delegate"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_auth_resp",
+                "func_c_signature": "void create_auth_resp(undefined4 param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void create_auth_resp(undefined4 param_1,undefined4 param_2,undefined4 param_3) {\n  int iVar1;\n  \n  iVar1 = create_basic_packet_head(param_1,param_2,param_3,0);\n  *(undefined *)(iVar1 + 8) = 1;\n  create_basic_response(param_1,param_2,param_3,1,0,0,0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_auth_resp",
+                        "create_basic_packet_head",
+                        "create_basic_response"
+                    ],
+                    "calling_functions": [
+                        "create_auth_resp",
+                        "process_client_auth"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_client_auth",
+                "func_c_signature": "int * process_client_auth(int *param_1)",
+                "decompiled_code": "int * process_client_auth(int *param_1) {\n  undefined4 *puVar1;\n  undefined4 uVar2;\n  undefined4 uVar3;\n  undefined4 uVar4;\n  int iVar5;\n  int *piVar6;\n  \n  puVar1 = (undefined4 *)*param_1;\n  uVar2 = *puVar1;\n  uVar3 = puVar1[1];\n  iVar5 = check_auth_packet(puVar1);\n  if (iVar5 == 0) {\n    piVar6 = (int *)0x0;\n  }\n  else {\n    iVar5 = open_txn(iVar5,puVar1);\n    if (iVar5 == 0) {\n      ERRNO = 0xc;\n      piVar6 = (int *)0x0;\n    }\n    else {\n      uVar4 = *(undefined4 *)(iVar5 + 4);\n      puVar1[3] = uVar4;\n      piVar6 = (int *)create_auth_resp(uVar2,uVar3,uVar4);\n      *(undefined *)(*piVar6 + 9) = *(undefined *)((int)puVar1 + 9);\n    }\n  }\n  return piVar6;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_client_auth",
+                        "check_auth_packet",
+                        "open_txn",
+                        "create_auth_resp"
+                    ],
+                    "calling_functions": [
+                        "process_client_auth",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_client_fin",
+                "func_c_signature": "undefined4 process_client_fin(int *param_1)",
+                "decompiled_code": "undefined4 process_client_fin(int *param_1) {\n  undefined4 *puVar1;\n  undefined4 uVar2;\n  undefined4 uVar3;\n  int iVar4;\n  undefined4 uVar5;\n  \n  puVar1 = (undefined4 *)*param_1;\n  uVar5 = *puVar1;\n  uVar2 = puVar1[1];\n  uVar3 = puVar1[3];\n  iVar4 = get_account(uVar5,uVar2);\n  if (iVar4 == 0) {\n    ERRNO = 0xf;\n    uVar5 = 0;\n  }\n  else {\n    iVar4 = get_transaction(iVar4,uVar3);\n    if (iVar4 == 0) {\n      uVar5 = 0;\n    }\n    else {\n      iVar4 = finalize_transaction(iVar4);\n      if (iVar4 == 0) {\n        uVar5 = create_basic_response(uVar5,uVar2,uVar3,3,*(undefined *)((int)puVar1 + 9),0,0);\n      }\n      else {\n        uVar5 = 0;\n      }\n    }\n  }\n  return uVar5;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_client_fin",
+                        "get_account",
+                        "get_transaction",
+                        "finalize_transaction",
+                        "create_basic_response"
+                    ],
+                    "calling_functions": [
+                        "process_client_fin",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "init_recv_structs",
+                "func_c_signature": "void init_recv_structs(void)",
+                "decompiled_code": "void init_recv_structs(void) {\n  PAD = (void **)malloc(0xc);\n  BACKING_DATA = malloc(0x420);\n  *PAD = BACKING_DATA;\n  PAD[2] = (void *)((int)*PAD + 0x10);\n  PAD[1] = (void *)0x0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_recv_structs",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "init_recv_structs",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "recv_all",
+                "func_c_signature": "int recv_all(int param_1,uint param_2,uint *param_3)",
+                "decompiled_code": "int recv_all(int param_1,uint param_2,uint *param_3) {\n  int iVar1;\n  int iVar2;\n  undefined4 *puVar3;\n  undefined4 auStack_2c [3];\n  undefined4 uStack_20;\n  undefined auStack_1c [4];\n  int local_18;\n  uint local_14;\n  int local_10;\n  \n  puVar3 = (undefined4 *)auStack_1c;\n  uStack_20 = 0x12b0c;\n  local_10 = 6;\n  if (param_3 == (uint *)0x0) {\n    puVar3 = auStack_2c;\n    auStack_2c[0] = 10;\n    _terminate();\n  }\n  local_18 = 0;\n  for (local_14 = 0; local_14 < param_2; local_14 = local_14 + local_18) {\n    iVar1 = param_2 - local_14;\n    iVar2 = param_1 + local_14;\n    *(int **)((int)puVar3 + -4) = &local_18;\n    *(int *)((int)puVar3 + -8) = iVar1;\n    *(int *)((int)puVar3 + -0xc) = iVar2;\n    *(undefined4 *)((int)puVar3 + -0x10) = 0;\n    *(undefined4 *)((int)puVar3 + -0x14) = 0x12b54;\n    local_10 = receive();\n    if ((local_18 == 0) || (local_10 != 0)) break;\n  }\n  *param_3 = local_14;\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recv_all",
+                        "_terminate",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "recv_all",
+                        "recv_pack_and_data"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "recv_pack_and_data",
+                "func_c_signature": "int * recv_pack_and_data(void)",
+                "decompiled_code": "int * recv_pack_and_data(void) {\n  int iVar1;\n  int *piVar2;\n  int iStack_5c;\n  int iStack_58;\n  int *piStack_54;\n  undefined4 uStack_50;\n  undefined auStack_4c [8];\n  int local_44;\n  uint local_40;\n  int local_3c;\n  int local_38;\n  int local_34;\n  int local_30;\n  undefined4 local_2c;\n  uint local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  uStack_50 = 0x12b97;\n  iStack_5c = *PAD;\n  local_14 = 0x10;\n  local_3c = 0;\n  local_40 = 0;\n  piStack_54 = &local_3c;\n  iStack_58 = 0x10;\n  local_10 = iStack_5c;\n  local_18 = recv_all();\n  if ((local_18 == 0) && (local_14 == local_3c)) {\n    PAD[1] = 0;\n    PAD[2] = 0;\n    iStack_58 = 1;\n    iStack_5c = local_10;\n    iStack_58 = get_size_of_data_for_pkt_head_only();\n    local_44 = 0;\n    if (iStack_58 != 0) {\n      PAD[2] = *PAD + 0x10;\n      iStack_5c = PAD[2];\n      piStack_54 = &local_44;\n      local_20 = iStack_5c;\n      local_1c = iStack_58;\n      local_24 = recv_all();\n      if ((local_24 != 0) || (local_1c != local_44)) {\n        return (int *)0x0;\n      }\n      piVar2 = (int *)auStack_4c;\n      if (local_1c != local_44) {\n        iStack_5c = 10;\n        _terminate();\n        piVar2 = &iStack_5c;\n      }\n      if ((*(char *)(local_10 + 8) == '\\x02') &&\n         ((*(char *)(local_10 + 9) == '\\0' || (*(char *)(local_10 + 9) == '\\x01')))) {\n        local_2c = 0;\n        if (*(char *)(local_10 + 9) == '\\0') {\n          local_38 = local_20;\n          local_28 = (uint)*(byte *)(local_20 + 0xd);\n          *(undefined4 *)((int)piVar2 + -0xc) = 1;\n          *(int *)((int)piVar2 + -0x10) = local_10;\n          *(undefined4 *)((int)piVar2 + -0x14) = 0x12d08;\n          local_34 = get_size_of_data_for_pkt_head_only();\n          local_34 = local_34 + local_20;\n          *(uint **)((int)piVar2 + -8) = &local_40;\n          *(uint *)((int)piVar2 + -0xc) = local_28;\n          *(int *)((int)piVar2 + -0x10) = local_34;\n          *(undefined4 *)((int)piVar2 + -0x14) = 0x12d25;\n          iVar1 = recv_all();\n          if ((iVar1 != 0) || (local_28 != local_40)) {\n            return (int *)0x0;\n          }\n        }\n        else if (*(char *)(local_10 + 9) == '\\x01') {\n          local_30 = local_20;\n          local_28 = (uint)*(byte *)(local_20 + 9);\n          *(undefined4 *)((int)piVar2 + -0xc) = 1;\n          *(int *)((int)piVar2 + -0x10) = local_10;\n          *(undefined4 *)((int)piVar2 + -0x14) = 0x12d60;\n          local_34 = get_size_of_data_for_pkt_head_only();\n          local_34 = local_34 + local_20;\n          *(uint **)((int)piVar2 + -8) = &local_40;\n          *(uint *)((int)piVar2 + -0xc) = local_28;\n          *(int *)((int)piVar2 + -0x10) = local_34;\n          *(undefined4 *)((int)piVar2 + -0x14) = 0x12d7d;\n          iVar1 = recv_all();\n          if ((iVar1 != 0) || (local_28 != local_40)) {\n            return (int *)0x0;\n          }\n        }\n      }\n    }\n    PAD[1] = local_40 + local_44;\n    piVar2 = PAD;\n  }\n  else {\n    piVar2 = (int *)0x0;\n  }\n  return piVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recv_pack_and_data",
+                        "recv_all",
+                        "get_size_of_data_for_pkt_head_only",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "recv_pack_and_data",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ops_delegate",
+                "func_c_signature": "undefined4 ops_delegate(int *param_1,undefined4 param_2)",
+                "decompiled_code": "undefined4 ops_delegate(int *param_1,undefined4 param_2) {\n  undefined4 uVar1;\n  \n  switch(*(undefined *)(*param_1 + 9)) {\n  case 0:\n    uVar1 = process_client_purchase_op(param_1);\n    break;\n  case 1:\n    uVar1 = process_client_recharge_op(param_1);\n    break;\n  case 2:\n    uVar1 = process_client_balance(param_1);\n    break;\n  case 3:\n    uVar1 = process_client_history(param_1,param_2);\n    break;\n  case 4:\n    uVar1 = 0;\n    break;\n  case 5:\n    uVar1 = process_client_refund_op(param_1);\n    break;\n  default:\n    ERRNO = 9;\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ops_delegate",
+                        "process_client_purchase_op",
+                        "process_client_recharge_op",
+                        "process_client_balance",
+                        "process_client_history",
+                        "process_client_refund_op"
+                    ],
+                    "calling_functions": [
+                        "ops_delegate",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free_pad",
+                "func_c_signature": "void free_pad(void **param_1)",
+                "decompiled_code": "void free_pad(void **param_1) {\n  void *__ptr;\n  void *__ptr_00;\n  \n  __ptr = *param_1;\n  __ptr_00 = param_1[2];\n  if ((int)__ptr_00 - (int)__ptr == 0x10) {\n    free(__ptr);\n  }\n  else {\n    free(__ptr);\n    if (__ptr_00 != (void *)0x0) {\n      free(__ptr_00);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_pad",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "free_pad"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(void)",
+                "decompiled_code": "void main(void) {\n  byte bVar1;\n  undefined4 uVar2;\n  undefined *puVar3;\n  undefined *puVar4;\n  undefined *puVar5;\n  undefined auStack_30 [12];\n  undefined4 local_24;\n  int local_20;\n  int *local_1c;\n  undefined4 *local_18;\n  int local_14;\n  undefined *puStack_10;\n  \n  puStack_10 = &stack0x00000004;\n  puVar3 = auStack_30;\n  malloc_init();\n  init_recv_structs();\n  init_resp_structs();\n  local_14 = 0;\n  do {\n    *(undefined4 *)(puVar3 + -4) = 0x12f09;\n    local_1c = (int *)recv_pack_and_data();\n    puVar4 = puVar3;\n    if (local_1c == (int *)0x0) {\n      puVar4 = puVar3 + -0x10;\n      *(undefined4 *)(puVar3 + -0x10) = 1;\n      *(undefined4 *)(puVar3 + -0x14) = 0x12f1c;\n      _terminate();\n    }\n    local_20 = *local_1c;\n    local_18 = (undefined4 *)0x0;\n    local_24 = 0;\n    if ((local_1c == (int *)0x0) || (puVar5 = puVar4, local_20 == 0)) {\n      puVar5 = puVar4 + -0x10;\n      *(undefined4 *)(puVar4 + -0x10) = 1;\n      *(undefined4 *)(puVar4 + -0x14) = 0x12f48;\n      _terminate();\n    }\n    bVar1 = *(byte *)(local_20 + 8);\n    if (bVar1 == 3) {\n      *(int **)(puVar5 + -0x10) = local_1c;\n      *(undefined4 *)(puVar5 + -0x14) = 0x12fbd;\n      local_18 = (undefined4 *)process_client_fin();\n    }\n    else if (bVar1 < 4) {\n      if (bVar1 == 2) {\n        *(undefined4 **)(puVar5 + -0xc) = &local_24;\n        *(int **)(puVar5 + -0x10) = local_1c;\n        *(undefined4 *)(puVar5 + -0x14) = 0x12faa;\n        local_18 = (undefined4 *)ops_delegate();\n      }\n      else if (bVar1 < 3) {\n        if (bVar1 == 0) {\n          local_14 = local_14 + 1;\n          *(int **)(puVar5 + -0x10) = local_1c;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12f80;\n          local_18 = (undefined4 *)generate_new_init_and_init_resp();\n        }\n        else if (bVar1 == 1) {\n          *(int **)(puVar5 + -0x10) = local_1c;\n          *(undefined4 *)(puVar5 + -0x14) = 0x12f93;\n          local_18 = (undefined4 *)process_client_auth();\n        }\n      }\n    }\n    if (local_18 == (undefined4 *)0x0) {\n      *(int *)(puVar5 + -0x10) = local_20;\n      *(undefined4 *)(puVar5 + -0x14) = 0x12fd7;\n      local_18 = (undefined4 *)generate_error();\n    }\n    puVar3 = puVar5;\n    if (local_18 == (undefined4 *)0x0) {\n      puVar3 = puVar5 + -0x10;\n      *(undefined4 *)(puVar5 + -0x10) = 1;\n      *(undefined4 *)(puVar5 + -0x14) = 0x12fed;\n      _terminate();\n    }\n    uVar2 = *local_18;\n    *(undefined4 *)(puVar3 + -8) = 0x10;\n    *(undefined4 *)(puVar3 + -0xc) = uVar2;\n    *(undefined4 *)(puVar3 + -0x10) = 1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x12fff;\n    transmit_all();\n    if (local_18[1] != 0) {\n      uVar2 = local_18[2];\n      *(undefined4 *)(puVar3 + -8) = local_18[1];\n      *(undefined4 *)(puVar3 + -0xc) = uVar2;\n      *(undefined4 *)(puVar3 + -0x10) = 1;\n      *(undefined4 *)(puVar3 + -0x14) = 0x13024;\n      transmit_all();\n    }\n    local_24 = 0;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "malloc_init",
+                        "init_recv_structs",
+                        "init_resp_structs",
+                        "recv_pack_and_data",
+                        "_terminate",
+                        "process_client_fin",
+                        "ops_delegate",
+                        "generate_new_init_and_init_resp",
+                        "process_client_auth",
+                        "generate_error",
+                        "transmit_all"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00014_decompiled.c"
+                }
+            }
+        ]
+    }
+}

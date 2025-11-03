@@ -1,0 +1,150 @@
+{
+    "file": "fold",
+    "decompiled_code": {
+        "fold.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [FILE]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"Wrap input lines in each FILE, writing to standard output.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_stdin_note();\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -b, --bytes         count bytes rather than columns\\n  -c, --characters    count characters rather than columns\\n  -s, --spaces        break at spaces\\n  -w, --width=WIDTH   use WIDTH columns instead of 80\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(&DAT_001812d9);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_stdin_note",
+                        "emit_mandatory_arg_note",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "fold_decompiled.c"
+                }
+            },
+            {
+                "func_name": "adjust_column",
+                "func_c_signature": "ulong adjust_column(ulong param_1,ulong param_2)",
+                "decompiled_code": "ulong adjust_column(ulong param_1,ulong param_2) {\n  int local_28;\n  ulong local_20;\n  \n  if (counting_mode == 1) {\n    local_20 = param_1 + (param_2 >> 0x28 & 0xff);\n  }\n  else {\n    local_28 = (int)param_2;\n    if (local_28 == 8) {\n      local_20 = param_1;\n      if (param_1 != 0) {\n        local_20 = param_1 - (long)last_character_width;\n      }\n    }\n    else if (local_28 == 0xd) {\n      local_20 = 0;\n    }\n    else if (local_28 == 9) {\n      local_20 = (param_1 & 0xfffffffffffffff8) + 8;\n    }\n    else {\n      if (counting_mode == 2) {\n        last_character_width = 1;\n      }\n      else {\n        last_character_width = c32width(param_2 & 0xffffffff);\n        if (last_character_width < 0) {\n          last_character_width = 1;\n        }\n      }\n      local_20 = param_1 + (long)last_character_width;\n    }\n  }\n  return local_20;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "adjust_column",
+                        "c32width"
+                    ],
+                    "calling_functions": [
+                        "adjust_column",
+                        "fold_file"
+                    ],
+                    "defined_in_file": "fold_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write_out",
+                "func_c_signature": "void write_out(void *param_1,size_t param_2,char param_3)",
+                "decompiled_code": "void write_out(void *param_1,size_t param_2,char param_3) {\n  int iVar1;\n  size_t sVar2;\n  \n  sVar2 = fwrite_unlocked(param_1,1,param_2,_stdout);\n  if (param_2 == sVar2) {\n    if (param_3 == '\\0') {\n      return;\n    }\n    iVar1 = putchar_unlocked(10);\n    if (-1 < iVar1) {\n      return;\n    }\n  }\n  write_error();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_out",
+                        "fwrite_unlocked",
+                        "putchar_unlocked",
+                        "write_error"
+                    ],
+                    "calling_functions": [
+                        "write_out",
+                        "fold_file"
+                    ],
+                    "defined_in_file": "fold_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fold_file",
+                "func_c_signature": "undefined8 fold_file(undefined8 param_1,ulong param_2)",
+                "decompiled_code": "undefined8 fold_file(undefined8 param_1,ulong param_2) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  ulong uVar5;\n  void *pvVar6;\n  long in_FS_OFFSET;\n  int local_c0;\n  uint local_bc;\n  FILE *local_a8;\n  ulong local_a0;\n  undefined1 *local_98;\n  undefined1 *local_90;\n  undefined1 *local_88;\n  undefined1 *local_80;\n  int local_58;\n  byte bStack_53;\n  byte bStack_4b;\n  undefined local_48 [40];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_a0 = 0;\n  local_98 = (undefined1 *)0x0;\n  cVar1 = streq(param_1,&DAT_001812de);\n  if (cVar1 == '\\0') {\n    local_a8 = (FILE *)rpl_fopen(param_1,&DAT_001812e0);\n  }\n  else {\n    local_a8 = _stdin;\n    have_read_stdin = 1;\n  }\n  if (local_a8 == (FILE *)0x0) {\n    uVar3 = quotearg_n_style_colon(0,3,param_1);\n    piVar4 = __errno_location();\n    error(0,*piVar4,&DAT_001812e2,uVar3);\n    uVar3 = 0;\n  }\n  else {\n    fadvise(local_a8,2);\n    mbbuf_init(local_48,line_in_1,0x40000,local_a8);\nLAB_00100a2b:\n    uVar3 = mbbuf_get_char(local_48);\n    local_58 = (int)uVar3;\n    if (local_58 != -1) {\n      if (local_58 == 10) {\n        write_out(line_out_0,local_98,1);\n        local_98 = (undefined1 *)0x0;\n        local_a0 = 0;\n      }\n      else {\n        while( true ) {\n          local_a0 = adjust_column(local_a0,uVar3);\n          bStack_53 = (byte)((ulong)uVar3 >> 0x28);\n          if (local_a0 <= param_2) break;\n          if (break_spaces == '\\0') {\nLAB_0010091a:\n            if (local_98 == (undefined1 *)0x0) {\n              pvVar6 = (void *)mbbuf_char_offset(local_48,uVar3);\n              memcpy(line_out_0,pvVar6,(ulong)bStack_53);\n              local_98 = (undefined1 *)(ulong)bStack_53;\n              goto LAB_00100a2b;\n            }\n            write_out(line_out_0,local_98,1);\n            local_98 = (undefined1 *)0x0;\n            local_a0 = 0;\n          }\n          else {\n            local_bc = 0;\n            local_90 = local_98;\n            for (local_88 = line_out_0; local_88 < line_out_0 + (long)local_98;\n                local_88 = local_88 + (uVar5 >> 0x28 & 0xff)) {\n              uVar5 = mcel_scan(local_88,line_out_0 + (long)local_98);\n              iVar2 = c32isblank(uVar5 & 0xffffffff);\n              if ((iVar2 != 0) && (iVar2 = c32isnbspace(uVar5 & 0xffffffff), iVar2 == 0)) {\n                bStack_4b = (byte)(uVar5 >> 0x28);\n                local_bc = (uint)bStack_4b;\n                local_90 = local_88 + -0x140ee0;\n              }\n            }\n            if (local_bc == 0) goto LAB_0010091a;\n            local_90 = local_90 + (int)local_bc;\n            write_out(line_out_0,local_90,1);\n            memmove(line_out_0,line_out_0 + (long)local_90,(long)local_98 - (long)local_90);\n            local_98 = local_98 + -(long)local_90;\n            local_a0 = 0;\n            for (local_80 = line_out_0; local_80 < line_out_0 + (long)local_98;\n                local_80 = local_80 + (uVar5 >> 0x28 & 0xff)) {\n              uVar5 = mcel_scan(local_80,line_out_0 + (long)local_98);\n              local_a0 = adjust_column(local_a0,uVar5);\n            }\n          }\n        }\n        if ((undefined1 *)0x3ffff < local_98 + bStack_53) {\n          write_out(line_out_0,local_98,0);\n          local_98 = (undefined1 *)0x0;\n        }\n        pvVar6 = (void *)mbbuf_char_offset(local_48,uVar3);\n        memcpy(line_out_0 + (long)local_98,pvVar6,(ulong)bStack_53);\n        local_98 = local_98 + bStack_53;\n      }\n      goto LAB_00100a2b;\n    }\n    piVar4 = __errno_location();\n    local_c0 = *piVar4;\n    iVar2 = ferror_unlocked(local_a8);\n    if (iVar2 == 0) {\n      local_c0 = 0;\n    }\n    if (local_98 != (undefined1 *)0x0) {\n      write_out(line_out_0,local_98,0);\n    }\n    cVar1 = streq(param_1,&DAT_001812de);\n    if (cVar1 == '\\0') {\n      iVar2 = rpl_fclose(local_a8);\n      if ((iVar2 != 0) && (local_c0 == 0)) {\n        piVar4 = __errno_location();\n        local_c0 = *piVar4;\n      }\n    }\n    else {\n      clearerr_unlocked(local_a8);\n    }\n    if (local_c0 == 0) {\n      uVar3 = 1;\n    }\n    else {\n      uVar3 = quotearg_n_style_colon(0,3,param_1);\n      error(0,local_c0,&DAT_001812e2,uVar3);\n      uVar3 = 0;\n    }\n  }\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return uVar3;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fold_file",
+                        "streq",
+                        "rpl_fopen",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "fadvise",
+                        "mbbuf_init",
+                        "mbbuf_get_char",
+                        "write_out",
+                        "adjust_column",
+                        "mbbuf_char_offset",
+                        "memcpy",
+                        "mcel_scan",
+                        "c32isblank",
+                        "c32isnbspace",
+                        "memmove",
+                        "ferror_unlocked",
+                        "rpl_fclose",
+                        "clearerr_unlocked",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "fold_file",
+                        "main"
+                    ],
+                    "defined_in_file": "fold_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  byte bVar1;\n  int iVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  long in_FS_OFFSET;\n  byte local_39;\n  int local_38;\n  undefined8 local_28;\n  undefined local_12;\n  undefined local_11;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_28 = 0x50;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  have_read_stdin = '\\0';\n  break_spaces = 0;\nLAB_00100da1:\n  while( true ) {\n    iVar2 = getopt_long(param_1,param_2,shortopts,longopts,0);\n    if (iVar2 == -1) {\n      if (param_1 == _optind) {\n        local_39 = fold_file(&DAT_001812de,local_28);\n      }\n      else {\n        local_39 = true;\n        for (local_38 = _optind; local_38 < param_1; local_38 = local_38 + 1) {\n          bVar1 = fold_file(param_2[local_38],local_28);\n          local_39 = (bVar1 & local_39) != 0;\n        }\n      }\n      if ((have_read_stdin != '\\0') && (iVar2 = rpl_fclose(_stdin), iVar2 == -1)) {\n        piVar4 = __errno_location();\n        error(1,*piVar4,&DAT_001812de);\n      }\n      if (local_10 == *(long *)(in_FS_OFFSET + 0x28)) {\n        return local_39 ^ 1;\n      }\n                    /* WARNING: Subroutine does not return */\n      __stack_chk_fail();\n    }\n    if (iVar2 != 0x77) break;\nLAB_00100ce8:\n    uVar3 = gettext(\"invalid number of columns\");\n    local_28 = xnumtoumax(_optarg,10,1,0xfffffffffffffff6,&DAT_0018106c,uVar3,0,0xc);\n  }\n  if (iVar2 < 0x78) {\n    if (iVar2 == 0x73) {\n      break_spaces = 1;\n      goto LAB_00100da1;\n    }\n    if (0x73 < iVar2) goto LAB_00100d97;\n    if (iVar2 == 99) {\n      counting_mode = 2;\n      goto LAB_00100da1;\n    }\n    if (iVar2 < 100) {\n      if (iVar2 == 0x62) {\n        counting_mode = 1;\n        goto LAB_00100da1;\n      }\n      if ((iVar2 < 99) && (iVar2 < 0x3a)) {\n        if (0x2f < iVar2) {\n          if (_optarg == (undefined *)0x0) {\n            local_12 = (undefined)iVar2;\n            local_11 = 0;\n            _optarg = &local_12;\n          }\n          else {\n            _optarg = _optarg + -1;\n          }\n          goto LAB_00100ce8;\n        }\n        if (iVar2 == -0x83) {\nLAB_00100d3c:\n          uVar3 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n          version_etc(_stdout,&DAT_001812d9,\"GNU coreutils\",_Version,uVar3,0);\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (iVar2 == -0x82) {\n          usage(0);\n          goto LAB_00100d3c;\n        }\n      }\n    }\n  }\nLAB_00100d97:\n  usage(1);\n  goto LAB_00100da1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "fold_file",
+                        "rpl_fclose",
+                        "__errno_location",
+                        "error",
+                        "__stack_chk_fail",
+                        "gettext",
+                        "xnumtoumax",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "fold_decompiled.c"
+                }
+            }
+        ]
+    }
+}

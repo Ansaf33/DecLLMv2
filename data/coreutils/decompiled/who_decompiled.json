@@ -1,0 +1,483 @@
+{
+    "file": "who",
+    "decompiled_code": {
+        "who.c": [
+            {
+                "func_name": "idle_string",
+                "func_c_signature": "char * idle_string(long param_1,long param_2)",
+                "decompiled_code": "char * idle_string(long param_1,long param_2) {\n  long lVar1;\n  int iVar2;\n  char *pcVar3;\n  long in_FS_OFFSET;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  if (now_9 == -0x8000000000000000) {\n    rpl_time(&now_9);\n  }\n  if ((((param_1 <= param_2) || (now_9 < param_1)) ||\n      (iVar2 = (int)(now_9 - param_1), now_9 - param_1 != (long)iVar2 || SBORROW8(now_9,param_1)))\n     || (0x1517f < iVar2)) {\n    pcVar3 = (char *)gettext(\" old \");\n  }\n  else if (iVar2 < 0x3c) {\n    pcVar3 = \"  .  \";\n  }\n  else {\n    sprintf((char *)&idle_hhmm_8,\"%02d:%02d\",(ulong)(uint)(iVar2 / 0xe10),\n            (ulong)(uint)((iVar2 % 0xe10) / 0x3c));\n    pcVar3 = (char *)&idle_hhmm_8;\n  }\n  if (lVar1 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return pcVar3;\n}",
+                "globals": [],
+                "externs": [
+                    "SBORROW8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "idle_string",
+                        "rpl_time",
+                        "SBORROW8",
+                        "gettext",
+                        "sprintf",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "idle_string",
+                        "print_user"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "time_string",
+                "func_c_signature": "undefined1 * time_string(long param_1)",
+                "decompiled_code": "undefined1 * time_string(long param_1) {\n  tm *__tp;\n  undefined1 *puVar1;\n  \n  __tp = localtime((time_t *)(param_1 + 0x20));\n  if (__tp == (tm *)0x0) {\n    puVar1 = (undefined1 *)timetostr(*(undefined8 *)(param_1 + 0x20),buf_7);\n  }\n  else {\n    strftime(buf_7,0x21,time_format,__tp);\n    puVar1 = buf_7;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "time_string",
+                        "localtime",
+                        "timetostr",
+                        "strftime"
+                    ],
+                    "calling_functions": [
+                        "time_string",
+                        "print_user",
+                        "print_boottime",
+                        "print_deadprocs",
+                        "print_login",
+                        "print_initspawn",
+                        "print_clockchange",
+                        "print_runlevel"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_line",
+                "func_c_signature": "void print_line(undefined *param_1,undefined param_2,undefined8 param_3,undefined8 param_4,\n               char *param_5,char *param_6,undefined8 param_7,char *param_8)",
+                "decompiled_code": "void print_line(undefined *param_1,undefined param_2,undefined8 param_3,undefined8 param_4,\n               char *param_5,char *param_6,undefined8 param_7,char *param_8) {\n  char *pcVar1;\n  int iVar2;\n  size_t sVar3;\n  long lVar4;\n  undefined3 *puVar5;\n  long in_FS_OFFSET;\n  char *local_50;\n  char *local_48;\n  char *local_40;\n  char local_35 [8];\n  char local_2d [13];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  mesg_6._1_1_ = param_2;\n  if (((include_idle == '\\0') || (short_output == '\\x01')) || (sVar3 = strlen(param_5), 6 < sVar3))\n  {\n    local_35[0] = '\\0';\n  }\n  else {\n    sprintf(local_35,\" %-6s\",param_5);\n  }\n  if ((short_output == '\\x01') || (sVar3 = strlen(param_6), 0xb < sVar3)) {\n    local_2d[0] = '\\0';\n  }\n  else {\n    sprintf(local_2d,\" %10s\",param_6);\n  }\n  if (include_exit == '\\0') {\n    lVar4 = 1;\n  }\n  else {\n    sVar3 = strlen(param_8);\n    if (sVar3 < 0xc) {\n      lVar4 = 0xe;\n    }\n    else {\n      sVar3 = strlen(param_8);\n      lVar4 = sVar3 + 2;\n    }\n  }\n  local_40 = (char *)xmalloc(lVar4);\n  if (include_exit == '\\0') {\n    *local_40 = '\\0';\n  }\n  else {\n    sprintf(local_40,\" %-12s\",param_8);\n  }\n  if (include_mesg == '\\0') {\n    puVar5 = (undefined3 *)&DAT_00101efc;\n  }\n  else {\n    puVar5 = &mesg_6;\n  }\n  if (param_1 == (undefined *)0x0) {\n    param_1 = &DAT_00101fca;\n  }\n  iVar2 = asprintf(&local_50,\"%-8s%s %-12s %-*s%s%s %-8s%s\",param_1,puVar5,param_3,\n                   (ulong)time_format_width,param_4,local_35,local_2d,param_7,local_40);\n  if (iVar2 == -1) {\n    xalloc_die();\n  }\n  pcVar1 = local_50;\n  sVar3 = strlen(local_50);\n  pcVar1 = pcVar1 + sVar3;\n  do {\n    local_48 = pcVar1;\n    pcVar1 = local_48 + -1;\n  } while (*pcVar1 == ' ');\n  *local_48 = '\\0';\n  local_48 = pcVar1;\n  puts(local_50);\n  free(local_50);\n  free(local_40);\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_line",
+                        "strlen",
+                        "sprintf",
+                        "xmalloc",
+                        "asprintf",
+                        "xalloc_die",
+                        "puts",
+                        "free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_line",
+                        "print_user",
+                        "print_boottime",
+                        "print_deadprocs",
+                        "print_login",
+                        "print_initspawn",
+                        "print_clockchange",
+                        "print_runlevel",
+                        "print_heading"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_tty_writable",
+                "func_c_signature": "bool is_tty_writable(long param_1)",
+                "decompiled_code": "bool is_tty_writable(long param_1) {\n  return (*(uint *)(param_1 + 0x18) & 0x10) != 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_tty_writable"
+                    ],
+                    "calling_functions": [
+                        "is_tty_writable",
+                        "print_user"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_user",
+                "func_c_signature": "void print_user(undefined8 *param_1,undefined8 param_2)",
+                "decompiled_code": "void print_user(undefined8 *param_1,undefined8 param_2) {\n  char cVar1;\n  int iVar2;\n  char *pcVar3;\n  char *pcVar4;\n  undefined8 uVar5;\n  size_t sVar6;\n  size_t sVar7;\n  long lVar8;\n  undefined2 *puVar9;\n  undefined *puVar10;\n  long in_FS_OFFSET;\n  undefined local_11d;\n  int local_11c;\n  long local_118;\n  char *local_110;\n  char *local_108;\n  stat local_c8;\n  char local_33 [7];\n  char local_2c [12];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  sprintf(local_2c,\"%ld\",(long)*(int *)(param_1 + 6));\n  pcVar4 = (char *)param_1[2];\n  pcVar3 = strchr(pcVar4,0x20);\n  if (pcVar3 != (char *)0x0) {\n    pcVar4 = pcVar3 + 1;\n  }\n  if (*pcVar4 == '/') {\n    local_11c = -100;\n  }\n  else {\n    if ((dev_dirfd_5 == 0) && (dev_dirfd_5 = open(\"/dev\",0x210000), dev_dirfd_5 < 0)) {\n      dev_dirfd_5 = -0x65;\n    }\n    local_11c = dev_dirfd_5;\n  }\n  if ((local_11c < -100) || (iVar2 = fstatat(local_11c,pcVar4,&local_c8,0), iVar2 != 0)) {\n    local_11d = 0x3f;\n    local_118 = 0;\n  }\n  else {\n    cVar1 = is_tty_writable(&local_c8);\n    if (cVar1 == '\\0') {\n      local_11d = 0x2d;\n    }\n    else {\n      local_11d = 0x2b;\n    }\n    local_118 = local_c8.st_atim.tv_sec;\n  }\n  if (local_118 == 0) {\n    sprintf(local_33,\"  ?\");\n  }\n  else {\n    uVar5 = idle_string(local_118,param_2);\n    sprintf(local_33,\"%.*s\",6,uVar5);\n  }\n  if (*(char *)param_1[3] == '\\0') {\n    if (hostlen_4 < 1) {\n      hoststr_3 = (undefined *)xpalloc(hoststr_3,&hostlen_4,1,0xffffffffffffffff,1);\n    }\n    *hoststr_3 = 0;\n  }\n  else {\n    local_110 = (char *)0x0;\n    pcVar4 = (char *)param_1[3];\n    pcVar3 = strchr(pcVar4,0x3a);\n    local_108 = pcVar3;\n    if (pcVar3 != (char *)0x0) {\n      local_108 = pcVar3 + 1;\n      *pcVar3 = '\\0';\n    }\n    if ((*pcVar4 != '\\0') && (do_lookup != '\\0')) {\n      local_110 = (char *)canon_host(pcVar4);\n    }\n    if (local_110 == (char *)0x0) {\n      local_110 = pcVar4;\n    }\n    if (local_108 == (char *)0x0) {\n      sVar6 = strlen(local_110);\n      if (hostlen_4 < (long)(sVar6 + 3)) {\n        free(hoststr_3);\n        hoststr_3 = (undefined *)xpalloc(0,&hostlen_4,(sVar6 + 3) - hostlen_4,0xffffffffffffffff,1);\n      }\n      pcVar3 = hoststr_3 + 1;\n      *hoststr_3 = 0x28;\n      puVar9 = (undefined2 *)stpcpy(pcVar3,local_110);\n      *puVar9 = 0x29;\n    }\n    else {\n      sVar6 = strlen(local_110);\n      sVar7 = strlen(local_108);\n      lVar8 = sVar7 + sVar6 + 4;\n      if (hostlen_4 < lVar8) {\n        free(hoststr_3);\n        hoststr_3 = (undefined *)xpalloc(0,&hostlen_4,lVar8 - hostlen_4,0xffffffffffffffff,1);\n      }\n      pcVar3 = hoststr_3 + 1;\n      *hoststr_3 = 0x28;\n      pcVar3 = stpcpy(pcVar3,local_110);\n      *pcVar3 = ':';\n      puVar9 = (undefined2 *)stpcpy(pcVar3 + 1,local_108);\n      *puVar9 = 0x29;\n    }\n    if (local_110 != pcVar4) {\n      free(local_110);\n    }\n  }\n  puVar10 = hoststr_3;\n  if (hoststr_3 == (undefined *)0x0) {\n    puVar10 = &DAT_00101efc;\n  }\n  uVar5 = time_string(param_1);\n  print_line(*param_1,local_11d,param_1[2],uVar5,local_33,local_2c,puVar10,&DAT_00101efc);\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_user",
+                        "sprintf",
+                        "strchr",
+                        "open",
+                        "fstatat",
+                        "is_tty_writable",
+                        "idle_string",
+                        "xpalloc",
+                        "canon_host",
+                        "strlen",
+                        "free",
+                        "stpcpy",
+                        "time_string",
+                        "print_line",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_user",
+                        "scan_entries"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_boottime",
+                "func_c_signature": "void print_boottime(undefined8 param_1)",
+                "decompiled_code": "void print_boottime(undefined8 param_1) {\n  undefined8 uVar1;\n  undefined8 uVar2;\n  \n  uVar1 = time_string(param_1);\n  uVar2 = gettext(\"system boot\");\n  print_line(&DAT_00101efc,0x20,uVar2,uVar1,&DAT_00101efc,&DAT_00101efc,&DAT_00101efc,&DAT_00101efc)\n  ;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_boottime",
+                        "time_string",
+                        "gettext",
+                        "print_line"
+                    ],
+                    "calling_functions": [
+                        "print_boottime",
+                        "scan_entries"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "make_id_equals_comment",
+                "func_c_signature": "void * make_id_equals_comment(long param_1)",
+                "decompiled_code": "void * make_id_equals_comment(long param_1) {\n  char *__s;\n  size_t __n;\n  char *__s_00;\n  size_t __n_00;\n  void *__dest;\n  void *__dest_00;\n  undefined *puVar1;\n  \n  __s = *(char **)(param_1 + 8);\n  __n = strlen(__s);\n  __s_00 = (char *)gettext(&DAT_0010200a);\n  __n_00 = strlen(__s_00);\n  __dest = (void *)xmalloc(__n + __n_00 + 1);\n  __dest_00 = mempcpy(__dest,__s_00,__n_00);\n  puVar1 = (undefined *)mempcpy(__dest_00,__s,__n);\n  *puVar1 = 0;\n  return __dest;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "make_id_equals_comment",
+                        "strlen",
+                        "gettext",
+                        "xmalloc",
+                        "mempcpy"
+                    ],
+                    "calling_functions": [
+                        "make_id_equals_comment",
+                        "print_deadprocs",
+                        "print_login",
+                        "print_initspawn"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_deadprocs",
+                "func_c_signature": "void print_deadprocs(long param_1)",
+                "decompiled_code": "void print_deadprocs(long param_1) {\n  uint uVar1;\n  uint uVar2;\n  void *__ptr;\n  char *pcVar3;\n  size_t sVar4;\n  size_t sVar5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  long in_FS_OFFSET;\n  char local_3c [12];\n  long local_30;\n  \n  local_30 = *(long *)(in_FS_OFFSET + 0x28);\n  __ptr = (void *)make_id_equals_comment(param_1);\n  sprintf(local_3c,\"%ld\",(long)*(int *)(param_1 + 0x30));\n  if (exitstr_2 == (char *)0x0) {\n    pcVar3 = (char *)gettext(\"term=\");\n    sVar4 = strlen(pcVar3);\n    pcVar3 = (char *)gettext(\"exit=\");\n    sVar5 = strlen(pcVar3);\n    exitstr_2 = (char *)xmalloc(sVar5 + sVar4 + 0x18);\n  }\n  uVar1 = *(uint *)(param_1 + 0x40);\n  uVar6 = gettext(\"exit=\");\n  uVar2 = *(uint *)(param_1 + 0x3c);\n  uVar7 = gettext(\"term=\");\n  sprintf(exitstr_2,\"%s%d %s%d\",uVar7,(ulong)uVar2,uVar6,(ulong)uVar1);\n  pcVar3 = exitstr_2;\n  uVar6 = time_string(param_1);\n  print_line(&DAT_00101efc,0x20,*(undefined8 *)(param_1 + 0x10),uVar6,&DAT_00101efc,local_3c,__ptr,\n             pcVar3);\n  free(__ptr);\n  if (local_30 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_deadprocs",
+                        "make_id_equals_comment",
+                        "sprintf",
+                        "gettext",
+                        "strlen",
+                        "xmalloc",
+                        "time_string",
+                        "print_line",
+                        "free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_deadprocs",
+                        "scan_entries"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_login",
+                "func_c_signature": "void print_login(long param_1)",
+                "decompiled_code": "void print_login(long param_1) {\n  undefined8 uVar1;\n  void *__ptr;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  long in_FS_OFFSET;\n  char local_2c [12];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  __ptr = (void *)make_id_equals_comment(param_1);\n  sprintf(local_2c,\"%ld\",(long)*(int *)(param_1 + 0x30));\n  uVar2 = time_string(param_1);\n  uVar1 = *(undefined8 *)(param_1 + 0x10);\n  uVar3 = gettext(\"LOGIN\");\n  print_line(uVar3,0x20,uVar1,uVar2,&DAT_00101efc,local_2c,__ptr,&DAT_00101efc);\n  free(__ptr);\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_login",
+                        "make_id_equals_comment",
+                        "sprintf",
+                        "time_string",
+                        "gettext",
+                        "print_line",
+                        "free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_login",
+                        "scan_entries"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_initspawn",
+                "func_c_signature": "void print_initspawn(long param_1)",
+                "decompiled_code": "void print_initspawn(long param_1) {\n  void *__ptr;\n  undefined8 uVar1;\n  long in_FS_OFFSET;\n  char local_1c [12];\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  __ptr = (void *)make_id_equals_comment(param_1);\n  sprintf(local_1c,\"%ld\",(long)*(int *)(param_1 + 0x30));\n  uVar1 = time_string(param_1);\n  print_line(&DAT_00101efc,0x20,*(undefined8 *)(param_1 + 0x10),uVar1,&DAT_00101efc,local_1c,__ptr,\n             &DAT_00101efc);\n  free(__ptr);\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_initspawn",
+                        "make_id_equals_comment",
+                        "sprintf",
+                        "time_string",
+                        "print_line",
+                        "free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_initspawn",
+                        "scan_entries"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_clockchange",
+                "func_c_signature": "void print_clockchange(undefined8 param_1)",
+                "decompiled_code": "void print_clockchange(undefined8 param_1) {\n  undefined8 uVar1;\n  undefined8 uVar2;\n  \n  uVar1 = time_string(param_1);\n  uVar2 = gettext(\"clock change\");\n  print_line(&DAT_00101efc,0x20,uVar2,uVar1,&DAT_00101efc,&DAT_00101efc,&DAT_00101efc,&DAT_00101efc)\n  ;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_clockchange",
+                        "time_string",
+                        "gettext",
+                        "print_line"
+                    ],
+                    "calling_functions": [
+                        "print_clockchange",
+                        "scan_entries"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_runlevel",
+                "func_c_signature": "void print_runlevel(long param_1)",
+                "decompiled_code": "void print_runlevel(long param_1) {\n  byte bVar1;\n  char cVar2;\n  int iVar3;\n  char *pcVar4;\n  size_t sVar5;\n  undefined8 uVar6;\n  ulong uVar7;\n  \n  iVar3 = *(int *)(param_1 + 0x30);\n  if (iVar3 < 0) {\n    iVar3 = iVar3 + 0xff;\n  }\n  bVar1 = (byte)((uint)iVar3 >> 8);\n  iVar3 = *(int *)(param_1 + 0x30);\n  if (runlevline_1 == (char *)0x0) {\n    pcVar4 = (char *)gettext(\"run-level\");\n    sVar5 = strlen(pcVar4);\n    runlevline_1 = (char *)xmalloc(sVar5 + 3);\n  }\n  uVar6 = gettext(\"run-level\");\n  sprintf(runlevline_1,\"%s %c\",uVar6,(ulong)(byte)(iVar3 % 0x100));\n  if (comment_0 == (char *)0x0) {\n    pcVar4 = (char *)gettext(\"last=\");\n    sVar5 = strlen(pcVar4);\n    comment_0 = (char *)xmalloc(sVar5 + 2);\n  }\n  if (bVar1 == 0x4e) {\n    uVar7 = 0x53;\n  }\n  else {\n    uVar7 = (ulong)bVar1;\n  }\n  uVar6 = gettext(\"last=\");\n  sprintf(comment_0,\"%s%c\",uVar6,uVar7);\n  cVar2 = c_isprint(bVar1);\n  pcVar4 = comment_0;\n  if (cVar2 == '\\0') {\n    pcVar4 = \"\";\n  }\n  uVar6 = time_string(param_1);\n  print_line(&DAT_00101efc,0x20,runlevline_1,uVar6,&DAT_00101efc,&DAT_00101efc,pcVar4,&DAT_00101efc)\n  ;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_runlevel",
+                        "gettext",
+                        "strlen",
+                        "xmalloc",
+                        "sprintf",
+                        "c_isprint",
+                        "time_string",
+                        "print_line"
+                    ],
+                    "calling_functions": [
+                        "print_runlevel",
+                        "scan_entries"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "list_entries_who",
+                "func_c_signature": "void list_entries_who(long param_1,char **param_2)",
+                "decompiled_code": "void list_entries_who(long param_1,char **param_2) {\n  void *__ptr;\n  char *__format;\n  char **local_38;\n  long local_30;\n  long local_20;\n  undefined *local_18;\n  \n  local_20 = 0;\n  local_18 = &DAT_00101efc;\n  local_38 = param_2;\n  local_30 = param_1;\n  while( true ) {\n    if (local_30 == 0) break;\n    if ((**local_38 != '\\0') && (*(short *)(local_38 + 7) == 7)) {\n      __ptr = (void *)extract_trimmed_name(local_38);\n      printf(\"%s%s\",local_18,__ptr);\n      free(__ptr);\n      local_18 = &DAT_00102057;\n      local_20 = local_20 + 1;\n    }\n    local_38 = local_38 + 9;\n    local_30 = local_30 + -1;\n  }\n  __format = (char *)gettext(\"\\n# users=%td\\n\");\n  printf(__format,local_20);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "list_entries_who",
+                        "extract_trimmed_name",
+                        "printf",
+                        "free",
+                        "gettext"
+                    ],
+                    "calling_functions": [
+                        "list_entries_who",
+                        "who"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_heading",
+                "func_c_signature": "void print_heading(void)",
+                "decompiled_code": "void print_heading(void) {\n  undefined8 uVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  \n  uVar1 = gettext(&DAT_00102067);\n  uVar2 = gettext(\"COMMENT\");\n  uVar3 = gettext(&DAT_00102074);\n  uVar4 = gettext(&DAT_00102078);\n  uVar5 = gettext(&DAT_0010207d);\n  uVar6 = gettext(&DAT_00102082);\n  uVar7 = gettext(&DAT_00102087);\n  print_line(uVar7,0x20,uVar6,uVar5,uVar4,uVar3,uVar2,uVar1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_heading",
+                        "gettext",
+                        "print_line"
+                    ],
+                    "calling_functions": [
+                        "print_heading",
+                        "scan_entries"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "scan_entries",
+                "func_c_signature": "void scan_entries(long param_1,char **param_2)",
+                "decompiled_code": "void scan_entries(long param_1,char **param_2) {\n  char cVar1;\n  int iVar2;\n  char **local_28;\n  long local_20;\n  char *local_18;\n  char *local_10;\n  \n  local_18 = (char *)0x0;\n  local_10 = (char *)0x8000000000000000;\n  if (include_heading != '\\0') {\n    print_heading();\n  }\n  local_28 = param_2;\n  local_20 = param_1;\n  if (my_line_only != '\\0') {\n    local_18 = ttyname(0);\n    if (local_18 == (char *)0x0) {\n      return;\n    }\n    iVar2 = strncmp(local_18,\"/dev/\",5);\n    local_20 = param_1;\n    if (iVar2 == 0) {\n      local_18 = local_18 + 5;\n      local_20 = param_1;\n    }\n  }\n  while (local_20 != 0) {\n    if ((my_line_only != '\\x01') || (cVar1 = str_endswith(local_28[2],local_18), cVar1 != '\\0')) {\n      if ((need_users == '\\0') || ((**local_28 == '\\0' || (*(short *)(local_28 + 7) != 7)))) {\n        if ((need_runlevel == '\\0') || (*(short *)(local_28 + 7) != 1)) {\n          if ((need_boottime == '\\0') || (*(short *)(local_28 + 7) != 2)) {\n            if ((need_clockchange == '\\0') || (*(short *)(local_28 + 7) != 3)) {\n              if ((need_initspawn == '\\0') || (*(short *)(local_28 + 7) != 5)) {\n                if ((need_login == '\\0') || (*(short *)(local_28 + 7) != 6)) {\n                  if ((need_deadprocs != '\\0') && (*(short *)(local_28 + 7) == 8)) {\n                    print_deadprocs(local_28);\n                  }\n                }\n                else {\n                  print_login(local_28);\n                }\n              }\n              else {\n                print_initspawn(local_28);\n              }\n            }\n            else {\n              print_clockchange(local_28);\n            }\n          }\n          else {\n            print_boottime(local_28);\n          }\n        }\n        else {\n          print_runlevel(local_28);\n        }\n      }\n      else {\n        print_user(local_28,local_10);\n      }\n    }\n    if (*(short *)(local_28 + 7) == 2) {\n      local_10 = local_28[4];\n    }\n    local_28 = local_28 + 9;\n    local_20 = local_20 + -1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "scan_entries",
+                        "print_heading",
+                        "ttyname",
+                        "strncmp",
+                        "str_endswith",
+                        "print_deadprocs",
+                        "print_login",
+                        "print_initspawn",
+                        "print_clockchange",
+                        "print_boottime",
+                        "print_runlevel",
+                        "print_user"
+                    ],
+                    "calling_functions": [
+                        "scan_entries",
+                        "who"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "who",
+                "func_c_signature": "void who(undefined8 param_1,uint param_2)",
+                "decompiled_code": "void who(undefined8 param_1,uint param_2) {\n  int iVar1;\n  undefined8 uVar2;\n  int *piVar3;\n  long in_FS_OFFSET;\n  uint local_54;\n  undefined8 local_38;\n  void *local_30;\n  undefined *local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_54 = param_2;\n  if (short_list != '\\0') {\n    local_54 = param_2 | 2;\n  }\n  iVar1 = read_utmp(param_1,&local_38,&local_30,local_54);\n  if (iVar1 != 0) {\n    uVar2 = quotearg_n_style_colon(0,3,param_1);\n    piVar3 = __errno_location();\n    local_28 = &DAT_00102092;\n    error(1,*piVar3,&DAT_00102092,uVar2);\n  }\n  if (short_list == '\\0') {\n    scan_entries(local_38,local_30);\n  }\n  else {\n    list_entries_who(local_38,local_30);\n  }\n  free(local_30);\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "who",
+                        "read_utmp",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "scan_entries",
+                        "list_entries_who",
+                        "free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "who",
+                        "main"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [ FILE | ARG1 ARG2 ]\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"Print information about users who are currently logged in.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\n  -a, --all         same as -b -d --login -p -r -t -T -u\\n  -b, --boot        time of last system boot\\n  -d, --dead        print dead processes\\n  -H, --heading     print line of column headings\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  -l, --login       print system login processes\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --lookup      attempt to canonicalize hostnames via DNS\\n  -m                only hostname and user associated with standard input\\n  -p, --process     print active processes spawned by init\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -q, --count       all login names and number of users logged on\\n  -r, --runlevel    print current runlevel\\n  -s, --short       print only name, line, and time (default)\\n  -t, --time        print last system clock change\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -T, -w, --mesg    add user\\'s message status as +, - or ?\\n  -u, --users       list users logged in\\n      --message     same as -T\\n      --writable    same as -T\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pcVar3 = (char *)gettext(\n                            \"\\nIf FILE is not specified, use %s.  %s as FILE is common.\\nIf ARG1 ARG2 given, -m presumed: \\'am i\\' or \\'mom likes\\' are usual.\\n\"\n                            );\n    printf(pcVar3,\"/var/run/utmp\",\"/var/log/wtmp\");\n    emit_ancillary_info(&DAT_00102589);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "time"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "time",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined8 main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined8 main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  char cVar2;\n  int iVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  \n  bVar1 = true;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  while (iVar3 = getopt_long(param_1,param_2,\"abdlmpqrstuwHT\",longopts,0), iVar3 != -1) {\n    if (iVar3 < 0x81) {\n      if (iVar3 < 0x48) {\n        if (iVar3 == -0x83) {\nLAB_00101b0c:\n          uVar5 = proper_name_lite(\"Michael Stone\",\"Michael Stone\");\n          uVar6 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n          uVar4 = proper_name_lite(\"Joseph Arceneaux\",\"Joseph Arceneaux\");\n          version_etc(_stdout,&DAT_00102589,\"GNU coreutils\",_Version,uVar4,uVar6,uVar5,0);\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (iVar3 == -0x82) {\n          usage(0);\n          goto LAB_00101b0c;\n        }\n        goto switchD_001019d5_caseD_49;\n      }\n      switch(iVar3) {\n      case 0x48:\n        include_heading = 1;\n        break;\n      default:\n        goto switchD_001019d5_caseD_49;\n      case 0x54:\n      case 0x77:\n        include_mesg = 1;\n        break;\n      case 0x61:\n        need_boottime = 1;\n        need_deadprocs = 1;\n        need_login = 1;\n        need_initspawn = 1;\n        need_runlevel = 1;\n        need_clockchange = 1;\n        need_users = 1;\n        include_mesg = 1;\n        include_idle = 1;\n        include_exit = '\\x01';\n        bVar1 = false;\n        break;\n      case 0x62:\n        need_boottime = 1;\n        bVar1 = false;\n        break;\n      case 100:\n        need_deadprocs = 1;\n        include_idle = 1;\n        include_exit = '\\x01';\n        bVar1 = false;\n        break;\n      case 0x6c:\n        need_login = 1;\n        include_idle = 1;\n        bVar1 = false;\n        break;\n      case 0x6d:\n        my_line_only = 1;\n        break;\n      case 0x70:\n        need_initspawn = 1;\n        bVar1 = false;\n        break;\n      case 0x71:\n        short_list = 1;\n        break;\n      case 0x72:\n        need_runlevel = 1;\n        include_idle = 1;\n        bVar1 = false;\n        break;\n      case 0x73:\n        short_output = 1;\n        break;\n      case 0x74:\n        need_clockchange = 1;\n        bVar1 = false;\n        break;\n      case 0x75:\n        need_users = 1;\n        include_idle = 1;\n        bVar1 = false;\n        break;\n      case 0x80:\n        do_lookup = 1;\n      }\n    }\n    else {\nswitchD_001019d5_caseD_49:\n      usage(1);\n    }\n  }\n  if (bVar1) {\n    need_users = 1;\n    short_output = 1;\n  }\n  if (include_exit != '\\0') {\n    short_output = 0;\n  }\n  cVar2 = hard_locale(2);\n  if (cVar2 == '\\0') {\n    time_format = \"%b %e %H:%M\";\n    time_format_width = 0xc;\n  }\n  else {\n    time_format = \"%Y-%m-%d %H:%M\";\n    time_format_width = 0x10;\n  }\n  param_1 = param_1 - _optind;\n  if (param_1 == 2) {\n    my_line_only = 1;\nLAB_00101c73:\n    who(\"/var/run/utmp\",1);\n  }\n  else {\n    if (param_1 < 3) {\n      if (param_1 < 1) {\n        if (-2 < param_1) goto LAB_00101c73;\n      }\n      else if (param_1 == 1) {\n        who(param_2[_optind],0);\n        return 0;\n      }\n    }\n    uVar5 = quote(param_2[(long)_optind + 2]);\n    uVar6 = gettext(\"extra operand %s\");\n    error(0,0,uVar6,uVar5);\n    usage(1);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage",
+                        "hard_locale",
+                        "who",
+                        "quote",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "who_decompiled.c"
+                }
+            }
+        ]
+    }
+}

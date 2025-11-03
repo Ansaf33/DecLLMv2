@@ -1,0 +1,412 @@
+{
+    "file": "KPRCA_00079",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "seedRandomGen",
+                "func_c_signature": "void seedRandomGen(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "void seedRandomGen(undefined4 param_1,undefined4 param_2) {\n  int iVar1;\n  \n  iVar1 = strcmp(playerName,\"magic\");\n  if (iVar1 == 0) {\n    seed1 = 0;\n    seed2 = 0;\n  }\n  else {\n    seed1 = param_1;\n    seed2 = param_2;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "seedRandomGen",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "seedRandomGen",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getRandomInt",
+                "func_c_signature": "int getRandomInt(void)",
+                "decompiled_code": "int getRandomInt(void) {\n  seed1 = (seed1 & 0xffff) * 0xa777 + (seed1 >> 0x10);\n  seed2 = (seed2 & 0xffff) * 0x6e0c + (seed2 >> 0x10);\n  return seed2 + seed1 * 0x10000;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getRandomInt"
+                    ],
+                    "calling_functions": [
+                        "getRandomInt",
+                        "updateEnemies",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "createEnemies",
+                "func_c_signature": "void createEnemies(void)",
+                "decompiled_code": "void createEnemies(void) {\n  void **ppvVar1;\n  void *pvVar2;\n  int local_14;\n  int local_10;\n  \n  enemies = calloc(rowCount,4);\n  for (local_10 = 0; local_10 < (int)rowCount; local_10 = local_10 + 1) {\n    ppvVar1 = (void **)((int)enemies + local_10 * 4);\n    pvVar2 = calloc(columns / 2,4);\n    *ppvVar1 = pvVar2;\n    for (local_14 = 0; local_14 < columns / 2; local_14 = local_14 + 1) {\n      *(undefined4 *)(*(int *)((int)enemies + local_10 * 4) + local_14 * 4) = 1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "createEnemies",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "createEnemies",
+                        "setupNewGame"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "createBoard",
+                "func_c_signature": "void * createBoard(int param_1,int param_2)",
+                "decompiled_code": "void * createBoard(int param_1,int param_2) {\n  void *pvVar1;\n  void *pvVar2;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  pvVar1 = malloc(param_1 << 2);\n  for (local_10 = 0; local_10 < param_1; local_10 = local_10 + 1) {\n    pvVar2 = malloc(param_2 << 2);\n    *(void **)(local_10 * 4 + (int)pvVar1) = pvVar2;\n  }\n  for (local_14 = 0; local_14 < param_1; local_14 = local_14 + 1) {\n    for (local_18 = 0; local_18 < param_2; local_18 = local_18 + 1) {\n      *(undefined4 *)(*(int *)((int)pvVar1 + local_14 * 4) + local_18 * 4) = 0;\n    }\n  }\n  return pvVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "createBoard",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "createBoard",
+                        "setupNewGame"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clearEnemies",
+                "func_c_signature": "void clearEnemies(void)",
+                "decompiled_code": "void clearEnemies(void) {\n  int local_c;\n  int local_8;\n  \n  for (local_8 = 0; local_8 < rows; local_8 = local_8 + 1) {\n    for (local_c = 0; local_c < columns; local_c = local_c + 1) {\n      if (*(int *)(*(int *)(board + local_8 * 4) + local_c * 4) == 3) {\n        *(undefined4 *)(*(int *)(board + local_8 * 4) + local_c * 4) = 0;\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clearEnemies"
+                    ],
+                    "calling_functions": [
+                        "clearEnemies",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "setEnemies",
+                "func_c_signature": "void setEnemies(void)",
+                "decompiled_code": "void setEnemies(void) {\n  int iVar1;\n  int iVar2;\n  int local_10;\n  int local_c;\n  \n  iVar2 = turnCounter / 0x14;\n  for (local_c = 0; local_c < rowCount; local_c = local_c + 1) {\n    for (local_10 = 0; local_10 < columns / 2; local_10 = local_10 + 1) {\n      iVar1 = *(int *)(*(int *)(enemies + local_c * 4) + local_10 * 4);\n      if (iVar1 == 4) {\n        *(undefined4 *)(*(int *)(board + (iVar2 + local_c * 2 + 1) * 4) + local_10 * 8) = 3;\n      }\n      else if (iVar1 < 5) {\n        if (iVar1 == 3) {\n          *(undefined4 *)(*(int *)(board + (iVar2 + local_c * 2 + 1) * 4) + local_10 * 8 + 4) = 3;\n        }\n        else if (iVar1 < 4) {\n          if (iVar1 == 1) {\n            *(undefined4 *)(*(int *)(board + (iVar2 + local_c * 2) * 4) + local_10 * 8) = 3;\n          }\n          else if (iVar1 == 2) {\n            *(undefined4 *)(*(int *)(board + (iVar2 + local_c * 2) * 4) + local_10 * 8 + 4) = 3;\n          }\n        }\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "setEnemies"
+                    ],
+                    "calling_functions": [
+                        "setEnemies",
+                        "setupNewGame",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "movePieces",
+                "func_c_signature": "undefined4 movePieces(void)",
+                "decompiled_code": "undefined4 movePieces(void) {\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "movePieces"
+                    ],
+                    "calling_functions": [
+                        "movePieces",
+                        "drawBoard"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "canEnemyFire",
+                "func_c_signature": "undefined4 canEnemyFire(int param_1,int param_2)",
+                "decompiled_code": "undefined4 canEnemyFire(int param_1,int param_2) {\n  int local_8;\n  \n  if (param_1 != rowCount + -1) {\n    for (local_8 = param_1 + 1; local_8 < rowCount; local_8 = local_8 + 1) {\n      if (*(int *)(*(int *)(enemies + local_8 * 4) + param_2 * 4) != 0) {\n        return 1;\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "canEnemyFire"
+                    ],
+                    "calling_functions": [
+                        "canEnemyFire",
+                        "updateEnemies"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "enemyFire",
+                "func_c_signature": "void enemyFire(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "void enemyFire(undefined4 param_1,undefined4 param_2) {\n  int local_c;\n  int local_8;\n  \n  local_8 = -1;\n  local_c = 0;\n  do {\n    if (rows * (columns / 2) <= local_c) {\nLAB_0001152e:\n      **(undefined4 **)(enemyBullets + local_8 * 4) = param_2;\n      *(undefined4 *)(*(int *)(enemyBullets + local_8 * 4) + 4) = param_1;\n      return;\n    }\n    if (**(int **)(enemyBullets + local_c * 4) == -1) {\n      local_8 = local_c;\n      goto LAB_0001152e;\n    }\n    local_c = local_c + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "enemyFire"
+                    ],
+                    "calling_functions": [
+                        "enemyFire",
+                        "updateEnemies"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "updateEnemies",
+                "func_c_signature": "void updateEnemies(void)",
+                "decompiled_code": "void updateEnemies(void) {\n  bool bVar1;\n  uint uVar2;\n  int iVar3;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  bVar1 = false;\n  for (local_10 = 0; local_10 < rowCount; local_10 = local_10 + 1) {\n    for (local_14 = 0; local_14 < columns / 2; local_14 = local_14 + 1) {\n      if (*(int *)(*(int *)(enemies + local_10 * 4) + local_14 * 4) != 0) {\n        bVar1 = true;\n        uVar2 = getRandomInt();\n        if (uVar2 % 7 == 1) {\n          local_18 = -1;\n          local_1c = -1;\n          iVar3 = canEnemyFire(local_10,local_14);\n          if (iVar3 == 0) {\n            iVar3 = *(int *)(*(int *)(enemies + local_10 * 4) + local_14 * 4);\n            if (iVar3 == 4) {\n              local_18 = local_14 * 2;\n              local_1c = local_10 * 2 + turnCounter / 0x14 + 1;\n            }\n            else if (iVar3 < 5) {\n              if (iVar3 == 3) {\n                local_18 = local_14 * 2 + 1;\n                local_1c = local_10 * 2 + turnCounter / 0x14 + 1;\n              }\n              else if (iVar3 < 4) {\n                if (iVar3 == 1) {\n                  local_18 = local_14 * 2;\n                  local_1c = local_10 * 2 + turnCounter / 0x14;\n                }\n                else if (iVar3 == 2) {\n                  local_18 = local_14 * 2 + 1;\n                  local_1c = local_10 * 2 + turnCounter / 0x14;\n                }\n              }\n            }\n            enemyFire(local_18,local_1c);\n          }\n        }\n        else if (uVar2 % 3 == 0) {\n          if (*(int *)(*(int *)(enemies + local_10 * 4) + local_14 * 4) == 1) {\n            *(undefined4 *)(*(int *)(enemies + local_10 * 4) + local_14 * 4) = 4;\n          }\n          else {\n            *(int *)(*(int *)(enemies + local_10 * 4) + local_14 * 4) =\n                 *(int *)(*(int *)(enemies + local_10 * 4) + local_14 * 4) + -1;\n          }\n        }\n        else if (uVar2 % 3 == 1) {\n          if (*(int *)(*(int *)(enemies + local_10 * 4) + local_14 * 4) == 4) {\n            *(undefined4 *)(*(int *)(enemies + local_10 * 4) + local_14 * 4) = 1;\n          }\n          else {\n            *(int *)(*(int *)(enemies + local_10 * 4) + local_14 * 4) =\n                 *(int *)(*(int *)(enemies + local_10 * 4) + local_14 * 4) + 1;\n          }\n        }\n      }\n    }\n  }\n  if (!bVar1) {\n    lost = 0xffffffff;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "updateEnemies",
+                        "getRandomInt",
+                        "canEnemyFire",
+                        "enemyFire"
+                    ],
+                    "calling_functions": [
+                        "updateEnemies",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clearScreen",
+                "func_c_signature": "undefined ** clearScreen(void)",
+                "decompiled_code": "undefined ** clearScreen(void) {\n  return &_GLOBAL_OFFSET_TABLE_;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clearScreen"
+                    ],
+                    "calling_functions": [
+                        "clearScreen",
+                        "drawBoard",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "setupNewGame",
+                "func_c_signature": "undefined4 setupNewGame(void)",
+                "decompiled_code": "undefined4 setupNewGame(void) {\n  void **ppvVar1;\n  void *pvVar2;\n  int local_18;\n  int local_14;\n  uint local_10;\n  \n  board = createBoard(rows,columns);\n  shipCords = (int *)calloc(2,4);\n  *shipCords = 0;\n  shipCords[1] = rows - 1;\n  *(undefined4 *)(*shipCords * 4 + *(int *)(shipCords[1] * 4 + board)) = 2;\n  fprintf((FILE *)stdout,\"Please input your name:\\n\");\n  playerName = calloc(1,0x100);\n  fflush((FILE *)stdout);\n  freaduntil(playerName,0x100,10,stdin);\n  for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {\n    if ((*(char *)(local_10 + (int)playerName) < 'a') ||\n       ('z' < *(char *)(local_10 + (int)playerName))) {\n      *(undefined *)(local_10 + (int)playerName) = 0;\n    }\n    if (*(char *)(local_10 + (int)playerName) == '\\n') {\n      *(undefined *)(local_10 + (int)playerName) = 0;\n    }\n  }\n  createEnemies();\n  setEnemies();\n  userBullets = calloc(rows,4);\n  for (local_14 = 0; local_14 < (int)rows; local_14 = local_14 + 1) {\n    ppvVar1 = (void **)((int)userBullets + local_14 * 4);\n    pvVar2 = calloc(2,4);\n    *ppvVar1 = pvVar2;\n    **(undefined4 **)((int)userBullets + local_14 * 4) = 0xffffffff;\n    *(undefined4 *)(*(int *)((int)userBullets + local_14 * 4) + 4) = 0xffffffff;\n  }\n  enemyBullets = calloc(rows * (columns / 2),4);\n  for (local_18 = 0; local_18 < (int)(rows * (columns / 2)); local_18 = local_18 + 1) {\n    ppvVar1 = (void **)((int)enemyBullets + local_18 * 4);\n    pvVar2 = calloc(2,4);\n    *ppvVar1 = pvVar2;\n    **(undefined4 **)((int)enemyBullets + local_18 * 4) = 0xffffffff;\n    *(undefined4 *)(*(int *)((int)enemyBullets + local_18 * 4) + 4) = 0xffffffff;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "setupNewGame",
+                        "createBoard",
+                        "calloc",
+                        "fprintf",
+                        "fflush",
+                        "freaduntil",
+                        "createEnemies",
+                        "setEnemies"
+                    ],
+                    "calling_functions": [
+                        "setupNewGame",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getUserInput",
+                "func_c_signature": "undefined getUserInput(void)",
+                "decompiled_code": "undefined getUserInput(void) {\n  undefined *puVar1;\n  \n  puVar1 = (undefined *)calloc(0x100,1);\n  fflush((FILE *)stdout);\n  freaduntil(puVar1,200,10,stdin);\n  return *puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getUserInput",
+                        "calloc",
+                        "fflush",
+                        "freaduntil"
+                    ],
+                    "calling_functions": [
+                        "getUserInput",
+                        "moveUser",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clearShip",
+                "func_c_signature": "void clearShip(void)",
+                "decompiled_code": "void clearShip(void) {\n  *(undefined4 *)(*shipCords * 4 + *(int *)(shipCords[1] * 4 + board)) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clearShip"
+                    ],
+                    "calling_functions": [
+                        "clearShip",
+                        "moveUser"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "setShip",
+                "func_c_signature": "void setShip(void)",
+                "decompiled_code": "void setShip(void) {\n  if (*(int *)(*shipCords * 4 + *(int *)(shipCords[1] * 4 + board)) == 5) {\n    lost = 1;\n  }\n  *(undefined4 *)(*shipCords * 4 + *(int *)(shipCords[1] * 4 + board)) = 2;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "setShip"
+                    ],
+                    "calling_functions": [
+                        "setShip",
+                        "moveUser",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "userFire",
+                "func_c_signature": "void userFire(void)",
+                "decompiled_code": "void userFire(void) {\n  int local_10;\n  int local_c;\n  \n  local_c = -1;\n  local_10 = 0;\n  do {\n    if (rows <= local_10) {\nLAB_00011f42:\n      if (0 < (int)shipCords[1]) {\n        **(undefined4 **)(userBullets + local_c * 4) = *shipCords;\n        *(undefined4 *)(*(int *)(userBullets + local_c * 4) + 4) = shipCords[1];\n      }\n      return;\n    }\n    if (**(int **)(userBullets + local_10 * 4) == -1) {\n      local_c = local_10;\n      goto LAB_00011f42;\n    }\n    local_10 = local_10 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "userFire"
+                    ],
+                    "calling_functions": [
+                        "userFire",
+                        "moveUser"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "moveUser",
+                "func_c_signature": "void moveUser(void)",
+                "decompiled_code": "void moveUser(void) {\n  char cVar1;\n  \n  cVar1 = getUserInput();\n  if (cVar1 == 'w') {\n    if (shipCords[1] < 1) {\n      return;\n    }\n    clearShip();\n    shipCords[1] = shipCords[1] + -1;\n    setShip();\n    return;\n  }\n  if (cVar1 < 'x') {\n    if (cVar1 == 's') {\n      if (rows + -1 <= shipCords[1]) {\n        return;\n      }\n      clearShip();\n      shipCords[1] = shipCords[1] + 1;\n      setShip();\n      return;\n    }\n    if (cVar1 < 't') {\n      if (cVar1 == 'a') {\n        if (*shipCords < 1) {\n          return;\n        }\n        clearShip();\n        *shipCords = *shipCords + -1;\n        setShip();\n        return;\n      }\n      if (cVar1 == 'd') {\n        if (columns + -1 <= *shipCords) {\n          return;\n        }\n        clearShip();\n        *shipCords = *shipCords + 1;\n        setShip();\n        return;\n      }\n    }\n  }\n  userFire();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "moveUser",
+                        "getUserInput",
+                        "clearShip",
+                        "setShip",
+                        "userFire"
+                    ],
+                    "calling_functions": [
+                        "moveUser",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "updateBullets",
+                "func_c_signature": "void updateBullets(void)",
+                "decompiled_code": "void updateBullets(void) {\n  int local_10;\n  int local_c;\n  \n  for (local_c = 0; local_c < rows; local_c = local_c + 1) {\n    if (**(int **)(userBullets + local_c * 4) != -1) {\n      if (*(int *)(*(int *)(userBullets + local_c * 4) + 4) == 0) {\n        **(undefined4 **)(userBullets + local_c * 4) = 0xffffffff;\n        *(undefined4 *)(*(int *)(userBullets + local_c * 4) + 4) = 0xffffffff;\n      }\n      else {\n        *(int *)(*(int *)(userBullets + local_c * 4) + 4) =\n             *(int *)(*(int *)(userBullets + local_c * 4) + 4) + -1;\n      }\n    }\n  }\n  for (local_10 = 0; local_10 < rows * (columns / 2); local_10 = local_10 + 1) {\n    if (**(int **)(enemyBullets + local_10 * 4) != -1) {\n      if (**(int **)(enemyBullets + local_10 * 4) == rows + -1) {\n        **(undefined4 **)(enemyBullets + local_10 * 4) = 0xffffffff;\n        *(undefined4 *)(*(int *)(enemyBullets + local_10 * 4) + 4) = 0xffffffff;\n      }\n      else {\n        **(int **)(enemyBullets + local_10 * 4) = **(int **)(enemyBullets + local_10 * 4) + 1;\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "updateBullets"
+                    ],
+                    "calling_functions": [
+                        "updateBullets",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clearBullets",
+                "func_c_signature": "void clearBullets(void)",
+                "decompiled_code": "void clearBullets(void) {\n  int local_10;\n  int local_c;\n  \n  for (local_c = 0; local_c < rows; local_c = local_c + 1) {\n    if ((**(int **)(userBullets + local_c * 4) != -1) &&\n       (*(int *)(**(int **)(userBullets + local_c * 4) * 4 +\n                *(int *)(*(int *)(*(int *)(userBullets + local_c * 4) + 4) * 4 + board)) == 4)) {\n      *(undefined4 *)\n       (**(int **)(userBullets + local_c * 4) * 4 +\n       *(int *)(*(int *)(*(int *)(userBullets + local_c * 4) + 4) * 4 + board)) = 0;\n    }\n  }\n  for (local_10 = 0; local_10 < rows * (columns / 2); local_10 = local_10 + 1) {\n    if ((**(int **)(enemyBullets + local_10 * 4) != -1) &&\n       (*(int *)(*(int *)(*(int *)(enemyBullets + local_10 * 4) + 4) * 4 +\n                *(int *)(**(int **)(enemyBullets + local_10 * 4) * 4 + board)) == 5)) {\n      *(undefined4 *)\n       (*(int *)(*(int *)(enemyBullets + local_10 * 4) + 4) * 4 +\n       *(int *)(**(int **)(enemyBullets + local_10 * 4) * 4 + board)) = 0;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clearBullets"
+                    ],
+                    "calling_functions": [
+                        "clearBullets",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            },
+            {
+                "func_name": "setBullets",
+                "func_c_signature": "void setBullets(void)",
+                "decompiled_code": "void setBullets(void) {\n  int local_14;\n  int local_10;\n  \n  for (local_10 = 0; local_10 < rows; local_10 = local_10 + 1) {\n    if (**(int **)(userBullets + local_10 * 4) != -1) {\n      if (*(int *)(**(int **)(userBullets + local_10 * 4) * 4 +\n                  *(int *)(*(int *)(*(int *)(userBullets + local_10 * 4) + 4) * 4 + board)) == 3) {\n        *(undefined4 *)\n         (**(int **)(userBullets + local_10 * 4) * 4 +\n         *(int *)(*(int *)(*(int *)(userBullets + local_10 * 4) + 4) * 4 + board)) = 0;\n        *(undefined4 *)\n         ((**(int **)(userBullets + local_10 * 4) / 2) * 4 +\n         *(int *)(enemies +\n                 ((*(int *)(*(int *)(userBullets + local_10 * 4) + 4) - turnCounter / 0x14) / 2) * 4\n                 )) = 0;\n        **(undefined4 **)(userBullets + local_10 * 4) = 0xffffffff;\n        *(undefined4 *)(*(int *)(userBullets + local_10 * 4) + 4) = 0xffffffff;\n      }\n      else {\n        *(undefined4 *)\n         (**(int **)(userBullets + local_10 * 4) * 4 +\n         *(int *)(*(int *)(*(int *)(userBullets + local_10 * 4) + 4) * 4 + board)) = 4;\n      }\n    }\n  }\n  for (local_14 = 0; local_14 < rows * (columns / 2); local_14 = local_14 + 1) {\n    if (**(int **)(enemyBullets + local_14 * 4) != -1) {\n      if (*(int *)(*(int *)(*(int *)(enemyBullets + local_14 * 4) + 4) * 4 +\n                  *(int *)(**(int **)(enemyBullets + local_14 * 4) * 4 + board)) == 2) {\n        lost = 1;\n      }\n      else {\n        *(undefined4 *)\n         (*(int *)(*(int *)(enemyBullets + local_14 * 4) + 4) * 4 +\n         *(int *)(**(int **)(enemyBullets + local_14 * 4) * 4 + board)) = 5;\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "setBullets"
+                    ],
+                    "calling_functions": [
+                        "setBullets",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00079_decompiled.c"
+                }
+            }
+        ]
+    }
+}

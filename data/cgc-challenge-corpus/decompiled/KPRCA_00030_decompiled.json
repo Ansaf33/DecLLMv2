@@ -1,0 +1,845 @@
+{
+    "file": "KPRCA_00030",
+    "decompiled_code": {
+        "gld.c": [
+            {
+                "func_name": "within_region",
+                "func_c_signature": "undefined4 within_region(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6)",
+                "decompiled_code": "undefined4 within_region(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6) {\n  undefined4 uVar1;\n  \n  if ((((param_1 < param_3) || (param_5 <= param_1)) || (param_2 < param_4)) || (param_6 <= param_2)\n     ) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "within_region"
+                    ],
+                    "calling_functions": [
+                        "within_region",
+                        "find_subregion_tree",
+                        "qt_delete",
+                        "qt_insert",
+                        "qt_get_pixel"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_cell_list",
+                "func_c_signature": "undefined4 * create_cell_list(int param_1,int param_2)",
+                "decompiled_code": "undefined4 * create_cell_list(int param_1,int param_2) {\n  undefined4 *puVar1;\n  undefined4 *puVar2;\n  undefined4 *local_24;\n  undefined4 *local_20;\n  undefined4 *local_1c;\n  undefined4 *local_18;\n  undefined4 *local_10;\n  \n  local_10 = (undefined4 *)0x0;\n  if (*(int *)(param_1 + 0x20) == 0) {\n    for (local_24 = *(undefined4 **)(param_1 + 0xc); puVar1 = local_10,\n        local_24 != (undefined4 *)0x0; local_24 = (undefined4 *)local_24[5]) {\n      if ((((param_2 != 1) || (local_24[2] != 0)) && ((param_2 != 3 || (local_24[3] != 0)))) &&\n         ((param_2 != 2 || ((local_24[2] == 0 && (local_24[3] == 0)))))) {\n        puVar2 = (undefined4 *)calloc(1,0x18);\n        *puVar2 = *local_24;\n        puVar2[1] = local_24[1];\n        puVar2[2] = local_24[2];\n        puVar2[3] = local_24[3];\n        puVar1 = puVar2;\n        if ((local_10 != (undefined4 *)0x0) && (puVar1 = local_10, puVar2 != (undefined4 *)0x0)) {\n          puVar2[5] = local_10;\n          puVar2[4] = 0;\n          local_10[4] = puVar2;\n          puVar1 = puVar2;\n        }\n      }\n      local_10 = puVar1;\n    }\n  }\n  else {\n    local_18 = (undefined4 *)create_cell_list(*(undefined4 *)(param_1 + 0x38),param_2);\n    puVar1 = (undefined4 *)create_cell_list(*(undefined4 *)(param_1 + 0x3c),param_2);\n    local_10 = puVar1;\n    if ((local_18 != (undefined4 *)0x0) && (local_10 = local_18, puVar1 != (undefined4 *)0x0)) {\n      for (; local_18[5] != 0; local_18 = (undefined4 *)local_18[5]) {\n      }\n      local_18[5] = puVar1;\n      puVar1[4] = local_18;\n    }\n    puVar2 = (undefined4 *)create_cell_list(*(undefined4 *)(param_1 + 0x40),param_2);\n    puVar1 = puVar2;\n    if ((local_10 != (undefined4 *)0x0) && (puVar1 = local_10, puVar2 != (undefined4 *)0x0)) {\n      for (local_1c = local_10; local_1c[5] != 0; local_1c = (undefined4 *)local_1c[5]) {\n      }\n      local_1c[5] = puVar2;\n      puVar2[4] = local_1c;\n    }\n    local_10 = puVar1;\n    puVar2 = (undefined4 *)create_cell_list(*(undefined4 *)(param_1 + 0x44),param_2);\n    puVar1 = puVar2;\n    if ((local_10 != (undefined4 *)0x0) && (puVar1 = local_10, puVar2 != (undefined4 *)0x0)) {\n      for (local_20 = local_10; local_20[5] != 0; local_20 = (undefined4 *)local_20[5]) {\n      }\n      local_20[5] = puVar2;\n      puVar2[4] = local_20;\n    }\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_cell_list",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "create_cell_list",
+                        "cg_step",
+                        "gld_clear_board"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_adjacent_coords",
+                "func_c_signature": "int * create_adjacent_coords(int param_1,int param_2)",
+                "decompiled_code": "int * create_adjacent_coords(int param_1,int param_2) {\n  int *piVar1;\n  \n  piVar1 = (int *)malloc(0x40);\n  *piVar1 = param_1 + -1;\n  piVar1[1] = param_2 + -1;\n  piVar1[2] = param_1;\n  piVar1[3] = param_2 + -1;\n  piVar1[4] = param_1 + 1;\n  piVar1[5] = param_2 + -1;\n  piVar1[6] = param_1 + -1;\n  piVar1[7] = param_2;\n  piVar1[8] = param_1 + 1;\n  piVar1[9] = param_2;\n  piVar1[10] = param_1 + -1;\n  piVar1[0xb] = param_2 + 1;\n  piVar1[0xc] = param_1;\n  piVar1[0xd] = param_2 + 1;\n  piVar1[0xe] = param_1 + 1;\n  piVar1[0xf] = param_2 + 1;\n  return piVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_adjacent_coords",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "create_adjacent_coords",
+                        "bomb_collisions",
+                        "is_dead_cell_generation",
+                        "conway_step"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "bomb_collisions",
+                "func_c_signature": "int bomb_collisions(undefined4 *param_1,int *param_2)",
+                "decompiled_code": "int bomb_collisions(undefined4 *param_1,int *param_2) {\n  undefined4 uVar1;\n  void *__src;\n  void *__dest;\n  undefined4 *puVar2;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int *local_10;\n  \n  local_18 = 0;\n  do {\n    while( true ) {\n      if (param_1 == (undefined4 *)0x0) {\n        return local_18;\n      }\n      local_1c = 0;\n      local_20 = 0;\n      if (param_1[3] == 0) break;\n      param_1 = (undefined4 *)param_1[5];\n    }\n    __src = (void *)create_adjacent_coords(*param_1,param_1[1]);\n    __dest = malloc(0x48);\n    memcpy(__dest,__src,0x40);\n    uVar1 = param_1[1];\n    *(undefined4 *)((int)__dest + 0x40) = *param_1;\n    *(undefined4 *)((int)__dest + 0x44) = uVar1;\n    free(__src);\n    local_10 = param_2;\n    while (local_10 != (int *)0x0) {\n      for (local_14 = 0; local_14 < 9; local_14 = local_14 + 1) {\n        if ((*local_10 == *(int *)((int)__dest + local_14 * 8)) &&\n           (local_10[1] == *(int *)((int)__dest + local_14 * 8 + 4))) {\n          puVar2 = (undefined4 *)(local_14 * 8 + (int)__dest);\n          puVar2 = (undefined4 *)qt_get_pixel(g_conway_gld,*puVar2,puVar2[1]);\n          if (puVar2[2] != 0) {\n            puVar2[2] = 0;\n            local_20 = local_20 + 1;\n            local_1c = local_1c + local_20 * local_1c + 100;\n            if (puVar2[3] == 0) {\n              qt_delete(g_conway_gld,*puVar2,puVar2[1],puVar2[2],puVar2[3]);\n            }\n          }\n          local_10 = (int *)local_10[5];\n          break;\n        }\n      }\n      if (local_14 == 9) {\n        local_10 = (int *)local_10[5];\n      }\n    }\n    param_1 = (undefined4 *)param_1[5];\n    free(__dest);\n    local_18 = local_18 + local_1c;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bomb_collisions",
+                        "create_adjacent_coords",
+                        "malloc",
+                        "memcpy",
+                        "free",
+                        "qt_get_pixel",
+                        "qt_delete"
+                    ],
+                    "calling_functions": [
+                        "bomb_collisions",
+                        "cg_step"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_dead_cell_generation",
+                "func_c_signature": "bool is_dead_cell_generation(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "bool is_dead_cell_generation(undefined4 param_1,undefined4 param_2) {\n  void *__ptr;\n  int iVar1;\n  undefined4 *puVar2;\n  int local_14;\n  int local_10;\n  \n  __ptr = (void *)create_adjacent_coords(param_1,param_2);\n  local_14 = 0;\n  for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {\n    puVar2 = (undefined4 *)(local_10 * 8 + (int)__ptr);\n    iVar1 = qt_get_pixel(g_conway_gld,*puVar2,puVar2[1]);\n    if ((iVar1 != 0) && (*(int *)(iVar1 + 8) != 0)) {\n      local_14 = local_14 + 1;\n    }\n  }\n  free(__ptr);\n  return local_14 == 3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_dead_cell_generation",
+                        "create_adjacent_coords",
+                        "qt_get_pixel",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "is_dead_cell_generation",
+                        "conway_step"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "conway_step",
+                "func_c_signature": "void conway_step(int param_1,int param_2,int param_3,int param_4,int **param_5,int **param_6,\n                int **param_7)",
+                "decompiled_code": "void conway_step(int param_1,int param_2,int param_3,int param_4,int **param_5,int **param_6,\n                int **param_7) {\n  void *__ptr;\n  int *piVar1;\n  int *piVar2;\n  int iVar3;\n  int *piVar4;\n  undefined4 *puVar5;\n  int *local_18;\n  int local_14;\n  int local_10;\n  \n  local_14 = 0;\n  local_18 = *param_7;\n  __ptr = (void *)create_adjacent_coords(param_1,param_2);\n  for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {\n    if ((((-1 < *(int *)((int)__ptr + local_10 * 8)) &&\n         (-1 < *(int *)((int)__ptr + local_10 * 8 + 4))) &&\n        (*(int *)((int)__ptr + local_10 * 8) < 0x2001)) &&\n       (*(int *)((int)__ptr + local_10 * 8 + 4) < 0x2001)) {\n      for (; (local_18 != (int *)0x0 &&\n             ((*(int *)((int)__ptr + local_10 * 8) != *local_18 ||\n              (*(int *)((int)__ptr + local_10 * 8 + 4) != local_18[1]))));\n          local_18 = (int *)local_18[3]) {\n      }\n      puVar5 = (undefined4 *)(local_10 * 8 + (int)__ptr);\n      piVar4 = (int *)qt_get_pixel(g_conway_gld,*puVar5,puVar5[1]);\n      if ((piVar4 == (int *)0x0) || (piVar4[2] == 0)) {\n        if (local_18 == (int *)0x0) {\n          piVar1 = (int *)calloc(1,0x10);\n          piVar2 = (int *)((int)__ptr + local_10 * 8);\n          iVar3 = piVar2[1];\n          *piVar1 = *piVar2;\n          piVar1[1] = iVar3;\n          if (*param_7 == (int *)0x0) {\n            *param_7 = piVar1;\n          }\n          else if (piVar1 != (int *)0x0) {\n            piVar1[3] = (int)*param_7;\n            piVar1[2] = 0;\n            (*param_7)[2] = (int)piVar1;\n            *param_7 = piVar1;\n          }\n          puVar5 = (undefined4 *)((int)__ptr + local_10 * 8);\n          iVar3 = is_dead_cell_generation(*puVar5,puVar5[1]);\n          if (iVar3 != 0) {\n            piVar1 = (int *)calloc(1,0x18);\n            if (piVar4 == (int *)0x0) {\n              piVar4 = (int *)((int)__ptr + local_10 * 8);\n              iVar3 = piVar4[1];\n              *piVar1 = *piVar4;\n              piVar1[1] = iVar3;\n            }\n            else {\n              *piVar1 = *piVar4;\n              piVar1[1] = piVar4[1];\n              piVar1[2] = piVar4[2];\n              piVar1[3] = piVar4[3];\n            }\n            piVar1[2] = 1;\n            if (*param_5 == (int *)0x0) {\n              *param_5 = piVar1;\n            }\n            else if (piVar1 != (int *)0x0) {\n              piVar1[5] = (int)*param_5;\n              piVar1[4] = 0;\n              (*param_5)[4] = (int)piVar1;\n              *param_5 = piVar1;\n            }\n          }\n        }\n      }\n      else {\n        local_14 = local_14 + 1;\n      }\n    }\n  }\n  piVar4 = (int *)calloc(1,0x10);\n  *piVar4 = param_1;\n  piVar4[1] = param_2;\n  if (*param_7 == (int *)0x0) {\n    *param_7 = piVar4;\n  }\n  else if (piVar4 != (int *)0x0) {\n    piVar4[3] = (int)*param_7;\n    piVar4[2] = 0;\n    (*param_7)[2] = (int)piVar4;\n    *param_7 = piVar4;\n  }\n  piVar4 = (int *)calloc(1,0x18);\n  *piVar4 = param_1;\n  piVar4[1] = param_2;\n  piVar4[2] = param_3;\n  piVar4[3] = param_4;\n  if ((local_14 == 2) || (local_14 == 3)) {\n    piVar4[2] = 1;\n    if (*param_5 == (int *)0x0) {\n      *param_5 = piVar4;\n    }\n    else if (piVar4 != (int *)0x0) {\n      piVar4[5] = (int)*param_5;\n      piVar4[4] = 0;\n      (*param_5)[4] = (int)piVar4;\n      *param_5 = piVar4;\n    }\n  }\n  else {\n    piVar4[2] = 0;\n    if (*param_6 == (int *)0x0) {\n      *param_6 = piVar4;\n    }\n    else if (piVar4 != (int *)0x0) {\n      piVar4[5] = (int)*param_6;\n      piVar4[4] = 0;\n      (*param_6)[4] = (int)piVar4;\n      *param_6 = piVar4;\n    }\n  }\n  free(__ptr);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "conway_step",
+                        "create_adjacent_coords",
+                        "qt_get_pixel",
+                        "calloc",
+                        "is_dead_cell_generation",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "conway_step",
+                        "cg_step"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_subregion_tree",
+                "func_c_signature": "undefined4 find_subregion_tree(int param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 find_subregion_tree(int param_1,undefined4 param_2,undefined4 param_3) {\n  undefined4 uVar1;\n  int iVar2;\n  \n  if (*(int *)(param_1 + 0x20) == 0) {\n    uVar1 = 0;\n  }\n  else {\n    iVar2 = *(int *)(param_1 + 0x38);\n    iVar2 = within_region(param_2,param_3,*(undefined4 *)(iVar2 + 0x10),\n                          *(undefined4 *)(iVar2 + 0x14),*(undefined4 *)(iVar2 + 0x18),\n                          *(undefined4 *)(iVar2 + 0x1c));\n    if (iVar2 == 0) {\n      iVar2 = *(int *)(param_1 + 0x3c);\n      iVar2 = within_region(param_2,param_3,*(undefined4 *)(iVar2 + 0x10),\n                            *(undefined4 *)(iVar2 + 0x14),*(undefined4 *)(iVar2 + 0x18),\n                            *(undefined4 *)(iVar2 + 0x1c));\n      if (iVar2 == 0) {\n        iVar2 = *(int *)(param_1 + 0x40);\n        iVar2 = within_region(param_2,param_3,*(undefined4 *)(iVar2 + 0x10),\n                              *(undefined4 *)(iVar2 + 0x14),*(undefined4 *)(iVar2 + 0x18),\n                              *(undefined4 *)(iVar2 + 0x1c));\n        if (iVar2 == 0) {\n          iVar2 = *(int *)(param_1 + 0x44);\n          iVar2 = within_region(param_2,param_3,*(undefined4 *)(iVar2 + 0x10),\n                                *(undefined4 *)(iVar2 + 0x14),*(undefined4 *)(iVar2 + 0x18),\n                                *(undefined4 *)(iVar2 + 0x1c));\n          if (iVar2 == 0) {\n            uVar1 = 0;\n          }\n          else {\n            uVar1 = *(undefined4 *)(param_1 + 0x44);\n          }\n        }\n        else {\n          uVar1 = *(undefined4 *)(param_1 + 0x40);\n        }\n      }\n      else {\n        uVar1 = *(undefined4 *)(param_1 + 0x3c);\n      }\n    }\n    else {\n      uVar1 = *(undefined4 *)(param_1 + 0x38);\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_subregion_tree",
+                        "within_region"
+                    ],
+                    "calling_functions": [
+                        "find_subregion_tree",
+                        "qt_delete",
+                        "qt_insert",
+                        "qt_get_pixel"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "subdivide",
+                "func_c_signature": "undefined4 subdivide(int *param_1)",
+                "decompiled_code": "undefined4 subdivide(int *param_1) {\n  int iVar1;\n  int iVar2;\n  int iVar3;\n  undefined4 uVar4;\n  int iVar5;\n  int iVar6;\n  int iVar7;\n  \n  if (*param_1 == 0) {\n    uVar4 = 0xffffffff;\n  }\n  else {\n    iVar7 = 1 << ((char)*param_1 - 1U & 0x1f);\n    iVar6 = param_1[4];\n    iVar1 = param_1[5];\n    iVar2 = param_1[6];\n    iVar3 = param_1[7];\n    iVar5 = qt_create(*param_1 + -1,iVar6,iVar1,iVar7 + iVar6,iVar7 + iVar1);\n    param_1[0xe] = iVar5;\n    iVar5 = qt_create(*param_1 + -1,iVar7 + iVar6,iVar1,iVar2,iVar7 + iVar1);\n    param_1[0xf] = iVar5;\n    iVar5 = qt_create(*param_1 + -1,iVar6,iVar7 + iVar1,iVar7 + iVar6,iVar3);\n    param_1[0x10] = iVar5;\n    iVar6 = qt_create(*param_1 + -1,iVar7 + iVar6,iVar7 + iVar1,iVar2,iVar3);\n    param_1[0x11] = iVar6;\n    param_1[8] = 1;\n    uVar4 = 0;\n  }\n  return uVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "subdivide",
+                        "qt_create"
+                    ],
+                    "calling_functions": [
+                        "subdivide",
+                        "qt_insert"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "move_pixels",
+                "func_c_signature": "undefined ** move_pixels(undefined **param_1,undefined *param_2,int param_3)",
+                "decompiled_code": "undefined ** move_pixels(undefined **param_1,undefined *param_2,int param_3) {\n  undefined **ppuVar1;\n  undefined *local_8;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  if (param_3 != 0) {\n    if (param_1[3] == (undefined *)0x0) {\n      param_1[3] = param_2;\n    }\n    else if (param_2 != (undefined *)0x0) {\n      for (local_8 = param_1[3]; *(int *)(local_8 + 0x14) != 0;\n          local_8 = *(undefined **)(local_8 + 0x14)) {\n      }\n      *(undefined **)(local_8 + 0x14) = param_2;\n      *(undefined **)(param_2 + 0x10) = local_8;\n    }\n    param_1[2] = param_1[2] + param_3;\n    ppuVar1 = param_1;\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "move_pixels"
+                    ],
+                    "calling_functions": [
+                        "move_pixels",
+                        "qt_undivide"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "qt_undivide",
+                "func_c_signature": "undefined4 qt_undivide(int param_1)",
+                "decompiled_code": "undefined4 qt_undivide(int param_1) {\n  undefined4 uVar1;\n  \n  if (*(int *)(param_1 + 0x20) == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else if ((((*(int *)(*(int *)(param_1 + 0x38) + 0x20) == 0) &&\n            (*(int *)(*(int *)(param_1 + 0x3c) + 0x20) == 0)) &&\n           (*(int *)(*(int *)(param_1 + 0x40) + 0x20) == 0)) &&\n          (*(int *)(*(int *)(param_1 + 0x44) + 0x20) == 0)) {\n    if (*(uint *)(param_1 + 4) <\n        (uint)(*(int *)(param_1 + 8) + *(int *)(*(int *)(param_1 + 0x38) + 8) +\n               *(int *)(*(int *)(param_1 + 0x3c) + 8) + *(int *)(*(int *)(param_1 + 0x40) + 8) +\n              *(int *)(*(int *)(param_1 + 0x44) + 8))) {\n      uVar1 = 0xffffffff;\n    }\n    else {\n      move_pixels(param_1,*(undefined4 *)(*(int *)(param_1 + 0x38) + 0xc),\n                  *(undefined4 *)(*(int *)(param_1 + 0x38) + 8));\n      move_pixels(param_1,*(undefined4 *)(*(int *)(param_1 + 0x3c) + 0xc),\n                  *(undefined4 *)(*(int *)(param_1 + 0x3c) + 8));\n      move_pixels(param_1,*(undefined4 *)(*(int *)(param_1 + 0x40) + 0xc),\n                  *(undefined4 *)(*(int *)(param_1 + 0x40) + 8));\n      move_pixels(param_1,*(undefined4 *)(*(int *)(param_1 + 0x44) + 0xc),\n                  *(undefined4 *)(*(int *)(param_1 + 0x44) + 8));\n      free(*(void **)(param_1 + 0x38));\n      free(*(void **)(param_1 + 0x3c));\n      free(*(void **)(param_1 + 0x40));\n      free(*(void **)(param_1 + 0x44));\n      *(undefined4 *)(param_1 + 0x38) = 0;\n      *(undefined4 *)(param_1 + 0x3c) = 0;\n      *(undefined4 *)(param_1 + 0x40) = 0;\n      *(undefined4 *)(param_1 + 0x44) = 0;\n      *(undefined4 *)(param_1 + 0x20) = 0;\n      uVar1 = 0;\n    }\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "qt_undivide",
+                        "move_pixels",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "qt_undivide",
+                        "qt_delete"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "qt_delete",
+                "func_c_signature": "undefined4 qt_delete(int param_1,int param_2,int param_3,undefined4 param_4,undefined4 param_5)",
+                "decompiled_code": "undefined4 qt_delete(int param_1,int param_2,int param_3,undefined4 param_4,undefined4 param_5) {\n  int iVar1;\n  undefined4 uVar2;\n  int *local_10;\n  \n  iVar1 = within_region(param_2,param_3,*(undefined4 *)(param_1 + 0x10),\n                        *(undefined4 *)(param_1 + 0x14),*(undefined4 *)(param_1 + 0x18),\n                        *(undefined4 *)(param_1 + 0x1c));\n  if (iVar1 == 0) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    iVar1 = find_subregion_tree(param_1,param_2,param_3);\n    if (iVar1 == 0) {\n      for (local_10 = *(int **)(param_1 + 0xc); local_10 != (int *)0x0;\n          local_10 = (int *)local_10[5]) {\n        if ((param_2 == *local_10) && (param_3 == local_10[1])) {\n          if (local_10[5] != 0) {\n            *(int *)(local_10[5] + 0x10) = local_10[4];\n          }\n          if (local_10[4] == 0) {\n            *(int *)(param_1 + 0xc) = local_10[5];\n          }\n          else {\n            *(int *)(local_10[4] + 0x14) = local_10[5];\n          }\n          local_10[4] = 0;\n          local_10[5] = 0;\n          free(local_10);\n          *(int *)(param_1 + 8) = *(int *)(param_1 + 8) + -1;\n          return 0;\n        }\n      }\n      uVar2 = 0xffffffff;\n    }\n    else {\n      iVar1 = qt_delete(iVar1,param_2,param_3,param_4,param_5);\n      if (iVar1 == 0) {\n        uVar2 = qt_undivide(param_1);\n      }\n      else {\n        uVar2 = 0xffffffff;\n      }\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "qt_delete",
+                        "within_region",
+                        "find_subregion_tree",
+                        "free",
+                        "qt_undivide"
+                    ],
+                    "calling_functions": [
+                        "bomb_collisions",
+                        "qt_delete",
+                        "cg_step",
+                        "shoot_pixel",
+                        "gld_clear_board"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "qt_create",
+                "func_c_signature": "undefined4 *\nqt_create(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,\n         undefined4 param_5)",
+                "decompiled_code": "undefined4 *\nqt_create(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,\n         undefined4 param_5) {\n  undefined4 *puVar1;\n  \n  puVar1 = (undefined4 *)malloc(0x48);\n  *puVar1 = param_1;\n  puVar1[1] = 0x10;\n  puVar1[2] = 0;\n  puVar1[3] = 0;\n  puVar1[4] = param_2;\n  puVar1[5] = param_3;\n  puVar1[6] = param_4;\n  puVar1[7] = param_5;\n  puVar1[8] = 0;\n  puVar1[9] = qt_insert;\n  puVar1[10] = qt_get_pixel;\n  puVar1[0xb] = cg_step;\n  puVar1[0xc] = shoot_pixel;\n  puVar1[0xd] = set_bomb;\n  puVar1[0xe] = 0;\n  puVar1[0xf] = 0;\n  puVar1[0x10] = 0;\n  puVar1[0x11] = 0;\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "qt_create",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "subdivide",
+                        "qt_create",
+                        "gld_init_game"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "qt_insert",
+                "func_c_signature": "undefined4 qt_insert(int param_1,int param_2,int param_3,int param_4,int param_5)",
+                "decompiled_code": "undefined4 qt_insert(int param_1,int param_2,int param_3,int param_4,int param_5) {\n  void *__ptr;\n  int iVar1;\n  undefined4 uVar2;\n  int *piVar3;\n  int *local_10;\n  \n  iVar1 = within_region(param_2,param_3,*(undefined4 *)(param_1 + 0x10),\n                        *(undefined4 *)(param_1 + 0x14),*(undefined4 *)(param_1 + 0x18),\n                        *(undefined4 *)(param_1 + 0x1c));\n  if (iVar1 == 0) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    iVar1 = find_subregion_tree(param_1,param_2,param_3);\n    if (iVar1 == 0) {\n      for (local_10 = *(int **)(param_1 + 0xc); local_10 != (int *)0x0;\n          local_10 = (int *)local_10[5]) {\n        if ((param_2 == *local_10) && (param_3 == local_10[1])) {\n          *local_10 = param_2;\n          local_10[1] = param_3;\n          local_10[2] = param_4;\n          local_10[3] = param_5;\n          return 0;\n        }\n      }\n      if (*(uint *)(param_1 + 8) < *(uint *)(param_1 + 4)) {\n        piVar3 = (int *)calloc(1,0x18);\n        *piVar3 = param_2;\n        piVar3[1] = param_3;\n        piVar3[2] = param_4;\n        piVar3[3] = param_5;\n        if (*(int *)(param_1 + 0xc) == 0) {\n          *(int **)(param_1 + 0xc) = piVar3;\n        }\n        else if (piVar3 != (int *)0x0) {\n          piVar3[5] = *(int *)(param_1 + 0xc);\n          piVar3[4] = 0;\n          *(int **)(*(int *)(param_1 + 0xc) + 0x10) = piVar3;\n          *(int **)(param_1 + 0xc) = piVar3;\n        }\n        *(int *)(param_1 + 8) = *(int *)(param_1 + 8) + 1;\n        uVar2 = 0;\n      }\n      else {\n        iVar1 = subdivide(param_1);\n        if (iVar1 == 0) {\n          for (local_10 = *(int **)(param_1 + 0xc); local_10 != (undefined4 *)0x0;\n              local_10 = (int *)local_10[5]) {\n            uVar2 = find_subregion_tree(param_1,*local_10,local_10[1]);\n            iVar1 = qt_insert(uVar2,*local_10,local_10[1],local_10[2],local_10[3]);\n            if (iVar1 != 0) {\n              return 0xffffffff;\n            }\n          }\n          while (*(int *)(param_1 + 0xc) != 0) {\n            __ptr = *(void **)(param_1 + 0xc);\n            *(undefined4 *)(param_1 + 0xc) = *(undefined4 *)(*(int *)(param_1 + 0xc) + 0x14);\n            free(__ptr);\n          }\n          *(undefined4 *)(param_1 + 0xc) = 0;\n          *(undefined4 *)(param_1 + 8) = 0;\n          uVar2 = find_subregion_tree(param_1,param_2,param_3);\n          uVar2 = qt_insert(uVar2,param_2,param_3,param_4,param_5);\n        }\n        else {\n          uVar2 = 0xffffffff;\n        }\n      }\n    }\n    else {\n      uVar2 = qt_insert(iVar1,param_2,param_3,param_4,param_5);\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "qt_insert",
+                        "within_region",
+                        "find_subregion_tree",
+                        "calloc",
+                        "subdivide",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "qt_insert",
+                        "cg_step",
+                        "set_bomb"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "qt_get_pixel",
+                "func_c_signature": "int * qt_get_pixel(int param_1,int param_2,int param_3)",
+                "decompiled_code": "int * qt_get_pixel(int param_1,int param_2,int param_3) {\n  int iVar1;\n  int *piVar2;\n  int *local_10;\n  \n  iVar1 = within_region(param_2,param_3,*(undefined4 *)(param_1 + 0x10),\n                        *(undefined4 *)(param_1 + 0x14),*(undefined4 *)(param_1 + 0x18),\n                        *(undefined4 *)(param_1 + 0x1c));\n  if (iVar1 == 0) {\n    piVar2 = (int *)0x0;\n  }\n  else {\n    iVar1 = find_subregion_tree(param_1,param_2,param_3);\n    if (iVar1 == 0) {\n      for (local_10 = *(int **)(param_1 + 0xc); local_10 != (int *)0x0;\n          local_10 = (int *)local_10[5]) {\n        if ((param_2 == *local_10) && (param_3 == local_10[1])) {\n          return local_10;\n        }\n      }\n      piVar2 = (int *)0x0;\n    }\n    else {\n      piVar2 = (int *)qt_get_pixel(iVar1,param_2,param_3);\n    }\n  }\n  return piVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "qt_get_pixel",
+                        "within_region",
+                        "find_subregion_tree"
+                    ],
+                    "calling_functions": [
+                        "bomb_collisions",
+                        "is_dead_cell_generation",
+                        "conway_step",
+                        "qt_get_pixel",
+                        "shoot_pixel",
+                        "set_bomb"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cg_step",
+                "func_c_signature": "int cg_step(int param_1)",
+                "decompiled_code": "int cg_step(int param_1) {\n  void *pvVar1;\n  undefined4 *puVar2;\n  int *piVar3;\n  int iVar4;\n  void *local_58;\n  undefined4 *local_54;\n  undefined4 *local_50;\n  undefined4 *local_4c;\n  int *local_48;\n  void *local_44;\n  int *local_40;\n  undefined4 *local_3c;\n  undefined4 *local_38;\n  void *local_34;\n  undefined4 *local_30;\n  int *local_2c;\n  int *local_28;\n  int *local_24;\n  int *local_20;\n  undefined4 *local_1c;\n  int *local_18;\n  int local_14;\n  int local_10;\n  \n  local_14 = 0;\n  local_18 = (int *)0x0;\n  local_1c = (undefined4 *)0x0;\n  local_50 = (undefined4 *)0x0;\n  local_54 = (undefined4 *)0x0;\n  local_58 = (void *)0x0;\n  local_20 = (int *)0x0;\n  local_2c = (int *)0x0;\n  local_24 = (undefined4 *)0x0;\n  local_10 = 0;\n  do {\n    if (param_1 <= local_10) {\n      return local_14;\n    }\n    local_24 = (int *)create_cell_list(g_conway_gld,1);\n    local_1c = local_24;\n    for (; local_24 != (undefined4 *)0x0; local_24 = (int *)local_24[5]) {\n      conway_step(*local_24,local_24[1],local_24[2],local_24[3],&local_50,&local_54,&local_58);\n    }\n    local_30 = local_1c;\n    while (puVar2 = local_1c, local_1c != (undefined4 *)0x0) {\n      local_30 = local_1c;\n      local_1c = (undefined4 *)local_1c[5];\n      free(puVar2);\n    }\n    local_34 = local_58;\n    while (pvVar1 = local_58, local_58 != (void *)0x0) {\n      local_34 = local_58;\n      local_58 = *(void **)((int)local_58 + 0xc);\n      free(pvVar1);\n    }\n    for (local_24 = local_50; local_24 != (undefined4 *)0x0; local_24 = (int *)local_24[5]) {\n      qt_insert(g_conway_gld,*local_24,local_24[1],local_24[2],local_24[3]);\n    }\n    local_38 = local_50;\n    while (puVar2 = local_50, local_50 != (undefined4 *)0x0) {\n      local_38 = local_50;\n      local_50 = (undefined4 *)local_50[5];\n      free(puVar2);\n    }\n    for (local_24 = local_54; local_24 != (undefined4 *)0x0; local_24 = (int *)local_24[5]) {\n      qt_insert(g_conway_gld,*local_24,local_24[1],local_24[2],local_24[3]);\n    }\n    local_3c = local_54;\n    while (puVar2 = local_54, local_54 != (undefined4 *)0x0) {\n      local_3c = local_54;\n      local_54 = (undefined4 *)local_54[5];\n      free(puVar2);\n    }\n    local_24 = (int *)create_cell_list(g_conway_gld,3);\n    local_18 = local_24;\n    for (; local_24 != (int *)0x0; local_24 = (int *)local_24[5]) {\n      local_24[3] = local_24[3] + -1;\n      qt_insert(g_conway_gld,*local_24,local_24[1],local_24[2],local_24[3]);\n      local_2c = (int *)calloc(1,0x18);\n      *local_2c = *local_24;\n      local_2c[1] = local_24[1];\n      local_2c[2] = local_24[2];\n      local_2c[3] = local_24[3];\n      piVar3 = local_2c;\n      if ((local_20 != (int *)0x0) && (piVar3 = local_20, local_2c != (int *)0x0)) {\n        local_28 = local_20;\n        while (local_28 != (int *)0x0) {\n          if (*local_28 < *local_2c) {\n            if (local_28[5] == 0) {\n              local_28[5] = (int)local_2c;\n              local_2c[4] = (int)local_28;\n              break;\n            }\n            local_28 = (int *)local_28[5];\n          }\n          else {\n            if (*local_28 != *local_2c) {\n              if (local_28[4] != 0) {\n                *(int **)(local_28[4] + 0x14) = local_2c;\n              }\n              local_2c[5] = (int)local_28;\n              local_2c[4] = local_28[4];\n              local_28[4] = (int)local_2c;\n              if (local_2c[4] == 0) {\n                local_20 = local_2c;\n              }\n              local_28 = (int *)0x0;\n              piVar3 = local_20;\n              break;\n            }\n            if (local_2c[1] <= local_28[1]) {\n              if (local_28[4] != 0) {\n                *(int **)(local_28[4] + 0x14) = local_2c;\n              }\n              local_2c[5] = (int)local_28;\n              local_2c[4] = local_28[4];\n              local_28[4] = (int)local_2c;\n              if (local_2c[4] == 0) {\n                local_20 = local_2c;\n              }\n              local_28 = (int *)0x0;\n              piVar3 = local_20;\n              break;\n            }\n            if (local_28[5] == 0) {\n              local_28[5] = (int)local_2c;\n              local_2c[4] = (int)local_28;\n              break;\n            }\n            local_28 = (int *)local_28[5];\n          }\n        }\n      }\n      local_20 = piVar3;\n    }\n    local_40 = local_18;\n    while (piVar3 = local_18, local_18 != (int *)0x0) {\n      local_40 = local_18;\n      local_18 = (int *)local_18[5];\n      free(piVar3);\n    }\n    local_18 = local_20;\n    local_20 = (int *)0x0;\n    local_1c = (undefined4 *)create_cell_list(g_conway_gld,1);\n    iVar4 = bomb_collisions(local_18,local_1c);\n    local_14 = local_14 + iVar4;\n    local_44 = local_1c;\n    while (pvVar1 = local_1c, local_1c != (undefined4 *)0x0) {\n      local_44 = local_1c;\n      local_1c = *(undefined4 **)((int)local_1c + 0x14);\n      free(pvVar1);\n    }\n    local_48 = local_18;\n    while (piVar3 = local_18, local_18 != (int *)0x0) {\n      local_48 = local_18;\n      local_18 = (int *)local_18[5];\n      free(piVar3);\n    }\n    local_54 = (undefined4 *)create_cell_list(g_conway_gld,2);\n    for (local_24 = local_54; local_24 != (undefined4 *)0x0; local_24 = (int *)local_24[5]) {\n      qt_delete(g_conway_gld,*local_24,local_24[1],local_24[2],local_24[3]);\n    }\n    local_4c = local_54;\n    while (puVar2 = local_54, local_54 != (undefined4 *)0x0) {\n      local_4c = local_54;\n      local_54 = (undefined4 *)local_54[5];\n      free(puVar2);\n    }\n    local_10 = local_10 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cg_step",
+                        "create_cell_list",
+                        "conway_step",
+                        "free",
+                        "qt_insert",
+                        "calloc",
+                        "bomb_collisions",
+                        "qt_delete"
+                    ],
+                    "calling_functions": [
+                        "cg_step"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "shoot_pixel",
+                "func_c_signature": "undefined4 shoot_pixel(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "undefined4 shoot_pixel(undefined4 param_1,undefined4 param_2) {\n  undefined4 *puVar1;\n  undefined4 uVar2;\n  \n  puVar1 = (undefined4 *)qt_get_pixel(g_conway_gld,param_1,param_2);\n  if ((puVar1 == (undefined4 *)0x0) || (puVar1[2] == 0)) {\n    uVar2 = 0;\n  }\n  else {\n    puVar1[2] = 0;\n    if (puVar1[3] == 0) {\n      qt_delete(g_conway_gld,*puVar1,puVar1[1],puVar1[2],puVar1[3]);\n    }\n    uVar2 = 100;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "shoot_pixel",
+                        "qt_get_pixel",
+                        "qt_delete"
+                    ],
+                    "calling_functions": [
+                        "shoot_pixel"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_bomb",
+                "func_c_signature": "bool set_bomb(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "bool set_bomb(undefined4 param_1,undefined4 param_2) {\n  int iVar1;\n  bool bVar2;\n  \n  iVar1 = qt_get_pixel(g_conway_gld,param_1,param_2);\n  if (iVar1 == 0) {\n    iVar1 = qt_insert(g_conway_gld,param_1,param_2,0,10);\n    bVar2 = iVar1 == 0;\n  }\n  else if (*(int *)(iVar1 + 0xc) == 0) {\n    *(undefined4 *)(iVar1 + 0xc) = 10;\n    bVar2 = true;\n  }\n  else {\n    bVar2 = false;\n  }\n  return bVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_bomb",
+                        "qt_get_pixel",
+                        "qt_insert"
+                    ],
+                    "calling_functions": [
+                        "set_bomb"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "gld_init_game",
+                "func_c_signature": "int gld_init_game(void)",
+                "decompiled_code": "int gld_init_game(void) {\n  if (g_conway_gld == 0) {\n    g_conway_gld = qt_create(0xd,0,0,0x2000,0x2000);\n  }\n  return g_conway_gld;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "gld_init_game",
+                        "qt_create"
+                    ],
+                    "calling_functions": [
+                        "gld_init_game",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "gld_clear_board",
+                "func_c_signature": "void gld_clear_board(void)",
+                "decompiled_code": "void gld_clear_board(void) {\n  undefined4 *puVar1;\n  undefined4 *local_14;\n  undefined4 *local_10;\n  \n  if (g_conway_gld != 0) {\n    local_10 = (undefined4 *)create_cell_list(g_conway_gld,0);\n    for (local_14 = local_10; local_14 != (undefined4 *)0x0; local_14 = (undefined4 *)local_14[5]) {\n      qt_delete(g_conway_gld,*local_14,local_14[1],local_14[2],local_14[3]);\n    }\n    while (local_10 != (undefined4 *)0x0) {\n      puVar1 = (undefined4 *)local_10[5];\n      free(local_10);\n      local_10 = puVar1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "gld_clear_board",
+                        "create_cell_list",
+                        "qt_delete",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "gld_clear_board",
+                        "new_game"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_board_helper",
+                "func_c_signature": "void print_board_helper(int param_1,int **param_2)",
+                "decompiled_code": "void print_board_helper(int param_1,int **param_2) {\n  int *piVar1;\n  int *local_14;\n  int *local_10;\n  \n  if (*(int *)(param_1 + 0x20) != 0) {\n    print_board_helper(*(undefined4 *)(param_1 + 0x38),param_2);\n    print_board_helper(*(undefined4 *)(param_1 + 0x3c),param_2);\n    print_board_helper(*(undefined4 *)(param_1 + 0x40),param_2);\n    print_board_helper(*(undefined4 *)(param_1 + 0x44),param_2);\n  }\n  local_10 = *(int **)(param_1 + 0xc);\n  do {\n    if (local_10 == (int *)0x0) {\n      return;\n    }\n    if ((local_10[2] != 0) || (local_10[3] != 0)) {\n      piVar1 = (int *)calloc(1,0x18);\n      *piVar1 = *local_10;\n      piVar1[1] = local_10[1];\n      piVar1[2] = local_10[2];\n      piVar1[3] = local_10[3];\n      if (*param_2 == (int *)0x0) {\n        *param_2 = piVar1;\n      }\n      else if (piVar1 != (int *)0x0) {\n        local_14 = *param_2;\n        while (local_14 != (int *)0x0) {\n          if (*local_14 < *piVar1) {\n            if (local_14[5] == 0) {\n              local_14[5] = (int)piVar1;\n              piVar1[4] = (int)local_14;\n              break;\n            }\n            local_14 = (int *)local_14[5];\n          }\n          else {\n            if (*local_14 != *piVar1) {\n              if (local_14[4] != 0) {\n                *(int **)(local_14[4] + 0x14) = piVar1;\n              }\n              piVar1[5] = (int)local_14;\n              piVar1[4] = local_14[4];\n              local_14[4] = (int)piVar1;\n              if (piVar1[4] == 0) {\n                *param_2 = piVar1;\n              }\n              break;\n            }\n            if (piVar1[1] <= local_14[1]) {\n              if (local_14[4] != 0) {\n                *(int **)(local_14[4] + 0x14) = piVar1;\n              }\n              piVar1[5] = (int)local_14;\n              piVar1[4] = local_14[4];\n              local_14[4] = (int)piVar1;\n              if (piVar1[4] == 0) {\n                *param_2 = piVar1;\n              }\n              break;\n            }\n            if (local_14[5] == 0) {\n              local_14[5] = (int)piVar1;\n              piVar1[4] = (int)local_14;\n              break;\n            }\n            local_14 = (int *)local_14[5];\n          }\n        }\n      }\n    }\n    local_10 = (int *)local_10[5];\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_board_helper",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "print_board_helper",
+                        "gld_print_board"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "gld_print_board",
+                "func_c_signature": "void gld_print_board(undefined4 param_1)",
+                "decompiled_code": "void gld_print_board(undefined4 param_1) {\n  undefined4 *__ptr;\n  undefined4 *local_18;\n  undefined4 *local_14;\n  undefined4 *local_10;\n  \n  local_18 = (undefined4 *)0x0;\n  local_10 = (undefined4 *)0x0;\n  print_board_helper(g_conway_gld,&local_18);\n  local_10 = local_18;\n  fdprintf(1,&DAT_00017000,param_1);\n  for (; local_10 != (undefined4 *)0x0; local_10 = (undefined4 *)local_10[5]) {\n    fdprintf(1,\"--| (x,y) = (%d,%d) | Alive=%d | Bomb=%d |\\n\",*local_10,local_10[1],local_10[2],\n             local_10[3]);\n  }\n  while (__ptr = local_18, local_18 != (undefined4 *)0x0) {\n    local_14 = local_18;\n    local_18 = (undefined4 *)local_18[5];\n    free(__ptr);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "gld_print_board",
+                        "print_board_helper",
+                        "fdprintf",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "gld_print_board",
+                        "reveal_board"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "qt_debug_print_tree",
+                "func_c_signature": "void qt_debug_print_tree(int *param_1,undefined4 param_2)",
+                "decompiled_code": "void qt_debug_print_tree(int *param_1,undefined4 param_2) {\n  int iVar1;\n  undefined4 *local_14;\n  uint local_10;\n  \n  if (param_1 != (int *)0x0) {\n    if (param_1[2] != 0) {\n      iVar1 = 0xd - *param_1;\n      fdprintf(1,\"Level: %d, ID: %s\\n\",iVar1,param_2);\n      for (local_14 = (undefined4 *)param_1[3]; local_14 != (undefined4 *)0x0;\n          local_14 = (undefined4 *)local_14[5]) {\n        for (local_10 = 0; local_10 < 0xdU - *param_1; local_10 = local_10 + 1) {\n          fdprintf(1,\"    >\",iVar1,param_2);\n        }\n        fdprintf(1,\"--| (x,y) = (%d,%d) | Alive=%d | Bomb=%d |\\n\",*local_14,local_14[1],local_14[2],\n                 local_14[3]);\n      }\n    }\n    qt_debug_print_tree(param_1[0xe],&DAT_00017049);\n    qt_debug_print_tree(param_1[0xf],&DAT_0001704c);\n    qt_debug_print_tree(param_1[0x10],&DAT_0001704f);\n    qt_debug_print_tree(param_1[0x11],&DAT_00017052);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "qt_debug_print_tree",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "qt_debug_print_tree"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "readopt",
+                "func_c_signature": "uint readopt(undefined4 param_1)",
+                "decompiled_code": "uint readopt(undefined4 param_1) {\n  int iVar1;\n  uint uVar2;\n  int local_14;\n  char local_f;\n  byte local_e;\n  char local_d;\n  \n  local_e = 0;\n  local_f = '\\0';\n  local_d = '\\n';\n  iVar1 = receive(param_1,&local_e,1,&local_14);\n  if ((iVar1 == 0) && (local_14 != 0)) {\n    iVar1 = receive(param_1,&local_f,1,&local_14);\n    if ((iVar1 == 0) && (local_14 != 0)) {\n      if (local_d == local_f) {\n        uVar2 = (uint)local_e;\n      }\n      else {\n        do {\n          if (local_d == local_f) {\n            return 0xffffffff;\n          }\n          iVar1 = receive(param_1,&local_f,1,&local_14);\n        } while ((iVar1 == 0) && (local_14 != 0));\n        uVar2 = 0xffffffff;\n      }\n    }\n    else {\n      uVar2 = 0xffffffff;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readopt",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "readopt",
+                        "game_selection"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "readline",
+                "func_c_signature": "undefined4 readline(undefined4 param_1,char *param_2,uint param_3)",
+                "decompiled_code": "undefined4 readline(undefined4 param_1,char *param_2,uint param_3) {\n  int iVar1;\n  undefined4 uVar2;\n  int local_14;\n  uint local_10;\n  \n  for (local_10 = 0; local_10 < param_3; local_10 = local_10 + 1) {\n    iVar1 = receive(param_1,param_2,1,&local_14);\n    if ((iVar1 != 0) || (local_14 == 0)) {\n                    /* WARNING: Subroutine does not return */\n      exit(0);\n    }\n    if (*param_2 == '\\n') break;\n    param_2 = param_2 + 1;\n  }\n  if ((local_10 == param_3) && (*param_2 != '\\n')) {\n    uVar2 = 0xffffffff;\n  }\n  else if (*param_2 == '\\n') {\n    *param_2 = '\\0';\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readline",
+                        "receive",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "readline",
+                        "take_shot",
+                        "place_bomb",
+                        "run",
+                        "init_randomness"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_num_steps",
+                "func_c_signature": "long parse_num_steps(char *param_1)",
+                "decompiled_code": "long parse_num_steps(char *param_1) {\n  int iVar1;\n  long lVar2;\n  char *local_10;\n  \n  local_10 = param_1;\n  while (*local_10 != '\\0') {\n    iVar1 = isdigit((int)*local_10);\n    local_10 = local_10 + 1;\n    if (iVar1 == 0) {\n      return -1;\n    }\n  }\n  lVar2 = strtol(param_1,(char **)0x0,10);\n  if ((99 < lVar2) && (lVar2 < 0x3e9)) {\n    if (g_num_steps_left < lVar2) {\n      return g_num_steps_left;\n    }\n    return lVar2;\n  }\n  return -1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_num_steps",
+                        "isdigit",
+                        "strtol"
+                    ],
+                    "calling_functions": [
+                        "parse_num_steps",
+                        "run"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_coordinate",
+                "func_c_signature": "long * parse_coordinate(long *param_1,char *param_2)",
+                "decompiled_code": "long * parse_coordinate(long *param_1,char *param_2) {\n  char *__s;\n  size_t sVar1;\n  int iVar2;\n  long lVar3;\n  long lVar4;\n  char *local_14;\n  char *local_10;\n  \n  __s = strsep(&param_2,\",\");\n  local_10 = strsep(&param_2,\" \");\n  if (param_2 != (char *)0x0) {\n    local_10 = param_2;\n  }\n  if ((((__s != (char *)0x0) && (local_10 != (char *)0x0)) && (sVar1 = strlen(__s), sVar1 != 0)) &&\n     (sVar1 = strlen(local_10), local_14 = __s, sVar1 != 0)) {\n    do {\n      if (*local_14 == '\\0') {\n        local_14 = local_10;\n        do {\n          if (*local_14 == '\\0') {\n            lVar3 = strtol(__s,(char **)0x0,10);\n            lVar4 = strtol(local_10,(char **)0x0,10);\n            *param_1 = lVar3;\n            param_1[1] = lVar4;\n            return param_1;\n          }\n          iVar2 = isdigit((int)*local_14);\n          local_14 = local_14 + 1;\n        } while (iVar2 != 0);\n        *param_1 = -1;\n        param_1[1] = -1;\n        return param_1;\n      }\n      iVar2 = isdigit((int)*local_14);\n      local_14 = local_14 + 1;\n    } while (iVar2 != 0);\n    *param_1 = -1;\n    param_1[1] = -1;\n    return param_1;\n  }\n  *param_1 = -1;\n  param_1[1] = -1;\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_coordinate",
+                        "strsep",
+                        "strlen",
+                        "strtol",
+                        "isdigit"
+                    ],
+                    "calling_functions": [
+                        "parse_coordinate",
+                        "take_shot",
+                        "place_bomb"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "take_shot",
+                "func_c_signature": "void take_shot(void)",
+                "decompiled_code": "void take_shot(void) {\n  int iVar1;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  fdprintf(1,\"Enter Shot Coordinates Ex: 100, 100:: \");\n  iVar1 = readline(0,&g_buf,0x200);\n  if (iVar1 == 0) {\n    parse_coordinate(&local_18,&g_buf,0x200);\n    if ((local_18 < 0) || (local_14 < 0)) {\n      fdprintf(1,\"Invalid coordinates\\n\");\n    }\n    else if (g_shots_left == 0) {\n      fdprintf(1,\"You\\'re out of bullets.\\n\");\n    }\n    else {\n      local_10 = (**(code **)(g_game_board + 0x30))(local_18,local_14);\n      g_shots_left = g_shots_left + -1;\n      if (local_10 == 0) {\n        fdprintf(1,\"You missed. Better luck next time.\\n\");\n      }\n      else {\n        fdprintf(1,\"Great shot! You got one\\n\");\n        fdprintf(1,\"Scored: %d points\\n\",local_10);\n      }\n      g_current_score = local_10 + g_current_score;\n    }\n  }\n  else {\n    fdprintf(1,\"Invalid coordinates\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "take_shot",
+                        "fdprintf",
+                        "readline",
+                        "parse_coordinate"
+                    ],
+                    "calling_functions": [
+                        "take_shot",
+                        "game_selection"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "place_bomb",
+                "func_c_signature": "void place_bomb(void)",
+                "decompiled_code": "void place_bomb(void) {\n  int iVar1;\n  int local_14;\n  int local_10;\n  \n  fdprintf(1,\"Enter Bomb Coordinates Ex: 100, 100:: \");\n  iVar1 = readline(0,&g_buf,0x200);\n  if (iVar1 == 0) {\n    parse_coordinate(&local_14,&g_buf,0x200);\n    if ((((local_14 < 0) || (local_10 < 0)) || (0x1fff < local_14)) || (0x1fff < local_10)) {\n      fdprintf(1,\"Invalid coordinates\\n\");\n    }\n    else if (g_bombs_left == 0) {\n      fdprintf(1,\"You\\'re out of bombs.\\n\");\n    }\n    else {\n      iVar1 = (**(code **)(g_game_board + 0x34))(local_14,local_10);\n      if (iVar1 == 0) {\n        fdprintf(1,\"There is already a bomb here. Try somewhere else.\\n\");\n      }\n      else {\n        fdprintf(1,\"Successfully planted bomb.\\n\");\n        g_bombs_left = g_bombs_left + -1;\n      }\n    }\n  }\n  else {\n    fdprintf(1,\"Invalid coordinates\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "place_bomb",
+                        "fdprintf",
+                        "readline",
+                        "parse_coordinate"
+                    ],
+                    "calling_functions": [
+                        "place_bomb",
+                        "game_selection"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "reveal_board",
+                "func_c_signature": "void reveal_board(void)",
+                "decompiled_code": "void reveal_board(void) {\n  g_board_revealed = 1;\n  gld_print_board(\"GAME BOARD\\n\");\n  fdprintf(1,&DAT_0001719b);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "reveal_board",
+                        "gld_print_board",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "reveal_board",
+                        "game_selection"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "place_runner",
+                "func_c_signature": "void place_runner(int param_1,int param_2)",
+                "decompiled_code": "void place_runner(int param_1,int param_2) {\n  (**(code **)(g_game_board + 0x24))(g_game_board,param_1,param_2,1,0);\n  if ((param_1 < 0x1000) && (param_2 < 0x1000)) {\n    (**(code **)(g_game_board + 0x24))(g_game_board,param_1,param_2 + 1,1,0);\n    (**(code **)(g_game_board + 0x24))(g_game_board,param_1,param_2 + 2,1,0);\n    (**(code **)(g_game_board + 0x24))(g_game_board,param_1 + -1,param_2 + 2,1,0);\n    (**(code **)(g_game_board + 0x24))(g_game_board,param_1 + -2,param_2 + 1,1,0);\n  }\n  else if ((param_1 < 0x1000) || (0xfff < param_2)) {\n    if ((param_1 < 0x1000) && (0xfff < param_2)) {\n      (**(code **)(g_game_board + 0x24))(g_game_board,param_1,param_2 + 1,1,0);\n      (**(code **)(g_game_board + 0x24))(g_game_board,param_1,param_2 + 2,1,0);\n      (**(code **)(g_game_board + 0x24))(g_game_board,param_1 + -1,param_2,1,0);\n      (**(code **)(g_game_board + 0x24))(g_game_board,param_1 + -2,param_2 + 1,1,0);\n    }\n    else if ((0xfff < param_1) && (0xfff < param_2)) {\n      (**(code **)(g_game_board + 0x24))(g_game_board,param_1,param_2 + 1,1,0);\n      (**(code **)(g_game_board + 0x24))(g_game_board,param_1,param_2 + 2,1,0);\n      (**(code **)(g_game_board + 0x24))(g_game_board,param_1 + 1,param_2,1,0);\n      (**(code **)(g_game_board + 0x24))(g_game_board,param_1 + 2,param_2 + 1,1,0);\n    }\n  }\n  else {\n    (**(code **)(g_game_board + 0x24))(g_game_board,param_1,param_2 + 1,1,0);\n    (**(code **)(g_game_board + 0x24))(g_game_board,param_1,param_2 + 2,1,0);\n    (**(code **)(g_game_board + 0x24))(g_game_board,param_1 + 1,param_2 + 2,1,0);\n    (**(code **)(g_game_board + 0x24))(g_game_board,param_1 + 2,param_2 + 1,1,0);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "place_runner"
+                    ],
+                    "calling_functions": [
+                        "place_runner",
+                        "create_runner"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_runner",
+                "func_c_signature": "void create_runner(void)",
+                "decompiled_code": "void create_runner(void) {\n  uint uVar1;\n  uint uVar2;\n  \n  uVar1 = a ^ a << 0xb;\n  uVar1 = uVar1 >> 8 ^ uVar1 ^ d >> 0x13 ^ d;\n  uVar2 = b ^ b << 0xb;\n  a = c;\n  b = d;\n  d = uVar2 >> 8 ^ uVar2 ^ uVar1 >> 0x13 ^ uVar1;\n  c = uVar1;\n  place_runner(uVar1 & 0x1fff,d & 0x1fff);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_runner",
+                        "place_runner"
+                    ],
+                    "calling_functions": [
+                        "create_runner",
+                        "new_game"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "new_game",
+                "func_c_signature": "void new_game(void)",
+                "decompiled_code": "void new_game(void) {\n  int local_10;\n  \n  gld_clear_board();\n  if (g_high_score < g_current_score) {\n    g_high_score = g_current_score;\n  }\n  for (local_10 = 0; local_10 < 0x19; local_10 = local_10 + 1) {\n    create_runner();\n  }\n  g_board_revealed = 0;\n  g_current_score = 0;\n  g_num_steps_left = 10000;\n  g_shots_left = 0x7d;\n  g_bombs_left = 5;\n  fdprintf(1,\"New Game -- Ready, set, go!\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "new_game",
+                        "gld_clear_board",
+                        "create_runner",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "new_game",
+                        "game_selection",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "run",
+                "func_c_signature": "void run(void)",
+                "decompiled_code": "void run(void) {\n  int iVar1;\n  int iVar2;\n  undefined4 uVar3;\n  undefined4 uVar4;\n  \n  uVar4 = 1000;\n  fdprintf(1,\"Enter amount of time to run: [%d-%d]:: \",100,1000);\n  uVar3 = 0x200;\n  iVar1 = readline(0,&g_buf,0x200);\n  if (iVar1 == 0) {\n    iVar1 = parse_num_steps(&g_buf,0x200);\n    if (iVar1 == -1) {\n      fdprintf(1,\"Invalid amount of time\\n\",uVar3,uVar4);\n    }\n    else {\n      iVar2 = (**(code **)(g_game_board + 0x2c))(iVar1);\n      if (0 < iVar2) {\n        fdprintf(1,\"Nice bombing! You racked up %d points.\\n\",iVar2,uVar4);\n      }\n      if (iVar1 < g_num_steps_left) {\n        g_num_steps_left = g_num_steps_left - iVar1;\n      }\n      else {\n        g_num_steps_left = 0;\n      }\n      g_current_score = iVar2 + g_current_score;\n      g_board_revealed = 0;\n    }\n  }\n  else {\n    fdprintf(1,\"Invalid amount of time\\n\",uVar3,uVar4);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "run",
+                        "fdprintf",
+                        "readline",
+                        "parse_num_steps"
+                    ],
+                    "calling_functions": [
+                        "run",
+                        "game_selection"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "quit",
+                "func_c_signature": "undefined4 quit(void)",
+                "decompiled_code": "undefined4 quit(void) {\n  fdprintf(1,\"Thanks for Playing\\n\");\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "quit",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "quit",
+                        "game_selection"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_menu",
+                "func_c_signature": "void print_menu(void)",
+                "decompiled_code": "void print_menu(void) {\n  int iVar1;\n  int iVar2;\n  \n  iVar2 = 0x13fd1;\n  if ((g_num_steps_left < 1) || ((g_shots_left == 0 && (g_bombs_left == 0)))) {\n    g_num_steps_left = 0;\n    fdprintf(1,\"GAME OVER!\\n\");\n    if (g_high_score < g_current_score) {\n      fdprintf(1,\"A new high score!!\\n\\n\");\n      g_high_score = g_current_score;\n    }\n    fdprintf(1,\"                              --GAME OVER--\\n\");\n    fdprintf(1,\"1. New Game\\n\");\n    fdprintf(1,\"2. Quit\\n\\n\");\n    iVar1 = g_high_score;\n    fdprintf(1,\"High Score = %d\\n\\n\",g_high_score);\n  }\n  else if (g_board_revealed == 0) {\n    fdprintf(1,\"                              --Board: HIDDEN--\\n\");\n    fdprintf(1,\"1. Shoot!\\n\");\n    fdprintf(1,\"2. Reveal Board\\n\");\n    fdprintf(1,\"3. New Game\\n\");\n    fdprintf(1,\"4. Quit\\n\");\n    fdprintf(1,\"Current Score = %d | Total Time Remaining: %d | High Score = %d \\n\",g_current_score,\n             g_num_steps_left,g_high_score);\n    iVar1 = g_shots_left;\n    iVar2 = g_bombs_left;\n    fdprintf(1,\"Shots Remaining: %d | Bombs Remaining: %d\\n\\n\",g_shots_left,g_bombs_left);\n  }\n  else {\n    fdprintf(1,\"                              --Board: REVEALED--\\n\");\n    fdprintf(1,\"1. Place Bomb\\n\");\n    fdprintf(1,\"2. Reveal Board\\n\");\n    fdprintf(1,\"3. Let them Run!\\n\");\n    fdprintf(1,\"4. New Game\\n\");\n    fdprintf(1,\"5. Quit\\n\");\n    fdprintf(1,\"Current Score = %d | Total Time Remaining: %d | High Score = %d \\n\",g_current_score,\n             g_num_steps_left,g_high_score);\n    iVar1 = g_shots_left;\n    iVar2 = g_bombs_left;\n    fdprintf(1,\"Shots Remaining: %d | Bombs Remaining: %d\\n\\n\",g_shots_left,g_bombs_left);\n  }\n  fdprintf(1,\"Selection-: \",iVar1,iVar2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_menu",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "print_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "game_selection",
+                "func_c_signature": "undefined4 game_selection(void)",
+                "decompiled_code": "undefined4 game_selection(void) {\n  char cVar1;\n  \n  cVar1 = readopt(0);\n  if (cVar1 == -1) {\n    fdprintf(1,\"Bad Input\\n\");\n    return 0xffffffff;\n  }\n  if (g_num_steps_left < 1) {\n    if (cVar1 != '1') {\n      if (cVar1 != '2') {\n        fdprintf(1,\"Bad Choice\\n\");\n        return 0xffffffff;\n      }\n      quit();\n      return 0;\n    }\n    new_game();\n  }\n  else if (g_board_revealed == 0) {\n    if (cVar1 == '4') {\n      quit();\n      return 0;\n    }\n    if ('4' < cVar1) {\nLAB_0001432f:\n      fdprintf(1,\"Bad Choice\\n\");\n      return 0xffffffff;\n    }\n    if (cVar1 == '3') {\n      new_game();\n    }\n    else {\n      if ('3' < cVar1) goto LAB_0001432f;\n      if (cVar1 == '1') {\n        take_shot();\n      }\n      else {\n        if (cVar1 != '2') goto LAB_0001432f;\n        reveal_board();\n      }\n    }\n  }\n  else {\n    switch(cVar1) {\n    case '1':\n      place_bomb();\n      break;\n    case '2':\n      reveal_board();\n      break;\n    case '3':\n      run();\n      break;\n    case '4':\n      new_game();\n      break;\n    case '5':\n      quit();\n      return 0;\n    default:\n      fdprintf(1,\"Bad Choice\\n\");\n      return 0xffffffff;\n    }\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "game_selection",
+                        "readopt",
+                        "fdprintf",
+                        "quit",
+                        "new_game",
+                        "take_shot",
+                        "reveal_board",
+                        "place_bomb",
+                        "run"
+                    ],
+                    "calling_functions": [
+                        "game_selection",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_randomness",
+                "func_c_signature": "void init_randomness(void)",
+                "decompiled_code": "void init_randomness(void) {\n  int iVar1;\n  char *local_10;\n  \n  do {\n    fdprintf(1,\n             \"Before we begin. Enter a number [1 - 4294967295]\\nOr any number. We\\'ll figure it out: \"\n            );\n    while( true ) {\n      iVar1 = readline(0,&g_buf,0x200);\n      if (iVar1 == 0) break;\n      fdprintf(1,\"Bad input\\n\");\n    }\n    local_10 = &g_buf;\n    do {\n      if ((local_10 == (char *)0x0) || (*local_10 == '\\0')) {\n        a = strtol(&g_buf,(char **)0x0,10);\n        return;\n      }\n      iVar1 = isdigit((int)*local_10);\n      local_10 = local_10 + 1;\n    } while (iVar1 != 0);\n    fdprintf(1,\"Invalid number\\n\");\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_randomness",
+                        "fdprintf",
+                        "readline",
+                        "strtol",
+                        "isdigit"
+                    ],
+                    "calling_functions": [
+                        "init_randomness",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  \n  init_randomness();\n  g_game_board = gld_init_game();\n  new_game();\n  do {\n    print_menu();\n    iVar1 = game_selection();\n  } while (iVar1 != 0);\n  fdprintf(1,\"EXITING...\\n\");\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "init_randomness",
+                        "gld_init_game",
+                        "new_game",
+                        "print_menu",
+                        "game_selection",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00030_decompiled.c"
+                }
+            }
+        ]
+    }
+}

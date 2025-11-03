@@ -1,0 +1,167 @@
+{
+    "file": "rmdir",
+    "decompiled_code": {
+        "rmdir.c": [
+            {
+                "func_name": "errno_rmdir_non_empty",
+                "func_c_signature": "undefined4 errno_rmdir_non_empty(int param_1)",
+                "decompiled_code": "undefined4 errno_rmdir_non_empty(int param_1) {\n  undefined4 uVar1;\n  \n  if ((param_1 == 0x27) || (param_1 == 0x11)) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "errno_rmdir_non_empty"
+                    ],
+                    "calling_functions": [
+                        "errno_rmdir_non_empty",
+                        "ignorable_failure"
+                    ],
+                    "defined_in_file": "rmdir_decompiled.c"
+                }
+            },
+            {
+                "func_name": "errno_may_be_non_empty",
+                "func_c_signature": "undefined8 errno_may_be_non_empty(uint param_1)",
+                "decompiled_code": "undefined8 errno_may_be_non_empty(uint param_1) {\n  undefined8 uVar1;\n  \n  if ((param_1 < 0x1f) && ((0x40012002UL >> ((byte)param_1 & 0x3f) & 1) != 0)) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "errno_may_be_non_empty"
+                    ],
+                    "calling_functions": [
+                        "errno_may_be_non_empty",
+                        "ignorable_failure"
+                    ],
+                    "defined_in_file": "rmdir_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ignorable_failure",
+                "func_c_signature": "undefined4 ignorable_failure(undefined4 param_1,undefined8 param_2)",
+                "decompiled_code": "undefined4 ignorable_failure(undefined4 param_1,undefined8 param_2) {\n  char cVar1;\n  int iVar2;\n  \n  if ((ignore_fail_on_non_empty != '\\0') &&\n     ((cVar1 = errno_rmdir_non_empty(param_1), cVar1 != '\\0' ||\n      ((cVar1 = errno_may_be_non_empty(param_1), cVar1 != '\\0' &&\n       (iVar2 = directory_status(0xffffff9c,param_2), iVar2 == 0)))))) {\n    return 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ignorable_failure",
+                        "errno_rmdir_non_empty",
+                        "errno_may_be_non_empty",
+                        "directory_status"
+                    ],
+                    "calling_functions": [
+                        "ignorable_failure",
+                        "remove_parents",
+                        "main"
+                    ],
+                    "defined_in_file": "rmdir_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove_parents",
+                "func_c_signature": "bool remove_parents(char *param_1)",
+                "decompiled_code": "bool remove_parents(char *param_1) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  bool local_3d;\n  char *local_30;\n  char *local_28;\n  \n  local_3d = true;\n  strip_trailing_slashes(param_1);\n  do {\n    local_30 = strrchr(param_1,0x2f);\n    if (local_30 == (char *)0x0) {\n      return local_3d;\n    }\n    for (; (param_1 < local_30 && (*local_30 == '/')); local_30 = local_30 + -1) {\n    }\n    local_30[1] = '\\0';\n    if (verbose != '\\0') {\n      uVar3 = quotearg_style(4,param_1);\n      uVar4 = gettext(\"removing directory, %s\");\n      prog_fprintf(_stdout,uVar4,uVar3);\n    }\n    iVar2 = rmdir(param_1);\n    local_3d = iVar2 == 0;\n    piVar5 = __errno_location();\n    iVar2 = *piVar5;\n  } while (local_3d);\n  cVar1 = ignorable_failure(iVar2,param_1);\n  if (cVar1 == '\\0') {\n    if (iVar2 == 0x14) {\n      local_28 = \"failed to remove %s\";\n    }\n    else {\n      local_28 = \"failed to remove directory %s\";\n    }\n    uVar3 = quotearg_style(4,param_1);\n    uVar4 = gettext(local_28);\n    error(0,iVar2,uVar4,uVar3);\n  }\n  else {\n    local_3d = true;\n  }\n  return local_3d;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_parents",
+                        "strip_trailing_slashes",
+                        "strrchr",
+                        "quotearg_style",
+                        "gettext",
+                        "prog_fprintf",
+                        "rmdir",
+                        "__errno_location",
+                        "ignorable_failure",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "remove_parents",
+                        "main"
+                    ],
+                    "defined_in_file": "rmdir_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... DIRECTORY...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"Remove the DIRECTORY(ies), if they are empty.\\n\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --ignore-fail-on-non-empty\\n                    ignore each failure to remove a non-empty directory\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -p, --parents     remove DIRECTORY and its ancestors;\\n                    e.g., \\'rmdir -p a/b\\' is similar to \\'rmdir a/b a\\'\\n\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -v, --verbose     output a diagnostic for every directory processed\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"rmdir\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "DIRECTORY"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "DIRECTORY",
+                        "fputs_unlocked",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "rmdir_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  char *__path;\n  char cVar1;\n  byte bVar2;\n  int iVar3;\n  int iVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  int *piVar7;\n  char *pcVar8;\n  void *__ptr;\n  long in_FS_OFFSET;\n  bool bVar9;\n  bool local_10e;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_10e = true;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  remove_empty_parents = '\\0';\nLAB_001008dd:\n  while( true ) {\n    iVar3 = getopt_long(param_1,param_2,&DAT_001010bd,longopts,0);\n    if (iVar3 == -1) {\n      if (param_1 != _optind) goto LAB_00100c55;\n      uVar5 = gettext(\"missing operand\");\n      error(0,0,uVar5);\n      usage(1);\n      do {\n        __path = (char *)param_2[_optind];\n        if (verbose != '\\0') {\n          uVar5 = quotearg_style(4,__path);\n          uVar6 = gettext(\"removing directory, %s\");\n          prog_fprintf(_stdout,uVar6,uVar5);\n        }\n        iVar3 = rmdir(__path);\n        if (iVar3 == 0) {\n          if (remove_empty_parents != '\\0') {\n            bVar2 = remove_parents(__path);\n            local_10e = (bVar2 & local_10e) != 0;\n          }\n        }\n        else {\n          piVar7 = __errno_location();\n          iVar3 = *piVar7;\n          cVar1 = ignorable_failure(iVar3,__path);\n          if (cVar1 == '\\0') {\n            bVar9 = false;\n            if ((((iVar3 == 0x14) && (pcVar8 = strrchr(__path,0x2f), pcVar8 != (char *)0x0)) &&\n                (pcVar8[1] == '\\0')) &&\n               (((iVar4 = stat(__path,&local_b8), iVar4 != 0 &&\n                 (piVar7 = __errno_location(), *piVar7 != 0x14)) ||\n                ((iVar4 == 0 && ((local_b8.st_mode & 0xf000) == 0x4000)))))) {\n              __ptr = (void *)xstrdup(__path);\n              strip_trailing_slashes(__path);\n              iVar4 = issymlink(__path);\n              bVar9 = iVar4 == 1;\n              if (bVar9) {\n                uVar5 = quotearg_style(4,__ptr);\n                uVar6 = gettext(\"failed to remove %s: Symbolic link not followed\");\n                error(0,0,uVar6,uVar5);\n              }\n              free(__ptr);\n            }\n            if (!bVar9) {\n              uVar5 = quotearg_style(4,__path);\n              uVar6 = gettext(\"failed to remove %s\");\n              error(0,iVar3,uVar6,uVar5);\n            }\n            local_10e = false;\n          }\n        }\n        _optind = _optind + 1;\nLAB_00100c55:\n      } while (_optind < param_1);\n      if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n        return local_10e ^ 1;\n      }\n                    /* WARNING: Subroutine does not return */\n      __stack_chk_fail();\n    }\n    if (iVar3 != 0x80) break;\n    ignore_fail_on_non_empty = 1;\n  }\n  if (iVar3 < 0x81) {\n    if (iVar3 == 0x76) {\n      verbose = '\\x01';\n      goto LAB_001008dd;\n    }\n    if (0x76 < iVar3) goto LAB_001008d3;\n    if (iVar3 == 0x70) {\n      remove_empty_parents = '\\x01';\n      goto LAB_001008dd;\n    }\n    if (iVar3 < 0x71) {\n      if (iVar3 == -0x83) {\nLAB_00100878:\n        uVar5 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n        version_etc(_stdout,\"rmdir\",\"GNU coreutils\",_Version,uVar5,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar3 == -0x82) {\n        usage(0);\n        goto LAB_00100878;\n      }\n    }\n  }\nLAB_001008d3:\n  usage(1);\n  goto LAB_001008dd;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "quotearg_style",
+                        "prog_fprintf",
+                        "rmdir",
+                        "remove_parents",
+                        "__errno_location",
+                        "ignorable_failure",
+                        "strrchr",
+                        "stat",
+                        "xstrdup",
+                        "strip_trailing_slashes",
+                        "issymlink",
+                        "free",
+                        "__stack_chk_fail",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "rmdir_decompiled.c"
+                }
+            }
+        ]
+    }
+}

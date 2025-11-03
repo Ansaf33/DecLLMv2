@@ -1,0 +1,339 @@
+{
+    "file": "KPRCA_00050",
+    "decompiled_code": {
+        "io.c": [
+            {
+                "func_name": "read_bytes",
+                "func_c_signature": "undefined4 read_bytes(int param_1,int param_2)",
+                "decompiled_code": "undefined4 read_bytes(int param_1,int param_2) {\n  int iVar1;\n  uint local_18;\n  int local_14;\n  uint local_10;\n  \n  local_14 = param_1;\n  while( true ) {\n    if (param_2 == 0) {\n      return 1;\n    }\n    iVar1 = receive(0,local_14,param_2,&local_18);\n    if ((iVar1 != 0) || (local_18 == 0)) break;\n    for (local_10 = 0; local_10 < local_18; local_10 = local_10 + 1) {\n      *(byte *)(local_10 + local_14) = ikey ^ *(byte *)(local_10 + local_14);\n      ikey = ikey + *(char *)(local_10 + local_14);\n    }\n    param_2 = param_2 - local_18;\n    local_14 = local_14 + local_18;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_bytes",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "read_bytes",
+                        "read_until",
+                        "consume_bytes",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_until",
+                "func_c_signature": "undefined4 read_until(int param_1,uint param_2,char param_3)",
+                "decompiled_code": "undefined4 read_until(int param_1,uint param_2,char param_3) {\n  int iVar1;\n  uint local_10;\n  \n  for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {\n    iVar1 = read_bytes(local_10 + param_1,1);\n    if (iVar1 == 0) {\n      return 0;\n    }\n    if (param_3 == *(char *)(local_10 + param_1)) break;\n  }\n  if (local_10 < param_2) {\n    *(undefined *)(local_10 + param_1) = 0;\n  }\n  else {\n    *(undefined *)(param_1 + (param_2 - 1)) = 0;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_until",
+                        "read_bytes"
+                    ],
+                    "calling_functions": [
+                        "read_until"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write_bytes",
+                "func_c_signature": "void write_bytes(int param_1,uint param_2)",
+                "decompiled_code": "void write_bytes(int param_1,uint param_2) {\n  int iVar1;\n  int local_1c;\n  char local_15;\n  int local_14;\n  uint local_10;\n  \n  local_14 = param_1;\n  for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {\n    local_15 = *(char *)(local_10 + param_1);\n    *(byte *)(local_10 + param_1) = okey ^ *(byte *)(local_10 + param_1);\n    okey = local_15 + okey;\n  }\n  while (((param_2 != 0 && (iVar1 = transmit(1,local_14,param_2,&local_1c), iVar1 == 0)) &&\n         (local_1c != 0))) {\n    param_2 = param_2 - local_1c;\n    local_14 = local_14 + local_1c;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_bytes",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "write_bytes",
+                        "write_string",
+                        "handle_msg_ping",
+                        "write_msg"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write_string",
+                "func_c_signature": "void write_string(char *param_1)",
+                "decompiled_code": "void write_string(char *param_1) {\n  size_t sVar1;\n  \n  sVar1 = strlen(param_1);\n  write_bytes(param_1,sVar1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_string",
+                        "strlen",
+                        "write_bytes"
+                    ],
+                    "calling_functions": [
+                        "write_string"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "is_supported",
+                "func_c_signature": "undefined4 is_supported(int param_1)",
+                "decompiled_code": "undefined4 is_supported(int param_1) {\n  undefined4 uVar1;\n  \n  if (((param_1 == 0) || (param_1 == 1)) || (param_1 == 2)) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_supported"
+                    ],
+                    "calling_functions": [
+                        "is_supported",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            },
+            {
+                "func_name": "consume_bytes",
+                "func_c_signature": "undefined4 consume_bytes(uint param_1)",
+                "decompiled_code": "undefined4 consume_bytes(uint param_1) {\n  int iVar1;\n  undefined local_210 [512];\n  uint local_10;\n  \n  while( true ) {\n    if (param_1 == 0) {\n      return 1;\n    }\n    local_10 = 0x200;\n    if (param_1 < 0x200) {\n      local_10 = param_1;\n    }\n    iVar1 = read_bytes(local_210,local_10);\n    if (iVar1 == 0) break;\n    param_1 = param_1 - local_10;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "consume_bytes",
+                        "read_bytes"
+                    ],
+                    "calling_functions": [
+                        "consume_bytes",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_msg",
+                "func_c_signature": "undefined4 handle_msg(ushort param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 handle_msg(ushort param_1,undefined4 param_2,undefined4 param_3) {\n  undefined4 uVar1;\n  \n  if (param_1 < 3) {\n    if (*(int *)(handlers + (uint)param_1 * 4) == 0) {\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = (**(code **)(handlers + (uint)param_1 * 4))(param_2,param_3);\n    }\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_msg"
+                    ],
+                    "calling_functions": [
+                        "handle_msg",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  uint uVar2;\n  undefined2 local_26;\n  undefined4 local_24;\n  void *local_20;\n  undefined2 local_1a;\n  uint local_18;\n  void *local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_14 = (void *)0x0;\n  init_vault();\n  store_in_vault(0,handlers,0xc);\n  do {\n    while( true ) {\n      iVar1 = read_bytes(&local_26,4);\n      if (iVar1 == 0) goto LAB_0001182e;\n      local_1a = swap16(local_26);\n      uVar2 = swap16(local_24 & 0xffff);\n      local_18 = uVar2 & 0xffff;\n      if ((uVar2 & 0x8000) != 0) {\n        iVar1 = read_bytes((int)&local_24 + 2,2);\n        if (iVar1 == 0) goto LAB_0001182e;\n        local_18 = swap32(local_24);\n        local_18 = local_18 & 0x7fffffff;\n      }\n      iVar1 = is_supported(local_1a);\n      if ((iVar1 == 0) || (local_20 = realloc(local_14,local_18), local_20 == (void *)0x0)) break;\n      local_14 = local_20;\n      iVar1 = read_bytes(local_20,local_18);\n      if (iVar1 == 0) goto LAB_0001182e;\n      handle_msg(local_1a,local_14,local_18);\n    }\n    iVar1 = consume_bytes(local_18);\n  } while (iVar1 != 0);\nLAB_0001182e:\n  free(local_14);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "init_vault",
+                        "store_in_vault",
+                        "read_bytes",
+                        "swap16",
+                        "swap32",
+                        "is_supported",
+                        "realloc",
+                        "handle_msg",
+                        "consume_bytes",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_msg_ping",
+                "func_c_signature": "undefined4 handle_msg_ping(undefined4 param_1,uint param_2)",
+                "decompiled_code": "undefined4 handle_msg_ping(undefined4 param_1,uint param_2) {\n  undefined2 uVar1;\n  undefined2 local_12;\n  undefined4 local_10;\n  \n  local_12 = swap16(0);\n  if (param_2 < 0x8000) {\n    uVar1 = swap16(param_2 & 0xffff);\n    local_10 = CONCAT22(local_10._2_2_,uVar1);\n    write_bytes(&local_12,4);\n  }\n  else {\n    local_10 = swap32(param_2 | 0x80000000);\n    write_bytes(&local_12,6);\n  }\n  write_bytes(param_1,param_2);\n  return 1;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT22"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_msg_ping",
+                        "swap16",
+                        "CONCAT22",
+                        "write_bytes",
+                        "swap32"
+                    ],
+                    "calling_functions": [
+                        "handle_msg_ping"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            }
+        ],
+        "time.c": [
+            {
+                "func_name": "handle_msg_time",
+                "func_c_signature": "undefined4 handle_msg_time(undefined4 *param_1,uint param_2)",
+                "decompiled_code": "undefined4 handle_msg_time(undefined4 *param_1,uint param_2) {\n  undefined4 uVar1;\n  uint uVar2;\n  uint uVar3;\n  uint uVar4;\n  int iVar5;\n  \n  if (param_2 < 8) {\n    uVar1 = 0;\n  }\n  else {\n    uVar2 = swap32(*param_1);\n    uVar3 = swap32(param_1[1]);\n    uVar4 = ((((uVar2 >> 0x1b) - (uint)(uVar2 * 0x20 < uVar2)) * 4 | uVar2 * 0x1f >> 0x1e) +\n            (uint)CARRY4(uVar2 * 0x7c,uVar2)) * 8 | uVar2 * 0x7d >> 0x1d;\n    uVar2 = uVar4 + uVar3 * 1000;\n    uVar3 = (((((uVar3 >> 0x1b) - (uint)(uVar3 * 0x20 < uVar3)) * 4 | uVar3 * 0x1f >> 0x1e) +\n             (uint)CARRY4(uVar3 * 0x7c,uVar3)) * 8 | uVar3 * 0x7d >> 0x1d) +\n            (uint)CARRY4(uVar4,uVar3 * 1000);\n    if ((uVar3 < DAT_0001600c || uVar3 - DAT_0001600c < (uint)(uVar2 < current_time)) ||\n       (iVar5 = (uVar3 - DAT_0001600c) - (uint)(uVar2 < current_time),\n       iVar5 != 0 || (uint)-iVar5 < (uint)(240000 < uVar2 - current_time))) {\n      uVar1 = 1;\n    }\n    else {\n      uVar1 = 1;\n      current_time = uVar2;\n      DAT_0001600c = uVar3;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [
+                    "CARRY4"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_msg_time",
+                        "swap32",
+                        "CARRY4"
+                    ],
+                    "calling_functions": [
+                        "handle_msg_time"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            }
+        ],
+        "vault.c": [
+            {
+                "func_name": "write_msg",
+                "func_c_signature": "void write_msg(undefined param_1,undefined4 param_2,int param_3)",
+                "decompiled_code": "void write_msg(undefined param_1,undefined4 param_2,int param_3) {\n  uint uVar1;\n  undefined2 uVar2;\n  undefined2 local_13;\n  undefined4 local_11;\n  undefined local_d;\n  \n  uVar1 = param_3 + 1;\n  local_13 = swap16(2);\n  if (uVar1 < 0x8000) {\n    uVar2 = swap16(uVar1 & 0xffff);\n    write_bytes(&local_13,5);\n  }\n  else {\n    local_11 = swap32(uVar1 | 0x80000000);\n    local_d = param_1;\n    write_bytes(&local_13,7);\n  }\n  write_bytes(param_2,param_3);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_msg",
+                        "swap16",
+                        "write_bytes",
+                        "swap32"
+                    ],
+                    "calling_functions": [
+                        "write_msg",
+                        "handle_msg_vault"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_vault",
+                "func_c_signature": "void init_vault(void)",
+                "decompiled_code": "void init_vault(void) {\n  undefined4 *puVar1;\n  \n  puVar1 = (undefined4 *)malloc(0xfb0);\n  the_vault = puVar1;\n  *puVar1 = 0xd0856180;\n  puVar1[1] = 0x34c;\n  the_vault[2] = 3600000;\n  the_vault[0x3eb] = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_vault",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "init_vault"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_msg_vault",
+                "func_c_signature": "undefined4 handle_msg_vault(char *param_1,int param_2)",
+                "decompiled_code": "undefined4 handle_msg_vault(char *param_1,int param_2) {\n  uint uVar1;\n  undefined4 *puVar2;\n  undefined4 uVar3;\n  undefined4 local_24;\n  undefined4 local_20;\n  void *local_1c;\n  void *local_18;\n  char local_11;\n  uint local_10;\n  \n  if (param_2 == 0) {\n    uVar3 = 0;\n  }\n  else {\n    local_11 = *param_1;\n    uVar1 = param_2 - 1;\n    puVar2 = (undefined4 *)(param_1 + 1);\n    if (local_11 == '\\x01') {\n      local_1c = malloc(*(int *)(the_vault + 0xfac) << 3);\n      if (local_1c == (void *)0x0) {\n        write_msg(1,0,0);\n      }\n      else {\n        for (local_10 = 0; local_10 < *(uint *)(the_vault + 0xfac); local_10 = local_10 + 1) {\n          puVar2 = (undefined4 *)(local_10 * 8 + (int)local_1c);\n          uVar3 = swap32(the_vault + local_10 * 8 + 0xc);\n          *puVar2 = uVar3;\n          puVar2 = (undefined4 *)(local_10 * 8 + 4 + (int)local_1c);\n          uVar3 = swap32(*(undefined4 *)(the_vault + 0x10 + local_10 * 8));\n          *puVar2 = uVar3;\n        }\n        write_msg(1,local_1c,*(int *)(the_vault + 0xfac) << 3);\n        free(local_1c);\n      }\n    }\n    else if (local_11 == '\\x02') {\n      uVar3 = store_in_vault(0,puVar2,uVar1);\n      local_20 = swap32(uVar3);\n      write_msg(2,&local_20,4);\n    }\n    else if ((local_11 == '\\x03') && (3 < uVar1)) {\n      local_20 = swap32(*puVar2);\n      uVar3 = store_in_vault(local_20,param_1 + 5,param_2 + -5);\n      local_20 = swap32(uVar3);\n      write_msg(3,&local_20,4);\n    }\n    else if ((local_11 == '\\x04') && (3 < uVar1)) {\n      local_20 = swap32(*puVar2);\n      local_18 = (void *)retrieve_from_vault(local_20,&local_24);\n      if (local_18 == (void *)0x0) {\n        write_msg(4,0,0);\n      }\n      else {\n        write_msg(4,local_18,local_24);\n      }\n      free(local_18);\n    }\n    uVar3 = 1;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_msg_vault",
+                        "malloc",
+                        "write_msg",
+                        "swap32",
+                        "free",
+                        "store_in_vault",
+                        "retrieve_from_vault"
+                    ],
+                    "calling_functions": [
+                        "handle_msg_vault"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            },
+            {
+                "func_name": "store_in_vault",
+                "func_c_signature": "void ** store_in_vault(void **param_1,void *param_2,void *param_3)",
+                "decompiled_code": "void ** store_in_vault(void **param_1,void *param_2,void *param_3) {\n  int iVar1;\n  int iVar2;\n  void *__dest;\n  void **local_10;\n  \n  iVar2 = the_vault;\n  if (param_1 == (void **)0x0) {\n    if (499 < *(uint *)(the_vault + 0xfac)) {\n      return (void **)0x0;\n    }\n    iVar1 = *(int *)(the_vault + 0xfac);\n    *(int *)(the_vault + 0xfac) = iVar1 + 1;\n    local_10 = (void **)(iVar1 * 8 + iVar2 + 0xc);\n  }\n  else {\n    local_10 = param_1;\n    if ((void **)(*(int *)(the_vault + 0xfac) * 8 + the_vault + 0xcU) <= param_1) {\n      return (void **)0x0;\n    }\n  }\n  __dest = malloc((size_t)param_3);\n  if (__dest == (void *)0x0) {\n    local_10 = (void **)0x0;\n  }\n  else {\n    memcpy(__dest,param_2,(size_t)param_3);\n    *local_10 = __dest;\n    local_10[1] = param_3;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "store_in_vault",
+                        "malloc",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "handle_msg_vault",
+                        "store_in_vault"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            },
+            {
+                "func_name": "retrieve_from_vault",
+                "func_c_signature": "undefined4 retrieve_from_vault(undefined4 *param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 retrieve_from_vault(undefined4 *param_1,undefined4 *param_2) {\n  undefined4 uVar1;\n  uint uVar2;\n  \n  if ((DAT_0001600c < the_vault[1] ||\n       DAT_0001600c - the_vault[1] < (uint)(current_time < *the_vault)) ||\n     (uVar2 = the_vault[1] + (uint)CARRY4(*the_vault,the_vault[2]),\n     uVar2 <= DAT_0001600c &&\n     (uint)(current_time < *the_vault + the_vault[2]) <= DAT_0001600c - uVar2)) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = *param_1;\n    *param_2 = param_1[1];\n    *param_1 = 0;\n    param_1[1] = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [
+                    "CARRY4"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "retrieve_from_vault",
+                        "CARRY4"
+                    ],
+                    "calling_functions": [
+                        "handle_msg_vault",
+                        "retrieve_from_vault"
+                    ],
+                    "defined_in_file": "KPRCA_00050_decompiled.c"
+                }
+            }
+        ]
+    }
+}

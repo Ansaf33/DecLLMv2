@@ -1,0 +1,319 @@
+{
+    "file": "pinky",
+    "decompiled_code": {
+        "pinky.c": [
+            {
+                "func_name": "count_ampersands",
+                "func_c_signature": "long count_ampersands(char *param_1)",
+                "decompiled_code": "long count_ampersands(char *param_1) {\n  char *local_20;\n  long local_10;\n  \n  local_10 = 0;\n  for (local_20 = param_1; *local_20 != '\\0'; local_20 = local_20 + 1) {\n    local_10 = local_10 + (ulong)(*local_20 == '&');\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "count_ampersands"
+                    ],
+                    "calling_functions": [
+                        "count_ampersands",
+                        "create_fullname"
+                    ],
+                    "defined_in_file": "pinky_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_fullname",
+                "func_c_signature": "char * create_fullname(char *param_1,char *param_2)",
+                "decompiled_code": "char * create_fullname(char *param_1,char *param_2) {\n  long lVar1;\n  ushort *puVar2;\n  byte bVar3;\n  int iVar4;\n  size_t sVar5;\n  long lVar6;\n  long lVar7;\n  char *pcVar8;\n  ushort **ppuVar9;\n  long in_FS_OFFSET;\n  bool bVar10;\n  char *local_60;\n  long local_58;\n  char *local_48;\n  char *local_40;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  sVar5 = strlen(param_1);\n  local_58 = sVar5 + 1;\n  lVar6 = count_ampersands(param_1);\n  if (lVar6 != 0) {\n    sVar5 = strlen(param_2);\n    lVar7 = lVar6 * (sVar5 - 1);\n    if ((SEXT816(lVar7) != SEXT816(lVar6) * SEXT816((long)(sVar5 - 1))) ||\n       (bVar10 = SCARRY8(lVar7,local_58), local_58 = lVar7 + local_58, bVar10)) {\n      xalloc_die();\n    }\n  }\n  pcVar8 = (char *)xmalloc(local_58);\n  local_48 = pcVar8;\n  for (local_60 = param_1; *local_60 != '\\0'; local_60 = local_60 + 1) {\n    if (*local_60 == '&') {\n      ppuVar9 = __ctype_b_loc();\n      puVar2 = *ppuVar9;\n      bVar3 = to_uchar((int)*param_2);\n      local_40 = param_2;\n      if ((puVar2[bVar3] & 0x200) != 0) {\n        bVar3 = to_uchar((int)*param_2);\n        iVar4 = toupper((uint)bVar3);\n        *local_48 = (char)iVar4;\n        local_48 = local_48 + 1;\n        local_40 = param_2 + 1;\n      }\n      while (*local_40 != '\\0') {\n        *local_48 = *local_40;\n        local_48 = local_48 + 1;\n        local_40 = local_40 + 1;\n      }\n    }\n    else {\n      *local_48 = *local_60;\n      local_48 = local_48 + 1;\n    }\n  }\n  *local_48 = '\\0';\n  if (lVar1 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return pcVar8;\n}",
+                "globals": [],
+                "externs": [
+                    "SEXT816",
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_fullname",
+                        "strlen",
+                        "count_ampersands",
+                        "SEXT816",
+                        "SCARRY8",
+                        "xalloc_die",
+                        "xmalloc",
+                        "__ctype_b_loc",
+                        "to_uchar",
+                        "toupper",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "create_fullname",
+                        "print_entry",
+                        "print_long_entry"
+                    ],
+                    "defined_in_file": "pinky_decompiled.c"
+                }
+            },
+            {
+                "func_name": "idle_string",
+                "func_c_signature": "char * idle_string(long param_1)",
+                "decompiled_code": "char * idle_string(long param_1) {\n  char *pcVar1;\n  \n  if (now_3 == 0) {\n    rpl_time(&now_3);\n  }\n  param_1 = now_3 - param_1;\n  if (param_1 < 0x3c) {\n    pcVar1 = \"     \";\n  }\n  else {\n    if (param_1 < 0x15180) {\n      sprintf(buf_2,\"%02d:%02d\",param_1 / 0xe10 & 0xffffffff,(param_1 % 0xe10) / 0x3c & 0xffffffff);\n    }\n    else {\n      sprintf(buf_2,\"%jdd\",param_1 / 0x15180);\n    }\n    pcVar1 = buf_2;\n  }\n  return pcVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "idle_string",
+                        "rpl_time",
+                        "sprintf"
+                    ],
+                    "calling_functions": [
+                        "idle_string",
+                        "print_entry"
+                    ],
+                    "defined_in_file": "pinky_decompiled.c"
+                }
+            },
+            {
+                "func_name": "time_string",
+                "func_c_signature": "undefined1 * time_string(long param_1)",
+                "decompiled_code": "undefined1 * time_string(long param_1) {\n  tm *__tp;\n  undefined1 *puVar1;\n  \n  __tp = localtime((time_t *)(param_1 + 0x20));\n  if (__tp == (tm *)0x0) {\n    puVar1 = (undefined1 *)timetostr(*(undefined8 *)(param_1 + 0x20),buf_1);\n  }\n  else {\n    strftime(buf_1,0x21,time_format,__tp);\n    puVar1 = buf_1;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "time_string",
+                        "localtime",
+                        "timetostr",
+                        "strftime"
+                    ],
+                    "calling_functions": [
+                        "time_string",
+                        "print_entry"
+                    ],
+                    "defined_in_file": "pinky_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_entry",
+                "func_c_signature": "void print_entry(char **param_1)",
+                "decompiled_code": "void print_entry(char **param_1) {\n  int iVar1;\n  char *pcVar2;\n  char *pcVar3;\n  size_t sVar4;\n  passwd *ppVar5;\n  undefined8 uVar6;\n  void *__ptr;\n  long in_FS_OFFSET;\n  char local_fd;\n  int local_fc;\n  long local_f8;\n  char *local_f0;\n  char *local_e8;\n  stat local_a8;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  pcVar3 = param_1[2];\n  pcVar2 = strchr(pcVar3,0x20);\n  if (pcVar2 != (char *)0x0) {\n    pcVar3 = pcVar2 + 1;\n  }\n  if (*pcVar3 == '/') {\n    local_fc = -100;\n  }\n  else {\n    if ((dev_dirfd_0 == 0) && (dev_dirfd_0 = open(\"/dev\",0x210000), dev_dirfd_0 < 0)) {\n      dev_dirfd_0 = -0x65;\n    }\n    local_fc = dev_dirfd_0;\n  }\n  if ((local_fc < -100) || (iVar1 = fstatat(local_fc,pcVar3,&local_a8,0), iVar1 != 0)) {\n    local_fd = '?';\n    local_f8 = 0;\n  }\n  else {\n    if ((local_a8.st_mode & 0x10) == 0) {\n      local_fd = '*';\n    }\n    else {\n      local_fd = ' ';\n    }\n    local_f8 = local_a8.st_atim.tv_sec;\n  }\n  pcVar3 = *param_1;\n  sVar4 = strnlen(pcVar3,8);\n  if (sVar4 < 8) {\n    printf(\"%-8s\",pcVar3);\n  }\n  else {\n    fputs_unlocked(pcVar3,_stdout);\n  }\n  if (include_fullname != '\\0') {\n    ppVar5 = getpwnam(pcVar3);\n    if (ppVar5 == (passwd *)0x0) {\n      uVar6 = gettext(\"        ???\");\n      printf(\" %19s\",uVar6);\n    }\n    else {\n      pcVar3 = strchr(ppVar5->pw_gecos,0x2c);\n      if (pcVar3 != (char *)0x0) {\n        *pcVar3 = '\\0';\n      }\n      __ptr = (void *)create_fullname(ppVar5->pw_gecos,ppVar5->pw_name);\n      printf(\" %-19.19s\",__ptr);\n      free(__ptr);\n    }\n  }\n  fputc_unlocked(0x20,_stdout);\n  fputc_unlocked((int)local_fd,_stdout);\n  sVar4 = strnlen(param_1[2],8);\n  if (sVar4 < 8) {\n    printf(\"%-8s\",param_1[2]);\n  }\n  else {\n    fputs_unlocked(param_1[2],_stdout);\n  }\n  if (include_idle != '\\0') {\n    if (local_f8 == 0) {\n      uVar6 = gettext(\"?????\");\n      printf(\" %-6s\",uVar6);\n    }\n    else {\n      uVar6 = idle_string(local_f8);\n      printf(\" %-6s\",uVar6);\n    }\n  }\n  uVar6 = time_string(param_1);\n  printf(\" %s\",uVar6);\n  if ((include_where != '\\0') && (*param_1[3] != '\\0')) {\n    local_f0 = (char *)0x0;\n    pcVar3 = param_1[3];\n    pcVar2 = strchr(pcVar3,0x3a);\n    local_e8 = pcVar2;\n    if (pcVar2 != (char *)0x0) {\n      local_e8 = pcVar2 + 1;\n      *pcVar2 = '\\0';\n    }\n    if ((*pcVar3 != '\\0') && (do_lookup != '\\0')) {\n      local_f0 = (char *)canon_host(pcVar3);\n    }\n    if (local_f0 == (char *)0x0) {\n      local_f0 = pcVar3;\n    }\n    fputc_unlocked(0x20,_stdout);\n    fputs_unlocked(local_f0,_stdout);\n    if (local_e8 != (char *)0x0) {\n      fputc_unlocked(0x3a,_stdout);\n      fputs_unlocked(local_e8,_stdout);\n    }\n    if (local_f0 != pcVar3) {\n      free(local_f0);\n    }\n  }\n  putchar_unlocked(10);\n  if (local_10 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_entry",
+                        "strchr",
+                        "open",
+                        "fstatat",
+                        "strnlen",
+                        "printf",
+                        "fputs_unlocked",
+                        "getpwnam",
+                        "gettext",
+                        "create_fullname",
+                        "free",
+                        "fputc_unlocked",
+                        "idle_string",
+                        "time_string",
+                        "canon_host",
+                        "putchar_unlocked",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_entry",
+                        "scan_entries"
+                    ],
+                    "defined_in_file": "pinky_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_long_entry",
+                "func_c_signature": "void print_long_entry(char *param_1)",
+                "decompiled_code": "void print_long_entry(char *param_1) {\n  passwd *ppVar1;\n  char *pcVar2;\n  undefined8 uVar3;\n  void *__ptr;\n  size_t sVar4;\n  size_t sVar5;\n  char *pcVar6;\n  FILE *pFVar7;\n  long in_FS_OFFSET;\n  undefined local_428 [1032];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  ppVar1 = getpwnam(param_1);\n  pcVar2 = (char *)gettext(\"Login name: \");\n  printf(pcVar2);\n  printf(\"%-28s\",param_1);\n  pcVar2 = (char *)gettext(\"In real life: \");\n  printf(pcVar2);\n  if (ppVar1 == (passwd *)0x0) {\n    uVar3 = gettext(&DAT_00101a0c);\n    printf(\" %s\",uVar3);\n  }\n  else {\n    pcVar2 = strchr(ppVar1->pw_gecos,0x2c);\n    if (pcVar2 != (char *)0x0) {\n      *pcVar2 = '\\0';\n    }\n    __ptr = (void *)create_fullname(ppVar1->pw_gecos,ppVar1->pw_name);\n    printf(\" %s\",__ptr);\n    free(__ptr);\n    putchar_unlocked(10);\n    if (include_home_and_shell != '\\0') {\n      pcVar2 = (char *)gettext(\"Directory: \");\n      printf(pcVar2);\n      printf(\"%-29s\",ppVar1->pw_dir);\n      pcVar2 = (char *)gettext(\"Shell: \");\n      printf(pcVar2);\n      printf(\" %s\",ppVar1->pw_shell);\n      putchar_unlocked(10);\n    }\n    if (include_project != '\\0') {\n      sVar4 = strlen(ppVar1->pw_dir);\n      sVar5 = strlen(\"/.project\");\n      pcVar2 = (char *)xmalloc(sVar5 + sVar4 + 1);\n      pcVar6 = stpcpy(pcVar2,ppVar1->pw_dir);\n      strcpy(pcVar6,\"/.project\");\n      pFVar7 = (FILE *)rpl_fopen(pcVar2,&DAT_00101a35);\n      if (pFVar7 != (FILE *)0x0) {\n        pcVar6 = (char *)gettext(\"Project: \");\n        printf(pcVar6);\n        while( true ) {\n          sVar4 = fread_unlocked(local_428,1,0x400,pFVar7);\n          if (sVar4 == 0) break;\n          fwrite_unlocked(local_428,1,sVar4,_stdout);\n        }\n        rpl_fclose(pFVar7);\n      }\n      free(pcVar2);\n    }\n    if (include_plan != '\\0') {\n      sVar4 = strlen(ppVar1->pw_dir);\n      sVar5 = strlen(\"/.plan\");\n      pcVar2 = (char *)xmalloc(sVar5 + sVar4 + 1);\n      pcVar6 = stpcpy(pcVar2,ppVar1->pw_dir);\n      strcpy(pcVar6,\"/.plan\");\n      pFVar7 = (FILE *)rpl_fopen(pcVar2,&DAT_00101a35);\n      if (pFVar7 != (FILE *)0x0) {\n        pcVar6 = (char *)gettext(\"Plan:\\n\");\n        printf(pcVar6);\n        while( true ) {\n          sVar4 = fread_unlocked(local_428,1,0x400,pFVar7);\n          if (sVar4 == 0) break;\n          fwrite_unlocked(local_428,1,sVar4,_stdout);\n        }\n        rpl_fclose(pFVar7);\n      }\n      free(pcVar2);\n    }\n    putchar_unlocked(10);\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_long_entry",
+                        "getpwnam",
+                        "gettext",
+                        "printf",
+                        "strchr",
+                        "create_fullname",
+                        "free",
+                        "putchar_unlocked",
+                        "strlen",
+                        "xmalloc",
+                        "stpcpy",
+                        "strcpy",
+                        "rpl_fopen",
+                        "fread_unlocked",
+                        "fwrite_unlocked",
+                        "rpl_fclose",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_long_entry",
+                        "long_pinky"
+                    ],
+                    "defined_in_file": "pinky_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_heading",
+                "func_c_signature": "void print_heading(void)",
+                "decompiled_code": "void print_heading(void) {\n  undefined8 uVar1;\n  \n  uVar1 = gettext(\"Login\");\n  printf(\"%-8s\",uVar1);\n  if (include_fullname != '\\0') {\n    uVar1 = gettext(&DAT_00101a55);\n    printf(\" %-19s\",uVar1);\n  }\n  uVar1 = gettext(&DAT_00101a61);\n  printf(\" %-9s\",uVar1);\n  if (include_idle != '\\0') {\n    uVar1 = gettext(&DAT_00101a6c);\n    printf(\" %-6s\",uVar1);\n  }\n  uVar1 = gettext(&DAT_00101a71);\n  printf(\" %-*s\",(ulong)time_format_width,uVar1);\n  if (include_where != '\\0') {\n    uVar1 = gettext(\"Where\");\n    printf(\" %s\",uVar1);\n  }\n  putchar_unlocked(10);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_heading",
+                        "gettext",
+                        "printf",
+                        "putchar_unlocked"
+                    ],
+                    "calling_functions": [
+                        "print_heading",
+                        "scan_entries"
+                    ],
+                    "defined_in_file": "pinky_decompiled.c"
+                }
+            },
+            {
+                "func_name": "scan_entries",
+                "func_c_signature": "void scan_entries(long param_1,char **param_2,int param_3,long param_4)",
+                "decompiled_code": "void scan_entries(long param_1,char **param_2,int param_3,long param_4) {\n  char cVar1;\n  char **local_28;\n  long local_20;\n  int local_c;\n  \n  cVar1 = hard_locale(2);\n  if (cVar1 == '\\0') {\n    time_format = \"%b %e %H:%M\";\n    time_format_width = 0xc;\n  }\n  else {\n    time_format = \"%Y-%m-%d %H:%M\";\n    time_format_width = 0x10;\n  }\n  local_28 = param_2;\n  local_20 = param_1;\n  if (include_heading != '\\0') {\n    print_heading();\n    local_20 = param_1;\n  }\n  do {\n    if (local_20 == 0) {\n      return;\n    }\n    if ((**local_28 != '\\0') && (*(short *)(local_28 + 7) == 7)) {\n      if (param_3 == 0) {\n        print_entry(local_28);\n      }\n      else {\n        for (local_c = 0; local_c < param_3; local_c = local_c + 1) {\n          cVar1 = streq(*local_28,*(undefined8 *)(param_4 + (long)local_c * 8));\n          if (cVar1 != '\\0') {\n            print_entry(local_28);\n            break;\n          }\n        }\n      }\n    }\n    local_28 = local_28 + 9;\n    local_20 = local_20 + -1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "scan_entries",
+                        "hard_locale",
+                        "print_heading",
+                        "print_entry",
+                        "streq"
+                    ],
+                    "calling_functions": [
+                        "scan_entries",
+                        "short_pinky"
+                    ],
+                    "defined_in_file": "pinky_decompiled.c"
+                }
+            },
+            {
+                "func_name": "short_pinky",
+                "func_c_signature": "void short_pinky(undefined8 param_1,undefined4 param_2,undefined8 param_3)",
+                "decompiled_code": "void short_pinky(undefined8 param_1,undefined4 param_2,undefined8 param_3) {\n  int iVar1;\n  undefined8 uVar2;\n  int *piVar3;\n  long in_FS_OFFSET;\n  undefined8 local_38;\n  undefined8 local_30;\n  undefined *local_28;\n  undefined8 local_20;\n  \n  local_20 = *(undefined8 *)(in_FS_OFFSET + 0x28);\n  iVar1 = read_utmp(param_1,&local_38,&local_30,2);\n  if (iVar1 != 0) {\n    uVar2 = quotearg_n_style_colon(0,3,param_1);\n    piVar3 = __errno_location();\n    local_28 = &DAT_00101a9d;\n    error(1,*piVar3,&DAT_00101a9d,uVar2);\n  }\n  scan_entries(local_38,local_30,param_2,param_3);\n                    /* WARNING: Subroutine does not return */\n  exit(0);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "short_pinky",
+                        "read_utmp",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "scan_entries",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "short_pinky",
+                        "main"
+                    ],
+                    "defined_in_file": "pinky_decompiled.c"
+                }
+            },
+            {
+                "func_name": "long_pinky",
+                "func_c_signature": "void long_pinky(int param_1,long param_2)",
+                "decompiled_code": "void long_pinky(int param_1,long param_2) {\n  int local_c;\n  \n  for (local_c = 0; local_c < param_1; local_c = local_c + 1) {\n    print_long_entry(*(undefined8 *)(param_2 + (long)local_c * 8));\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "long_pinky",
+                        "print_long_entry"
+                    ],
+                    "calling_functions": [
+                        "long_pinky",
+                        "main"
+                    ],
+                    "defined_in_file": "pinky_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [USER]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\n  -l              produce long format output for the specified USERs\\n  -b              omit the user\\'s home directory and shell in long format\\n  -h              omit the user\\'s project file in long format\\n  -p              omit the user\\'s plan file in long format\\n  -s              do short format output, this is the default\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -f              omit the line of column headings in short format\\n  -w              omit the user\\'s full name in short format\\n  -i              omit the user\\'s full name and remote host in short format\\n  -q              omit the user\\'s full name, remote host and idle time\\n                  in short format\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --lookup    attempt to canonicalize hostnames via DNS\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pcVar3 = (char *)gettext(\n                            \"\\nA lightweight \\'finger\\' program;  print user information.\\nThe utmp file will be %s.\\n\"\n                            );\n    printf(pcVar3,\"/var/run/utmp\");\n    emit_ancillary_info(\"pinky\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "pinky_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined8 main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined8 main(int param_1,undefined8 *param_2) {\n  int iVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  \n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  do {\n    while( true ) {\n      iVar1 = getopt_long(param_1,param_2,\"sfwiqbhlp\",longopts,0);\n      if (iVar1 == -1) {\n        param_1 = param_1 - _optind;\n        if ((do_short_format != '\\x01') && (param_1 == 0)) {\n          uVar4 = gettext(\"no username specified; at least one must be specified when using -l\");\n          error(0,0,uVar4);\n          usage(1);\n        }\n        if (do_short_format == '\\0') {\n          long_pinky(param_1,param_2 + _optind);\n        }\n        else {\n          short_pinky(\"/var/run/utmp\",param_1,param_2 + _optind);\n        }\n        return 0;\n      }\n      if (iVar1 < 0x81) break;\nswitchD_0010158f_caseD_63:\n      usage(1);\n    }\n    if (iVar1 < 0x62) {\n      if (iVar1 == -0x83) {\nLAB_00101629:\n        uVar4 = proper_name_lite(\"Kaveh Ghazi\",\"Kaveh Ghazi\");\n        uVar2 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n        uVar3 = proper_name_lite(\"Joseph Arceneaux\",\"Joseph Arceneaux\");\n        version_etc(_stdout,\"pinky\",\"GNU coreutils\",_Version,uVar3,uVar2,uVar4,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar1 == -0x82) {\n        usage(0);\n        goto LAB_00101629;\n      }\n      goto switchD_0010158f_caseD_63;\n    }\n    switch(iVar1) {\n    case 0x62:\n      include_home_and_shell = 0;\n      break;\n    default:\n      goto switchD_0010158f_caseD_63;\n    case 0x66:\n      include_heading = 0;\n      break;\n    case 0x68:\n      include_project = 0;\n      break;\n    case 0x69:\n      include_fullname = 0;\n      include_where = 0;\n      break;\n    case 0x6c:\n      do_short_format = '\\0';\n      break;\n    case 0x70:\n      include_plan = 0;\n      break;\n    case 0x71:\n      include_fullname = 0;\n      include_where = 0;\n      include_idle = 0;\n      break;\n    case 0x73:\n      do_short_format = '\\x01';\n      break;\n    case 0x77:\n      include_fullname = 0;\n      break;\n    case 0x80:\n      do_lookup = 1;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "long_pinky",
+                        "short_pinky",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "pinky_decompiled.c"
+                }
+            }
+        ]
+    }
+}

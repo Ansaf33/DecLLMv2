@@ -1,0 +1,1045 @@
+{
+    "file": "KPRCA_00021",
+    "decompiled_code": {
+        "array.c": [
+            {
+                "func_name": "array_create",
+                "func_c_signature": "undefined4 * array_create(int param_1,int param_2)",
+                "decompiled_code": "undefined4 * array_create(int param_1,int param_2) {\n  undefined4 *__ptr;\n  void *pvVar1;\n  \n  __ptr = (undefined4 *)malloc(0x10);\n  if ((__ptr != (undefined4 *)0x0) && (param_2 != 0)) {\n    __ptr[3] = param_2;\n    *__ptr = 0;\n    if (param_1 < 1) {\n      param_1 = 0x10;\n    }\n    __ptr[1] = param_1;\n    pvVar1 = malloc(__ptr[1] << 2);\n    __ptr[2] = pvVar1;\n    if (__ptr[2] != 0) {\n      return __ptr;\n    }\n  }\n  if (__ptr != (undefined4 *)0x0) {\n    if (__ptr[2] != 0) {\n      free((void *)__ptr[2]);\n    }\n    free(__ptr);\n  }\n  return (undefined4 *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "array_create",
+                        "malloc",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "array_create",
+                        "parse_array",
+                        "parse_item",
+                        "kty_loads"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_array_double_size",
+                "func_c_signature": "undefined4 _array_double_size(int param_1)",
+                "decompiled_code": "undefined4 _array_double_size(int param_1) {\n  undefined4 uVar1;\n  void *pvVar2;\n  \n  if (*(uint *)(param_1 + 4) < 0x20000000) {\n    pvVar2 = realloc(*(void **)(param_1 + 8),*(int *)(param_1 + 4) * 8);\n    if (pvVar2 == (void *)0x0) {\n      uVar1 = 0xffffffff;\n    }\n    else {\n      *(void **)(param_1 + 8) = pvVar2;\n      *(int *)(param_1 + 4) = *(int *)(param_1 + 4) * 2;\n      uVar1 = 0;\n    }\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_array_double_size",
+                        "realloc"
+                    ],
+                    "calling_functions": [
+                        "_array_double_size",
+                        "array_append"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "array_append",
+                "func_c_signature": "undefined4 array_append(int *param_1,int param_2)",
+                "decompiled_code": "undefined4 array_append(int *param_1,int param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  \n  if ((param_1 == (int *)0x0) || (param_2 == 0)) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    if ((param_1[1] == *param_1) && (iVar1 = _array_double_size(param_1), iVar1 != 0)) {\n      return 0xffffffff;\n    }\n    *(int *)(param_1[2] + *param_1 * 4) = param_2;\n    *param_1 = *param_1 + 1;\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "array_append",
+                        "_array_double_size"
+                    ],
+                    "calling_functions": [
+                        "array_append",
+                        "parse_array"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "array_get",
+                "func_c_signature": "undefined4 array_get(uint *param_1,uint param_2)",
+                "decompiled_code": "undefined4 array_get(uint *param_1,uint param_2) {\n  undefined4 uVar1;\n  \n  if ((param_1 == (uint *)0x0) || (*param_1 <= param_2)) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = *(undefined4 *)(param_1[2] + param_2 * 4);\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "array_get"
+                    ],
+                    "calling_functions": [
+                        "array_get",
+                        "kty_array_to_string",
+                        "parse_item",
+                        "nyan"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "array_length",
+                "func_c_signature": "undefined4 array_length(undefined4 *param_1)",
+                "decompiled_code": "undefined4 array_length(undefined4 *param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == (undefined4 *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = *param_1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "array_length"
+                    ],
+                    "calling_functions": [
+                        "array_length",
+                        "kty_array_to_string",
+                        "parse_item",
+                        "nyan"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "array_destroy",
+                "func_c_signature": "void array_destroy(uint *param_1)",
+                "decompiled_code": "void array_destroy(uint *param_1) {\n  uint local_10;\n  \n  if (param_1 != (uint *)0x0) {\n    if (param_1[2] != 0) {\n      for (local_10 = 0; local_10 < *param_1; local_10 = local_10 + 1) {\n        if (*(int *)(param_1[2] + local_10 * 4) != 0) {\n          (*(code *)param_1[3])(*(undefined4 *)(param_1[2] + local_10 * 4));\n        }\n      }\n      free((void *)param_1[2]);\n    }\n    free(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "array_destroy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "array_destroy",
+                        "parse_item",
+                        "kty_loads",
+                        "free_kty_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            }
+        ],
+        "hashtable.c": [
+            {
+                "func_name": "htbl_create",
+                "func_c_signature": "int * htbl_create(int param_1,int param_2)",
+                "decompiled_code": "int * htbl_create(int param_1,int param_2) {\n  int *__s;\n  void *pvVar1;\n  \n  __s = (int *)malloc(0x18);\n  if ((__s != (int *)0x0) && (param_2 != 0)) {\n    memset(__s,0,0x18);\n    __s[5] = param_2;\n    if (param_1 < 1) {\n      param_1 = 0x10;\n    }\n    *__s = param_1;\n    __s[1] = 0;\n    pvVar1 = malloc(*__s << 2);\n    __s[2] = (int)pvVar1;\n    if (__s[2] != 0) {\n      memset((void *)__s[2],0,*__s * 4);\n      return __s;\n    }\n  }\n  if (__s != (int *)0x0) {\n    if (__s[2] != 0) {\n      free((void *)__s[2]);\n    }\n    free(__s);\n  }\n  return (int *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "htbl_create",
+                        "malloc",
+                        "memset",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "htbl_create"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_htbl_hash",
+                "func_c_signature": "uint _htbl_hash(uint *param_1,char *param_2)",
+                "decompiled_code": "uint _htbl_hash(uint *param_1,char *param_2) {\n  size_t sVar1;\n  uint local_14;\n  uint local_10;\n  \n  local_14 = 0x9e370001;\n  local_10 = 0;\n  while( true ) {\n    sVar1 = strlen(param_2);\n    if (sVar1 <= local_10) break;\n    local_14 = (local_14 + (int)param_2[local_10]) * 0x20;\n    local_10 = local_10 + 1;\n  }\n  return (local_14 + (uint)(0x9e370000 < local_14) * 0x61c8ffff) % *param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_htbl_hash",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "_htbl_hash",
+                        "htbl_put",
+                        "htbl_get"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_htbl_double_size",
+                "func_c_signature": "undefined4 _htbl_double_size(uint *param_1)",
+                "decompiled_code": "undefined4 _htbl_double_size(uint *param_1) {\n  undefined4 uVar1;\n  void *pvVar2;\n  \n  if (*param_1 < 0x20000000) {\n    pvVar2 = realloc((void *)param_1[2],*param_1 * 8);\n    if (pvVar2 == (void *)0x0) {\n      uVar1 = 0xffffffff;\n    }\n    else {\n      memset((void *)((int)pvVar2 + *param_1 * 4),0,*param_1 * 4);\n      param_1[2] = (uint)pvVar2;\n      *param_1 = *param_1 * 2;\n      uVar1 = 0;\n    }\n  }\n  else {\n    uVar1 = 0xffffffff;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_htbl_double_size",
+                        "realloc",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "_htbl_double_size",
+                        "htbl_put"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "htbl_put",
+                "func_c_signature": "undefined4 htbl_put(uint *param_1,char *param_2,char *param_3)",
+                "decompiled_code": "undefined4 htbl_put(uint *param_1,char *param_2,char *param_3) {\n  int iVar1;\n  char **ppcVar2;\n  undefined4 uVar3;\n  char *pcVar4;\n  uint local_10;\n  \n  if (((param_1 == (uint *)0x0) || (param_2 == (char *)0x0)) || (param_3 == (char *)0x0)) {\n    uVar3 = 0xffffffff;\n  }\n  else {\n    if ((_DAT_00015000 * (double)(ulonglong)*param_1 <= (double)(ulonglong)param_1[1]) &&\n       (iVar1 = _htbl_double_size(param_1), iVar1 != 0)) {\n      return 0xffffffff;\n    }\n    local_10 = _htbl_hash(param_1,param_2);\n    while (ppcVar2 = *(char ***)(param_1[2] + local_10 * 4), ppcVar2 != (char **)0x0) {\n      if (((ppcVar2 != (char **)0x0) && (*ppcVar2 != (char *)0x0)) &&\n         (iVar1 = strcmp(*ppcVar2,param_2), iVar1 == 0)) {\n        (*(code *)param_1[5])(ppcVar2[1]);\n        ppcVar2[1] = param_3;\n        return 0;\n      }\n      local_10 = local_10 + 1;\n      if (*param_1 == local_10) {\n        local_10 = 0;\n      }\n    }\n    ppcVar2 = (char **)malloc(0xc);\n    if (ppcVar2 == (char **)0x0) {\n      uVar3 = 0xffffffff;\n    }\n    else {\n      pcVar4 = strdup(param_2);\n      *ppcVar2 = pcVar4;\n      ppcVar2[1] = param_3;\n      ppcVar2[2] = (char *)0x0;\n      if (param_1[4] == 0) {\n        param_1[3] = (uint)ppcVar2;\n        param_1[4] = param_1[3];\n      }\n      else {\n        *(char ***)(param_1[4] + 8) = ppcVar2;\n        param_1[4] = (uint)ppcVar2;\n      }\n      *(char ***)(local_10 * 4 + param_1[2]) = ppcVar2;\n      param_1[1] = param_1[1] + 1;\n      uVar3 = 0;\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "htbl_put",
+                        "_htbl_double_size",
+                        "_htbl_hash",
+                        "strcmp",
+                        "malloc",
+                        "strdup"
+                    ],
+                    "calling_functions": [
+                        "htbl_put"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "htbl_get",
+                "func_c_signature": "char * htbl_get(uint *param_1,char *param_2)",
+                "decompiled_code": "char * htbl_get(uint *param_1,char *param_2) {\n  char **ppcVar1;\n  int iVar2;\n  uint local_14;\n  uint local_10;\n  \n  if (((param_1 != (uint *)0x0) && (param_2 != (char *)0x0)) && (param_1[1] != 0)) {\n    local_10 = _htbl_hash(param_1,param_2);\n    local_14 = 0;\n    while ((local_14 < *param_1 &&\n           (ppcVar1 = *(char ***)(param_1[2] + local_10 * 4), ppcVar1 != (char **)0x0))) {\n      if ((*ppcVar1 != (char *)0x0) && (iVar2 = strcmp(*ppcVar1,param_2), iVar2 == 0)) {\n        return ppcVar1[1];\n      }\n      local_10 = local_10 + 1;\n      if (*param_1 == local_10) {\n        local_10 = 0;\n      }\n      local_14 = local_14 + 1;\n    }\n  }\n  return (char *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "htbl_get",
+                        "_htbl_hash",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "htbl_get"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "htbl_destroy",
+                "func_c_signature": "void htbl_destroy(uint *param_1)",
+                "decompiled_code": "void htbl_destroy(uint *param_1) {\n  void **__ptr;\n  uint local_10;\n  \n  if (param_1 != (uint *)0x0) {\n    if (param_1[2] != 0) {\n      for (local_10 = 0; local_10 < *param_1; local_10 = local_10 + 1) {\n        __ptr = *(void ***)(param_1[2] + local_10 * 4);\n        if (__ptr != (void **)0x0) {\n          if (*__ptr != (void *)0x0) {\n            free(*__ptr);\n          }\n          if (__ptr[1] != (void *)0x0) {\n            (*(code *)param_1[5])(__ptr[1]);\n          }\n          free(__ptr);\n        }\n      }\n      free((void *)param_1[2]);\n      param_1[2] = 0;\n    }\n    free(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "htbl_destroy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "htbl_destroy",
+                        "parse_item",
+                        "free_kty_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            }
+        ],
+        "kty.c": [
+            {
+                "func_name": "eat_ws",
+                "func_c_signature": "char * eat_ws(char *param_1)",
+                "decompiled_code": "char * eat_ws(char *param_1) {\n  for (; ((param_1 != (char *)0x0 && (*param_1 != '\\0')) && (*param_1 < '!')); param_1 = param_1 + 1\n      ) {\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "eat_ws"
+                    ],
+                    "calling_functions": [
+                        "eat_ws",
+                        "parse_array",
+                        "parse_object",
+                        "parse_item",
+                        "kty_loads"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_escaped",
+                "func_c_signature": "void print_escaped(int param_1,int param_2)",
+                "decompiled_code": "void print_escaped(int param_1,int param_2) {\n  int iVar1;\n  int iVar2;\n  int iVar3;\n  undefined2 local_16;\n  char *local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_16 = 0;\n  local_14 = \"0123456789ABCDEF\";\n  do {\n    while( true ) {\n      iVar2 = param_2 + -1;\n      if (param_2 == 0) {\n        return;\n      }\n      iVar1 = local_10 + 1;\n      local_16 = CONCAT11(local_16._1_1_,*(char *)(param_1 + local_10));\n      iVar3 = (int)*(char *)(param_1 + local_10);\n      param_2 = iVar2;\n      local_10 = iVar1;\n      if (iVar3 < 0x30) break;\n      if (iVar3 == 0x5c) {\n        fdprintf(1,&DAT_0001501c);\n      }\n      else {\n_L10:\n        fdprintf(1,&DAT_00015031,&local_16);\n      }\n    }\n    if (iVar3 < 8) goto _L10;\n    switch(iVar3) {\n    case 8:\n      fdprintf(1,&DAT_00015022);\n      break;\n    case 9:\n      fdprintf(1,&DAT_0001502e);\n      break;\n    case 10:\n      fdprintf(1,&DAT_00015028);\n      break;\n    default:\n      goto _L10;\n    case 0xc:\n      fdprintf(1,&DAT_00015025);\n      break;\n    case 0xd:\n      fdprintf(1,&DAT_0001502b);\n      break;\n    case 0x22:\n      fdprintf(1,&DAT_00015019);\n      break;\n    case 0x2f:\n      fdprintf(1,&DAT_0001501f);\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT11"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_escaped",
+                        "CONCAT11",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "print_escaped",
+                        "kty_string_to_string",
+                        "kty_object_to_string"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_indent",
+                "func_c_signature": "void print_indent(int param_1)",
+                "decompiled_code": "void print_indent(int param_1) {\n  int local_10;\n  \n  for (local_10 = 0; SBORROW4(local_10,param_1 * 2) != local_10 + param_1 * -2 < 0;\n      local_10 = local_10 + 1) {\n    fdprintf(1,&DAT_000150d4);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "SBORROW4"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_indent",
+                        "SBORROW4",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "print_indent",
+                        "kty_object_to_string",
+                        "kty_array_to_string"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "kty_int_to_string",
+                "func_c_signature": "void kty_int_to_string(int param_1)",
+                "decompiled_code": "void kty_int_to_string(int param_1) {\n  fdprintf(1,&DAT_000150d6,*(undefined4 *)(param_1 + 4));\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "kty_int_to_string",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "kty_int_to_string",
+                        "kty_print_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "kty_double_to_string",
+                "func_c_signature": "void kty_double_to_string(int param_1)",
+                "decompiled_code": "void kty_double_to_string(int param_1) {\n  double dVar1;\n  int local_10;\n  \n  dVar1 = *(double *)(param_1 + 4);\n  if ((dVar1 < 0.0) && ((int)ROUND(dVar1) == 0)) {\n    fdprintf(1,&DAT_000150d9);\n  }\n  fdprintf(1,&DAT_000150db,(int)ROUND(dVar1));\n  local_10 = (int)ROUND(_DAT_00015188 * dVar1) % 100;\n  if (local_10 < 0) {\n    local_10 = -local_10;\n  }\n  fdprintf(1,&DAT_000150df,local_10);\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "kty_double_to_string",
+                        "ROUND",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "kty_double_to_string",
+                        "kty_print_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "kty_string_to_string",
+                "func_c_signature": "void kty_string_to_string(int param_1)",
+                "decompiled_code": "void kty_string_to_string(int param_1) {\n  fdprintf(1,&DAT_000150e4);\n  print_escaped(*(undefined4 *)(param_1 + 4),*(undefined4 *)(param_1 + 8));\n  fdprintf(1,&DAT_000150e4);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "kty_string_to_string",
+                        "fdprintf",
+                        "print_escaped"
+                    ],
+                    "calling_functions": [
+                        "kty_string_to_string",
+                        "kty_print_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "kty_object_to_string",
+                "func_c_signature": "void kty_object_to_string(int param_1,int param_2)",
+                "decompiled_code": "void kty_object_to_string(int param_1,int param_2) {\n  int iVar1;\n  size_t sVar2;\n  char **local_14;\n  int local_10;\n  \n  local_10 = 0;\n  fdprintf(1,&DAT_000150e6);\n  iVar1 = *(int *)(param_1 + 4);\n  if (iVar1 != 0) {\n    fdprintf(1,&DAT_000150e8);\n    for (local_14 = *(char ***)(iVar1 + 0xc); local_14 != (char **)0x0;\n        local_14 = (char **)local_14[2]) {\n      if (0 < local_10) {\n        fdprintf(1,&DAT_000150ea);\n      }\n      local_10 = local_10 + 1;\n      print_indent(param_2 + 1);\n      fdprintf(1,&DAT_000150e4);\n      sVar2 = strlen(*local_14);\n      print_escaped(*local_14,sVar2);\n      fdprintf(1,&DAT_000150ed);\n      kty_print_item(local_14[1],param_2 + 1);\n    }\n  }\n  if (0 < local_10) {\n    fdprintf(1,&DAT_000150e8);\n    print_indent(param_2);\n  }\n  fdprintf(1,&DAT_000150f1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "kty_object_to_string",
+                        "fdprintf",
+                        "print_indent",
+                        "strlen",
+                        "print_escaped",
+                        "kty_print_item"
+                    ],
+                    "calling_functions": [
+                        "kty_object_to_string",
+                        "kty_print_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "kty_array_to_string",
+                "func_c_signature": "void kty_array_to_string(int param_1,int param_2)",
+                "decompiled_code": "void kty_array_to_string(int param_1,int param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  int local_14;\n  int local_10;\n  \n  local_14 = 0;\n  fdprintf(1,&DAT_000150f3);\n  iVar1 = array_length(*(undefined4 *)(param_1 + 4));\n  if (0 < iVar1) {\n    fdprintf(1,&DAT_000150e8);\n  }\n  local_10 = 0;\n  while( true ) {\n    iVar1 = array_length(*(undefined4 *)(param_1 + 4));\n    if (iVar1 <= local_10) break;\n    if (0 < local_14) {\n      fdprintf(1,&DAT_000150ea);\n    }\n    local_14 = local_14 + 1;\n    print_indent(param_2 + 1);\n    uVar2 = array_get(*(undefined4 *)(param_1 + 4),local_10);\n    kty_print_item(uVar2,param_2 + 1);\n    local_10 = local_10 + 1;\n  }\n  if (0 < local_14) {\n    fdprintf(1,&DAT_000150e8);\n    print_indent(param_2);\n  }\n  fdprintf(1,&DAT_000150f5);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "kty_array_to_string",
+                        "fdprintf",
+                        "array_length",
+                        "print_indent",
+                        "array_get",
+                        "kty_print_item"
+                    ],
+                    "calling_functions": [
+                        "kty_array_to_string",
+                        "kty_print_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "kty_boolean_to_string",
+                "func_c_signature": "void kty_boolean_to_string(int param_1)",
+                "decompiled_code": "void kty_boolean_to_string(int param_1) {\n  char *pcVar1;\n  \n  if (*(char *)(param_1 + 4) == '\\0') {\n    pcVar1 = \"false\";\n  }\n  else {\n    pcVar1 = \"true\";\n  }\n  fdprintf(1,&DAT_00015031,pcVar1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "kty_boolean_to_string",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "kty_boolean_to_string",
+                        "kty_print_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "kty_null_to_string",
+                "func_c_signature": "void kty_null_to_string(void)",
+                "decompiled_code": "void kty_null_to_string(void) {\n  fdprintf(1,&DAT_00015102);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "kty_null_to_string",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "kty_null_to_string",
+                        "kty_print_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "kty_cat_to_string",
+                "func_c_signature": "void kty_cat_to_string(void)",
+                "decompiled_code": "void kty_cat_to_string(void) {\n  *g_parser = *g_parser + 1;\n  fdprintf(1,\"=^.^=\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "kty_cat_to_string",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "kty_cat_to_string",
+                        "kty_print_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "kty_print_item",
+                "func_c_signature": "void kty_print_item(undefined4 *param_1,undefined4 param_2)",
+                "decompiled_code": "void kty_print_item(undefined4 *param_1,undefined4 param_2) {\n  switch(*param_1) {\n  case 0:\n    kty_int_to_string(param_1);\n    break;\n  case 1:\n    kty_double_to_string(param_1);\n    break;\n  case 2:\n    kty_string_to_string(param_1);\n    break;\n  case 3:\n    kty_object_to_string(param_1,param_2);\n    break;\n  case 4:\n    kty_array_to_string(param_1,param_2);\n    break;\n  case 5:\n    kty_boolean_to_string(param_1);\n    break;\n  case 6:\n    kty_null_to_string(param_1);\n    break;\n  case 7:\n    kty_cat_to_string(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "kty_print_item",
+                        "kty_int_to_string",
+                        "kty_double_to_string",
+                        "kty_string_to_string",
+                        "kty_object_to_string",
+                        "kty_array_to_string",
+                        "kty_boolean_to_string",
+                        "kty_null_to_string",
+                        "kty_cat_to_string"
+                    ],
+                    "calling_functions": [
+                        "kty_object_to_string",
+                        "kty_array_to_string",
+                        "kty_print_item",
+                        "kty_dumps"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "kty_dumps",
+                "func_c_signature": "void kty_dumps(int param_1)",
+                "decompiled_code": "void kty_dumps(int param_1) {\n  *g_parser = 0;\n  if (param_1 != 0) {\n    kty_print_item(param_1,0);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "kty_dumps",
+                        "kty_print_item"
+                    ],
+                    "calling_functions": [
+                        "kty_dumps"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_number",
+                "func_c_signature": "char * parse_number(undefined4 *param_1,char *param_2)",
+                "decompiled_code": "char * parse_number(undefined4 *param_1,char *param_2) {\n  char *pcVar1;\n  long lVar2;\n  double dVar3;\n  char *local_10;\n  \n  local_10 = strchr(param_2,0x20);\n  if (local_10 == (char *)0x0) {\n    local_10 = strchr(param_2,0x2c);\n  }\n  if (local_10 == (char *)0x0) {\n    local_10 = strchr(param_2,0x5d);\n  }\n  if (local_10 == (char *)0x0) {\n    local_10 = strchr(param_2,0x7d);\n  }\n  pcVar1 = strchr(param_2,0x2e);\n  if ((((local_10 == (char *)0x0) || (pcVar1 == (char *)0x0)) || (local_10 <= pcVar1)) &&\n     ((pcVar1 == (char *)0x0 || (local_10 != (char *)0x0)))) {\n    lVar2 = strtol(param_2,&param_2,10);\n    *param_1 = 0;\n    param_1[1] = lVar2;\n  }\n  else {\n    dVar3 = strtod(param_2,&param_2);\n    *param_1 = 1;\n    *(double *)(param_1 + 1) = dVar3;\n  }\n  return param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_number",
+                        "strchr",
+                        "strtol",
+                        "strtod"
+                    ],
+                    "calling_functions": [
+                        "parse_number",
+                        "parse_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_string",
+                "func_c_signature": "char * parse_string(undefined4 *param_1,char *param_2)",
+                "decompiled_code": "char * parse_string(undefined4 *param_1,char *param_2) {\n  void *pvVar1;\n  char *local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  local_18 = param_2 + 1;\n  *param_1 = 2;\n  param_1[1] = 0;\n  if (*param_2 == '\\\"') {\n    for (; (*local_18 != '\\0' && (*local_18 != '\\\"')); local_18 = local_18 + 1) {\n      if (*local_18 == '\\\\') {\n        local_18 = local_18 + 1;\n        local_10 = local_10 + 1;\n      }\n      local_14 = local_14 + 1;\n      local_10 = local_10 + 1;\n    }\n    if (local_14 < 0x100) {\n      pvVar1 = malloc(local_14 + 1);\n      param_1[1] = pvVar1;\n      if (param_1[1] == 0) {\n        param_2 = (char *)0x0;\n      }\n      else {\n        local_14 = 0;\n        for (local_18 = param_2 + 1; (*local_18 != '\\0' && (*local_18 != '\\\"'));\n            local_18 = local_18 + 1) {\n          if (*local_18 == '\\\\') {\n            local_18 = local_18 + 1;\n            switch(*local_18) {\n            case 'b':\n              *(undefined *)(local_14 + param_1[1]) = 8;\n              break;\n            default:\n              *(char *)(param_1[1] + local_14) = *local_18;\n              break;\n            case 'f':\n              *(undefined *)(local_14 + param_1[1]) = 0xc;\n              break;\n            case 'n':\n              *(undefined *)(local_14 + param_1[1]) = 10;\n              break;\n            case 'r':\n              *(undefined *)(local_14 + param_1[1]) = 0xd;\n              break;\n            case 't':\n              *(undefined *)(local_14 + param_1[1]) = 9;\n            }\n          }\n          else {\n            *(char *)(param_1[1] + local_14) = *local_18;\n          }\n          local_14 = local_14 + 1;\n        }\n        *(undefined *)(local_14 + param_1[1]) = 0;\n        param_1[2] = local_14;\n        param_2 = param_2 + local_10 + 2;\n      }\n    }\n    else {\n      param_2 = (char *)0x0;\n    }\n  }\n  else {\n    param_2 = (char *)0x0;\n  }\n  return param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_string",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "parse_string",
+                        "parse_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_array",
+                "func_c_signature": "char * parse_array(undefined4 *param_1,char *param_2)",
+                "decompiled_code": "char * parse_array(undefined4 *param_1,char *param_2) {\n  char *pcVar1;\n  undefined4 uVar2;\n  void *local_10;\n  \n  *param_1 = 4;\n  param_1[1] = 0;\n  pcVar1 = (char *)eat_ws((int)param_2 + 1);\n  if (*pcVar1 == ']') {\n    pcVar1 = pcVar1 + 1;\n  }\n  else {\n    local_10 = malloc(0xc);\n    if (local_10 != (void *)0x0) {\n      uVar2 = array_create(4,free_kty_item);\n      param_1[1] = uVar2;\n      if (param_1[1] != 0) {\n        uVar2 = eat_ws(pcVar1);\n        uVar2 = parse_item(local_10,uVar2);\n        param_2 = (char *)eat_ws(uVar2);\n        if (param_2 != (char *)0x0) {\n          array_append(param_1[1],local_10);\n          while (local_10 = (void *)0x0, *param_2 == ',') {\n            local_10 = malloc(0xc);\n            if (local_10 == (void *)0x0) goto LAB_00012747;\n            uVar2 = eat_ws(param_2 + 1);\n            uVar2 = parse_item(local_10,uVar2);\n            param_2 = (char *)eat_ws(uVar2);\n            if (param_2 == (char *)0x0) goto LAB_00012747;\n            array_append(param_1[1],local_10);\n          }\n          if (*param_2 == ']') {\n            return param_2 + 1;\n          }\n        }\n      }\n    }\nLAB_00012747:\n    if (local_10 != (void *)0x0) {\n      free_kty_item(local_10);\n    }\n    pcVar1 = (char *)0x0;\n  }\n  return pcVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_array",
+                        "eat_ws",
+                        "malloc",
+                        "array_create",
+                        "parse_item",
+                        "array_append",
+                        "free_kty_item"
+                    ],
+                    "calling_functions": [
+                        "parse_array",
+                        "parse_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_object",
+                "func_c_signature": "char * parse_object(undefined4 *param_1,char *param_2)",
+                "decompiled_code": "char * parse_object(undefined4 *param_1,char *param_2) {\n  char *pcVar1;\n  void *pvVar2;\n  undefined4 uVar3;\n  char *pcVar4;\n  int iVar5;\n  int *piVar6;\n  int iVar7;\n  int *local_10;\n  \n  local_10 = (int *)0x0;\n  iVar7 = 0;\n  *param_1 = 3;\n  param_1[1] = 0;\n  pcVar1 = (char *)eat_ws((int)param_2 + 1,0,0,0);\n  if (*pcVar1 == '}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_object",
+                        "eat_ws"
+                    ],
+                    "calling_functions": [
+                        "parse_object",
+                        "parse_item"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_item",
+                "func_c_signature": "char * parse_item(undefined4 *param_1,char *param_2)",
+                "decompiled_code": "char * parse_item(undefined4 *param_1,char *param_2) {\n  char cVar1;\n  int iVar2;\n  char *pcVar3;\n  \n  if ((param_1 != (undefined4 *)0x0) && (param_2 != (char *)0x0)) {\n    cVar1 = *param_2;\n    iVar2 = strncmp(param_2,\"true\",4);\n    if (iVar2 == 0) {\n      *param_1 = 5;\n      *(undefined *)(param_1 + 1) = 1;\n      return param_2 + 4;\n    }\n    iVar2 = strncmp(param_2,\"false\",5);\n    if (iVar2 == 0) {\n      *param_1 = 5;\n      *(undefined *)(param_1 + 1) = 0;\n      return param_2 + 5;\n    }\n    iVar2 = strncmp(param_2,\"null\",4);\n    if (iVar2 == 0) {\n      *param_1 = 6;\n      return param_2 + 4;\n    }\n    iVar2 = strncmp(param_2,\"=^.^=\",5);\n    if (iVar2 == 0) {\n      *param_1 = 7;\n      return param_2 + 5;\n    }\n    if (cVar1 == '{') {\n      pcVar3 = (char *)parse_object(param_1,param_2);\n      return pcVar3;\n    }\n    if (cVar1 < '|') {\n      if (cVar1 == '[') {\n        pcVar3 = (char *)parse_array(param_1,param_2);\n        return pcVar3;\n      }\n      if ((cVar1 < '\\\\') && (cVar1 < ':')) {\n        if (('/' < cVar1) || (cVar1 == '-')) {\nLAB_00012cd3:\n          pcVar3 = (char *)parse_number(param_1,param_2);\n          return pcVar3;\n        }\n        if (cVar1 < '.') {\n          if (cVar1 == '\\\"') {\n            pcVar3 = (char *)parse_string(param_1,param_2);\n            return pcVar3;\n          }\n          if (cVar1 == '+') goto LAB_00012cd3;\n        }\n      }\n    }\n  }\n  return (char *)0x0;\n}\n\n// Function: kty_loads\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nvoid * kty_loads(undefined4 param_1)\n\n{\n  void *pvVar1;\n  undefined4 uVar2;\n  int iVar3;\n  \n  pvVar1 = calloc(1,0xc);\n  if (pvVar1 != (void *)0x0) {\n    if (*(int *)(g_parser + 4) != 0) {\n      array_destroy(*(undefined4 *)(g_parser + 4));\n    }\n    iVar3 = g_parser;\n    uVar2 = array_create(0x10,free_kty_item);\n    *(undefined4 *)(iVar3 + 4) = uVar2;\n    if (*(int *)(g_parser + 4) != 0) {\n      uVar2 = eat_ws(param_1);\n      iVar3 = parse_item(pvVar1,uVar2);\n      if (iVar3 != 0) {\n        return pvVar1;\n      }\n    }\n  }\n  if (pvVar1 != (void *)0x0) {\n    free_kty_item(pvVar1);\n  }\n  return (void *)0x0;\n}\n\n// Function: kty_init\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nundefined4 kty_init(undefined4 *param_1)\n\n{\n  undefined4 uVar1;\n  \n  if (param_1 == (undefined4 *)0x0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    *param_1 = 0;\n    param_1[1] = 0;\n    param_1[2] = kty_dumps;\n    param_1[3] = kty_loads;\n    g_parser = param_1;\n    uVar1 = 0;\n  }\n  return uVar1;\n}\n\n// Function: free_kty_item\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nvoid free_kty_item(uint *param_1)\n\n{\n  uint uVar1;\n  \n  if (param_1 != (uint *)0x0) {\n    uVar1 = *param_1;\n    if (uVar1 == 4) {\n      array_destroy(param_1[1]);\n    }\n    else if (uVar1 < 5) {\n      if (uVar1 == 2) {\n        if (param_1[1] != 0) {\n          free((void *)param_1[1]);\n        }\n      }\n      else if (uVar1 == 3) {\n        htbl_destroy(param_1[1]);\n      }\n    }\n    free(param_1);\n  }\n  return;\n}\n\n// Function: exit\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid exit(int __status)\n\n{\n                    /* WARNING: Subroutine does not return */\n  _terminate(__status);\n}\n\n// Function: read_until\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nint read_until(undefined4 param_1,char *param_2,uint param_3,char param_4)\n\n{\n  char *pcVar1;\n  char cVar2;\n  int iVar3;\n  int local_18;\n  char *local_14;\n  uint local_10;\n  \n  local_14 = param_2;\n  for (local_10 = 0; local_10 < param_3; local_10 = local_10 + 1) {\n    iVar3 = receive(param_1,local_14,1,&local_18);\n    if ((iVar3 != 0) || (local_18 == 0)) {\n      return -1;\n    }\n    pcVar1 = local_14 + 1;\n    cVar2 = *local_14;\n    local_14 = pcVar1;\n    if (param_4 == cVar2) break;\n  }\n  local_14[-1] = '\\0';\n  return (int)local_14 - (int)param_2;\n}\n\n// Function: import_kty\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nvoid import_kty(undefined4 param_1)\n\n{\n  if (my_kty != 0) {\n    free_kty_item(my_kty);\n    my_kty = 0;\n  }\n  *parser = 0;\n  my_kty = (*(code *)parser[3])(param_1);\n  if (my_kty == 0) {\n    fdprintf(1,\"Error!\\n\");\n  }\n  return;\n}\n\n// Function: print_kty\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid print_kty(void)\n\n{\n  if (my_kty == 0) {\n    fdprintf(1,\"Error!\\n\");\n  }\n  else {\n    *parser = 0;\n    (*(code *)parser[2])(my_kty);\n  }\n  return;\n}\n\n// Function: nyan\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nvoid nyan(void)\n\n{\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 *puVar3;\n  undefined4 local_5a8 [96];\n  undefined4 local_428 [256];\n  int local_28;\n  undefined4 *local_24;\n  int local_20;\n  \n  puVar2 = local_428;\n  for (iVar1 = 0x100; iVar1 != 0; iVar1 = iVar1 + -1) {\n    *puVar2 = 0;\n    puVar2 = puVar2 + 1;\n  }\n  puVar2 = (undefined4 *)\n           \"\\n\\n+      o     +              o\\n    +             o     +       +\\no          +\\n    o  +           +        +\\n+        o     o       +        o\\n-_-_-_-_-_-_-_,------,      o\\n_-_-_-_-_-_-_-|   /\\\\_/\\\\\\n-_-_-_-_-_-_-~|__( ^ .^)  +     +\\n_-_-_-_-_-_-_-\\\"\\\"  \\\"\\\"\\n+      o         o   +       o\\n    +         +\\no        o         o      o     +\\n    o           +\\n+      +     o        o      +\\n\\n\"\n  ;\n  puVar3 = local_5a8;\n  for (iVar1 = 0x60; iVar1 != 0; iVar1 = iVar1 + -1) {\n    *puVar3 = *puVar2;\n    puVar2 = puVar2 + 1;\n    puVar3 = puVar3 + 1;\n  }\n  if (my_kty == 0) {\n    fdprintf(1,\"Error!\\n\");\n  }\n  else {\n    (*(code *)parser[2])(my_kty);\n    if (2 < *parser) {\n      fdprintf(1,&DAT_00015198,local_5a8);\n      local_24 = local_428;\n      local_20 = 0;\n      while( true ) {\n        iVar1 = array_length(parser[1]);\n        if (iVar1 <= local_20) break;\n        local_28 = array_get(parser[1],local_20);\n        strcpy((char *)local_24,*(char **)(local_28 + 4));\n        local_24 = (undefined4 *)((int)local_24 + *(int *)(local_28 + 8));\n        local_20 = local_20 + 1;\n      }\n      fdprintf(1,\"NYAN SAYS...\\n\\\"\\n%s\\n\\\"\",local_428);\n    }\n  }\n  return;\n}\n\n// Function: quit\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid quit(void)\n\n{\n  fdprintf(1,\"\\n\\n=^.^=// Bye!\\n\\n\");\n                    /* WARNING: Subroutine does not return */\n  exit(0);\n}\n\n// Function: menu\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nvoid menu(void)\n\n{\n  fdprintf(1,\"=======================\\n\");\n  fdprintf(1,\" 1. Import KTY\\n\");\n  fdprintf(1,\" 2. Print KTY\\n\");\n  fdprintf(1,\" 3. Quit\\n\");\n  fdprintf(1,\"=======================\\n\");\n  return;\n}\n\n// Function: main\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nundefined4 main(void)\n\n{\n  int iVar1;\n  char local_2024 [16];\n  undefined local_2014 [8192];\n  long local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  fdprintf(1,\"KTY Pretty Printer v0.1\\n\");\n  parser = malloc(0x10);\n  iVar1 = kty_init(parser);\n  if (iVar1 != 0) {\n    fdprintf(1,\"Error!\\n\");\n    quit();\n  }\n  menu();\nLAB_000133b2:\n  while( true ) {\n    iVar1 = read_until(0,local_2024,0x10,10);\n    if (iVar1 < 1) {\n      return 0;\n    }\n    local_14 = strtol(local_2024,(char **)0x0,10);\n    if (local_14 != 0x309) break;\n    nyan();\n  }\n  if (local_14 < 0x30a) {\n    if (local_14 == 3) {\n      quit();\n      goto LAB_000133b2;\n    }\n    if (3 < local_14) goto LAB_0001339d;\n    if (local_14 == 1) {\n      iVar1 = read_until(0,local_2014,0x2000,0);\n      if (iVar1 < 1) {\n        fdprintf(1,\"Error!\\n\");\n      }\n      else {\n        import_kty(local_2014);\n      }\n      goto LAB_000133b2;\n    }\n    if (local_14 == 2) {\n      print_kty();\n      goto LAB_000133b2;\n    }\n  }\nLAB_0001339d:\n  fdprintf(1,\"Invalid menu. Try again.\\n\");\n  goto LAB_000133b2;\n}\n\n// Function: exit\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid exit(int __status)\n\n{\n                    /* WARNING: Subroutine does not return */\n  _terminate(__status);\n}\n\n// Function: strdup\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nchar * strdup(char *__s)\n\n{\n  size_t sVar1;\n  char *__s_00;\n  \n  if (__s != (char *)0x0) {\n    sVar1 = strlen(__s);\n    sVar1 = sVar1 + 1;\n    __s_00 = (char *)malloc(sVar1);\n    if (__s_00 != (char *)0x0) {\n      memset(__s_00,0,sVar1);\n      memcpy(__s_00,__s,sVar1);\n      return __s_00;\n    }\n  }\n  return (char *)0x0;\n}\n\n// Function: exit\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid exit(int __status)\n\n{\n                    /* WARNING: Subroutine does not return */\n  _terminate(__status);\n}\n\n// Function: strncmp\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint strncmp(char *__s1,char *__s2,size_t __n)\n\n{\n  size_t sVar1;\n  int iVar2;\n  bool bVar3;\n  \n  for (; (((*__s1 != '\\0' && (*__s2 != '\\0')) &&\n          (sVar1 = __n - 1, bVar3 = __n != 0, __n = sVar1, bVar3)) && (*__s1 == *__s2));\n      __s1 = __s1 + 1) {\n    __s2 = __s2 + 1;\n  }\n  if (__n == 0) {\n    iVar2 = 0;\n  }\n  else {\n    iVar2 = (int)*__s2 - (int)*__s1;\n  }\n  return iVar2;\n}\n\n// Function: exit\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid exit(int __status)\n\n{\n                    /* WARNING: Subroutine does not return */\n  _terminate(__status);\n}\n\n// Function: strtod\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\ndouble strtod(char *__nptr,char **__endptr)\n\n{\n  char cVar1;\n  bool bVar2;\n  bool bVar3;\n  char *pcVar4;\n  char *pcVar5;\n  int iVar6;\n  double local_24;\n  double local_1c;\n  \n  pcVar5 = __nptr;\n  bVar3 = false;\n  bVar2 = false;\n  local_1c = 0.0;\n  local_24 = 1.0;\n  while ((*__nptr != '\\0' && (iVar6 = isspace((int)*__nptr), iVar6 != 0))) {\n    __nptr = __nptr + 1;\n  }\n  if (*__nptr == '-') {\n    bVar3 = true;\n    __nptr = __nptr + 1;\n    pcVar4 = __nptr;\n  }\n  else {\n    pcVar4 = __nptr;\n    if (*__nptr == '+') {\n      __nptr = __nptr + 1;\n      pcVar4 = __nptr;\n    }\n  }\n  while (cVar1 = *__nptr, cVar1 != '\\0') {\n    if (cVar1 == '.') {\n      bVar2 = true;\n      __nptr = __nptr + 1;\n    }\n    else {\n      if ((cVar1 < '0') || ('9' < cVar1)) break;\n      if (bVar2) {\n        local_24 = local_24 / DAT_000153b8;\n        local_1c = local_1c + (double)(cVar1 + -0x30) * local_24;\n      }\n      else {\n        local_1c = (double)(cVar1 + -0x30) + DAT_000153b8 * local_1c;\n      }\n      __nptr = __nptr + 1;\n    }\n  }\n  local_1c = DAT_000153c0 + local_1c;\n  if (pcVar4 == __nptr) {\n    local_1c = 0.0;\n    __nptr = pcVar5;\n  }\n  if (__endptr != (char **)0x0) {\n    *__endptr = __nptr;\n  }\n  if (bVar3) {\n    local_1c = -local_1c;\n  }\n  return local_1c;\n}\n\n// Function: exit\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid exit(int __status)\n\n{\n                    /* WARNING: Subroutine does not return */\n  _terminate(__status);\n}\n\n// Function: calloc\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nvoid * calloc(size_t __nmemb,size_t __size)\n\n{\n  void *pvVar1;\n  uint __size_00;\n  \n  if ((__nmemb == 0) || (__size == 0)) {\n    pvVar1 = (void *)0x0;\n  }\n  else {\n    __size_00 = __nmemb * __size;\n    if (__nmemb == __size_00 / __size) {\n      pvVar1 = malloc(__size_00);\n      if (pvVar1 == (void *)0x0) {\n        pvVar1 = (void *)0x0;\n      }\n      else {\n        pvVar1 = memset(pvVar1,0,__size_00);\n      }\n    }\n    else {\n      pvVar1 = (void *)0x0;\n    }\n  }\n  return pvVar1;\n}\n\n// Function: isalnum\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint isalnum(int param_1)\n\n{\n  int iVar1;\n  \n  iVar1 = isalpha(param_1);\n  if ((iVar1 == 0) && (iVar1 = isdigit(param_1), iVar1 == 0)) {\n    return 0;\n  }\n  return 1;\n}\n\n// Function: isalpha\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint isalpha(int param_1)\n\n{\n  int iVar1;\n  \n  iVar1 = islower(param_1);\n  if ((iVar1 == 0) && (iVar1 = isupper(param_1), iVar1 == 0)) {\n    return 0;\n  }\n  return 1;\n}\n\n// Function: isascii\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint isascii(int __c)\n\n{\n  return (uint)((uint)__c < 0x80);\n}\n\n// Function: isblank\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint isblank(int param_1)\n\n{\n  int iVar1;\n  \n  if ((param_1 == 0x20) || (param_1 == 9)) {\n    iVar1 = 1;\n  }\n  else {\n    iVar1 = 0;\n  }\n  return iVar1;\n}\n\n// Function: iscntrl\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint iscntrl(int param_1)\n\n{\n  int iVar1;\n  \n  if ((param_1 == 0x7f) || (param_1 < 0x20)) {\n    iVar1 = 1;\n  }\n  else {\n    iVar1 = 0;\n  }\n  return iVar1;\n}\n\n// Function: isdigit\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint isdigit(int param_1)\n\n{\n  return (uint)(param_1 - 0x30U < 10);\n}\n\n// Function: isgraph\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint isgraph(int param_1)\n\n{\n  int iVar1;\n  \n  if ((param_1 != 0x20) && (iVar1 = isprint(param_1), iVar1 != 0)) {\n    return 1;\n  }\n  return 0;\n}\n\n// Function: islower\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint islower(int param_1)\n\n{\n  return (uint)(param_1 - 0x61U < 0x1a);\n}\n\n// Function: isprint\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint isprint(int param_1)\n\n{\n  int iVar1;\n  \n  if ((param_1 < 0x20) || (param_1 == 0x7f)) {\n    iVar1 = 0;\n  }\n  else {\n    iVar1 = 1;\n  }\n  return iVar1;\n}\n\n// Function: ispunct\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint ispunct(int param_1)\n\n{\n  return (uint)(byte)_punct[param_1];\n}\n\n// Function: isspace\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint isspace(int param_1)\n\n{\n  int iVar1;\n  \n  if (((param_1 < 9) || (0xd < param_1)) && (param_1 != 0x20)) {\n    iVar1 = 0;\n  }\n  else {\n    iVar1 = 1;\n  }\n  return iVar1;\n}\n\n// Function: isupper\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint isupper(int param_1)\n\n{\n  return (uint)(param_1 - 0x41U < 0x1a);\n}\n\n// Function: isxdigit\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint isxdigit(int param_1)\n\n{\n  return (uint)(byte)_xdigit[param_1];\n}\n\n// Function: toascii\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint toascii(int __c)\n\n{\n  return __c & 0x7f;\n}\n\n// Function: tolower\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint tolower(int __c)\n\n{\n  int iVar1;\n  \n  iVar1 = isupper(__c);\n  if (iVar1 != 0) {\n    __c = __c | 0x20;\n  }\n  return __c;\n}\n\n// Function: toupper\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint toupper(int __c)\n\n{\n  int iVar1;\n  \n  iVar1 = islower(__c);\n  if (iVar1 != 0) {\n    __c = __c & 0x5f;\n  }\n  return __c;\n}\n\n// Function: exit\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid exit(int __status)\n\n{\n                    /* WARNING: Subroutine does not return */\n  _terminate(__status);\n}\n\n// Function: free_huge\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid free_huge(undefined4 *param_1)\n\n{\n  deallocate(param_1,*param_1);\n  return;\n}\n\n// Function: free\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nvoid free(void *__ptr)\n\n{\n  uint *puVar1;\n  \n  if ((__ptr != (void *)0x0) &&\n     (puVar1 = (uint *)((int)__ptr + -0x18), *(int *)((int)__ptr + -0x14) == 0)) {\n    if (*puVar1 < 0x40000) {\n      insert_into_flist(puVar1);\n      coalesce(puVar1);\n    }\n    else {\n      free_huge(puVar1);\n    }\n  }\n  return;\n}\n\n// Function: exit\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid exit(int __status)\n\n{\n                    /* WARNING: Subroutine does not return */\n  _terminate(__status);\n}\n\n// Function: allocate_new_blk\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nundefined4 allocate_new_blk(void)\n\n{\n  int iVar1;\n  undefined4 uVar2;\n  undefined4 *local_18;\n  undefined4 *local_14;\n  undefined4 local_10;\n  \n  local_10 = 0x40000;\n  iVar1 = allocate(0x40000,0,&local_18,0x13a63);\n  if (iVar1 == 0) {\n    if (local_18 == (undefined4 *)0x0) {\n      uVar2 = 1;\n    }\n    else {\n      local_14 = local_18;\n      *local_18 = local_10;\n      local_18[1] = 1;\n      local_18[3] = 0;\n      local_18[2] = 0;\n      local_18[5] = 0;\n      local_18[4] = 0;\n      insert_into_flist(local_18);\n      uVar2 = 0;\n    }\n  }\n  else {\n    uVar2 = 1;\n  }\n  return uVar2;\n}\n\n// Function: find_fit\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nint find_fit(uint param_1,uint **param_2)\n\n{\n  int local_10;\n  \n  local_10 = get_size_class(param_1);\n  do {\n    if (0x1f < local_10) {\n      *param_2 = (uint *)0x0;\n      return -1;\n    }\n    *param_2 = *(uint **)(free_lists + local_10 * 4);\n    while (*param_2 != (uint *)0x0) {\n      if (param_1 <= **param_2) {\n        return local_10;\n      }\n      *param_2 = (uint *)(*param_2)[2];\n    }\n    local_10 = local_10 + 1;\n  } while( true );\n}\n\n// Function: malloc_huge\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint * malloc_huge(int param_1)\n\n{\n  int iVar1;\n  int *local_14 [3];\n  \n  iVar1 = allocate(param_1 + 0x18,0,local_14,0x13b7d);\n  if (iVar1 == 0) {\n    *local_14[0] = param_1 + 0x18;\n    local_14[0][1] = 0;\n    local_14[0][3] = 0;\n    local_14[0][2] = 0;\n    local_14[0][5] = 0;\n    local_14[0][4] = 0;\n    local_14[0] = local_14[0] + 6;\n  }\n  else {\n    local_14[0] = (int *)0x0;\n  }\n  return local_14[0];\n}\n\n// Function: malloc\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nvoid * malloc(size_t __size)\n\n{\n  int iVar1;\n  int iVar2;\n  int *local_1c;\n  uint *local_18;\n  uint local_14;\n  undefined4 local_10;\n  \n  if (__size == 0) {\n    local_1c = (int *)0x0;\n  }\n  else if (__size + 0x18 < 0x40000) {\n    if ((__size & 7) != 0) {\n      __size = __size + 7 & 0xfffffff8;\n    }\n    if ((int)__size < 0) {\n      local_1c = (int *)0x0;\n    }\n    else {\n      iVar1 = __size + 0x18;\n      local_1c = (int *)0x0;\n      local_10 = find_fit(iVar1,&local_1c);\n      if (local_1c == (int *)0x0) {\n        iVar2 = allocate_new_blk();\n        if (iVar2 != 0) {\n          return (void *)0x0;\n        }\n        local_10 = 0x1f;\n        local_1c = (int *)free_lists._124_4_;\n      }\n      remove_from_flist(local_1c);\n      local_14 = *local_1c - iVar1;\n      if (0x30 < local_14) {\n        local_18 = (uint *)(iVar1 + (int)local_1c);\n        *local_18 = local_14;\n        local_18[1] = 1;\n        local_18[2] = 0;\n        local_18[3] = 0;\n        *local_1c = iVar1;\n        local_18[5] = (uint)local_1c;\n        local_18[4] = local_1c[4];\n        if (local_1c[4] != 0) {\n          *(uint **)(local_1c[4] + 0x14) = local_18;\n        }\n        local_1c[4] = (int)local_18;\n        insert_into_flist(local_18);\n      }\n      local_1c = local_1c + 6;\n    }\n  }\n  else {\n    local_1c = (int *)malloc_huge(__size);\n  }\n  return local_1c;\n}\n\n// Function: exit\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid exit(int __status)\n\n{\n                    /* WARNING: Subroutine does not return */\n  _terminate(__status);\n}\n\n// Function: remove_from_blist\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid remove_from_blist(int param_1)\n\n{\n  if (*(int *)(param_1 + 0x14) != 0) {\n    *(undefined4 *)(*(int *)(param_1 + 0x14) + 0x10) = *(undefined4 *)(param_1 + 0x10);\n  }\n  if (*(int *)(param_1 + 0x10) != 0) {\n    *(undefined4 *)(*(int *)(param_1 + 0x10) + 0x14) = *(undefined4 *)(param_1 + 0x14);\n  }\n  return;\n}\n\n// Function: get_size_class\n/* WARNING: Function: __x86.get_pc_thunk.dx replaced with injection: get_pc_thunk_dx */\n\nint get_size_class(uint param_1)\n\n{\n  int local_8;\n  \n  for (local_8 = 0; (local_8 < 0x20 && (*(uint *)(local_8 * 4 + 0x18000) < param_1));\n      local_8 = local_8 + 1) {\n  }\n  return local_8;\n}\n\n// Function: insert_into_flist\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nvoid insert_into_flist(undefined4 *param_1)\n\n{\n  int iVar1;\n  \n  iVar1 = get_size_class(*param_1);\n  param_1[1] = 1;\n  if (*(int *)(free_lists + iVar1 * 4) == 0) {\n    *(undefined4 **)(free_lists + iVar1 * 4) = param_1;\n  }\n  else {\n    param_1[2] = *(undefined4 *)(free_lists + iVar1 * 4);\n    *(undefined4 **)(*(int *)(free_lists + iVar1 * 4) + 0xc) = param_1;\n    *(undefined4 **)(free_lists + iVar1 * 4) = param_1;\n    param_1[3] = 0;\n  }\n  return;\n}\n\n// Function: remove_from_flist\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nvoid remove_from_flist(undefined4 *param_1)\n\n{\n  int iVar1;\n  \n  iVar1 = get_size_class(*param_1);\n  if (param_1[3] != 0) {\n    *(undefined4 *)(param_1[3] + 8) = param_1[2];\n  }\n  if (param_1[2] != 0) {\n    *(undefined4 *)(param_1[2] + 0xc) = param_1[3];\n  }\n  if (param_1 == *(undefined4 **)(free_lists + iVar1 * 4)) {\n    *(undefined4 *)(free_lists + iVar1 * 4) = param_1[2];\n  }\n  param_1[2] = 0;\n  param_1[3] = 0;\n  param_1[1] = 0;\n  return;\n}\n\n// Function: coalesce\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid coalesce(int *param_1)\n\n{\n  if ((((param_1[5] == 0) || (*(int *)(param_1[5] + 4) == 0)) || (param_1[4] == 0)) ||\n     (*(int *)(param_1[4] + 4) == 0)) {\n    if (((param_1[5] == 0) || (*(int *)(param_1[5] + 4) == 0)) ||\n       ((param_1[4] == 0 || (*(int *)(param_1[4] + 4) != 0)))) {\n      if (((param_1[5] != 0) && (*(int *)(param_1[5] + 4) == 0)) &&\n         ((param_1[4] != 0 && (*(int *)(param_1[4] + 4) != 0)))) {\n        remove_from_flist(param_1[4]);\n        remove_from_flist(param_1);\n        *param_1 = *param_1 + *(int *)param_1[4];\n        insert_into_flist(param_1);\n        remove_from_blist(param_1[4]);\n      }\n    }\n    else {\n      remove_from_flist(param_1[5]);\n      remove_from_flist(param_1);\n      *(int *)param_1[5] = *param_1 + *(int *)param_1[5];\n      insert_into_flist(param_1[5]);\n      remove_from_blist(param_1);\n    }\n  }\n  else {\n    remove_from_flist(param_1[5]);\n    remove_from_flist(param_1[4]);\n    remove_from_flist(param_1);\n    *(int *)param_1[5] = *param_1 + *(int *)param_1[5];\n    *(int *)param_1[5] = *(int *)param_1[4] + *(int *)param_1[5];\n    insert_into_flist(param_1[5]);\n    remove_from_blist(param_1[4]);\n    remove_from_blist(param_1);\n  }\n  return;\n}\n\n// Function: __x86.get_pc_thunk.dx\n/* WARNING: This is an inlined function */\n\nvoid __x86_get_pc_thunk_dx(void)\n\n{\n  return;\n}\n\n// Function: memchr\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid * memchr(void *__s,int __c,size_t __n)\n\n{\n  uint local_8;\n  \n  local_8 = 0;\n  while( true ) {\n    if (__n <= local_8) {\n      return (void *)0x0;\n    }\n    if (__c == (uint)*(byte *)(local_8 + (int)__s)) break;\n    local_8 = local_8 + 1;\n  }\n  return (void *)(local_8 + (int)__s);\n}\n\n// Function: memcmp\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint memcmp(void *__s1,void *__s2,size_t __n)\n\n{\n  uint local_8;\n  \n  local_8 = 0;\n  while( true ) {\n    if (__n <= local_8) {\n      return 0;\n    }\n                    /* WARNING: Load size is inaccurate */\n                    /* WARNING: Load size is inaccurate */\n    if (*__s1 != *__s2) break;\n    __s1 = (void *)((int)__s1 + 1);\n    __s2 = (void *)((int)__s2 + 1);\n    local_8 = local_8 + 1;\n  }\n                    /* WARNING: Load size is inaccurate */\n                    /* WARNING: Load size is inaccurate */\n  return (int)*__s2 - (int)*__s1;\n}\n\n// Function: memcpy\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid * memcpy(void *__dest,void *__src,size_t __n)\n\n{\n  uint local_8;\n  \n  for (local_8 = 0; local_8 < __n; local_8 = local_8 + 1) {\n    *(undefined *)(local_8 + (int)__dest) = *(undefined *)(local_8 + (int)__src);\n  }\n  return __dest;\n}\n\n// Function: memset\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid * memset(void *__s,int __c,size_t __n)\n\n{\n  uint local_c;\n  undefined *local_8;\n  \n  if (__s == (void *)0x0) {\n    __s = (void *)0x0;\n  }\n  else if (__n != 0) {\n    local_8 = (undefined *)__s;\n    for (local_c = 0; local_c < __n; local_c = local_c + 1) {\n      *local_8 = (char)__c;\n      local_8 = local_8 + 1;\n    }\n  }\n  return __s;\n}\n\n// Function: exit\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid exit(int __status)\n\n{\n                    /* WARNING: Subroutine does not return */\n  _terminate(__status);\n}\n\n// Function: output_number_printf\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nint output_number_printf(undefined4 param_1,uint param_2,uint param_3,int param_4,uint param_5)\n\n{\n  char local_2d;\n  undefined local_2c [7];\n  char local_25;\n  undefined local_24 [7];\n  undefined local_1d;\n  undefined local_1c [7];\n  undefined local_15;\n  undefined local_14 [4];\n  int local_10;\n  \n  local_10 = 0;\n  if (param_3 <= param_2) {\n    local_10 = output_number_printf(param_1,param_2 / param_3,param_3,param_4 + -1,param_5);\n    param_2 = param_2 % param_3;\n  }\n  if ((local_10 == 0) && (0 < param_4)) {\n    while (param_4 = param_4 + -1, param_4 != 0) {\n      if ((param_5 & 1) == 0) {\n        local_1d = 0x20;\n        transmit(param_1,&local_1d,1,local_1c);\n      }\n      else {\n        local_15 = 0x30;\n        transmit(param_1,&local_15,1,local_14);\n      }\n    }\n  }\n  local_25 = (char)param_2;\n  if ((param_5 & 2) == 0) {\n    if (param_2 < 10) {\n      local_2d = local_25 + '0';\n    }\n    else {\n      local_2d = local_25 + 'W';\n    }\n    transmit(param_1,&local_2d,1,local_2c);\n  }\n  else {\n    if (param_2 < 10) {\n      local_25 = local_25 + '0';\n    }\n    else {\n      local_25 = local_25 + '7';\n    }\n    transmit(param_1,&local_25,1,local_24);\n  }\n  return local_10 + 1;\n}\n\n// Function: fdprintf\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nundefined4 fdprintf(undefined4 param_1,char *param_2)\n\n{\n  char *pcVar1;\n  char **ppcVar2;\n  char *__nptr;\n  int iVar3;\n  size_t sVar4;\n  char local_55;\n  undefined local_54 [7];\n  char local_4d;\n  undefined local_4c [7];\n  undefined local_45;\n  undefined local_44 [7];\n  char local_3d;\n  undefined local_3c [7];\n  undefined local_35;\n  undefined local_34 [4];\n  char **local_30;\n  char *local_2c;\n  char *local_28;\n  char local_21;\n  undefined4 local_20;\n  long local_1c;\n  uint local_18;\n  uint local_14;\n  char *local_10;\n  \n  local_20 = 0;\n  local_18 = 0;\n  local_1c = 0;\n  local_30 = (char **)&stack0x0000000c;\n  do {\n    while( true ) {\n      if (*param_2 == '\\0') {\n        return local_20;\n      }\n      pcVar1 = param_2 + 1;\n      local_21 = *param_2;\n      param_2 = pcVar1;\n      if (local_21 == '%') break;\n      local_55 = local_21;\n      transmit(param_1,&local_55,1,local_54);\n    }\n    while( true ) {\n      while( true ) {\n        __nptr = param_2;\n        pcVar1 = param_2 + 1;\n        local_21 = *param_2;\n        iVar3 = (int)local_21;\n        param_2 = pcVar1;\n        if (iVar3 != 0x30) break;\n        local_18 = local_18 | 1;\n      }\n      if ((iVar3 < 0x30) || (8 < iVar3 - 0x31U)) break;\n      local_1c = strtol(__nptr,&param_2,10);\n    }\n    if (local_21 == 'x') {\nLAB_00014508:\n      local_2c = *local_30;\n      local_30 = local_30 + 1;\n      output_number_printf(param_1,local_2c,0x10,local_1c,local_18);\n    }\n    else {\n      if (local_21 < 'y') {\n        if (local_21 == 's') {\n          local_28 = *local_30;\n          local_14 = 0;\n          local_21 = 0x73;\n          local_30 = local_30 + 1;\n          while (sVar4 = strlen(local_28), local_14 < sVar4) {\n            local_3d = local_28[local_14];\n            transmit(param_1,&local_3d,1,local_3c);\n            local_14 = local_14 + 1;\n          }\n          goto LAB_0001454f;\n        }\n        if (local_21 < 't') {\n          if (local_21 == 'd') {\n            ppcVar2 = local_30 + 1;\n            local_10 = *local_30;\n            local_30 = ppcVar2;\n            if ((int)local_10 < 0) {\n              local_45 = 0x2d;\n              transmit(param_1,&local_45,1,local_44);\n              local_10 = (char *)-(int)local_10;\n            }\n            output_number_printf(param_1,local_10,10,local_1c,local_18);\n            goto LAB_0001454f;\n          }\n          if (local_21 < 'e') {\n            if (local_21 == '%') {\n              local_35 = 0x25;\n              transmit(param_1,&local_35,1,local_34);\n              goto LAB_0001454f;\n            }\n            if (local_21 == 'X') {\n              local_18 = local_18 | 2;\n              goto LAB_00014508;\n            }\n          }\n        }\n      }\n      local_4d = local_21;\n      transmit(param_1,&local_4d,1,local_4c);\n    }\nLAB_0001454f:\n    local_1c = 0;\n    local_18 = 0;\n  } while( true );\n}\n\n// Function: output_number_sprintf\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid output_number_sprintf\n               (int *param_1,char **param_2,uint param_3,uint param_4,int param_5,uint param_6)\n\n{\n  char cVar1;\n  \n  if (param_4 <= param_3) {\n    output_number_sprintf(param_1,param_2,param_3 / param_4,param_4,param_5 + -1,param_6);\n    param_3 = param_3 % param_4;\n  }\n  if ((param_3 < param_4) && (0 < param_5)) {\n    while (param_5 = param_5 + -1, param_5 != 0) {\n      if ((param_6 & 1) == 0) {\n        **param_2 = ' ';\n        *param_2 = *param_2 + 1;\n        *param_1 = *param_1 + 1;\n      }\n      else {\n        **param_2 = '0';\n        *param_2 = *param_2 + 1;\n        *param_1 = *param_1 + 1;\n      }\n    }\n  }\n  cVar1 = (char)param_3;\n  if ((param_6 & 2) == 0) {\n    if (param_3 < 10) {\n      cVar1 = cVar1 + '0';\n    }\n    else {\n      cVar1 = cVar1 + 'W';\n    }\n    **param_2 = cVar1;\n    *param_2 = *param_2 + 1;\n    *param_1 = *param_1 + 1;\n  }\n  else {\n    if (param_3 < 10) {\n      cVar1 = cVar1 + '0';\n    }\n    else {\n      cVar1 = cVar1 + '7';\n    }\n    **param_2 = cVar1;\n    *param_2 = *param_2 + 1;\n    *param_1 = *param_1 + 1;\n  }\n  return;\n}\n\n// Function: sprintf\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nint sprintf(char *__s,char *__format,...)\n\n{\n  char *pcVar1;\n  char **ppcVar2;\n  char cVar3;\n  char *__nptr;\n  int iVar4;\n  size_t sVar5;\n  char **local_38;\n  int local_34;\n  char local_2e;\n  undefined local_2d;\n  char *local_2c;\n  undefined local_26;\n  char local_25;\n  char *local_24;\n  char local_1e;\n  char local_1d;\n  long local_1c;\n  uint local_18;\n  uint local_14;\n  char *local_10;\n  \n  local_34 = 0;\n  local_38 = (char **)&stack0x0000000c;\nLAB_0001492a:\n  while( true ) {\n    while( true ) {\n      local_18 = 0;\n      local_1c = 0;\n      if (*__format == '\\0') {\n        *__s = '\\0';\n        return local_34;\n      }\n      pcVar1 = __format + 1;\n      cVar3 = *__format;\n      __format = pcVar1;\n      if (cVar3 == '%') break;\n      *__s = cVar3;\n      __s = __s + 1;\n      local_34 = local_34 + 1;\n      local_1e = cVar3;\n    }\n    while( true ) {\n      while( true ) {\n        __nptr = __format;\n        pcVar1 = __format + 1;\n        local_1d = *__format;\n        iVar4 = (int)local_1d;\n        __format = pcVar1;\n        if (iVar4 != 0x30) break;\n        local_18 = local_18 | 1;\n      }\n      if ((iVar4 < 0x30) || (8 < iVar4 - 0x31U)) break;\n      local_1c = strtol(__nptr,&__format,10);\n    }\n    if (local_1d != 'x') break;\nLAB_000148a6:\n    local_2c = *local_38;\n    output_number_sprintf(&local_34,&__s,local_2c,0x10,local_1c,local_18);\n    local_38 = local_38 + 1;\n  }\n  if (local_1d < 'y') {\n    if (local_1d == 's') {\n      ppcVar2 = local_38 + 1;\n      local_24 = *local_38;\n      local_14 = 0;\n      local_1d = 0x73;\n      while (sVar5 = strlen(local_24), local_38 = ppcVar2, local_14 < sVar5) {\n        local_25 = local_24[local_14];\n        *__s = local_25;\n        __s = __s + 1;\n        local_34 = local_34 + 1;\n        local_14 = local_14 + 1;\n      }\n      goto LAB_0001492a;\n    }\n    if ('s' < local_1d) goto LAB_000148d5;\n    if (local_1d == 'd') {\n      local_10 = *local_38;\n      if ((int)local_10 < 0) {\n        local_26 = 0x2d;\n        *__s = '-';\n        __s = __s + 1;\n        local_34 = local_34 + 1;\n        local_10 = (char *)-(int)local_10;\n      }\n      output_number_sprintf(&local_34,&__s,local_10,10,local_1c,local_18);\n      local_38 = local_38 + 1;\n      goto LAB_0001492a;\n    }\n    if (local_1d < 'e') {\n      if (local_1d == '%') {\n        local_2d = 0x25;\n        *__s = '%';\n        __s = __s + 1;\n        local_34 = local_34 + 1;\n        goto LAB_0001492a;\n      }\n      if (local_1d == 'X') {\n        local_18 = local_18 | 2;\n        goto LAB_000148a6;\n      }\n    }\n  }\nLAB_000148d5:\n  *__s = local_1d;\n  __s = __s + 1;\n  local_34 = local_34 + 1;\n  local_2e = local_1d;\n  goto LAB_0001492a;\n}\n\n// Function: exit\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nvoid exit(int __status)\n\n{\n                    /* WARNING: Subroutine does not return */\n  _terminate(__status);\n}\n\n// Function: realloc\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nvoid * realloc(void *__ptr,size_t __size)\n\n{\n  void *__dest;\n  \n  if (__ptr == (void *)0x0) {\n    __dest = malloc(__size);\n  }\n  else if (__size == 0) {\n    free(__ptr);\n    __dest = (void *)0x0;\n  }\n  else {\n    __dest = malloc(__size);\n    if (__dest == (void *)0x0) {\n      __dest = (void *)0x0;\n    }\n    else {\n      if (__size < *(int *)((int)__ptr + -0x18) - 0x18U) {\n        memcpy(__dest,__ptr,__size);\n      }\n      else {\n        memcpy(__dest,__ptr,*(int *)((int)__ptr + -0x18) - 0x18);\n      }\n      free(__ptr);\n    }\n  }\n  return __dest;\n}\n\n// Function: strchr\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nchar * strchr(char *__s,int __c)\n\n{\n  char *pcVar1;\n  char cVar2;\n  char *local_8;\n  \n  local_8 = __s;\n  do {\n    if (*local_8 == '\\0') {\n      return (char *)0x0;\n    }\n    pcVar1 = local_8 + 1;\n    cVar2 = *local_8;\n    local_8 = pcVar1;\n  } while (__c != cVar2);\n  return pcVar1;\n}\n\n// Function: strcmp\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nint strcmp(char *__s1,char *__s2)\n\n{\n  for (; ((*__s1 != '\\0' && (*__s2 != '\\0')) && (*__s1 == *__s2)); __s1 = __s1 + 1) {\n    __s2 = __s2 + 1;\n  }\n  return (int)*__s2 - (int)*__s1;\n}\n\n// Function: strcpy\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nchar * strcpy(char *__dest,char *__src)\n\n{\n  int local_8;\n  \n  local_8 = 0;\n  while (*__src != '\\0') {\n    __dest[local_8] = *__src;\n    __src = __src + 1;\n    local_8 = local_8 + 1;\n  }\n  __dest[local_8] = '\\0';\n  return __dest;\n}\n\n// Function: strlen\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nsize_t strlen(char *__s)\n\n{\n  char *local_8;\n  \n  for (local_8 = __s; *local_8 != '\\0'; local_8 = local_8 + 1) {\n  }\n  return (int)local_8 - (int)__s;\n}\n\n// Function: strsep\n/* WARNING: Function: __x86.get_pc_thunk.bx replaced with injection: get_pc_thunk_bx */\n\nchar * strsep(char **__stringp,char *__delim)\n\n{\n  char *pcVar1;\n  char *local_10;\n  \n  if (*__stringp == (char *)0x0) {\n    pcVar1 = (char *)0x0;\n  }\n  else {\n    local_10 = *__stringp;\n    while ((*local_10 != '\\0' && (pcVar1 = strchr(__delim,(int)*local_10), pcVar1 == (char *)0x0)))\n    {\n      local_10 = local_10 + 1;\n    }\n    pcVar1 = *__stringp;\n    if (*local_10 == '\\0') {\n      *__stringp = (char *)0x0;\n    }\n    else {\n      *local_10 = '\\0';\n      *__stringp = local_10 + 1;\n    }\n  }\n  return pcVar1;\n}\n\n// Function: strtol\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nlong strtol(char *__nptr,char **__endptr,int __base)\n\n{\n  char cVar1;\n  bool bVar2;\n  char *local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  int local_c;\n  \n  local_c = 0;\n  local_10 = 0;\n  local_1c = __nptr;\n  if (((__base != 1) && (__base < 0x25)) && (-1 < __base)) {\n    for (; ((*local_1c == ' ' || (*local_1c == '\\t')) ||\n           ((*local_1c == '\\f' || ((*local_1c == '\\n' || (*local_1c == '\\v'))))));\n        local_1c = local_1c + 1) {\n    }\n    cVar1 = *local_1c;\n    if (cVar1 == '-') {\n      local_1c = local_1c + 1;\n    }\n    if (*local_1c == '+') {\n      local_1c = local_1c + 1;\n    }\n    if (__base == 0) {\n      if (*local_1c == '0') {\n        if ((local_1c[1] == 'x') || (local_1c[1] == 'X')) {\n          local_1c = local_1c + 2;\n          __base = 0x10;\n        }\n        else {\n          local_1c = local_1c + 1;\n          __base = 8;\n        }\n      }\n      else {\n        __base = 10;\n      }\n    }\n    else if (((__base == 0x10) && (*local_1c == '0')) &&\n            ((local_1c[1] == 'x' || (local_1c[1] == 'X')))) {\n      local_1c = local_1c + 2;\n      __base = 0x10;\n    }\n    do {\n      if ((*local_1c < '0') || ('9' < *local_1c)) {\n        bVar2 = false;\n      }\n      else {\n        bVar2 = true;\n      }\n      if (!bVar2) {\n        if (((*local_1c < 'A') || ('Z' < *local_1c)) && ((*local_1c < 'a' || ('z' < *local_1c)))) {\n          local_18 = 0;\n        }\n        else {\n          local_18 = 1;\n        }\n        if (local_18 == 0) goto LAB_00014de1;\n      }\n      if (bVar2) {\n        local_14 = *local_1c + -0x30;\n      }\n      else {\n        local_14 = 0;\n        if (local_18 != 0) {\n          if ((*local_1c < 'A') || ('Z' < *local_1c)) {\n            local_14 = *local_1c + -0x61;\n          }\n          else {\n            local_14 = *local_1c + -0x41;\n          }\n          local_14 = local_14 + 10;\n        }\n      }\n      if (__base <= local_14) goto LAB_00014de1;\n      local_c = local_c * __base + local_14;\n      local_10 = local_10 + 1;\n      local_1c = local_1c + 1;\n    } while( true );\n  }\nLAB_00014df0:\n  if (__endptr != (char **)0x0) {\n    if (0 < local_10) {\n      __nptr = local_1c;\n    }\n    *__endptr = __nptr;\n  }\n  return local_c;\nLAB_00014de1:\n  if (cVar1 == '-') {\n    local_c = -local_c;\n  }\n  goto LAB_00014df0;\n}\n\n// Function: strtoul\n/* WARNING: Function: __x86.get_pc_thunk.ax replaced with injection: get_pc_thunk_ax */\n\nulong strtoul(char *__nptr,char **__endptr,int __base)\n\n{\n  ulong uVar1;\n  \n  uVar1 = strtol(__nptr,__endptr,__base);\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [
+                    "__"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_item",
+                        "strncmp",
+                        "parse_object",
+                        "parse_array",
+                        "parse_number",
+                        "parse_string",
+                        "kty_loads",
+                        "calloc",
+                        "array_destroy",
+                        "array_create",
+                        "eat_ws",
+                        "free_kty_item",
+                        "kty_init",
+                        "free",
+                        "htbl_destroy",
+                        "exit",
+                        "_terminate",
+                        "read_until",
+                        "receive",
+                        "import_kty",
+                        "fdprintf",
+                        "print_kty",
+                        "nyan",
+                        "__",
+                        "array_length",
+                        "array_get",
+                        "strcpy",
+                        "quit",
+                        "menu",
+                        "main",
+                        "malloc",
+                        "strtol",
+                        "strdup",
+                        "strlen",
+                        "memset",
+                        "memcpy",
+                        "strtod",
+                        "isspace",
+                        "isalnum",
+                        "isalpha",
+                        "isdigit",
+                        "islower",
+                        "isupper",
+                        "isascii",
+                        "isblank",
+                        "iscntrl",
+                        "isgraph",
+                        "isprint",
+                        "ispunct",
+                        "isxdigit",
+                        "toascii",
+                        "tolower",
+                        "toupper",
+                        "free_huge",
+                        "deallocate",
+                        "insert_into_flist",
+                        "coalesce",
+                        "allocate_new_blk",
+                        "allocate",
+                        "find_fit",
+                        "get_size_class",
+                        "malloc_huge",
+                        "remove_from_flist",
+                        "remove_from_blist",
+                        "__x86_get_pc_thunk_dx",
+                        "memchr",
+                        "memcmp",
+                        "output_number_printf",
+                        "transmit",
+                        "output_number_sprintf",
+                        "sprintf",
+                        "realloc",
+                        "strchr",
+                        "strcmp",
+                        "strsep",
+                        "strtoul"
+                    ],
+                    "calling_functions": [
+                        "parse_array",
+                        "parse_item",
+                        "kty_loads"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "kty_loads",
+                "func_c_signature": "void * kty_loads(undefined4 param_1)",
+                "decompiled_code": "void * kty_loads(undefined4 param_1) {\n  void *pvVar1;\n  undefined4 uVar2;\n  int iVar3;\n  \n  pvVar1 = calloc(1,0xc);\n  if (pvVar1 != (void *)0x0) {\n    if (*(int *)(g_parser + 4) != 0) {\n      array_destroy(*(undefined4 *)(g_parser + 4));\n    }\n    iVar3 = g_parser;\n    uVar2 = array_create(0x10,free_kty_item);\n    *(undefined4 *)(iVar3 + 4) = uVar2;\n    if (*(int *)(g_parser + 4) != 0) {\n      uVar2 = eat_ws(param_1);\n      iVar3 = parse_item(pvVar1,uVar2);\n      if (iVar3 != 0) {\n        return pvVar1;\n      }\n    }\n  }\n  if (pvVar1 != (void *)0x0) {\n    free_kty_item(pvVar1);\n  }\n  return (void *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "kty_loads",
+                        "calloc",
+                        "array_destroy",
+                        "array_create",
+                        "eat_ws",
+                        "parse_item",
+                        "free_kty_item"
+                    ],
+                    "calling_functions": [
+                        "parse_item",
+                        "kty_loads"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "kty_init",
+                "func_c_signature": "undefined4 kty_init(undefined4 *param_1)",
+                "decompiled_code": "undefined4 kty_init(undefined4 *param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == (undefined4 *)0x0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    *param_1 = 0;\n    param_1[1] = 0;\n    param_1[2] = kty_dumps;\n    param_1[3] = kty_loads;\n    g_parser = param_1;\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "kty_init"
+                    ],
+                    "calling_functions": [
+                        "parse_item",
+                        "kty_init",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free_kty_item",
+                "func_c_signature": "void free_kty_item(uint *param_1)",
+                "decompiled_code": "void free_kty_item(uint *param_1) {\n  uint uVar1;\n  \n  if (param_1 != (uint *)0x0) {\n    uVar1 = *param_1;\n    if (uVar1 == 4) {\n      array_destroy(param_1[1]);\n    }\n    else if (uVar1 < 5) {\n      if (uVar1 == 2) {\n        if (param_1[1] != 0) {\n          free((void *)param_1[1]);\n        }\n      }\n      else if (uVar1 == 3) {\n        htbl_destroy(param_1[1]);\n      }\n    }\n    free(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_kty_item",
+                        "array_destroy",
+                        "free",
+                        "htbl_destroy"
+                    ],
+                    "calling_functions": [
+                        "parse_array",
+                        "parse_item",
+                        "kty_loads",
+                        "free_kty_item",
+                        "import_kty"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "read_until",
+                "func_c_signature": "int read_until(undefined4 param_1,char *param_2,uint param_3,char param_4)",
+                "decompiled_code": "int read_until(undefined4 param_1,char *param_2,uint param_3,char param_4) {\n  char *pcVar1;\n  char cVar2;\n  int iVar3;\n  int local_18;\n  char *local_14;\n  uint local_10;\n  \n  local_14 = param_2;\n  for (local_10 = 0; local_10 < param_3; local_10 = local_10 + 1) {\n    iVar3 = receive(param_1,local_14,1,&local_18);\n    if ((iVar3 != 0) || (local_18 == 0)) {\n      return -1;\n    }\n    pcVar1 = local_14 + 1;\n    cVar2 = *local_14;\n    local_14 = pcVar1;\n    if (param_4 == cVar2) break;\n  }\n  local_14[-1] = '\\0';\n  return (int)local_14 - (int)param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_until",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "parse_item",
+                        "read_until",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "import_kty",
+                "func_c_signature": "void import_kty(undefined4 param_1)",
+                "decompiled_code": "void import_kty(undefined4 param_1) {\n  if (my_kty != 0) {\n    free_kty_item(my_kty);\n    my_kty = 0;\n  }\n  *parser = 0;\n  my_kty = (*(code *)parser[3])(param_1);\n  if (my_kty == 0) {\n    fdprintf(1,\"Error!\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "import_kty",
+                        "free_kty_item",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "parse_item",
+                        "import_kty",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_kty",
+                "func_c_signature": "void print_kty(void)",
+                "decompiled_code": "void print_kty(void) {\n  if (my_kty == 0) {\n    fdprintf(1,\"Error!\\n\");\n  }\n  else {\n    *parser = 0;\n    (*(code *)parser[2])(my_kty);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_kty",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "parse_item",
+                        "print_kty",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "nyan",
+                "func_c_signature": "void nyan(void)",
+                "decompiled_code": "void nyan(void) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 *puVar3;\n  undefined4 local_5a8 [96];\n  undefined4 local_428 [256];\n  int local_28;\n  undefined4 *local_24;\n  int local_20;\n  \n  puVar2 = local_428;\n  for (iVar1 = 0x100; iVar1 != 0; iVar1 = iVar1 + -1) {\n    *puVar2 = 0;\n    puVar2 = puVar2 + 1;\n  }\n  puVar2 = (undefined4 *)\n           \"\\n\\n+      o     +              o\\n    +             o     +       +\\no          +\\n    o  +           +        +\\n+        o     o       +        o\\n-_-_-_-_-_-_-_,------,      o\\n_-_-_-_-_-_-_-|   /\\\\_/\\\\\\n-_-_-_-_-_-_-~|__( ^ .^)  +     +\\n_-_-_-_-_-_-_-\\\"\\\"  \\\"\\\"\\n+      o         o   +       o\\n    +         +\\no        o         o      o     +\\n    o           +\\n+      +     o        o      +\\n\\n\"\n  ;\n  puVar3 = local_5a8;\n  for (iVar1 = 0x60; iVar1 != 0; iVar1 = iVar1 + -1) {\n    *puVar3 = *puVar2;\n    puVar2 = puVar2 + 1;\n    puVar3 = puVar3 + 1;\n  }\n  if (my_kty == 0) {\n    fdprintf(1,\"Error!\\n\");\n  }\n  else {\n    (*(code *)parser[2])(my_kty);\n    if (2 < *parser) {\n      fdprintf(1,&DAT_00015198,local_5a8);\n      local_24 = local_428;\n      local_20 = 0;\n      while( true ) {\n        iVar1 = array_length(parser[1]);\n        if (iVar1 <= local_20) break;\n        local_28 = array_get(parser[1],local_20);\n        strcpy((char *)local_24,*(char **)(local_28 + 4));\n        local_24 = (undefined4 *)((int)local_24 + *(int *)(local_28 + 8));\n        local_20 = local_20 + 1;\n      }\n      fdprintf(1,\"NYAN SAYS...\\n\\\"\\n%s\\n\\\"\",local_428);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "__"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "nyan",
+                        "__",
+                        "fdprintf",
+                        "array_length",
+                        "array_get",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "parse_item",
+                        "nyan",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "quit",
+                "func_c_signature": "void quit(void)",
+                "decompiled_code": "void quit(void) {\n  fdprintf(1,\"\\n\\n=^.^=// Bye!\\n\\n\");\n                    /* WARNING: Subroutine does not return */\n  exit(0);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "quit",
+                        "fdprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "parse_item",
+                        "quit",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "menu",
+                "func_c_signature": "void menu(void)",
+                "decompiled_code": "void menu(void) {\n  fdprintf(1,\"=======================\\n\");\n  fdprintf(1,\" 1. Import KTY\\n\");\n  fdprintf(1,\" 2. Print KTY\\n\");\n  fdprintf(1,\" 3. Quit\\n\");\n  fdprintf(1,\"=======================\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "menu",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "parse_item",
+                        "menu",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  char local_2024 [16];\n  undefined local_2014 [8192];\n  long local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  fdprintf(1,\"KTY Pretty Printer v0.1\\n\");\n  parser = malloc(0x10);\n  iVar1 = kty_init(parser);\n  if (iVar1 != 0) {\n    fdprintf(1,\"Error!\\n\");\n    quit();\n  }\n  menu();\nLAB_000133b2:\n  while( true ) {\n    iVar1 = read_until(0,local_2024,0x10,10);\n    if (iVar1 < 1) {\n      return 0;\n    }\n    local_14 = strtol(local_2024,(char **)0x0,10);\n    if (local_14 != 0x309) break;\n    nyan();\n  }\n  if (local_14 < 0x30a) {\n    if (local_14 == 3) {\n      quit();\n      goto LAB_000133b2;\n    }\n    if (3 < local_14) goto LAB_0001339d;\n    if (local_14 == 1) {\n      iVar1 = read_until(0,local_2014,0x2000,0);\n      if (iVar1 < 1) {\n        fdprintf(1,\"Error!\\n\");\n      }\n      else {\n        import_kty(local_2014);\n      }\n      goto LAB_000133b2;\n    }\n    if (local_14 == 2) {\n      print_kty();\n      goto LAB_000133b2;\n    }\n  }\nLAB_0001339d:\n  fdprintf(1,\"Invalid menu. Try again.\\n\");\n  goto LAB_000133b2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "fdprintf",
+                        "malloc",
+                        "kty_init",
+                        "quit",
+                        "menu",
+                        "read_until",
+                        "strtol",
+                        "nyan",
+                        "import_kty",
+                        "print_kty"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "parse_item",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            }
+        ],
+        "strdup.c": [
+            {
+                "func_name": "strdup",
+                "func_c_signature": "char * strdup(char *__s)",
+                "decompiled_code": "char * strdup(char *__s) {\n  size_t sVar1;\n  char *__s_00;\n  \n  if (__s != (char *)0x0) {\n    sVar1 = strlen(__s);\n    sVar1 = sVar1 + 1;\n    __s_00 = (char *)malloc(sVar1);\n    if (__s_00 != (char *)0x0) {\n      memset(__s_00,0,sVar1);\n      memcpy(__s_00,__s,sVar1);\n      return __s_00;\n    }\n  }\n  return (char *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strdup",
+                        "strlen",
+                        "malloc",
+                        "memset",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "htbl_put",
+                        "parse_item",
+                        "strdup"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            }
+        ],
+        "strncmp.c": [
+            {
+                "func_name": "strncmp",
+                "func_c_signature": "int strncmp(char *__s1,char *__s2,size_t __n)",
+                "decompiled_code": "int strncmp(char *__s1,char *__s2,size_t __n) {\n  size_t sVar1;\n  int iVar2;\n  bool bVar3;\n  \n  for (; (((*__s1 != '\\0' && (*__s2 != '\\0')) &&\n          (sVar1 = __n - 1, bVar3 = __n != 0, __n = sVar1, bVar3)) && (*__s1 == *__s2));\n      __s1 = __s1 + 1) {\n    __s2 = __s2 + 1;\n  }\n  if (__n == 0) {\n    iVar2 = 0;\n  }\n  else {\n    iVar2 = (int)*__s2 - (int)*__s1;\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strncmp"
+                    ],
+                    "calling_functions": [
+                        "parse_item",
+                        "strncmp"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            }
+        ],
+        "strtod.c": [
+            {
+                "func_name": "strtod",
+                "func_c_signature": "double strtod(char *__nptr,char **__endptr)",
+                "decompiled_code": "double strtod(char *__nptr,char **__endptr) {\n  char cVar1;\n  bool bVar2;\n  bool bVar3;\n  char *pcVar4;\n  char *pcVar5;\n  int iVar6;\n  double local_24;\n  double local_1c;\n  \n  pcVar5 = __nptr;\n  bVar3 = false;\n  bVar2 = false;\n  local_1c = 0.0;\n  local_24 = 1.0;\n  while ((*__nptr != '\\0' && (iVar6 = isspace((int)*__nptr), iVar6 != 0))) {\n    __nptr = __nptr + 1;\n  }\n  if (*__nptr == '-') {\n    bVar3 = true;\n    __nptr = __nptr + 1;\n    pcVar4 = __nptr;\n  }\n  else {\n    pcVar4 = __nptr;\n    if (*__nptr == '+') {\n      __nptr = __nptr + 1;\n      pcVar4 = __nptr;\n    }\n  }\n  while (cVar1 = *__nptr, cVar1 != '\\0') {\n    if (cVar1 == '.') {\n      bVar2 = true;\n      __nptr = __nptr + 1;\n    }\n    else {\n      if ((cVar1 < '0') || ('9' < cVar1)) break;\n      if (bVar2) {\n        local_24 = local_24 / DAT_000153b8;\n        local_1c = local_1c + (double)(cVar1 + -0x30) * local_24;\n      }\n      else {\n        local_1c = (double)(cVar1 + -0x30) + DAT_000153b8 * local_1c;\n      }\n      __nptr = __nptr + 1;\n    }\n  }\n  local_1c = DAT_000153c0 + local_1c;\n  if (pcVar4 == __nptr) {\n    local_1c = 0.0;\n    __nptr = pcVar5;\n  }\n  if (__endptr != (char **)0x0) {\n    *__endptr = __nptr;\n  }\n  if (bVar3) {\n    local_1c = -local_1c;\n  }\n  return local_1c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strtod",
+                        "isspace"
+                    ],
+                    "calling_functions": [
+                        "parse_number",
+                        "parse_item",
+                        "strtod"
+                    ],
+                    "defined_in_file": "KPRCA_00021_decompiled.c"
+                }
+            }
+        ]
+    }
+}

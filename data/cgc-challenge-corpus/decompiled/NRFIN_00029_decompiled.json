@@ -1,0 +1,125 @@
+{
+    "file": "NRFIN_00029",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "canonicalize_path",
+                "func_c_signature": "undefined4 canonicalize_path(char *param_1,char *param_2)",
+                "decompiled_code": "undefined4 canonicalize_path(char *param_1,char *param_2) {\n  char *pcVar1;\n  undefined4 uVar2;\n  \n  pcVar1 = strchr(param_2,0x2f);\n  if (pcVar1 == (char *)0x0) {\n    strncpy(param_1,\"/public/\",9);\n    utf8_canonicalize(param_1 + 8,param_2,100);\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "canonicalize_path",
+                        "strchr",
+                        "strncpy",
+                        "utf8_canonicalize"
+                    ],
+                    "calling_functions": [
+                        "canonicalize_path",
+                        "read_file",
+                        "write_file"
+                    ],
+                    "defined_in_file": "NRFIN_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_file",
+                "func_c_signature": "undefined4 read_file(void)",
+                "decompiled_code": "undefined4 read_file(void) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined local_85 [100];\n  undefined local_21 [16];\n  undefined local_11;\n  int local_10;\n  \n  iVar1 = read_all(0,local_21,0x10);\n  if (iVar1 == 0x10) {\n    local_11 = 0;\n    iVar1 = canonicalize_path(local_85,local_21);\n    if (iVar1 == 0) {\n      local_10 = lookup_file(&vfs,local_85);\n      if (local_10 == 0) {\n        uVar2 = 0xffffffff;\n      }\n      else {\n        iVar1 = write_all(1,*(undefined4 *)(local_10 + 0x18),*(undefined4 *)(local_10 + 0x14));\n        if (iVar1 == *(int *)(local_10 + 0x14)) {\n          uVar2 = 0;\n        }\n        else {\n          uVar2 = 0xffffffff;\n        }\n      }\n    }\n    else {\n      uVar2 = 0xffffffff;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_file",
+                        "read_all",
+                        "canonicalize_path",
+                        "lookup_file",
+                        "write_all"
+                    ],
+                    "calling_functions": [
+                        "read_file",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write_file",
+                "func_c_signature": "undefined4 write_file(void)",
+                "decompiled_code": "undefined4 write_file(void) {\n  int iVar1;\n  undefined4 uVar2;\n  void *pvVar3;\n  undefined *__size;\n  undefined local_89 [100];\n  undefined4 local_25 [4];\n  undefined local_15;\n  uint local_14;\n  int local_10;\n  \n  iVar1 = read_all(0,local_25,0x10);\n  if (iVar1 == 0x10) {\n    local_15 = 0;\n    iVar1 = read_all(0,&local_14,4);\n    if (iVar1 == 4) {\n      if (local_14 < 0xff9) {\n        iVar1 = canonicalize_path(local_89,local_25);\n        if (iVar1 == 0) {\n          iVar1 = lookup_file(&vfs,local_89);\n          if (iVar1 == 0) {\n            __size = local_89;\n            local_10 = create_file(&vfs);\n            if (local_10 == 0) {\n              uVar2 = 0xffffffff;\n            }\n            else {\n              *(uint *)(local_10 + 0x14) = local_14;\n              if (*(int *)(local_10 + 0x10) == admin) {\n                *(undefined4 *)(local_10 + 0x18) = local_25[0];\n              }\n              else {\n                pvVar3 = calloc(local_14,(size_t)__size);\n                *(void **)(local_10 + 0x18) = pvVar3;\n                if (*(int *)(local_10 + 0x18) == 0) {\n                  delete_file(&vfs,local_10);\n                  return 0xffffffff;\n                }\n              }\n              iVar1 = read_all(0,*(undefined4 *)(local_10 + 0x18),*(undefined4 *)(local_10 + 0x14));\n              if (iVar1 == *(int *)(local_10 + 0x14)) {\n                uVar2 = 0;\n              }\n              else {\n                delete_file(&vfs,local_10);\n                uVar2 = 0xffffffff;\n              }\n            }\n          }\n          else {\n            uVar2 = 0xffffffff;\n          }\n        }\n        else {\n          uVar2 = 0xffffffff;\n        }\n      }\n      else {\n        uVar2 = 0xffffffff;\n      }\n    }\n    else {\n      uVar2 = 0xffffffff;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_file",
+                        "read_all",
+                        "canonicalize_path",
+                        "lookup_file",
+                        "create_file",
+                        "calloc",
+                        "delete_file"
+                    ],
+                    "calling_functions": [
+                        "write_file",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "list_files",
+                "func_c_signature": "undefined4 list_files(void)",
+                "decompiled_code": "undefined4 list_files(void) {\n  int iVar1;\n  int local_10;\n  \n  if (*(int *)(pubroot + 0x1c) == 0) {\n    local_10 = 0;\n  }\n  else {\n    local_10 = *(int *)(pubroot + 0x1c) + -0x1c;\n  }\n  while( true ) {\n    if (local_10 == 0) {\n      return 0;\n    }\n    iVar1 = write_all(1,local_10,0x10);\n    if (iVar1 != 0x10) break;\n    if (*(int *)(local_10 + 0x1c) == 0) {\n      local_10 = 0;\n    }\n    else {\n      local_10 = *(int *)(local_10 + 0x1c) + -0x1c;\n    }\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "list_files",
+                        "write_all"
+                    ],
+                    "calling_functions": [
+                        "list_files",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00029_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined4 local_18;\n  int local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  vfs_init(&vfs);\n  pubroot = create_dir(&vfs,\"/public/\");\n  admin = create_dir(&vfs,\"/admin\");\nLAB_000113a2:\n  do {\n    iVar1 = read_all(0,&local_14,4);\n  } while (iVar1 != 4);\n  if (local_14 == -1) {\n    vfs_destroy(&vfs);\n    return 0;\n  }\n  if (local_14 != 2) goto code_r0x000113ca;\n  local_18 = list_files();\n  goto LAB_000113f7;\ncode_r0x000113ca:\n  if (local_14 < 3) {\n    if (local_14 == 0) {\n      local_18 = read_file();\n    }\n    else {\n      if (local_14 != 1) goto LAB_000113a2;\n      local_18 = write_file();\n    }\nLAB_000113f7:\n    write_all(1,&local_18,4);\n  }\n  goto LAB_000113a2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "vfs_init",
+                        "create_dir",
+                        "read_all",
+                        "vfs_destroy",
+                        "list_files",
+                        "read_file",
+                        "write_file",
+                        "write_all"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "NRFIN_00029_decompiled.c"
+                }
+            }
+        ]
+    }
+}

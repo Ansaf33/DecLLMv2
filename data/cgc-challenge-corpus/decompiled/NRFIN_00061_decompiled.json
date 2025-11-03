@@ -1,0 +1,912 @@
+{
+    "file": "NRFIN_00061",
+    "decompiled_code": {
+        "certificate.c": [
+            {
+                "func_name": "isCertCommand",
+                "func_c_signature": "undefined4 isCertCommand(char *param_1)",
+                "decompiled_code": "undefined4 isCertCommand(char *param_1) {\n  size_t sVar1;\n  int iVar2;\n  undefined4 uVar3;\n  \n  sVar1 = strlen(\"enroll\");\n  iVar2 = strncmp(param_1,\"enroll\",sVar1);\n  if (iVar2 == 0) {\n    uVar3 = 1;\n  }\n  else {\n    sVar1 = strlen(\"reenroll\");\n    iVar2 = strncmp(param_1,\"reenroll\",sVar1);\n    if (iVar2 == 0) {\n      uVar3 = 1;\n    }\n    else {\n      sVar1 = strlen(\"crls\");\n      iVar2 = strncmp(param_1,\"crls\",sVar1);\n      if (iVar2 == 0) {\n        uVar3 = 1;\n      }\n      else {\n        sVar1 = strlen(\"revoke\");\n        iVar2 = strncmp(param_1,\"revoke\",sVar1);\n        if (iVar2 == 0) {\n          uVar3 = 1;\n        }\n        else {\n          uVar3 = 0;\n        }\n      }\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "isCertCommand",
+                        "strlen",
+                        "strncmp"
+                    ],
+                    "calling_functions": [
+                        "isCertCommand",
+                        "authenticate"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initIssuer",
+                "func_c_signature": "void initIssuer(void)",
+                "decompiled_code": "void initIssuer(void) {\n  size_t sVar1;\n  undefined *puVar2;\n  undefined auStack_c [4];\n  \n  puVar2 = auStack_c;\n  issuer = malloc(0x40);\n  if (issuer == (void *)0x0) {\n    puVar2 = &stack0xffffffe4;\n    _terminate();\n  }\n  *(undefined4 *)(puVar2 + -0xc) = 0x40;\n  *(void **)(puVar2 + -0x10) = issuer;\n  *(undefined4 *)(puVar2 + -0x14) = 0x11135;\n  bzero(*(void **)(puVar2 + -0x10),*(size_t *)(puVar2 + -0xc));\n  *(char **)(puVar2 + -0x10) = \"Secure Registers Inc.\";\n  *(undefined4 *)(puVar2 + -0x14) = 0x11147;\n  sVar1 = strlen(*(char **)(puVar2 + -0x10));\n  *(size_t *)(puVar2 + -8) = sVar1;\n  *(char **)(puVar2 + -0xc) = \"Secure Registers Inc.\";\n  *(void **)(puVar2 + -0x10) = issuer;\n  *(undefined4 *)(puVar2 + -0x14) = 0x11161;\n  memcpy(*(void **)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),*(size_t *)(puVar2 + -8));\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initIssuer",
+                        "malloc",
+                        "_terminate",
+                        "bzero",
+                        "strlen",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "initIssuer",
+                        "enroll"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "signCert",
+                "func_c_signature": "void signCert(int *param_1)",
+                "decompiled_code": "void signCert(int *param_1) {\n  char **ppcVar1;\n  size_t sVar2;\n  uint local_14;\n  char *local_10;\n  \n  local_10 = (char *)0x0;\n  ppcVar1 = (char **)*param_1;\n  sVar2 = strlen(ppcVar1[1]);\n  for (local_14 = 0; local_14 < sVar2; local_14 = local_14 + 1) {\n    local_10 = (char *)((int)local_10 + (int)ppcVar1[1][local_14]);\n  }\n  sVar2 = strlen(*ppcVar1);\n  for (local_14 = 0; local_14 < sVar2; local_14 = local_14 + 1) {\n    local_10 = (char *)((int)local_10 + (int)(*ppcVar1)[local_14]);\n  }\n  sVar2 = strlen(ppcVar1[2]);\n  for (local_14 = 0; local_14 < sVar2; local_14 = local_14 + 1) {\n    local_10 = (char *)((int)local_10 + (int)ppcVar1[2][local_14]);\n  }\n  local_10 = ppcVar1[6] + (int)local_10;\n  sVar2 = strlen(private_key);\n  for (local_14 = 0; local_14 < sVar2; local_14 = local_14 + 1) {\n    local_10 = local_10 + (char)private_key[local_14];\n  }\n  if (ppcVar1[4] != (char *)0x0) {\n    sVar2 = strlen(ppcVar1[4]);\n    for (local_14 = 0; local_14 < sVar2; local_14 = local_14 + 1) {\n      local_10 = local_10 + ppcVar1[4][local_14];\n    }\n  }\n  ppcVar1[5] = local_10;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "signCert",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "signCert",
+                        "validateCert",
+                        "revokeCert",
+                        "reenroll",
+                        "enroll"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "calculateCertSize",
+                "func_c_signature": "int calculateCertSize(char **param_1)",
+                "decompiled_code": "int calculateCertSize(char **param_1) {\n  size_t sVar1;\n  size_t sVar2;\n  size_t sVar3;\n  size_t sVar4;\n  size_t sVar5;\n  size_t sVar6;\n  size_t sVar7;\n  size_t sVar8;\n  size_t sVar9;\n  size_t sVar10;\n  int local_10;\n  \n  sVar1 = strlen(\"Issuer\");\n  sVar2 = strlen(param_1[1]);\n  sVar3 = strlen(\"Subject\");\n  sVar4 = strlen(*param_1);\n  sVar5 = strlen(\"Key\");\n  sVar6 = strlen(param_1[2]);\n  sVar7 = strlen(\"Signature\");\n  sVar8 = strlen(\"Expiration\");\n  sVar9 = strlen(\"Use\");\n  sVar10 = strlen(param_1[3]);\n  local_10 = sVar1 + sVar2 + sVar3 + sVar4 + sVar5 + sVar6 + sVar7 + sVar8 + 0x24 + sVar9 + sVar10;\n  if (param_1[4] != (char *)0x0) {\n    sVar1 = strlen(\"Status\");\n    sVar2 = strlen(param_1[4]);\n    local_10 = local_10 + sVar1 + sVar2 + 2;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "calculateCertSize",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "calculateCertSize",
+                        "sendCerts"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sendCerts",
+                "func_c_signature": "void sendCerts(undefined4 param_1,undefined4 *param_2)",
+                "decompiled_code": "void sendCerts(undefined4 param_1,undefined4 *param_2) {\n  undefined4 uVar1;\n  undefined4 uVar2;\n  undefined4 uVar3;\n  size_t sVar4;\n  undefined *puVar5;\n  undefined *puVar6;\n  undefined auStack_4c [4];\n  undefined4 local_48;\n  undefined4 local_44;\n  undefined4 local_40;\n  void *local_30;\n  size_t local_2c;\n  int local_28;\n  int local_24;\n  undefined4 *local_20;\n  \n  puVar6 = auStack_4c;\n  local_24 = 1;\n  local_20 = param_2;\n  do {\n    if (local_20 == (undefined4 *)0x0) {\n      *(undefined **)(puVar6 + -0x10) = &DAT_000150b8;\n      *(undefined4 *)(puVar6 + -0x14) = 0x11645;\n      sVar4 = strlen(*(char **)(puVar6 + -0x10));\n      *(size_t *)(puVar6 + -8) = sVar4;\n      *(undefined **)(puVar6 + -0xc) = &DAT_000150b8;\n      *(undefined4 *)(puVar6 + -0x10) = 1;\n      *(undefined4 *)(puVar6 + -0x14) = 0x1165a;\n      local_28 = transmit_all();\n      if (local_28 != 0) {\n        *(undefined4 *)(puVar6 + -0x10) = 1;\n        *(undefined4 *)(puVar6 + -0x14) = 0x11670;\n        _terminate();\n      }\n      return;\n    }\n    puVar5 = puVar6;\n    if (local_24 == 0) {\n      *(undefined4 *)(puVar6 + -8) = 2;\n      *(undefined **)(puVar6 + -0xc) = &DAT_00015065;\n      *(undefined4 *)(puVar6 + -0x10) = 1;\n      *(undefined4 *)(puVar6 + -0x14) = 0x11472;\n      local_28 = transmit_all();\n      if (local_28 != 0) {\n        puVar5 = puVar6 + -0x10;\n        *(undefined4 *)(puVar6 + -0x10) = 1;\n        *(undefined4 *)(puVar6 + -0x14) = 0x11488;\n        _terminate();\n        goto LAB_00011488;\n      }\n    }\n    else {\nLAB_00011488:\n      local_24 = 0;\n    }\n    *(undefined4 **)(puVar5 + -0x10) = param_2;\n    *(undefined4 *)(puVar5 + -0x14) = 0x1149a;\n    local_2c = calculateCertSize();\n    *(size_t *)(puVar5 + -0x10) = local_2c + 10;\n    *(undefined4 *)(puVar5 + -0x14) = 0x114af;\n    local_30 = malloc(*(size_t *)(puVar5 + -0x10));\n    puVar6 = puVar5;\n    if (local_30 == (void *)0x0) {\n      *(undefined4 *)(puVar5 + -0x10) = 1;\n      *(undefined4 *)(puVar5 + -0x14) = 0x114c5;\n      _terminate();\n      puVar6 = puVar5 + -0x10;\n    }\n    *(size_t *)(puVar6 + -0xc) = local_2c + 10;\n    *(void **)(puVar6 + -0x10) = local_30;\n    *(undefined4 *)(puVar6 + -0x14) = 0x114d7;\n    bzero(*(void **)(puVar6 + -0x10),*(size_t *)(puVar6 + -0xc));\n    if (param_2[4] == 0) {\n      local_40 = param_2[6];\n      local_44 = param_2[5];\n      uVar1 = param_2[2];\n      uVar2 = *param_2;\n      uVar3 = param_2[1];\n      *(undefined4 *)(puVar6 + -0xc) = param_2[3];\n      *(undefined **)(puVar6 + -0x10) = &DAT_0001505a;\n      *(undefined4 *)(puVar6 + -0x14) = local_40;\n      *(char **)(puVar6 + -0x18) = \"Expiration\";\n      *(undefined4 *)(puVar6 + -0x1c) = local_44;\n      *(char **)(puVar6 + -0x20) = \"Signature\";\n      *(undefined4 *)(puVar6 + -0x24) = uVar1;\n      *(undefined **)(puVar6 + -0x28) = &DAT_00015041;\n      *(undefined4 *)(puVar6 + -0x2c) = uVar2;\n      *(char **)(puVar6 + -0x30) = \"Subject\";\n      *(undefined4 *)(puVar6 + -0x34) = uVar3;\n      *(char **)(puVar6 + -0x38) = \"Issuer\";\n      *(char **)(puVar6 + -0x3c) = \"!X=!X;!X=!X;!X=!X;!X=!U;!X=!U;!X=!X\";\n      *(void **)(puVar6 + -0x40) = local_30;\n      *(undefined4 *)(puVar6 + -0x44) = 0x115db;\n      sprintf(*(char **)(puVar6 + -0x40),*(char **)(puVar6 + -0x3c));\n    }\n    else {\n      uVar1 = param_2[3];\n      local_40 = param_2[6];\n      local_44 = param_2[5];\n      local_48 = param_2[2];\n      uVar2 = *param_2;\n      uVar3 = param_2[1];\n      *(undefined4 *)(puVar6 + -4) = param_2[4];\n      *(char **)(puVar6 + -8) = \"Status\";\n      *(undefined4 *)(puVar6 + -0xc) = uVar1;\n      *(undefined **)(puVar6 + -0x10) = &DAT_0001505a;\n      *(undefined4 *)(puVar6 + -0x14) = local_40;\n      *(char **)(puVar6 + -0x18) = \"Expiration\";\n      *(undefined4 *)(puVar6 + -0x1c) = local_44;\n      *(char **)(puVar6 + -0x20) = \"Signature\";\n      *(undefined4 *)(puVar6 + -0x24) = local_48;\n      *(undefined **)(puVar6 + -0x28) = &DAT_00015041;\n      *(undefined4 *)(puVar6 + -0x2c) = uVar2;\n      *(char **)(puVar6 + -0x30) = \"Subject\";\n      *(undefined4 *)(puVar6 + -0x34) = uVar3;\n      *(char **)(puVar6 + -0x38) = \"Issuer\";\n      *(char **)(puVar6 + -0x3c) = \"!X=!X;!X=!X;!X=!X;!X=!U;!X=!U;!X=!X;!X=!X\";\n      *(void **)(puVar6 + -0x40) = local_30;\n      *(undefined4 *)(puVar6 + -0x44) = 0x11567;\n      sprintf(*(char **)(puVar6 + -0x40),*(char **)(puVar6 + -0x3c));\n    }\n    *(void **)(puVar6 + -0x10) = local_30;\n    *(undefined4 *)(puVar6 + -0x14) = 0x115e9;\n    local_2c = strlen(*(char **)(puVar6 + -0x10));\n    *(size_t *)(puVar6 + -8) = local_2c;\n    *(void **)(puVar6 + -0xc) = local_30;\n    *(undefined4 *)(puVar6 + -0x10) = 1;\n    *(undefined4 *)(puVar6 + -0x14) = 0x115ff;\n    local_28 = transmit_all();\n    if (local_28 != 0) {\n      *(undefined4 *)(puVar6 + -0x10) = 1;\n      *(undefined4 *)(puVar6 + -0x14) = 0x11615;\n      _terminate();\n      puVar6 = puVar6 + -0x10;\n    }\n    *(void **)(puVar6 + -0x10) = local_30;\n    *(undefined4 *)(puVar6 + -0x14) = 0x11620;\n    free(*(void **)(puVar6 + -0x10));\n    local_20 = (undefined4 *)local_20[8];\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sendCerts",
+                        "strlen",
+                        "transmit_all",
+                        "_terminate",
+                        "calculateCertSize",
+                        "malloc",
+                        "bzero",
+                        "sprintf",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "sendCerts",
+                        "crls",
+                        "revokeCert",
+                        "reenroll",
+                        "enroll"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parseCertificate",
+                "func_c_signature": "void * parseCertificate(undefined4 param_1)",
+                "decompiled_code": "void * parseCertificate(undefined4 param_1) {\n  undefined *puVar1;\n  undefined auStack_1c [12];\n  void *local_10;\n  \n  puVar1 = auStack_1c;\n  local_10 = malloc(0x24);\n  if (local_10 == (void *)0x0) {\n    puVar1 = &stack0xffffffd4;\n    _terminate();\n  }\n  *(undefined4 *)(puVar1 + -0xc) = 0x24;\n  *(void **)(puVar1 + -0x10) = local_10;\n  *(undefined4 *)(puVar1 + -0x14) = 0x116b8;\n  bzero(*(void **)(puVar1 + -0x10),*(size_t *)(puVar1 + -0xc));\n  *(undefined4 *)(puVar1 + -0x10) = param_1;\n  *(undefined4 *)(puVar1 + -0x14) = 0x116c6;\n  initializeAttributes();\n  *(char **)(puVar1 + -0xc) = \"Issuer\";\n  *(int *)(puVar1 + -0x10) = (int)local_10 + 4;\n  *(undefined4 *)(puVar1 + -0x14) = 0x116df;\n  getStringAttribute();\n  *(char **)(puVar1 + -0xc) = \"Subject\";\n  *(void **)(puVar1 + -0x10) = local_10;\n  *(undefined4 *)(puVar1 + -0x14) = 0x116f5;\n  getStringAttribute();\n  *(undefined **)(puVar1 + -0xc) = &DAT_00015041;\n  *(int *)(puVar1 + -0x10) = (int)local_10 + 8;\n  *(undefined4 *)(puVar1 + -0x14) = 0x1170e;\n  getStringAttribute();\n  *(char **)(puVar1 + -0xc) = \"Signature\";\n  *(int *)(puVar1 + -0x10) = (int)local_10 + 0x14;\n  *(undefined4 *)(puVar1 + -0x14) = 0x11727;\n  getIntegerAttribute();\n  *(char **)(puVar1 + -0xc) = \"Expiration\";\n  *(int *)(puVar1 + -0x10) = (int)local_10 + 0x18;\n  *(undefined4 *)(puVar1 + -0x14) = 0x11740;\n  getIntegerAttribute();\n  *(undefined **)(puVar1 + -0xc) = &DAT_0001505a;\n  *(int *)(puVar1 + -0x10) = (int)local_10 + 0xc;\n  *(undefined4 *)(puVar1 + -0x14) = 0x11759;\n  getStringAttribute();\n  *(char **)(puVar1 + -0xc) = \"Status\";\n  *(int *)(puVar1 + -0x10) = (int)local_10 + 0x10;\n  *(undefined4 *)(puVar1 + -0x14) = 0x11772;\n  getStringAttribute();\n  *(char **)(puVar1 + -0xc) = \"ExpWindow\";\n  *(int *)(puVar1 + -0x10) = (int)local_10 + 0x1c;\n  *(undefined4 *)(puVar1 + -0x14) = 0x1178b;\n  getIntegerAttribute();\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parseCertificate",
+                        "malloc",
+                        "_terminate",
+                        "bzero",
+                        "initializeAttributes",
+                        "getStringAttribute",
+                        "getIntegerAttribute"
+                    ],
+                    "calling_functions": [
+                        "parseCertificate",
+                        "revokeCert",
+                        "reenroll",
+                        "enroll",
+                        "authenticate"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "checkCRLs",
+                "func_c_signature": "undefined4 checkCRLs(char **param_1)",
+                "decompiled_code": "undefined4 checkCRLs(char **param_1) {\n  size_t sVar1;\n  size_t sVar2;\n  int iVar3;\n  char **local_10;\n  \n  local_10 = CRL;\n  do {\n    if (local_10 == (char **)0x0) {\n      return 1;\n    }\n    sVar1 = strlen(*local_10);\n    sVar2 = strlen(*param_1);\n    if (sVar1 <= sVar2) {\n      sVar1 = sVar2;\n    }\n    iVar3 = strncmp(*local_10,*param_1,sVar1);\n    if (iVar3 == 0) {\n      sVar1 = strlen(local_10[2]);\n      sVar2 = strlen(param_1[2]);\n      if (sVar1 <= sVar2) {\n        sVar1 = sVar2;\n      }\n      iVar3 = strncmp(local_10[2],param_1[2],sVar1);\n      if (iVar3 == 0) {\n        return 0;\n      }\n    }\n    local_10 = (char **)local_10[8];\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "checkCRLs",
+                        "strlen",
+                        "strncmp"
+                    ],
+                    "calling_functions": [
+                        "checkCRLs",
+                        "validateCert"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validateCert",
+                "func_c_signature": "undefined4 validateCert(int *param_1,undefined4 param_2,uint *param_3)",
+                "decompiled_code": "undefined4 validateCert(int *param_1,undefined4 param_2,uint *param_3) {\n  undefined4 uVar1;\n  size_t sVar2;\n  int iVar3;\n  \n  if (((((param_1[1] == 0) || (*param_1 == 0)) || (param_1[2] == 0)) ||\n      ((param_1[5] == 0 || (param_1[6] == 0)))) || (param_1[3] == 0)) {\n    sendErrorResponse(\"Invalid Certificate!\");\n    uVar1 = 0;\n  }\n  else {\n    sVar2 = strlen(\"Secure Registers Inc.\");\n    iVar3 = strncmp((char *)param_1[1],issuer,sVar2);\n    if (iVar3 == 0) {\n      if (param_1[4] != 0) {\n        sVar2 = strlen(\"Revoked\");\n        iVar3 = strncmp((char *)param_1[4],\"Revoked\",sVar2);\n        if (iVar3 == 0) {\n          return 0;\n        }\n      }\n      iVar3 = param_1[5];\n      signCert(&param_1);\n      *param_3 = *param_3 + 1;\n      if ((iVar3 == param_1[5]) && (*param_3 < (uint)param_1[6])) {\n        uVar1 = checkCRLs(param_1);\n      }\n      else if (*param_3 < (uint)param_1[6]) {\n        sendErrorResponse(\"Invalid Certificate!\");\n        uVar1 = 0;\n      }\n      else {\n        sendErrorResponse(\"Expired Certificate!\");\n        uVar1 = 0;\n      }\n    }\n    else {\n      sendErrorResponse(\"Invalid Certificate!\");\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validateCert",
+                        "sendErrorResponse",
+                        "strlen",
+                        "strncmp",
+                        "signCert",
+                        "checkCRLs"
+                    ],
+                    "calling_functions": [
+                        "validateCert",
+                        "revokeCert",
+                        "reenroll",
+                        "authenticate"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "crls",
+                "func_c_signature": "void crls(undefined4 param_1)",
+                "decompiled_code": "void crls(undefined4 param_1) {\n  sendCerts(param_1,CRL);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "crls",
+                        "sendCerts"
+                    ],
+                    "calling_functions": [
+                        "crls"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "freeCert",
+                "func_c_signature": "void freeCert(void **param_1)",
+                "decompiled_code": "void freeCert(void **param_1) {\n  free(*param_1);\n  free(param_1[1]);\n  free(param_1[2]);\n  free(param_1[3]);\n  free(param_1[8]);\n  if (param_1[4] != (void *)0x0) {\n    free(param_1[4]);\n  }\n  free(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "freeCert",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "freeCert",
+                        "reenroll",
+                        "enroll"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "revokeCert",
+                "func_c_signature": "void revokeCert(undefined4 param_1)",
+                "decompiled_code": "void revokeCert(undefined4 param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  void *pvVar3;\n  undefined *puVar4;\n  undefined auStack_1c [4];\n  int local_18;\n  size_t local_14;\n  int local_10;\n  \n  local_18 = parseCertificate();\n  if ((local_18 != 0) && (local_10 = validateCert(), local_10 != 0)) {\n    local_14 = strlen(\"Revoked\");\n    iVar2 = local_18;\n    pvVar3 = malloc(local_14 + 1);\n    *(void **)(iVar2 + 0x10) = pvVar3;\n    puVar4 = auStack_1c;\n    if (*(int *)(iVar2 + 0x10) == 0) {\n      _terminate();\n      puVar4 = &stack0xffffffd4;\n    }\n    uVar1 = *(undefined4 *)(local_18 + 0x10);\n    *(size_t *)(puVar4 + -0xc) = local_14 + 1;\n    *(undefined4 *)(puVar4 + -0x10) = uVar1;\n    *(undefined4 *)(puVar4 + -0x14) = 0x11b7f;\n    bzero(*(void **)(puVar4 + -0x10),*(size_t *)(puVar4 + -0xc));\n    uVar1 = *(undefined4 *)(local_18 + 0x10);\n    *(size_t *)(puVar4 + -8) = local_14;\n    *(char **)(puVar4 + -0xc) = \"Revoked\";\n    *(undefined4 *)(puVar4 + -0x10) = uVar1;\n    *(undefined4 *)(puVar4 + -0x14) = 0x11b9b;\n    memcpy(*(void **)(puVar4 + -0x10),*(void **)(puVar4 + -0xc),*(size_t *)(puVar4 + -8));\n    *(int **)(puVar4 + -0x10) = &local_18;\n    *(undefined4 *)(puVar4 + -0x14) = 0x11baa;\n    signCert();\n    *(undefined4 *)(local_18 + 0x20) = 0;\n    *(int *)(puVar4 + -0xc) = local_18;\n    *(undefined4 *)(puVar4 + -0x10) = param_1;\n    *(undefined4 *)(puVar4 + -0x14) = 0x11bc7;\n    sendCerts();\n    *(int *)(local_18 + 0x20) = CRL;\n    CRL = local_18;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "revokeCert",
+                        "parseCertificate",
+                        "validateCert",
+                        "strlen",
+                        "malloc",
+                        "_terminate",
+                        "bzero",
+                        "memcpy",
+                        "signCert",
+                        "sendCerts"
+                    ],
+                    "calling_functions": [
+                        "revokeCert"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "reenroll",
+                "func_c_signature": "void reenroll(undefined4 param_1,undefined4 param_2,int *param_3)",
+                "decompiled_code": "void reenroll(undefined4 param_1,undefined4 param_2,int *param_3) {\n  undefined4 uVar1;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  uVar1 = 0x11bfb;\n  local_10 = 100;\n  local_18 = parseCertificate(param_2);\n  if ((local_18 != 0) && (local_14 = validateCert(local_18,0,param_3,uVar1), local_14 != 0)) {\n    if (*(int *)(local_18 + 0x1c) != 0) {\n      local_10 = *(int *)(local_18 + 0x1c);\n    }\n    *param_3 = *param_3 + 1;\n    *(int *)(local_18 + 0x18) = local_10 + *param_3;\n    signCert(&local_18);\n    sendCerts(param_1,local_18);\n    freeCert(local_18);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "reenroll",
+                        "parseCertificate",
+                        "validateCert",
+                        "signCert",
+                        "sendCerts",
+                        "freeCert"
+                    ],
+                    "calling_functions": [
+                        "reenroll"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "checkCertUse",
+                "func_c_signature": "undefined4 checkCertUse(char *param_1,char *param_2)",
+                "decompiled_code": "undefined4 checkCertUse(char *param_1,char *param_2) {\n  size_t sVar1;\n  size_t sVar2;\n  int iVar3;\n  char *local_10;\n  \n  if (param_2 != (char *)0x0) {\n    local_10 = strtok(param_2,\":\");\n    do {\n      sVar1 = strlen(param_1);\n      sVar2 = strlen(local_10);\n      if (sVar1 <= sVar2) {\n        sVar1 = sVar2;\n      }\n      iVar3 = strncmp(param_1,local_10,sVar1);\n      if (iVar3 == 0) {\n        return 1;\n      }\n      sVar1 = strlen(\"revoke\");\n      iVar3 = strncmp(\"revoke\",local_10,sVar1);\n      if (iVar3 == 0) {\n        return 1;\n      }\n      local_10 = strtok((char *)0x0,\":\");\n    } while (local_10 != (char *)0x0);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "checkCertUse",
+                        "strtok",
+                        "strlen",
+                        "strncmp"
+                    ],
+                    "calling_functions": [
+                        "checkCertUse",
+                        "authenticate"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "enroll",
+                "func_c_signature": "void enroll(undefined4 param_1,undefined4 param_2,int *param_3)",
+                "decompiled_code": "void enroll(undefined4 param_1,undefined4 param_2,int *param_3) {\n  int iVar1;\n  int *piVar2;\n  void *pvVar3;\n  undefined *puVar4;\n  undefined auStack_1c [4];\n  int *local_18;\n  size_t local_14;\n  int local_10;\n  \n  local_10 = 100;\n  if (issuer == (char *)0x0) {\n    initIssuer();\n  }\n  local_18 = (int *)parseCertificate();\n  if (((*local_18 == 0) || (local_18[2] == 0)) || (local_18[3] == 0)) {\n    sendErrorResponse();\n  }\n  else {\n    if (local_18[1] != 0) {\n      free((void *)local_18[1]);\n    }\n    local_14 = strlen(issuer);\n    piVar2 = local_18;\n    pvVar3 = malloc(local_14 + 1);\n    piVar2[1] = (int)pvVar3;\n    puVar4 = auStack_1c;\n    if (piVar2[1] == 0) {\n      _terminate();\n      puVar4 = &stack0xffffffd4;\n    }\n    iVar1 = local_18[1];\n    *(size_t *)(puVar4 + -0xc) = local_14 + 1;\n    *(int *)(puVar4 + -0x10) = iVar1;\n    *(undefined4 *)(puVar4 + -0x14) = 0x11e67;\n    bzero(*(void **)(puVar4 + -0x10),*(size_t *)(puVar4 + -0xc));\n    iVar1 = local_18[1];\n    *(size_t *)(puVar4 + -8) = local_14;\n    *(char **)(puVar4 + -0xc) = issuer;\n    *(int *)(puVar4 + -0x10) = iVar1;\n    *(undefined4 *)(puVar4 + -0x14) = 0x11e83;\n    memcpy(*(void **)(puVar4 + -0x10),*(void **)(puVar4 + -0xc),*(size_t *)(puVar4 + -8));\n    if ((*local_18 != 0) && (local_18[2] != 0)) {\n      if (local_18[7] != 0) {\n        local_10 = local_18[7];\n      }\n      *param_3 = *param_3 + 1;\n      local_18[6] = local_10 + *param_3;\n      local_18[8] = 0;\n      *(int ***)(puVar4 + -0x10) = &local_18;\n      *(undefined4 *)(puVar4 + -0x14) = 0x11edf;\n      signCert();\n      *(int **)(puVar4 + -0xc) = local_18;\n      *(undefined4 *)(puVar4 + -0x10) = param_1;\n      *(undefined4 *)(puVar4 + -0x14) = 0x11ef2;\n      sendCerts();\n      *(int **)(puVar4 + -0x10) = local_18;\n      *(undefined4 *)(puVar4 + -0x14) = 0x11f01;\n      freeCert();\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "enroll",
+                        "initIssuer",
+                        "parseCertificate",
+                        "sendErrorResponse",
+                        "free",
+                        "strlen",
+                        "malloc",
+                        "_terminate",
+                        "bzero",
+                        "memcpy",
+                        "signCert",
+                        "sendCerts",
+                        "freeCert"
+                    ],
+                    "calling_functions": [
+                        "enroll"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "addService",
+                "func_c_signature": "void addService(void **param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "void addService(void **param_1,undefined4 param_2,undefined4 param_3) {\n  undefined4 uVar1;\n  void *pvVar2;\n  undefined *puVar3;\n  undefined *puVar4;\n  void *apvStackY_50 [3];\n  size_t asStackY_44 [6];\n  undefined4 uStack_20;\n  undefined auStack_1c [8];\n  size_t local_14;\n  void *local_10;\n  \n  puVar3 = auStack_1c;\n  uStack_20 = 0x1223f;\n  local_10 = malloc(0x10);\n  if (local_10 == (void *)0x0) {\n    puVar3 = &stack0xffffffd4;\n    _terminate();\n  }\n  *(undefined4 *)(puVar3 + -0xc) = 0x10;\n  *(void **)(puVar3 + -0x10) = local_10;\n  *(undefined4 *)(puVar3 + -0x14) = 0x12272;\n  bzero(*(void **)(puVar3 + -0x10),*(size_t *)(puVar3 + -0xc));\n  *(undefined4 *)((int)local_10 + 4) = param_3;\n  *(undefined4 *)(puVar3 + -0x10) = param_2;\n  *(undefined4 *)(puVar3 + -0x14) = 0x12289;\n  local_14 = strlen(*(char **)(puVar3 + -0x10));\n  *(size_t *)(puVar3 + -0x10) = local_14 + 1;\n  *(undefined4 *)(puVar3 + -0x14) = 0x1229e;\n  pvVar2 = malloc(*(size_t *)(puVar3 + -0x10));\n  *(void **)((int)local_10 + 8) = pvVar2;\n  puVar4 = puVar3;\n  if (*(int *)((int)local_10 + 8) == 0) {\n    *(undefined4 *)(puVar3 + -0x10) = 1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x122bb;\n    _terminate();\n    puVar4 = puVar3 + -0x10;\n  }\n  uVar1 = *(undefined4 *)((int)local_10 + 8);\n  *(size_t *)(puVar4 + -0xc) = local_14 + 1;\n  *(undefined4 *)(puVar4 + -0x10) = uVar1;\n  *(undefined4 *)(puVar4 + -0x14) = 0x122d1;\n  bzero(*(void **)(puVar4 + -0x10),*(size_t *)(puVar4 + -0xc));\n  uVar1 = *(undefined4 *)((int)local_10 + 8);\n  *(size_t *)(puVar4 + -8) = local_14;\n  *(undefined4 *)(puVar4 + -0xc) = param_2;\n  *(undefined4 *)(puVar4 + -0x10) = uVar1;\n  *(undefined4 *)(puVar4 + -0x14) = 0x122e9;\n  memcpy(*(void **)(puVar4 + -0x10),*(void **)(puVar4 + -0xc),*(size_t *)(puVar4 + -8));\n  *(void **)((int)local_10 + 0xc) = *param_1;\n  *param_1 = local_10;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "addService",
+                        "malloc",
+                        "_terminate",
+                        "bzero",
+                        "strlen",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "addService",
+                        "initServices"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initServices",
+                "func_c_signature": "void initServices(undefined4 param_1)",
+                "decompiled_code": "void initServices(undefined4 param_1) {\n  addService(param_1,\"newTokens\",requestToken);\n  addService(param_1,\"enroll\",enroll);\n  addService(param_1,\"reenroll\",reenroll);\n  addService(param_1,&DAT_00015112,crls);\n  addService(param_1,\"revoke\",revokeCert);\n  addService(param_1,\"revokeT\",revokeToken);\n  addService(param_1,\"refreshToken\",refreshToken);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initServices",
+                        "addService"
+                    ],
+                    "calling_functions": [
+                        "initServices",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "freeMessage",
+                "func_c_signature": "void freeMessage(void *param_1)",
+                "decompiled_code": "void freeMessage(void *param_1) {\n  free(*(void **)((int)param_1 + 0x14));\n  free(*(void **)((int)param_1 + 0x18));\n  free(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "freeMessage",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "freeMessage",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getMessage",
+                "func_c_signature": "void ** getMessage(void)",
+                "decompiled_code": "void ** getMessage(void) {\n  int iVar1;\n  void *pvVar2;\n  undefined *puVar3;\n  undefined *puVar4;\n  void *apvStackY_4a0 [2];\n  char *pcStackY_498;\n  size_t asStackY_494 [2];\n  char *apcStackY_48c [2];\n  size_t asStackY_484 [2];\n  int *piStackY_47c;\n  char *pcStackY_478;\n  size_t asStackY_474 [2];\n  char *apcStackY_46c [4];\n  int aiStackY_45c [8];\n  undefined4 uStack_430;\n  undefined local_42c [1024];\n  undefined local_2c [4];\n  char *local_28;\n  char *local_24;\n  char *local_20;\n  char *local_1c;\n  char *local_18;\n  void **local_14;\n  size_t local_10;\n  \n  uStack_430 = 0x1243a;\n  bzero(local_42c,0x400);\n  local_14 = (void **)malloc(0x1c);\n  puVar4 = local_42c;\n  if (local_14 == (void **)0x0) {\n    _terminate();\n    puVar4 = &stack0xfffffbc4;\n  }\n  *(undefined4 *)(puVar4 + -0xc) = 0x1c;\n  *(void ***)(puVar4 + -0x10) = local_14;\n  *(undefined4 *)(puVar4 + -0x14) = 0x12484;\n  bzero(*(void **)(puVar4 + -0x10),*(size_t *)(puVar4 + -0xc));\n  puVar3 = puVar4;\n  if (local_14 == (void **)0x0) {\n    puVar3 = puVar4 + -0x10;\n    *(undefined4 *)(puVar4 + -0x10) = 1;\n    *(undefined4 *)(puVar4 + -0x14) = 0x12497;\n    _terminate();\n  }\n  *(undefined **)(puVar3 + -0x10) = local_2c;\n  *(undefined4 *)(puVar3 + -0x14) = 0x400;\n  *(undefined4 *)(puVar3 + -0x18) = 0x21;\n  *(undefined **)(puVar3 + -0x1c) = local_42c;\n  *(undefined4 *)(puVar3 + -0x20) = 0;\n  *(undefined4 *)(puVar3 + -0x24) = 0x124b3;\n  iVar1 = read_until_delim_or_n();\n  puVar4 = puVar3;\n  if (iVar1 != 0) {\n    puVar4 = puVar3 + -0x10;\n    *(undefined4 *)(puVar3 + -0x10) = 2;\n    *(undefined4 *)(puVar3 + -0x14) = 0x124c4;\n    _terminate();\n  }\n  *(undefined **)(puVar4 + -0xc) = &DAT_00015133;\n  *(undefined **)(puVar4 + -0x10) = local_42c;\n  *(undefined4 *)(puVar4 + -0x14) = 0x124da;\n  local_18 = strtok(*(char **)(puVar4 + -0x10),*(char **)(puVar4 + -0xc));\n  if (local_18 == (char *)0x0) {\n    local_14 = (void **)0x0;\n  }\n  else {\n    *(char **)(puVar4 + -0x10) = local_18;\n    *(undefined4 *)(puVar4 + -0x14) = 0x124fb;\n    local_10 = strlen(*(char **)(puVar4 + -0x10));\n    if (0x10 < local_10) {\n      local_10 = 0x10;\n    }\n    *(size_t *)(puVar4 + -0x10) = local_10 + 1;\n    *(undefined4 *)(puVar4 + -0x14) = 0x1251d;\n    pvVar2 = malloc(*(size_t *)(puVar4 + -0x10));\n    *local_14 = pvVar2;\n    if (*local_14 == (void *)0x0) {\n      *(undefined4 *)(puVar4 + -0x10) = 1;\n      *(undefined4 *)(puVar4 + -0x14) = 0x12538;\n      _terminate();\n      puVar4 = puVar4 + -0x10;\n    }\n    pvVar2 = *local_14;\n    *(size_t *)(puVar4 + -0xc) = local_10 + 1;\n    *(void **)(puVar4 + -0x10) = pvVar2;\n    *(undefined4 *)(puVar4 + -0x14) = 0x1254d;\n    bzero(*(void **)(puVar4 + -0x10),*(size_t *)(puVar4 + -0xc));\n    pvVar2 = *local_14;\n    *(size_t *)(puVar4 + -8) = local_10;\n    *(char **)(puVar4 + -0xc) = local_18;\n    *(void **)(puVar4 + -0x10) = pvVar2;\n    *(undefined4 *)(puVar4 + -0x14) = 0x12564;\n    memcpy(*(void **)(puVar4 + -0x10),*(void **)(puVar4 + -0xc),*(size_t *)(puVar4 + -8));\n    *(undefined **)(puVar4 + -0xc) = &DAT_00015133;\n    *(undefined4 *)(puVar4 + -0x10) = 0;\n    *(undefined4 *)(puVar4 + -0x14) = 0x12578;\n    local_1c = strtok(*(char **)(puVar4 + -0x10),*(char **)(puVar4 + -0xc));\n    if (local_1c == (char *)0x0) {\n      local_14 = (void **)0x0;\n    }\n    else {\n      *(char **)(puVar4 + -0x10) = local_1c;\n      *(undefined4 *)(puVar4 + -0x14) = 0x12599;\n      local_10 = strlen(*(char **)(puVar4 + -0x10));\n      if (10 < local_10) {\n        local_10 = 10;\n      }\n      *(size_t *)(puVar4 + -8) = local_10;\n      *(char **)(puVar4 + -0xc) = local_1c;\n      *(void ***)(puVar4 + -0x10) = local_14 + 1;\n      *(undefined4 *)(puVar4 + -0x14) = 0x125c1;\n      memcpy(*(void **)(puVar4 + -0x10),*(void **)(puVar4 + -0xc),*(size_t *)(puVar4 + -8));\n      *(undefined **)(puVar4 + -0xc) = &DAT_00015133;\n      *(undefined4 *)(puVar4 + -0x10) = 0;\n      *(undefined4 *)(puVar4 + -0x14) = 0x125d5;\n      local_20 = strtok(*(char **)(puVar4 + -0x10),*(char **)(puVar4 + -0xc));\n      if (local_20 == (char *)0x0) {\n        local_14 = (void **)0x0;\n      }\n      else {\n        *(char **)(puVar4 + -0x10) = local_20;\n        *(undefined4 *)(puVar4 + -0x14) = 0x125ec;\n        pvVar2 = (void *)atoi(*(char **)(puVar4 + -0x10));\n        local_14[4] = pvVar2;\n        *(undefined **)(puVar4 + -0xc) = &DAT_00015133;\n        *(undefined4 *)(puVar4 + -0x10) = 0;\n        *(undefined4 *)(puVar4 + -0x14) = 0x12606;\n        local_24 = strtok(*(char **)(puVar4 + -0x10),*(char **)(puVar4 + -0xc));\n        if (local_24 == (char *)0x0) {\n          local_14 = (void **)0x0;\n        }\n        else {\n          *(char **)(puVar4 + -0x10) = local_24;\n          *(undefined4 *)(puVar4 + -0x14) = 0x12633;\n          local_10 = strlen(*(char **)(puVar4 + -0x10));\n          *(size_t *)(puVar4 + -0x10) = local_10 + 1;\n          *(undefined4 *)(puVar4 + -0x14) = 0x12648;\n          pvVar2 = malloc(*(size_t *)(puVar4 + -0x10));\n          local_14[5] = pvVar2;\n          if (local_14[5] == (void *)0x0) {\n            *(undefined4 *)(puVar4 + -0x10) = 1;\n            *(undefined4 *)(puVar4 + -0x14) = 0x12665;\n            _terminate();\n            puVar4 = puVar4 + -0x10;\n          }\n          pvVar2 = local_14[5];\n          *(size_t *)(puVar4 + -0xc) = local_10 + 1;\n          *(void **)(puVar4 + -0x10) = pvVar2;\n          *(undefined4 *)(puVar4 + -0x14) = 0x1267b;\n          bzero(*(void **)(puVar4 + -0x10),*(size_t *)(puVar4 + -0xc));\n          pvVar2 = local_14[5];\n          *(size_t *)(puVar4 + -8) = local_10;\n          *(char **)(puVar4 + -0xc) = local_24;\n          *(void **)(puVar4 + -0x10) = pvVar2;\n          *(undefined4 *)(puVar4 + -0x14) = 0x12693;\n          memcpy(*(void **)(puVar4 + -0x10),*(void **)(puVar4 + -0xc),*(size_t *)(puVar4 + -8));\n          *(undefined **)(puVar4 + -0xc) = &DAT_00015135;\n          *(undefined4 *)(puVar4 + -0x10) = 0;\n          *(undefined4 *)(puVar4 + -0x14) = 0x126a7;\n          local_28 = strtok(*(char **)(puVar4 + -0x10),*(char **)(puVar4 + -0xc));\n          if (local_28 != (char *)0x0) {\n            *(char **)(puVar4 + -0x10) = local_28;\n            *(undefined4 *)(puVar4 + -0x14) = 0x126be;\n            local_10 = strlen(*(char **)(puVar4 + -0x10));\n            *(size_t *)(puVar4 + -0x10) = local_10;\n            *(undefined4 *)(puVar4 + -0x14) = 0x126cf;\n            pvVar2 = malloc(*(size_t *)(puVar4 + -0x10));\n            local_14[6] = pvVar2;\n            if (local_14[6] == (void *)0x0) {\n              *(undefined4 *)(puVar4 + -0x10) = 1;\n              *(undefined4 *)(puVar4 + -0x14) = 0x126ec;\n              _terminate();\n              puVar4 = puVar4 + -0x10;\n            }\n            pvVar2 = local_14[6];\n            *(size_t *)(puVar4 + -0xc) = local_10 + 1;\n            *(void **)(puVar4 + -0x10) = pvVar2;\n            *(undefined4 *)(puVar4 + -0x14) = 0x12702;\n            bzero(*(void **)(puVar4 + -0x10),*(size_t *)(puVar4 + -0xc));\n            pvVar2 = local_14[6];\n            *(size_t *)(puVar4 + -8) = local_10;\n            *(char **)(puVar4 + -0xc) = local_28;\n            *(void **)(puVar4 + -0x10) = pvVar2;\n            *(undefined4 *)(puVar4 + -0x14) = 0x1271a;\n            memcpy(*(void **)(puVar4 + -0x10),*(void **)(puVar4 + -0xc),*(size_t *)(puVar4 + -8));\n          }\n        }\n      }\n    }\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getMessage",
+                        "bzero",
+                        "malloc",
+                        "_terminate",
+                        "read_until_delim_or_n",
+                        "strtok",
+                        "strlen",
+                        "memcpy",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "getMessage",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "authenticate",
+                "func_c_signature": "undefined4 authenticate(char *param_1,char *param_2,char *param_3)",
+                "decompiled_code": "undefined4 authenticate(char *param_1,char *param_2,char *param_3) {\n  size_t sVar1;\n  int iVar2;\n  int iVar3;\n  undefined4 uVar4;\n  char *pcVar5;\n  \n  sVar1 = strlen(\"PeerCert\");\n  iVar2 = strncmp(param_2,\"PeerCert\",sVar1);\n  if ((iVar2 != 0) || (iVar2 = isCertCommand(param_1), iVar2 == 0)) {\n    sVar1 = strlen(\"Token\");\n    iVar2 = strncmp(param_2,\"Token\",sVar1);\n    if (iVar2 == 0) {\n      iVar2 = parseToken(param_3);\n      iVar3 = checkTokenUse(param_1,*(undefined4 *)(iVar2 + 4));\n      if (iVar3 == 0) {\n        uVar4 = 0;\n      }\n      else {\n        iVar2 = validateToken(iVar2,&expiration_date);\n        if (iVar2 == 0) {\n          uVar4 = 0;\n        }\n        else {\n          uVar4 = 1;\n        }\n      }\n    }\n    else {\n      sVar1 = strlen(\"UserPass\");\n      iVar2 = strncmp(param_2,\"UserPass\",sVar1);\n      if (iVar2 == 0) {\n        sVar1 = strlen(\"newTokens\");\n        iVar2 = strncmp(param_1,\"newTokens\",sVar1);\n        if (iVar2 == 0) {\n          pcVar5 = strtok(param_3,\"/\");\n          sVar1 = strlen(\"user\");\n          iVar2 = strncmp(pcVar5,\"user\",sVar1);\n          if (iVar2 == 0) {\n            pcVar5 = strtok((char *)0x0,\"!\");\n            sVar1 = strlen(\"pass\");\n            iVar2 = strncmp(pcVar5,\"pass\",sVar1);\n            if (iVar2 == 0) {\n              return 1;\n            }\n          }\n          return 0;\n        }\n      }\n      uVar4 = 0;\n    }\n    return uVar4;\n  }\n  iVar2 = parseCertificate(param_3);\n  iVar3 = checkCertUse(param_1,*(undefined4 *)(iVar2 + 0xc));\n  if (iVar3 == 0) {\n    return 0;\n  }\n  iVar2 = validateCert(iVar2,param_1,&expiration_date);\n  if (iVar2 != 0) {\n    return 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "authenticate",
+                        "strlen",
+                        "strncmp",
+                        "isCertCommand",
+                        "parseToken",
+                        "checkTokenUse",
+                        "validateToken",
+                        "strtok",
+                        "parseCertificate",
+                        "checkCertUse",
+                        "validateCert"
+                    ],
+                    "calling_functions": [
+                        "authenticate",
+                        "runService"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "runService",
+                "func_c_signature": "void runService(int param_1,char **param_2)",
+                "decompiled_code": "void runService(int param_1,char **param_2) {\n  size_t __n;\n  int iVar1;\n  int local_10;\n  \n  local_10 = param_1;\n  while( true ) {\n    if (local_10 == 0) {\n      sendErrorResponse(\"Invalid Service\");\n      return;\n    }\n    __n = strlen(*(char **)(local_10 + 8));\n    iVar1 = strncmp(*param_2,*(char **)(local_10 + 8),__n);\n    if (iVar1 == 0) break;\n    local_10 = *(int *)(local_10 + 0xc);\n  }\n  iVar1 = authenticate(*param_2,param_2 + 1,param_2[5]);\n  if (iVar1 != 0) {\n    (**(code **)(local_10 + 4))(param_2[4],param_2[6],&expiration_date);\n    return;\n  }\n  sendErrorResponse(\"Failed Authentication\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "runService",
+                        "sendErrorResponse",
+                        "strlen",
+                        "strncmp",
+                        "authenticate"
+                    ],
+                    "calling_functions": [
+                        "runService",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  undefined4 uVar1;\n  size_t sVar2;\n  int iVar3;\n  undefined1 **ppuVar4;\n  undefined1 *puStack_830;\n  undefined4 uStack_82c;\n  undefined *puStack_828;\n  undefined4 uStack_824;\n  undefined auStack_820 [4];\n  undefined4 local_81c [511];\n  undefined local_20 [4];\n  undefined4 *local_1c;\n  int local_18;\n  undefined4 local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  ppuVar4 = (undefined1 **)auStack_820;\n  uStack_824 = 0x12a52;\n  local_14 = 0;\n  local_81c[0] = 0;\n  puStack_828 = local_20;\n  uStack_82c = 0x400;\n  puStack_830 = private_key;\n  local_18 = random();\n  if (local_18 != 0) {\n    ppuVar4 = &puStack_830;\n    puStack_830 = (undefined1 *)0x1;\n    _terminate();\n  }\n  *(undefined4 **)((int)ppuVar4 + -0x10) = local_81c;\n  *(undefined4 *)((int)ppuVar4 + -0x14) = 0x12aa6;\n  initServices();\n  while( true ) {\n    *(undefined4 *)((int)ppuVar4 + -4) = 0x12aae;\n    local_1c = (undefined4 *)getMessage();\n    if (local_1c == (undefined4 *)0x0) {\n      *(char **)((int)ppuVar4 + -0x10) = \"Invalid Message\";\n      *(undefined4 *)((int)ppuVar4 + -0x14) = 0x12ac6;\n      sendErrorResponse();\n      return 0;\n    }\n    *(undefined **)((int)ppuVar4 + -0x10) = &DAT_00015191;\n    *(undefined4 *)((int)ppuVar4 + -0x14) = 0x12ae2;\n    sVar2 = strlen(*(char **)((int)ppuVar4 + -0x10));\n    uVar1 = *local_1c;\n    *(size_t *)((int)ppuVar4 + -8) = sVar2;\n    *(undefined **)((int)ppuVar4 + -0xc) = &DAT_00015191;\n    *(undefined4 *)((int)ppuVar4 + -0x10) = uVar1;\n    *(undefined4 *)((int)ppuVar4 + -0x14) = 0x12afb;\n    iVar3 = strncmp(*(char **)((int)ppuVar4 + -0x10),*(char **)((int)ppuVar4 + -0xc),\n                    *(size_t *)((int)ppuVar4 + -8));\n    if (iVar3 == 0) break;\n    *(undefined4 **)((int)ppuVar4 + -0xc) = local_1c;\n    *(undefined4 *)((int)ppuVar4 + -0x10) = local_81c[0];\n    *(undefined4 *)((int)ppuVar4 + -0x14) = 0x12b56;\n    runService();\n    *(undefined4 **)((int)ppuVar4 + -0x10) = local_1c;\n    *(undefined4 *)((int)ppuVar4 + -0x14) = 0x12b64;\n    freeMessage();\n  }\n  *(undefined **)((int)ppuVar4 + -0x10) = &DAT_00015135;\n  *(undefined4 *)((int)ppuVar4 + -0x14) = 0x12b11;\n  sVar2 = strlen(*(char **)((int)ppuVar4 + -0x10));\n  *(undefined **)((int)ppuVar4 + -4) = local_20;\n  *(size_t *)((int)ppuVar4 + -8) = sVar2;\n  *(undefined **)((int)ppuVar4 + -0xc) = &DAT_00015135;\n  *(undefined4 *)((int)ppuVar4 + -0x10) = 1;\n  *(undefined4 *)((int)ppuVar4 + -0x14) = 0x12b27;\n  local_18 = transmit();\n  if (local_18 == 0) {\n    return 0;\n  }\n  *(undefined4 *)((int)ppuVar4 + -0x10) = 1;\n  *(undefined4 *)((int)ppuVar4 + -0x14) = 0x12b3d;\n  _terminate();\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "random",
+                        "_terminate",
+                        "initServices",
+                        "getMessage",
+                        "sendErrorResponse",
+                        "strlen",
+                        "strncmp",
+                        "runService",
+                        "freeMessage",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            }
+        ],
+        "token.c": [
+            {
+                "func_name": "getToken",
+                "func_c_signature": "uint getToken(void)",
+                "decompiled_code": "uint getToken(void) {\n  uint local_3c [11];\n  uint local_10;\n  uint local_c;\n  \n  local_3c[0] = 2;\n  local_3c[1] = 3;\n  local_3c[2] = 5;\n  local_3c[3] = 7;\n  local_3c[4] = 0xb;\n  local_3c[5] = 0xd;\n  local_3c[6] = 0x11;\n  local_3c[7] = 0x13;\n  local_3c[8] = 0x17;\n  local_3c[9] = 0x1d;\n  local_c = 1;\n  for (local_10 = 0; local_10 < 10; local_10 = local_10 + 1) {\n    if ((uint)(byte)(&DAT_4347c000)[flag_index + local_10] % local_3c[local_10] == 0) {\n      local_c = local_3c[local_10] * local_c;\n    }\n  }\n  flag_index = flag_index + 10;\n  for (; local_c < 10000000; local_c = local_c * 10) {\n  }\n  for (; 99999999 < local_c; local_c = local_c / 10) {\n  }\n  return local_c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getToken"
+                    ],
+                    "calling_functions": [
+                        "getToken",
+                        "requestToken"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "isTokenCommand",
+                "func_c_signature": "undefined4 isTokenCommand(char *param_1)",
+                "decompiled_code": "undefined4 isTokenCommand(char *param_1) {\n  size_t sVar1;\n  int iVar2;\n  undefined4 uVar3;\n  \n  sVar1 = strlen(\"newTokens\");\n  iVar2 = strncmp(param_1,\"newTokens\",sVar1);\n  if (iVar2 == 0) {\n    uVar3 = 1;\n  }\n  else {\n    sVar1 = strlen(\"refreshToken\");\n    iVar2 = strncmp(param_1,\"refreshToken\",sVar1);\n    if (iVar2 == 0) {\n      uVar3 = 1;\n    }\n    else {\n      sVar1 = strlen(\"revokeT\");\n      iVar2 = strncmp(param_1,\"revokeT\",sVar1);\n      if (iVar2 == 0) {\n        uVar3 = 1;\n      }\n      else {\n        uVar3 = 0;\n      }\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "isTokenCommand",
+                        "strlen",
+                        "strncmp"
+                    ],
+                    "calling_functions": [
+                        "isTokenCommand"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "calculateTokenSize",
+                "func_c_signature": "int calculateTokenSize(undefined4 *param_1)",
+                "decompiled_code": "int calculateTokenSize(undefined4 *param_1) {\n  size_t sVar1;\n  char local_2c [20];\n  int local_18;\n  size_t local_14;\n  size_t local_10;\n  \n  bzero(local_2c,0x14);\n  sprintf(local_2c,\"!U\",param_1[2]);\n  local_10 = strlen(local_2c);\n  bzero(local_2c,0x14);\n  sprintf(local_2c,\"!U\",*param_1);\n  local_14 = strlen(local_2c);\n  sVar1 = strlen(\"Token\");\n  local_18 = sVar1 + local_10 + 2;\n  sVar1 = strlen(\"Expiration\");\n  local_18 = local_18 + sVar1 + local_14 + 7;\n  sVar1 = strlen((char *)param_1[1]);\n  return local_18 + sVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "calculateTokenSize",
+                        "bzero",
+                        "sprintf",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "calculateTokenSize",
+                        "sendToken"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sendToken",
+                "func_c_signature": "void sendToken(undefined4 param_1,undefined4 *param_2)",
+                "decompiled_code": "void sendToken(undefined4 param_1,undefined4 *param_2) {\n  undefined4 uVar1;\n  undefined4 uVar2;\n  undefined *puVar3;\n  char *apcStack_70 [7];\n  uint auStack_54 [6];\n  undefined4 uStack_30;\n  undefined auStack_2c [8];\n  int local_24;\n  void *local_20;\n  size_t local_1c;\n  void *local_18;\n  uint local_14;\n  byte *local_10;\n  \n  uStack_30 = 0x12e36;\n  local_10 = &DAT_4347c000;\n  local_18 = (void *)0x0;\n  local_1c = calculateTokenSize();\n  local_20 = malloc(local_1c);\n  puVar3 = auStack_2c;\n  if (local_20 == (void *)0x0) {\n    _terminate();\n    puVar3 = &stack0xffffffc4;\n  }\n  *(size_t *)(puVar3 + -0xc) = local_1c + 1;\n  *(void **)(puVar3 + -0x10) = local_20;\n  *(undefined4 *)(puVar3 + -0x14) = 0x12e8e;\n  bzero(*(void **)(puVar3 + -0x10),*(size_t *)(puVar3 + -0xc));\n  *(undefined4 *)(puVar3 + -0x10) = 0x40;\n  *(undefined4 *)(puVar3 + -0x14) = 0x12e9b;\n  local_18 = malloc(*(size_t *)(puVar3 + -0x10));\n  if (local_18 == (void *)0x0) {\n    *(undefined4 *)(puVar3 + -0x10) = 1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x12eb1;\n    _terminate();\n    puVar3 = puVar3 + -0x10;\n  }\n  *(undefined4 *)(puVar3 + -0xc) = 0x40;\n  *(void **)(puVar3 + -0x10) = local_18;\n  *(undefined4 *)(puVar3 + -0x14) = 0x12ebe;\n  bzero(*(void **)(puVar3 + -0x10),*(size_t *)(puVar3 + -0xc));\n  for (local_14 = 0; local_14 < 10; local_14 = local_14 + 1) {\n    *(uint *)(puVar3 + -8) = (uint)*local_10;\n    *(undefined **)(puVar3 + -0xc) = &DAT_000151c9;\n    *(void **)(puVar3 + -0x10) = (void *)((int)local_18 + local_14 * 4);\n    *(undefined4 *)(puVar3 + -0x14) = 0x12ef9;\n    local_10 = local_10 + 1;\n    sprintf(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc));\n  }\n  uVar1 = *param_2;\n  uVar2 = param_2[2];\n  *(undefined4 *)(puVar3 + -4) = param_2[1];\n  *(undefined **)(puVar3 + -8) = &DAT_000151cc;\n  *(undefined4 *)(puVar3 + -0xc) = uVar1;\n  *(char **)(puVar3 + -0x10) = \"Expiration\";\n  *(undefined4 *)(puVar3 + -0x14) = uVar2;\n  *(char **)(puVar3 + -0x18) = \"Token\";\n  *(char **)(puVar3 + -0x1c) = \"!X=!U;!X=!U;!X=!X?\";\n  *(void **)(puVar3 + -0x20) = local_20;\n  *(undefined4 *)(puVar3 + -0x24) = 0x12f3e;\n  sprintf(*(char **)(puVar3 + -0x20),*(char **)(puVar3 + -0x1c));\n  *(void **)(puVar3 + -0x10) = local_20;\n  *(undefined4 *)(puVar3 + -0x14) = 0x12f4c;\n  local_1c = strlen(*(char **)(puVar3 + -0x10));\n  *(size_t *)(puVar3 + -8) = local_1c;\n  *(void **)(puVar3 + -0xc) = local_20;\n  *(undefined4 *)(puVar3 + -0x10) = 1;\n  *(undefined4 *)(puVar3 + -0x14) = 0x12f62;\n  local_24 = transmit_all();\n  if (local_24 != 0) {\n    *(undefined4 *)(puVar3 + -0x10) = 1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x12f78;\n    _terminate();\n    puVar3 = puVar3 + -0x10;\n  }\n  *(void **)(puVar3 + -0x10) = local_20;\n  *(undefined4 *)(puVar3 + -0x14) = 0x12f83;\n  free(*(void **)(puVar3 + -0x10));\n  *(void **)(puVar3 + -0x10) = local_18;\n  *(undefined4 *)(puVar3 + -0x14) = 0x12f91;\n  free(*(void **)(puVar3 + -0x10));\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sendToken",
+                        "calculateTokenSize",
+                        "malloc",
+                        "_terminate",
+                        "bzero",
+                        "sprintf",
+                        "strlen",
+                        "transmit_all",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "sendToken",
+                        "refreshToken",
+                        "requestToken"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "findToken",
+                "func_c_signature": "int findToken(int param_1)",
+                "decompiled_code": "int findToken(int param_1) {\n  int local_8;\n  \n  local_8 = tokenStore;\n  while( true ) {\n    if (local_8 == 0) {\n      return 0;\n    }\n    if (*(int *)(local_8 + 8) == *(int *)(param_1 + 8)) break;\n    local_8 = *(int *)(local_8 + 0xc);\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "findToken"
+                    ],
+                    "calling_functions": [
+                        "findToken",
+                        "validateToken",
+                        "refreshToken"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "removeToken",
+                "func_c_signature": "undefined4 removeToken(void *param_1)",
+                "decompiled_code": "undefined4 removeToken(void *param_1) {\n  int local_14;\n  int local_10;\n  \n  local_14 = tokenStore;\n  local_10 = tokenStore;\n  while( true ) {\n    if (local_14 == 0) {\n      return 0;\n    }\n    if (*(int *)((int)param_1 + 8) == *(int *)(local_14 + 8)) break;\n    local_10 = local_14;\n    local_14 = *(int *)(local_14 + 0xc);\n  }\n  if (local_10 != 0) {\n    *(undefined4 *)(local_10 + 0xc) = *(undefined4 *)(local_14 + 0xc);\n  }\n  free(param_1);\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "removeToken",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "removeToken",
+                        "validateToken",
+                        "refreshToken",
+                        "revokeToken"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validateToken",
+                "func_c_signature": "undefined4 validateToken(int *param_1,uint *param_2)",
+                "decompiled_code": "undefined4 validateToken(int *param_1,uint *param_2) {\n  undefined4 uVar1;\n  uint *puVar2;\n  \n  if (((param_1[2] == 0) || (param_1[1] == 0)) || (*param_1 == 0)) {\n    sendErrorResponse(\"Invalid Token\");\n    uVar1 = 0;\n  }\n  else {\n    puVar2 = (uint *)findToken(param_1);\n    if (puVar2 == (uint *)0x0) {\n      sendErrorResponse(\"Invalid Token\");\n      uVar1 = 0;\n    }\n    else if (*param_2 < *puVar2) {\n      uVar1 = 1;\n    }\n    else {\n      removeToken(puVar2);\n      sendErrorResponse(\"Expired Token\");\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validateToken",
+                        "sendErrorResponse",
+                        "findToken",
+                        "removeToken"
+                    ],
+                    "calling_functions": [
+                        "authenticate",
+                        "validateToken"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parseToken",
+                "func_c_signature": "void * parseToken(undefined4 param_1)",
+                "decompiled_code": "void * parseToken(undefined4 param_1) {\n  undefined *puVar1;\n  undefined *puVar2;\n  void *apvStackY_50 [2];\n  char *apcStackY_48 [7];\n  undefined4 uStack_20;\n  undefined auStack_1c [12];\n  void *local_10;\n  \n  puVar1 = auStack_1c;\n  uStack_20 = 0x1312d;\n  local_10 = malloc(0x10);\n  if (local_10 == (void *)0x0) {\n    puVar1 = &stack0xffffffd4;\n    _terminate();\n  }\n  *(undefined4 *)(puVar1 + -0xc) = 0x10;\n  *(void **)(puVar1 + -0x10) = local_10;\n  *(undefined4 *)(puVar1 + -0x14) = 0x13160;\n  bzero(*(void **)(puVar1 + -0x10),*(size_t *)(puVar1 + -0xc));\n  puVar2 = puVar1;\n  if (local_10 == (void *)0x0) {\n    puVar2 = puVar1 + -0x10;\n    *(undefined4 *)(puVar1 + -0x10) = 1;\n    *(undefined4 *)(puVar1 + -0x14) = 0x13173;\n    _terminate();\n  }\n  *(undefined4 *)(puVar2 + -0x10) = param_1;\n  *(undefined4 *)(puVar2 + -0x14) = 0x1317e;\n  initializeAttributes();\n  *(undefined **)(puVar2 + -0xc) = &DAT_000151cc;\n  *(int *)(puVar2 + -0x10) = (int)local_10 + 4;\n  *(undefined4 *)(puVar2 + -0x14) = 0x13197;\n  getStringAttribute();\n  *(char **)(puVar2 + -0xc) = \"Token\";\n  *(int *)(puVar2 + -0x10) = (int)local_10 + 8;\n  *(undefined4 *)(puVar2 + -0x14) = 0x131b0;\n  getIntegerAttribute();\n  *(char **)(puVar2 + -0xc) = \"Expiration\";\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x131c6;\n  getIntegerAttribute();\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parseToken",
+                        "malloc",
+                        "_terminate",
+                        "bzero",
+                        "initializeAttributes",
+                        "getStringAttribute",
+                        "getIntegerAttribute"
+                    ],
+                    "calling_functions": [
+                        "authenticate",
+                        "parseToken",
+                        "refreshToken",
+                        "requestToken",
+                        "revokeToken"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "refreshToken",
+                "func_c_signature": "void refreshToken(undefined4 param_1,undefined4 param_2,uint *param_3)",
+                "decompiled_code": "void refreshToken(undefined4 param_1,undefined4 param_2,uint *param_3) {\n  int iVar1;\n  uint *puVar2;\n  \n  iVar1 = parseToken(param_2);\n  if ((iVar1 != 0) && (puVar2 = (uint *)findToken(iVar1), puVar2 != (uint *)0x0)) {\n    if (*param_3 < *puVar2) {\n      *param_3 = *param_3 + 1;\n      *puVar2 = *param_3 + 100;\n      sendToken(param_1,iVar1);\n    }\n    else {\n      removeToken(iVar1);\n      sendErrorResponse(\"Expired Token\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "refreshToken",
+                        "parseToken",
+                        "findToken",
+                        "sendToken",
+                        "removeToken",
+                        "sendErrorResponse"
+                    ],
+                    "calling_functions": [
+                        "refreshToken"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "requestToken",
+                "func_c_signature": "void requestToken(undefined4 param_1,undefined4 param_2,int *param_3)",
+                "decompiled_code": "void requestToken(undefined4 param_1,undefined4 param_2,int *param_3) {\n  int *piVar1;\n  int iVar2;\n  \n  piVar1 = (int *)parseToken(param_2);\n  if (piVar1 != (int *)0x0) {\n    iVar2 = getToken();\n    piVar1[2] = iVar2;\n    *param_3 = *param_3 + 1;\n    *piVar1 = *param_3 + 100;\n    sendToken(param_1,piVar1);\n    piVar1[3] = (int)tokenStore;\n    tokenStore = piVar1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "requestToken",
+                        "parseToken",
+                        "getToken",
+                        "sendToken"
+                    ],
+                    "calling_functions": [
+                        "requestToken"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "checkTokenUse",
+                "func_c_signature": "undefined4 checkTokenUse(char *param_1,char *param_2)",
+                "decompiled_code": "undefined4 checkTokenUse(char *param_1,char *param_2) {\n  size_t sVar1;\n  int iVar2;\n  char *local_10;\n  \n  if (param_2 != (char *)0x0) {\n    local_10 = strtok(param_2,\":\");\n    do {\n      strlen(param_1);\n      strlen(local_10);\n      sVar1 = strlen(param_1);\n      iVar2 = strncmp(param_1,local_10,sVar1);\n      if (iVar2 == 0) {\n        return 1;\n      }\n      sVar1 = strlen(\"revokeT\");\n      iVar2 = strncmp(\"revokeT\",param_1,sVar1);\n      if (iVar2 == 0) {\n        return 1;\n      }\n      local_10 = strtok((char *)0x0,\":\");\n    } while (local_10 != (char *)0x0);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "checkTokenUse",
+                        "strtok",
+                        "strlen",
+                        "strncmp"
+                    ],
+                    "calling_functions": [
+                        "authenticate",
+                        "checkTokenUse"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "revokeToken",
+                "func_c_signature": "void revokeToken(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "void revokeToken(undefined4 param_1,undefined4 param_2) {\n  int iVar1;\n  \n  iVar1 = parseToken(param_2);\n  if (iVar1 != 0) {\n    iVar1 = removeToken(iVar1);\n    if (iVar1 == 0) {\n      sendErrorResponse(\"Invalid Token\");\n    }\n    else {\n      sendErrorResponse(\"Token Revoked\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "revokeToken",
+                        "parseToken",
+                        "removeToken",
+                        "sendErrorResponse"
+                    ],
+                    "calling_functions": [
+                        "revokeToken"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            }
+        ],
+        "util.c": [
+            {
+                "func_name": "clearAttributes",
+                "func_c_signature": "void clearAttributes(void)",
+                "decompiled_code": "void clearAttributes(void) {\n  undefined4 *puVar1;\n  undefined4 *local_10;\n  \n  local_10 = attributes;\n  while (local_10 != (undefined4 *)0x0) {\n    puVar1 = (undefined4 *)local_10[2];\n    local_10[1] = 0;\n    *local_10 = 0;\n    local_10[2] = 0;\n    free(local_10);\n    local_10 = puVar1;\n  }\n  attributes = (undefined4 *)0x0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clearAttributes",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "clearAttributes",
+                        "initializeAttributes"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initializeAttributes",
+                "func_c_signature": "void initializeAttributes(char *param_1)",
+                "decompiled_code": "void initializeAttributes(char *param_1) {\n  void *pvVar1;\n  size_t *psVar2;\n  undefined *puVar3;\n  size_t local_1c;\n  void **local_18;\n  char *local_14;\n  char *local_10;\n  \n  psVar2 = &local_1c;\n  clearAttributes();\n  local_10 = strtok(param_1,\"=\");\n  do {\n    *(undefined **)((int)psVar2 + -0xc) = &DAT_00015211;\n    *(undefined4 *)((int)psVar2 + -0x10) = 0;\n    *(undefined4 *)((int)psVar2 + -0x14) = 0x13503;\n    local_14 = strtok(*(char **)((int)psVar2 + -0x10),*(char **)((int)psVar2 + -0xc));\n    *(undefined4 *)((int)psVar2 + -0x10) = 0xc;\n    *(undefined4 *)((int)psVar2 + -0x14) = 0x13513;\n    local_18 = (void **)malloc(*(size_t *)((int)psVar2 + -0x10));\n    puVar3 = (undefined *)psVar2;\n    if (local_18 == (void **)0x0) {\n      *(undefined4 *)((int)psVar2 + -0x10) = 1;\n      *(undefined4 *)((int)psVar2 + -0x14) = 0x13529;\n      _terminate();\n      puVar3 = (undefined *)((int)psVar2 + -0x10);\n    }\n    *(undefined4 *)(puVar3 + -0xc) = 0xc;\n    *(void ***)(puVar3 + -0x10) = local_18;\n    *(undefined4 *)(puVar3 + -0x14) = 0x13536;\n    bzero(*(void **)(puVar3 + -0x10),*(size_t *)(puVar3 + -0xc));\n    *(char **)(puVar3 + -0x10) = local_10;\n    *(undefined4 *)(puVar3 + -0x14) = 0x13544;\n    local_1c = strlen(*(char **)(puVar3 + -0x10));\n    *(size_t *)(puVar3 + -0x10) = local_1c + 1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x13559;\n    pvVar1 = malloc(*(size_t *)(puVar3 + -0x10));\n    *local_18 = pvVar1;\n    if (*local_18 == (void *)0x0) {\n      *(undefined4 *)(puVar3 + -0x10) = 1;\n      *(undefined4 *)(puVar3 + -0x14) = 0x13574;\n      _terminate();\n      puVar3 = puVar3 + -0x10;\n    }\n    pvVar1 = *local_18;\n    *(size_t *)(puVar3 + -0xc) = local_1c + 1;\n    *(void **)(puVar3 + -0x10) = pvVar1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x13589;\n    bzero(*(void **)(puVar3 + -0x10),*(size_t *)(puVar3 + -0xc));\n    pvVar1 = *local_18;\n    *(size_t *)(puVar3 + -8) = local_1c;\n    *(char **)(puVar3 + -0xc) = local_10;\n    *(void **)(puVar3 + -0x10) = pvVar1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x135a0;\n    memcpy(*(void **)(puVar3 + -0x10),*(void **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n    *(char **)(puVar3 + -0x10) = local_14;\n    *(undefined4 *)(puVar3 + -0x14) = 0x135ae;\n    local_1c = strlen(*(char **)(puVar3 + -0x10));\n    *(size_t *)(puVar3 + -0x10) = local_1c + 1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x135c3;\n    pvVar1 = malloc(*(size_t *)(puVar3 + -0x10));\n    local_18[1] = pvVar1;\n    psVar2 = (size_t *)puVar3;\n    if (local_18[1] == (void *)0x0) {\n      *(undefined4 *)(puVar3 + -0x10) = 1;\n      *(undefined4 *)(puVar3 + -0x14) = 0x135e0;\n      _terminate();\n      psVar2 = (size_t *)(puVar3 + -0x10);\n    }\n    pvVar1 = local_18[1];\n    *(size_t *)((int)psVar2 + -0xc) = local_1c + 1;\n    *(void **)((int)psVar2 + -0x10) = pvVar1;\n    *(undefined4 *)((int)psVar2 + -0x14) = 0x135f6;\n    bzero(*(void **)((int)psVar2 + -0x10),*(size_t *)((int)psVar2 + -0xc));\n    pvVar1 = local_18[1];\n    *(size_t *)((int)psVar2 + -8) = local_1c;\n    *(char **)((int)psVar2 + -0xc) = local_14;\n    *(void **)((int)psVar2 + -0x10) = pvVar1;\n    *(undefined4 *)((int)psVar2 + -0x14) = 0x1360e;\n    memcpy(*(void **)((int)psVar2 + -0x10),*(void **)((int)psVar2 + -0xc),\n           *(size_t *)((int)psVar2 + -8));\n    local_18[2] = attributes;\n    attributes = local_18;\n    *(undefined **)((int)psVar2 + -0xc) = &DAT_0001520f;\n    *(undefined4 *)((int)psVar2 + -0x10) = 0;\n    *(undefined4 *)((int)psVar2 + -0x14) = 0x1363b;\n    local_10 = strtok(*(char **)((int)psVar2 + -0x10),*(char **)((int)psVar2 + -0xc));\n  } while (local_10 != (char *)0x0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initializeAttributes",
+                        "clearAttributes",
+                        "strtok",
+                        "malloc",
+                        "_terminate",
+                        "bzero",
+                        "strlen",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "parseCertificate",
+                        "parseToken",
+                        "initializeAttributes"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sendErrorResponse",
+                "func_c_signature": "void sendErrorResponse(char *param_1)",
+                "decompiled_code": "void sendErrorResponse(char *param_1) {\n  size_t sVar1;\n  undefined *puVar2;\n  void *apvStack_50 [9];\n  undefined4 uStack_20;\n  undefined auStack_1c [8];\n  int local_14;\n  void *local_10;\n  \n  uStack_20 = 0x1365e;\n  sVar1 = strlen(param_1);\n  local_10 = malloc(sVar1 + 10);\n  puVar2 = auStack_1c;\n  if (local_10 == (void *)0x0) {\n    _terminate();\n    puVar2 = &stack0xffffffd4;\n  }\n  *(char **)(puVar2 + -0x10) = param_1;\n  *(undefined4 *)(puVar2 + -0x14) = 0x1369f;\n  sVar1 = strlen(*(char **)(puVar2 + -0x10));\n  *(size_t *)(puVar2 + -0xc) = sVar1 + 10;\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x136b1;\n  bzero(*(void **)(puVar2 + -0x10),*(size_t *)(puVar2 + -0xc));\n  *(char **)(puVar2 + -4) = param_1;\n  *(char **)(puVar2 + -8) = \"Response\";\n  *(char **)(puVar2 + -0xc) = \"!X=!X?\";\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x136cd;\n  sprintf(*(char **)(puVar2 + -0x10),*(char **)(puVar2 + -0xc));\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x136db;\n  sVar1 = strlen(*(char **)(puVar2 + -0x10));\n  *(size_t *)(puVar2 + -8) = sVar1;\n  *(void **)(puVar2 + -0xc) = local_10;\n  *(undefined4 *)(puVar2 + -0x10) = 1;\n  *(undefined4 *)(puVar2 + -0x14) = 0x136ec;\n  local_14 = transmit_all();\n  if (local_14 != 0) {\n    *(undefined4 *)(puVar2 + -0x10) = 1;\n    *(undefined4 *)(puVar2 + -0x14) = 0x13702;\n    _terminate();\n    puVar2 = puVar2 + -0x10;\n  }\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x1370d;\n  free(*(void **)(puVar2 + -0x10));\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sendErrorResponse",
+                        "strlen",
+                        "malloc",
+                        "_terminate",
+                        "bzero",
+                        "sprintf",
+                        "transmit_all",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "validateCert",
+                        "enroll",
+                        "runService",
+                        "main",
+                        "validateToken",
+                        "refreshToken",
+                        "revokeToken",
+                        "sendErrorResponse"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getStringAttribute",
+                "func_c_signature": "void getStringAttribute(char **param_1,char *param_2)",
+                "decompiled_code": "void getStringAttribute(char **param_1,char *param_2) {\n  size_t __n;\n  size_t sVar1;\n  int iVar2;\n  char **local_10;\n  \n  local_10 = attributes;\n  while( true ) {\n    if (local_10 == (char **)0x0) {\n      return;\n    }\n    __n = strlen(*local_10);\n    sVar1 = strlen(param_2);\n    if (__n <= sVar1) {\n      __n = sVar1;\n    }\n    iVar2 = strncmp(*local_10,param_2,__n);\n    if (iVar2 == 0) break;\n    local_10 = (char **)local_10[2];\n  }\n  *param_1 = local_10[1];\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getStringAttribute",
+                        "strlen",
+                        "strncmp"
+                    ],
+                    "calling_functions": [
+                        "parseCertificate",
+                        "parseToken",
+                        "getStringAttribute",
+                        "getIntegerAttribute"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getIntegerAttribute",
+                "func_c_signature": "void getIntegerAttribute(int *param_1,undefined4 param_2)",
+                "decompiled_code": "void getIntegerAttribute(int *param_1,undefined4 param_2) {\n  int iVar1;\n  char *local_10 [2];\n  \n  local_10[0] = (char *)0x0;\n  getStringAttribute(local_10,param_2);\n  if (local_10[0] == (char *)0x0) {\n    *param_1 = 0;\n  }\n  else {\n    iVar1 = atoi(local_10[0]);\n    *param_1 = iVar1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getIntegerAttribute",
+                        "getStringAttribute",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "parseCertificate",
+                        "parseToken",
+                        "getIntegerAttribute"
+                    ],
+                    "defined_in_file": "NRFIN_00061_decompiled.c"
+                }
+            }
+        ]
+    }
+}

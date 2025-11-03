@@ -1,0 +1,204 @@
+{
+    "file": "NRFIN_00005",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "do_menu",
+                "func_c_signature": "void do_menu(int param_1)",
+                "decompiled_code": "void do_menu(int param_1) {\n  void *pvVar1;\n  size_t in_stack_ffffffec;\n  int __flags;\n  \n  __flags = 0x1100c;\n  if (param_1 == 0) {\n    pvVar1 = (void *)strlen(\"Make your selection:\\nPLAY\\nQUIT\\n\");\n    send(0x14034,pvVar1,in_stack_ffffffec,__flags);\n  }\n  else {\n    pvVar1 = (void *)strlen(\"Make your selection:\\nPLAY AGAIN\\nSTART OVER\\nQUIT\\n\");\n    send(0x14000,pvVar1,in_stack_ffffffec,__flags);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_menu",
+                        "strlen",
+                        "send"
+                    ],
+                    "calling_functions": [
+                        "do_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_quit",
+                "func_c_signature": "void do_quit(void)",
+                "decompiled_code": "void do_quit(void) {\n  void *__buf;\n  size_t in_stack_ffffffec;\n  int __flags;\n  \n  __flags = 0x11076;\n  __buf = (void *)strlen(\"Give up?. Don\\'t be a stranger!\\n\");\n  send(0x14054,__buf,in_stack_ffffffec,__flags);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_quit",
+                        "strlen",
+                        "send"
+                    ],
+                    "calling_functions": [
+                        "do_quit",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_select_char",
+                "func_c_signature": "void do_select_char(void)",
+                "decompiled_code": "void do_select_char(void) {\n  void *pvVar1;\n  size_t in_stack_ffffffdc;\n  char *__flags;\n  undefined2 local_10;\n  undefined local_e;\n  char local_d;\n  \n  __flags = (char *)0x110b3;\n  local_10 = 0;\n  local_e = 0;\n  local_d = '\\0';\n  while (local_d == '\\0') {\n    pvVar1 = (void *)strlen(\"P goes first. Do you want P or Q?\\n\");\n    send(0x14074,pvVar1,in_stack_ffffffdc,(int)__flags);\n    __flags = \"\\nI don\\'t think that means what you think it means.\\n\";\n    in_stack_ffffffdc = 3;\n    prompt_user(&DAT_000140cc,&local_10);\n    if ((char)local_10 == 'P') {\n      local_d = 'P';\n    }\n    else if ((char)local_10 == 'Q') {\n      local_d = 'Q';\n    }\n    else {\n      pvVar1 = (void *)strlen(\"Wat?\\n\");\n      send(0x140cf,pvVar1,in_stack_ffffffdc,(int)__flags);\n    }\n  }\n  set_player_chars(*game,(int)local_d);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_select_char",
+                        "strlen",
+                        "send",
+                        "prompt_user",
+                        "set_player_chars"
+                    ],
+                    "calling_functions": [
+                        "do_select_char",
+                        "do_play"
+                    ],
+                    "defined_in_file": "NRFIN_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "send_current_board",
+                "func_c_signature": "void send_current_board(void)",
+                "decompiled_code": "void send_current_board(void) {\n  void *__buf;\n  uint uVar1;\n  undefined4 *puVar2;\n  size_t in_stack_ffffff4c;\n  int __flags;\n  undefined local_a5;\n  undefined4 auStack_a4 [33];\n  undefined4 uStack_20;\n  undefined auStack_1c [12];\n  \n  __flags = 0x1118a;\n  _local_a5 = 0;\n  uStack_20 = 0;\n  puVar2 = (undefined4 *)(&local_a5 + 1);\n  for (uVar1 = (uint)(auStack_1c + -(int)(&local_a5 + 1)) >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {\n    *puVar2 = 0;\n    puVar2 = puVar2 + 1;\n  }\n  make_board(*game,&local_a5);\n  __buf = (void *)strlen(&local_a5);\n  send((int)&local_a5,__buf,in_stack_ffffff4c,__flags);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "send_current_board",
+                        "make_board",
+                        "strlen",
+                        "send"
+                    ],
+                    "calling_functions": [
+                        "send_current_board"
+                    ],
+                    "defined_in_file": "NRFIN_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "make_move",
+                "func_c_signature": "void make_move(void)",
+                "decompiled_code": "void make_move(void) {\n  undefined uVar1;\n  int iVar2;\n  void *pvVar3;\n  size_t in_stack_ffffffbc;\n  char *__flags;\n  undefined4 local_30;\n  undefined4 local_2c;\n  undefined4 local_28;\n  undefined4 local_24;\n  undefined4 local_20;\n  undefined4 local_1c;\n  undefined local_18;\n  undefined4 local_17;\n  undefined local_13;\n  undefined2 local_12;\n  int local_10;\n  \n  __flags = (char *)0x11213;\n  local_12 = 0;\n  local_17 = 0;\n  local_13 = 0;\n  iVar2 = is_players_turn(*game);\n  if (iVar2 == 0) {\n    computer_move(*game,&local_12);\n    local_30 = 0;\n    local_2c = 0;\n    local_28 = 0;\n    local_24 = 0;\n    local_20 = 0;\n    local_1c = 0;\n    local_18 = 0;\n    snprintf((char *)&local_30,0x19,\"Computer\\'s move: ~n ~n.\\n\",(uint)(byte)local_12,\n             (uint)local_12._1_1_);\n    pvVar3 = (void *)strlen((char *)&local_30);\n    send((int)&local_30,pvVar3,in_stack_ffffffbc,(int)__flags);\n  }\n  else {\n    pvVar3 = (void *)strlen(\"It\\'s your move. Enter \\'row col\\'\\n\");\n    send(0x140d8,pvVar3,in_stack_ffffffbc,(int)__flags);\n    __flags = \"\\nI don\\'t think that means what you think it means.\\n\";\n    in_stack_ffffffbc = 5;\n    prompt_user(&DAT_000140cc,&local_17);\n    uVar1 = str2int(&local_17);\n    local_12 = CONCAT11(local_12._1_1_,uVar1);\n    uVar1 = str2int((int)&local_17 + 2);\n    local_12 = CONCAT11(uVar1,(byte)local_12);\n  }\n  local_10 = update_board(*game,&local_12);\n  if (local_10 == 0) {\n    move_complete(*game);\n  }\n  else {\n    iVar2 = is_players_turn(*game);\n    if (iVar2 != 0) {\n      pvVar3 = (void *)strlen(\"Invalid coordinates!\\n\");\n      send(0x14112,pvVar3,in_stack_ffffffbc,(int)__flags);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT11"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "make_move",
+                        "is_players_turn",
+                        "computer_move",
+                        "snprintf",
+                        "strlen",
+                        "send",
+                        "prompt_user",
+                        "str2int",
+                        "CONCAT11",
+                        "update_board",
+                        "move_complete"
+                    ],
+                    "calling_functions": [
+                        "make_move",
+                        "do_play"
+                    ],
+                    "defined_in_file": "NRFIN_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "send_game_results",
+                "func_c_signature": "void send_game_results(void)",
+                "decompiled_code": "void send_game_results(void) {\n  char cVar1;\n  void *pvVar2;\n  size_t in_stack_ffffffbc;\n  int __flags;\n  undefined4 local_2f;\n  undefined4 local_2b;\n  undefined4 local_27;\n  undefined4 local_23;\n  undefined4 local_1f;\n  undefined4 local_1b;\n  undefined4 local_17;\n  undefined4 local_13;\n  undefined4 uStack_f;\n  \n  __flags = 0x113cc;\n  cVar1 = is_player_winner(*game);\n  if (cVar1 == '\\0') {\n    pvVar2 = (void *)strlen(\"Nice effort. Maybe next time.\\n\");\n    send(0x14144,pvVar2,in_stack_ffffffbc,__flags);\n  }\n  else {\n    pvVar2 = (void *)strlen(\"Congratulations! You Win!\\n\");\n    send(0x14128,pvVar2,in_stack_ffffffbc,__flags);\n  }\n  local_2f = 0;\n  local_2b = 0;\n  local_27 = 0;\n  local_23 = 0;\n  local_1f = 0;\n  local_1b = 0;\n  local_17 = 0;\n  local_13 = 0;\n  uStack_f = (uint)uStack_f._3_1_ << 0x18;\n  snprintf((char *)&local_2f,0x23,\"~n wins. ~n losses.\\n\",(uint)*(byte *)game[1],\n           (uint)*(byte *)(game[1] + 1));\n  pvVar2 = (void *)strlen((char *)&local_2f);\n  send((int)&local_2f,pvVar2,in_stack_ffffffbc,__flags);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "send_game_results",
+                        "is_player_winner",
+                        "strlen",
+                        "send",
+                        "snprintf"
+                    ],
+                    "calling_functions": [
+                        "send_game_results",
+                        "do_play"
+                    ],
+                    "defined_in_file": "NRFIN_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_play",
+                "func_c_signature": "void do_play(void)",
+                "decompiled_code": "void do_play(void) {\n  void *__buf;\n  size_t in_stack_ffffffec;\n  int iVar1;\n  \n  iVar1 = 0x114f0;\n  do_select_char();\n  __buf = (void *)strlen(\"Game on!\\n\");\n  send(0x14178,__buf,in_stack_ffffffec,iVar1);\n  do {\n    make_move();\n    iVar1 = have_winner(*game);\n    if (iVar1 != 0) break;\n    iVar1 = have_moves_remaining(*game);\n  } while (iVar1 != 0);\n  update_score(game);\n  send_game_results();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_play",
+                        "do_select_char",
+                        "strlen",
+                        "send",
+                        "make_move",
+                        "have_winner",
+                        "have_moves_remaining",
+                        "update_score",
+                        "send_game_results"
+                    ],
+                    "calling_functions": [
+                        "do_play",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00005_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  void *__buf;\n  size_t sVar1;\n  undefined *puVar2;\n  undefined *puVar3;\n  undefined4 uStackY_54;\n  size_t in_stack_ffffffb8;\n  int iVar4;\n  undefined auStack_40 [8];\n  int *local_38;\n  undefined local_32 [14];\n  int local_24;\n  undefined4 local_20;\n  undefined4 local_1c;\n  int *local_18;\n  int local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  iVar4 = 0x11585;\n  local_1c = 0xe;\n  local_14 = 0;\n  local_38 = (int *)0x0;\n  local_18 = (int *)0x0;\n  __buf = (void *)strlen(\"Welcome to Tick-A-Tack.\\n\");\n  send(0x14182,__buf,in_stack_ffffffb8,iVar4);\n  puVar2 = auStack_40;\nLAB_000115cc:\n  do {\n    while( true ) {\n      if (((local_38 == (int *)0x0) || (*(char *)game[1] != '\\0')) ||\n         (*(char *)(game[1] + 1) != '\\0')) {\n        if (local_38 == (int *)0x0) {\n          local_20 = 0x17;\n          local_24 = 0;\n          *(int ***)(puVar2 + -8) = &local_38;\n          *(undefined4 *)(puVar2 + -0xc) = 0;\n          *(undefined4 *)(puVar2 + -0x10) = 0x17;\n          *(undefined4 *)(puVar2 + -0x14) = 0x1162c;\n          local_24 = allocate();\n          puVar3 = puVar2;\n          if (local_24 != 0) {\n            puVar3 = puVar2 + -0x10;\n            *(undefined4 *)(puVar2 + -0x10) = 99;\n            *(undefined4 *)(puVar2 + -0x14) = 0x11642;\n            _terminate();\n          }\n          game = local_38;\n          *local_38 = (int)(local_38 + 2);\n          local_18 = (int *)((int)local_38 + 0x15);\n          game[1] = (int)local_18;\n          puVar2 = puVar3;\n        }\n      }\n      else {\n        game = local_18;\n      }\n      *(int *)(puVar2 + -0x10) = *game;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11689;\n      init_game_data();\n      *(int *)(puVar2 + -0x10) = local_14;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11697;\n      do_menu();\n      *(char **)(puVar2 + -4) = \"\\nI don\\'t think that means what you think it means.\\n\";\n      *(undefined4 *)(puVar2 + -8) = local_1c;\n      *(undefined **)(puVar2 + -0xc) = local_32;\n      *(undefined **)(puVar2 + -0x10) = &DAT_000140cc;\n      *(undefined4 *)(puVar2 + -0x14) = 0x116b5;\n      prompt_user();\n      *(undefined **)(puVar2 + -0xc) = &DAT_0001419b;\n      *(undefined **)(puVar2 + -0x10) = local_32;\n      *(undefined4 *)(puVar2 + -0x14) = 0x116cb;\n      iVar4 = streq();\n      if (iVar4 != 0) break;\n      *(undefined4 *)(puVar2 + -4) = 0x116d7;\n      do_play();\n      local_14 = 1;\n    }\n    if (local_14 != 0) {\n      *(char **)(puVar2 + -0xc) = \"PLAY AGAIN\";\n      *(undefined **)(puVar2 + -0x10) = local_32;\n      *(undefined4 *)(puVar2 + -0x14) = 0x116fc;\n      iVar4 = streq();\n      if (iVar4 == 0) {\n        *(undefined4 *)(puVar2 + -4) = 0x11708;\n        do_play();\n        goto LAB_000115cc;\n      }\n    }\n    if (local_14 == 0) {\nLAB_0001174d:\n      *(undefined **)(puVar2 + -0xc) = &DAT_000141b6;\n      *(undefined **)(puVar2 + -0x10) = local_32;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11760;\n      iVar4 = streq();\n      if (iVar4 == 0) {\n        *(undefined4 *)(puVar2 + -4) = 0x1176c;\n        do_quit();\n      }\n      else {\n        *(char **)(puVar2 + -0x10) = \"Wat?\\n\";\n        *(undefined4 *)(puVar2 + -0x14) = 0x1177d;\n        sVar1 = strlen(*(char **)(puVar2 + -0x10));\n        *(size_t *)(puVar2 + -0xc) = sVar1;\n        *(char **)(puVar2 + -0x10) = \"Wat?\\n\";\n        *(undefined4 *)(puVar2 + -0x14) = 0x11790;\n        send(*(int *)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),*(size_t *)(puVar2 + -8),\n             *(int *)(puVar2 + -4));\n      }\n      return 0;\n    }\n    *(char **)(puVar2 + -0xc) = \"START OVER\";\n    *(undefined **)(puVar2 + -0x10) = local_32;\n    *(undefined4 *)(puVar2 + -0x14) = 0x11726;\n    iVar4 = streq();\n    if (iVar4 != 0) goto LAB_0001174d;\n    local_14 = 0;\n    *(int *)(puVar2 + -0x10) = game[1];\n    *(undefined4 *)(puVar2 + -0x14) = 0x11748;\n    reset_scores();\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "strlen",
+                        "send",
+                        "allocate",
+                        "_terminate",
+                        "init_game_data",
+                        "do_menu",
+                        "prompt_user",
+                        "streq",
+                        "do_play",
+                        "do_quit",
+                        "reset_scores"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "NRFIN_00005_decompiled.c"
+                }
+            }
+        ]
+    }
+}

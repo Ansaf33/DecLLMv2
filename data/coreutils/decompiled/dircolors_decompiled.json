@@ -1,0 +1,219 @@
+{
+    "file": "dircolors",
+    "decompiled_code": {
+        "dircolors.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [FILE]\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Output commands to set the LS_COLORS environment variable.\\n\\nDetermine format of output:\\n  -b, --sh, --bourne-shell    output Bourne shell code to set LS_COLORS\\n  -c, --csh, --c-shell        output C shell code to set LS_COLORS\\n  -p, --print-database        output defaults\\n      --print-ls-colors       output fully escaped colors for display\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nIf FILE is specified, read it to determine which colors to use for which\\nfile types and extensions.  Otherwise, a precompiled database is used.\\nFor details on the format of these files, run \\'dircolors --print-database\\'.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"dircolors\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "dircolors_decompiled.c"
+                }
+            },
+            {
+                "func_name": "guess_shell_syntax",
+                "func_c_signature": "undefined8 guess_shell_syntax(void)",
+                "decompiled_code": "undefined8 guess_shell_syntax(void) {\n  char cVar1;\n  char *pcVar2;\n  undefined8 uVar3;\n  \n  pcVar2 = getenv(\"SHELL\");\n  if ((pcVar2 == (char *)0x0) || (*pcVar2 == '\\0')) {\n    uVar3 = 2;\n  }\n  else {\n    uVar3 = last_component(pcVar2);\n    cVar1 = streq(uVar3,&DAT_00103007);\n    if ((cVar1 == '\\0') && (cVar1 = streq(uVar3,&DAT_0010333e), cVar1 == '\\0')) {\n      return 0;\n    }\n    uVar3 = 1;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "guess_shell_syntax",
+                        "getenv",
+                        "last_component",
+                        "streq"
+                    ],
+                    "calling_functions": [
+                        "guess_shell_syntax",
+                        "main"
+                    ],
+                    "defined_in_file": "dircolors_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_line",
+                "func_c_signature": "void parse_line(char *param_1,undefined8 *param_2,undefined8 *param_3)",
+                "decompiled_code": "void parse_line(char *param_1,undefined8 *param_2,undefined8 *param_3) {\n  char *pcVar1;\n  char *pcVar2;\n  char cVar3;\n  undefined8 uVar4;\n  char *local_20;\n  \n  *param_2 = 0;\n  *param_3 = 0;\n  local_20 = param_1;\n  while (pcVar1 = local_20, cVar3 = c_isspace((int)*local_20), cVar3 != '\\0') {\n    local_20 = local_20 + 1;\n  }\n  if ((*local_20 != '\\0') && (*local_20 != '#')) {\n    for (; (cVar3 = c_isspace((int)*local_20), cVar3 != '\\x01' && (*local_20 != '\\0'));\n        local_20 = local_20 + 1) {\n    }\n    uVar4 = ximemdup0(pcVar1,(long)local_20 - (long)pcVar1);\n    *param_2 = uVar4;\n    if (*local_20 != '\\0') {\n      do {\n        pcVar1 = local_20 + 1;\n        cVar3 = c_isspace((int)*pcVar1);\n        local_20 = pcVar1;\n      } while (cVar3 != '\\0');\n      if ((*pcVar1 != '\\0') && (*pcVar1 != '#')) {\n        for (; (*local_20 != '\\0' && (*local_20 != '#')); local_20 = local_20 + 1) {\n        }\n        do {\n          pcVar2 = local_20;\n          local_20 = pcVar2 + -1;\n          cVar3 = c_isspace((int)*local_20);\n        } while (cVar3 != '\\0');\n        uVar4 = ximemdup0(pcVar1,(long)pcVar2 - (long)pcVar1);\n        *param_3 = uVar4;\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_line",
+                        "c_isspace",
+                        "ximemdup0"
+                    ],
+                    "calling_functions": [
+                        "parse_line",
+                        "dc_parse_stream"
+                    ],
+                    "defined_in_file": "dircolors_decompiled.c"
+                }
+            },
+            {
+                "func_name": "append_quoted",
+                "func_c_signature": "void append_quoted(char *param_1)",
+                "decompiled_code": "void append_quoted(char *param_1) {\n  char cVar1;\n  bool bVar2;\n  long lVar3;\n  char *local_70;\n  \n  bVar2 = true;\n  local_70 = param_1;\n  do {\n    if (*local_70 == '\\0') {\n      return;\n    }\n    if (print_ls_colors != '\\x01') {\n      cVar1 = *local_70;\n      if (cVar1 == '^') {\nLAB_00100712:\n        bVar2 = !bVar2;\n      }\n      else {\n        if (cVar1 < '_') {\n          if (cVar1 == '\\\\') goto LAB_00100712;\n          if (cVar1 < ']') {\n            if (cVar1 == '=') {\nLAB_0010072a:\n              if (bVar2) {\n                if (lsc_obstack._32_8_ == lsc_obstack._24_8_) {\n                  rpl_obstack_newchunk(lsc_obstack,1);\n                }\n                lVar3 = lsc_obstack._24_8_ + 1;\n                *(undefined *)lsc_obstack._24_8_ = 0x5c;\n                lsc_obstack._24_8_ = lVar3;\n              }\n            }\n            else if (cVar1 < '>') {\n              if (cVar1 == '\\'') {\n                if (lsc_obstack._32_8_ == lsc_obstack._24_8_) {\n                  rpl_obstack_newchunk(lsc_obstack,1);\n                }\n                lVar3 = lsc_obstack._24_8_ + 1;\n                *(undefined *)lsc_obstack._24_8_ = 0x27;\n                lsc_obstack._24_8_ = lVar3;\n                if (lsc_obstack._32_8_ == lsc_obstack._24_8_) {\n                  rpl_obstack_newchunk(lsc_obstack,1);\n                }\n                lVar3 = lsc_obstack._24_8_ + 1;\n                *(undefined *)lsc_obstack._24_8_ = 0x5c;\n                lsc_obstack._24_8_ = lVar3;\n                if (lsc_obstack._32_8_ == lsc_obstack._24_8_) {\n                  rpl_obstack_newchunk(lsc_obstack,1);\n                }\n                lVar3 = lsc_obstack._24_8_ + 1;\n                *(undefined *)lsc_obstack._24_8_ = 0x27;\n                lsc_obstack._24_8_ = lVar3;\n                bVar2 = true;\n                goto LAB_0010078b;\n              }\n              if (cVar1 == ':') goto LAB_0010072a;\n            }\n          }\n        }\n        bVar2 = true;\n      }\n    }\nLAB_0010078b:\n    if (lsc_obstack._32_8_ == lsc_obstack._24_8_) {\n      rpl_obstack_newchunk(lsc_obstack,1);\n    }\n    lVar3 = lsc_obstack._24_8_ + 1;\n    *(char *)lsc_obstack._24_8_ = *local_70;\n    lsc_obstack._24_8_ = lVar3;\n    local_70 = local_70 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "append_quoted",
+                        "rpl_obstack_newchunk"
+                    ],
+                    "calling_functions": [
+                        "append_quoted",
+                        "append_entry"
+                    ],
+                    "defined_in_file": "dircolors_decompiled.c"
+                }
+            },
+            {
+                "func_name": "append_entry",
+                "func_c_signature": "void append_entry(char param_1,undefined8 param_2,undefined8 param_3)",
+                "decompiled_code": "void append_entry(char param_1,undefined8 param_2,undefined8 param_3) {\n  long lVar1;\n  undefined uVar2;\n  \n  if (print_ls_colors != '\\0') {\n    append_quoted(&DAT_00103343);\n    append_quoted(param_3);\n    if (lsc_obstack._32_8_ == lsc_obstack._24_8_) {\n      rpl_obstack_newchunk(lsc_obstack,1);\n    }\n    lVar1 = lsc_obstack._24_8_ + 1;\n    *(undefined *)lsc_obstack._24_8_ = 0x6d;\n    lsc_obstack._24_8_ = lVar1;\n  }\n  if (param_1 != '\\0') {\n    if (lsc_obstack._32_8_ == lsc_obstack._24_8_) {\n      rpl_obstack_newchunk(lsc_obstack,1);\n    }\n    lVar1 = lsc_obstack._24_8_ + 1;\n    *(char *)lsc_obstack._24_8_ = param_1;\n    lsc_obstack._24_8_ = lVar1;\n  }\n  append_quoted(param_2);\n  if (lsc_obstack._32_8_ == lsc_obstack._24_8_) {\n    rpl_obstack_newchunk(lsc_obstack,1);\n  }\n  if (print_ls_colors == '\\0') {\n    uVar2 = 0x3d;\n  }\n  else {\n    uVar2 = 9;\n  }\n  lVar1 = lsc_obstack._24_8_ + 1;\n  *(undefined *)lsc_obstack._24_8_ = uVar2;\n  lsc_obstack._24_8_ = lVar1;\n  append_quoted(param_3);\n  if (print_ls_colors != '\\0') {\n    append_quoted(&DAT_00103346);\n  }\n  if (lsc_obstack._32_8_ == lsc_obstack._24_8_) {\n    rpl_obstack_newchunk(lsc_obstack,1);\n  }\n  if (print_ls_colors == '\\0') {\n    uVar2 = 0x3a;\n  }\n  else {\n    uVar2 = 10;\n  }\n  lVar1 = lsc_obstack._24_8_ + 1;\n  *(undefined *)lsc_obstack._24_8_ = uVar2;\n  lsc_obstack._24_8_ = lVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "append_entry",
+                        "append_quoted",
+                        "rpl_obstack_newchunk"
+                    ],
+                    "calling_functions": [
+                        "append_entry",
+                        "dc_parse_stream"
+                    ],
+                    "defined_in_file": "dircolors_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dc_parse_stream",
+                "func_c_signature": "undefined dc_parse_stream(FILE *param_1,long param_2)",
+                "decompiled_code": "undefined dc_parse_stream(FILE *param_1,long param_2) {\n  bool bVar1;\n  char *pcVar2;\n  int iVar3;\n  long lVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  int *piVar7;\n  size_t sVar8;\n  long in_FS_OFFSET;\n  undefined local_a2;\n  int local_a0;\n  int local_9c;\n  char *local_80;\n  undefined8 local_78;\n  char *local_70;\n  char *local_68;\n  long local_60;\n  char *local_58;\n  char *local_50;\n  char *local_48;\n  char *local_40;\n  undefined8 local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_60 = 0;\n  local_58 = \"# Configuration file for dircolors, a utility to help you set the\";\n  local_80 = (char *)0x0;\n  local_78 = 0;\n  local_a2 = 1;\n  local_a0 = 3;\n  local_48 = getenv(\"TERM\");\n  if ((local_48 == (char *)0x0) || (*local_48 == '\\0')) {\n    local_48 = \"none\";\n  }\n  local_40 = getenv(\"COLORTERM\");\n  if (local_40 == (char *)0x0) {\n    local_40 = \"\";\n  }\n  do {\n    local_60 = local_60 + 1;\n    if (param_1 == (FILE *)0x0) {\n      if (local_58 == \"NORMAL\") goto LAB_00100f7a;\n      local_50 = local_58;\n      sVar8 = strlen(local_58);\n      local_58 = local_58 + sVar8 + 1;\n    }\n    else {\n      lVar4 = rpl_getline(&local_80,&local_78,param_1);\n      if (lVar4 < 1) {\n        iVar3 = ferror_unlocked(param_1);\n        if (iVar3 != 0) {\n          uVar5 = quotearg_n_style_colon(0,3,param_2);\n          uVar6 = gettext(\"%s: read error\");\n          piVar7 = __errno_location();\n          local_38 = uVar6;\n          error(0,*piVar7,uVar6,uVar5);\n          local_a2 = 0;\n        }\n        free(local_80);\nLAB_00100f7a:\n        if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n          return local_a2;\n        }\n                    /* WARNING: Subroutine does not return */\n        __stack_chk_fail();\n      }\n      local_50 = local_80;\n    }\n    parse_line(local_50,&local_70,&local_68);\n    if (local_70 != (char *)0x0) {\n      if (local_68 == (char *)0x0) {\n        uVar5 = quotearg_n_style_colon(0,3,param_2);\n        local_30 = gettext(\"%s:%td: invalid line;  missing second token\");\n        error(0,0,local_30,uVar5,local_60);\n        local_a2 = 0;\n        free(local_70);\n      }\n      else {\n        bVar1 = false;\n        iVar3 = c_strcasecmp(local_70,&DAT_0010334b);\n        if (iVar3 == 0) {\n          if (local_a0 != 2) {\n            iVar3 = fnmatch(local_68,local_48,0);\n            if (iVar3 == 0) {\n              local_a0 = 2;\n            }\n            else {\n              local_a0 = 0;\n            }\n          }\n        }\n        else {\n          iVar3 = c_strcasecmp(local_70,\"COLORTERM\");\n          if (iVar3 == 0) {\n            if (local_a0 != 2) {\n              iVar3 = fnmatch(local_68,local_40,0);\n              if (iVar3 == 0) {\n                local_a0 = 2;\n              }\n              else {\n                local_a0 = 0;\n              }\n            }\n          }\n          else {\n            if (local_a0 == 2) {\n              local_a0 = 1;\n            }\n            if (local_a0 == 0) {\n              bVar1 = true;\n            }\n            else if (*local_70 == '.') {\n              append_entry(0x2a,local_70,local_68);\n            }\n            else if (*local_70 == '*') {\n              append_entry(0,local_70,local_68);\n            }\n            else {\n              iVar3 = c_strcasecmp(local_70,\"OPTIONS\");\n              if (((iVar3 != 0) && (iVar3 = c_strcasecmp(local_70,\"COLOR\"), iVar3 != 0)) &&\n                 (iVar3 = c_strcasecmp(local_70,\"EIGHTBIT\"), iVar3 != 0)) {\n                local_9c = 0;\n                while ((*(long *)(slack_codes + (long)local_9c * 8) != 0 &&\n                       (iVar3 = c_strcasecmp(local_70,*(undefined8 *)\n                                                       (slack_codes + (long)local_9c * 8)),\n                       iVar3 != 0))) {\n                  local_9c = local_9c + 1;\n                }\n                if (*(long *)(slack_codes + (long)local_9c * 8) == 0) {\n                  bVar1 = true;\n                }\n                else {\n                  append_entry(0,*(undefined8 *)(ls_codes + (long)local_9c * 8),local_68);\n                }\n              }\n            }\n          }\n        }\n        pcVar2 = local_70;\n        if ((bVar1) && ((local_a0 == 2 || (local_a0 == 1)))) {\n          if (param_2 == 0) {\n            uVar5 = gettext(\"<internal>\");\n          }\n          else {\n            uVar5 = quotearg_n_style_colon(0,3,param_2);\n          }\n          local_28 = gettext(\"%s:%td: unrecognized keyword %s\");\n          error(0,0,local_28,uVar5,local_60,pcVar2);\n          local_a2 = 0;\n        }\n        free(local_70);\n        free(local_68);\n      }\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dc_parse_stream",
+                        "getenv",
+                        "strlen",
+                        "rpl_getline",
+                        "ferror_unlocked",
+                        "quotearg_n_style_colon",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "free",
+                        "__stack_chk_fail",
+                        "parse_line",
+                        "c_strcasecmp",
+                        "fnmatch",
+                        "append_entry"
+                    ],
+                    "calling_functions": [
+                        "dc_parse_stream",
+                        "dc_parse_file",
+                        "main"
+                    ],
+                    "defined_in_file": "dircolors_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dc_parse_file",
+                "func_c_signature": "undefined dc_parse_file(undefined8 param_1)",
+                "decompiled_code": "undefined dc_parse_file(undefined8 param_1) {\n  char cVar1;\n  undefined uVar2;\n  int iVar3;\n  long lVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  \n  cVar1 = streq(param_1,&DAT_001033e0);\n  if ((cVar1 == '\\x01') || (lVar4 = freopen_safer(param_1,&DAT_001033e2,_stdin), lVar4 != 0)) {\n    uVar2 = dc_parse_stream(_stdin,param_1);\n    iVar3 = rpl_fclose(_stdin);\n    if (iVar3 != 0) {\n      uVar5 = quotearg_n_style_colon(0,3,param_1);\n      piVar6 = __errno_location();\n      error(0,*piVar6,&DAT_001033e4,uVar5);\n      uVar2 = 0;\n    }\n  }\n  else {\n    uVar5 = quotearg_n_style_colon(0,3,param_1);\n    piVar6 = __errno_location();\n    error(0,*piVar6,&DAT_001033e4,uVar5);\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dc_parse_file",
+                        "streq",
+                        "freopen_safer",
+                        "dc_parse_stream",
+                        "rpl_fclose",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "dc_parse_file",
+                        "main"
+                    ],
+                    "defined_in_file": "dircolors_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  int iVar1;\n  int iVar2;\n  long lVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  size_t sVar6;\n  long lVar7;\n  byte local_a2;\n  byte local_a1;\n  int local_a0;\n  char *local_78;\n  char *local_70;\n  char *local_68;\n  \n  local_a2 = 1;\n  local_a0 = 2;\n  local_a1 = 0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\nLAB_00101293:\n  while( true ) {\n    iVar2 = getopt_long(param_1,param_2,&DAT_0010341c,long_options,0);\n    iVar1 = _optind;\n    if (iVar2 == -1) {\n      iVar2 = param_1 - _optind;\n      lVar3 = (long)_optind;\n      if (((print_ls_colors | local_a1) != 0) && (local_a0 != 2)) {\n        uVar4 = gettext(\n                       \"the options to output non shell syntax,\\nand to select a shell syntax are mutually exclusive\"\n                       );\n        error(0,0,uVar4);\n        usage(1);\n      }\n      if ((local_a1 != 0) && (print_ls_colors != 0)) {\n        uVar4 = gettext(\"options --print-database and --print-ls-colors are mutually exclusive\");\n        error(0,0,uVar4);\n        usage(1);\n      }\n      if ((int)(uint)(local_a1 ^ 1) < iVar2) {\n        if (local_a1 == 1) {\n          lVar7 = 0;\n        }\n        else {\n          lVar7 = 8;\n        }\n        uVar4 = quote(*(undefined8 *)((long)(param_2 + lVar3) + lVar7));\n        uVar5 = gettext(\"extra operand %s\");\n        error(0,0,uVar5,uVar4);\n        if (local_a1 != 0) {\n          uVar4 = gettext(\"file operands cannot be combined with --print-database (-p)\");\n          fprintf(_stderr,\"%s\\n\",uVar4);\n        }\n        usage(1);\n      }\n      if (local_a1 == 0) {\n        if (((local_a0 == 2) && (print_ls_colors != 1)) &&\n           (local_a0 = guess_shell_syntax(), local_a0 == 2)) {\n          uVar4 = gettext(\"no SHELL environment variable, and no shell type option given\");\n          error(1,0,uVar4);\n        }\n        rpl_obstack_begin(lsc_obstack,0,0,&malloc,free);\n        if (param_1 == iVar1) {\n          local_a2 = dc_parse_stream(0,0);\n        }\n        else {\n          local_a2 = dc_parse_file(param_2[lVar3]);\n        }\n        uVar4 = lsc_obstack._16_8_;\n        if (local_a2 != 0) {\n          sVar6 = lsc_obstack._24_8_ - lsc_obstack._16_8_;\n          if (lsc_obstack._16_8_ == lsc_obstack._24_8_) {\n            lsc_obstack[80] = lsc_obstack[80] | 2;\n          }\n          lsc_obstack._16_8_ = lsc_obstack._24_8_ + (lsc_obstack._48_8_ & -lsc_obstack._24_8_);\n          if (local_a0 == 0) {\n            local_70 = \"LS_COLORS=\\'\";\n            local_68 = \"\\';\\nexport LS_COLORS\\n\";\n          }\n          else {\n            local_70 = \"setenv LS_COLORS \\'\";\n            local_68 = \"\\'\\n\";\n          }\n          lsc_obstack._24_8_ = lsc_obstack._16_8_;\n          if (print_ls_colors != 1) {\n            fputs_unlocked(local_70,_stdout);\n          }\n          fwrite_unlocked((void *)uVar4,1,sVar6,_stdout);\n          if (print_ls_colors != 1) {\n            fputs_unlocked(local_68,_stdout);\n          }\n        }\n      }\n      else {\n        for (local_78 = \"# Configuration file for dircolors, a utility to help you set the\";\n            local_78 + -0x1018c0 < (char *)0x15f0; local_78 = local_78 + sVar6 + 1) {\n          puts(local_78);\n          sVar6 = strlen(local_78);\n        }\n      }\n      return local_a2 ^ 1;\n    }\n    if (iVar2 != 0x80) break;\n    print_ls_colors = 1;\n  }\n  if (iVar2 < 0x81) {\n    if (iVar2 == 0x70) {\n      local_a1 = 1;\n      goto LAB_00101293;\n    }\n    if (0x70 < iVar2) goto LAB_00101289;\n    if (iVar2 == 99) {\n      local_a0 = 1;\n      goto LAB_00101293;\n    }\n    if (iVar2 < 100) {\n      if (iVar2 == 0x62) {\n        local_a0 = 0;\n        goto LAB_00101293;\n      }\n      if (iVar2 < 99) {\n        if (iVar2 == -0x83) {\nLAB_0010122e:\n          uVar4 = proper_name_lite(\"H. Peter Anvin\",\"H. Peter Anvin\");\n          version_etc(_stdout,\"dircolors\",\"GNU coreutils\",_Version,uVar4,0);\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (iVar2 == -0x82) {\n          usage(0);\n          goto LAB_0010122e;\n        }\n      }\n    }\n  }\nLAB_00101289:\n  usage(1);\n  goto LAB_00101293;\n}",
+                "globals": [],
+                "externs": [
+                    "database"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "quote",
+                        "database",
+                        "fprintf",
+                        "guess_shell_syntax",
+                        "rpl_obstack_begin",
+                        "dc_parse_stream",
+                        "dc_parse_file",
+                        "fputs_unlocked",
+                        "fwrite_unlocked",
+                        "puts",
+                        "strlen",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "dircolors_decompiled.c"
+                }
+            }
+        ]
+    }
+}

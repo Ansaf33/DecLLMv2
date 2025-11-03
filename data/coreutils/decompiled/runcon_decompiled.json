@@ -1,0 +1,73 @@
+{
+    "file": "runcon",
+    "decompiled_code": {
+        "runcon.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\n                            \"Usage: %s CONTEXT COMMAND [args]\\n  or:  %s [ -c ] [-u USER] [-r ROLE] [-t TYPE] [-l RANGE] COMMAND [args]\\n\"\n                            );\n    printf(pcVar3,uVar2,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Run a program in a different SELinux security context.\\nWith neither CONTEXT nor COMMAND, print the current security context.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  CONTEXT            Complete security context\\n  -c, --compute      compute process transition context before modifying\\n  -t, --type=TYPE    type (for same role as parent)\\n  -u, --user=USER    user identity\\n  -r, --role=ROLE    role\\n  -l, --range=RANGE  levelrange\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_exec_status(\"runcon\");\n    emit_ancillary_info(\"runcon\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "type"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "type",
+                        "emit_exec_status",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "runcon_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined8 main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined8 main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  int iVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  long in_FS_OFFSET;\n  undefined4 local_e8;\n  undefined4 local_e4;\n  undefined4 local_e0;\n  undefined4 local_dc;\n  undefined4 local_d8;\n  undefined4 local_d4;\n  undefined4 local_d0;\n  undefined4 local_cc;\n  undefined4 local_c8;\n  undefined4 local_c4;\n  int local_c0;\n  undefined4 local_bc;\n  undefined4 local_b8;\n  undefined4 local_b4;\n  undefined4 local_b0;\n  undefined4 local_ac;\n  undefined4 local_a8;\n  int local_a4;\n  char *local_a0;\n  undefined8 local_98;\n  undefined8 local_90;\n  undefined8 local_88;\n  undefined8 local_80;\n  undefined8 local_78;\n  undefined8 local_70;\n  undefined8 local_68;\n  undefined8 local_60;\n  undefined8 local_58;\n  undefined8 local_50;\n  long local_48;\n  long local_40;\n  long local_38;\n  long local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_40 = 0;\n  local_48 = 0;\n  local_30 = 0;\n  local_38 = 0;\n  local_50 = 0;\n  local_a0 = (char *)0x0;\n  local_98 = 0;\n  local_90 = 0;\n  bVar1 = false;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  initialize_exit_failure(0x7d);\n  atexit((__func *)&close_stdout);\n  do {\n    while( true ) {\n      local_e8 = 0;\n      local_a4 = getopt_long(param_1,param_2,\"+r:t:u:l:c\",long_options,&local_e8);\n      if (local_a4 == -1) {\n        if (param_1 == _optind) {\n          iVar2 = getcon(&local_a0);\n          if (iVar2 < 0) {\n            uVar3 = gettext(\"failed to get current context\");\n            piVar4 = __errno_location();\n            local_c0 = *piVar4;\n            local_c4 = 0x7d;\n            local_70 = uVar3;\n            error(0x7d,local_c0,uVar3);\n          }\n          fputs_unlocked(local_a0,_stdout);\n          fputc_unlocked(10,_stdout);\n          if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n            return 0;\n          }\n        }\n        else {\n          if ((((local_30 == 0) && (local_40 == 0)) && (local_38 == 0)) &&\n             ((local_48 == 0 && (!bVar1)))) {\n            if (param_1 <= _optind) {\n              local_80 = gettext(\"you must specify -c, -t, -u, -l, -r, or context\");\n              local_d4 = 0;\n              local_d0 = 0;\n              error(0,0,local_80);\n              usage(0x7d);\n            }\n            local_50 = param_2[_optind];\n            _optind = _optind + 1;\n          }\n          if (param_1 <= _optind) {\n            local_88 = gettext(\"no command specified\");\n            local_d8 = 0;\n            local_e4 = 0;\n            error(0,0,local_88);\n            usage(0x7d);\n          }\n          uVar3 = _program_name;\n          local_28 = gettext(\"%s may be used only on a SELinux kernel\");\n          local_e0 = 0x7d;\n          local_dc = 0;\n          error(0x7d,0,local_28,uVar3);\n        }\n                    /* WARNING: Subroutine does not return */\n        __stack_chk_fail();\n      }\n      if (local_a4 < 0x76) break;\nswitchD_001005cb_caseD_64:\n      usage(0x7d);\n    }\n    if (local_a4 < 99) {\n      if (local_a4 == -0x83) {\nLAB_00100752:\n        uVar3 = proper_name_lite(\"Russell Coker\",\"Russell Coker\");\n        version_etc(_stdout,\"runcon\",\"GNU coreutils\",_Version,uVar3,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (local_a4 == -0x82) {\n        usage(0);\n        goto LAB_00100752;\n      }\n      goto switchD_001005cb_caseD_64;\n    }\n    switch(local_a4) {\n    case 99:\n      bVar1 = true;\n      break;\n    default:\n      goto switchD_001005cb_caseD_64;\n    case 0x6c:\n      if (local_48 != 0) {\n        local_78 = gettext(\"multiple levelranges\");\n        local_cc = 0x7d;\n        local_c8 = 0;\n        error(0x7d,0,local_78);\n      }\n      local_48 = _optarg;\n      break;\n    case 0x72:\n      if (local_40 != 0) {\n        local_68 = gettext(\"multiple roles\");\n        local_bc = 0x7d;\n        local_b8 = 0;\n        error(0x7d,0,local_68);\n      }\n      local_40 = _optarg;\n      break;\n    case 0x74:\n      if (local_38 != 0) {\n        local_60 = gettext(\"multiple types\");\n        local_b4 = 0x7d;\n        local_b0 = 0;\n        error(0x7d,0,local_60);\n      }\n      local_38 = _optarg;\n      break;\n    case 0x75:\n      if (local_30 != 0) {\n        local_58 = gettext(\"multiple users\");\n        local_ac = 0x7d;\n        local_a8 = 0;\n        error(0x7d,0,local_58);\n      }\n      local_30 = _optarg;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "initialize_exit_failure",
+                        "atexit",
+                        "getopt_long",
+                        "getcon",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "fputs_unlocked",
+                        "fputc_unlocked",
+                        "usage",
+                        "__stack_chk_fail",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "runcon_decompiled.c"
+                }
+            }
+        ]
+    }
+}

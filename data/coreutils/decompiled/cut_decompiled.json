@@ -1,0 +1,226 @@
+{
+    "file": "cut",
+    "decompiled_code": {
+        "cut.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s OPTION... [FILE]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"Print selected parts of lines from each FILE to standard output.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_stdin_note();\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -b, --bytes=LIST        select only these bytes\\n  -c, --characters=LIST   select only these characters\\n  -d, --delimiter=DELIM   use DELIM instead of TAB for field delimiter\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -f, --fields=LIST       select only these fields;  also print any line\\n                            that contains no delimiter character, unless\\n                            the -s option is specified\\n  -n                      (ignored)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --complement        complement the set of selected bytes, characters\\n                            or fields\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -s, --only-delimited    do not print lines not containing delimiters\\n      --output-delimiter=STRING  use STRING as the output delimiter\\n                            the default is to use the input delimiter\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  -z, --zero-terminated   line delimiter is NUL, not newline\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nUse one, and only one of -b, -c or -f.  Each LIST is made up of one\\nrange, or many ranges separated by commas.  Selected input is written\\nin the same order that it is read, and is written exactly once.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Each range is one of:\\n\\n  N     N\\'th byte, character or field, counted from 1\\n  N-    from N\\'th byte, character or field, to end of line\\n  N-M   from N\\'th to M\\'th (included) byte, character or field\\n  -M    from first to M\\'th (included) byte, character or field\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(&DAT_00101c26);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "n",
+                    "th"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_stdin_note",
+                        "emit_mandatory_arg_note",
+                        "n",
+                        "th",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "cut_decompiled.c"
+                }
+            },
+            {
+                "func_name": "next_item",
+                "func_c_signature": "void next_item(ulong *param_1)",
+                "decompiled_code": "void next_item(ulong *param_1) {\n  *param_1 = *param_1 + 1;\n  if (*(ulong *)(current_rp + 8) < *param_1) {\n    current_rp = current_rp + 0x10;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "next_item"
+                    ],
+                    "calling_functions": [
+                        "next_item",
+                        "cut_bytes",
+                        "cut_fields"
+                    ],
+                    "defined_in_file": "cut_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_kth",
+                "func_c_signature": "undefined8 print_kth(ulong param_1)",
+                "decompiled_code": "undefined8 print_kth(ulong param_1) {\n  return CONCAT71((int7)(*current_rp >> 8),*current_rp <= param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT71"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_kth",
+                        "CONCAT71"
+                    ],
+                    "calling_functions": [
+                        "print_kth",
+                        "cut_bytes",
+                        "cut_fields"
+                    ],
+                    "defined_in_file": "cut_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_range_start_index",
+                "func_c_signature": "undefined8 is_range_start_index(long param_1)",
+                "decompiled_code": "undefined8 is_range_start_index(long param_1) {\n  return CONCAT71((int7)((ulong)*current_rp >> 8),param_1 == *current_rp);\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT71"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_range_start_index",
+                        "CONCAT71"
+                    ],
+                    "calling_functions": [
+                        "is_range_start_index",
+                        "cut_bytes"
+                    ],
+                    "defined_in_file": "cut_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cut_bytes",
+                "func_c_signature": "void cut_bytes(FILE *param_1)",
+                "decompiled_code": "void cut_bytes(FILE *param_1) {\n  bool bVar1;\n  char cVar2;\n  uint __c;\n  int iVar3;\n  size_t sVar4;\n  long in_FS_OFFSET;\n  long local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_18 = 0;\n  bVar1 = false;\n  current_rp = _frp;\n  while( true ) {\n    while( true ) {\n      __c = getc_unlocked(param_1);\n      if (__c != line_delim) break;\n      iVar3 = putchar_unlocked(__c);\n      if (iVar3 < 0) {\n        write_error();\n      }\n      local_18 = 0;\n      bVar1 = false;\n      current_rp = _frp;\n    }\n    if (__c == 0xffffffff) break;\n    next_item(&local_18);\n    cVar2 = print_kth(local_18);\n    if (cVar2 != '\\0') {\n      if (output_delimiter_string != &output_delimiter_default) {\n        if (bVar1) {\n          cVar2 = is_range_start_index(local_18);\n          if (cVar2 != '\\0') {\n            sVar4 = fwrite_unlocked(output_delimiter_string,1,output_delimiter_length,_stdout);\n            if (sVar4 != output_delimiter_length) {\n              write_error();\n            }\n          }\n        }\n        bVar1 = true;\n      }\n      iVar3 = putchar_unlocked(__c);\n      if (iVar3 < 0) {\n        write_error();\n      }\n    }\n  }\n  if (local_18 != 0) {\n    iVar3 = putchar_unlocked((uint)line_delim);\n    if (iVar3 < 0) {\n      write_error();\n    }\n  }\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cut_bytes",
+                        "getc_unlocked",
+                        "putchar_unlocked",
+                        "write_error",
+                        "next_item",
+                        "print_kth",
+                        "is_range_start_index",
+                        "fwrite_unlocked",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "cut_bytes"
+                    ],
+                    "defined_in_file": "cut_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cut_fields",
+                "func_c_signature": "void cut_fields(FILE *param_1)",
+                "decompiled_code": "void cut_fields(FILE *param_1) {\n  bool bVar1;\n  byte bVar2;\n  char cVar3;\n  int iVar4;\n  uint __c;\n  size_t sVar5;\n  long in_FS_OFFSET;\n  bool bVar6;\n  uint local_38;\n  uint local_34;\n  long local_28;\n  size_t local_20;\n  size_t local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_28 = 1;\n  bVar1 = false;\n  current_rp = _frp;\n  iVar4 = getc_unlocked(param_1);\n  if (iVar4 == -1) {\nLAB_00100bf6:\n    if (local_10 == *(long *)(in_FS_OFFSET + 0x28)) {\n      return;\n    }\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  ungetc(iVar4,param_1);\n  local_38 = 0;\n  bVar2 = print_kth(1);\n  bVar6 = suppress_non_delimited == (bVar2 ^ 1);\n  do {\n    while ((local_28 != 1 || (bVar6))) {\nLAB_001009f4:\n      local_34 = local_38;\n      cVar3 = print_kth(local_28);\n      __c = local_38;\n      if (cVar3 == '\\0') {\n        do {\n          local_38 = __c;\n          __c = getc_unlocked(param_1);\n          local_34 = local_38;\n          if ((__c == delim) || (__c == line_delim)) break;\n        } while (__c != 0xffffffff);\n      }\n      else {\n        if ((bVar1) &&\n           (sVar5 = fwrite_unlocked(output_delimiter_string,1,output_delimiter_length,_stdout),\n           sVar5 != output_delimiter_length)) {\n          write_error();\n        }\n        bVar1 = true;\n        while (((__c = getc_unlocked(param_1), __c != delim && (__c != line_delim)) &&\n               (__c != 0xffffffff))) {\n          iVar4 = putchar_unlocked(__c);\n          local_34 = __c;\n          if (iVar4 < 0) {\n            write_error();\n          }\n        }\n      }\n      local_38 = __c;\n      if ((delim == line_delim) && (local_38 == delim)) {\n        iVar4 = getc_unlocked(param_1);\n        if (iVar4 == -1) {\n          local_38 = 0xffffffff;\n        }\n        else {\n          ungetc(iVar4,param_1);\n        }\n      }\n      if (local_38 == delim) {\n        next_item(&local_28);\n      }\n      else if ((local_38 == line_delim) || (local_38 == 0xffffffff)) {\n        if ((((bVar1) || ((suppress_non_delimited != 1 || (local_28 != 1)))) &&\n            ((local_38 == line_delim || ((local_34 != line_delim || (delim == line_delim)))))) &&\n           (iVar4 = putchar_unlocked((uint)line_delim), iVar4 < 0)) {\n          write_error();\n        }\n        if (local_38 == 0xffffffff) goto LAB_00100bf6;\n        local_28 = 1;\n        current_rp = _frp;\n        bVar1 = false;\n      }\n    }\n    local_20 = getndelim2(&field_1_buffer,&field_1_bufsize,0,0xffffffffffffffff,delim,line_delim,\n                          param_1);\n    if ((long)local_20 < 0) {\n      free(field_1_buffer);\n      field_1_buffer = (void *)0x0;\n      iVar4 = ferror_unlocked(param_1);\n      if ((iVar4 != 0) || (iVar4 = feof_unlocked(param_1), iVar4 != 0)) goto LAB_00100bf6;\n      xalloc_die();\n    }\n    local_18 = local_20;\n    if (local_20 == 0) {\n                    /* WARNING: Subroutine does not return */\n      __assert_fail(\"n_bytes != 0\",\n                    \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/cut.c\",\n                    0x140,\"cut_fields\");\n    }\n    local_38 = 0;\n    bVar2 = to_uchar((int)*(char *)((long)field_1_buffer + (local_20 - 1)));\n    if (bVar2 == delim) {\n      cVar3 = print_kth(1);\n      if (cVar3 != '\\0') {\n        sVar5 = fwrite_unlocked(field_1_buffer,1,local_18 - 1,_stdout);\n        if (sVar5 != local_18 - 1) {\n          write_error();\n        }\n        if (delim == line_delim) {\n          iVar4 = getc_unlocked(param_1);\n          if (iVar4 != -1) {\n            ungetc(iVar4,param_1);\n            bVar1 = true;\n          }\n        }\n        else {\n          bVar1 = true;\n        }\n      }\n      next_item(&local_28);\n      goto LAB_001009f4;\n    }\n    if (suppress_non_delimited == 0) {\n      sVar5 = fwrite_unlocked(field_1_buffer,1,local_18,_stdout);\n      if (local_18 != sVar5) {\n        write_error();\n      }\n      if (((int)*(char *)((long)field_1_buffer + (local_18 - 1)) != (uint)line_delim) &&\n         (iVar4 = putchar_unlocked((uint)line_delim), iVar4 < 0)) {\n        write_error();\n      }\n      local_38 = (uint)line_delim;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cut_fields",
+                        "getc_unlocked",
+                        "__stack_chk_fail",
+                        "ungetc",
+                        "print_kth",
+                        "fwrite_unlocked",
+                        "write_error",
+                        "putchar_unlocked",
+                        "next_item",
+                        "getndelim2",
+                        "free",
+                        "ferror_unlocked",
+                        "feof_unlocked",
+                        "xalloc_die",
+                        "__assert_fail",
+                        "to_uchar"
+                    ],
+                    "calling_functions": [
+                        "cut_fields"
+                    ],
+                    "defined_in_file": "cut_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cut_file",
+                "func_c_signature": "bool cut_file(undefined8 param_1,code *param_2)",
+                "decompiled_code": "bool cut_file(undefined8 param_1,code *param_2) {\n  char cVar1;\n  int iVar2;\n  int *piVar3;\n  undefined8 uVar4;\n  int local_44;\n  FILE *local_30;\n  \n  cVar1 = streq(param_1,&DAT_00101c8a);\n  if (cVar1 == '\\0') {\n    local_30 = (FILE *)rpl_fopen(param_1,&DAT_00101c8c);\n    if (local_30 == (FILE *)0x0) {\n      uVar4 = quotearg_n_style_colon(0,3,param_1);\n      piVar3 = __errno_location();\n      error(0,*piVar3,&DAT_00101c8e,uVar4);\n      return false;\n    }\n  }\n  else {\n    have_read_stdin = 1;\n    local_30 = _stdin;\n  }\n  fadvise(local_30,2);\n  (*param_2)(local_30);\n  piVar3 = __errno_location();\n  local_44 = *piVar3;\n  iVar2 = ferror_unlocked(local_30);\n  if (iVar2 == 0) {\n    local_44 = 0;\n  }\n  cVar1 = streq(param_1,&DAT_00101c8a);\n  if (cVar1 == '\\0') {\n    iVar2 = rpl_fclose(local_30);\n    if (iVar2 == -1) {\n      piVar3 = __errno_location();\n      local_44 = *piVar3;\n    }\n  }\n  else {\n    clearerr_unlocked(local_30);\n  }\n  if (local_44 != 0) {\n    uVar4 = quotearg_n_style_colon(0,3,param_1);\n    error(0,local_44,&DAT_00101c8e,uVar4);\n  }\n  return local_44 == 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cut_file",
+                        "streq",
+                        "rpl_fopen",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "fadvise",
+                        "ferror_unlocked",
+                        "rpl_fclose",
+                        "clearerr_unlocked"
+                    ],
+                    "calling_functions": [
+                        "cut_file",
+                        "main"
+                    ],
+                    "defined_in_file": "cut_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  bool bVar2;\n  byte bVar3;\n  int iVar4;\n  uint uVar5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  undefined8 uVar8;\n  code *pcVar9;\n  int *piVar10;\n  uint uVar11;\n  byte local_8f;\n  char *local_58;\n  \n  bVar2 = false;\n  bVar1 = false;\n  local_58 = (char *)0x0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  suppress_non_delimited = '\\0';\n  delim = '\\0';\n  have_read_stdin = '\\0';\nLAB_001010bf:\n  iVar4 = getopt_long(param_1,param_2,\"b:c:d:f:nsz\",longopts,0);\n  if (iVar4 == -1) {\n    if (local_58 == (char *)0x0) {\n      uVar8 = gettext(\"you must specify a list of bytes, characters, or fields\");\n      error(0,0,uVar8);\n      usage(1);\n    }\n    if (bVar1) {\n      if (bVar2) {\n        uVar8 = gettext(\"an input delimiter may be specified only when operating on fields\");\n        error(0,0,uVar8);\n        usage(1);\n      }\n      if (suppress_non_delimited != '\\0') {\n        uVar8 = gettext(\n                       \"suppressing non-delimited lines makes sense\\n\\tonly when operating on fields\"\n                       );\n        error(0,0,uVar8);\n        usage(1);\n      }\n    }\n    if (bVar1) {\n      uVar11 = 4;\n    }\n    else {\n      uVar11 = 0;\n    }\n    if (complement == '\\0') {\n      uVar5 = 0;\n    }\n    else {\n      uVar5 = 2;\n    }\n    set_fields(local_58,uVar5 | uVar11);\n    if (!bVar2) {\n      delim = '\\t';\n    }\n    if (output_delimiter_string == (char *)0x0) {\n      output_delimiter_default = delim;\n      output_delimiter_string = &output_delimiter_default;\n      output_delimiter_length = 1;\n    }\n    if (bVar1) {\n      pcVar9 = cut_bytes;\n    }\n    else {\n      pcVar9 = cut_fields;\n    }\n    if (param_1 == _optind) {\n      local_8f = cut_file(&DAT_00101c8a,pcVar9);\n    }\n    else {\n      local_8f = true;\n      for (; _optind < param_1; _optind = _optind + 1) {\n        bVar3 = cut_file(param_2[_optind],pcVar9);\n        local_8f = (bVar3 & local_8f) != 0;\n      }\n    }\n    if ((have_read_stdin != '\\0') && (iVar4 = rpl_fclose(_stdin), iVar4 == -1)) {\n      piVar10 = __errno_location();\n      error(0,*piVar10,&DAT_00101c8a);\n      local_8f = 0;\n    }\n    return local_8f ^ 1;\n  }\n  if (iVar4 < 0x82) {\n    if (iVar4 < 0x62) {\n      if (iVar4 == -0x83) {\nLAB_0010101d:\n        uVar8 = proper_name_lite(\"Jim Meyering\",\"Jim Meyering\");\n        uVar6 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n        uVar7 = proper_name_lite(\"David M. Ihnat\",\"David M. Ihnat\");\n        version_etc(_stdout,&DAT_00101c26,\"GNU coreutils\",_Version,uVar7,uVar6,uVar8,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar4 == -0x82) {\n        usage(0);\n        goto LAB_0010101d;\n      }\n      goto switchD_00100ecc_caseD_65;\n    }\n    goto code_r0x00100eac;\n  }\n  goto switchD_00100ecc_caseD_65;\ncode_r0x00100eac:\n  switch(iVar4) {\n  case 0x62:\n  case 99:\n    bVar1 = true;\n  case 0x66:\n    if (local_58 != (char *)0x0) {\n      uVar8 = gettext(\"only one list may be specified\");\n      error(0,0,uVar8);\n      usage(1);\n    }\n    local_58 = _optarg;\n    break;\n  case 100:\n    if ((*_optarg != '\\0') && (_optarg[1] != '\\0')) {\n      uVar8 = gettext(\"the delimiter must be a single character\");\n      error(0,0,uVar8);\n      usage(1);\n    }\n    delim = *_optarg;\n    bVar2 = true;\n    break;\n  default:\nswitchD_00100ecc_caseD_65:\n    usage(1);\n    break;\n  case 0x6e:\n    break;\n  case 0x73:\n    suppress_non_delimited = '\\x01';\n    break;\n  case 0x7a:\n    line_delim = 0;\n    break;\n  case 0x80:\n    if (*_optarg == '\\0') {\n      output_delimiter_length = 1;\n    }\n    else {\n      output_delimiter_length = strlen(_optarg);\n    }\n    output_delimiter_string = _optarg;\n    break;\n  case 0x81:\n    complement = '\\x01';\n  }\n  goto LAB_001010bf;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "set_fields",
+                        "cut_file",
+                        "rpl_fclose",
+                        "__errno_location",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "cut_decompiled.c"
+                }
+            }
+        ]
+    }
+}

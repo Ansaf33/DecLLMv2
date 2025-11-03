@@ -1,0 +1,553 @@
+{
+    "file": "CROMU_00033",
+    "decompiled_code": {
+        "command.c": [
+            {
+                "func_name": "handle_repo",
+                "func_c_signature": "undefined4 handle_repo(void)",
+                "decompiled_code": "undefined4 handle_repo(void) {\n  ssize_t sVar1;\n  undefined4 uVar2;\n  size_t in_stack_fffffedc;\n  size_t __n;\n  int __flags;\n  undefined local_110 [256];\n  void *local_10 [2];\n  \n  __flags = 0x1100f;\n  local_10[0] = (void *)0x0;\n  sVar1 = recv((int)local_10,(void *)0x1,in_stack_fffffedc,0x1100f);\n  if (sVar1 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    __n = 0x100;\n    memset(local_110,0,0x100);\n    sVar1 = recv((int)local_110,local_10[0],__n,__flags);\n    if (sVar1 == 0) {\n      uVar2 = 0;\n    }\n    else {\n      uVar2 = delete_file(local_110);\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_repo",
+                        "recv",
+                        "memset",
+                        "delete_file"
+                    ],
+                    "calling_functions": [
+                        "handle_repo",
+                        "service_loop"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_prnt",
+                "func_c_signature": "void handle_prnt(int param_1,char *param_2)",
+                "decompiled_code": "void handle_prnt(int param_1,char *param_2) {\n  char *pcVar1;\n  char *pcVar2;\n  char local_118 [256];\n  char *local_18;\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  local_18 = (char *)0x0;\n  if (param_1 != 0) {\n    bubble_sort(param_1);\n    local_14 = *(int *)(param_1 + 0x108);\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 0x104); local_10 = local_10 + 1) {\n      pcVar2 = *(char **)(local_14 + local_10 * 4);\n      pcVar1 = param_2;\n      local_18 = pcVar2;\n      printf(\"$s/$s     \",param_2,pcVar2);\n      if (*(int *)(local_18 + 0x100) == 0) {\n        printf(\"File     $d\\n\",*(undefined4 *)(local_18 + 0x104),pcVar2);\n      }\n      else {\n        printf(\"Dir\\n\",pcVar1,pcVar2);\n        memset(local_118,0,0x100);\n        strncpy(local_118,param_2,0xff);\n        strncat(local_118,\"/\",0xff);\n        strncat(local_118,local_18,0xff);\n        handle_prnt(local_18,local_118);\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_prnt",
+                        "bubble_sort",
+                        "printf",
+                        "memset",
+                        "strncpy",
+                        "strncat"
+                    ],
+                    "calling_functions": [
+                        "handle_prnt",
+                        "service_loop"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_recv",
+                "func_c_signature": "undefined4 handle_recv(void)",
+                "decompiled_code": "undefined4 handle_recv(void) {\n  ssize_t sVar1;\n  undefined4 uVar2;\n  size_t __n;\n  int __flags;\n  undefined local_114 [256];\n  void *local_14;\n  int local_10;\n  \n  __flags = 0x11200;\n  local_14 = (void *)0x0;\n  local_10 = 0;\n  __n = 0x100;\n  memset(local_114,0,0x100);\n  sVar1 = recv((int)&local_14,(void *)0x1,__n,__flags);\n  if (sVar1 == 0) {\n    printf(\"[ERROR] Failed to recv\\n\");\n    uVar2 = 0;\n  }\n  else {\n    sVar1 = recv((int)local_114,local_14,__n,__flags);\n    if (sVar1 == 0) {\n      printf(\"[ERROR] Failed to recv name\\n\");\n      uVar2 = 0;\n    }\n    else {\n      local_10 = get_file(local_114);\n      if (local_10 == 0) {\n        printf(\"[ERROR] RECV failed\\n\");\n        uVar2 = 0;\n      }\n      else if (*(int *)(local_10 + 0x100) == 1) {\n        printf(\"[ERROR] $s is a directory\\n\",local_10);\n        uVar2 = 0;\n      }\n      else if (*(int *)(local_10 + 0x108) == 0) {\n        uVar2 = 0;\n      }\n      else {\n        printf(\"[DATA] $s\\n\",*(undefined4 *)(local_10 + 0x108));\n        uVar2 = 1;\n      }\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_recv",
+                        "memset",
+                        "recv",
+                        "printf",
+                        "get_file"
+                    ],
+                    "calling_functions": [
+                        "handle_recv",
+                        "service_loop"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_ndir",
+                "func_c_signature": "undefined4 handle_ndir(void)",
+                "decompiled_code": "undefined4 handle_ndir(void) {\n  ssize_t sVar1;\n  undefined4 uVar2;\n  size_t __n;\n  int iVar3;\n  undefined local_114 [256];\n  void *local_14;\n  void *local_10;\n  \n  iVar3 = 0x1133c;\n  local_14 = (void *)0x0;\n  local_10 = (void *)0x0;\n  __n = 0x100;\n  memset(local_114,0,0x100);\n  sVar1 = recv((int)&local_14,(void *)0x1,__n,iVar3);\n  if (sVar1 == 0) {\n    printf(\"[ERROR] Failed to recv\\n\");\n    uVar2 = 0;\n  }\n  else {\n    sVar1 = recv((int)local_114,local_14,__n,iVar3);\n    if (sVar1 == 0) {\n      printf(\"[ERROR] Failed to recv name\\n\");\n      uVar2 = 0;\n    }\n    else {\n      local_10 = (void *)init_file();\n      if (local_10 == (void *)0x0) {\n        printf(\"[ERROR] Failed to initialize a new directory\\n\");\n        uVar2 = 0;\n      }\n      else {\n        iVar3 = set_name(local_10,local_114);\n        if (iVar3 == 0) {\n          printf(\"[ERROR] Failed to set directory name\\n\");\n          free(local_10);\n          uVar2 = 0;\n        }\n        else {\n          iVar3 = set_type(local_10,1);\n          if (iVar3 == 0) {\n            printf(\"[ERROR] Failed to set type\\n\");\n            free(local_10);\n            uVar2 = 0;\n          }\n          else {\n            iVar3 = add_file(local_10);\n            if (iVar3 == 0) {\n              printf(\"[ERROR] NDIR failed\\n\");\n              free(local_10);\n              uVar2 = 0;\n            }\n            else {\n              printf(\"[INFO] Added new directory\\n\");\n              uVar2 = 1;\n            }\n          }\n        }\n      }\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_ndir",
+                        "memset",
+                        "recv",
+                        "printf",
+                        "init_file",
+                        "set_name",
+                        "free",
+                        "set_type",
+                        "add_file"
+                    ],
+                    "calling_functions": [
+                        "handle_ndir",
+                        "service_loop"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_send",
+                "func_c_signature": "undefined4 handle_send(void)",
+                "decompiled_code": "undefined4 handle_send(void) {\n  ssize_t sVar1;\n  undefined4 uVar2;\n  size_t sVar3;\n  int iVar4;\n  undefined local_11c [256];\n  void *local_1c;\n  void *local_18;\n  void *local_14;\n  void *local_10;\n  \n  iVar4 = 0x114dc;\n  local_18 = (void *)0x0;\n  local_1c = (void *)0x0;\n  local_10 = (void *)0x0;\n  local_14 = (void *)0x0;\n  sVar3 = 0x100;\n  memset(local_11c,0,0x100);\n  sVar1 = recv((int)&local_18,(void *)0x1,sVar3,iVar4);\n  if (sVar1 == 0) {\n    printf(\"[ERROR] Failed to recv\\n\");\n    uVar2 = 0;\n  }\n  else {\n    sVar1 = recv((int)local_11c,local_18,sVar3,iVar4);\n    if (sVar1 == 0) {\n      printf(\"[ERROR] Failed to recv name\\n\");\n      uVar2 = 0;\n    }\n    else {\n      sVar1 = recv((int)&local_1c,(void *)0x2,sVar3,iVar4);\n      if (sVar1 == 0) {\n        printf(\"[ERROR] Failed to recv file length\\n\");\n        uVar2 = 0;\n      }\n      else if ((int)local_1c < 0x401) {\n        local_10 = malloc((int)local_1c + 1);\n        if (local_10 == (void *)0x0) {\n          printf(\"[ERROR] malloc failed\\n\");\n          uVar2 = 0;\n        }\n        else {\n          sVar3 = (int)local_1c + 1;\n          memset(local_10,0,sVar3);\n          sVar1 = recv((int)local_10,local_1c,sVar3,iVar4);\n          if (sVar1 == 0) {\n            printf(\"[ERROR] Failed to recv data\\n\");\n            uVar2 = 0;\n          }\n          else {\n            local_14 = (void *)init_file();\n            if (local_14 == (void *)0x0) {\n              printf(\"[ERROR] Failed to initialize a new file\\n\");\n              free(local_10);\n              uVar2 = 0;\n            }\n            else {\n              iVar4 = set_name(local_14,local_11c);\n              if (iVar4 == 0) {\n                printf(\"[ERROR] Failed to set file name\\n\");\n                free(local_10);\n                free(local_14);\n                uVar2 = 0;\n              }\n              else {\n                iVar4 = set_type(local_14,0);\n                if (iVar4 == 0) {\n                  printf(\"[ERROR] Failed to set type\\n\");\n                  free(local_10);\n                  free(local_14);\n                  uVar2 = 0;\n                }\n                else {\n                  iVar4 = set_data(local_14,local_1c,local_10);\n                  if (iVar4 == 0) {\n                    printf(\"[ERROR] Failed to set data\\n\");\n                    free(local_10);\n                    free(local_14);\n                    uVar2 = 0;\n                  }\n                  else {\n                    free(local_10);\n                    iVar4 = add_file(local_14);\n                    if (iVar4 == 0) {\n                      printf(\"[ERROR] SEND failed\\n\");\n                      free_file(local_14);\n                      uVar2 = 0;\n                    }\n                    else {\n                      printf(\"[INFO] File received: $s\\n\",local_11c);\n                      uVar2 = 1;\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n      else {\n        printf(\"[ERROR] Maximum file length is 0x400\\n\");\n        uVar2 = 0;\n      }\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_send",
+                        "memset",
+                        "recv",
+                        "printf",
+                        "malloc",
+                        "init_file",
+                        "free",
+                        "set_name",
+                        "set_type",
+                        "set_data",
+                        "add_file",
+                        "free_file"
+                    ],
+                    "calling_functions": [
+                        "handle_send",
+                        "service_loop"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            }
+        ],
+        "file.c": [
+            {
+                "func_name": "bubble_sort",
+                "func_c_signature": "undefined4 bubble_sort(int param_1)",
+                "decompiled_code": "undefined4 bubble_sort(int param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  int iVar3;\n  uint local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  if (param_1 == 0) {\n    uVar2 = 0;\n  }\n  else if (*(int *)(param_1 + 0x108) == 0) {\n    uVar2 = 0;\n  }\n  else {\n    iVar1 = *(int *)(param_1 + 0x108);\n    for (; local_10 < *(uint *)(param_1 + 0x104); local_10 = local_10 + 1) {\n      if (*(int *)(iVar1 + local_10 * 4) != 0) {\n        local_14 = local_14 + 1;\n      }\n    }\n    if (local_14 < *(uint *)(param_1 + 0x104)) {\n      local_14 = 0;\n      for (local_10 = 0; local_10 < *(uint *)(param_1 + 0x104); local_10 = local_10 + 1) {\n        if (*(int *)(iVar1 + local_10 * 4) != 0) {\n          *(undefined4 *)(iVar1 + local_14 * 4) = *(undefined4 *)(iVar1 + local_10 * 4);\n          local_14 = local_14 + 1;\n        }\n      }\n      for (; local_14 < *(uint *)(param_1 + 0x104); local_14 = local_14 + 1) {\n        *(undefined4 *)(iVar1 + local_14 * 4) = 0;\n      }\n    }\n    for (local_10 = 0; local_14 = local_10, local_10 < *(uint *)(param_1 + 0x104);\n        local_10 = local_10 + 1) {\n      while (local_14 = local_14 + 1, local_14 < *(uint *)(param_1 + 0x104)) {\n        iVar3 = strcmp(*(char **)(iVar1 + local_10 * 4),*(char **)(iVar1 + local_14 * 4));\n        if (0 < iVar3) {\n          uVar2 = *(undefined4 *)(iVar1 + local_14 * 4);\n          *(undefined4 *)(iVar1 + local_14 * 4) = *(undefined4 *)(iVar1 + local_10 * 4);\n          *(undefined4 *)(local_10 * 4 + iVar1) = uVar2;\n        }\n      }\n    }\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "bubble_sort",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "handle_prnt",
+                        "bubble_sort"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove_sub_file",
+                "func_c_signature": "undefined4 remove_sub_file(int param_1,char *param_2)",
+                "decompiled_code": "undefined4 remove_sub_file(int param_1,char *param_2) {\n  int iVar1;\n  char *__s1;\n  int iVar2;\n  uint local_10;\n  \n  local_10 = 0;\n  if (((param_1 != 0) && (param_2 != (char *)0x0)) && (*(int *)(param_1 + 0x108) != 0)) {\n    iVar1 = *(int *)(param_1 + 0x108);\n    while (local_10 < *(uint *)(param_1 + 0x104)) {\n      __s1 = *(char **)(iVar1 + local_10 * 4);\n      if (__s1 == (char *)0x0) {\n        local_10 = local_10 + 1;\n      }\n      else {\n        iVar2 = strcmp(__s1,param_2);\n        if (iVar2 == 0) {\n          if (*(int *)(__s1 + 0x100) != 1) {\n            free_file(__s1);\n            *(undefined4 *)(iVar1 + local_10 * 4) = 0;\n            return 1;\n          }\n          printf(\"[ERROR] Cannot delete a directory\\n\");\n          return 0;\n        }\n        local_10 = local_10 + 1;\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_sub_file",
+                        "strcmp",
+                        "free_file",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "remove_sub_file",
+                        "delete_file"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "delete_file",
+                "func_c_signature": "undefined4 delete_file(char *param_1)",
+                "decompiled_code": "undefined4 delete_file(char *param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  undefined local_11c [256];\n  size_t local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = root;\n  local_14 = 0;\n  local_18 = 0;\n  local_1c = 0;\n  if (param_1 == (char *)0x0) {\n    uVar1 = 0;\n  }\n  else if (*param_1 == '/') {\n    local_14 = 1;\n    local_1c = strlen(param_1);\n    if ((int)local_1c < 0x101) {\n      while (local_18 != -1) {\n        local_18 = find_next_slash(param_1,local_14,local_1c);\n        memset(local_11c,0,0x100);\n        if (local_18 == -1) {\n          if (0x100 < (int)(local_1c - local_14)) {\n            printf(\"[ERROR] Size calculation failed\\n\");\n            return 0;\n          }\n          memcpy(local_11c,param_1 + local_14,local_1c - local_14);\n          iVar2 = does_sub_file_exist(local_10,local_11c);\n          if (iVar2 == 0) {\n            printf(\"[ERROR] Could not locate $s\\n\",param_1);\n            return 0;\n          }\n          iVar2 = remove_sub_file(local_10,local_11c);\n          if (iVar2 != 0) {\n            printf(\"[INFO] $s removed\\n\",local_11c);\n            return 1;\n          }\n          return 0;\n        }\n        if (0x100 < local_18 - local_14) {\n          printf(\"[ERROR] Size calculation failed\\n\");\n          return 0;\n        }\n        memcpy(local_11c,param_1 + local_14,local_18 - local_14);\n        local_10 = retrieve_sub(local_10,local_11c);\n        if (local_10 == 0) {\n          printf(\"[ERROR] Failed to locate directory $s\\n\",local_11c);\n          return 0;\n        }\n        if (*(int *)(local_10 + 0x100) != 1) {\n          return 0;\n        }\n        local_14 = local_18 + 1;\n      }\n      uVar1 = 0;\n    }\n    else {\n      printf(\"[ERROR] Name too long\\n\");\n      uVar1 = 0;\n    }\n  }\n  else {\n    iVar2 = does_sub_file_exist(root,param_1);\n    if (iVar2 == 0) {\n      printf(\"[ERROR] Could not locate $s\\n\",param_1);\n      uVar1 = 0;\n    }\n    else {\n      iVar2 = remove_sub_file(local_10,param_1);\n      if (iVar2 == 0) {\n        uVar1 = 0;\n      }\n      else {\n        printf(\"[INFO] $s removed\\n\",param_1);\n        uVar1 = 1;\n      }\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "delete_file",
+                        "strlen",
+                        "find_next_slash",
+                        "memset",
+                        "printf",
+                        "memcpy",
+                        "does_sub_file_exist",
+                        "remove_sub_file",
+                        "retrieve_sub"
+                    ],
+                    "calling_functions": [
+                        "handle_repo",
+                        "delete_file"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "retrieve_sub",
+                "func_c_signature": "char * retrieve_sub(int param_1,char *param_2)",
+                "decompiled_code": "char * retrieve_sub(int param_1,char *param_2) {\n  int iVar1;\n  char *__s1;\n  int iVar2;\n  uint local_10;\n  \n  local_10 = 0;\n  if (((param_1 != 0) && (param_2 != (char *)0x0)) && (*(int *)(param_1 + 0x100) == 1)) {\n    iVar1 = *(int *)(param_1 + 0x108);\n    while (local_10 < *(uint *)(param_1 + 0x104)) {\n      __s1 = *(char **)(iVar1 + local_10 * 4);\n      if (__s1 == (char *)0x0) {\n        local_10 = local_10 + 1;\n      }\n      else {\n        iVar2 = strcmp(__s1,param_2);\n        if (iVar2 == 0) {\n          return __s1;\n        }\n        local_10 = local_10 + 1;\n      }\n    }\n  }\n  return (char *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "retrieve_sub",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "delete_file",
+                        "retrieve_sub",
+                        "get_file",
+                        "add_file"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_next_slash",
+                "func_c_signature": "int find_next_slash(int param_1,int param_2,int param_3)",
+                "decompiled_code": "int find_next_slash(int param_1,int param_2,int param_3) {\n  int iVar1;\n  int local_8;\n  \n  local_8 = -1;\n  if (param_1 == 0) {\n    iVar1 = -1;\n  }\n  else {\n    for (; (iVar1 = local_8, param_2 < param_3 &&\n           (iVar1 = param_2, *(char *)(param_1 + param_2) != '/')); param_2 = param_2 + 1) {\n    }\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_next_slash"
+                    ],
+                    "calling_functions": [
+                        "delete_file",
+                        "find_next_slash",
+                        "get_file",
+                        "add_file"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fixup_dir_length",
+                "func_c_signature": "undefined4 fixup_dir_length(int param_1)",
+                "decompiled_code": "undefined4 fixup_dir_length(int param_1) {\n  undefined4 uVar1;\n  void *pvVar2;\n  \n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    if (*(int *)(param_1 + 0x104) == 0) {\n      *(undefined4 *)(param_1 + 0x104) = 1;\n      pvVar2 = malloc(8);\n      *(void **)(param_1 + 0x108) = pvVar2;\n      if (*(int *)(param_1 + 0x108) == 0) {\n        printf(\"[ERROR] Failed to fixup dir data\\n\");\n        *(undefined4 *)(param_1 + 0x104) = 0;\n        return 0;\n      }\n      memset(*(void **)(param_1 + 0x108),0,8);\n    }\n    else {\n      *(int *)(param_1 + 0x104) = *(int *)(param_1 + 0x104) + 1;\n      pvVar2 = malloc(*(int *)(param_1 + 0x104) << 2);\n      if (pvVar2 == (void *)0x0) {\n        *(int *)(param_1 + 0x104) = *(int *)(param_1 + 0x104) + -1;\n        return 0;\n      }\n      memset(pvVar2,0,*(int *)(param_1 + 0x104) << 2);\n      memcpy(pvVar2,*(void **)(param_1 + 0x108),(*(int *)(param_1 + 0x104) + -1) * 4);\n      free(*(void **)(param_1 + 0x108));\n      *(void **)(param_1 + 0x108) = pvVar2;\n    }\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fixup_dir_length",
+                        "malloc",
+                        "printf",
+                        "memset",
+                        "memcpy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "fixup_dir_length",
+                        "add_file_to_dir"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_file",
+                "func_c_signature": "undefined4 get_file(char *param_1)",
+                "decompiled_code": "undefined4 get_file(char *param_1) {\n  undefined4 uVar1;\n  undefined local_120 [256];\n  size_t local_20;\n  undefined4 local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = root;\n  local_1c = 0;\n  local_14 = 0;\n  local_18 = 0;\n  local_20 = 0;\n  if (param_1 == (char *)0x0) {\n    uVar1 = 0;\n  }\n  else if (*param_1 == '/') {\n    local_14 = 1;\n    local_20 = strlen(param_1);\n    do {\n      if (local_18 == -1) {\n        return 0;\n      }\n      local_18 = find_next_slash(param_1,local_14,local_20);\n      if (local_18 == -1) {\n        memset(local_120,0,0x100);\n        memcpy(local_120,param_1 + local_14,local_20 - local_14);\n        uVar1 = retrieve_sub(local_10,local_120);\n        return uVar1;\n      }\n      memset(local_120,0,0x100);\n      memcpy(local_120,param_1 + local_14,local_18 - local_14);\n      local_10 = retrieve_sub(local_10,local_120);\n      local_14 = local_18 + 1;\n      if (local_10 == 0) {\n        return 0;\n      }\n    } while (*(int *)(local_10 + 0x100) == 1);\n    printf(\"[ERROR] $s is not a directory\\n\",local_120);\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = retrieve_sub(root,param_1);\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_file",
+                        "strlen",
+                        "find_next_slash",
+                        "memset",
+                        "memcpy",
+                        "retrieve_sub",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "handle_recv",
+                        "get_file"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "does_sub_file_exist",
+                "func_c_signature": "undefined4 does_sub_file_exist(int param_1,char *param_2)",
+                "decompiled_code": "undefined4 does_sub_file_exist(int param_1,char *param_2) {\n  int iVar1;\n  char *__s1;\n  int iVar2;\n  uint local_10;\n  \n  local_10 = 0;\n  iVar1 = *(int *)(param_1 + 0x108);\n  while( true ) {\n    while( true ) {\n      if (*(uint *)(param_1 + 0x104) <= local_10) {\n        return 0;\n      }\n      __s1 = *(char **)(iVar1 + local_10 * 4);\n      if (__s1 != (char *)0x0) break;\n      local_10 = local_10 + 1;\n    }\n    iVar2 = strcmp(__s1,param_2);\n    if (iVar2 == 0) break;\n    local_10 = local_10 + 1;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "does_sub_file_exist",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "delete_file",
+                        "does_sub_file_exist",
+                        "add_file"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_file_to_dir",
+                "func_c_signature": "undefined4 add_file_to_dir(int param_1,int param_2)",
+                "decompiled_code": "undefined4 add_file_to_dir(int param_1,int param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  \n  if ((param_1 == 0) || (param_2 == 0)) {\n    uVar1 = 0;\n  }\n  else {\n    iVar2 = fixup_dir_length(param_1);\n    if (iVar2 == 0) {\n      uVar1 = 0;\n    }\n    else {\n      *(int *)(*(int *)(param_1 + 0x108) + (*(int *)(param_1 + 0x104) + 0x3fffffff) * 4) = param_2;\n      uVar1 = 1;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_file_to_dir",
+                        "fixup_dir_length"
+                    ],
+                    "calling_functions": [
+                        "add_file_to_dir",
+                        "add_file"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_file",
+                "func_c_signature": "undefined4 add_file(char *param_1)",
+                "decompiled_code": "undefined4 add_file(char *param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  undefined local_124 [256];\n  int local_24;\n  size_t local_20;\n  undefined4 local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  local_1c = 0;\n  local_20 = 0;\n  local_18 = root;\n  local_24 = 0;\n  if (param_1 == (char *)0x0) {\n    uVar1 = 0;\n  }\n  else if (*param_1 == '/') {\n    local_10 = 1;\n    local_20 = strlen(param_1);\n    if (local_20 == 1) {\n      printf(\"[ERROR] You cannot add \\'/\\'\\n\");\n      uVar1 = 0;\n    }\n    else {\n      while (local_14 != -1) {\n        local_14 = find_next_slash(param_1,local_10,local_20);\n        if (local_14 == -1) {\n          memset(local_124,0,0x100);\n          memcpy(local_124,param_1 + local_10,local_20 - local_10);\n          memset(param_1,0,0x100);\n          memcpy(param_1,local_124,local_20 - local_10);\n          iVar2 = does_sub_file_exist(local_18,param_1);\n          if (iVar2 == 1) {\n            printf(\"[ERROR] File already exists\\n\");\n            return 0;\n          }\n          iVar2 = add_file_to_dir(local_18,param_1);\n          if (iVar2 == 0) {\n            printf(\"[ERROR] Failed to add file to $s\\n\",local_18);\n            return 0;\n          }\n          return 1;\n        }\n        memset(local_124,0,0x100);\n        memcpy(local_124,param_1 + local_10,local_14 - local_10);\n        local_24 = retrieve_sub(local_18,local_124);\n        if (local_24 == 0) {\n          printf(\"[ERROR] Directory $s does not exist.\\n\",local_124);\n          return 0;\n        }\n        if (*(int *)(local_24 + 0x100) != 1) {\n          printf(\"[ERROR] $s is not a directory\\n\",local_124);\n          return 0;\n        }\n        local_10 = local_14 + 1;\n        local_18 = local_24;\n      }\n      uVar1 = 1;\n    }\n  }\n  else {\n    iVar2 = add_file_to_dir(root,param_1);\n    if (iVar2 == 0) {\n      printf(\"[ERROR] Failed to add file to root\\n\");\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = 1;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_file",
+                        "strlen",
+                        "printf",
+                        "find_next_slash",
+                        "memset",
+                        "memcpy",
+                        "does_sub_file_exist",
+                        "add_file_to_dir",
+                        "retrieve_sub"
+                    ],
+                    "calling_functions": [
+                        "handle_ndir",
+                        "handle_send",
+                        "add_file"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free_file",
+                "func_c_signature": "void free_file(void *param_1)",
+                "decompiled_code": "void free_file(void *param_1) {\n  if (param_1 != (void *)0x0) {\n    if (*(int *)((int)param_1 + 0x108) != 0) {\n      free(*(void **)((int)param_1 + 0x108));\n    }\n    free(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_file",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "handle_send",
+                        "remove_sub_file",
+                        "free_file"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_file",
+                "func_c_signature": "void * init_file(void)",
+                "decompiled_code": "void * init_file(void) {\n  void *__s;\n  \n  __s = malloc(0x10c);\n  if (__s != (void *)0x0) {\n    memset(__s,0,0x10c);\n  }\n  return __s;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_file",
+                        "malloc",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "handle_ndir",
+                        "handle_send",
+                        "init_file",
+                        "service_loop"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_name",
+                "func_c_signature": "size_t set_name(void *param_1,char *param_2)",
+                "decompiled_code": "size_t set_name(void *param_1,char *param_2) {\n  size_t __n;\n  \n  if (param_1 == (void *)0x0) {\n    __n = 0;\n  }\n  else if (param_2 == (char *)0x0) {\n    __n = 0;\n  }\n  else {\n    __n = strlen(param_2);\n    if ((int)__n < 0x100) {\n      memcpy(param_1,param_2,__n);\n    }\n    else {\n      __n = 0;\n    }\n  }\n  return __n;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_name",
+                        "strlen",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "handle_ndir",
+                        "handle_send",
+                        "set_name",
+                        "service_loop"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_type",
+                "func_c_signature": "undefined4 set_type(int param_1,int param_2)",
+                "decompiled_code": "undefined4 set_type(int param_1,int param_2) {\n  undefined4 uVar1;\n  \n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else if ((param_2 == 0) || (param_2 == 1)) {\n    *(int *)(param_1 + 0x100) = param_2;\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_type"
+                    ],
+                    "calling_functions": [
+                        "handle_ndir",
+                        "handle_send",
+                        "set_type",
+                        "service_loop"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_data",
+                "func_c_signature": "undefined4 set_data(int param_1,int param_2,void *param_3)",
+                "decompiled_code": "undefined4 set_data(int param_1,int param_2,void *param_3) {\n  undefined4 uVar1;\n  void *__dest;\n  \n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else if (param_3 == (void *)0x0) {\n    uVar1 = 0;\n  }\n  else if (param_2 < 0x401) {\n    __dest = malloc(param_2 + 1);\n    if (__dest == (void *)0x0) {\n      uVar1 = 0;\n    }\n    else {\n      memcpy(__dest,param_3,param_2 + 1);\n      *(int *)(param_1 + 0x104) = param_2;\n      *(void **)(param_1 + 0x108) = __dest;\n      uVar1 = 1;\n    }\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_data",
+                        "malloc",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "handle_send",
+                        "set_data"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            }
+        ],
+        "recv.c": [
+            {
+                "func_name": "recv",
+                "func_c_signature": "ssize_t recv(int __fd,void *__buf,size_t __n,int __flags)",
+                "decompiled_code": "ssize_t recv(int __fd,void *__buf,size_t __n,int __flags) {\n  int iVar1;\n  int local_18;\n  void *local_14;\n  ssize_t local_10;\n  \n  local_10 = 0;\n  local_18 = 0;\n  local_14 = __buf;\n  if (__fd == 0) {\n    local_10 = 0;\n  }\n  else {\n    for (; local_10 < (int)__buf; local_10 = local_18 + local_10) {\n      iVar1 = receive(0,local_10 + __fd,local_14,&local_18);\n      if (iVar1 != 0) {\n        printf(\"[ERROR] Failed to receive data\\n\");\n        return 0;\n      }\n      if (local_18 == 0) {\n        printf(\"[ERROR] Failed to receive data\\n\");\n        return 0;\n      }\n      local_14 = (void *)((int)local_14 - local_18);\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recv",
+                        "receive",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "handle_repo",
+                        "handle_recv",
+                        "handle_ndir",
+                        "handle_send",
+                        "recv",
+                        "service_loop"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "service_loop",
+                "func_c_signature": "void service_loop(void)",
+                "decompiled_code": "void service_loop(void) {\n  ssize_t sVar1;\n  undefined *puVar2;\n  undefined *puVar3;\n  size_t sStack_30;\n  undefined4 uStack_20;\n  undefined auStack_1c [8];\n  int local_14;\n  undefined4 local_10;\n  \n  local_14 = 0;\n  local_10 = 0;\n  uStack_20 = 0x12b78;\n  root = init_file();\n  if (root == 0) {\n    printf(\"[ERROR] Failed to create the root node\\n\");\n    return;\n  }\n  set_type(root,1);\n  set_name(root,&DAT_0001443c);\n  puVar2 = auStack_1c;\nLAB_00012bcc:\n  while( true ) {\n    while( true ) {\n      *(undefined4 *)(puVar2 + -0xc) = 4;\n      *(int **)(puVar2 + -0x10) = &local_14;\n      *(undefined4 *)(puVar2 + -0x14) = 0x12bda;\n      sVar1 = recv(*(int *)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),*(size_t *)(puVar2 + -8),\n                   *(int *)(puVar2 + -4));\n      if (sVar1 != 4) {\n        *(char **)(puVar2 + -0x10) = \"[ERROR] Receive failed\\n\";\n        *(undefined4 *)(puVar2 + -0x14) = 0x12bf1;\n        printf(*(char **)(puVar2 + -0x10));\n        return;\n      }\n      if (local_14 != 0x56434552) break;\n      *(undefined4 *)(puVar2 + -4) = 0x12c67;\n      handle_recv();\n    }\n    if (0x56434552 < local_14) goto LAB_00012cbb;\n    puVar3 = puVar2;\n    if (local_14 != 0x544e5250) break;\nLAB_00012c87:\n    *(char **)(puVar3 + -0x10) = \"[INFO] Listing files\\n\";\n    *(undefined4 *)(puVar3 + -0x14) = 0x12c96;\n    printf(*(char **)(puVar3 + -0x10));\n    *(undefined **)(puVar3 + -0xc) = &DAT_00014480;\n    *(int *)(puVar3 + -0x10) = root;\n    *(undefined4 *)(puVar3 + -0x14) = 0x12caf;\n    handle_prnt();\n    puVar2 = puVar3;\n  }\n  if (local_14 < 0x544e5251) {\n    if (local_14 == 0x5249444e) {\n      *(undefined4 *)(puVar2 + -4) = 0x12c5e;\n      handle_ndir();\n      goto LAB_00012bcc;\n    }\n    if (0x5249444e < local_14) goto LAB_00012cbb;\n    if (local_14 == 0x504f5453) {\n      puVar3 = puVar2 + -0x10;\n      *(char **)(puVar2 + -0x10) = \"[INFO] Terminating\\n\";\n      *(undefined4 *)(puVar2 + -0x14) = 0x12c7a;\n      printf(*(char **)(puVar2 + -0x10));\n      *(undefined4 *)(puVar2 + -0x10) = 0;\n      *(undefined4 *)(puVar2 + -0x14) = 0x12c87;\n      _terminate();\n      goto LAB_00012c87;\n    }\n    if (local_14 < 0x504f5454) {\n      if (local_14 == 0x444e4553) {\n        *(undefined4 *)(puVar2 + -4) = 0x12c55;\n        handle_send();\n        goto LAB_00012bcc;\n      }\n      if (local_14 == 0x4f504552) {\n        *(undefined4 *)(puVar2 + -4) = 0x12cb9;\n        handle_repo();\n        goto LAB_00012bcc;\n      }\n    }\n  }\nLAB_00012cbb:\n  *(int *)(puVar2 + -0xc) = local_14;\n  *(char **)(puVar2 + -0x10) = \"[ERROR] Invalid command: $x\\n\";\n  *(undefined4 *)(puVar2 + -0x14) = 0x12cce;\n  printf(*(char **)(puVar2 + -0x10));\n  goto LAB_00012bcc;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "service_loop",
+                        "init_file",
+                        "printf",
+                        "set_type",
+                        "set_name",
+                        "recv",
+                        "handle_recv",
+                        "handle_prnt",
+                        "handle_ndir",
+                        "_terminate",
+                        "handle_send",
+                        "handle_repo"
+                    ],
+                    "calling_functions": [
+                        "service_loop",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  service_loop();\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "service_loop"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00033_decompiled.c"
+                }
+            }
+        ]
+    }
+}

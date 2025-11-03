@@ -1,0 +1,73 @@
+{
+    "file": "NRFIN_00025",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "defrag",
+                "func_c_signature": "int defrag(uint param_1)",
+                "decompiled_code": "int defrag(uint param_1) {\n  undefined *puVar1;\n  int iVar2;\n  undefined *puVar3;\n  undefined auStack_10015 [13];\n  undefined auStack_10008 [65523];\n  byte local_15;\n  uint local_14;\n  int local_10;\n  \n  puVar1 = &stack0xfffffff8;\n  do {\n    puVar3 = puVar1;\n    *(undefined4 *)(puVar3 + -0x1000) = *(undefined4 *)(puVar3 + -0x1000);\n    puVar1 = puVar3 + -0x1000;\n  } while (puVar3 + -0x1000 != auStack_10008);\n  *(undefined4 *)(puVar3 + -0x1018) = 0x11021;\n  iVar2 = *(int *)(puVar3 + -0x1018);\n  local_10 = 0;\n  local_14 = 0;\n  *(int *)(iVar2 + 0x33bf) = *(int *)(iVar2 + 0x33bf) + 1;\n  *(undefined4 *)(puVar3 + -0x101c) = 0x10000;\n  *(undefined4 *)(puVar3 + -0x1020) = 0;\n  *(undefined **)(puVar3 + -0x1024) = auStack_10015;\n  *(undefined4 *)(puVar3 + -0x1028) = 0x1105b;\n  memset(*(void **)(puVar3 + -0x1024),*(int *)(puVar3 + -0x1020),*(size_t *)(puVar3 + -0x101c));\n  local_14 = 0;\n  do {\n    if (param_1 <= local_14) {\nLAB_000110fb:\n      *(int *)(iVar2 + 0x33bf) = *(int *)(iVar2 + 0x33bf) + -1;\n      return local_10;\n    }\n    if (0xff < *(uint *)(iVar2 + 0x33c7)) {\n      local_10 = -0xf;\n      goto LAB_000110fb;\n    }\n    local_15 = *(byte *)(iVar2 + 0x361f + *(int *)(iVar2 + 0x33c7));\n    *(int *)(iVar2 + 0x33c7) = *(int *)(iVar2 + 0x33c7) + 1;\n    if ((char)local_15 < '\\0') {\n      *(uint *)(puVar3 + -0x1024) = local_15 & 0x7f;\n      *(undefined4 *)(puVar3 + -0x1028) = 0x110ba;\n      local_10 = defrag();\n      if (local_10 != 0) goto LAB_000110fb;\n    }\n    else {\n      *(byte *)(iVar2 + 0x351f + *(int *)(iVar2 + 0x33df)) = local_15;\n      *(int *)(iVar2 + 0x33df) = *(int *)(iVar2 + 0x33df) + 1;\n    }\n    local_14 = local_14 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "defrag",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "defrag",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00025_decompiled.c"
+                }
+            },
+            {
+                "func_name": "exercise_stack",
+                "func_c_signature": "void exercise_stack(void)",
+                "decompiled_code": "void exercise_stack(void) {\n  undefined *puVar1;\n  undefined *puVar2;\n  \n  puVar1 = &stack0xfffffff8;\n  do {\n    puVar2 = puVar1;\n    *(undefined4 *)(puVar2 + -0x1000) = *(undefined4 *)(puVar2 + -0x1000);\n    puVar1 = puVar2 + -0x1000;\n  } while (puVar2 + -0x1000 != &stack0xff800ff8);\n  *(undefined4 *)(puVar2 + -0x1008) = 0x11133;\n  *(undefined4 *)(puVar2 + -0x100c) = 0x7ff000;\n  *(undefined4 *)(puVar2 + -0x1010) = 0;\n  *(undefined **)(puVar2 + -0x1014) = &stack0xff800ff4;\n  *(undefined4 *)(puVar2 + -0x1018) = 0x11151;\n  memset(*(void **)(puVar2 + -0x1014),*(int *)(puVar2 + -0x1010),*(size_t *)(puVar2 + -0x100c));\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "exercise_stack",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "exercise_stack",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00025_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  uint local_20;\n  int local_1c;\n  uint local_18;\n  \n  local_18 = 0;\n  local_1c = 0x100;\n  exercise_stack();\n  _DAT_ba2bb000 = otp;\n  do {\n    while( true ) {\n      while( true ) {\n        while( true ) {\n          rx_bytes = 0;\n          memset(&rx_buf,0,0x100);\n          iVar1 = receive_all(0,&rx_buf,0x100,&rx_bytes);\n          if (iVar1 != 0) {\n            return 0xfffffff9;\n          }\n          if ((rx_bytes == 0x2a) && (iVar1 = memcmp(&rx_buf,PKT_EXIT,0x2a), iVar1 == 0)) {\n            iVar1 = transmit_all(1,PKT_EXIT_ACK,0x2a,0);\n            if (iVar1 != 0) {\n              return 0xfffffff8;\n            }\n            return 0;\n          }\n          if (local_1c == rx_bytes) break;\n          iVar1 = transmit_all(1,PKT_INVALID_SZ,0x100,0);\n          if (iVar1 != 0) {\n            return 0xfffffff8;\n          }\n        }\n        if (local_18 != 2) break;\n        iVar1 = memcmp(&rx_buf,PKT_CONNTERM,0x100);\n        if (iVar1 == 0) {\n          local_18 = 1;\n          local_1c = 0x10;\n        }\n        else if (rx_buf == -1) {\n          transmit_all(1,&rx_buf,0xff,0);\n        }\n        else {\n          rx_index = 0;\n          ct_index = 0;\n          memset(ct,0,0x100);\n          defrag(0x100);\n          for (local_20 = 0; local_20 < ct_index; local_20 = local_20 + 1) {\n            ct[local_20] = ct[local_20] ^ _DAT_ba2bb000[local_20 & 0xf];\n          }\n          tx_bytes = 0;\n          iVar1 = transmit_all(1,ct,ct_index,&tx_bytes);\n          if (iVar1 != 0) {\n            return 0xfffffff8;\n          }\n        }\n      }\n      if (2 < local_18) {\n        return 0xfffffff3;\n      }\n      if (local_18 != 0) break;\n      iVar1 = memcmp(&rx_buf,PKT_CONNTERM,0x100);\n      if (iVar1 == 0) {\n        iVar1 = transmit_all(1,PKT_CONNTERM_ACK,0x100,0);\n        if (iVar1 != 0) {\n          return 0xfffffff8;\n        }\n        local_18 = 1;\n        local_1c = 0x10;\n      }\n      else {\n        iVar1 = transmit_all(1,PKT_CONNTERM_ERR,0x100,0);\n        if (iVar1 != 0) {\n          return 0xfffffff8;\n        }\n      }\n    }\n    if (local_18 != 1) {\n      return 0xfffffff3;\n    }\n    memcpy(_DAT_ba2bb000,&rx_buf,0x10);\n    local_18 = 2;\n    local_1c = 0x100;\n    iVar1 = transmit_all(1,PKT_OTP_ACK,0x10,0);\n  } while (iVar1 == 0);\n  return 0xfffffff8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "exercise_stack",
+                        "memset",
+                        "receive_all",
+                        "memcmp",
+                        "transmit_all",
+                        "defrag",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "NRFIN_00025_decompiled.c"
+                }
+            }
+        ]
+    }
+}

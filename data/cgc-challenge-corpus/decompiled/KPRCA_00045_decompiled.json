@@ -1,0 +1,644 @@
+{
+    "file": "KPRCA_00045",
+    "decompiled_code": {
+        "dict.c": [
+            {
+                "func_name": "dict_new",
+                "func_c_signature": "void dict_new(void)",
+                "decompiled_code": "void dict_new(void) {\n  calloc(4,0x100);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dict_new",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "dict_new",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_hash",
+                "func_c_signature": "char _hash(char *param_1)",
+                "decompiled_code": "char _hash(char *param_1) {\n  char cVar1;\n  \n  cVar1 = '+';\n  if (param_1 != (char *)0x0) {\n    for (; *param_1 != '\\0'; param_1 = param_1 + 1) {\n      cVar1 = *param_1 + cVar1 * '%';\n    }\n  }\n  return cVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_hash"
+                    ],
+                    "calling_functions": [
+                        "_hash",
+                        "dict_find",
+                        "dict_insert",
+                        "dict_remove"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dict_find",
+                "func_c_signature": "char * dict_find(int param_1,char *param_2)",
+                "decompiled_code": "char * dict_find(int param_1,char *param_2) {\n  int iVar1;\n  char **local_10;\n  \n  iVar1 = _hash(param_2);\n  local_10 = *(char ***)(param_1 + iVar1 * 4);\n  while( true ) {\n    if (local_10 == (char **)0x0) {\n      return (char *)0x0;\n    }\n    iVar1 = strcmp(*local_10,param_2);\n    if (iVar1 == 0) break;\n    local_10 = (char **)local_10[2];\n  }\n  return local_10[1];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dict_find",
+                        "_hash",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "dict_find",
+                        "dict_insert",
+                        "parse_sadface",
+                        "sadface_render"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dict_insert",
+                "func_c_signature": "void dict_insert(int param_1,char *param_2,char *param_3)",
+                "decompiled_code": "void dict_insert(int param_1,char *param_2,char *param_3) {\n  int iVar1;\n  char **__ptr;\n  char *pcVar2;\n  \n  iVar1 = dict_find(param_1,param_2);\n  if (iVar1 == 0) {\n    __ptr = (char **)malloc(0xc);\n    if (__ptr != (char **)0x0) {\n      pcVar2 = strdup(param_2);\n      *__ptr = pcVar2;\n      if (*__ptr != (char *)0x0) {\n        __ptr[1] = param_3;\n        iVar1 = _hash(param_2);\n        __ptr[2] = *(char **)(param_1 + iVar1 * 4);\n        *(char ***)(iVar1 * 4 + param_1) = __ptr;\n        return;\n      }\n    }\n    if (__ptr != (char **)0x0) {\n      if (*__ptr != (char *)0x0) {\n        free(*__ptr);\n      }\n      free(__ptr);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dict_insert",
+                        "dict_find",
+                        "malloc",
+                        "strdup",
+                        "_hash",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "dict_insert",
+                        "define_vars"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dict_remove",
+                "func_c_signature": "char * dict_remove(int param_1,char *param_2)",
+                "decompiled_code": "char * dict_remove(int param_1,char *param_2) {\n  char *pcVar1;\n  int iVar2;\n  int iVar3;\n  char **local_18;\n  char **local_14;\n  \n  iVar2 = _hash(param_2);\n  local_14 = *(char ***)(param_1 + iVar2 * 4);\n  local_18 = (char **)0x0;\n  while( true ) {\n    if (local_14 == (char **)0x0) {\n      return (char *)0x0;\n    }\n    iVar3 = strcmp(*local_14,param_2);\n    if (iVar3 == 0) break;\n    local_18 = local_14;\n    local_14 = (char **)local_14[2];\n  }\n  if (local_18 == (char **)0x0) {\n    *(char **)(iVar2 * 4 + param_1) = local_14[2];\n  }\n  else {\n    local_18[2] = local_14[2];\n  }\n  pcVar1 = local_14[1];\n  free(*local_14);\n  free(local_14);\n  return pcVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dict_remove",
+                        "_hash",
+                        "strcmp",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "dict_remove",
+                        "define_vars"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "print_menu",
+                "func_c_signature": "void print_menu(void)",
+                "decompiled_code": "void print_menu(void) {\n  fdprintf(1,\"1. Define variables\\n\");\n  fdprintf(1,\"2. View variables\\n\");\n  fdprintf(1,\"3. Submit templated text\\n\");\n  fdprintf(1,\"4. Render text\\n\");\n  fdprintf(1,\"5. Quit\\n\");\n  fdprintf(1,&DAT_0001507e);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_menu",
+                        "fdprintf"
+                    ],
+                    "calling_functions": [
+                        "print_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "define_vars",
+                "func_c_signature": "void define_vars(undefined4 param_1)",
+                "decompiled_code": "void define_vars(undefined4 param_1) {\n  uint uVar1;\n  int iVar2;\n  ulong uVar3;\n  char *pcVar4;\n  float fVar5;\n  char local_2018 [4096];\n  char local_1018 [4096];\n  int *local_18;\n  uint *local_14;\n  uint local_10;\n  \n  fdprintf(1,\"-- Empty variable name will exit this menu\\n\");\n  fdprintf(1,\"-- Empty value will undefine the variable (if exists)\\n\");\n  do {\n    fdprintf(1,\"var name: \");\n    iVar2 = read_until(0,local_1018,0x1000,10);\n    if ((iVar2 < 0) || (local_1018[0] == '\\0')) {\n      return;\n    }\n    fdprintf(1,\"-- Available types\\n\");\n    fdprintf(1,\"    0 - String (default)\\n\");\n    fdprintf(1,\"    1 - Integer\\n\");\n    fdprintf(1,\"    2 - Float\\n\");\n    fdprintf(1,\"    3 - Bool [true/false]\\n\");\n    fdprintf(1,\"var type: \");\n    iVar2 = read_until(0,local_2018,0x1000,10);\n    if (iVar2 < 0) {\n      return;\n    }\n    uVar3 = strtoul(local_2018,(char **)0x0,10);\n    if (uVar3 == 3) {\n      local_10 = 3;\n    }\n    else if (uVar3 < 4) {\n      if (uVar3 == 1) {\n        local_10 = 1;\n      }\n      else {\n        if (uVar3 != 2) goto LAB_00011803;\n        local_10 = 2;\n      }\n    }\n    else {\nLAB_00011803:\n      local_10 = 0;\n    }\n    fdprintf(1,\"var value: \");\n    iVar2 = read_until(0,local_2018,0x1000,10);\n    if (iVar2 < 0) {\n      return;\n    }\n    if (local_2018[0] == '\\0') {\n      local_18 = (int *)dict_remove(param_1,local_1018);\n      if (local_18 != (int *)0x0) {\n        if ((*local_18 == 0) && (local_18[1] != 0)) {\n          free((void *)local_18[1]);\n        }\n        free(local_18);\n      }\n    }\n    else {\n      local_14 = (uint *)malloc(8);\n      if (local_14 != (uint *)0x0) {\n        *local_14 = local_10;\n        uVar1 = *local_14;\n        if (uVar1 == 3) {\n          iVar2 = strcmp(local_2018,\"false\");\n          *(char *)(local_14 + 1) = (char)iVar2;\n        }\n        else if (uVar1 < 4) {\n          if (uVar1 == 2) {\n            fVar5 = strtof(local_2018,(char **)0x0);\n            local_14[1] = (uint)fVar5;\n          }\n          else if (uVar1 < 3) {\n            if (uVar1 == 0) {\n              pcVar4 = strdup(local_2018);\n              local_14[1] = (uint)pcVar4;\n            }\n            else if (uVar1 == 1) {\n              uVar3 = strtoul(local_2018,(char **)0x0,10);\n              local_14[1] = uVar3;\n            }\n          }\n        }\n        dict_insert(param_1,local_1018,local_14);\n      }\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [
+                    "variable",
+                    "String"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "define_vars",
+                        "fdprintf",
+                        "variable",
+                        "read_until",
+                        "String",
+                        "strtoul",
+                        "dict_remove",
+                        "free",
+                        "malloc",
+                        "strcmp",
+                        "strtof",
+                        "strdup",
+                        "dict_insert"
+                    ],
+                    "calling_functions": [
+                        "define_vars",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "view_vars",
+                "func_c_signature": "void view_vars(int param_1)",
+                "decompiled_code": "void view_vars(int param_1) {\n  int *piVar1;\n  void *__ptr;\n  undefined4 *local_18;\n  int local_14;\n  int local_10;\n  \n  local_14 = 0;\n  fdprintf(1,\"-- Current variables:\\n\");\n  for (local_10 = 0; local_10 < 0x100; local_10 = local_10 + 1) {\n    for (local_18 = *(undefined4 **)(param_1 + local_10 * 4); local_18 != (undefined4 *)0x0;\n        local_18 = (undefined4 *)local_18[2]) {\n      piVar1 = (int *)local_18[1];\n      __ptr = (void *)sadface_var2str(piVar1);\n      if (__ptr != (void *)0x0) {\n        fdprintf(1,\" > %s : %s\\n\",*local_18,__ptr);\n        if (*piVar1 != 0) {\n          free(__ptr);\n        }\n        local_14 = local_14 + 1;\n      }\n    }\n  }\n  if (local_14 == 0) {\n    fdprintf(1,\"-- None\\n\");\n  }\n  else {\n    fdprintf(1,\"-- Total %d variable(s)\\n\",local_14);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "variable"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "view_vars",
+                        "fdprintf",
+                        "sadface_var2str",
+                        "free",
+                        "variable"
+                    ],
+                    "calling_functions": [
+                        "view_vars",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "submit_text",
+                "func_c_signature": "void submit_text(void *param_1,size_t param_2)",
+                "decompiled_code": "void submit_text(void *param_1,size_t param_2) {\n  int iVar1;\n  \n  memset(param_1,0,param_2);\n  fdprintf(1,\"-- Submit a null-terminated string\\n\");\n  iVar1 = read_until(0,param_1,param_2,0);\n  if (iVar1 < 0) {\n    fdprintf(1,\"error.\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "submit_text",
+                        "memset",
+                        "fdprintf",
+                        "read_until"
+                    ],
+                    "calling_functions": [
+                        "submit_text",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "render_text",
+                "func_c_signature": "void render_text(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "void render_text(undefined4 param_1,undefined4 param_2) {\n  int iVar1;\n  undefined4 local_18;\n  undefined4 local_14;\n  void *local_10;\n  \n  local_18 = 0;\n  iVar1 = sadface_init(&local_18,0,param_1,param_2);\n  if (iVar1 < 0) {\n    fdprintf(1,\"error.\\n\");\n  }\n  else {\n    local_14 = 0x1000;\n    local_10 = calloc(1,0x1000);\n    if ((local_10 != (void *)0x0) &&\n       (iVar1 = sadface_render(local_18,local_10,&local_14), -1 < iVar1)) {\n      fdprintf(1,\"-- Render start.\\n\");\n      fdprintf(1,&DAT_000151fa,local_10);\n      fdprintf(1,\"-- Render complete (%d bytes).\\n\",local_14);\n      return;\n    }\n    fdprintf(1,\"error.\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "complete"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "render_text",
+                        "sadface_init",
+                        "fdprintf",
+                        "calloc",
+                        "sadface_render",
+                        "complete"
+                    ],
+                    "calling_functions": [
+                        "render_text",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  long lVar2;\n  undefined *puVar3;\n  undefined local_2014 [4096];\n  char local_1014 [4096];\n  undefined4 local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_14 = dict_new();\n  puVar3 = banner;\n  fdprintf(1,&DAT_00015220,banner);\n  while( true ) {\n    print_menu();\n    fdprintf(1,&DAT_00015223,puVar3);\n    iVar1 = read_until(0,local_1014,0x1000,10);\n    if (iVar1 < 0) break;\n    puVar3 = (undefined *)0xa;\n    lVar2 = strtol(local_1014,(char **)0x0,10);\n    switch(lVar2) {\n    default:\n      fdprintf(1,\"Invalid menu. Try again.\\n\");\n      break;\n    case 1:\n      define_vars(local_14);\n      break;\n    case 2:\n      view_vars(local_14);\n      break;\n    case 3:\n      submit_text(local_2014,0x1000);\n      break;\n    case 4:\n      render_text(local_2014,local_14);\n      break;\n    case 5:\n      fdprintf(1,\"# Bye.\\n\\n\");\n                    /* WARNING: Subroutine does not return */\n      exit(0);\n    }\n    fdprintf(1,&DAT_0001507e);\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "dict_new",
+                        "fdprintf",
+                        "print_menu",
+                        "read_until",
+                        "strtol",
+                        "define_vars",
+                        "view_vars",
+                        "submit_text",
+                        "render_text",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            }
+        ],
+        "readuntil.c": [
+            {
+                "func_name": "read_until",
+                "func_c_signature": "int read_until(undefined4 param_1,char *param_2,uint param_3,char param_4)",
+                "decompiled_code": "int read_until(undefined4 param_1,char *param_2,uint param_3,char param_4) {\n  char *pcVar1;\n  char cVar2;\n  int iVar3;\n  int local_18;\n  char *local_14;\n  uint local_10;\n  \n  local_14 = param_2;\n  for (local_10 = 0; local_10 < param_3; local_10 = local_10 + 1) {\n    iVar3 = receive(param_1,local_14,1,&local_18);\n    if ((iVar3 != 0) || (local_18 == 0)) {\n      return -1;\n    }\n    pcVar1 = local_14 + 1;\n    cVar2 = *local_14;\n    local_14 = pcVar1;\n    if (param_4 == cVar2) break;\n  }\n  local_14[-1] = '\\0';\n  return (int)local_14 - (int)param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_until",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "define_vars",
+                        "submit_text",
+                        "main",
+                        "read_until"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_n",
+                "func_c_signature": "int read_n(undefined4 param_1,int param_2,uint param_3)",
+                "decompiled_code": "int read_n(undefined4 param_1,int param_2,uint param_3) {\n  int iVar1;\n  int local_18;\n  int local_14;\n  uint local_10;\n  \n  local_14 = param_2;\n  for (local_10 = 0; local_10 < param_3; local_10 = local_10 + 1) {\n    iVar1 = receive(param_1,local_14,1,&local_18);\n    if ((iVar1 != 0) || (local_18 == 0)) break;\n    local_14 = local_14 + 1;\n  }\n  return local_14 - param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_n",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "read_n"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            }
+        ],
+        "sadface.c": [
+            {
+                "func_name": "strstr",
+                "func_c_signature": "char * strstr(char *__haystack,char *__needle)",
+                "decompiled_code": "char * strstr(char *__haystack,char *__needle) {\n  char *pcVar1;\n  char cVar2;\n  char cVar3;\n  char *local_c;\n  char *local_8;\n  \n  if ((__haystack != (char *)0x0) && (__needle != (char *)0x0)) {\n    for (; *__haystack != '\\0'; __haystack = __haystack + 1) {\n      local_8 = __haystack;\n      local_c = __needle;\n      do {\n        if ((*local_8 == '\\0') || (*local_c == '\\0')) break;\n        cVar2 = *local_8;\n        pcVar1 = local_c + 1;\n        cVar3 = *local_c;\n        local_c = pcVar1;\n        local_8 = local_8 + 1;\n      } while (cVar2 == cVar3);\n      if (*local_c == '\\0') {\n        return __haystack;\n      }\n    }\n  }\n  return (char *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strstr"
+                    ],
+                    "calling_functions": [
+                        "strstr",
+                        "_find_sadface"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sadface_init",
+                "func_c_signature": "undefined4 sadface_init(int **param_1,int *param_2,char *param_3,int param_4)",
+                "decompiled_code": "undefined4 sadface_init(int **param_1,int *param_2,char *param_3,int param_4) {\n  char *pcVar1;\n  size_t sVar2;\n  int *local_10;\n  \n  local_10 = (int *)0x0;\n  if ((param_1 != (int **)0x0) && (local_10 = (int *)malloc(0x18), local_10 != (int *)0x0)) {\n    if (param_2 == (int *)0x0) {\n      *local_10 = (int)&DAT_00015264;\n      local_10[1] = (int)&DAT_00015267;\n    }\n    else {\n      if (*param_2 == 0) {\n        *local_10 = (int)&DAT_00015264;\n      }\n      else {\n        *local_10 = *param_2;\n      }\n      if (param_2[1] == 0) {\n        local_10[1] = (int)&DAT_00015267;\n      }\n      else {\n        local_10[1] = param_2[1];\n      }\n    }\n    pcVar1 = strdup(param_3);\n    local_10[2] = (int)pcVar1;\n    if (local_10[2] != 0) {\n      sVar2 = strlen(param_3);\n      local_10[3] = sVar2;\n      local_10[4] = 0;\n      local_10[5] = param_4;\n      *param_1 = local_10;\n      return 0;\n    }\n  }\n  if (local_10 != (int *)0x0) {\n    if (local_10[2] != 0) {\n      free((void *)local_10[2]);\n    }\n    free(local_10);\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sadface_init",
+                        "malloc",
+                        "strdup",
+                        "strlen",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "render_text",
+                        "sadface_init"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sadface_var2str",
+                "func_c_signature": "char * sadface_var2str(uint *param_1)",
+                "decompiled_code": "char * sadface_var2str(uint *param_1) {\n  uint uVar1;\n  char *__dest;\n  int iVar2;\n  int local_10;\n  \n  __dest = (char *)calloc(1,0x100);\n  if (__dest != (char *)0x0) {\n    uVar1 = *param_1;\n    if (uVar1 == 3) {\n      if (*(char *)(param_1 + 1) == '\\0') {\n        strcpy(__dest,\"false\");\n      }\n      else {\n        strcpy(__dest,\"true\");\n      }\n    }\n    else if (uVar1 < 4) {\n      if (uVar1 == 2) {\n        local_10 = (int)ROUND(DAT_00015280 *\n                              ((float)param_1[1] - (float)(int)ROUND((float)param_1[1]))) % 100;\n        if (local_10 < 0) {\n          local_10 = -local_10;\n        }\n        iVar2 = sprintf(__dest,\"%d\",(int)ROUND((float)param_1[1]));\n        sprintf(__dest + iVar2,\".%02d\",local_10);\n      }\n      else if (uVar1 < 3) {\n        if (uVar1 == 0) {\n          free(__dest);\n          __dest = (char *)param_1[1];\n        }\n        else if (uVar1 == 1) {\n          sprintf(__dest,\"%d\",param_1[1]);\n        }\n      }\n    }\n  }\n  return __dest;\n}",
+                "globals": [],
+                "externs": [
+                    "ROUND"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sadface_var2str",
+                        "calloc",
+                        "strcpy",
+                        "ROUND",
+                        "sprintf",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "view_vars",
+                        "sadface_var2str",
+                        "sadface_render"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_find_sadface",
+                "func_c_signature": "undefined4 _find_sadface(char **param_1,int *param_2,char **param_3)",
+                "decompiled_code": "undefined4 _find_sadface(char **param_1,int *param_2,char **param_3) {\n  char *pcVar1;\n  undefined4 uVar2;\n  size_t sVar3;\n  char *pcVar4;\n  \n  pcVar1 = strstr(param_1[4] + (int)param_1[2],*param_1);\n  if (pcVar1 == (char *)0x0) {\n    uVar2 = 0;\n  }\n  else {\n    pcVar4 = param_1[1];\n    sVar3 = strlen(*param_1);\n    pcVar4 = strstr(pcVar1 + sVar3,pcVar4);\n    if (pcVar4 == (char *)0x0) {\n      uVar2 = 0xffffffff;\n    }\n    else {\n      *param_2 = (int)pcVar1 - (int)param_1[2];\n      pcVar1 = param_1[2];\n      sVar3 = strlen(param_1[1]);\n      *param_3 = pcVar4 + (sVar3 - (int)pcVar1);\n      uVar2 = 1;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_find_sadface",
+                        "strstr",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "_find_sadface",
+                        "parse_sadface"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_sadface",
+                "func_c_signature": "undefined4 * parse_sadface(char **param_1)",
+                "decompiled_code": "undefined4 * parse_sadface(char **param_1) {\n  char cVar1;\n  char *pcVar2;\n  char *pcVar3;\n  int iVar4;\n  size_t sVar5;\n  size_t sVar6;\n  undefined4 uVar7;\n  undefined4 uVar8;\n  char *local_54;\n  char *local_50;\n  undefined4 *local_4c;\n  int local_48;\n  undefined4 *local_44;\n  char *local_40;\n  char *local_3c;\n  int *local_38;\n  undefined4 local_34;\n  int local_30;\n  undefined4 *local_2c;\n  undefined4 *local_28;\n  char *local_24;\n  char *local_20;\n  int local_1c;\n  undefined4 *local_18;\n  undefined4 *local_14;\n  int local_10;\n  \n  uVar8 = 0x12257;\n  local_50 = (char *)0x0;\n  local_54 = (char *)0x0;\n  local_10 = stack_new(0x40);\n  local_14 = (undefined4 *)malloc(0x14);\n  if ((local_10 == 0) || (local_14 == (undefined4 *)0x0)) {\nLAB_0001276d:\n    if (local_10 != 0) {\n      stack_destroy(local_10);\n    }\n    sadface_destroy(param_1);\n    local_14 = (undefined4 *)0x0;\n  }\n  else {\n    uVar7 = 0x14;\n    memset(local_14,0,0x14);\n    *local_14 = 0;\n    stack_push(local_10,local_14,uVar7,uVar8);\n    while (param_1[4] < param_1[3]) {\n      iVar4 = _find_sadface(param_1,&local_50,&local_54);\n      if (iVar4 < 1) {\n        local_4c = (undefined4 *)malloc(0x14);\n        if (local_4c == (undefined4 *)0x0) {\n          local_4c = (undefined4 *)0x0;\n          goto LAB_0001276d;\n        }\n        memset(local_4c,0,0x14);\n        *local_4c = 1;\n        local_4c[1] = 0;\n        local_4c[2] = param_1[4];\n        local_4c[3] = (int)param_1[3] - (int)param_1[4];\n        local_1c = stack_pop(local_10);\n        *(undefined4 **)(local_1c + 4) = local_4c;\n        stack_push(local_10,local_4c);\n        param_1[4] = param_1[3];\n        break;\n      }\n      if (param_1[4] != local_50) {\n        local_18 = (undefined4 *)malloc(0x14);\n        if (local_18 == (undefined4 *)0x0) goto LAB_0001276d;\n        memset(local_18,0,0x14);\n        *local_18 = 1;\n        local_18[1] = 0;\n        local_18[2] = param_1[4];\n        local_18[3] = (int)local_50 - (int)param_1[4];\n        local_1c = stack_pop(local_10);\n        *(undefined4 **)(local_1c + 4) = local_18;\n        stack_push(local_10,local_18);\n        param_1[4] = local_50;\n      }\n      pcVar3 = local_50;\n      pcVar2 = local_54;\n      sVar5 = strlen(*param_1);\n      sVar6 = strlen(param_1[1]);\n      local_20 = pcVar2 + ((-sVar5 - (int)pcVar3) - sVar6);\n      pcVar2 = param_1[2];\n      sVar5 = strlen(*param_1);\n      local_24 = local_50 + sVar5 + (int)pcVar2;\n      cVar1 = *local_24;\n      if (cVar1 == '@') {\n        local_28 = (undefined4 *)malloc(0x14);\n        local_2c = (undefined4 *)malloc(0x14);\n        if ((local_28 == (undefined4 *)0x0) || (local_2c == (undefined4 *)0x0)) goto LAB_0001276d;\n        memset(local_28,0,0x14);\n        *local_28 = 0;\n        memset(local_2c,0,0x14);\n        *local_2c = 3;\n        sVar5 = strlen(*param_1);\n        local_2c[2] = local_50 + sVar5 + 1;\n        local_2c[3] = local_20 + -1;\n        local_2c[4] = local_28;\n        local_30 = stack_pop(local_10);\n        *(undefined4 **)(local_30 + 4) = local_2c;\n        stack_push(local_10,local_2c);\n        stack_push(local_10,local_28);\n        param_1[4] = local_54;\n      }\n      else if (cVar1 < 'A') {\n        if (cVar1 == '#') {\n          param_1[4] = local_54;\n        }\n        else {\n          if (cVar1 != '/') goto LAB_0001261d;\n          local_34 = stack_pop(local_10);\n          local_38 = (int *)stack_peek(local_10);\n          if (((local_38 == (int *)0x0) || (*local_38 != 3)) ||\n             (iVar4 = strncmp(param_1[2] + local_38[2],local_24 + 1,local_38[3]), iVar4 != 0))\n          goto LAB_0001276d;\n          param_1[4] = local_54;\n        }\n      }\n      else {\nLAB_0001261d:\n        local_3c = (char *)calloc((size_t)(local_20 + 1),1);\n        if (local_3c == (char *)0x0) goto LAB_0001276d;\n        memset(local_3c,0,(size_t)(local_20 + 1));\n        sVar5 = strlen(*param_1);\n        local_40 = local_50 + sVar5;\n        strncpy(local_3c,local_40 + (int)param_1[2],(size_t)local_20);\n        local_44 = (undefined4 *)malloc(0x14);\n        if (local_44 == (undefined4 *)0x0) goto LAB_0001276d;\n        memset(local_44,0,0x14);\n        *local_44 = 2;\n        local_44[2] = local_40;\n        local_44[3] = local_20;\n        uVar8 = dict_find(param_1[5],local_3c);\n        local_44[4] = uVar8;\n        free(local_3c);\n        local_48 = stack_pop(local_10);\n        *(undefined4 **)(local_48 + 4) = local_44;\n        stack_push(local_10,local_44);\n        param_1[4] = local_54;\n      }\n    }\n    stack_destroy(local_10);\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_sadface",
+                        "stack_new",
+                        "malloc",
+                        "stack_destroy",
+                        "sadface_destroy",
+                        "memset",
+                        "stack_push",
+                        "_find_sadface",
+                        "stack_pop",
+                        "strlen",
+                        "stack_peek",
+                        "strncmp",
+                        "calloc",
+                        "strncpy",
+                        "dict_find",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "parse_sadface",
+                        "sadface_render"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sadface_render",
+                "func_c_signature": "undefined4 sadface_render(int param_1,int param_2,int *param_3)",
+                "decompiled_code": "undefined4 sadface_render(int param_1,int param_2,int *param_3) {\n  uint uVar1;\n  char *pcVar2;\n  size_t sVar3;\n  int *piVar4;\n  undefined4 uVar5;\n  int local_18;\n  uint *local_14;\n  int *local_10;\n  \n  local_18 = 0;\n  local_14 = (uint *)parse_sadface(param_1);\n  if ((local_14 == (uint *)0x0) || (local_10 = (int *)stack_new(0x40), local_10 == (int *)0x0)) {\nLAB_00012a1e:\n    if (local_10 != (int *)0x0) {\n      stack_destroy(local_10);\n    }\n    uVar5 = 0xffffffff;\n  }\n  else {\n    for (; local_14 != (uint *)0x0; local_14 = (uint *)local_14[1]) {\n      uVar1 = *local_14;\n      if (uVar1 == 3) {\n        pcVar2 = (char *)calloc(local_14[3] + 1,1);\n        if (pcVar2 == (char *)0x0) goto LAB_00012a1e;\n        memset(pcVar2,0,local_14[3] + 1);\n        strncpy(pcVar2,(char *)(local_14[2] + *(int *)(param_1 + 8)),local_14[3]);\n        piVar4 = (int *)dict_find(*(undefined4 *)(param_1 + 0x14),pcVar2);\n        free(pcVar2);\n        if ((piVar4 != (int *)0x0) && ((*piVar4 != 3 || (*(char *)(piVar4 + 1) != '\\0')))) {\n          stack_push(local_10,local_14);\n          local_14 = (uint *)local_14[4];\n        }\n      }\n      else if (uVar1 < 4) {\n        if (uVar1 == 2) {\n          piVar4 = (int *)local_14[4];\n          if ((piVar4 != (int *)0x0) &&\n             (pcVar2 = (char *)sadface_var2str(piVar4), pcVar2 != (char *)0x0)) {\n            sVar3 = strlen(pcVar2);\n            memcpy((void *)(local_18 + param_2),pcVar2,sVar3);\n            sVar3 = strlen(pcVar2);\n            local_18 = local_18 + sVar3;\n            if (*piVar4 != 0) {\n              free(pcVar2);\n            }\n          }\n        }\n        else if (((uVar1 < 3) && (uVar1 != 0)) && (uVar1 == 1)) {\n          memcpy((void *)(local_18 + param_2),(void *)(*(int *)(param_1 + 8) + local_14[2]),\n                 local_14[3]);\n          local_18 = local_18 + local_14[3];\n        }\n      }\n      if ((local_14[1] == 0) && (*local_10 != 0)) {\n        local_14 = (uint *)stack_pop(local_10);\n      }\n    }\n    *param_3 = local_18;\n    uVar5 = 0;\n  }\n  return uVar5;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sadface_render",
+                        "parse_sadface",
+                        "stack_new",
+                        "stack_destroy",
+                        "calloc",
+                        "memset",
+                        "strncpy",
+                        "dict_find",
+                        "free",
+                        "stack_push",
+                        "sadface_var2str",
+                        "strlen",
+                        "memcpy",
+                        "stack_pop"
+                    ],
+                    "calling_functions": [
+                        "render_text",
+                        "sadface_render"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sadface_destroy",
+                "func_c_signature": "void sadface_destroy(void *param_1)",
+                "decompiled_code": "void sadface_destroy(void *param_1) {\n  if (param_1 != (void *)0x0) {\n    if (*(int *)((int)param_1 + 8) != 0) {\n      free(*(void **)((int)param_1 + 8));\n    }\n    free(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sadface_destroy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "parse_sadface",
+                        "sadface_destroy"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            }
+        ],
+        "stack.c": [
+            {
+                "func_name": "stack_new",
+                "func_c_signature": "undefined4 * stack_new(int param_1)",
+                "decompiled_code": "undefined4 * stack_new(int param_1) {\n  undefined4 *puVar1;\n  void *pvVar2;\n  \n  puVar1 = (undefined4 *)malloc(0xc);\n  if (puVar1 == (undefined4 *)0x0) {\n    puVar1 = (undefined4 *)0x0;\n  }\n  else {\n    *puVar1 = 0;\n    puVar1[1] = param_1;\n    pvVar2 = malloc(param_1 << 2);\n    puVar1[2] = pvVar2;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "stack_new",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "parse_sadface",
+                        "sadface_render",
+                        "stack_new"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_stack_resize",
+                "func_c_signature": "void _stack_resize(int param_1,int param_2)",
+                "decompiled_code": "void _stack_resize(int param_1,int param_2) {\n  void *pvVar1;\n  \n  pvVar1 = realloc(*(void **)(param_1 + 8),param_2 * 4);\n  if (pvVar1 != (void *)0x0) {\n    *(void **)(param_1 + 8) = pvVar1;\n    *(int *)(param_1 + 4) = param_2;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_stack_resize",
+                        "realloc"
+                    ],
+                    "calling_functions": [
+                        "_stack_resize",
+                        "stack_push",
+                        "stack_pop"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "stack_push",
+                "func_c_signature": "void stack_push(int *param_1,undefined4 param_2)",
+                "decompiled_code": "void stack_push(int *param_1,undefined4 param_2) {\n  if (*param_1 == param_1[1]) {\n    _stack_resize(param_1,param_1[1] * 2);\n  }\n  *(undefined4 *)(param_1[2] + *param_1 * 4) = param_2;\n  *param_1 = *param_1 + 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "stack_push",
+                        "_stack_resize"
+                    ],
+                    "calling_functions": [
+                        "parse_sadface",
+                        "sadface_render",
+                        "stack_push"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "stack_pop",
+                "func_c_signature": "undefined4 stack_pop(uint *param_1)",
+                "decompiled_code": "undefined4 stack_pop(uint *param_1) {\n  undefined4 uVar1;\n  \n  if (*param_1 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    if (*param_1 == param_1[1] >> 1) {\n      _stack_resize(param_1,param_1[1] >> 1);\n    }\n    *param_1 = *param_1 - 1;\n    uVar1 = *(undefined4 *)(*param_1 * 4 + param_1[2]);\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "stack_pop",
+                        "_stack_resize"
+                    ],
+                    "calling_functions": [
+                        "parse_sadface",
+                        "sadface_render",
+                        "stack_pop"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "stack_peek",
+                "func_c_signature": "undefined4 stack_peek(int *param_1)",
+                "decompiled_code": "undefined4 stack_peek(int *param_1) {\n  undefined4 uVar1;\n  \n  if (*param_1 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = *(undefined4 *)((*param_1 + 0x3fffffff) * 4 + param_1[2]);\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "stack_peek"
+                    ],
+                    "calling_functions": [
+                        "parse_sadface",
+                        "stack_peek"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            },
+            {
+                "func_name": "stack_destroy",
+                "func_c_signature": "undefined ** stack_destroy(undefined **param_1)",
+                "decompiled_code": "undefined ** stack_destroy(undefined **param_1) {\n  undefined **ppuVar1;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  if (param_1 != (undefined **)0x0) {\n    if (param_1[2] != (undefined *)0x0) {\n      free(param_1[2]);\n    }\n    *param_1 = (undefined *)0x0;\n    param_1[1] = (undefined *)0x0;\n    param_1[2] = (undefined *)0x0;\n    ppuVar1 = param_1;\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "stack_destroy",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "parse_sadface",
+                        "sadface_render",
+                        "stack_destroy"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            }
+        ],
+        "strtof.c": [
+            {
+                "func_name": "strtof",
+                "func_c_signature": "float strtof(char *__nptr,char **__endptr)",
+                "decompiled_code": "float strtof(char *__nptr,char **__endptr) {\n  char cVar1;\n  float fVar2;\n  bool bVar3;\n  char *pcVar4;\n  char *pcVar5;\n  int iVar6;\n  double local_24;\n  double local_1c;\n  int local_10;\n  \n  pcVar5 = __nptr;\n  local_10 = -1;\n  bVar3 = false;\n  local_1c = 0.0;\n  local_24 = 1.0;\n  while ((*__nptr != '\\0' && (iVar6 = isspace((int)*__nptr), iVar6 != 0))) {\n    __nptr = __nptr + 1;\n  }\n  if ((*__nptr == '-') || (pcVar4 = __nptr, *__nptr == '+')) {\n    if (*__nptr == '-') {\n      local_10 = 1;\n    }\n    __nptr = __nptr + 1;\n    pcVar4 = __nptr;\n  }\n  for (; cVar1 = *__nptr, cVar1 != '\\0'; __nptr = __nptr + 1) {\n    if (cVar1 == '.') {\n      bVar3 = true;\n    }\n    else {\n      if ((cVar1 < '0') || ('9' < cVar1)) break;\n      if (bVar3) {\n        local_24 = local_24 / DAT_00015288;\n        local_1c = local_1c + (double)(cVar1 + -0x30) * local_24;\n      }\n      else {\n        local_1c = (double)(cVar1 + -0x30) + DAT_00015288 * local_1c;\n      }\n    }\n  }\n  if (pcVar4 == __nptr) {\n    if (__endptr != (char **)0x0) {\n      *__endptr = pcVar5;\n    }\n    fVar2 = 0.0;\n  }\n  else {\n    if (__endptr != (char **)0x0) {\n      *__endptr = __nptr;\n    }\n    fVar2 = ((float)DAT_00015290 + (float)local_1c) * (float)-local_10;\n  }\n  return fVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strtof",
+                        "isspace"
+                    ],
+                    "calling_functions": [
+                        "define_vars",
+                        "strtof"
+                    ],
+                    "defined_in_file": "KPRCA_00045_decompiled.c"
+                }
+            }
+        ]
+    }
+}

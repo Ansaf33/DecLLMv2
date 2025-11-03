@@ -1,0 +1,1218 @@
+{
+    "file": "dd",
+    "decompiled_code": {
+        "dd.c": [
+            {
+                "func_name": "maybe_close_stdout",
+                "func_c_signature": "void maybe_close_stdout(void)",
+                "decompiled_code": "void maybe_close_stdout(void) {\n  int iVar1;\n  \n  if (close_stdout_required == '\\0') {\n    iVar1 = close_stream(_stderr);\n    if (iVar1 != 0) {\n                    /* WARNING: Subroutine does not return */\n      _exit(1);\n    }\n  }\n  else {\n    close_stdout();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "maybe_close_stdout",
+                        "close_stream",
+                        "_exit",
+                        "close_stdout"
+                    ],
+                    "calling_functions": [
+                        "maybe_close_stdout"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "diagnose",
+                "func_c_signature": "void diagnose(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,\n             undefined4 param_5,undefined4 param_6,undefined4 param_7,undefined4 param_8,\n             undefined4 param_9,undefined8 param_10,undefined8 param_11,undefined8 param_12,\n             undefined8 param_13,undefined8 param_14)",
+                "decompiled_code": "void diagnose(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,\n             undefined4 param_5,undefined4 param_6,undefined4 param_7,undefined4 param_8,\n             undefined4 param_9,undefined8 param_10,undefined8 param_11,undefined8 param_12,\n             undefined8 param_13,undefined8 param_14) {\n  char in_AL;\n  long in_FS_OFFSET;\n  undefined4 local_d8;\n  undefined4 local_d4;\n  undefined *local_d0;\n  undefined *local_c8;\n  long local_c0;\n  undefined local_b8 [16];\n  undefined8 local_a8;\n  undefined8 local_a0;\n  undefined8 local_98;\n  undefined8 local_90;\n  undefined4 local_88;\n  undefined4 local_78;\n  undefined4 local_68;\n  undefined4 local_58;\n  undefined4 local_48;\n  undefined4 local_38;\n  undefined4 local_28;\n  undefined4 local_18;\n  \n  if (in_AL != '\\0') {\n    local_88 = param_1;\n    local_78 = param_2;\n    local_68 = param_3;\n    local_58 = param_4;\n    local_48 = param_5;\n    local_38 = param_6;\n    local_28 = param_7;\n    local_18 = param_8;\n  }\n  local_c0 = *(long *)(in_FS_OFFSET + 0x28);\n  local_a8 = param_11;\n  local_a0 = param_12;\n  local_98 = param_13;\n  local_90 = param_14;\n  if (0 < progress_len) {\n    fputc_unlocked(10,_stderr);\n    progress_len = 0;\n  }\n  local_d8 = 0x10;\n  local_d4 = 0x30;\n  local_d0 = &stack0x00000008;\n  local_c8 = local_b8;\n  verror(0,param_9,param_10,&local_d8);\n  if (local_c0 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "diagnose",
+                        "fputc_unlocked",
+                        "verror",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "diagnose",
+                        "iread",
+                        "iwrite",
+                        "write_output",
+                        "parse_symbols",
+                        "parse_integer",
+                        "scanargs",
+                        "skip",
+                        "advance_input_after_read_error",
+                        "dd_copy",
+                        "synchronize_output",
+                        "main"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPERAND]...\\n  or:  %s OPTION\\n\");\n    printf(pcVar3,uVar2,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Copy a file, converting and formatting according to the operands.\\n\\n  bs=BYTES        read and write up to BYTES bytes at a time (default: 512);\\n                  overrides ibs and obs\\n  cbs=BYTES       convert BYTES bytes at a time\\n  conv=CONVS      convert the file as per the comma separated symbol list\\n  count=N         copy only N input blocks\\n  ibs=BYTES       read up to BYTES bytes at a time (default: 512)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  if=FILE         read from FILE instead of standard input\\n  iflag=FLAGS     read as per the comma separated symbol list\\n  obs=BYTES       write BYTES bytes at a time (default: 512)\\n  of=FILE         write to FILE instead of standard output\\n  oflag=FLAGS     write as per the comma separated symbol list\\n  seek=N          (or oseek=N) skip N obs-sized output blocks\\n  skip=N          (or iseek=N) skip N ibs-sized input blocks\\n  status=LEVEL    The LEVEL of information to print to standard error;\\n                  \\'none\\' suppresses everything but error messages,\\n                  \\'noxfer\\' suppresses the final transfer statistics,\\n                  \\'progress\\' shows periodic transfer statistics\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nN and BYTES may be followed by the following multiplicative suffixes:\\nc=1, w=2, b=512, kB=1000, K=1024, MB=1000*1000, M=1024*1024, xM=M,\\nGB=1000*1000*1000, G=1024*1024*1024, and so on for T, P, E, Z, Y, R, Q.\\nBinary prefixes can be used, too: KiB=K, MiB=M, and so on.\\nIf N ends in \\'B\\', it counts bytes not blocks.\\n\\nEach CONV symbol may be:\\n\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  ascii     from EBCDIC to ASCII\\n  ebcdic    from ASCII to EBCDIC\\n  ibm       from ASCII to alternate EBCDIC\\n  block     pad newline-terminated records with spaces to cbs-size\\n  unblock   replace trailing spaces in cbs-size records with newline\\n  lcase     change upper case to lower case\\n  ucase     change lower case to upper case\\n  sparse    try to seek rather than write all-NUL output blocks\\n  swab      swap every pair of input bytes\\n  sync      pad every input block with NULs to ibs-size; when used\\n            with block or unblock, pad with spaces rather than NULs\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  excl      fail if the output file already exists\\n  nocreat   do not create the output file\\n  notrunc   do not truncate the output file\\n  noerror   continue after read errors\\n  fdatasync  physically write output file data before finishing\\n  fsync     likewise, but also write metadata\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nEach FLAG symbol may be:\\n\\n  append    append mode (makes sense only for output; conv=notrunc suggested)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  direct    use direct I/O for data\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  directory  fail unless a directory\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  dsync     use synchronized I/O for data\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  sync      likewise, but also for metadata\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  fullblock  accumulate full blocks of input (iflag only)\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  nonblock  use non-blocking I/O\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  noatime   do not update access time\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  nocache   Request to drop cache.  See also oflag=sync\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  noctty    do not assign controlling terminal from file\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  nofollow  do not follow symlinks\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pcVar3 = (char *)gettext(\n                            \"\\nSending a %s signal to a running \\'dd\\' process makes it\\nprint I/O statistics to standard error and then resume copying.\\n\\nOptions are:\\n\\n\"\n                            );\n    printf(pcVar3,&DAT_001067b0);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(&DAT_00106821);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "time",
+                    "N",
+                    "mode",
+                    "input"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "time",
+                        "fputs_unlocked",
+                        "N",
+                        "mode",
+                        "input",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "parse_symbols",
+                        "scanargs"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "alloc_ibuf",
+                "func_c_signature": "void alloc_ibuf(void)",
+                "decompiled_code": "void alloc_ibuf(void) {\n  long lVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  long in_FS_OFFSET;\n  undefined local_2b8 [664];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (ibuf == 0) {\n    ibuf = alignalloc(page_size,(ulong)((conversions_mask & 0x80) != 0) + input_blocksize);\n    if (ibuf == 0) {\n      uVar2 = human_readable(input_blocksize,local_2b8,0x1f1,1,1);\n      lVar1 = input_blocksize;\n      uVar3 = gettext(\"memory exhausted by input buffer of size %td bytes (%s)\");\n      error(1,0,uVar3,lVar1,uVar2);\n    }\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "bytes"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "alloc_ibuf",
+                        "alignalloc",
+                        "human_readable",
+                        "gettext",
+                        "bytes",
+                        "error",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "alloc_ibuf",
+                        "alloc_obuf",
+                        "skip",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "alloc_obuf",
+                "func_c_signature": "void alloc_obuf(void)",
+                "decompiled_code": "void alloc_obuf(void) {\n  undefined8 uVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  long in_FS_OFFSET;\n  undefined local_2b8 [664];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (obuf == 0) {\n    if ((conversions_mask & 0x800) != 0) {\n      obuf = alignalloc(page_size,output_blocksize);\n      if (obuf != 0) goto LAB_001009e8;\n      uVar2 = human_readable(output_blocksize,local_2b8,0x1f1,1,1);\n      uVar1 = output_blocksize;\n      uVar3 = gettext(\"memory exhausted by output buffer of size %td bytes (%s)\");\n      error(1,0,uVar3,uVar1,uVar2);\n    }\n    alloc_ibuf();\n    obuf = ibuf;\n  }\nLAB_001009e8:\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "bytes"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "alloc_obuf",
+                        "alignalloc",
+                        "human_readable",
+                        "gettext",
+                        "bytes",
+                        "error",
+                        "alloc_ibuf",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "alloc_obuf",
+                        "skip",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "translate_charset",
+                "func_c_signature": "void translate_charset(long param_1)",
+                "decompiled_code": "void translate_charset(long param_1) {\n  int local_c;\n  \n  for (local_c = 0; local_c < 0x100; local_c = local_c + 1) {\n    trans_table[local_c] = *(undefined *)(param_1 + (ulong)(byte)trans_table[local_c]);\n  }\n  translation_needed = 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "translate_charset"
+                    ],
+                    "calling_functions": [
+                        "translate_charset",
+                        "apply_translations"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "multiple_bits_set",
+                "func_c_signature": "undefined4 multiple_bits_set(uint param_1)",
+                "decompiled_code": "undefined4 multiple_bits_set(uint param_1) {\n  param_1 = param_1 - 1 & param_1;\n  return CONCAT31((int3)(param_1 >> 8),param_1 != 0);\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT31"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "multiple_bits_set",
+                        "CONCAT31"
+                    ],
+                    "calling_functions": [
+                        "multiple_bits_set",
+                        "scanargs"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "abbreviation_lacks_prefix",
+                "func_c_signature": "bool abbreviation_lacks_prefix(char *param_1)",
+                "decompiled_code": "bool abbreviation_lacks_prefix(char *param_1) {\n  size_t sVar1;\n  \n  sVar1 = strlen(param_1);\n  return param_1[sVar1 - 2] == ' ';\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "abbreviation_lacks_prefix",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "abbreviation_lacks_prefix",
+                        "print_xfer_stats"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_xfer_stats",
+                "func_c_signature": "void print_xfer_stats(long param_1)",
+                "decompiled_code": "void print_xfer_stats(long param_1) {\n  char cVar1;\n  int iVar2;\n  long lVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  char *pcVar7;\n  long in_FS_OFFSET;\n  double local_828;\n  char *local_820;\n  undefined local_7e8 [654];\n  undefined auStack_55a [654];\n  char acStack_2cc [660];\n  char local_38 [24];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  lVar3 = param_1;\n  if (param_1 == 0) {\n    lVar3 = gethrxtime();\n  }\n  uVar4 = human_readable(w_bytes,local_7e8,0x1d1,1,1);\n  uVar5 = human_readable(w_bytes,auStack_55a,0x1f1,1,1);\n  local_820 = acStack_2cc;\n  if (start_time < lVar3) {\n    local_828 = (double)(lVar3 - start_time) / DAT_00106eb0;\n    local_820 = (char *)human_readable(w_bytes,local_820,0x1d1,1000000000,lVar3 - start_time);\n    strcat(local_820,(char *)&slash_s_6);\n  }\n  else {\n    local_828 = 0.0;\n    uVar6 = gettext(\"Infinity\");\n    snprintf(local_820,0x28e,\"%s B/s\",uVar6);\n  }\n  if (param_1 == 0) {\n    pcVar7 = \"%g s\";\n  }\n  else {\n    fputc_unlocked(0xd,_stderr);\n    pcVar7 = \"%.0f s\";\n  }\n  snprintf(local_38,0x18,pcVar7,local_828);\n  cVar1 = abbreviation_lacks_prefix(uVar4);\n  uVar6 = w_bytes;\n  if (cVar1 == '\\0') {\n    cVar1 = abbreviation_lacks_prefix(uVar5);\n    uVar6 = w_bytes;\n    if (cVar1 == '\\0') {\n      pcVar7 = (char *)gettext(\"%jd bytes (%s, %s) copied, %s, %s\");\n      iVar2 = fprintf(_stderr,pcVar7,uVar6,uVar4,uVar5,local_38,local_820);\n    }\n    else {\n      pcVar7 = (char *)gettext(\"%jd bytes (%s) copied, %s, %s\");\n      iVar2 = fprintf(_stderr,pcVar7,uVar6,uVar4,local_38,local_820);\n    }\n  }\n  else {\n    uVar4 = select_plural(w_bytes);\n    pcVar7 = (char *)ngettext(\"%jd byte copied, %s, %s\",\"%jd bytes copied, %s, %s\",uVar4);\n    iVar2 = fprintf(_stderr,pcVar7,uVar6,local_38,local_820);\n  }\n  if (param_1 == 0) {\n    fputc_unlocked(10,_stderr);\n    iVar2 = progress_len;\n  }\n  else if ((-1 < iVar2) && (iVar2 < progress_len)) {\n    fprintf(_stderr,\"%*s\",(ulong)(uint)(progress_len - iVar2),&DAT_0010556c);\n  }\n  progress_len = iVar2;\n  reported_w_bytes = w_bytes;\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "bytes"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_xfer_stats",
+                        "gethrxtime",
+                        "human_readable",
+                        "strcat",
+                        "gettext",
+                        "snprintf",
+                        "fputc_unlocked",
+                        "abbreviation_lacks_prefix",
+                        "bytes",
+                        "fprintf",
+                        "select_plural",
+                        "ngettext",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_xfer_stats",
+                        "print_stats",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_stats",
+                "func_c_signature": "void print_stats(void)",
+                "decompiled_code": "void print_stats(void) {\n  undefined8 uVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  long lVar4;\n  char *pcVar5;\n  undefined8 uVar6;\n  \n  if (status_level != 1) {\n    if (0 < progress_len) {\n      fputc_unlocked(10,_stderr);\n      progress_len = 0;\n    }\n    uVar3 = r_full;\n    uVar2 = r_partial;\n    uVar1 = w_full;\n    uVar6 = w_partial;\n    pcVar5 = (char *)gettext(\"%jd+%jd records in\\n%jd+%jd records out\\n\");\n    fprintf(_stderr,pcVar5,uVar3,uVar2,uVar1,uVar6);\n    lVar4 = r_truncate;\n    if (r_truncate != 0) {\n      uVar6 = select_plural(r_truncate);\n      pcVar5 = (char *)ngettext(\"%jd truncated record\\n\",\"%jd truncated records\\n\",uVar6);\n      fprintf(_stderr,pcVar5,lVar4);\n    }\n    if (status_level != 2) {\n      print_xfer_stats(0);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_stats",
+                        "fputc_unlocked",
+                        "gettext",
+                        "fprintf",
+                        "select_plural",
+                        "ngettext",
+                        "print_xfer_stats"
+                    ],
+                    "calling_functions": [
+                        "print_stats",
+                        "process_signals",
+                        "finish_up",
+                        "skip",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "interrupt_handler",
+                "func_c_signature": "void interrupt_handler(undefined4 param_1)",
+                "decompiled_code": "void interrupt_handler(undefined4 param_1) {\n  interrupt_signal = param_1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "interrupt_handler"
+                    ],
+                    "calling_functions": [
+                        "interrupt_handler"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "siginfo_handler",
+                "func_c_signature": "void siginfo_handler(void)",
+                "decompiled_code": "void siginfo_handler(void) {\n  info_signal_count = info_signal_count + 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "siginfo_handler"
+                    ],
+                    "calling_functions": [
+                        "siginfo_handler"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "install_signal_handlers",
+                "func_c_signature": "void install_signal_handlers(void)",
+                "decompiled_code": "void install_signal_handlers(void) {\n  int iVar1;\n  char *pcVar2;\n  long in_FS_OFFSET;\n  sigaction local_a8;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  pcVar2 = getenv(\"POSIXLY_CORRECT\");\n  sigemptyset((sigset_t *)&caught_signals);\n  if (pcVar2 == (char *)0x0) {\n    sigaddset((sigset_t *)&caught_signals,10);\n  }\n  sigaction(2,(sigaction *)0x0,&local_a8);\n  if (local_a8.__sigaction_handler.sa_handler != (__sighandler_t)0x1) {\n    sigaddset((sigset_t *)&caught_signals,2);\n  }\n  local_a8.sa_mask.__val[0] = caught_signals;\n  local_a8.sa_mask.__val[1] = DAT_001052a8;\n  local_a8.sa_mask.__val[2] = DAT_001052b0;\n  local_a8.sa_mask.__val[3] = DAT_001052b8;\n  local_a8.sa_mask.__val[4] = DAT_001052c0;\n  local_a8.sa_mask.__val[5] = DAT_001052c8;\n  local_a8.sa_mask.__val[6] = DAT_001052d0;\n  local_a8.sa_mask.__val[7] = DAT_001052d8;\n  local_a8.sa_mask.__val[8] = DAT_001052e0;\n  local_a8.sa_mask.__val[9] = DAT_001052e8;\n  local_a8.sa_mask.__val[10] = DAT_001052f0;\n  local_a8.sa_mask.__val[11] = DAT_001052f8;\n  local_a8.sa_mask.__val[12] = DAT_00105300;\n  local_a8.sa_mask.__val[13] = DAT_00105308;\n  local_a8.sa_mask.__val[14] = DAT_00105310;\n  local_a8.sa_mask.__val[15] = DAT_00105318;\n  iVar1 = sigismember((sigset_t *)&caught_signals,10);\n  if (iVar1 != 0) {\n    local_a8.__sigaction_handler.sa_handler = siginfo_handler;\n    local_a8.sa_flags = 0;\n    sigaction(10,&local_a8,(sigaction *)0x0);\n  }\n  iVar1 = sigismember((sigset_t *)&caught_signals,2);\n  if (iVar1 != 0) {\n    local_a8.__sigaction_handler.sa_handler = interrupt_handler;\n    local_a8.sa_flags = -0x40000000;\n    sigaction(2,&local_a8,(sigaction *)0x0);\n  }\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "install_signal_handlers",
+                        "getenv",
+                        "sigemptyset",
+                        "sigaddset",
+                        "sigaction",
+                        "sigismember",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "install_signal_handlers",
+                        "main"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "iclose",
+                "func_c_signature": "undefined8 iclose(int param_1)",
+                "decompiled_code": "undefined8 iclose(int param_1) {\n  int iVar1;\n  int *piVar2;\n  \n  iVar1 = close(param_1);\n  if (iVar1 != 0) {\n    do {\n      piVar2 = __errno_location();\n      if (*piVar2 != 4) {\n        return 0xffffffff;\n      }\n      iVar1 = close(param_1);\n    } while ((iVar1 != 0) && (piVar2 = __errno_location(), *piVar2 != 9));\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "iclose",
+                        "close",
+                        "__errno_location"
+                    ],
+                    "calling_functions": [
+                        "iclose",
+                        "cleanup"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cleanup",
+                "func_c_signature": "void cleanup(EVP_PKEY_CTX *ctx)",
+                "decompiled_code": "void cleanup(EVP_PKEY_CTX *ctx) {\n  int iVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  \n  if (interrupt_signal == 0) {\n    iVar1 = synchronize_output();\n    if (iVar1 != 0) {\n                    /* WARNING: Subroutine does not return */\n      exit(iVar1);\n    }\n  }\n  iVar1 = iclose(0);\n  if (iVar1 != 0) {\n    uVar2 = quotearg_style(4,input_file);\n    uVar3 = gettext(\"closing input file %s\");\n    piVar4 = __errno_location();\n    error(1,*piVar4,uVar3,uVar2);\n  }\n  iVar1 = iclose(1);\n  if (iVar1 != 0) {\n    uVar2 = quotearg_style(4,output_file);\n    uVar3 = gettext(\"closing output file %s\");\n    piVar4 = __errno_location();\n    error(1,*piVar4,uVar3,uVar2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cleanup",
+                        "synchronize_output",
+                        "exit",
+                        "iclose",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "cleanup",
+                        "process_signals",
+                        "finish_up"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_signals",
+                "func_c_signature": "void process_signals(void)",
+                "decompiled_code": "void process_signals(void) {\n  int __sig;\n  EVP_PKEY_CTX *ctx;\n  long in_FS_OFFSET;\n  sigset_t local_98;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  while ((interrupt_signal != 0 || (info_signal_count != 0))) {\n    sigprocmask(0,(sigset_t *)&caught_signals,&local_98);\n    __sig = interrupt_signal;\n    if (info_signal_count != 0) {\n      info_signal_count = info_signal_count + -1;\n    }\n    ctx = (EVP_PKEY_CTX *)0x2;\n    sigprocmask(2,&local_98,(sigset_t *)0x0);\n    if (__sig != 0) {\n      cleanup(ctx);\n    }\n    print_stats();\n    if (__sig != 0) {\n      raise(__sig);\n    }\n  }\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_signals",
+                        "sigprocmask",
+                        "cleanup",
+                        "print_stats",
+                        "raise",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "process_signals",
+                        "finish_up",
+                        "iread",
+                        "iwrite",
+                        "ifdatasync",
+                        "ifd_reopen",
+                        "ifstat",
+                        "ifsync",
+                        "iftruncate"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "finish_up",
+                "func_c_signature": "void finish_up(EVP_PKEY_CTX *param_1)",
+                "decompiled_code": "void finish_up(EVP_PKEY_CTX *param_1) {\n  process_signals();\n  cleanup(param_1);\n  print_stats();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "finish_up",
+                        "process_signals",
+                        "cleanup",
+                        "print_stats"
+                    ],
+                    "calling_functions": [
+                        "finish_up",
+                        "quit",
+                        "main"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "quit",
+                "func_c_signature": "void quit(int param_1)",
+                "decompiled_code": "void quit(int param_1) {\n  finish_up();\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "quit",
+                        "finish_up",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "quit",
+                        "write_output",
+                        "skip",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cache_round",
+                "func_c_signature": "long cache_round(int param_1,long param_2)",
+                "decompiled_code": "long cache_round(int param_1,long param_2) {\n  long lVar1;\n  long *plVar2;\n  long in_FS_OFFSET;\n  long local_38;\n  long local_20;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  if (param_1 == 0) {\n    plVar2 = &i_pending_5;\n  }\n  else {\n    plVar2 = &o_pending_4;\n  }\n  if (param_2 == 0) {\n    local_38 = *plVar2;\n  }\n  else {\n    local_20 = param_2 + *plVar2;\n    if (SCARRY8(param_2,*plVar2)) {\n      local_20 = 0x7fffffffffffffff;\n    }\n    *plVar2 = local_20 % 0x40000;\n    if (*plVar2 < local_20) {\n      local_38 = local_20 - *plVar2;\n    }\n    else {\n      local_38 = 0;\n    }\n  }\n  if (lVar1 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return local_38;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cache_round",
+                        "SCARRY8",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "cache_round",
+                        "invalidate_cache"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "invalidate_cache",
+                "func_c_signature": "bool invalidate_cache(int param_1,long param_2)",
+                "decompiled_code": "bool invalidate_cache(int param_1,long param_2) {\n  char cVar1;\n  long lVar2;\n  int *piVar3;\n  bool bVar4;\n  int local_24;\n  long local_20;\n  long local_18;\n  long local_10;\n  \n  local_24 = -1;\n  cVar1 = o_nocache_eof;\n  if (param_1 == 0) {\n    cVar1 = i_nocache_eof;\n  }\n  lVar2 = cache_round(param_1,param_2);\n  if ((param_2 == 0) || (lVar2 != 0)) {\n    if ((param_2 != 0) || ((lVar2 != 0 || (cVar1 != '\\0')))) {\n      if (param_2 == 0) {\n        local_10 = 0;\n      }\n      else {\n        local_10 = cache_round(param_1,0);\n      }\n      if (param_1 == 0) {\n        if (input_seekable == '\\0') {\n          local_20 = -1;\n          piVar3 = __errno_location();\n          *piVar3 = 0x1d;\n        }\n        else {\n          local_20 = input_offset;\n        }\n      }\n      else {\n        if (output_offset_3 != -1) {\n          if (output_offset_3 < 0) {\n            output_offset_3 = lseek(param_1,0,1);\n          }\n          else if (param_2 != 0) {\n            output_offset_3 = output_offset_3 + lVar2 + local_10;\n          }\n        }\n        local_20 = output_offset_3;\n      }\n      if (-1 < local_20) {\n        local_18 = lVar2;\n        if (((param_2 == 0) && (lVar2 != 0)) && (cVar1 != '\\0')) {\n          local_18 = 0;\n          local_10 = lVar2;\n        }\n        local_20 = (local_20 - local_18) - local_10;\n        if (local_18 == 0) {\n          local_20 = local_20 - local_20 % page_size;\n        }\n        local_24 = posix_fadvise(param_1,local_20,local_18,4);\n        piVar3 = __errno_location();\n        *piVar3 = local_24;\n      }\n      bVar4 = local_24 == 0;\n    }\n    else {\n      bVar4 = true;\n    }\n  }\n  else {\n    bVar4 = true;\n  }\n  return bVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "invalidate_cache",
+                        "cache_round",
+                        "__errno_location",
+                        "lseek",
+                        "posix_fadvise"
+                    ],
+                    "calling_functions": [
+                        "invalidate_cache",
+                        "iwrite",
+                        "dd_copy",
+                        "main"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "iread",
+                "func_c_signature": "long iread(int param_1,void *param_2,size_t param_3)",
+                "decompiled_code": "long iread(int param_1,void *param_2,size_t param_3) {\n  long lVar1;\n  int *piVar2;\n  undefined8 uVar3;\n  ssize_t local_18;\n  \n  do {\n    process_signals();\n    local_18 = read(param_1,param_2,param_3);\n    if (local_18 == -1) {\n      piVar2 = __errno_location();\n      if ((((*piVar2 == 0x16) && (0 < prev_nread_2)) && (prev_nread_2 < (long)param_3)) &&\n         ((input_flags & 0x4000) != 0)) {\n        piVar2 = __errno_location();\n        *piVar2 = 0;\n        local_18 = 0;\n      }\n    }\n    if (-1 < local_18) break;\n    piVar2 = __errno_location();\n  } while (*piVar2 == 4);\n  if ((0 < local_18) && (local_18 < (long)param_3)) {\n    process_signals();\n  }\n  lVar1 = prev_nread_2;\n  if (((0 < local_18) && (warn_partial_read != '\\0')) &&\n     ((0 < prev_nread_2 && (prev_nread_2 < (long)param_3)))) {\n    if (status_level != 1) {\n      uVar3 = select_plural(prev_nread_2);\n      uVar3 = ngettext(\"warning: partial read (%td byte); suggest iflag=fullblock\",\n                       \"warning: partial read (%td bytes); suggest iflag=fullblock\",uVar3);\n      diagnose(0,uVar3,lVar1);\n    }\n    warn_partial_read = '\\0';\n  }\n  prev_nread_2 = local_18;\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "iread",
+                        "process_signals",
+                        "read",
+                        "__errno_location",
+                        "select_plural",
+                        "ngettext",
+                        "diagnose"
+                    ],
+                    "calling_functions": [
+                        "iread",
+                        "iread_fullblock"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "iread_fullblock",
+                "func_c_signature": "long iread_fullblock(undefined4 param_1,long param_2,long param_3)",
+                "decompiled_code": "long iread_fullblock(undefined4 param_1,long param_2,long param_3) {\n  long lVar1;\n  long lVar2;\n  long local_30;\n  long local_28;\n  long local_18;\n  \n  local_18 = 0;\n  local_30 = param_3;\n  local_28 = param_2;\n  while (((lVar2 = local_18, 0 < local_30 &&\n          (lVar1 = iread(param_1,local_28,local_30), lVar2 = lVar1, -1 < lVar1)) &&\n         (lVar2 = local_18, lVar1 != 0))) {\n    local_18 = local_18 + lVar1;\n    local_28 = local_28 + lVar1;\n    local_30 = local_30 - lVar1;\n  }\n  return lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "iread_fullblock",
+                        "iread"
+                    ],
+                    "calling_functions": [
+                        "iread_fullblock"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "iwrite",
+                "func_c_signature": "long iwrite(int param_1,long param_2,long param_3)",
+                "decompiled_code": "long iwrite(int param_1,long param_2,long param_3) {\n  char cVar1;\n  uint uVar2;\n  int iVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  __off_t _Var7;\n  long local_28;\n  long local_20;\n  \n  local_28 = 0;\n  if (((output_flags & 0x4000) != 0) && (param_3 < output_blocksize)) {\n    uVar2 = rpl_fcntl(1,3);\n    iVar3 = rpl_fcntl(1,4,uVar2 & 0xffffbfff);\n    if ((iVar3 != 0) && (status_level != 1)) {\n      uVar4 = quotearg_n_style_colon(0,3,output_file);\n      uVar5 = gettext(\"failed to turn off O_DIRECT: %s\");\n      piVar6 = __errno_location();\n      diagnose(*piVar6,uVar5,uVar4);\n    }\n    o_nocache_eof = 1;\n    invalidate_cache(1,0);\n    conversions_mask = conversions_mask | 0x8000;\n  }\n  do {\n    while( true ) {\n      if (param_3 <= local_28) goto LAB_00101abd;\n      local_20 = 0;\n      process_signals();\n      final_op_was_seek = 0;\n      if (((conversions_mask & 0x10000) != 0) && (cVar1 = is_nul(param_2,param_3), cVar1 != '\\0')) {\n        _Var7 = lseek(param_1,param_3,1);\n        if (_Var7 < 0) {\n          conversions_mask = conversions_mask & 0xfffeffff;\n        }\n        else {\n          final_op_was_seek = 1;\n          local_20 = param_3;\n        }\n      }\n      if (local_20 == 0) {\n        local_20 = write(param_1,(void *)(local_28 + param_2),param_3 - local_28);\n      }\n      if (local_20 < 0) break;\n      if (local_20 == 0) {\n        piVar6 = __errno_location();\n        *piVar6 = 0x1c;\n        goto LAB_00101abd;\n      }\n      local_28 = local_28 + local_20;\n    }\n    piVar6 = __errno_location();\n  } while (*piVar6 == 4);\nLAB_00101abd:\n  if ((o_nocache != '\\0') && (local_28 != 0)) {\n    invalidate_cache(param_1,local_28);\n  }\n  return local_28;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "iwrite",
+                        "rpl_fcntl",
+                        "quotearg_n_style_colon",
+                        "gettext",
+                        "__errno_location",
+                        "diagnose",
+                        "invalidate_cache",
+                        "process_signals",
+                        "is_nul",
+                        "lseek",
+                        "write"
+                    ],
+                    "calling_functions": [
+                        "iwrite",
+                        "write_output",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write_output",
+                "func_c_signature": "void write_output(void)",
+                "decompiled_code": "void write_output(void) {\n  long lVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  \n  lVar1 = iwrite(1,obuf,output_blocksize);\n  w_bytes = lVar1 + w_bytes;\n  if (lVar1 == output_blocksize) {\n    w_full = w_full + 1;\n  }\n  else {\n    uVar2 = quotearg_style(4,output_file);\n    uVar3 = gettext(\"writing to %s\");\n    piVar4 = __errno_location();\n    diagnose(*piVar4,uVar3,uVar2);\n    if (lVar1 != 0) {\n      w_partial = w_partial + 1;\n    }\n    quit(1);\n  }\n  oc = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_output",
+                        "iwrite",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "diagnose",
+                        "quit"
+                    ],
+                    "calling_functions": [
+                        "write_output",
+                        "copy_simple",
+                        "copy_with_block",
+                        "copy_with_unblock",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ifdatasync",
+                "func_c_signature": "int ifdatasync(int param_1)",
+                "decompiled_code": "int ifdatasync(int param_1) {\n  int iVar1;\n  int *piVar2;\n  \n  do {\n    process_signals();\n    iVar1 = fdatasync(param_1);\n    if (-1 < iVar1) {\n      return iVar1;\n    }\n    piVar2 = __errno_location();\n  } while (*piVar2 == 4);\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ifdatasync",
+                        "process_signals",
+                        "fdatasync",
+                        "__errno_location"
+                    ],
+                    "calling_functions": [
+                        "ifdatasync",
+                        "synchronize_output"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ifd_reopen",
+                "func_c_signature": "int ifd_reopen(undefined4 param_1,undefined8 param_2,undefined4 param_3,undefined4 param_4)",
+                "decompiled_code": "int ifd_reopen(undefined4 param_1,undefined8 param_2,undefined4 param_3,undefined4 param_4) {\n  int iVar1;\n  int *piVar2;\n  \n  do {\n    process_signals();\n    iVar1 = fd_reopen(param_1,param_2,param_3,param_4);\n    if (-1 < iVar1) {\n      return iVar1;\n    }\n    piVar2 = __errno_location();\n  } while (*piVar2 == 4);\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ifd_reopen",
+                        "process_signals",
+                        "fd_reopen",
+                        "__errno_location"
+                    ],
+                    "calling_functions": [
+                        "ifd_reopen",
+                        "main"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ifstat",
+                "func_c_signature": "int ifstat(int param_1,stat *param_2)",
+                "decompiled_code": "int ifstat(int param_1,stat *param_2) {\n  int iVar1;\n  int *piVar2;\n  \n  do {\n    process_signals();\n    iVar1 = fstat(param_1,param_2);\n    if (-1 < iVar1) {\n      return iVar1;\n    }\n    piVar2 = __errno_location();\n  } while (*piVar2 == 4);\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ifstat",
+                        "process_signals",
+                        "fstat",
+                        "__errno_location"
+                    ],
+                    "calling_functions": [
+                        "ifstat",
+                        "skip",
+                        "set_fd_flags",
+                        "dd_copy",
+                        "main"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ifsync",
+                "func_c_signature": "int ifsync(int param_1)",
+                "decompiled_code": "int ifsync(int param_1) {\n  int iVar1;\n  int *piVar2;\n  \n  do {\n    process_signals();\n    iVar1 = fsync(param_1);\n    if (-1 < iVar1) {\n      return iVar1;\n    }\n    piVar2 = __errno_location();\n  } while (*piVar2 == 4);\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ifsync",
+                        "process_signals",
+                        "fsync",
+                        "__errno_location"
+                    ],
+                    "calling_functions": [
+                        "ifsync",
+                        "synchronize_output"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "iftruncate",
+                "func_c_signature": "int iftruncate(int param_1,__off_t param_2)",
+                "decompiled_code": "int iftruncate(int param_1,__off_t param_2) {\n  int iVar1;\n  int *piVar2;\n  \n  do {\n    process_signals();\n    iVar1 = ftruncate(param_1,param_2);\n    if (-1 < iVar1) {\n      return iVar1;\n    }\n    piVar2 = __errno_location();\n  } while (*piVar2 == 4);\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "iftruncate",
+                        "process_signals",
+                        "ftruncate",
+                        "__errno_location"
+                    ],
+                    "calling_functions": [
+                        "iftruncate",
+                        "dd_copy",
+                        "main"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "operand_matches",
+                "func_c_signature": "undefined4 operand_matches(char *param_1,char *param_2,char param_3)",
+                "decompiled_code": "undefined4 operand_matches(char *param_1,char *param_2,char param_3) {\n  char cVar1;\n  char cVar2;\n  char *local_18;\n  char *local_10;\n  \n  local_18 = param_2;\n  local_10 = param_1;\n  while (*local_18 != '\\0') {\n    cVar1 = *local_10;\n    cVar2 = *local_18;\n    local_18 = local_18 + 1;\n    local_10 = local_10 + 1;\n    if (cVar1 != cVar2) {\n      return 0;\n    }\n  }\n  if ((*local_10 != '\\0') && (param_3 != *local_10)) {\n    return 0;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "operand_matches"
+                    ],
+                    "calling_functions": [
+                        "operand_matches",
+                        "parse_symbols",
+                        "operand_is"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_symbols",
+                "func_c_signature": "uint parse_symbols(char *param_1,char *param_2,char param_3,undefined8 param_4)",
+                "decompiled_code": "uint parse_symbols(char *param_1,char *param_2,char param_3,undefined8 param_4) {\n  char cVar1;\n  char *pcVar2;\n  size_t sVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  char *local_40;\n  uint local_34;\n  char *local_30;\n  \n  local_34 = 0;\n  local_40 = param_1;\n  while( true ) {\n    pcVar2 = strchr(local_40,0x2c);\n    local_30 = param_2;\n    while( true ) {\n      cVar1 = operand_matches(local_40,local_30,0x2c);\n      if ((cVar1 == '\\x01') && (*(int *)(local_30 + 0xc) != 0)) break;\n      if (*local_30 == '\\0') {\n        if (pcVar2 == (char *)0x0) {\n          sVar3 = strlen(local_40);\n        }\n        else {\n          sVar3 = (long)pcVar2 - (long)local_40;\n        }\n        uVar4 = quotearg_n_style_mem(0,8,local_40,sVar3);\n        uVar5 = gettext(param_4);\n        diagnose(0,\"%s: %s\",uVar5,uVar4);\n        usage(1);\n      }\n      local_30 = local_30 + 0x10;\n    }\n    if (param_3 == '\\0') {\n      local_34 = local_34 | *(uint *)(local_30 + 0xc);\n    }\n    else {\n      local_34 = *(uint *)(local_30 + 0xc);\n    }\n    if (pcVar2 == (char *)0x0) break;\n    local_40 = pcVar2 + 1;\n  }\n  return local_34;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_symbols",
+                        "strchr",
+                        "operand_matches",
+                        "strlen",
+                        "quotearg_n_style_mem",
+                        "gettext",
+                        "diagnose",
+                        "usage"
+                    ],
+                    "calling_functions": [
+                        "parse_symbols",
+                        "scanargs"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_integer",
+                "func_c_signature": "long parse_integer(char *param_1,uint *param_2)",
+                "decompiled_code": "long parse_integer(char *param_1,uint *param_2) {\n  int iVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  long in_FS_OFFSET;\n  bool bVar5;\n  uint local_4c;\n  uint local_48;\n  int local_44;\n  long local_40;\n  char *local_38;\n  long local_30;\n  long local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_44 = 0;\n  local_40 = 0;\n  local_48 = xstrtoumax(param_1,&local_38,10,&local_40,suffixes_1);\n  if (((((local_48 & 0xfffffffe) == 2) && (*local_38 == 'B')) && (param_1 < local_38)) &&\n     ((local_38[-1] != 'B' && (local_38 = local_38 + 1, *local_38 == '\\0')))) {\n    local_48 = local_48 & 0xfffffffd;\n  }\n  if (((local_48 & 0xfffffffe) == 2) && (*local_38 == 'x')) {\n    local_4c = 0;\n    local_28 = parse_integer(local_38 + 1,&local_4c);\n    if (local_4c < 2) {\n      local_30 = local_28 * local_40;\n      bVar5 = SEXT816(local_30) != SEXT816(local_28) * SEXT816(local_40);\n      if ((local_40 < 0) &&\n         ((bVar5 = true, local_28 == 0 || ((local_28 == -1 && (local_40 == local_30)))))) {\n        bVar5 = false;\n      }\n      if ((bVar5) || ((local_30 != 0 && (((local_4c | local_48) & 1) != 0)))) {\n        local_48 = 1;\n        local_30 = 0x7fffffffffffffff;\n      }\n      else {\n        if ((local_30 == 0) && (iVar1 = strncmp(param_1,\"0x\",2), iVar1 == 0)) {\n          uVar2 = quote_n(1,&DAT_00106a80);\n          uVar3 = quote_n(0,&DAT_00106a7d);\n          uVar4 = gettext(\"warning: %s is a zero multiplier; use %s if that is intended\");\n          diagnose(0,uVar4,uVar3,uVar2);\n        }\n        local_48 = 0;\n      }\n    }\n    else {\n      local_48 = local_4c;\n      local_30 = (long)local_44;\n    }\n  }\n  else if (local_40 < 0) {\n    local_48 = 1;\n    local_30 = 0x7fffffffffffffff;\n  }\n  else {\n    local_30 = local_40;\n  }\n  *param_2 = local_48;\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return local_30;\n}",
+                "globals": [],
+                "externs": [
+                    "SEXT816"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_integer",
+                        "xstrtoumax",
+                        "SEXT816",
+                        "strncmp",
+                        "quote_n",
+                        "gettext",
+                        "diagnose",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "parse_integer",
+                        "scanargs"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "operand_is",
+                "func_c_signature": "void operand_is(undefined8 param_1,undefined8 param_2)",
+                "decompiled_code": "void operand_is(undefined8 param_1,undefined8 param_2) {\n  operand_matches(param_1,param_2,0x3d);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "operand_is",
+                        "operand_matches"
+                    ],
+                    "calling_functions": [
+                        "operand_is",
+                        "scanargs"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "scanargs",
+                "func_c_signature": "void scanargs(int param_1,long param_2)",
+                "decompiled_code": "void scanargs(int param_1,long param_2) {\n  bool bVar1;\n  bool bVar2;\n  bool bVar3;\n  char cVar4;\n  uint uVar5;\n  char *pcVar6;\n  undefined8 uVar7;\n  undefined8 uVar8;\n  long in_FS_OFFSET;\n  bool bVar9;\n  int local_e0;\n  int local_dc;\n  undefined4 local_d8;\n  undefined4 local_d4;\n  undefined4 local_d0;\n  undefined4 local_cc;\n  undefined4 local_c8;\n  undefined4 local_c4;\n  undefined4 local_c0;\n  undefined4 local_bc;\n  undefined4 local_b8;\n  undefined4 local_b4;\n  undefined4 local_b0;\n  undefined4 local_ac;\n  long local_a8;\n  long local_a0;\n  long local_98;\n  long local_90;\n  long local_88;\n  long local_80;\n  long *local_78;\n  char *local_70;\n  char *local_68;\n  long local_60;\n  long local_58;\n  char *local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  undefined8 local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_a8 = 0;\n  local_a0 = 0x7fffffffffffffff;\n  local_98 = 0;\n  local_90 = 0;\n  bVar2 = false;\n  bVar1 = false;\n  bVar3 = false;\n  for (local_dc = _optind; local_dc < param_1; local_dc = local_dc + 1) {\n    local_70 = *(char **)(param_2 + (long)local_dc * 8);\n    local_68 = strchr(local_70,0x3d);\n    if (local_68 == (char *)0x0) {\n      uVar7 = quotearg_style(4,local_70);\n      uVar8 = gettext(\"unrecognized operand %s\");\n      diagnose(0,uVar8,uVar7);\n      usage(1);\n    }\n    local_68 = local_68 + 1;\n    cVar4 = operand_is(local_70,&DAT_00106add);\n    if (cVar4 == '\\0') {\n      cVar4 = operand_is(local_70,&DAT_00106ae0);\n      if (cVar4 == '\\0') {\n        cVar4 = operand_is(local_70,&DAT_00106ae3);\n        if (cVar4 == '\\0') {\n          cVar4 = operand_is(local_70,\"iflag\");\n          if (cVar4 == '\\0') {\n            cVar4 = operand_is(local_70,\"oflag\");\n            if (cVar4 == '\\0') {\n              cVar4 = operand_is(local_70,\"status\");\n              if (cVar4 == '\\0') {\n                local_e0 = 0;\n                local_60 = parse_integer(local_68,&local_e0);\n                pcVar6 = strchr(local_68,0x42);\n                bVar9 = pcVar6 != (char *)0x0;\n                local_88 = 0;\n                local_80 = 0x7fffffffffffffff;\n                local_78 = (long *)0x0;\n                local_58 = 0x7ffffffffffffffe;\n                cVar4 = operand_is(local_70,&DAT_00106b4a);\n                if (cVar4 == '\\0') {\n                  cVar4 = operand_is(local_70,&DAT_00106b4e);\n                  if (cVar4 == '\\0') {\n                    cVar4 = operand_is(local_70,&DAT_00106b52);\n                    if (cVar4 == '\\0') {\n                      cVar4 = operand_is(local_70,&DAT_00106b55);\n                      if (cVar4 == '\\0') {\n                        cVar4 = operand_is(local_70,&DAT_00106b59);\n                        if (cVar4 == '\\0') {\n                          cVar4 = operand_is(local_70,\"iseek\");\n                          if (cVar4 == '\\0') {\n                            cVar4 = operand_is(local_70 + (*local_70 == 'o'),&DAT_00106b64);\n                            if (cVar4 == '\\0') {\n                              cVar4 = operand_is(local_70,\"count\");\n                              if (cVar4 == '\\0') {\n                                uVar7 = quotearg_style(4,local_70);\n                                uVar8 = gettext(\"unrecognized operand %s\");\n                                diagnose(0,uVar8,uVar7);\n                                usage(1);\n                              }\n                              else {\n                                local_a0 = local_60;\n                                bVar2 = bVar9;\n                              }\n                            }\n                            else {\n                              local_90 = local_60;\n                              bVar3 = bVar9;\n                            }\n                            goto LAB_00102638;\n                          }\n                        }\n                        local_98 = local_60;\n                        bVar1 = bVar9;\n                      }\n                      else {\n                        local_88 = 1;\n                        local_80 = 0x7fffffffffffffff;\n                        local_78 = &conversion_blocksize;\n                      }\n                    }\n                    else {\n                      local_88 = 1;\n                      local_80 = local_58;\n                      local_78 = &local_a8;\n                    }\n                  }\n                  else {\n                    local_88 = 1;\n                    local_80 = local_58;\n                    local_78 = &output_blocksize;\n                  }\n                }\n                else {\n                  local_88 = 1;\n                  local_80 = local_58;\n                  local_78 = &input_blocksize;\n                }\nLAB_00102638:\n                if (local_60 < local_88) {\n                  local_e0 = 4;\n                }\n                else if (local_80 < local_60) {\n                  local_e0 = 1;\n                }\n                if (local_e0 != 0) {\n                  uVar7 = quotearg_style(4,local_68);\n                  uVar8 = gettext(\"invalid number\");\n                  if (local_e0 == 1) {\n                    local_d4 = 0x4b;\n                  }\n                  else {\n                    local_d4 = 0;\n                  }\n                  local_d8 = 1;\n                  local_50 = \"%s: %s\";\n                  error(1,local_d4,\"%s: %s\",uVar8,uVar7);\n                }\n                if (local_78 != (long *)0x0) {\n                  *local_78 = local_60;\n                }\n              }\n              else {\n                status_level = parse_symbols(local_68,&statuses,1,\"invalid status level\");\n              }\n            }\n            else {\n              uVar5 = parse_symbols(local_68,\"append\",0,\"invalid output flag\");\n              output_flags = uVar5 | output_flags;\n            }\n          }\n          else {\n            uVar5 = parse_symbols(local_68,\"append\",0,\"invalid input flag\");\n            input_flags = uVar5 | input_flags;\n          }\n        }\n        else {\n          uVar5 = parse_symbols(local_68,&conversions,0,\"invalid conversion\");\n          conversions_mask = uVar5 | conversions_mask;\n        }\n      }\n      else {\n        output_file = local_68;\n      }\n    }\n    else {\n      input_file = local_68;\n    }\n  }\n  if (local_a8 == 0) {\n    conversions_mask = conversions_mask | 0x800;\n  }\n  else {\n    output_blocksize = local_a8;\n    input_blocksize = local_a8;\n  }\n  if (input_blocksize == 0) {\n    input_blocksize = 0x200;\n  }\n  if (output_blocksize == 0) {\n    output_blocksize = 0x200;\n  }\n  if (conversion_blocksize == 0) {\n    conversions_mask = conversions_mask & 0xffffffe7;\n  }\n  if ((input_flags & 0x101000) != 0) {\n    input_flags = input_flags | 0x101000;\n  }\n  if ((output_flags & 1) != 0) {\n    uVar7 = quote(\"fullblock\");\n    uVar8 = gettext(\"invalid output flag\");\n    diagnose(0,\"%s: %s\",uVar8,uVar7);\n    usage(1);\n  }\n  if (bVar1) {\n    input_flags = input_flags | 8;\n  }\n  if (((input_flags & 8) == 0) || (local_98 == 0)) {\n    if (local_98 != 0) {\n      skip_records = local_98;\n    }\n  }\n  else {\n    skip_records = local_98 / input_blocksize;\n    skip_bytes = local_98 % input_blocksize;\n  }\n  if (bVar2) {\n    input_flags = input_flags | 4;\n  }\n  if (((input_flags & 4) == 0) || (local_a0 == 0x7fffffffffffffff)) {\n    if (local_a0 != 0x7fffffffffffffff) {\n      max_records = local_a0;\n    }\n  }\n  else {\n    max_records = local_a0 / input_blocksize;\n    max_bytes = local_a0 % input_blocksize;\n  }\n  if (bVar3) {\n    output_flags = output_flags | 0x10;\n  }\n  if (((output_flags & 0x10) == 0) || (local_90 == 0)) {\n    if (local_90 != 0) {\n      seek_records = local_90;\n    }\n  }\n  else {\n    seek_records = local_90 / output_blocksize;\n    seek_bytes = local_90 % output_blocksize;\n  }\n  if ((((conversions_mask & 0x800) == 0) && ((input_flags & 1) == 0)) &&\n     ((skip_records != 0 ||\n      (((0 < max_records && (max_records != 0x7fffffffffffffff)) ||\n       (((output_flags | input_flags) & 0x4000) != 0)))))) {\n    warn_partial_read = 1;\n  }\n  else {\n    warn_partial_read = 0;\n  }\n  if ((input_flags & 1) == 0) {\n    iread_fnc = iread;\n  }\n  else {\n    iread_fnc = iread_fullblock;\n  }\n  input_flags = input_flags & 0xfffffffe;\n  cVar4 = multiple_bits_set(conversions_mask & 7);\n  if (cVar4 != '\\0') {\n    local_48 = gettext(\"cannot combine any two of {ascii,ebcdic,ibm}\");\n    local_d0 = 1;\n    local_cc = 0;\n    error(1,0,local_48);\n  }\n  cVar4 = multiple_bits_set(conversions_mask & 0x18);\n  if (cVar4 != '\\0') {\n    local_40 = gettext(\"cannot combine block and unblock\");\n    local_c8 = 1;\n    local_c4 = 0;\n    error(1,0,local_40);\n  }\n  cVar4 = multiple_bits_set(conversions_mask & 0x60);\n  if (cVar4 != '\\0') {\n    local_38 = gettext(\"cannot combine lcase and ucase\");\n    local_c0 = 1;\n    local_bc = 0;\n    error(1,0,local_38);\n  }\n  cVar4 = multiple_bits_set(conversions_mask & 0x3000);\n  if (cVar4 != '\\0') {\n    local_30 = gettext(\"cannot combine excl and nocreat\");\n    local_b8 = 1;\n    local_b4 = 0;\n    error(1,0,local_30);\n  }\n  cVar4 = multiple_bits_set(input_flags & 0x4002);\n  if (cVar4 == '\\0') {\n    cVar4 = multiple_bits_set(output_flags & 0x4002);\n    if (cVar4 == '\\0') goto LAB_00102c28;\n  }\n  local_28 = gettext(\"cannot combine direct and nocache\");\n  local_b0 = 1;\n  local_ac = 0;\n  error(1,0,local_28);\nLAB_00102c28:\n  if ((input_flags & 2) != 0) {\n    i_nocache = 1;\n    if ((max_records == 0) && (max_bytes == 0)) {\n      i_nocache_eof = 1;\n    }\n    else {\n      i_nocache_eof = 0;\n    }\n    input_flags = input_flags & 0xfffffffd;\n  }\n  if ((output_flags & 2) != 0) {\n    o_nocache = 1;\n    if ((max_records == 0) && (max_bytes == 0)) {\n      o_nocache_eof = 1;\n    }\n    else {\n      o_nocache_eof = 0;\n    }\n    output_flags = output_flags & 0xfffffffd;\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "scanargs",
+                        "strchr",
+                        "quotearg_style",
+                        "gettext",
+                        "diagnose",
+                        "usage",
+                        "operand_is",
+                        "parse_integer",
+                        "error",
+                        "parse_symbols",
+                        "quote",
+                        "multiple_bits_set",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "scanargs",
+                        "main"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "apply_translations",
+                "func_c_signature": "void apply_translations(void)",
+                "decompiled_code": "void apply_translations(void) {\n  int iVar1;\n  int local_c;\n  \n  if ((conversions_mask & 1) != 0) {\n    translate_charset(ebcdic_to_ascii);\n  }\n  if ((conversions_mask & 0x40) == 0) {\n    if ((conversions_mask & 0x20) != 0) {\n      for (local_c = 0; local_c < 0x100; local_c = local_c + 1) {\n        iVar1 = tolower((uint)(byte)trans_table[local_c]);\n        trans_table[local_c] = (char)iVar1;\n      }\n      translation_needed = 1;\n    }\n  }\n  else {\n    for (local_c = 0; local_c < 0x100; local_c = local_c + 1) {\n      iVar1 = toupper((uint)(byte)trans_table[local_c]);\n      trans_table[local_c] = (char)iVar1;\n    }\n    translation_needed = 1;\n  }\n  if ((conversions_mask & 2) == 0) {\n    if ((conversions_mask & 4) != 0) {\n      translate_charset(ascii_to_ibm);\n      newline_character = 0x25;\n      space_character = 0x40;\n    }\n  }\n  else {\n    translate_charset(ascii_to_ebcdic);\n    newline_character = 0x25;\n    space_character = 0x40;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "apply_translations",
+                        "translate_charset",
+                        "tolower",
+                        "toupper"
+                    ],
+                    "calling_functions": [
+                        "apply_translations",
+                        "main"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "translate_buffer",
+                "func_c_signature": "void translate_buffer(char *param_1,long param_2)",
+                "decompiled_code": "void translate_buffer(char *param_1,long param_2) {\n  byte bVar1;\n  long local_18;\n  char *local_10;\n  \n  local_10 = param_1;\n  for (local_18 = param_2; local_18 != 0; local_18 = local_18 + -1) {\n    bVar1 = to_uchar((int)*local_10);\n    *local_10 = trans_table[(int)(uint)bVar1];\n    local_10 = local_10 + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "translate_buffer",
+                        "to_uchar"
+                    ],
+                    "calling_functions": [
+                        "translate_buffer",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "swab_buffer",
+                "func_c_signature": "long swab_buffer(long param_1,long *param_2,uint *param_3)",
+                "decompiled_code": "long swab_buffer(long param_1,long *param_2,uint *param_3) {\n  uint uVar1;\n  long local_10;\n  \n  if (*param_2 != 0) {\n    uVar1 = *param_3;\n    if (((byte)*param_2 & 1) == (byte)~(byte)(uVar1 >> 0x18) >> 7) {\n      *param_3 = 0xffffffff;\n    }\n    else {\n      *param_2 = *param_2 + -1;\n      *param_3 = (uint)*(byte *)(param_1 + *param_2);\n    }\n    for (local_10 = *param_2; 1 < local_10; local_10 = local_10 + -2) {\n      *(undefined *)(param_1 + local_10) = *(undefined *)(param_1 + local_10 + -2);\n    }\n    if ((int)uVar1 < 0) {\n      param_1 = param_1 + 1;\n    }\n    else {\n      *(char *)(param_1 + 1) = (char)uVar1;\n      *param_2 = *param_2 + 1;\n    }\n  }\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "swab_buffer"
+                    ],
+                    "calling_functions": [
+                        "swab_buffer",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "advance_input_offset",
+                "func_c_signature": "void advance_input_offset(long param_1)",
+                "decompiled_code": "void advance_input_offset(long param_1) {\n  bool bVar1;\n  \n  if ((-1 < input_offset) &&\n     (bVar1 = SCARRY8(param_1,input_offset), input_offset = param_1 + input_offset, bVar1)) {\n    input_offset = -1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "advance_input_offset",
+                        "SCARRY8"
+                    ],
+                    "calling_functions": [
+                        "advance_input_offset",
+                        "skip",
+                        "advance_input_after_read_error",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "skip",
+                "func_c_signature": "long skip(int param_1,undefined8 param_2,long param_3,long param_4,long *param_5)",
+                "decompiled_code": "long skip(int param_1,undefined8 param_2,long param_3,long param_4,long *param_5) {\n  char cVar1;\n  int iVar2;\n  int *piVar3;\n  long lVar4;\n  __off_t _Var5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  char *pcVar8;\n  long in_FS_OFFSET;\n  int local_e4;\n  long local_d8;\n  undefined8 local_d0;\n  undefined local_b8 [48];\n  long local_88;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  piVar3 = __errno_location();\n  *piVar3 = 0;\n  lVar4 = param_3 * param_4;\n  if (((SEXT816(lVar4) != SEXT816(param_3) * SEXT816(param_4)) ||\n      (local_d8 = *param_5 + lVar4, SCARRY8(*param_5,lVar4))) ||\n     (_Var5 = lseek(param_1,local_d8,1), _Var5 < 0)) {\n    piVar3 = __errno_location();\n    local_e4 = *piVar3;\n    _Var5 = lseek(param_1,0,2);\n    if (-1 < _Var5) {\n      if (local_e4 == 0) {\n        local_e4 = 0x4b;\n      }\n      uVar6 = quotearg_n_style_colon(0,3,param_2);\n      if (param_1 == 0) {\n        pcVar8 = \"%s: cannot skip\";\n      }\n      else {\n        pcVar8 = \"%s: cannot seek\";\n      }\n      uVar7 = gettext(pcVar8);\n      diagnose(local_e4,uVar7,uVar6);\n      quit(1);\n    }\n    if (param_1 == 0) {\n      alloc_ibuf();\n      local_d0 = ibuf;\n    }\n    else {\n      alloc_obuf();\n      local_d0 = obuf;\n    }\n    do {\n      lVar4 = param_4;\n      if (param_3 == 0) {\n        lVar4 = *param_5;\n      }\n      lVar4 = (*iread_fnc)(param_1,local_d0,lVar4);\n      if (lVar4 < 0) {\n        if (param_1 == 0) {\n          uVar6 = quotearg_style(4,param_2);\n          uVar7 = gettext(\"error reading %s\");\n          piVar3 = __errno_location();\n          diagnose(*piVar3,uVar7,uVar6);\n          if ((conversions_mask & 0x100) != 0) {\n            print_stats();\n          }\n        }\n        else {\n          uVar6 = quotearg_n_style_colon(0,3,param_2);\n          uVar7 = gettext(\"%s: cannot seek\");\n          diagnose(local_e4,uVar7,uVar6);\n        }\n        quit(1);\n      }\n      else {\n        if (lVar4 == 0) break;\n        if (param_1 == 0) {\n          advance_input_offset(lVar4);\n        }\n      }\n      if (param_3 == 0) {\n        *param_5 = 0;\n      }\n      else {\n        param_3 = param_3 + -1;\n      }\n    } while ((param_3 != 0) || (*param_5 != 0));\n  }\n  else if (param_1 == 0) {\n    iVar2 = ifstat(0,local_b8);\n    if (iVar2 != 0) {\n      uVar6 = quotearg_style(4,param_2);\n      uVar7 = gettext(\"cannot fstat %s\");\n      piVar3 = __errno_location();\n      error(1,*piVar3,uVar7,uVar6);\n    }\n    cVar1 = usable_st_size(local_b8);\n    if (((cVar1 == '\\0') || (local_88 < 1)) ||\n       ((input_offset < 0 || (local_d8 <= local_88 - input_offset)))) {\n      param_3 = 0;\n    }\n    else {\n      param_3 = (local_d8 - local_88) / param_4;\n      local_d8 = local_88 - input_offset;\n    }\n    advance_input_offset(local_d8);\n  }\n  else {\n    param_3 = 0;\n    *param_5 = 0;\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return param_3;\n}",
+                "globals": [],
+                "externs": [
+                    "SEXT816",
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "skip",
+                        "__errno_location",
+                        "SEXT816",
+                        "SCARRY8",
+                        "lseek",
+                        "quotearg_n_style_colon",
+                        "gettext",
+                        "diagnose",
+                        "quit",
+                        "alloc_ibuf",
+                        "alloc_obuf",
+                        "quotearg_style",
+                        "print_stats",
+                        "advance_input_offset",
+                        "ifstat",
+                        "error",
+                        "usable_st_size",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "skip",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "advance_input_after_read_error",
+                "func_c_signature": "undefined8 advance_input_after_read_error(long param_1)",
+                "decompiled_code": "undefined8 advance_input_after_read_error(long param_1) {\n  int *piVar1;\n  __off_t _Var2;\n  long __offset;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  \n  if (input_seekable == '\\x01') {\n    advance_input_offset(param_1);\n    if (input_offset < 0) {\n      uVar3 = quotearg_style(4,input_file);\n      uVar4 = gettext(\"offset overflow while reading file %s\");\n      diagnose(0,uVar4,uVar3);\n      return 0;\n    }\n    _Var2 = lseek(0,0,1);\n    if (-1 < _Var2) {\n      if (_Var2 == input_offset) {\n        return 1;\n      }\n      __offset = input_offset - _Var2;\n      if (((__offset < 0) || (param_1 < __offset)) && (status_level != 1)) {\n        uVar3 = gettext(\"warning: invalid file offset after failed read\");\n        diagnose(0,uVar3);\n      }\n      _Var2 = lseek(0,__offset,1);\n      if (-1 < _Var2) {\n        return 1;\n      }\n      piVar1 = __errno_location();\n      if (*piVar1 == 0) {\n        uVar3 = gettext(\"cannot work around kernel bug after all\");\n        diagnose(0,uVar3);\n      }\n    }\n  }\n  else {\n    if (input_seek_errno == 0x1d) {\n      return 1;\n    }\n    piVar1 = __errno_location();\n    *piVar1 = input_seek_errno;\n  }\n  uVar3 = quotearg_n_style_colon(0,3,input_file);\n  uVar4 = gettext(\"%s: cannot seek\");\n  piVar1 = __errno_location();\n  diagnose(*piVar1,uVar4,uVar3);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "advance_input_after_read_error",
+                        "advance_input_offset",
+                        "quotearg_style",
+                        "gettext",
+                        "diagnose",
+                        "lseek",
+                        "__errno_location",
+                        "quotearg_n_style_colon"
+                    ],
+                    "calling_functions": [
+                        "advance_input_after_read_error",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "copy_simple",
+                "func_c_signature": "void copy_simple(void *param_1,size_t param_2)",
+                "decompiled_code": "void copy_simple(void *param_1,size_t param_2) {\n  size_t __n;\n  size_t local_28;\n  void *local_18;\n  \n  local_28 = param_2;\n  local_18 = param_1;\n  do {\n    __n = output_blocksize - oc;\n    if ((long)local_28 <= output_blocksize - oc) {\n      __n = local_28;\n    }\n    memcpy((void *)(oc + obuf),local_18,__n);\n    local_28 = local_28 - __n;\n    local_18 = (void *)((long)local_18 + __n);\n    oc = __n + oc;\n    if (output_blocksize <= oc) {\n      write_output();\n    }\n  } while (local_28 != 0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copy_simple",
+                        "memcpy",
+                        "write_output"
+                    ],
+                    "calling_functions": [
+                        "copy_simple",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "copy_with_block",
+                "func_c_signature": "void copy_with_block(char *param_1,long param_2)",
+                "decompiled_code": "void copy_with_block(char *param_1,long param_2) {\n  undefined *puVar1;\n  char *pcVar2;\n  char *local_20;\n  long local_18;\n  long local_10;\n  \n  local_20 = param_1;\n  for (local_18 = param_2; local_18 != 0; local_18 = local_18 + -1) {\n    if (*local_20 == newline_character) {\n      if (col < conversion_blocksize) {\n        for (local_10 = col; local_10 < conversion_blocksize; local_10 = local_10 + 1) {\n          puVar1 = (undefined *)(obuf + oc);\n          oc = oc + 1;\n          *puVar1 = space_character;\n          if (output_blocksize <= oc) {\n            write_output();\n          }\n        }\n      }\n      col = 0;\n    }\n    else {\n      if (col == conversion_blocksize) {\n        r_truncate = r_truncate + 1;\n      }\n      else if (col < conversion_blocksize) {\n        pcVar2 = (char *)(obuf + oc);\n        oc = oc + 1;\n        *pcVar2 = *local_20;\n        if (output_blocksize <= oc) {\n          write_output();\n        }\n      }\n      col = col + 1;\n    }\n    local_20 = local_20 + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copy_with_block",
+                        "write_output"
+                    ],
+                    "calling_functions": [
+                        "copy_with_block",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "copy_with_unblock",
+                "func_c_signature": "void copy_with_unblock(long param_1,long param_2)",
+                "decompiled_code": "void copy_with_unblock(long param_1,long param_2) {\n  long lVar1;\n  undefined *puVar2;\n  char *pcVar3;\n  char cVar4;\n  long local_10;\n  \n  for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {\n    cVar4 = *(char *)(param_1 + local_10);\n    lVar1 = col + 1;\n    if (col < conversion_blocksize) {\n      col = lVar1;\n      if (cVar4 == space_character) {\n        pending_spaces_0 = pending_spaces_0 + 1;\n      }\n      else {\n        for (; pending_spaces_0 != 0; pending_spaces_0 = pending_spaces_0 + -1) {\n          pcVar3 = (char *)(obuf + oc);\n          oc = oc + 1;\n          *pcVar3 = space_character;\n          if (output_blocksize <= oc) {\n            write_output();\n          }\n        }\n        pcVar3 = (char *)(obuf + oc);\n        oc = oc + 1;\n        *pcVar3 = cVar4;\n        if (output_blocksize <= oc) {\n          write_output();\n        }\n      }\n    }\n    else {\n      pending_spaces_0 = 0;\n      col = 0;\n      local_10 = local_10 + -1;\n      puVar2 = (undefined *)(obuf + oc);\n      oc = oc + 1;\n      *puVar2 = newline_character;\n      if (output_blocksize <= oc) {\n        write_output();\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copy_with_unblock",
+                        "write_output"
+                    ],
+                    "calling_functions": [
+                        "copy_with_unblock",
+                        "dd_copy"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_fd_flags",
+                "func_c_signature": "void set_fd_flags(undefined4 param_1,uint param_2,undefined8 param_3)",
+                "decompiled_code": "void set_fd_flags(undefined4 param_1,uint param_2,undefined8 param_3) {\n  bool bVar1;\n  uint uVar2;\n  int iVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  long in_FS_OFFSET;\n  uint local_d0;\n  undefined local_b8 [24];\n  uint local_a0;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if ((param_2 & 0xfffdfeff) != 0) {\n    uVar2 = rpl_fcntl(param_1,3);\n    local_d0 = uVar2 | param_2 & 0xfffdfeff;\n    bVar1 = true;\n    if ((int)uVar2 < 0) {\n      bVar1 = false;\n    }\n    else if (uVar2 != local_d0) {\n      if ((local_d0 & 0x10000) != 0) {\n        iVar3 = ifstat(param_1,local_b8);\n        if (iVar3 == 0) {\n          if (((local_d0 & 0x10000) != 0) && ((local_a0 & 0xf000) != 0x4000)) {\n            piVar6 = __errno_location();\n            *piVar6 = 0x14;\n            bVar1 = false;\n          }\n        }\n        else {\n          bVar1 = false;\n        }\n        local_d0 = local_d0 & 0xfffeffff;\n      }\n      if ((bVar1) && (uVar2 != local_d0)) {\n        iVar3 = rpl_fcntl(param_1,4,local_d0);\n        if (iVar3 == -1) {\n          bVar1 = false;\n        }\n      }\n    }\n    if (!bVar1) {\n      uVar4 = quotearg_style(4,param_3);\n      uVar5 = gettext(\"setting flags for %s\");\n      piVar6 = __errno_location();\n      error(1,*piVar6,uVar5,uVar4);\n    }\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_fd_flags",
+                        "rpl_fcntl",
+                        "ifstat",
+                        "__errno_location",
+                        "quotearg_style",
+                        "gettext",
+                        "error",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "set_fd_flags",
+                        "main"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dd_copy",
+                "func_c_signature": "undefined4 dd_copy(void)",
+                "decompiled_code": "undefined4 dd_copy(void) {\n  undefined *puVar1;\n  byte bVar2;\n  char cVar3;\n  int iVar4;\n  undefined4 uVar5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  size_t sVar8;\n  int *piVar9;\n  long in_FS_OFFSET;\n  bool bVar10;\n  undefined local_132;\n  char local_131;\n  int local_130;\n  undefined4 local_12c;\n  size_t local_128;\n  void *local_120;\n  size_t local_118;\n  size_t local_110;\n  long local_108;\n  long local_100;\n  long local_f8;\n  long local_f0;\n  size_t local_e8;\n  long local_e0;\n  long local_d8;\n  size_t local_d0;\n  long local_c8;\n  __off_t local_c0;\n  undefined local_b8 [24];\n  uint local_a0;\n  long local_88;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_110 = 0;\n  local_12c = 0;\n  if ((skip_records != 0) || (skip_bytes != 0)) {\n    local_128 = input_blocksize * skip_records;\n    if ((SEXT816((long)local_128) != SEXT816((long)input_blocksize) * SEXT816(skip_records)) ||\n       (bVar10 = SCARRY8(local_128,skip_bytes), local_128 = local_128 + skip_bytes, bVar10)) {\n      local_131 = '\\x01';\n    }\n    else {\n      local_131 = '\\0';\n    }\n    local_f8 = input_offset;\n    local_f0 = skip(0,input_file,skip_records,input_blocksize,&skip_bytes);\n    if (((local_f0 != 0) ||\n        ((-1 < input_offset && ((local_131 != '\\0' || (input_offset - local_f8 != local_128)))))) &&\n       (status_level != 1)) {\n      uVar6 = quotearg_n_style_colon(0,3,input_file);\n      uVar7 = gettext(\"%s: cannot skip to specified offset\");\n      diagnose(0,uVar7,uVar6);\n    }\n  }\n  if ((seek_records != 0) || (seek_bytes != 0)) {\n    local_128 = seek_bytes;\n    local_108 = skip(1,output_file,seek_records,output_blocksize,&local_128);\n    if ((local_108 != 0) || (local_128 != 0)) {\n      sVar8 = local_128;\n      if (local_108 != 0) {\n        sVar8 = output_blocksize;\n      }\n      memset(obuf,0,sVar8);\n      do {\n        local_e8 = local_128;\n        if (local_108 != 0) {\n          local_e8 = output_blocksize;\n        }\n        sVar8 = iwrite(1,obuf,local_e8);\n        if (local_e8 != sVar8) {\n          uVar6 = quotearg_style(4,output_file);\n          uVar7 = gettext(\"writing to %s\");\n          piVar9 = __errno_location();\n          diagnose(*piVar9,uVar7,uVar6);\n          quit(1);\n        }\n        if (local_108 == 0) {\n          local_128 = 0;\n        }\n        else {\n          local_108 = local_108 + -1;\n        }\n      } while ((local_108 != 0) || (local_128 != 0));\n    }\n  }\n  if ((max_records == 0) && (uVar5 = local_12c, max_bytes == 0)) goto LAB_00104822;\n  alloc_ibuf();\n  alloc_obuf();\n  local_130 = -1;\nLAB_00103edc:\n  if ((status_level == 4) && (local_e0 = gethrxtime(), next_time <= local_e0)) {\n    print_xfer_stats(local_e0);\n    next_time = next_time + 1000000000;\n  }\n  if (r_partial + r_full < (long)(max_records + (ulong)(max_bytes != 0))) {\n    if (((conversions_mask & 0x400) != 0) && ((conversions_mask & 0x100) != 0)) {\n      if ((conversions_mask & 0x18) == 0) {\n        iVar4 = 0;\n      }\n      else {\n        iVar4 = 0x20;\n      }\n      memset(ibuf,iVar4,input_blocksize);\n    }\n    if (r_partial + r_full < max_records) {\n      local_118 = (*iread_fnc)(0,ibuf,input_blocksize);\n    }\n    else {\n      local_118 = (*iread_fnc)(0,ibuf,max_bytes);\n    }\n    if (0 < (long)local_118) {\n      advance_input_offset(local_118);\n      if (i_nocache != 0) {\n        invalidate_cache(0,local_118);\n      }\n      goto LAB_001041ce;\n    }\n    if (local_118 == 0) {\n      i_nocache_eof = (i_nocache | i_nocache_eof) != 0;\n      if ((o_nocache == '\\0') || ((conversions_mask & 0x200) != 0)) {\n        bVar2 = 0;\n      }\n      else {\n        bVar2 = 1;\n      }\n      o_nocache_eof = (bVar2 | o_nocache_eof) != 0;\n    }\n    else {\n      if (((conversions_mask & 0x100) == 0) || (status_level != 1)) {\n        uVar6 = quotearg_style(4,input_file);\n        uVar7 = gettext(\"error reading %s\");\n        piVar9 = __errno_location();\n        diagnose(*piVar9,uVar7,uVar6);\n      }\n      if ((conversions_mask & 0x100) != 0) goto code_r0x00104132;\n      local_12c = 1;\n    }\n  }\n  if (-1 < local_130) {\n    local_132 = (undefined)local_130;\n    if ((conversions_mask & 8) == 0) {\n      if ((conversions_mask & 0x10) == 0) {\n        puVar1 = (undefined *)((long)obuf + oc);\n        oc = oc + 1;\n        *puVar1 = local_132;\n        if ((long)output_blocksize <= oc) {\n          write_output();\n        }\n      }\n      else {\n        copy_with_unblock(&local_132,1);\n      }\n    }\n    else {\n      copy_with_block(&local_132,1);\n    }\n  }\n  if (((conversions_mask & 8) != 0) && (0 < col)) {\n    for (local_100 = col; local_100 < conversion_blocksize; local_100 = local_100 + 1) {\n      puVar1 = (undefined *)((long)obuf + oc);\n      oc = oc + 1;\n      *puVar1 = space_character;\n      if ((long)output_blocksize <= oc) {\n        write_output();\n      }\n    }\n  }\n  if ((col != 0) && ((conversions_mask & 0x10) != 0)) {\n    puVar1 = (undefined *)((long)obuf + oc);\n    oc = oc + 1;\n    *puVar1 = newline_character;\n    if ((long)output_blocksize <= oc) {\n      write_output();\n    }\n  }\n  if (oc != 0) {\n    local_c8 = iwrite(1,obuf,oc);\n    w_bytes = local_c8 + w_bytes;\n    if (local_c8 != 0) {\n      w_partial = w_partial + 1;\n    }\n    if (local_c8 != oc) {\n      uVar6 = quotearg_style(4,output_file);\n      uVar7 = gettext(\"error writing %s\");\n      piVar9 = __errno_location();\n      diagnose(*piVar9,uVar7,uVar6);\n      uVar5 = 1;\n      goto LAB_00104822;\n    }\n  }\n  if (final_op_was_seek != '\\0') {\n    iVar4 = ifstat(1,local_b8);\n    if (iVar4 != 0) {\n      uVar6 = quotearg_style(4,output_file);\n      uVar7 = gettext(\"cannot fstat %s\");\n      piVar9 = __errno_location();\n      diagnose(*piVar9,uVar7,uVar6);\n      uVar5 = 1;\n      goto LAB_00104822;\n    }\n    if (((((local_a0 & 0xf000) == 0x8000) && (local_c0 = lseek(1,0,1), -1 < local_c0)) &&\n        (local_88 < local_c0)) && (iVar4 = iftruncate(1,local_c0), iVar4 != 0)) {\n      uVar6 = quotearg_style(4,output_file);\n      uVar7 = gettext(\"failed to truncate to %jd bytes in output file %s\");\n      piVar9 = __errno_location();\n      diagnose(*piVar9,uVar7,local_c0,uVar6);\n      uVar5 = 1;\n      goto LAB_00104822;\n    }\n  }\n  uVar5 = local_12c;\n  if ((((conversions_mask & 0xc000) != 0) && (status_level == 4)) &&\n     ((-1 < reported_w_bytes && (reported_w_bytes < w_bytes)))) {\n    print_xfer_stats(0);\n    uVar5 = local_12c;\n  }\nLAB_00104822:\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return uVar5;\ncode_r0x00104132:\n  print_stats();\n  local_d8 = input_blocksize - local_110;\n  invalidate_cache(0,local_d8);\n  cVar3 = advance_input_after_read_error(local_d8);\n  if (cVar3 != '\\x01') {\n    local_12c = 1;\n    input_seekable = 0;\n    input_seek_errno = 0x1d;\n  }\n  if (((conversions_mask & 0x400) != 0) && (local_110 == 0)) {\n    local_118 = 0;\nLAB_001041ce:\n    local_128 = local_118;\n    if ((long)local_118 < (long)input_blocksize) {\n      r_partial = r_partial + 1;\n      local_110 = local_118;\n      if ((conversions_mask & 0x400) != 0) {\n        if ((conversions_mask & 0x100) == 0) {\n          if ((conversions_mask & 0x18) == 0) {\n            iVar4 = 0;\n          }\n          else {\n            iVar4 = 0x20;\n          }\n          memset((void *)((long)ibuf + local_118),iVar4,input_blocksize - local_118);\n        }\n        local_128 = input_blocksize;\n      }\n    }\n    else {\n      r_full = r_full + 1;\n      local_110 = 0;\n    }\n    if (ibuf == obuf) {\n      local_d0 = iwrite(1,obuf,local_128);\n      w_bytes = local_d0 + w_bytes;\n      if (local_d0 != local_128) {\n        uVar6 = quotearg_style(4,output_file);\n        uVar7 = gettext(\"error writing %s\");\n        piVar9 = __errno_location();\n        diagnose(*piVar9,uVar7,uVar6);\n        uVar5 = 1;\n        goto LAB_00104822;\n      }\n      if (local_128 == input_blocksize) {\n        w_full = w_full + 1;\n      }\n      else {\n        w_partial = w_partial + 1;\n      }\n    }\n    else {\n      if (translation_needed != '\\0') {\n        translate_buffer(ibuf,local_128);\n      }\n      if ((conversions_mask & 0x80) == 0) {\n        local_120 = ibuf;\n      }\n      else {\n        local_120 = (void *)swab_buffer(ibuf,&local_128,&local_130);\n      }\n      if ((conversions_mask & 8) == 0) {\n        if ((conversions_mask & 0x10) == 0) {\n          copy_simple(local_120,local_128);\n        }\n        else {\n          copy_with_unblock(local_120,local_128);\n        }\n      }\n      else {\n        copy_with_block(local_120,local_128);\n      }\n    }\n  }\n  goto LAB_00103edc;\n}",
+                "globals": [],
+                "externs": [
+                    "SEXT816",
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dd_copy",
+                        "SEXT816",
+                        "SCARRY8",
+                        "skip",
+                        "quotearg_n_style_colon",
+                        "gettext",
+                        "diagnose",
+                        "memset",
+                        "iwrite",
+                        "quotearg_style",
+                        "__errno_location",
+                        "quit",
+                        "alloc_ibuf",
+                        "alloc_obuf",
+                        "gethrxtime",
+                        "print_xfer_stats",
+                        "advance_input_offset",
+                        "invalidate_cache",
+                        "write_output",
+                        "copy_with_unblock",
+                        "copy_with_block",
+                        "ifstat",
+                        "lseek",
+                        "iftruncate",
+                        "__stack_chk_fail",
+                        "print_stats",
+                        "advance_input_after_read_error",
+                        "translate_buffer",
+                        "swab_buffer",
+                        "copy_simple"
+                    ],
+                    "calling_functions": [
+                        "dd_copy",
+                        "main"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "synchronize_output",
+                "func_c_signature": "undefined4 synchronize_output(void)",
+                "decompiled_code": "undefined4 synchronize_output(void) {\n  uint uVar1;\n  uint uVar2;\n  int iVar3;\n  int *piVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  undefined4 local_20;\n  uint local_1c;\n  \n  local_1c = conversions_mask;\n  local_20 = 0;\n  uVar1 = conversions_mask & 0xffff3fff;\n  uVar2 = conversions_mask & 0x4000;\n  conversions_mask = uVar1;\n  if ((uVar2 != 0) && (iVar3 = ifdatasync(1), iVar3 != 0)) {\n    piVar4 = __errno_location();\n    if ((*piVar4 != 0x26) && (piVar4 = __errno_location(), *piVar4 != 0x16)) {\n      uVar5 = quotearg_style(4,output_file);\n      uVar6 = gettext(\"fdatasync failed for %s\");\n      piVar4 = __errno_location();\n      diagnose(*piVar4,uVar6,uVar5);\n      local_20 = 1;\n    }\n    local_1c = local_1c | 0x8000;\n  }\n  if (((local_1c & 0x8000) != 0) && (iVar3 = ifsync(1), iVar3 != 0)) {\n    uVar5 = quotearg_style(4,output_file);\n    uVar6 = gettext(\"fsync failed for %s\");\n    piVar4 = __errno_location();\n    diagnose(*piVar4,uVar6,uVar5);\n    local_20 = 1;\n  }\n  return local_20;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "synchronize_output",
+                        "ifdatasync",
+                        "__errno_location",
+                        "quotearg_style",
+                        "gettext",
+                        "diagnose",
+                        "ifsync"
+                    ],
+                    "calling_functions": [
+                        "cleanup",
+                        "synchronize_output",
+                        "main"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(undefined4 param_1,undefined8 *param_2)",
+                "decompiled_code": "void main(undefined4 param_1,undefined8 *param_2) {\n  long lVar1;\n  long lVar2;\n  char cVar3;\n  int iVar4;\n  uint uVar5;\n  int iVar6;\n  undefined8 uVar7;\n  undefined8 uVar8;\n  undefined8 uVar9;\n  int *piVar10;\n  uint uVar11;\n  long in_FS_OFFSET;\n  bool bVar12;\n  int local_118;\n  int local_114;\n  long local_e8;\n  undefined local_b8 [24];\n  uint local_a0;\n  undefined8 local_20;\n  \n  local_20 = *(undefined8 *)(in_FS_OFFSET + 0x28);\n  install_signal_handlers();\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit(maybe_close_stdout);\n  iVar4 = getpagesize();\n  page_size = (long)iVar4;\n  uVar7 = proper_name_lite(\"Stuart Kemp\",\"Stuart Kemp\");\n  uVar8 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n  uVar9 = proper_name_lite(\"Paul Rubin\",\"Paul Rubin\");\n  parse_gnu_standard_options_only\n            (param_1,param_2,&DAT_00106821,\"coreutils\",_Version,1,usage,uVar9,uVar8,uVar7,0);\n  close_stdout_required = 0;\n  for (local_118 = 0; local_118 < 0x100; local_118 = local_118 + 1) {\n    trans_table[local_118] = (char)local_118;\n  }\n  scanargs(param_1,param_2);\n  apply_translations();\n  if (input_file == 0) {\n    input_file = gettext(\"standard input\");\n    set_fd_flags(0,input_flags,input_file);\n  }\n  else {\n    iVar4 = ifd_reopen(0,input_file,input_flags,0);\n    if (iVar4 < 0) {\n      uVar7 = quotearg_style(4,input_file);\n      uVar8 = gettext(\"failed to open %s\");\n      piVar10 = __errno_location();\n      error(1,*piVar10,uVar8,uVar7);\n    }\n  }\n  input_offset = lseek(0,0,1);\n  input_seekable = (byte)~(byte)((ulong)input_offset >> 0x38) >> 7;\n  if (input_offset < 0) {\n    input_offset = 0;\n  }\n  piVar10 = __errno_location();\n  lVar2 = seek_records;\n  lVar1 = output_blocksize;\n  input_seek_errno = *piVar10;\n  if (output_file == 0) {\n    output_file = gettext(\"standard output\");\n    set_fd_flags(1,output_flags,output_file);\n  }\n  else {\n    if ((conversions_mask & 0x1000) == 0) {\n      uVar11 = 0x40;\n    }\n    else {\n      uVar11 = 0;\n    }\n    if ((seek_records == 0) && ((conversions_mask & 0x200) == 0)) {\n      uVar5 = 0x200;\n    }\n    else {\n      uVar5 = 0;\n    }\n    uVar5 = uVar5 | uVar11 | output_flags | (int)conversions_mask >> 6 & 0x80U;\n    local_e8 = output_blocksize * seek_records;\n    if (((SEXT816(local_e8) != SEXT816(output_blocksize) * SEXT816(seek_records)) ||\n        (bVar12 = SCARRY8(local_e8,seek_bytes), local_e8 = local_e8 + seek_bytes, bVar12)) &&\n       ((conversions_mask & 0x200) == 0)) {\n      uVar7 = gettext(\"offset too large: cannot truncate to a length of seek=%jd (%td-byte) blocks\")\n      ;\n      error(1,0,uVar7,lVar2,lVar1);\n    }\n    if (((seek_records == 0) || (iVar4 = ifd_reopen(1,output_file,uVar5 | 2,0x1b6), iVar4 < 0)) &&\n       (iVar4 = ifd_reopen(1,output_file,uVar5 | 1,0x1b6), iVar4 < 0)) {\n      uVar7 = quotearg_style(4,output_file);\n      uVar8 = gettext(\"failed to open %s\");\n      piVar10 = __errno_location();\n      error(1,*piVar10,uVar8,uVar7);\n    }\n    if (((seek_records != 0) && ((conversions_mask & 0x200) == 0)) &&\n       (iVar4 = iftruncate(1,local_e8), iVar4 != 0)) {\n      piVar10 = __errno_location();\n      iVar4 = *piVar10;\n      iVar6 = ifstat(1,local_b8);\n      if (iVar6 == 0) {\n        if (((local_a0 & 0xf000) == 0x8000) || ((local_a0 & 0xf000) == 0x4000)) {\n          uVar7 = quotearg_style(4,output_file);\n          uVar8 = gettext(\"failed to truncate to %jd bytes in output file %s\");\n          diagnose(iVar4,uVar8,local_e8,uVar7);\n        }\n      }\n      else {\n        uVar7 = quotearg_style(4,output_file);\n        uVar8 = gettext(\"cannot fstat %s\");\n        piVar10 = __errno_location();\n        diagnose(*piVar10,uVar8,uVar7);\n      }\n    }\n  }\n  start_time = gethrxtime();\n  next_time = start_time + 1000000000;\n  local_114 = dd_copy();\n  iVar4 = synchronize_output();\n  if (iVar4 != 0) {\n    local_114 = iVar4;\n  }\n  if ((max_records == 0) && (max_bytes == 0)) {\n    if ((i_nocache != '\\0') && (cVar3 = invalidate_cache(0,0), cVar3 != '\\x01')) {\n      uVar7 = quotearg_n_style_colon(0,3,input_file);\n      uVar8 = gettext(\"failed to discard cache for: %s\");\n      piVar10 = __errno_location();\n      diagnose(*piVar10,uVar8,uVar7);\n      local_114 = 1;\n    }\n    if ((o_nocache != '\\0') && (cVar3 = invalidate_cache(1,0), cVar3 != '\\x01')) {\n      uVar7 = quotearg_n_style_colon(0,3,output_file);\n      uVar8 = gettext(\"failed to discard cache for: %s\");\n      piVar10 = __errno_location();\n      diagnose(*piVar10,uVar8,uVar7);\n      local_114 = 1;\n    }\n  }\n  else {\n    if ((i_nocache != '\\0') || (i_nocache_eof != '\\0')) {\n      invalidate_cache(0,0);\n    }\n    if ((o_nocache != '\\0') || (o_nocache_eof != '\\0')) {\n      invalidate_cache(1,0);\n    }\n  }\n  finish_up();\n                    /* WARNING: Subroutine does not return */\n  exit(local_114);\n}",
+                "globals": [],
+                "externs": [
+                    "SEXT816",
+                    "SCARRY8",
+                    "jd"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "install_signal_handlers",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getpagesize",
+                        "proper_name_lite",
+                        "parse_gnu_standard_options_only",
+                        "scanargs",
+                        "apply_translations",
+                        "gettext",
+                        "set_fd_flags",
+                        "ifd_reopen",
+                        "quotearg_style",
+                        "__errno_location",
+                        "error",
+                        "lseek",
+                        "SEXT816",
+                        "SCARRY8",
+                        "jd",
+                        "iftruncate",
+                        "ifstat",
+                        "diagnose",
+                        "gethrxtime",
+                        "dd_copy",
+                        "synchronize_output",
+                        "invalidate_cache",
+                        "quotearg_n_style_colon",
+                        "finish_up",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "dd_decompiled.c"
+                }
+            }
+        ]
+    }
+}

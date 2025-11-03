@@ -1,0 +1,669 @@
+{
+    "file": "stty",
+    "decompiled_code": {
+        "stty.c": [
+            {
+                "func_name": "wrapf",
+                "func_c_signature": "void wrapf(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,\n          undefined4 param_5,undefined4 param_6,undefined4 param_7,undefined4 param_8,char *param_9,\n          undefined8 param_10,undefined8 param_11,undefined8 param_12,undefined8 param_13,\n          undefined8 param_14)",
+                "decompiled_code": "void wrapf(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,\n          undefined4 param_5,undefined4 param_6,undefined4 param_7,undefined4 param_8,char *param_9,\n          undefined8 param_10,undefined8 param_11,undefined8 param_12,undefined8 param_13,\n          undefined8 param_14) {\n  char in_AL;\n  int iVar1;\n  long in_FS_OFFSET;\n  char *local_e0;\n  undefined4 local_d8;\n  undefined4 local_d4;\n  undefined *local_d0;\n  undefined *local_c8;\n  long local_c0;\n  undefined local_b8 [8];\n  undefined8 local_b0;\n  undefined8 local_a8;\n  undefined8 local_a0;\n  undefined8 local_98;\n  undefined8 local_90;\n  undefined4 local_88;\n  undefined4 local_78;\n  undefined4 local_68;\n  undefined4 local_58;\n  undefined4 local_48;\n  undefined4 local_38;\n  undefined4 local_28;\n  undefined4 local_18;\n  \n  if (in_AL != '\\0') {\n    local_88 = param_1;\n    local_78 = param_2;\n    local_68 = param_3;\n    local_58 = param_4;\n    local_48 = param_5;\n    local_38 = param_6;\n    local_28 = param_7;\n    local_18 = param_8;\n  }\n  local_c0 = *(long *)(in_FS_OFFSET + 0x28);\n  local_d8 = 8;\n  local_d4 = 0x30;\n  local_d0 = &stack0x00000008;\n  local_c8 = local_b8;\n  local_b0 = param_10;\n  local_a8 = param_11;\n  local_a0 = param_12;\n  local_98 = param_13;\n  local_90 = param_14;\n  iVar1 = vasprintf(&local_e0,param_9,&local_d8);\n  if (iVar1 < 0) {\n    xalloc_die();\n  }\n  if (0 < current_col) {\n    if (iVar1 < max_col - current_col) {\n      putchar_unlocked(0x20);\n      current_col = current_col + 1;\n    }\n    else {\n      putchar_unlocked(10);\n      current_col = 0;\n    }\n  }\n  fputs_unlocked(local_e0,_stdout);\n  free(local_e0);\n  current_col = iVar1 + current_col;\n  if (local_c0 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "wrapf",
+                        "vasprintf",
+                        "xalloc_die",
+                        "putchar_unlocked",
+                        "fputs_unlocked",
+                        "free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "wrapf",
+                        "display_window_size",
+                        "display_changed",
+                        "display_all",
+                        "display_speed"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  char *pcVar2;\n  undefined8 uVar3;\n  \n  uVar3 = _program_name;\n  if (param_1 == 0) {\n    pcVar2 = (char *)gettext(\n                            \"Usage: %s [-F DEVICE | --file=DEVICE] [SETTING]...\\n  or:  %s [-F DEVICE | --file=DEVICE] [-a|--all]\\n  or:  %s [-F DEVICE | --file=DEVICE] [-g|--save]\\n\"\n                            );\n    printf(pcVar2,uVar3,uVar3,uVar3);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\"Print or change terminal characteristics.\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"  -a, --all          print all current settings in human-readable form\\n  -g, --save         print all current settings in a stty-readable form\\n  -F, --file=DEVICE  open and use DEVICE instead of standard input\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"\\nOptional - before SETTING indicates negation.  An * marks non-POSIX\\nsettings.  The underlying system defines which settings are available.\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\"\\nSpecial characters:\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * discard CHAR  CHAR will toggle discarding of output\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   eof CHAR      CHAR will send an end of file (terminate the input)\\n   eol CHAR      CHAR will end the line\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * eol2 CHAR     alternate CHAR for ending the line\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   erase CHAR    CHAR will erase the last character typed\\n   intr CHAR     CHAR will send an interrupt signal\\n   kill CHAR     CHAR will erase the current line\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * lnext CHAR    CHAR will enter the next character quoted\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\"   quit CHAR     CHAR will send a quit signal\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * rprnt CHAR    CHAR will redraw the current line\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   start CHAR    CHAR will restart the output after stopping it\\n   stop CHAR     CHAR will stop the output\\n   susp CHAR     CHAR will send a terminal stop signal\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * swtch CHAR    CHAR will switch to a different shell layer\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * werase CHAR   CHAR will erase the last word typed\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"\\nSpecial settings:\\n   N             set the input and output speeds to N bauds\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   cols N        tell the kernel that the terminal has N columns\\n * columns N     same as cols N\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    if (tcsetattr_options == 1) {\n      uVar3 = gettext(&DAT_001058d2);\n    }\n    else {\n      uVar3 = gettext(&DAT_001058d5);\n    }\n    pcVar2 = (char *)gettext(\n                            \" * [-]drain      wait for transmission before applying settings (%s by default)\\n\"\n                            );\n    printf(pcVar2,uVar3);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\"   ispeed N      set the input speed to N\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * line N        use line discipline N\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   min N         with -icanon, set N characters minimum for a completed read\\n   ospeed N      set the output speed to N\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   rows N        tell the kernel that the terminal has N rows\\n   size          print the number of rows and columns according to the kernel\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   speed         print the terminal speed\\n   time N        with -icanon, set read timeout of N tenths of a second\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"\\nControl settings:\\n   [-]clocal     disable modem control signals\\n   [-]cread      allow input to be received\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]crtscts    enable RTS/CTS handshaking\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\"   csN           set character size to N bits, N in [5..8]\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   [-]cstopb     use two stop bits per character (one with \\'-\\')\\n   [-]hup        send a hangup signal when the last process closes the tty\\n   [-]hupcl      same as [-]hup\\n   [-]parenb     generate parity bit in output and expect parity bit in input\\n   [-]parodd     set odd parity (or even parity with \\'-\\')\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]cmspar     use \\\"stick\\\" (mark/space) parity\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"\\nInput settings:\\n   [-]brkint     breaks cause an interrupt signal\\n   [-]icrnl      translate carriage return to newline\\n   [-]ignbrk     ignore break characters\\n   [-]igncr      ignore carriage return\\n   [-]ignpar     ignore characters with parity errors\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \" * [-]imaxbel    beep and do not flush a full input buffer on a character\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   [-]inlcr      translate newline to carriage return\\n   [-]inpck      enable input parity checking\\n   [-]istrip     clear high (8th) bit of input characters\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]iutf8      assume input characters are UTF-8 encoded\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]iuclc      translate uppercase characters to lowercase\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \" * [-]ixany      let any character restart output, not only start character\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   [-]ixoff      enable sending of start/stop characters\\n   [-]ixon       enable XON/XOFF flow control\\n   [-]parmrk     mark parity errors (with a 255-0-character sequence)\\n   [-]tandem     same as [-]ixoff\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\"\\nOutput settings:\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * bsN           backspace delay style, N in [0..1]\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * crN           carriage return delay style, N in [0..3]\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * ffN           form feed delay style, N in [0..1]\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * nlN           newline delay style, N in [0..1]\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]ocrnl      translate carriage return to newline\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \" * [-]ofdel      use delete characters for fill instead of NUL characters\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \" * [-]ofill      use fill (padding) characters instead of timing for delays\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]olcuc      translate lowercase characters to uppercase\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]onlcr      translate newline to carriage return-newline\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]onlret     newline performs a carriage return\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]onocr      do not print carriage returns in the first column\\n\")\n    ;\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\"   [-]opost      postprocess output\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \" * tabN          horizontal tab delay style, N in [0..3]\\n * tabs          same as tab0\\n * -tabs         same as tab3\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * vtN           vertical tab delay style, N in [0..1]\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"\\nLocal settings:\\n   [-]crterase   echo erase characters as backspace-space-backspace\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \" * crtkill       kill all line by obeying the echoprt and echoe settings\\n * -crtkill      kill all line by obeying the echoctl and echok settings\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]ctlecho    echo control characters in hat notation (\\'^c\\')\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\"   [-]echo       echo input characters\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]echoctl    same as [-]ctlecho\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   [-]echoe      same as [-]crterase\\n   [-]echok      echo a newline after a kill character\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]echoke     same as [-]crtkill\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\"   [-]echonl     echo newline even if not echoing other characters\\n\")\n    ;\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \" * [-]echoprt    echo erased characters backward, between \\'\\\\\\' and \\'/\\'\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \" * [-]extproc    enable \\\"LINEMODE\\\"; useful with high latency links\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]flusho     discard output\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pcVar2 = (char *)gettext(\n                            \"   [-]icanon     enable special characters: %s\\n   [-]iexten     enable non-POSIX special characters\\n\"\n                            );\n    printf(pcVar2,\"erase, kill, werase, rprnt\");\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   [-]isig       enable interrupt, quit, and suspend special characters\\n   [-]noflsh     disable flushing after interrupt and quit special characters\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]prterase   same as [-]echoprt\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \" * [-]tostop     stop background jobs that try to write to the terminal\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \" * [-]xcase      with icanon, escape with \\'\\\\\\' for uppercase characters\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\"\\nCombination settings:\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]LCASE      same as [-]lcase\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\"   cbreak        same as -icanon\\n   -cbreak       same as icanon\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   cooked        same as brkint ignpar istrip icrnl ixon opost isig\\n                 icanon, eof and eol characters to their default values\\n   -cooked       same as raw\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pcVar2 = (char *)gettext(\"   crt           same as %s\\n\");\n    printf(pcVar2,\"echoe echoctl echoke\");\n    pcVar2 = (char *)gettext(\n                            \"   dec           same as %s intr ^c erase 0177\\n                 kill ^u\\n\"\n                            );\n    printf(pcVar2,\"echoe echoctl echoke -ixany\");\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]decctlq    same as [-]ixany\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   ek            erase and kill characters to their default values\\n   evenp         same as parenb -parodd cs7\\n   -evenp        same as -parenb cs8\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\" * [-]lcase      same as xcase iuclc olcuc\\n\");\n    fputs_unlocked(pcVar2,pFVar1);\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   litout        same as -parenb -istrip -opost cs8\\n   -litout       same as parenb istrip opost cs7\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pcVar2 = (char *)gettext(\"   nl            same as %s\\n   -nl           same as %s\\n\");\n    printf(pcVar2,\"-icrnl -onlcr\",\"icrnl -inlcr -igncr onlcr -ocrnl -onlret\");\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"   oddp          same as parenb parodd cs7\\n   -oddp         same as -parenb cs8\\n   [-]parity     same as [-]evenp\\n   pass8         same as -parenb -istrip cs8\\n   -pass8        same as parenb istrip cs7\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    pcVar2 = (char *)gettext(\n                            \"   raw           same as -ignbrk -brkint -ignpar -parmrk -inpck -istrip\\n                 -inlcr -igncr -icrnl -ixon -ixoff -icanon -opost\\n                 -isig%s min 1 time 0\\n   -raw          same as cooked\\n\"\n                            );\n    printf(pcVar2,\" -iuclc -ixany -imaxbel -xcase\");\n    pcVar2 = (char *)gettext(\n                            \"   sane          same as cread -ignbrk brkint -inlcr -igncr icrnl\\n                 icanon iexten echo echoe echok -echonl -noflsh\\n                 %s\\n                 %s\\n                 %s,\\n                 all special characters to their default values\\n\"\n                            );\n    printf(pcVar2,\"-ixoff -iutf8 -iuclc -ixany imaxbel -xcase -olcuc -ocrnl\",\n           \"opost -ofill onlcr -onocr -onlret nl0 cr0 tab0 bs0 vt0 ff0\",\n           \"isig -tostop -ofdel -echoprt echoctl echoke -extproc -flusho\");\n    pFVar1 = _stdout;\n    pcVar2 = (char *)gettext(\n                            \"\\nHandle the tty line connected to standard input.  Without arguments,\\nprints baud rate, line discipline, and deviations from stty sane.  In\\nsettings, CHAR is taken literally, or coded as in ^c, 0x37, 0177 or\\n127; special values ^- or undef used to disable special characters.\\n\"\n                            );\n    fputs_unlocked(pcVar2,pFVar1);\n    emit_ancillary_info(&DAT_001071d5);\n  }\n  else {\n    pcVar2 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar2,uVar3);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "file",
+                    "settings",
+                    "character",
+                    "parity",
+                    "high",
+                    "errors",
+                    "fill",
+                    "notation"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "file",
+                        "settings",
+                        "character",
+                        "parity",
+                        "high",
+                        "errors",
+                        "fill",
+                        "notation",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "apply_settings",
+                        "main"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "apply_settings",
+                "func_c_signature": "void apply_settings(char param_1,undefined8 param_2,long param_3,int param_4,long param_5,\n                   undefined *param_6)",
+                "decompiled_code": "void apply_settings(char param_1,undefined8 param_2,long param_3,int param_4,long param_5,\n                   undefined *param_6) {\n  bool bVar1;\n  char cVar2;\n  int iVar3;\n  undefined4 uVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  ulong uVar7;\n  bool bVar8;\n  char local_e3;\n  int local_e0;\n  int local_dc;\n  char *local_80;\n  \n  local_e0 = 1;\n  do {\n    if (param_4 <= local_e0) {\n      if (param_1 != '\\0') {\n        check_speed(param_5);\n      }\n      return;\n    }\n    local_80 = *(char **)(param_3 + (long)local_e0 * 8);\n    local_e3 = '\\0';\n    bVar1 = false;\n    if (local_80 != (char *)0x0) {\n      bVar8 = *local_80 == '-';\n      if (bVar8) {\n        local_80 = local_80 + 1;\n      }\n      cVar2 = streq(local_80,\"drain\");\n      if (cVar2 == '\\0') {\n        local_dc = 0;\n        while (*(long *)(mode_info + (long)local_dc * 0x20) != 0) {\n          cVar2 = streq(local_80,*(undefined8 *)(mode_info + (long)local_dc * 0x20));\n          if (cVar2 != '\\0') {\n            if ((mode_info[(long)local_dc * 0x20 + 0xc] & 0x10) == 0) {\n              local_e3 = set_mode(mode_info + (long)local_dc * 0x20,bVar8,param_5);\n              *param_6 = 1;\n            }\n            else {\n              bVar1 = true;\n              local_e3 = '\\x01';\n            }\n            break;\n          }\n          local_dc = local_dc + 1;\n        }\n        if ((local_e3 != '\\x01') && (bVar8)) {\n          uVar5 = quote(local_80 + -1);\n          uVar6 = gettext(\"invalid argument %s\");\n          error(0,0,uVar6,uVar5);\n          usage(1);\n        }\n        if (local_e3 != '\\x01') {\n          local_dc = 0;\n          while (*(long *)(control_info + (long)local_dc * 0x18) != 0) {\n            cVar2 = streq(local_80,*(undefined8 *)(control_info + (long)local_dc * 0x18));\n            if (cVar2 != '\\0') {\n              if ((local_e0 == param_4 + -1) || (*(long *)(param_3 + ((long)local_e0 + 1) * 8) == 0)\n                 ) {\n                uVar5 = quote(local_80);\n                uVar6 = gettext(\"missing argument to %s\");\n                error(0,0,uVar6,uVar5);\n                usage(1);\n              }\n              local_e3 = '\\x01';\n              local_e0 = local_e0 + 1;\n              set_control_char(control_info + (long)local_dc * 0x18,\n                               *(undefined8 *)(param_3 + (long)local_e0 * 8),param_5);\n              *param_6 = 1;\n              break;\n            }\n            local_dc = local_dc + 1;\n          }\n        }\n        if ((local_e3 != '\\x01') || (bVar1)) {\n          cVar2 = streq(local_80,\"ispeed\");\n          if (cVar2 == '\\0') {\n            cVar2 = streq(local_80,\"ospeed\");\n            if (cVar2 == '\\0') {\n              cVar2 = streq(local_80,&DAT_0010723d);\n              if (cVar2 == '\\0') {\n                cVar2 = streq(local_80,&DAT_00107242);\n                if ((cVar2 == '\\0') && (cVar2 = streq(local_80,\"columns\"), cVar2 == '\\0')) {\n                  cVar2 = streq(local_80,&DAT_0010724f);\n                  if (cVar2 == '\\0') {\n                    cVar2 = streq(local_80,&DAT_00107254);\n                    if (cVar2 == '\\0') {\n                      cVar2 = streq(local_80,\"speed\");\n                      if (cVar2 == '\\0') {\n                        iVar3 = string_to_baud(local_80);\n                        if (iVar3 == -1) {\n                          cVar2 = recover_mode(local_80,param_5);\n                          if (cVar2 != '\\x01') {\n                            uVar5 = quote(local_80);\n                            uVar6 = gettext(\"invalid argument %s\");\n                            error(0,0,uVar6,uVar5);\n                            usage(1);\n                          }\n                          *param_6 = 1;\n                        }\n                        else {\n                          set_speed(2,local_80,param_5);\n                          if (param_1 == '\\0') {\n                            *param_6 = 1;\n                          }\n                        }\n                      }\n                      else if (param_1 == '\\0') {\n                        max_col = screen_columns();\n                        display_speed(param_5,0);\n                      }\n                    }\n                    else {\n                      if ((local_e0 == param_4 + -1) ||\n                         (*(long *)(param_3 + ((long)local_e0 + 1) * 8) == 0)) {\n                        uVar5 = quote(local_80);\n                        uVar6 = gettext(\"missing argument to %s\");\n                        error(0,0,uVar6,uVar5);\n                        usage(1);\n                      }\n                      local_e0 = local_e0 + 1;\n                      uVar7 = integer_arg(*(undefined8 *)(param_3 + (long)local_e0 * 8),\n                                          0xffffffffffffffff);\n                      *(char *)(param_5 + 0x10) = (char)uVar7;\n                      if (uVar7 != (uVar7 & 0xff)) {\n                        uVar5 = quote(*(undefined8 *)(param_3 + (long)local_e0 * 8));\n                        uVar6 = gettext(\"invalid line discipline %s\");\n                        error(0,0x4b,uVar6,uVar5);\n                      }\n                      *param_6 = 1;\n                    }\n                  }\n                  else if (param_1 == '\\0') {\n                    max_col = screen_columns();\n                    current_col = 0;\n                    display_window_size(0,param_2);\n                  }\n                }\n                else {\n                  if ((local_e0 == param_4 + -1) ||\n                     (*(long *)(param_3 + ((long)local_e0 + 1) * 8) == 0)) {\n                    uVar5 = quote(local_80);\n                    uVar6 = gettext(\"missing argument to %s\");\n                    error(0,0,uVar6,uVar5);\n                    usage(1);\n                  }\n                  local_e0 = local_e0 + 1;\n                  if (param_1 == '\\0') {\n                    uVar4 = integer_arg(*(undefined8 *)(param_3 + (long)local_e0 * 8),0x7fffffff);\n                    set_window_size(0xffffffff,uVar4,param_2);\n                  }\n                }\n              }\n              else {\n                if ((local_e0 == param_4 + -1) ||\n                   (*(long *)(param_3 + ((long)local_e0 + 1) * 8) == 0)) {\n                  uVar5 = quote(local_80);\n                  uVar6 = gettext(\"missing argument to %s\");\n                  error(0,0,uVar6,uVar5);\n                  usage(1);\n                }\n                local_e0 = local_e0 + 1;\n                if (param_1 == '\\0') {\n                  uVar4 = integer_arg(*(undefined8 *)(param_3 + (long)local_e0 * 8),0x7fffffff);\n                  set_window_size(uVar4,0xffffffff,param_2);\n                }\n              }\n            }\n            else {\n              if ((local_e0 == param_4 + -1) || (*(long *)(param_3 + ((long)local_e0 + 1) * 8) == 0)\n                 ) {\n                uVar5 = quote(local_80);\n                uVar6 = gettext(\"missing argument to %s\");\n                error(0,0,uVar6,uVar5);\n                usage(1);\n              }\n              local_e0 = local_e0 + 1;\n              iVar3 = string_to_baud(*(undefined8 *)(param_3 + (long)local_e0 * 8));\n              if (iVar3 == -1) {\n                uVar5 = quote(*(undefined8 *)(param_3 + (long)local_e0 * 8));\n                uVar6 = gettext(\"invalid ospeed %s\");\n                error(0,0,uVar6,uVar5);\n                usage(1);\n              }\n              set_speed(1,*(undefined8 *)(param_3 + (long)local_e0 * 8),param_5);\n              if (param_1 == '\\0') {\n                *param_6 = 1;\n              }\n            }\n          }\n          else {\n            if ((local_e0 == param_4 + -1) || (*(long *)(param_3 + ((long)local_e0 + 1) * 8) == 0))\n            {\n              uVar5 = quote(local_80);\n              uVar6 = gettext(\"missing argument to %s\");\n              error(0,0,uVar6,uVar5);\n              usage(1);\n            }\n            local_e0 = local_e0 + 1;\n            iVar3 = string_to_baud(*(undefined8 *)(param_3 + (long)local_e0 * 8));\n            if (iVar3 == -1) {\n              uVar5 = quote(*(undefined8 *)(param_3 + (long)local_e0 * 8));\n              uVar6 = gettext(\"invalid ispeed %s\");\n              error(0,0,uVar6,uVar5);\n              usage(1);\n            }\n            set_speed(0,*(undefined8 *)(param_3 + (long)local_e0 * 8),param_5);\n            if (param_1 == '\\0') {\n              *param_6 = 1;\n            }\n          }\n        }\n      }\n      else {\n        tcsetattr_options = (uint)!bVar8;\n      }\n    }\n    local_e0 = local_e0 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "apply_settings",
+                        "check_speed",
+                        "streq",
+                        "set_mode",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "set_control_char",
+                        "string_to_baud",
+                        "recover_mode",
+                        "set_speed",
+                        "screen_columns",
+                        "display_speed",
+                        "integer_arg",
+                        "display_window_size",
+                        "set_window_size"
+                    ],
+                    "calling_functions": [
+                        "apply_settings",
+                        "main"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined8 main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined8 main(int param_1,undefined8 *param_2) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  undefined8 uVar5;\n  undefined *puVar6;\n  long in_FS_OFFSET;\n  char local_104;\n  char local_103;\n  char local_102;\n  char local_101;\n  undefined4 local_100;\n  int local_fc;\n  int local_f8;\n  uint local_f4;\n  int local_f0;\n  uint local_ec;\n  uint local_e8;\n  uint local_e4;\n  undefined4 local_e0;\n  undefined4 local_dc;\n  undefined4 local_d8;\n  undefined4 local_d4;\n  undefined4 local_d0;\n  undefined4 local_cc;\n  undefined4 local_c8;\n  int local_c4;\n  undefined4 local_c0;\n  int local_bc;\n  undefined4 local_b8;\n  int local_b4;\n  undefined4 local_b0;\n  int local_ac;\n  undefined4 local_a8;\n  int local_a4;\n  undefined4 local_a0;\n  undefined4 local_9c;\n  undefined4 local_98;\n  undefined4 local_94;\n  undefined4 local_90;\n  undefined4 local_8c;\n  long local_88;\n  long local_80;\n  undefined8 local_78;\n  undefined8 local_70;\n  undefined8 local_68;\n  undefined *local_60;\n  undefined8 local_58;\n  undefined *local_50;\n  undefined *local_48;\n  undefined *local_40;\n  undefined8 local_38;\n  char *local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_fc = 0;\n  local_f8 = 1;\n  local_101 = '\\x01';\n  local_88 = 0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  local_100 = 0;\n  local_103 = '\\0';\n  local_102 = '\\0';\n  _opterr = 0;\n  do {\n    local_f0 = getopt_long(param_1 - local_fc,param_2 + local_fc,\"-agF:\",longopts,0);\n    if (local_f0 == -1) {\n      if ((local_103 != '\\0') && (local_102 != '\\0')) {\n        local_70 = gettext(\n                          \"the options for verbose and stty-readable output styles are\\nmutually exclusive\"\n                          );\n        local_d8 = 1;\n        local_d4 = 0;\n        error(1,0,local_70);\n      }\n      if ((local_101 != '\\x01') && ((local_103 != '\\0' || (local_102 != '\\0')))) {\n        local_68 = gettext(\"when specifying an output style, modes may not be set\");\n        local_d0 = 1;\n        local_cc = 0;\n        error(1,0,local_68);\n      }\n      local_80 = local_88;\n      if (local_88 == 0) {\n        local_80 = gettext(\"standard input\");\n      }\n      if (((local_101 != '\\x01') && (local_103 != '\\x01')) && (local_102 != '\\x01')) {\n        apply_settings(1,local_80,param_2,param_1,check_mode_4,&local_104);\n      }\n      if (local_88 != 0) {\n        iVar2 = fd_reopen(0,local_80,0x800,0);\n        if (iVar2 < 0) {\n          uVar3 = quotearg_n_style_colon(0,3,local_80);\n          piVar4 = __errno_location();\n          local_c4 = *piVar4;\n          local_c8 = 1;\n          local_60 = &DAT_0010737d;\n          error(1,local_c4,&DAT_0010737d,uVar3);\n        }\n        local_ec = rpl_fcntl(0,3);\n        if ((local_ec == 0xffffffff) || (iVar2 = rpl_fcntl(0,4,local_ec & 0xfffff7ff), iVar2 < 0)) {\n          uVar3 = quotearg_n_style_colon(0,3,local_80);\n          uVar5 = gettext(\"%s: couldn\\'t reset non-blocking mode\");\n          piVar4 = __errno_location();\n          local_bc = *piVar4;\n          local_c0 = 1;\n          local_58 = uVar5;\n          error(1,local_bc,uVar5,uVar3);\n        }\n      }\n      iVar2 = tcgetattr(0,(termios *)mode_3);\n      if (iVar2 != 0) {\n        uVar3 = quotearg_n_style_colon(0,3,local_80);\n        piVar4 = __errno_location();\n        local_b4 = *piVar4;\n        local_b8 = 1;\n        local_50 = &DAT_0010737d;\n        error(1,local_b4,&DAT_0010737d,uVar3);\n      }\n      if (((local_103 == '\\0') && (local_102 == '\\0')) && (local_101 == '\\0')) {\n        local_104 = '\\0';\n        apply_settings(0,local_80,param_2,param_1,mode_3,&local_104);\n        if (local_104 != '\\0') {\n          iVar2 = tcsetattr(0,tcsetattr_options,(termios *)mode_3);\n          if (iVar2 != 0) {\n            uVar3 = quotearg_n_style_colon(0,3,local_80);\n            piVar4 = __errno_location();\n            local_ac = *piVar4;\n            local_b0 = 1;\n            local_48 = &DAT_0010737d;\n            error(1,local_ac,&DAT_0010737d,uVar3);\n          }\n          iVar2 = tcgetattr(0,(termios *)new_mode_2);\n          if (iVar2 != 0) {\n            uVar3 = quotearg_n_style_colon(0,3,local_80);\n            piVar4 = __errno_location();\n            local_a4 = *piVar4;\n            local_a8 = 1;\n            local_40 = &DAT_0010737d;\n            error(1,local_a4,&DAT_0010737d,uVar3);\n          }\n          cVar1 = eq_mode(mode_3,new_mode_2);\n          if (cVar1 != '\\x01') {\n            if (dev_debug != '\\0') {\n              local_38 = gettext(\"indx: mode: actual mode\");\n              local_a0 = 0;\n              local_9c = 0;\n              error(0,0,local_38);\n              for (local_f4 = 0; local_f4 < 0x3c; local_f4 = local_f4 + 1) {\n                local_e8 = (uint)(byte)new_mode_2[local_f4];\n                local_e4 = (uint)(byte)mode_3[local_f4];\n                if (local_e8 == local_e4) {\n                  puVar6 = &DAT_00104f24;\n                }\n                else {\n                  puVar6 = &DAT_001073bd;\n                }\n                local_98 = 0;\n                local_94 = 0;\n                local_30 = \"0x%02x, 0x%02x: 0x%02x%s\";\n                error(0,0,\"0x%02x, 0x%02x: 0x%02x%s\",local_f4,local_e4,local_e8,puVar6);\n              }\n            }\n            uVar3 = quotearg_n_style_colon(0,3,local_80);\n            local_28 = gettext(\"%s: unable to perform all requested operations\");\n            local_90 = 1;\n            local_8c = 0;\n            error(1,0,local_28,uVar3);\n          }\n        }\n      }\n      else {\n        max_col = screen_columns();\n        current_col = 0;\n        display_settings(local_100,mode_3,local_80);\n      }\n      if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n        return 0;\n      }\n                    /* WARNING: Subroutine does not return */\n      __stack_chk_fail();\n    }\n    if (local_f0 == 0x80) {\n      dev_debug = '\\x01';\n    }\n    else {\n      if (local_f0 < 0x81) {\n        if (local_f0 == 0x67) {\n          local_102 = '\\x01';\n          local_100 = 2;\n          goto LAB_00101fc5;\n        }\n        if (local_f0 < 0x68) {\n          if (local_f0 == 0x61) {\n            local_103 = '\\x01';\n            local_100 = 1;\n            goto LAB_00101fc5;\n          }\n          if (local_f0 < 0x62) {\n            if (local_f0 == 0x46) {\n              if (local_88 != 0) {\n                local_78 = gettext(\"only one device may be specified\");\n                local_e0 = 1;\n                local_dc = 0;\n                error(1,0,local_78);\n              }\n              local_88 = _optarg;\n              goto LAB_00101fc5;\n            }\n            if (local_f0 < 0x47) {\n              if (local_f0 == -0x83) {\nLAB_00101e92:\n                uVar3 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n                version_etc(_stdout,&DAT_001071d5,\"GNU coreutils\",_Version,uVar3,0);\n                    /* WARNING: Subroutine does not return */\n                exit(0);\n              }\n              if (local_f0 == -0x82) {\n                usage(0);\n                goto LAB_00101e92;\n              }\n            }\n          }\n        }\n      }\n      cVar1 = streq(param_2[local_f8 + local_fc],\"-drain\");\n      if ((cVar1 != '\\x01') &&\n         (cVar1 = streq(param_2[local_f8 + local_fc],\"drain\"), cVar1 != '\\x01')) {\n        local_101 = '\\0';\n      }\n      local_fc = local_fc + local_f8;\n      local_f8 = 1;\n      _optind = 0;\n    }\nLAB_00101fc5:\n    while (local_f8 < _optind) {\n      param_2[local_f8 + local_fc] = 0;\n      local_f8 = local_f8 + 1;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "apply_settings",
+                        "fd_reopen",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "rpl_fcntl",
+                        "tcgetattr",
+                        "tcsetattr",
+                        "eq_mode",
+                        "screen_columns",
+                        "display_settings",
+                        "__stack_chk_fail",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage",
+                        "streq"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "eq_mode",
+                "func_c_signature": "undefined4 eq_mode(termios *param_1,termios *param_2)",
+                "decompiled_code": "undefined4 eq_mode(termios *param_1,termios *param_2) {\n  char cVar1;\n  speed_t sVar2;\n  speed_t sVar3;\n  \n  if ((((param_1->c_iflag == param_2->c_iflag) && (param_1->c_oflag == param_2->c_oflag)) &&\n      (param_1->c_cflag == param_2->c_cflag)) &&\n     (((param_1->c_lflag == param_2->c_lflag && (param_1->c_line == param_2->c_line)) &&\n      (cVar1 = memeq(param_1->c_cc,param_2->c_cc,0x20), cVar1 != '\\0')))) {\n    sVar2 = cfgetispeed(param_1);\n    sVar3 = cfgetispeed(param_2);\n    if (sVar2 == sVar3) {\n      sVar2 = cfgetospeed(param_1);\n      sVar3 = cfgetospeed(param_2);\n      if (sVar2 == sVar3) {\n        return 1;\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "eq_mode",
+                        "memeq",
+                        "cfgetispeed",
+                        "cfgetospeed"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "eq_mode"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_mode",
+                "func_c_signature": "undefined8 set_mode(char **param_1,char param_2,uint *param_3)",
+                "decompiled_code": "undefined8 set_mode(char **param_1,char param_2,uint *param_3) {\n  char cVar1;\n  uint *puVar2;\n  \n  if ((param_2 != '\\0') && ((*(byte *)((long)param_1 + 0xc) & 4) == 0)) {\n    return 0;\n  }\n  puVar2 = (uint *)mode_type_flag(*(undefined4 *)(param_1 + 1),param_3);\n  if (puVar2 == (uint *)0x0) {\n    cVar1 = streq(*param_1,\"evenp\");\n    if ((cVar1 == '\\0') && (cVar1 = streq(*param_1,\"parity\"), cVar1 == '\\0')) {\n      cVar1 = streq(*param_1,&DAT_00105116);\n      if (cVar1 == '\\0') {\n        cVar1 = streq(*param_1,&DAT_0010511b);\n        if (cVar1 == '\\0') {\n          cVar1 = streq(*param_1,&DAT_0010511e);\n          if (cVar1 == '\\0') {\n            cVar1 = streq(*param_1,&DAT_00105121);\n            if (cVar1 == '\\0') {\n              cVar1 = streq(*param_1,\"cbreak\");\n              if (cVar1 == '\\0') {\n                cVar1 = streq(*param_1,\"pass8\");\n                if (cVar1 == '\\0') {\n                  cVar1 = streq(*param_1,\"litout\");\n                  if (cVar1 == '\\0') {\n                    cVar1 = streq(*param_1,&DAT_0010512d);\n                    if ((cVar1 == '\\0') && (cVar1 = streq(*param_1,\"cooked\"), cVar1 == '\\0')) {\n                      cVar1 = streq(*param_1,\"decctlq\");\n                      if (cVar1 == '\\0') {\n                        cVar1 = streq(*param_1,&DAT_0010514d);\n                        if (cVar1 == '\\0') {\n                          cVar1 = streq(*param_1,\"lcase\");\n                          if ((cVar1 == '\\0') && (cVar1 = streq(*param_1,\"LCASE\"), cVar1 == '\\0')) {\n                            cVar1 = streq(*param_1,&DAT_0010515e);\n                            if (cVar1 == '\\0') {\n                              cVar1 = streq(*param_1,&DAT_00105162);\n                              if (cVar1 != '\\0') {\n                                *(undefined *)((long)param_3 + 0x11) = 3;\n                                *(undefined *)((long)param_3 + 0x13) = 0x7f;\n                                *(undefined *)(param_3 + 5) = 0x15;\n                                param_3[3] = param_3[3] | 0xa10;\n                                *param_3 = *param_3 & 0xfffff7ff;\n                              }\n                            }\n                            else {\n                              param_3[3] = param_3[3] | 0xa10;\n                            }\n                          }\n                          else if (param_2 == '\\0') {\n                            param_3[3] = param_3[3] | 4;\n                            *param_3 = *param_3 | 0x200;\n                            param_3[1] = param_3[1] | 2;\n                          }\n                          else {\n                            param_3[3] = param_3[3] & 0xfffffffb;\n                            *param_3 = *param_3 & 0xfffffdff;\n                            param_3[1] = param_3[1] & 0xfffffffd;\n                          }\n                        }\n                        else if (param_2 == '\\0') {\n                          param_3[1] = param_3[1] & 0xffffe7ff;\n                        }\n                        else {\n                          param_3[1] = param_3[1] | 0x1800;\n                        }\n                      }\n                      else if (param_2 == '\\0') {\n                        *param_3 = *param_3 & 0xfffff7ff;\n                      }\n                      else {\n                        *param_3 = *param_3 | 0x800;\n                      }\n                    }\n                    else if (((**param_1 == 'r') && (param_2 != '\\0')) ||\n                            ((**param_1 == 'c' && (param_2 != '\\x01')))) {\n                      *param_3 = *param_3 | 0x526;\n                      param_3[1] = param_3[1] | 1;\n                      param_3[3] = param_3[3] | 3;\n                    }\n                    else {\n                      *param_3 = 0;\n                      param_3[1] = param_3[1] & 0xfffffffe;\n                      param_3[3] = param_3[3] & 0xfffffff8;\n                      *(undefined *)((long)param_3 + 0x17) = 1;\n                      *(undefined *)((long)param_3 + 0x16) = 0;\n                    }\n                  }\n                  else if (param_2 == '\\0') {\n                    param_3[2] = param_3[2] & 0xfffffecf | 0x30;\n                    *param_3 = *param_3 & 0xffffffdf;\n                    param_3[1] = param_3[1] & 0xfffffffe;\n                  }\n                  else {\n                    param_3[2] = param_3[2] & 0xfffffecf | 0x120;\n                    *param_3 = *param_3 | 0x20;\n                    param_3[1] = param_3[1] | 1;\n                  }\n                }\n                else if (param_2 == '\\0') {\n                  param_3[2] = param_3[2] & 0xfffffecf | 0x30;\n                  *param_3 = *param_3 & 0xffffffdf;\n                }\n                else {\n                  param_3[2] = param_3[2] & 0xfffffecf | 0x120;\n                  *param_3 = *param_3 | 0x20;\n                }\n              }\n              else if (param_2 == '\\0') {\n                param_3[3] = param_3[3] & 0xfffffffd;\n              }\n              else {\n                param_3[3] = param_3[3] | 2;\n              }\n            }\n            else {\n              sane_mode(param_3);\n            }\n          }\n          else {\n            *(undefined *)((long)param_3 + 0x13) = 0x7f;\n            *(undefined *)(param_3 + 5) = 0x15;\n          }\n        }\n        else if (param_2 == '\\0') {\n          *param_3 = *param_3 & 0xfffffeff;\n          param_3[1] = param_3[1] & 0xfffffffb;\n        }\n        else {\n          *param_3 = *param_3 & 0xfffffe3f | 0x100;\n          param_3[1] = param_3[1] & 0xffffffd3 | 4;\n        }\n      }\n      else if (param_2 == '\\0') {\n        param_3[2] = param_3[2] & 0xfffffccf | 800;\n      }\n      else {\n        param_3[2] = param_3[2] & 0xfffffecf | 0x30;\n      }\n    }\n    else if (param_2 == '\\0') {\n      param_3[2] = param_3[2] & 0xfffffccf | 0x120;\n    }\n    else {\n      param_3[2] = param_3[2] & 0xfffffecf | 0x30;\n    }\n  }\n  else if (param_2 == '\\0') {\n    *puVar2 = *puVar2 & ~(uint)param_1[3] | (uint)param_1[2];\n  }\n  else {\n    *puVar2 = *puVar2 & ~(uint)param_1[3] & ~(uint)param_1[2];\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_mode",
+                        "mode_type_flag",
+                        "streq",
+                        "sane_mode"
+                    ],
+                    "calling_functions": [
+                        "apply_settings",
+                        "set_mode"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_control_char",
+                "func_c_signature": "void set_control_char(undefined8 *param_1,char *param_2,long param_3)",
+                "decompiled_code": "void set_control_char(undefined8 *param_1,char *param_2,long param_3) {\n  char cVar1;\n  byte local_10;\n  \n  cVar1 = streq(*param_1,&DAT_001051bf);\n  if (cVar1 == '\\0') {\n    cVar1 = streq(*param_1,&DAT_001051c3);\n    if (cVar1 == '\\0') {\n      if ((*param_2 == '\\0') || (param_2[1] == '\\0')) {\n        local_10 = to_uchar((int)*param_2);\n      }\n      else {\n        cVar1 = streq(param_2,&DAT_0010740f);\n        if (cVar1 == '\\0') {\n          cVar1 = streq(param_2,\"undef\");\n          if (cVar1 == '\\0') {\n            if ((*param_2 == '^') && (param_2[1] != '\\0')) {\n              if (param_2[1] == '?') {\n                local_10 = 0x7f;\n              }\n              else {\n                local_10 = to_uchar((int)param_2[1]);\n                local_10 = local_10 & 0x9f;\n              }\n            }\n            else {\n              local_10 = integer_arg(param_2,0xff);\n            }\n            goto LAB_00102f5d;\n          }\n        }\n        local_10 = 0;\n      }\n      goto LAB_00102f5d;\n    }\n  }\n  local_10 = integer_arg(param_2,0xff);\nLAB_00102f5d:\n  *(byte *)(param_3 + 0x11 + param_1[2]) = local_10;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_control_char",
+                        "streq",
+                        "to_uchar",
+                        "integer_arg"
+                    ],
+                    "calling_functions": [
+                        "apply_settings",
+                        "set_control_char"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_speed",
+                "func_c_signature": "void set_speed(int param_1,undefined8 param_2,termios *param_3)",
+                "decompiled_code": "void set_speed(int param_1,undefined8 param_2,termios *param_3) {\n  speed_t __speed;\n  int iVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  \n  __speed = string_to_baud(param_2);\n  if (__speed == 0xffffffff) {\n                    /* WARNING: Subroutine does not return */\n    __assert_fail(\"baud != (speed_t) -1\",\n                  \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/stty.c\",\n                  0x6ba,\"set_speed\");\n  }\n  if ((param_1 == 0) || (param_1 == 2)) {\n    last_ibaud = __speed;\n    iVar1 = cfsetispeed(param_3,__speed);\n    if (iVar1 != 0) {\n      uVar2 = quotearg_style(4,param_2);\n      uVar3 = gettext(\"unsupported ispeed %s\");\n      error(1,0,uVar3,uVar2);\n    }\n  }\n  if ((param_1 == 1) || (param_1 == 2)) {\n    last_obaud = __speed;\n    iVar1 = cfsetospeed(param_3,__speed);\n    if (iVar1 != 0) {\n      uVar2 = quotearg_style(4,param_2);\n      uVar3 = gettext(\"unsupported ospeed %s\");\n      error(1,0,uVar3,uVar2);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_speed",
+                        "string_to_baud",
+                        "__assert_fail",
+                        "cfsetispeed",
+                        "quotearg_style",
+                        "gettext",
+                        "error",
+                        "cfsetospeed"
+                    ],
+                    "calling_functions": [
+                        "apply_settings",
+                        "set_speed"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_win_size",
+                "func_c_signature": "int get_win_size(int param_1,undefined8 param_2)",
+                "decompiled_code": "int get_win_size(int param_1,undefined8 param_2) {\n  int iVar1;\n  \n  iVar1 = ioctl(param_1,0x5413,param_2);\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_win_size",
+                        "ioctl"
+                    ],
+                    "calling_functions": [
+                        "get_win_size",
+                        "set_window_size",
+                        "display_window_size",
+                        "screen_columns"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_window_size",
+                "func_c_signature": "void set_window_size(int param_1,int param_2,undefined8 param_3)",
+                "decompiled_code": "void set_window_size(int param_1,int param_2,undefined8 param_3) {\n  int iVar1;\n  int *piVar2;\n  undefined8 uVar3;\n  long in_FS_OFFSET;\n  undefined2 local_28;\n  undefined2 local_26;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  iVar1 = get_win_size(0,&local_28);\n  if (iVar1 != 0) {\n    piVar2 = __errno_location();\n    if (*piVar2 != 0x16) {\n      uVar3 = quotearg_n_style_colon(0,3,param_3);\n      piVar2 = __errno_location();\n      error(1,*piVar2,&DAT_0010737d,uVar3);\n    }\n    memset(&local_28,0,8);\n  }\n  if (-1 < param_1) {\n    local_28 = (undefined2)param_1;\n  }\n  if (-1 < param_2) {\n    local_26 = (undefined2)param_2;\n  }\n  iVar1 = ioctl(0,0x5414,&local_28);\n  if (iVar1 != 0) {\n    uVar3 = quotearg_n_style_colon(0,3,param_3);\n    piVar2 = __errno_location();\n    error(1,*piVar2,&DAT_0010737d,uVar3);\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_window_size",
+                        "get_win_size",
+                        "__errno_location",
+                        "quotearg_n_style_colon",
+                        "error",
+                        "memset",
+                        "ioctl",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "apply_settings",
+                        "set_window_size"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "display_window_size",
+                "func_c_signature": "void display_window_size(char param_1,undefined8 param_2)",
+                "decompiled_code": "void display_window_size(char param_1,undefined8 param_2) {\n  int iVar1;\n  int *piVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  char *pcVar5;\n  long in_FS_OFFSET;\n  undefined2 local_28;\n  undefined2 local_26;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  iVar1 = get_win_size(0,&local_28);\n  if (iVar1 != 0) {\n    piVar2 = __errno_location();\n    if (*piVar2 != 0x16) {\n      uVar3 = quotearg_n_style_colon(0,3,param_2);\n      piVar2 = __errno_location();\n      error(1,*piVar2,&DAT_0010737d,uVar3);\n    }\n    if (param_1 == '\\x01') goto code_r0x0010338b;\n    uVar3 = quotearg_n_style_colon(0,3,param_2);\n    uVar4 = gettext(\"%s: no size information for this device\");\n    error(1,0,uVar4,uVar3);\n  }\n  if (param_1 == '\\0') {\n    pcVar5 = \"%d %d\\n\";\n  }\n  else {\n    pcVar5 = \"rows %d; columns %d;\";\n  }\n  wrapf(pcVar5,local_28,local_26);\n  if (param_1 != '\\x01') {\n    current_col = 0;\n  }\ncode_r0x0010338b:\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "display_window_size",
+                        "get_win_size",
+                        "__errno_location",
+                        "quotearg_n_style_colon",
+                        "error",
+                        "gettext",
+                        "wrapf",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "apply_settings",
+                        "display_window_size",
+                        "display_all"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "screen_columns",
+                "func_c_signature": "ulong screen_columns(void)",
+                "decompiled_code": "ulong screen_columns(void) {\n  int iVar1;\n  ulong uVar2;\n  long in_FS_OFFSET;\n  ulong local_28;\n  char *local_20;\n  undefined local_18 [2];\n  ushort local_16;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  iVar1 = get_win_size(1,local_18);\n  if ((iVar1 == 0) && (local_16 != 0)) {\n    uVar2 = (ulong)local_16;\n  }\n  else {\n    local_20 = getenv(\"COLUMNS\");\n    if ((((local_20 == (char *)0x0) ||\n         (iVar1 = xstrtol(local_20,0,0,&local_28,&DAT_00104f24), iVar1 != 0)) ||\n        ((long)local_28 < 1)) || (uVar2 = local_28, 0x7fffffff < (long)local_28)) {\n      local_28 = 0x50;\n      uVar2 = local_28;\n    }\n  }\n  if (local_10 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return uVar2;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "screen_columns",
+                        "get_win_size",
+                        "getenv",
+                        "xstrtol",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "apply_settings",
+                        "main",
+                        "screen_columns"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "mode_type_flag",
+                "func_c_signature": "void mode_type_flag(uint param_1)",
+                "decompiled_code": "void mode_type_flag(uint param_1) {\n                    /* WARNING: Could not recover jumptable at 0x00103492. Too many branches */\n                    /* WARNING: Treating indirect jump as call */\n  (*(code *)(&DAT_001074f4 + *(int *)(&DAT_001074f4 + (ulong)param_1 * 4)))();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "mode_type_flag"
+                    ],
+                    "calling_functions": [
+                        "set_mode",
+                        "mode_type_flag",
+                        "display_changed",
+                        "display_all",
+                        "sane_mode"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "display_settings",
+                "func_c_signature": "void display_settings(uint param_1,undefined8 param_2,undefined8 param_3)",
+                "decompiled_code": "void display_settings(uint param_1,undefined8 param_2,undefined8 param_3) {\n  if (param_1 == 2) {\n    display_recoverable(param_2);\n  }\n  else if (param_1 < 3) {\n    if (param_1 == 0) {\n      display_changed(param_2);\n    }\n    else if (param_1 == 1) {\n      display_all(param_2,param_3);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "display_settings",
+                        "display_recoverable",
+                        "display_changed",
+                        "display_all"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "display_settings"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "display_changed",
+                "func_c_signature": "void display_changed(long param_1)",
+                "decompiled_code": "void display_changed(long param_1) {\n  bool bVar1;\n  char cVar2;\n  undefined8 uVar3;\n  uint *puVar4;\n  ulong uVar5;\n  int local_20;\n  int local_1c;\n  \n  local_1c = 0;\n  display_speed(param_1,1);\n  wrapf(\"line = %d;\",*(undefined *)(param_1 + 0x10));\n  putchar_unlocked(10);\n  current_col = 0;\n  bVar1 = true;\n  local_20 = 0;\n  while (cVar2 = streq(*(undefined8 *)(control_info + (long)local_20 * 0x18),&DAT_001051bf),\n        cVar2 != '\\x01') {\n    if ((*(char *)(param_1 + 0x11 + *(long *)(control_info + (long)local_20 * 0x18 + 0x10)) !=\n         control_info[(long)local_20 * 0x18 + 8]) &&\n       (cVar2 = streq(*(undefined8 *)(control_info + (long)local_20 * 0x18),\"flush\"), cVar2 == '\\0')\n       ) {\n      bVar1 = false;\n      uVar3 = visible(*(undefined *)\n                       (param_1 + 0x11 + *(long *)(control_info + (long)local_20 * 0x18 + 0x10)));\n      wrapf(\"%s = %s;\",*(undefined8 *)(control_info + (long)local_20 * 0x18),uVar3);\n    }\n    local_20 = local_20 + 1;\n  }\n  if ((*(uint *)(param_1 + 0xc) & 2) == 0) {\n    wrapf(\"min = %lu; time = %lu;\\n\",*(undefined *)(param_1 + 0x17),*(undefined *)(param_1 + 0x16));\n  }\n  else if (!bVar1) {\n    putchar_unlocked(10);\n  }\n  current_col = 0;\n  bVar1 = true;\n  local_20 = 0;\n  while (*(long *)(mode_info + (long)local_20 * 0x20) != 0) {\n    if ((mode_info[(long)local_20 * 0x20 + 0xc] & 8) == 0) {\n      if (local_1c != *(int *)(mode_info + (long)local_20 * 0x20 + 8)) {\n        if (!bVar1) {\n          putchar_unlocked(10);\n          current_col = 0;\n          bVar1 = true;\n        }\n        local_1c = *(int *)(mode_info + (long)local_20 * 0x20 + 8);\n      }\n      puVar4 = (uint *)mode_type_flag(*(undefined4 *)(mode_info + (long)local_20 * 0x20 + 8),param_1\n                                     );\n      if (*(long *)(mode_info + (long)local_20 * 0x20 + 0x18) == 0) {\n        uVar5 = *(ulong *)(mode_info + (long)local_20 * 0x20 + 0x10);\n      }\n      else {\n        uVar5 = *(ulong *)(mode_info + (long)local_20 * 0x20 + 0x18);\n      }\n      if ((*puVar4 & uVar5) == *(ulong *)(mode_info + (long)local_20 * 0x20 + 0x10)) {\n        if ((mode_info[(long)local_20 * 0x20 + 0xc] & 2) != 0) {\n          wrapf(&DAT_0010737d,*(undefined8 *)(mode_info + (long)local_20 * 0x20));\n          bVar1 = false;\n        }\n      }\n      else if ((mode_info[(long)local_20 * 0x20 + 0xc] & 5) == 5) {\n        wrapf(&DAT_00107534,*(undefined8 *)(mode_info + (long)local_20 * 0x20));\n        bVar1 = false;\n      }\n    }\n    local_20 = local_20 + 1;\n  }\n  if (!bVar1) {\n    putchar_unlocked(10);\n  }\n  current_col = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "display_changed",
+                        "display_speed",
+                        "wrapf",
+                        "putchar_unlocked",
+                        "streq",
+                        "visible",
+                        "mode_type_flag"
+                    ],
+                    "calling_functions": [
+                        "display_settings",
+                        "display_changed"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "display_all",
+                "func_c_signature": "void display_all(long param_1,undefined8 param_2)",
+                "decompiled_code": "void display_all(long param_1,undefined8 param_2) {\n  char cVar1;\n  undefined8 uVar2;\n  uint *puVar3;\n  ulong uVar4;\n  int local_20;\n  int local_1c;\n  \n  local_1c = 0;\n  display_speed(param_1,1);\n  display_window_size(1,param_2);\n  wrapf(\"line = %d;\",*(undefined *)(param_1 + 0x10));\n  putchar_unlocked(10);\n  current_col = 0;\n  local_20 = 0;\n  while( true ) {\n    cVar1 = streq(*(undefined8 *)(control_info + (long)local_20 * 0x18),&DAT_001051bf);\n    if (cVar1 == '\\x01') break;\n    cVar1 = streq(*(undefined8 *)(control_info + (long)local_20 * 0x18),\"flush\");\n    if (cVar1 == '\\0') {\n      uVar2 = visible(*(undefined *)\n                       (param_1 + 0x11 + *(long *)(control_info + (long)local_20 * 0x18 + 0x10)));\n      wrapf(\"%s = %s;\",*(undefined8 *)(control_info + (long)local_20 * 0x18),uVar2);\n    }\n    local_20 = local_20 + 1;\n  }\n  wrapf(\"min = %lu; time = %lu;\",*(undefined *)(param_1 + 0x17),*(undefined *)(param_1 + 0x16));\n  if (current_col != 0) {\n    putchar_unlocked(10);\n  }\n  current_col = 0;\n  local_20 = 0;\n  while (*(long *)(mode_info + (long)local_20 * 0x20) != 0) {\n    if ((mode_info[(long)local_20 * 0x20 + 0xc] & 8) == 0) {\n      if (local_1c != *(int *)(mode_info + (long)local_20 * 0x20 + 8)) {\n        putchar_unlocked(10);\n        current_col = 0;\n        local_1c = *(int *)(mode_info + (long)local_20 * 0x20 + 8);\n      }\n      puVar3 = (uint *)mode_type_flag(*(undefined4 *)(mode_info + (long)local_20 * 0x20 + 8),param_1\n                                     );\n      if (*(long *)(mode_info + (long)local_20 * 0x20 + 0x18) == 0) {\n        uVar4 = *(ulong *)(mode_info + (long)local_20 * 0x20 + 0x10);\n      }\n      else {\n        uVar4 = *(ulong *)(mode_info + (long)local_20 * 0x20 + 0x18);\n      }\n      if ((*puVar3 & uVar4) == *(ulong *)(mode_info + (long)local_20 * 0x20 + 0x10)) {\n        wrapf(&DAT_0010737d,*(undefined8 *)(mode_info + (long)local_20 * 0x20));\n      }\n      else if ((mode_info[(long)local_20 * 0x20 + 0xc] & 4) != 0) {\n        wrapf(&DAT_00107534,*(undefined8 *)(mode_info + (long)local_20 * 0x20));\n      }\n    }\n    local_20 = local_20 + 1;\n  }\n  putchar_unlocked(10);\n  current_col = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "display_all",
+                        "display_speed",
+                        "display_window_size",
+                        "wrapf",
+                        "putchar_unlocked",
+                        "streq",
+                        "visible",
+                        "mode_type_flag"
+                    ],
+                    "calling_functions": [
+                        "display_settings",
+                        "display_all"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_speed",
+                "func_c_signature": "void check_speed(termios *param_1)",
+                "decompiled_code": "void check_speed(termios *param_1) {\n  speed_t sVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  \n  if ((last_ibaud != 0xffffffff) && (last_obaud != 0xffffffff)) {\n    sVar1 = cfgetispeed(param_1);\n    if ((sVar1 == last_ibaud) && (sVar1 = cfgetospeed(param_1), sVar1 == last_obaud)) {\n      return;\n    }\n    uVar2 = baud_to_value(last_obaud);\n    uVar3 = baud_to_value(last_ibaud);\n    uVar4 = gettext(\"asymmetric input (%lu), output (%lu) speeds not supported\");\n    error(1,0,uVar4,uVar3,uVar2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "input",
+                    "output"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_speed",
+                        "cfgetispeed",
+                        "cfgetospeed",
+                        "baud_to_value",
+                        "gettext",
+                        "input",
+                        "output",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "apply_settings",
+                        "check_speed"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "display_speed",
+                "func_c_signature": "void display_speed(termios *param_1,char param_2)",
+                "decompiled_code": "void display_speed(termios *param_1,char param_2) {\n  speed_t sVar1;\n  speed_t sVar2;\n  undefined8 uVar3;\n  char *pcVar4;\n  undefined8 uVar5;\n  \n  sVar1 = cfgetispeed(param_1);\n  if (sVar1 != 0) {\n    sVar1 = cfgetispeed(param_1);\n    sVar2 = cfgetospeed(param_1);\n    if (sVar1 != sVar2) {\n      sVar1 = cfgetospeed(param_1);\n      uVar3 = baud_to_value(sVar1);\n      sVar1 = cfgetispeed(param_1);\n      uVar5 = baud_to_value(sVar1);\n      if (param_2 == '\\0') {\n        pcVar4 = \"%lu %lu\\n\";\n      }\n      else {\n        pcVar4 = \"ispeed %lu baud; ospeed %lu baud;\";\n      }\n      wrapf(pcVar4,uVar5,uVar3);\n      goto LAB_00103e8a;\n    }\n  }\n  sVar1 = cfgetospeed(param_1);\n  uVar3 = baud_to_value(sVar1);\n  if (param_2 == '\\0') {\n    pcVar4 = \"%lu\\n\";\n  }\n  else {\n    pcVar4 = \"speed %lu baud;\";\n  }\n  wrapf(pcVar4,uVar3);\nLAB_00103e8a:\n  if (param_2 != '\\x01') {\n    current_col = 0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "display_speed",
+                        "cfgetispeed",
+                        "cfgetospeed",
+                        "baud_to_value",
+                        "wrapf"
+                    ],
+                    "calling_functions": [
+                        "apply_settings",
+                        "display_changed",
+                        "display_all",
+                        "display_speed"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "display_recoverable",
+                "func_c_signature": "void display_recoverable(uint *param_1)",
+                "decompiled_code": "void display_recoverable(uint *param_1) {\n  ulong local_10;\n  \n  printf(\"%lx:%lx:%lx:%lx\",(ulong)*param_1,(ulong)param_1[1],(ulong)param_1[2],(ulong)param_1[3]);\n  for (local_10 = 0; local_10 < 0x20; local_10 = local_10 + 1) {\n    printf(\":%lx\",(ulong)*(byte *)((long)param_1 + local_10 + 0x11));\n  }\n  putchar_unlocked(10);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "display_recoverable",
+                        "printf",
+                        "putchar_unlocked"
+                    ],
+                    "calling_functions": [
+                        "display_settings",
+                        "display_recoverable"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "strtoul_tcflag_t",
+                "func_c_signature": "undefined8\nstrtoul_tcflag_t(char *param_1,undefined4 param_2,char **param_3,undefined4 *param_4,char param_5)",
+                "decompiled_code": "undefined8\nstrtoul_tcflag_t(char *param_1,undefined4 param_2,char **param_3,undefined4 *param_4,char param_5) {\n  int *piVar1;\n  ulong uVar2;\n  undefined8 uVar3;\n  \n  piVar1 = __errno_location();\n  *piVar1 = 0;\n  uVar2 = __isoc23_strtoul(param_1,param_3,param_2);\n  piVar1 = __errno_location();\n  if ((((*piVar1 == 0) && (param_5 == **param_3)) && (param_1 != *param_3)) &&\n     (uVar2 == (uVar2 & 0xffffffff))) {\n    *param_4 = (int)uVar2;\n    uVar3 = 0;\n  }\n  else {\n    uVar3 = 0xffffffff;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strtoul_tcflag_t",
+                        "__errno_location",
+                        "__isoc23_strtoul"
+                    ],
+                    "calling_functions": [
+                        "strtoul_tcflag_t",
+                        "recover_mode"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "strtoul_cc_t",
+                "func_c_signature": "undefined8\nstrtoul_cc_t(char *param_1,undefined4 param_2,char **param_3,undefined *param_4,char param_5)",
+                "decompiled_code": "undefined8\nstrtoul_cc_t(char *param_1,undefined4 param_2,char **param_3,undefined *param_4,char param_5) {\n  int *piVar1;\n  ulong uVar2;\n  undefined8 uVar3;\n  \n  piVar1 = __errno_location();\n  *piVar1 = 0;\n  uVar2 = __isoc23_strtoul(param_1,param_3,param_2);\n  piVar1 = __errno_location();\n  if ((((*piVar1 == 0) && (param_5 == **param_3)) && (param_1 != *param_3)) &&\n     (uVar2 == (uVar2 & 0xff))) {\n    *param_4 = (char)uVar2;\n    uVar3 = 0;\n  }\n  else {\n    uVar3 = 0xffffffff;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strtoul_cc_t",
+                        "__errno_location",
+                        "__isoc23_strtoul"
+                    ],
+                    "calling_functions": [
+                        "strtoul_cc_t",
+                        "recover_mode"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "recover_mode",
+                "func_c_signature": "undefined8 recover_mode(long param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined8 recover_mode(long param_1,undefined4 *param_2) {\n  undefined uVar1;\n  int iVar2;\n  undefined8 uVar3;\n  long in_FS_OFFSET;\n  long local_40;\n  long local_38;\n  ulong local_30;\n  undefined4 local_28 [6];\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_38 = param_1;\n  for (local_30 = 0; local_30 < 4; local_30 = local_30 + 1) {\n    iVar2 = strtoul_tcflag_t(local_38,0x10,&local_40,local_28 + local_30,0x3a);\n    if (iVar2 != 0) {\n      uVar3 = 0;\n      goto LAB_0010418e;\n    }\n    local_38 = local_40 + 1;\n  }\n  *param_2 = local_28[0];\n  param_2[1] = local_28[1];\n  param_2[2] = local_28[2];\n  param_2[3] = local_28[3];\n  local_30 = 0;\n  do {\n    if (0x1f < local_30) {\n      uVar3 = 1;\nLAB_0010418e:\n      if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n        __stack_chk_fail();\n      }\n      return uVar3;\n    }\n    if (local_30 < 0x1f) {\n      uVar1 = 0x3a;\n    }\n    else {\n      uVar1 = 0;\n    }\n    iVar2 = strtoul_cc_t(local_38,0x10,&local_40,(long)param_2 + local_30 + 0x11,uVar1);\n    if (iVar2 != 0) {\n      uVar3 = 0;\n      goto LAB_0010418e;\n    }\n    local_38 = local_40 + 1;\n    local_30 = local_30 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recover_mode",
+                        "strtoul_tcflag_t",
+                        "__stack_chk_fail",
+                        "strtoul_cc_t"
+                    ],
+                    "calling_functions": [
+                        "apply_settings",
+                        "recover_mode"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "string_to_baud",
+                "func_c_signature": "undefined8 string_to_baud(char *param_1)",
+                "decompiled_code": "undefined8 string_to_baud(char *param_1) {\n  char *pcVar1;\n  char cVar2;\n  undefined8 uVar3;\n  long in_FS_OFFSET;\n  char *local_30;\n  char local_22;\n  char *local_20;\n  ulong local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_30 = param_1;\n  while( true ) {\n    cVar2 = c_isspace((int)*local_30);\n    if (cVar2 == '\\0') break;\n    local_30 = local_30 + 1;\n  }\n  if (*local_30 == '-') {\n    uVar3 = 0xffffffff;\n  }\n  else {\n    local_18 = __isoc23_strtoul(local_30,&local_20,10);\n    pcVar1 = local_20 + 1;\n    cVar2 = *local_20;\n    if (cVar2 == '.') {\n      local_20 = local_20 + 2;\n      local_22 = *pcVar1;\n      if (local_22 != '\\0') {\n        if ((byte)(local_22 - 0x30U) < 6) {\n          if ((byte)(local_22 - 0x30U) == 5) {\n            do {\n              pcVar1 = local_20 + 1;\n              local_22 = *local_20;\n              local_20 = pcVar1;\n            } while (local_22 == '0');\n            if (local_22 == '\\0') {\n              local_18 = local_18 + 1 & 0xfffffffffffffffe;\n            }\n            else {\n              local_18 = local_18 + 1;\n            }\n          }\n        }\n        else {\n          local_18 = local_18 + 1;\n        }\n        while( true ) {\n          cVar2 = c_isdigit(local_22);\n          if (cVar2 == '\\0') break;\n          local_22 = *local_20;\n          local_20 = local_20 + 1;\n        }\n        if (local_22 != '\\0') {\n          uVar3 = 0xffffffff;\n          goto LAB_001048f9;\n        }\n      }\n    }\n    else {\n      local_20 = pcVar1;\n      if (cVar2 != '\\0') {\n        cVar2 = streq(local_30,&DAT_0010765c);\n        if (cVar2 == '\\0') {\n          cVar2 = streq(local_30,&DAT_00107661);\n          if (cVar2 == '\\0') {\n            uVar3 = 0xffffffff;\n          }\n          else {\n            uVar3 = 0xf;\n          }\n        }\n        else {\n          uVar3 = 0xe;\n        }\n        goto LAB_001048f9;\n      }\n    }\n    uVar3 = value_to_baud(local_18);\n  }\nLAB_001048f9:\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "string_to_baud",
+                        "c_isspace",
+                        "__isoc23_strtoul",
+                        "c_isdigit",
+                        "streq",
+                        "value_to_baud",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "apply_settings",
+                        "set_speed",
+                        "string_to_baud"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sane_mode",
+                "func_c_signature": "void sane_mode(long param_1)",
+                "decompiled_code": "void sane_mode(long param_1) {\n  uint *puVar1;\n  int local_14;\n  \n  local_14 = 0;\n  while (*(long *)(control_info + (long)local_14 * 0x18) != 0) {\n    *(undefined1 *)(param_1 + 0x11 + *(long *)(control_info + (long)local_14 * 0x18 + 0x10)) =\n         control_info[(long)local_14 * 0x18 + 8];\n    local_14 = local_14 + 1;\n  }\n  local_14 = 0;\n  while (*(long *)(mode_info + (long)local_14 * 0x20) != 0) {\n    if ((mode_info[(long)local_14 * 0x20 + 0xc] & 0x10) == 0) {\n      if ((mode_info[(long)local_14 * 0x20 + 0xc] & 1) == 0) {\n        if ((mode_info[(long)local_14 * 0x20 + 0xc] & 2) != 0) {\n          puVar1 = (uint *)mode_type_flag(*(undefined4 *)(mode_info + (long)local_14 * 0x20 + 8),\n                                          param_1);\n          *puVar1 = *puVar1 & ~(uint)*(undefined8 *)(mode_info + (long)local_14 * 0x20 + 0x18) &\n                    ~(uint)*(undefined8 *)(mode_info + (long)local_14 * 0x20 + 0x10);\n        }\n      }\n      else {\n        puVar1 = (uint *)mode_type_flag(*(undefined4 *)(mode_info + (long)local_14 * 0x20 + 8),\n                                        param_1);\n        *puVar1 = *puVar1 & ~(uint)*(undefined8 *)(mode_info + (long)local_14 * 0x20 + 0x18) |\n                  (uint)*(undefined8 *)(mode_info + (long)local_14 * 0x20 + 0x10);\n      }\n    }\n    local_14 = local_14 + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sane_mode",
+                        "mode_type_flag"
+                    ],
+                    "calling_functions": [
+                        "set_mode",
+                        "sane_mode"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "visible",
+                "func_c_signature": "char * visible(byte param_1)",
+                "decompiled_code": "char * visible(byte param_1) {\n  char *pcVar1;\n  undefined *local_10;\n  \n  if (param_1 == 0) {\n    pcVar1 = \"<undef>\";\n  }\n  else {\n    if (param_1 < 0x20) {\n      buf_0 = 0x5e;\n      DAT_00104dc1 = param_1 + 0x40;\n      local_10 = &DAT_00104dc2;\n    }\n    else if (param_1 < 0x7f) {\n      local_10 = &DAT_00104dc1;\n      buf_0 = param_1;\n    }\n    else if (param_1 == 0x7f) {\n      buf_0 = 0x5e;\n      local_10 = &DAT_00104dc2;\n      DAT_00104dc1 = '?';\n    }\n    else {\n      buf_0 = 0x4d;\n      DAT_00104dc1 = '-';\n      if (param_1 < 0xa0) {\n        DAT_00104dc2 = '^';\n        DAT_00104dc3 = param_1 - 0x40;\n        local_10 = &DAT_00104dc4;\n      }\n      else if (param_1 == 0xff) {\n        DAT_00104dc2 = '^';\n        local_10 = &DAT_00104dc4;\n        DAT_00104dc3 = '?';\n      }\n      else {\n        DAT_00104dc2 = param_1 + 0x80;\n        local_10 = &DAT_00104dc3;\n      }\n    }\n    *local_10 = 0;\n    pcVar1 = (char *)&buf_0;\n  }\n  return pcVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "visible"
+                    ],
+                    "calling_functions": [
+                        "display_changed",
+                        "display_all",
+                        "visible"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            },
+            {
+                "func_name": "integer_arg",
+                "func_c_signature": "void integer_arg(undefined8 param_1,undefined8 param_2)",
+                "decompiled_code": "void integer_arg(undefined8 param_1,undefined8 param_2) {\n  undefined8 uVar1;\n  \n  uVar1 = gettext(\"invalid integer argument\");\n  xnumtoumax(param_1,0,0,param_2,&DAT_00107687,uVar1,0,0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "integer_arg",
+                        "gettext",
+                        "xnumtoumax"
+                    ],
+                    "calling_functions": [
+                        "apply_settings",
+                        "set_control_char",
+                        "integer_arg"
+                    ],
+                    "defined_in_file": "stty_decompiled.c"
+                }
+            }
+        ]
+    }
+}

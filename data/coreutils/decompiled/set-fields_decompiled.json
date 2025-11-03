@@ -1,0 +1,109 @@
+{
+    "file": "set-fields",
+    "decompiled_code": {
+        "set-fields.c": [
+            {
+                "func_name": "add_range_pair",
+                "func_c_signature": "void add_range_pair(undefined8 param_1,undefined8 param_2)",
+                "decompiled_code": "void add_range_pair(undefined8 param_1,undefined8 param_2) {\n  if (n_frp == n_frp_allocated) {\n    frp = xpalloc(frp,&n_frp_allocated,1,0xffffffffffffffff,0x10);\n  }\n  *(undefined8 *)(n_frp * 0x10 + frp) = param_1;\n  *(undefined8 *)(n_frp * 0x10 + frp + 8) = param_2;\n  n_frp = n_frp + 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_range_pair",
+                        "xpalloc"
+                    ],
+                    "calling_functions": [
+                        "add_range_pair",
+                        "complement_rp",
+                        "set_fields"
+                    ],
+                    "defined_in_file": "set-fields_decompiled.c"
+                }
+            },
+            {
+                "func_name": "compare_ranges",
+                "func_c_signature": "int compare_ranges(ulong *param_1,ulong *param_2)",
+                "decompiled_code": "int compare_ranges(ulong *param_1,ulong *param_2) {\n  return (uint)(*param_2 < *param_1) - (uint)(*param_1 < *param_2);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "compare_ranges"
+                    ],
+                    "calling_functions": [
+                        "compare_ranges"
+                    ],
+                    "defined_in_file": "set-fields_decompiled.c"
+                }
+            },
+            {
+                "func_name": "complement_rp",
+                "func_c_signature": "void complement_rp(void)",
+                "decompiled_code": "void complement_rp(void) {\n  ulong *__ptr;\n  long lVar1;\n  long local_20;\n  \n  lVar1 = n_frp;\n  __ptr = frp;\n  frp = (ulong *)0x0;\n  n_frp = 0;\n  n_frp_allocated = 0;\n  if (1 < *__ptr) {\n    add_range_pair(1,*__ptr - 1);\n  }\n  for (local_20 = 1; local_20 < lVar1; local_20 = local_20 + 1) {\n    if (__ptr[local_20 * 2 + -1] + 1 != __ptr[local_20 * 2]) {\n      add_range_pair(__ptr[local_20 * 2 + -1] + 1,__ptr[local_20 * 2] - 1);\n    }\n  }\n  if (__ptr[lVar1 * 2 + -1] != 0xffffffffffffffff) {\n    add_range_pair(__ptr[lVar1 * 2 + -1] + 1,0xffffffffffffffff);\n  }\n  free(__ptr);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "complement_rp",
+                        "add_range_pair",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "complement_rp",
+                        "set_fields"
+                    ],
+                    "defined_in_file": "set-fields_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_fields",
+                "func_c_signature": "void set_fields(char *param_1,uint param_2)",
+                "decompiled_code": "void set_fields(char *param_1,uint param_2) {\n  long lVar1;\n  ushort *puVar2;\n  ulong uVar3;\n  undefined auVar4 [16];\n  bool bVar5;\n  bool bVar6;\n  bool bVar7;\n  bool bVar8;\n  char cVar9;\n  byte bVar10;\n  undefined8 uVar11;\n  ushort **ppuVar12;\n  size_t sVar13;\n  void *__ptr;\n  undefined8 uVar14;\n  ulong uVar15;\n  long lVar16;\n  long in_FS_OFFSET;\n  char *local_e0;\n  ulong local_88;\n  ulong local_80;\n  long local_78;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  local_80 = 1;\n  local_88 = 0;\n  bVar6 = false;\n  bVar7 = false;\n  bVar5 = false;\n  bVar8 = false;\n  local_e0 = param_1;\n  if (((param_2 & 1) != 0) && (cVar9 = streq(param_1,&DAT_00100b58), cVar9 != '\\0')) {\n    local_88 = 1;\n    bVar6 = true;\n    bVar5 = true;\n    local_e0 = param_1 + 1;\n  }\n  do {\n    while( true ) {\n      while (*local_e0 == '-') {\n        bVar8 = false;\n        if (bVar5) {\n          if ((param_2 & 4) == 0) {\n            uVar11 = gettext(\"invalid field range\");\n          }\n          else {\n            uVar11 = gettext(\"invalid byte or character range\");\n          }\n          error(0,0,uVar11);\n          usage(1);\n        }\n        bVar5 = true;\n        local_e0 = local_e0 + 1;\n        if ((bVar6) && (local_88 == 0)) {\n          if ((param_2 & 4) == 0) {\n            uVar11 = gettext(\"fields are numbered from 1\");\n          }\n          else {\n            uVar11 = gettext(\"byte/character positions are numbered from 1\");\n          }\n          error(0,0,uVar11);\n          usage(1);\n        }\n        local_80 = local_88;\n        if (!bVar6) {\n          local_80 = 1;\n        }\n        local_88 = 0;\n      }\n      if (*local_e0 != ',') break;\nLAB_0010048f:\n      bVar8 = false;\n      if (bVar5) {\n        bVar5 = false;\n        if ((!bVar6) && (!bVar7)) {\n          if ((param_2 & 1) == 0) {\n            uVar11 = gettext(\"invalid range with no endpoint: -\");\n            error(0,0,uVar11);\n            usage(1);\n          }\n          else {\n            local_80 = 1;\n          }\n        }\n        if (bVar7) {\n          if (local_88 < local_80) {\n            uVar11 = gettext(\"invalid decreasing range\");\n            error(0,0,uVar11);\n            usage(1);\n          }\n          add_range_pair(local_80,local_88);\n        }\n        else {\n          add_range_pair(local_80,0xffffffffffffffff);\n        }\n      }\n      else {\n        if (local_88 == 0) {\n          if ((param_2 & 4) == 0) {\n            uVar11 = gettext(\"fields are numbered from 1\");\n          }\n          else {\n            uVar11 = gettext(\"byte/character positions are numbered from 1\");\n          }\n          error(0,0,uVar11);\n          usage(1);\n        }\n        add_range_pair(local_88,local_88);\n      }\n      local_88 = 0;\n      if (*local_e0 == '\\0') {\n        if (n_frp == 0) {\n          if ((param_2 & 4) == 0) {\n            uVar11 = gettext(\"missing list of fields\");\n          }\n          else {\n            uVar11 = gettext(\"missing list of byte/character positions\");\n          }\n          error(0,0,uVar11);\n          usage(1);\n        }\n        qsort(frp,n_frp,0x10,compare_ranges);\n        for (local_78 = 0; local_78 < (long)n_frp; local_78 = local_78 + 1) {\n          lVar16 = local_78 + 1;\n          while ((lVar16 < (long)n_frp &&\n                 (*(ulong *)((long)frp + lVar16 * 0x10) <=\n                  *(ulong *)((long)frp + local_78 * 0x10 + 8)))) {\n            uVar3 = *(ulong *)((long)frp + local_78 * 0x10 + 8);\n            uVar15 = *(ulong *)((long)frp + lVar16 * 0x10 + 8);\n            if (uVar15 <= uVar3) {\n              uVar15 = uVar3;\n            }\n            *(ulong *)((long)frp + local_78 * 0x10 + 8) = uVar15;\n            memmove((void *)((long)frp + lVar16 * 0x10),(void *)((local_78 + 2) * 0x10 + (long)frp),\n                    ((n_frp - lVar16) + -1) * 0x10);\n            n_frp = n_frp - 1;\n          }\n        }\n        if ((param_2 & 2) != 0) {\n          complement_rp();\n        }\n        n_frp = n_frp + 1;\n        frp = (void *)xrealloc(frp,n_frp * 0x10);\n        lVar16 = (long)frp + n_frp * 0x10 + -0x10;\n        *(undefined8 *)(lVar16 + 8) = 0xffffffffffffffff;\n        *(undefined8 *)((long)frp + n_frp * 0x10 + -0x10) = *(undefined8 *)(lVar16 + 8);\n        if (lVar1 == *(long *)(in_FS_OFFSET + 0x28)) {\n          return;\n        }\n                    /* WARNING: Subroutine does not return */\n        __stack_chk_fail();\n      }\n      local_e0 = local_e0 + 1;\n      bVar6 = false;\n      bVar7 = false;\n    }\n    ppuVar12 = __ctype_b_loc();\n    puVar2 = *ppuVar12;\n    bVar10 = to_uchar((int)*local_e0);\n    if (((puVar2[bVar10] & 1) != 0) || (*local_e0 == '\\0')) goto LAB_0010048f;\n    cVar9 = c_isdigit((int)*local_e0);\n    if (cVar9 == '\\0') {\n      uVar11 = quote(local_e0);\n      if ((param_2 & 4) == 0) {\n        uVar14 = gettext(\"invalid field value %s\");\n      }\n      else {\n        uVar14 = gettext(\"invalid byte/character position %s\");\n      }\n      error(0,0,uVar14,uVar11);\n      usage(1);\n    }\n    else {\n      if ((!bVar8) || (num_start_0 == (char *)0x0)) {\n        num_start_0 = local_e0;\n      }\n      bVar8 = true;\n      if (bVar5) {\n        bVar7 = true;\n      }\n      else {\n        bVar6 = true;\n      }\n      auVar4._8_8_ = 0;\n      auVar4._0_8_ = local_88;\n      local_88 = SUB168(auVar4 * ZEXT816(10),0);\n      if (((SUB168(auVar4 * ZEXT816(10),8) != 0) ||\n          (lVar16 = local_88 + 0x8000000000000000,\n          local_88 = lVar16 + (*local_e0 + -0x30) + 0x8000000000000000,\n          SCARRY8(lVar16,(long)(*local_e0 + -0x30)))) || (local_88 == 0xffffffffffffffff)) {\n        sVar13 = strspn(num_start_0,\"0123456789\");\n        __ptr = (void *)ximemdup0(num_start_0,sVar13);\n        uVar11 = quote(__ptr);\n        if ((param_2 & 4) == 0) {\n          uVar14 = gettext(\"field number %s is too large\");\n        }\n        else {\n          uVar14 = gettext(\"byte/character offset %s is too large\");\n        }\n        error(0,0,uVar14,uVar11);\n        free(__ptr);\n        usage(1);\n      }\n      local_e0 = local_e0 + 1;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [
+                    "SUB168",
+                    "ZEXT816",
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_fields",
+                        "streq",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "add_range_pair",
+                        "qsort",
+                        "memmove",
+                        "complement_rp",
+                        "xrealloc",
+                        "__stack_chk_fail",
+                        "__ctype_b_loc",
+                        "to_uchar",
+                        "c_isdigit",
+                        "quote",
+                        "SUB168",
+                        "ZEXT816",
+                        "SCARRY8",
+                        "strspn",
+                        "ximemdup0",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "set_fields"
+                    ],
+                    "defined_in_file": "set-fields_decompiled.c"
+                }
+            }
+        ]
+    }
+}

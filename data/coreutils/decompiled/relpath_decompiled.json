@@ -1,0 +1,70 @@
+{
+    "file": "relpath",
+    "decompiled_code": {
+        "relpath.c": [
+            {
+                "func_name": "path_common_prefix",
+                "func_c_signature": "int path_common_prefix(char *param_1,char *param_2)",
+                "decompiled_code": "int path_common_prefix(char *param_1,char *param_2) {\n  char *local_28;\n  char *local_20;\n  int local_10;\n  int local_c;\n  \n  local_10 = 0;\n  local_c = 0;\n  local_28 = param_2;\n  local_20 = param_1;\n  if ((param_2[1] == '/') == (param_1[1] == '/')) {\n    for (; ((*local_20 != '\\0' && (*local_28 != '\\0')) && (*local_20 == *local_28));\n        local_20 = local_20 + 1) {\n      if (*local_20 == '/') {\n        local_c = local_10 + 1;\n      }\n      local_28 = local_28 + 1;\n      local_10 = local_10 + 1;\n    }\n    if ((((*local_20 == '\\0') && (*local_28 == '\\0')) || ((*local_20 == '\\0' && (*local_28 == '/')))\n        ) || ((*local_28 == '\\0' && (*local_20 == '/')))) {\n      local_c = local_10;\n    }\n  }\n  else {\n    local_c = 0;\n  }\n  return local_c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "path_common_prefix"
+                    ],
+                    "calling_functions": [
+                        "path_common_prefix",
+                        "relpath"
+                    ],
+                    "defined_in_file": "relpath_decompiled.c"
+                }
+            },
+            {
+                "func_name": "buffer_or_output",
+                "func_c_signature": "undefined8 buffer_or_output(char *param_1,void **param_2,ulong *param_3)",
+                "decompiled_code": "undefined8 buffer_or_output(char *param_1,void **param_2,ulong *param_3) {\n  size_t sVar1;\n  \n  if (*param_2 == (void *)0x0) {\n    fputs_unlocked(param_1,_stdout);\n  }\n  else {\n    sVar1 = strlen(param_1);\n    if (*param_3 <= sVar1) {\n      return 1;\n    }\n    memcpy(*param_2,param_1,sVar1 + 1);\n    *param_2 = (void *)((long)*param_2 + sVar1);\n    *param_3 = *param_3 - sVar1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "buffer_or_output",
+                        "fputs_unlocked",
+                        "strlen",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "buffer_or_output",
+                        "relpath"
+                    ],
+                    "defined_in_file": "relpath_decompiled.c"
+                }
+            },
+            {
+                "func_name": "relpath",
+                "func_c_signature": "bool relpath(long param_1,long param_2,undefined8 param_3,undefined8 param_4)",
+                "decompiled_code": "bool relpath(long param_1,long param_2,undefined8 param_3,undefined8 param_4) {\n  byte bVar1;\n  char *pcVar2;\n  undefined8 uVar3;\n  bool bVar4;\n  undefined8 local_58;\n  undefined8 local_50;\n  long local_48;\n  long local_40;\n  byte local_2d;\n  int local_2c;\n  undefined4 local_28;\n  undefined4 local_24;\n  char *local_20;\n  char *local_18;\n  undefined *local_10;\n  \n  local_2d = 0;\n  local_58 = param_4;\n  local_50 = param_3;\n  local_48 = param_2;\n  local_40 = param_1;\n  local_2c = path_common_prefix(param_2,param_1);\n  if (local_2c == 0) {\n    bVar4 = false;\n  }\n  else {\n    local_20 = (char *)(local_48 + local_2c);\n    local_18 = (char *)(local_40 + local_2c);\n    if (*local_20 == '/') {\n      local_20 = local_20 + 1;\n    }\n    if (*local_18 == '/') {\n      local_18 = local_18 + 1;\n    }\n    if (*local_20 == '\\0') {\n      pcVar2 = local_18;\n      if (*local_18 == '\\0') {\n        pcVar2 = \".\";\n      }\n      bVar1 = buffer_or_output(pcVar2,&local_50,&local_58);\n      local_2d = (bVar1 | local_2d) != 0;\n    }\n    else {\n      bVar1 = buffer_or_output(&DAT_0010038e,&local_50,&local_58);\n      local_2d = (bVar1 | local_2d) != 0;\n      for (; *local_20 != '\\0'; local_20 = local_20 + 1) {\n        if (*local_20 == '/') {\n          bVar1 = buffer_or_output(&DAT_00100391,&local_50,&local_58);\n          local_2d = (bVar1 | local_2d) != 0;\n        }\n      }\n      if (*local_18 != '\\0') {\n        bVar1 = buffer_or_output(&DAT_00100395,&local_50,&local_58);\n        local_2d = (bVar1 | local_2d) != 0;\n        bVar1 = buffer_or_output(local_18,&local_50,&local_58);\n        local_2d = (bVar1 | local_2d) != 0;\n      }\n    }\n    if ((bool)local_2d != false) {\n      uVar3 = gettext(\"generating relative path\");\n      local_28 = 0;\n      local_24 = 0x24;\n      local_10 = &DAT_001003b2;\n      error(0,0x24,&DAT_001003b2,uVar3);\n    }\n    bVar4 = local_2d == '\\0';\n  }\n  return bVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "relpath",
+                        "path_common_prefix",
+                        "buffer_or_output",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "relpath"
+                    ],
+                    "defined_in_file": "relpath_decompiled.c"
+                }
+            }
+        ]
+    }
+}

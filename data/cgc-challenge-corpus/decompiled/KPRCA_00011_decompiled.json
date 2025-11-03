@@ -1,0 +1,514 @@
+{
+    "file": "KPRCA_00011",
+    "decompiled_code": {
+        "main.c": [
+            {
+                "func_name": "initialize",
+                "func_c_signature": "void initialize(void)",
+                "decompiled_code": "void initialize(void) {\n  char **__s;\n  size_t sVar1;\n  char *pcVar2;\n  byte local_19;\n  uint local_18;\n  uint local_10;\n  \n  printf(\"\\n   . . . Initializing the inventory . . .\\n         (movie info from IMDb.com)\\n\");\n  for (local_10 = 0; local_10 < 0x16; local_10 = local_10 + 1) {\n    random();\n    random();\n    if ((local_19 & 1) == 0) {\n      g_password[local_10] = (char)local_18 + (char)(local_18 / 0x1a) * -0x1a + 'a';\n    }\n    else {\n      g_password[local_10] = (char)local_18 + (char)(local_18 / 0x1a) * -0x1a + 'A';\n    }\n  }\n  g_password[local_10] = 0;\n  local_10 = 0;\n  while( true ) {\n    if (9 < local_10) {\n      return;\n    }\n    __s = (char **)malloc(0x1c);\n    if (__s == (char **)0x0) break;\n    memset(__s,0,0x1c);\n    sVar1 = strlen(*(char **)(local_10 * 0x1c + 0x18000));\n    pcVar2 = (char *)malloc(sVar1 + 1);\n    *__s = pcVar2;\n    sVar1 = strlen(*(char **)(default_movies + local_10 * 0x1c + 4));\n    pcVar2 = (char *)malloc(sVar1 + 1);\n    __s[1] = pcVar2;\n    if ((*__s == (char *)0x0) || (__s[1] == (char *)0x0)) break;\n    strcpy(*__s,*(char **)(local_10 * 0x1c + 0x18000));\n    strcpy(__s[1],*(char **)(default_movies + local_10 * 0x1c + 4));\n    __s[2] = *(char **)(default_movies + local_10 * 0x1c + 8);\n    __s[3] = *(char **)(default_movies + local_10 * 0x1c + 0xc);\n    __s[4] = *(char **)(default_movies + local_10 * 0x1c + 0x10);\n    __s[5] = *(char **)(default_movies + local_10 * 0x1c + 0x14);\n    __s[6] = (char *)print_movie_detail;\n    movie_add(&movies_full,__s);\n    local_10 = local_10 + 1;\n  }\n  printf(\"[ERROR] Initialization failed. Exit.\\n\");\n  quit();\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "n"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initialize",
+                        "printf",
+                        "n",
+                        "random",
+                        "malloc",
+                        "memset",
+                        "strlen",
+                        "strcpy",
+                        "movie_add",
+                        "quit"
+                    ],
+                    "calling_functions": [
+                        "initialize",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "readuntil",
+                "func_c_signature": "int readuntil(undefined4 param_1,char *param_2,uint param_3,char param_4)",
+                "decompiled_code": "int readuntil(undefined4 param_1,char *param_2,uint param_3,char param_4) {\n  char *pcVar1;\n  char cVar2;\n  int iVar3;\n  int local_18;\n  char *local_14;\n  uint local_10;\n  \n  local_14 = param_2;\n  local_10 = 0;\n  while ((((local_10 < param_3 && (iVar3 = receive(param_1,local_14,1,&local_18), iVar3 == 0)) &&\n          (local_18 != 0)) &&\n         (pcVar1 = local_14 + 1, cVar2 = *local_14, local_14 = pcVar1, param_4 != cVar2))) {\n    local_10 = local_10 + 1;\n  }\n  local_14[-1] = '\\0';\n  return (int)local_14 - (int)param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readuntil",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "readuntil",
+                        "rent_movie",
+                        "return_movie",
+                        "login",
+                        "add_movie",
+                        "remove_movie",
+                        "update_movie",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_movie_detail",
+                "func_c_signature": "void print_movie_detail(undefined4 param_1,undefined4 *param_2)",
+                "decompiled_code": "void print_movie_detail(undefined4 param_1,undefined4 *param_2) {\n  uint uVar1;\n  undefined4 local_3c;\n  undefined4 local_38;\n  undefined4 local_34;\n  undefined4 local_30;\n  undefined4 local_2c;\n  undefined4 local_28;\n  undefined4 local_24;\n  undefined4 local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  char *local_14;\n  char *local_10;\n  \n  local_3c = 0x5d64255b;\n  local_38 = 0x20732520;\n  local_34 = 0x2c642528;\n  local_30 = 0x29732520;\n  local_2c = 0x25202d20;\n  local_28 = 0x255b2073;\n  local_24 = 0x30312f64;\n  local_20 = 0x200a5d30;\n  local_1c = 0x203e3d20;\n  local_18 = 0xa7325;\n  if (param_2 == (undefined4 *)0x0) {\n    return;\n  }\n  uVar1 = param_2[5];\n  if (uVar1 == 4) {\n    local_10 = \"R\";\n  }\n  else if (uVar1 < 5) {\n    if (uVar1 == 3) {\n      local_10 = \"PG13\";\n    }\n    else {\n      if (3 < uVar1) goto LAB_000113cb;\n      if (uVar1 == 1) {\n        local_10 = \"G\";\n      }\n      else {\n        if (uVar1 != 2) goto LAB_000113cb;\n        local_10 = \"PG\";\n      }\n    }\n  }\n  else {\nLAB_000113cb:\n    local_10 = \"Unknown\";\n  }\n  uVar1 = param_2[4];\n  if (uVar1 == 4) {\n    local_14 = \"Horror\";\n    goto LAB_00011431;\n  }\n  if (uVar1 < 5) {\n    if (uVar1 == 3) {\n      local_14 = \"Comedy\";\n      goto LAB_00011431;\n    }\n    if (uVar1 < 4) {\n      if (uVar1 == 1) {\n        local_14 = \"Action\";\n        goto LAB_00011431;\n      }\n      if (uVar1 == 2) {\n        local_14 = \"Romance\";\n        goto LAB_00011431;\n      }\n    }\n  }\n  local_14 = \"Other\";\nLAB_00011431:\n  printf((char *)&local_3c,param_1,*param_2,param_2[2],local_10,local_14,param_2[3],param_2[1]);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_movie_detail",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_movie_detail"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "list_movies",
+                "func_c_signature": "void list_movies(void)",
+                "decompiled_code": "void list_movies(void) {\n  int *local_14;\n  int local_10;\n  \n  local_10 = 0;\n  printf(\"\\nMovies (Full)\\n--------------\\n\");\n  for (local_14 = movies_full; local_14 != (int *)0x0; local_14 = (int *)local_14[1]) {\n    local_10 = local_10 + 1;\n    (**(code **)(*local_14 + 0x18))(local_10,*local_14);\n  }\n  printf(\"--------------\\n%d movie(s)\\n\",local_10);\n  local_10 = 0;\n  printf(\"\\nMovies (Rented)\\n--------------\\n\");\n  for (local_14 = movies_rented; local_14 != (int *)0x0; local_14 = (int *)local_14[1]) {\n    local_10 = local_10 + 1;\n    (**(code **)(*local_14 + 0x18))(local_10,*local_14);\n  }\n  printf(\"--------------\\n%d movie(s)\\n\",local_10);\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "nMovies",
+                    "movie"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "list_movies",
+                        "printf",
+                        "nMovies",
+                        "movie"
+                    ],
+                    "calling_functions": [
+                        "list_movies",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rent_movie",
+                "func_c_signature": "void rent_movie(void)",
+                "decompiled_code": "void rent_movie(void) {\n  int iVar1;\n  uint uVar2;\n  char local_120 [256];\n  undefined4 *local_20;\n  undefined4 *local_1c;\n  ulong local_18;\n  uint local_14;\n  int *local_10;\n  \n  local_14 = 0;\n  printf(\"\\nMovies (Full)\\n--------------\\n\");\n  for (local_10 = movies_full; local_10 != (int *)0x0; local_10 = (int *)local_10[1]) {\n    local_14 = local_14 + 1;\n    (**(code **)(*local_10 + 0x18))(local_14,*local_10);\n  }\n  uVar2 = local_14;\n  printf(\"--------------\\n%d movie(s)\\n\",local_14);\n  if (local_14 == 0) {\n    printf(\"[ERROR] Movie list is empty. Please try again later.\\n\",uVar2);\n  }\n  else {\n    while( true ) {\n      printf(\"Enter movie id: \",uVar2);\n      iVar1 = readuntil(0,local_120,0x100,10);\n      if (iVar1 < 0) break;\n      uVar2 = 0;\n      local_18 = strtoul(local_120,(char **)0x0,10);\n      if ((local_18 != 0) && (local_18 <= local_14)) {\n        local_1c = (undefined4 *)movie_find_by_id(movies_full,local_18);\n        local_20 = (undefined4 *)*local_1c;\n        local_1c = (undefined4 *)movie_find(movies_rented,*local_20);\n        if (local_1c != (undefined4 *)0x0) {\n          printf(\"Sorry, [%s] is already rented at this time. Please try again later.\\n\",\n                 *(undefined4 *)*local_1c);\n          return;\n        }\n        local_1c = (undefined4 *)movie_find_by_id(movies_full,local_18);\n        iVar1 = movie_add(&movies_rented,*local_1c);\n        if (iVar1 != 0) {\n          printf(\"[ERROR] Failed to rent. Please try again later.\\n\");\n          return;\n        }\n        printf(\"Successfully rented [%s]! Enjoy!\\n\",*(undefined4 *)*local_1c);\n        return;\n      }\n      printf(\"[ERROR] Invalid movie id. Try again.\\n\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "nMovies",
+                    "movie"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rent_movie",
+                        "printf",
+                        "nMovies",
+                        "movie",
+                        "readuntil",
+                        "strtoul",
+                        "movie_find_by_id",
+                        "movie_find",
+                        "movie_add"
+                    ],
+                    "calling_functions": [
+                        "rent_movie",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "return_movie",
+                "func_c_signature": "void return_movie(void)",
+                "decompiled_code": "void return_movie(void) {\n  int iVar1;\n  uint uVar2;\n  char local_11c [256];\n  undefined4 *local_1c;\n  ulong local_18;\n  int *local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  printf(\"\\nMovies (Rented)\\n--------------\\n\");\n  for (local_14 = movies_rented; local_14 != (int *)0x0; local_14 = (int *)local_14[1]) {\n    local_10 = local_10 + 1;\n    (**(code **)(*local_14 + 0x18))(local_10,*local_14);\n  }\n  uVar2 = local_10;\n  printf(\"--------------\\n%d movie(s)\\n\",local_10);\n  if (local_10 == 0) {\n    printf(\"[ERROR] All the movies are in our inventory.\\n\",uVar2);\n  }\n  else {\n    while( true ) {\n      printf(\"Enter movie id: \",uVar2);\n      iVar1 = readuntil(0,local_11c,0x100,10);\n      if (iVar1 < 0) break;\n      uVar2 = 0;\n      local_18 = strtoul(local_11c,(char **)0x0,10);\n      if ((local_18 != 0) && (local_18 <= local_10)) {\n        local_1c = (undefined4 *)movie_find_by_id(movies_rented,local_18);\n        if (local_1c == (undefined4 *)0x0) {\n          printf(\"Sorry, we have some issues here. Please try again later.\\n\");\n          return;\n        }\n        iVar1 = movie_delete(&movies_rented,local_18);\n        if (iVar1 != 0) {\n          printf(\"[ERROR] Failed to return the movie. Please try again.\\n\");\n          return;\n        }\n        printf(\"Successfully returned [%s]! Thank you!\\n\",*(undefined4 *)*local_1c);\n        return;\n      }\n      printf(\"[ERROR] Invalid movie id. Try again.\\n\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "nMovies",
+                    "movie"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "return_movie",
+                        "printf",
+                        "nMovies",
+                        "movie",
+                        "readuntil",
+                        "strtoul",
+                        "movie_find_by_id",
+                        "movie_delete"
+                    ],
+                    "calling_functions": [
+                        "return_movie",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "login",
+                "func_c_signature": "undefined4 login(void)",
+                "decompiled_code": "undefined4 login(void) {\n  int iVar1;\n  undefined4 local_56;\n  undefined2 local_52;\n  char local_50 [64];\n  undefined4 local_10;\n  \n  local_10 = 0;\n  local_56 = 0x696d6461;\n  local_52 = 0x6e;\n  printf(\"username: \");\n  readuntil(0,local_50,0x40,10);\n  iVar1 = strcmp((char *)&local_56,local_50);\n  if (iVar1 == 0) {\n    printf(\"password: \");\n    readuntil(0,local_50,0x44,10);\n    iVar1 = strcmp(g_password,local_50);\n    if (iVar1 == 0) {\n      printf(\"\\nWelcome, admin!\\n\");\n      local_10 = 1;\n    }\n    else {\n      printf(\"[ERROR] Permission Denied: Wrong credentials\\n\");\n    }\n  }\n  else {\n    printf(\"[ERROR] Permission Denied: Wrong credentials\\n\");\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "login",
+                        "printf",
+                        "readuntil",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "login",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_movie",
+                "func_c_signature": "void add_movie(void)",
+                "decompiled_code": "void add_movie(void) {\n  int iVar1;\n  size_t sVar2;\n  char *pcVar3;\n  char local_41c [1024];\n  ulong local_1c;\n  ulong local_18;\n  char **local_14;\n  int local_10;\n  \n  local_14 = (char **)malloc(0x1c);\n  if (local_14 == (char **)0x0) {\n    return;\n  }\n  printf(\"Add a movie\\n--------------\\n\");\n  printf(\"Enter Title: \");\n  iVar1 = readuntil(0,local_41c,0x400,10);\n  if (-1 < iVar1) {\n    sVar2 = strlen(local_41c);\n    pcVar3 = (char *)malloc(sVar2 + 1);\n    *local_14 = pcVar3;\n    if (*local_14 != (char *)0x0) {\n      strcpy(*local_14,local_41c);\n      printf(\"Enter Description: \");\n      iVar1 = readuntil(0,local_41c,0x400,10);\n      if (-1 < iVar1) {\n        sVar2 = strlen(local_41c);\n        pcVar3 = (char *)malloc(sVar2 + 1);\n        local_14[1] = pcVar3;\n        if (local_14[1] != (char *)0x0) {\n          strcpy(local_14[1],local_41c);\n          while( true ) {\n            printf(\"Enter Year (1800-2015): \");\n            iVar1 = readuntil(0,local_41c,0x400,10);\n            if (iVar1 < 0) break;\n            pcVar3 = (char *)strtoul(local_41c,(char **)0x0,10);\n            local_14[2] = pcVar3;\n            if ((0x707 < (int)local_14[2]) && ((int)local_14[2] < 0x7e0)) goto LAB_00011b61;\n            printf(\"[ERROR] Invalid year. Try again.\\n\");\n          }\n        }\n      }\n    }\n  }\n  goto LAB_00011dd4;\nLAB_00011b61:\n  printf(\"Enter Review score (0-100): \");\n  iVar1 = readuntil(0,local_41c,0x400,10);\n  if (iVar1 < 0) goto LAB_00011dd4;\n  pcVar3 = (char *)strtoul(local_41c,(char **)0x0,10);\n  local_14[3] = pcVar3;\n  if ((-1 < (int)local_14[3]) && ((int)local_14[3] < 0x65)) {\n    local_10 = 0;\n    goto LAB_00011ca6;\n  }\n  printf(\"[ERROR] Invalid rating. Try again.\\n\");\n  goto LAB_00011b61;\nLAB_00011ca6:\n  if (local_10 == 0) {\n    printf(\"Select a genre\\n 1. Action\\n 2. Romance\\n 3. Comeda\\n 4. Horror\\n 5. Other\\nChoice: \");\n    iVar1 = readuntil(0,local_41c,0x400,10);\n    if (iVar1 < 0) goto LAB_00011dd4;\n    local_1c = strtoul(local_41c,(char **)0x0,10);\n    local_10 = 1;\n    switch(local_1c) {\n    default:\n      local_10 = 0;\n      printf(\"[ERROR] Invalid genre. Try again.\\n\");\n      break;\n    case 1:\n      local_14[4] = (char *)0x1;\n      break;\n    case 2:\n      local_14[4] = (char *)0x2;\n      break;\n    case 3:\n      local_14[4] = (char *)0x3;\n      break;\n    case 4:\n      local_14[4] = (char *)0x4;\n      break;\n    case 5:\n      local_14[4] = (char *)0x5;\n    }\n    goto LAB_00011ca6;\n  }\n  local_10 = 0;\n  while (local_10 == 0) {\n    printf(\"Select a film rating\\n 1. G\\n 2. PG\\n 3. PG-13\\n 4. R\\n 5. Unknown\\nChoice: \");\n    iVar1 = readuntil(0,local_41c,0x400,10);\n    if (iVar1 < 0) goto LAB_00011dd4;\n    local_18 = strtoul(local_41c,(char **)0x0,10);\n    local_10 = 1;\n    switch(local_18) {\n    default:\n      local_10 = 0;\n      printf(\"[ERROR] Invalid film rating. Try again.\\n\");\n      break;\n    case 1:\n      local_14[5] = (char *)0x1;\n      break;\n    case 2:\n      local_14[5] = (char *)0x2;\n      break;\n    case 3:\n      local_14[5] = (char *)0x3;\n      break;\n    case 4:\n      local_14[5] = (char *)0x4;\n      break;\n    case 5:\n      local_14[5] = (char *)0x5;\n    }\n  }\n  local_14[6] = (char *)print_movie_detail;\n  iVar1 = movie_add(&movies_full,local_14);\n  if (iVar1 == 0) {\n    return;\n  }\n  printf(\"[ERROR] Failed to add a movie.\\n\");\nLAB_00011dd4:\n  if (local_14 != (char **)0x0) {\n    if (local_14[1] != (char *)0x0) {\n      free(local_14[1]);\n    }\n    if (*local_14 != (char *)0x0) {\n      free(*local_14);\n    }\n    free(local_14);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "Year",
+                    "score"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_movie",
+                        "malloc",
+                        "printf",
+                        "readuntil",
+                        "strlen",
+                        "strcpy",
+                        "Year",
+                        "strtoul",
+                        "score",
+                        "movie_add",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "add_movie",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove_movie",
+                "func_c_signature": "void remove_movie(void)",
+                "decompiled_code": "void remove_movie(void) {\n  int iVar1;\n  uint uVar2;\n  char local_11c [256];\n  undefined4 local_1c;\n  ulong local_18;\n  int *local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  printf(\"\\nMovies (Full)\\n--------------\\n\");\n  for (local_14 = movies_full; local_14 != (int *)0x0; local_14 = (int *)local_14[1]) {\n    local_10 = local_10 + 1;\n    (**(code **)(*local_14 + 0x18))(local_10,*local_14);\n  }\n  uVar2 = local_10;\n  printf(\"--------------\\n%d movie(s)\\n\",local_10);\n  if (local_10 == 0) {\n    printf(\"[ERROR] Movie list is empty.\\n\",uVar2);\n  }\n  else {\n    while( true ) {\n      printf(\"Enter movie id: \",uVar2);\n      iVar1 = readuntil(0,local_11c,0x100,10);\n      if (iVar1 < 0) break;\n      uVar2 = 0;\n      local_18 = strtoul(local_11c,(char **)0x0,10);\n      if ((local_18 != 0) && (local_18 <= local_10)) {\n        local_14 = (int *)movie_find_by_id(movies_full,local_18);\n        local_1c = *local_14;\n        iVar1 = movie_delete(&movies_full,local_18);\n        if (iVar1 != 0) {\n          printf(\"[ERROR] Failed to remove.\\n\");\n          return;\n        }\n        g_num_movies = g_num_movies + -1;\n        free_movie(local_1c);\n        printf(\"Successfully removed the movie!\\n\");\n        return;\n      }\n      printf(\"[ERROR] Invalid movie id. Try again.\\n\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "nMovies",
+                    "movie"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_movie",
+                        "printf",
+                        "nMovies",
+                        "movie",
+                        "readuntil",
+                        "strtoul",
+                        "movie_find_by_id",
+                        "movie_delete",
+                        "free_movie"
+                    ],
+                    "calling_functions": [
+                        "remove_movie",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "update_movie",
+                "func_c_signature": "void update_movie(void)",
+                "decompiled_code": "void update_movie(void) {\n  int iVar1;\n  size_t sVar2;\n  undefined4 uVar3;\n  uint uVar4;\n  char local_438 [1024];\n  ulong local_38;\n  ulong local_34;\n  char *local_30;\n  char *local_2c;\n  char **local_28;\n  ulong local_24;\n  int local_20;\n  int *local_1c;\n  char *local_18;\n  char *local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  printf(\"\\nMovies (Full)\\n--------------\\n\");\n  for (local_1c = movies_full; local_1c != (int *)0x0; local_1c = (int *)local_1c[1]) {\n    local_10 = local_10 + 1;\n    (**(code **)(*local_1c + 0x18))(local_10,*local_1c);\n  }\n  uVar4 = local_10;\n  printf(\"--------------\\n%d movie(s)\\n\",local_10);\n  if (local_10 == 0) {\n    printf(\"[ERROR] Nothing to update.\\n\",uVar4);\n    return;\n  }\n  while( true ) {\n    printf(\"Enter movie id: \",uVar4);\n    iVar1 = readuntil(0,local_438,0x400,10);\n    if (iVar1 < 0) {\n      return;\n    }\n    uVar4 = 0;\n    local_24 = strtoul(local_438,(char **)0x0,10);\n    if ((local_24 != 0) && (local_24 <= local_10)) break;\n    printf(\"[ERROR] Invalid movie id. Try again.\\n\");\n  }\n  local_1c = (int *)movie_find_by_id(movies_full,local_24);\n  local_28 = (char **)*local_1c;\n  printf(\"\\nUpdate a movie\\n--------------\\nJust leave it empty to keep the old value.\\n\");\n  printf(\"Enter new title (current: [%s]): \",*local_28);\n  iVar1 = readuntil(0,local_438,0x400,10);\n  if (iVar1 < 0) {\n    return;\n  }\n  sVar2 = strlen(local_438);\n  if (sVar2 != 0) {\n    sVar2 = strlen(local_438);\n    local_14 = (char *)malloc(sVar2 + 1);\n    if (local_14 == (char *)0x0) goto LAB_000125b2;\n    strcpy(local_14,local_438);\n    free(*local_28);\n    *local_28 = local_14;\n  }\n  printf(\"Enter new description (current: [%s]): \",local_28[1]);\n  iVar1 = readuntil(0,local_438,0x400,10);\n  if (iVar1 < 0) {\n    return;\n  }\n  sVar2 = strlen(local_438);\n  if (sVar2 != 0) {\n    sVar2 = strlen(local_438);\n    local_18 = (char *)malloc(sVar2 + 1);\n    if (local_18 == (char *)0x0) goto LAB_000125b2;\n    strcpy(local_18,local_438);\n    free(local_28[1]);\n    local_28[1] = local_18;\n  }\n  while( true ) {\n    printf(\"Enter new year (1800-2015) (current: [%d]): \",local_28[2]);\n    iVar1 = readuntil(0,local_438,0x400,10);\n    if (iVar1 < 0) break;\n    sVar2 = strlen(local_438);\n    if (sVar2 == 0) goto LAB_000122ed;\n    local_2c = (char *)strtoul(local_438,(char **)0x0,10);\n    if ((0x707 < (int)local_2c) && ((int)local_2c < 0x7e0)) {\n      local_28[2] = local_2c;\n      goto LAB_000122ed;\n    }\n    printf(\"[ERROR] Invalid year. Try again.\\n\");\n  }\nLAB_000125b2:\n  if (local_14 != (char *)0x0) {\n    free(local_14);\n  }\n  if (local_18 != (char *)0x0) {\n    free(local_18);\n  }\n  if (local_28 == (char **)0x0) {\n    return;\n  }\n  free(local_28);\n  return;\nLAB_000122ed:\n  printf(\"Enter new review score (0-100) (current: [%d/100]: \",local_28[3]);\n  iVar1 = readuntil(0,local_438,0x400,10);\n  if (iVar1 < 0) goto LAB_000125b2;\n  sVar2 = strlen(local_438);\n  if (sVar2 == 0) {\nLAB_00012384:\n    local_20 = 0;\n    goto LAB_0001247c;\n  }\n  local_30 = (char *)strtoul(local_438,(char **)0x0,10);\n  if ((-1 < (int)local_30) && ((int)local_30 < 0x65)) {\n    local_28[3] = local_30;\n    goto LAB_00012384;\n  }\n  printf(\"[ERROR] Invalid rating. Try again.\\n\");\n  goto LAB_000122ed;\nLAB_0001247c:\n  if (local_20 == 0) {\n    uVar3 = movie_g2s(local_28[4]);\n    printf(\"Select a genre (current: [%s])\\n 1. Action\\n 2. Romance\\n 3. Comeda\\n 4. Horror\\n 5. Other\\nChoice: \"\n           ,uVar3);\n    iVar1 = readuntil(0,local_438,0x400,10);\n    if (iVar1 < 0) goto LAB_000125b2;\n    sVar2 = strlen(local_438);\n    if (sVar2 == 0) goto LAB_00012489;\n    local_34 = strtoul(local_438,(char **)0x0,10);\n    local_20 = 1;\n    switch(local_34) {\n    default:\n      local_20 = 0;\n      printf(\"[ERROR] Invalid genre. Try again.\\n\");\n      break;\n    case 1:\n      local_28[4] = (char *)0x1;\n      break;\n    case 2:\n      local_28[4] = (char *)0x2;\n      break;\n    case 3:\n      local_28[4] = (char *)0x3;\n      break;\n    case 4:\n      local_28[4] = (char *)0x4;\n      break;\n    case 5:\n      local_28[4] = (char *)0x5;\n    }\n    goto LAB_0001247c;\n  }\nLAB_00012489:\n  local_20 = 0;\n  while (local_20 == 0) {\n    uVar3 = movie_r2s(local_28[5]);\n    printf(\"Select a film rating (current: [%s]\\n 1. G\\n 2. PG\\n 3. PG-13\\n 4. R\\n 5. Unknown\\nChoice: \"\n           ,uVar3);\n    iVar1 = readuntil(0,local_438,0x400,10);\n    if (iVar1 < 0) goto LAB_000125b2;\n    sVar2 = strlen(local_438);\n    if (sVar2 == 0) break;\n    local_38 = strtoul(local_438,(char **)0x0,10);\n    local_20 = 1;\n    switch(local_38) {\n    default:\n      local_20 = 0;\n      printf(\"[ERROR] Invalid film rating. Try again.\\n\");\n      break;\n    case 1:\n      local_28[5] = (char *)0x1;\n      break;\n    case 2:\n      local_28[5] = (char *)0x2;\n      break;\n    case 3:\n      local_28[5] = (char *)0x3;\n      break;\n    case 4:\n      local_28[5] = (char *)0x4;\n      break;\n    case 5:\n      local_28[5] = (char *)0x5;\n    }\n  }\n  printf(\"Successfully updated the movie information!\\n\");\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "nMovies",
+                    "movie",
+                    "title",
+                    "description",
+                    "year",
+                    "score",
+                    "genre",
+                    "rating"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "update_movie",
+                        "printf",
+                        "nMovies",
+                        "movie",
+                        "readuntil",
+                        "strtoul",
+                        "movie_find_by_id",
+                        "title",
+                        "strlen",
+                        "malloc",
+                        "strcpy",
+                        "free",
+                        "description",
+                        "year",
+                        "score",
+                        "movie_g2s",
+                        "genre",
+                        "movie_r2s",
+                        "rating"
+                    ],
+                    "calling_functions": [
+                        "update_movie",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "quit",
+                "func_c_signature": "void quit(void)",
+                "decompiled_code": "void quit(void) {\n  printf(\"Bye!\\n\");\n                    /* WARNING: Subroutine does not return */\n  exit(0);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "quit",
+                        "printf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "initialize",
+                        "quit",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(void)",
+                "decompiled_code": "void main(void) {\n  uint uVar1;\n  int iVar2;\n  undefined4 *puVar3;\n  undefined4 *puVar4;\n  undefined local_10eb [3];\n  undefined4 auStack_10e8 [17];\n  undefined4 uStack_10a4;\n  undefined4 local_10a0 [19];\n  undefined4 local_1052;\n  undefined4 local_104e;\n  undefined4 local_104a;\n  undefined4 local_1046;\n  undefined4 local_1042;\n  undefined4 local_103e;\n  undefined4 local_103a;\n  undefined4 local_1036;\n  undefined4 local_1032;\n  undefined4 local_102e;\n  undefined4 local_102a;\n  undefined2 local_1026;\n  char local_1024 [4096];\n  int local_24;\n  undefined *puStack_18;\n  \n  puStack_18 = &stack0x00000004;\n  local_24 = 0;\n  local_1052 = 0x3d3d3d3d;\n  local_104e = 0x3d3d3d3d;\n  local_104a = 0x6f4d203d;\n  local_1046 = 0x20656976;\n  local_1042 = 0x746e6552;\n  local_103e = 0x53206c61;\n  local_103a = 0x69767265;\n  local_1036 = 0x76206563;\n  local_1032 = 0x20312e30;\n  local_102e = 0x3d3d3d3d;\n  local_102a = 0x3d3d3d3d;\n  local_1026 = 0x3d;\n  puVar3 = (undefined4 *)\n           \"\\n1. List movies\\n2. Rent movie\\n3. Return movie\\n4. Admin mode\\n5. Exit\\n\\nChoice: \";\n  puVar4 = local_10a0;\n  for (iVar2 = 0x13; iVar2 != 0; iVar2 = iVar2 + -1) {\n    *puVar4 = *puVar3;\n    puVar3 = puVar3 + 1;\n    puVar4 = puVar4 + 1;\n  }\n  *(undefined2 *)puVar4 = *(undefined2 *)puVar3;\n  _local_10eb = s__1__Add_movie_2__Remove_movie_3__00015eb8._0_4_;\n  uStack_10a4 = s__1__Add_movie_2__Remove_movie_3__00015eb8._71_4_;\n  iVar2 = -(int)(local_10eb + 3);\n  puVar3 = (undefined4 *)\n           (\"\\n1. Add movie\\n2. Remove movie\\n3. Update movie\\n4. Quit admin mode\\n\\nChoice: \" +\n           -(int)(local_10eb + iVar2));\n  puVar4 = (undefined4 *)(local_10eb + 3);\n  for (uVar1 = (uint)((int)local_10a0 + iVar2) >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {\n    *puVar4 = *puVar3;\n    puVar3 = puVar3 + 1;\n    puVar4 = puVar4 + 1;\n  }\n  printf((char *)&local_1052);\n  initialize();\n  printf(\"=============================================\");\nLAB_0001275f:\n  while( true ) {\n    while (local_24 == 0) {\n      printf((char *)local_10a0);\n      iVar2 = readuntil(0,local_1024,0x1000,10);\n      if (iVar2 < 0) {\n        quit();\n      }\n      switch(local_1024[0]) {\n      case '1':\n        list_movies();\n        break;\n      case '2':\n        rent_movie();\n        break;\n      case '3':\n        return_movie();\n        break;\n      case '4':\n        local_24 = login();\n        break;\n      case '5':\n        quit();\n        break;\n      default:\n        printf(\"[ERROR] Invalid menu. Please select again.\\n\");\n      }\n    }\n    printf(local_10eb);\n    iVar2 = readuntil(0,local_1024,0x1000,10);\n    if (iVar2 < 0) {\n      quit();\n    }\n    if (local_1024[0] != '4') break;\n    local_24 = 0;\n  }\n  if (local_1024[0] < '5') {\n    if (local_1024[0] == '3') {\n      update_movie();\n      goto LAB_0001275f;\n    }\n    if ('3' < local_1024[0]) goto LAB_000127f0;\n    if (local_1024[0] == '1') {\n      add_movie();\n      goto LAB_0001275f;\n    }\n    if (local_1024[0] == '2') {\n      remove_movie();\n      goto LAB_0001275f;\n    }\n  }\nLAB_000127f0:\n  printf(\"[ERROR] Invalid menu. Please select again.\\n\");\n  goto LAB_0001275f;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "printf",
+                        "initialize",
+                        "readuntil",
+                        "quit",
+                        "list_movies",
+                        "rent_movie",
+                        "return_movie",
+                        "login",
+                        "update_movie",
+                        "add_movie",
+                        "remove_movie"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            }
+        ],
+        "movie.c": [
+            {
+                "func_name": "movie_g2s",
+                "func_c_signature": "char * movie_g2s(uint param_1)",
+                "decompiled_code": "char * movie_g2s(uint param_1) {\n  char *local_8;\n  \n  if (param_1 == 4) {\n    local_8 = \"Horror\";\n    return local_8;\n  }\n  if (param_1 < 5) {\n    if (param_1 == 3) {\n      local_8 = \"Comedy\";\n      return local_8;\n    }\n    if (param_1 < 4) {\n      if (param_1 == 1) {\n        local_8 = \"Action\";\n        return local_8;\n      }\n      if (param_1 == 2) {\n        local_8 = \"Romance\";\n        return local_8;\n      }\n    }\n  }\n  return \"Other\";\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "movie_g2s"
+                    ],
+                    "calling_functions": [
+                        "update_movie",
+                        "movie_g2s"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "movie_r2s",
+                "func_c_signature": "char * movie_r2s(uint param_1)",
+                "decompiled_code": "char * movie_r2s(uint param_1) {\n  char *local_8;\n  \n  if (param_1 == 4) {\n    local_8 = \"R\";\n    return local_8;\n  }\n  if (param_1 < 5) {\n    if (param_1 == 3) {\n      local_8 = \"PG13\";\n      return local_8;\n    }\n    if (param_1 < 4) {\n      if (param_1 == 1) {\n        local_8 = \"G\";\n        return local_8;\n      }\n      if (param_1 == 2) {\n        local_8 = \"PG\";\n        return local_8;\n      }\n    }\n  }\n  return \"Unknown\";\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "movie_r2s"
+                    ],
+                    "calling_functions": [
+                        "update_movie",
+                        "movie_r2s"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "movie_add",
+                "func_c_signature": "undefined4 movie_add(int *param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 movie_add(int *param_1,undefined4 *param_2) {\n  undefined4 *__ptr;\n  undefined4 uVar1;\n  int iVar2;\n  int local_10;\n  \n  if (param_1 == (int *)0x0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    __ptr = (undefined4 *)malloc(8);\n    if (__ptr == (undefined4 *)0x0) {\n      uVar1 = 0xffffffff;\n    }\n    else if (*param_1 == 0) {\n      *__ptr = param_2;\n      __ptr[1] = 0;\n      *param_1 = (int)__ptr;\n      uVar1 = 0;\n    }\n    else {\n      iVar2 = movie_find(*param_1,*param_2);\n      if (iVar2 == 0) {\n        for (local_10 = *param_1; *(int *)(local_10 + 4) != 0; local_10 = *(int *)(local_10 + 4)) {\n        }\n        *__ptr = param_2;\n        __ptr[1] = 0;\n        *(undefined4 **)(local_10 + 4) = __ptr;\n        uVar1 = 0;\n      }\n      else {\n        if (__ptr != (undefined4 *)0x0) {\n          free(__ptr);\n        }\n        uVar1 = 0xffffffff;\n      }\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "movie_add",
+                        "malloc",
+                        "movie_find",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "initialize",
+                        "rent_movie",
+                        "add_movie",
+                        "movie_add"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free_movie",
+                "func_c_signature": "void free_movie(void **param_1)",
+                "decompiled_code": "void free_movie(void **param_1) {\n  if (param_1 != (void **)0x0) {\n    if (*param_1 != (void *)0x0) {\n      free(*param_1);\n    }\n    if (param_1[1] != (void *)0x0) {\n      free(param_1[1]);\n    }\n    free(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_movie",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "remove_movie",
+                        "free_movie"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "movie_delete",
+                "func_c_signature": "undefined4 movie_delete(void **param_1,int param_2)",
+                "decompiled_code": "undefined4 movie_delete(void **param_1,int param_2) {\n  void *__ptr;\n  undefined4 uVar1;\n  int local_18;\n  void *local_14;\n  void *local_10;\n  \n  if (param_1 == (void **)0x0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    __ptr = *param_1;\n    local_18 = 1;\n    if ((__ptr == (void *)0x0) || (param_2 != 1)) {\n      local_10 = *param_1;\n      for (local_14 = *(void **)((int)local_10 + 4); local_14 != (void *)0x0;\n          local_14 = *(void **)((int)local_14 + 4)) {\n        local_18 = local_18 + 1;\n        if (param_2 == local_18) {\n          *(undefined4 *)((int)local_10 + 4) = *(undefined4 *)((int)local_14 + 4);\n          free(local_14);\n          break;\n        }\n        local_10 = local_14;\n      }\n      uVar1 = 0;\n    }\n    else {\n      *param_1 = *(void **)((int)__ptr + 4);\n      free(__ptr);\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "movie_delete",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "return_movie",
+                        "remove_movie",
+                        "movie_delete"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "movie_update",
+                "func_c_signature": "undefined4 movie_update(void)",
+                "decompiled_code": "undefined4 movie_update(void) {\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "movie_update"
+                    ],
+                    "calling_functions": [
+                        "movie_update"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "movie_find",
+                "func_c_signature": "undefined4 * movie_find(undefined4 *param_1,char *param_2)",
+                "decompiled_code": "undefined4 * movie_find(undefined4 *param_1,char *param_2) {\n  int iVar1;\n  undefined4 *local_10;\n  \n  if (param_1 != (undefined4 *)0x0) {\n    for (local_10 = param_1; local_10 != (undefined4 *)0x0; local_10 = (undefined4 *)local_10[1]) {\n      iVar1 = strcmp(*(char **)*local_10,param_2);\n      if (iVar1 == 0) {\n        return local_10;\n      }\n    }\n  }\n  return (undefined4 *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "movie_find",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "rent_movie",
+                        "movie_add",
+                        "movie_find"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "movie_find_by_id",
+                "func_c_signature": "int movie_find_by_id(int param_1,int param_2)",
+                "decompiled_code": "int movie_find_by_id(int param_1,int param_2) {\n  int local_c;\n  int local_8;\n  \n  if (param_1 != 0) {\n    local_8 = 0;\n    for (local_c = param_1; local_c != 0; local_c = *(int *)(local_c + 4)) {\n      local_8 = local_8 + 1;\n      if (param_2 == local_8) {\n        return local_c;\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "movie_find_by_id"
+                    ],
+                    "calling_functions": [
+                        "rent_movie",
+                        "return_movie",
+                        "remove_movie",
+                        "update_movie",
+                        "movie_find_by_id"
+                    ],
+                    "defined_in_file": "KPRCA_00011_decompiled.c"
+                }
+            }
+        ]
+    }
+}

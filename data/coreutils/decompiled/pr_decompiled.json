@@ -1,0 +1,988 @@
+{
+    "file": "pr",
+    "decompiled_code": {
+        "pr.c": [
+            {
+                "func_name": "integer_overflow",
+                "func_c_signature": "int integer_overflow(void)",
+                "decompiled_code": "int integer_overflow(void) {\n  undefined8 uVar1;\n  uint uStack_30;\n  int iStack_2c;\n  long lStack_28;\n  \n  uVar1 = gettext(\"integer overflow\");\n  error(1,0,uVar1);\n  iStack_2c = 0;\n  lStack_28 = column_vector;\n  for (uStack_30 = 0; uStack_30 < columns; uStack_30 = uStack_30 + 1) {\n    if (((*(int *)(lStack_28 + 0x10) == 0) || (*(int *)(lStack_28 + 0x10) == 1)) ||\n       ((storing_columns != '\\0' &&\n        ((0 < *(int *)(lStack_28 + 0x2c) && (0 < *(int *)(lStack_28 + 0x30))))))) {\n      iStack_2c = iStack_2c + 1;\n    }\n    lStack_28 = lStack_28 + 0x40;\n  }\n  return iStack_2c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "integer_overflow",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "integer_overflow",
+                        "separator_string",
+                        "init_store_cols"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cols_ready_to_print",
+                "func_c_signature": "int cols_ready_to_print(void)",
+                "decompiled_code": "int cols_ready_to_print(void) {\n  uint local_18;\n  int local_14;\n  long local_10;\n  \n  local_14 = 0;\n  local_10 = column_vector;\n  for (local_18 = 0; local_18 < columns; local_18 = local_18 + 1) {\n    if (((*(int *)(local_10 + 0x10) == 0) || (*(int *)(local_10 + 0x10) == 1)) ||\n       ((storing_columns != '\\0' &&\n        ((0 < *(int *)(local_10 + 0x2c) && (0 < *(int *)(local_10 + 0x30))))))) {\n      local_14 = local_14 + 1;\n    }\n    local_10 = local_10 + 0x40;\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cols_ready_to_print"
+                    ],
+                    "calling_functions": [
+                        "cols_ready_to_print",
+                        "print_page"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "first_last_page",
+                "func_c_signature": "undefined8 first_last_page(undefined4 param_1,char param_2,char *param_3)",
+                "decompiled_code": "undefined8 first_last_page(undefined4 param_1,char param_2,char *param_3) {\n  int iVar1;\n  undefined8 uVar2;\n  long in_FS_OFFSET;\n  char *local_30;\n  ulong local_28;\n  ulong local_20;\n  char *local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_20 = 0xffffffffffffffff;\n  iVar1 = xstrtoumax(param_3,&local_30,10,&local_28,&DAT_0010426c);\n  if ((iVar1 != 0) && (iVar1 != 2)) {\n    xstrtol_fatal(iVar1,param_1,(int)param_2,long_options,param_3);\n  }\n  if ((param_3 == local_30) || (local_28 == 0)) {\n    uVar2 = 0;\n  }\n  else {\n    if (*local_30 == ':') {\n      local_18 = local_30 + 1;\n      iVar1 = xstrtoumax(local_18,&local_30,10,&local_20,&DAT_0010426c);\n      if (iVar1 != 0) {\n        xstrtol_fatal(iVar1,param_1,(int)param_2,long_options,param_3);\n      }\n      if ((local_18 == local_30) || (local_20 < local_28)) {\n        uVar2 = 0;\n        goto LAB_00100582;\n      }\n    }\n    if (*local_30 == '\\0') {\n      first_page_number = local_28;\n      last_page_number = local_20;\n      uVar2 = 1;\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\nLAB_00100582:\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "first_last_page",
+                        "xstrtoumax",
+                        "xstrtol_fatal",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "first_last_page",
+                        "main"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_column_count",
+                "func_c_signature": "void parse_column_count(undefined8 param_1)",
+                "decompiled_code": "void parse_column_count(undefined8 param_1) {\n  undefined8 uVar1;\n  \n  uVar1 = gettext(\"invalid number of columns\");\n  columns = getoptnum(param_1,1,uVar1);\n  explicit_columns = 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_column_count",
+                        "gettext",
+                        "getoptnum"
+                    ],
+                    "calling_functions": [
+                        "parse_column_count",
+                        "main"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "separator_string",
+                "func_c_signature": "void separator_string(char *param_1)",
+                "decompiled_code": "void separator_string(char *param_1) {\n  size_t sVar1;\n  \n  sVar1 = strlen(param_1);\n  if (0x7fffffff < sVar1) {\n    integer_overflow();\n  }\n  col_sep_length = (int)sVar1;\n  col_sep_string = param_1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "separator_string",
+                        "strlen",
+                        "integer_overflow"
+                    ],
+                    "calling_functions": [
+                        "separator_string",
+                        "main"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "void main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  bool bVar2;\n  bool bVar3;\n  char cVar4;\n  int iVar5;\n  undefined8 uVar6;\n  char *pcVar7;\n  EVP_PKEY_CTX *ctx;\n  undefined8 uVar8;\n  int *piVar9;\n  long in_FS_OFFSET;\n  undefined4 local_a4;\n  uint local_a0;\n  uint local_9c;\n  int local_98;\n  undefined4 local_94;\n  undefined4 local_90;\n  undefined4 local_8c;\n  undefined4 local_88;\n  undefined4 local_84;\n  undefined4 local_80;\n  undefined4 local_7c;\n  undefined4 local_78;\n  undefined4 local_74;\n  undefined4 local_70;\n  int local_6c;\n  long local_68;\n  void *local_60;\n  long local_58;\n  long local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  undefined8 local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  undefined8 local_20;\n  \n  local_20 = *(undefined8 *)(in_FS_OFFSET + 0x28);\n  bVar1 = false;\n  bVar2 = false;\n  bVar3 = false;\n  local_60 = (void *)0x0;\n  local_58 = 0;\n  local_68 = 0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  local_a0 = 0;\n  if (param_1 < 2) {\n    local_50 = 0;\n  }\n  else {\n    local_50 = xnmalloc((long)(param_1 + -1),8);\n  }\nLAB_0010070f:\n  do {\n    while( true ) {\n      local_a4 = 0xffffffff;\n      local_98 = getopt_long(param_1,param_2,\"-0123456789D:FJN:S::TW:abcde::fh:i::l:mn::o:rs::tvw:\",\n                             long_options,&local_a4);\n      if (local_98 == -1) {\n        if (local_60 != (void *)0x0) {\n          parse_column_count(local_60);\n          free(local_60);\n        }\n        if (date_format == (char *)0x0) {\n          pcVar7 = getenv(\"POSIXLY_CORRECT\");\n          if ((pcVar7 == (char *)0x0) || (cVar4 = hard_locale(2), cVar4 == '\\x01')) {\n            date_format = \"%Y-%m-%d %H:%M\";\n          }\n          else {\n            date_format = \"%b %e %H:%M %Y\";\n          }\n        }\n        ctx = (EVP_PKEY_CTX *)getenv(\"TZ\");\n        localtz = tzalloc();\n        if (first_page_number == 0) {\n          first_page_number = 1;\n        }\n        if ((parallel_files != '\\0') && (explicit_columns != '\\0')) {\n          local_38 = gettext(\"cannot specify number of columns when printing in parallel\");\n          local_80 = 1;\n          local_7c = 0;\n          ctx = (EVP_PKEY_CTX *)0x1;\n          error(1,0,local_38);\n        }\n        if ((parallel_files != '\\0') && (print_across_flag != '\\0')) {\n          local_30 = gettext(\"cannot specify both printing across and printing in parallel\");\n          local_78 = 1;\n          local_74 = 0;\n          ctx = (EVP_PKEY_CTX *)0x1;\n          error(1,0,local_30);\n        }\n        if (bVar1) {\n          if (bVar2) {\n            if ((parallel_files == '\\0') && (explicit_columns == '\\0')) {\n              join_lines = 1;\n            }\n            else {\n              truncate_lines = '\\x01';\n              if (bVar3) {\n                use_col_separator = '\\x01';\n              }\n            }\n          }\n          else if (((use_col_separator != '\\x01') && (bVar3)) &&\n                  ((parallel_files != '\\0' || (explicit_columns != '\\0')))) {\n            if (truncate_lines == '\\x01') {\n              use_col_separator = '\\x01';\n            }\n            else {\n              join_lines = 1;\n              if (0 < col_sep_length) {\n                use_col_separator = '\\x01';\n              }\n            }\n          }\n        }\n        for (; _optind < param_1; _optind = _optind + 1) {\n          *(undefined8 *)((ulong)local_a0 * 8 + local_50) = param_2[_optind];\n          local_a0 = local_a0 + 1;\n        }\n        if (local_a0 == 0) {\n          ctx = (EVP_PKEY_CTX *)0x0;\n          print_files(0,0);\n        }\n        else if (parallel_files == '\\0') {\n          for (local_9c = 0; local_9c < local_a0; local_9c = local_9c + 1) {\n            ctx = (EVP_PKEY_CTX *)0x1;\n            print_files(1,local_50 + (ulong)local_9c * 8);\n          }\n        }\n        else {\n          ctx = (EVP_PKEY_CTX *)(ulong)local_a0;\n          print_files(ctx,local_50);\n        }\n        cleanup(ctx);\n        if ((have_read_stdin != '\\0') && (iVar5 = rpl_fclose(_stdin), iVar5 == -1)) {\n          uVar8 = gettext(\"standard input\");\n          piVar9 = __errno_location();\n          local_6c = *piVar9;\n          local_70 = 1;\n          local_28 = uVar8;\n          error(1,local_6c,uVar8);\n        }\n                    /* WARNING: Subroutine does not return */\n        exit((uint)failed_opens);\n      }\n      cVar4 = c_isdigit(local_98);\n      if (cVar4 == '\\0') break;\n      if (local_68 <= local_58 + 1) {\n        local_60 = (void *)xpalloc(local_60,&local_68,2,0xffffffffffffffff,1);\n      }\n      *(char *)((long)local_60 + local_58) = (char)local_98;\n      *(undefined *)((long)local_60 + local_58 + 1) = 0;\n      local_58 = local_58 + 1;\n    }\n    local_58 = 0;\n    if (0x81 < local_98) goto switchD_0010085a_caseD_2;\n    switch(local_98) {\n    case 1:\n      if (((first_page_number != 0) || (*_optarg != '+')) ||\n         (cVar4 = first_last_page(0xfffffffe,0x2b,_optarg + 1), cVar4 != '\\x01')) {\n        *(char **)((ulong)local_a0 * 8 + local_50) = _optarg;\n        local_a0 = local_a0 + 1;\n      }\n      break;\n    case 0x44:\n      date_format = _optarg;\n      break;\n    case 0x46:\n    case 0x66:\n      use_form_feed = 1;\n      break;\n    case 0x4a:\n      join_lines = 1;\n      break;\n    case 0x4e:\n      skip_count = 0;\n      uVar8 = gettext(\"\\'-N NUMBER\\' invalid starting line number\");\n      start_line_num = getoptnum(_optarg,0x80000000,uVar8);\n      break;\n    case 0x53:\n      bVar3 = false;\n      col_sep_string = &DAT_0010426c;\n      col_sep_length = 0;\n      use_col_separator = '\\x01';\n      if (_optarg != (char *)0x0) {\n        separator_string(_optarg);\n      }\n      break;\n    case 0x54:\n      extremities = 0;\n      keep_FF = 0;\n      break;\n    case 0x57:\n      bVar2 = false;\n      truncate_lines = '\\x01';\n      uVar8 = gettext(\"\\'-W PAGE_WIDTH\\' invalid number of characters\");\n      chars_per_line = getoptnum(_optarg,1,uVar8);\n      break;\n    case 0x61:\n      print_across_flag = '\\x01';\n      storing_columns = 0;\n      break;\n    case 0x62:\n      balance_columns = 1;\n      break;\n    case 99:\n      use_cntrl_prefix = 1;\n      break;\n    case 100:\n      double_space = 1;\n      break;\n    case 0x65:\n      if (_optarg != (char *)0x0) {\n        getoptarg(_optarg,0x65,&input_tab_char,&chars_per_input_tab);\n      }\n      untabify_input = 1;\n      break;\n    case 0x68:\n      custom_header = _optarg;\n      break;\n    case 0x69:\n      if (_optarg != (char *)0x0) {\n        getoptarg(_optarg,0x69,&output_tab_char,&chars_per_output_tab);\n      }\n      tabify_output = 1;\n      break;\n    case 0x6c:\n      uVar8 = gettext(\"\\'-l PAGE_LENGTH\\' invalid number of lines\");\n      lines_per_page = getoptnum(_optarg,1,uVar8);\n      break;\n    case 0x6d:\n      parallel_files = '\\x01';\n      storing_columns = 0;\n      break;\n    case 0x6e:\n      numbered_lines = 1;\n      if (_optarg != (char *)0x0) {\n        getoptarg(_optarg,0x6e,&number_separator,&chars_per_number);\n      }\n      break;\n    case 0x6f:\n      uVar8 = gettext(\"\\'-o MARGIN\\' invalid line offset\");\n      chars_per_margin = getoptnum(_optarg,0,uVar8);\n      break;\n    case 0x72:\n      ignore_failed_opens = 1;\n      break;\n    case 0x73:\n      bVar1 = true;\n      bVar3 = true;\n      if ((use_col_separator != '\\x01') && (_optarg != (char *)0x0)) {\n        separator_string(_optarg);\n      }\n      break;\n    case 0x74:\n      extremities = 0;\n      keep_FF = 1;\n      break;\n    case 0x76:\n      use_esc_sequence = 1;\n      break;\n    case 0x77:\n      bVar1 = true;\n      bVar2 = true;\n      uVar8 = gettext(\"\\'-w PAGE_WIDTH\\' invalid number of characters\");\n      local_94 = getoptnum(_optarg,1,uVar8);\n      if (truncate_lines != '\\x01') {\n        chars_per_line = local_94;\n      }\n      break;\n    case 0x80:\n      goto switchD_0010085a_caseD_80;\n    case 0x81:\n      goto switchD_0010085a_caseD_81;\n    default:\n      if (local_98 == -0x83) {\nLAB_00100d10:\n        uVar8 = proper_name_lite(\"Roland Huebner\",\"Roland Huebner\");\n        uVar6 = proper_name_lite(\"Pete TerMaat\",\"Pete TerMaat\");\n        version_etc(_stdout,&DAT_001045a7,\"GNU coreutils\",_Version,uVar6,uVar8,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (local_98 == -0x82) {\n        usage(0);\n        goto LAB_00100d10;\n      }\n    case 2:\n    case 3:\n    case 4:\n    case 5:\n    case 6:\n    case 7:\n    case 8:\n    case 9:\n    case 10:\n    case 0xb:\n    case 0xc:\n    case 0xd:\n    case 0xe:\n    case 0xf:\n    case 0x10:\n    case 0x11:\n    case 0x12:\n    case 0x13:\n    case 0x14:\n    case 0x15:\n    case 0x16:\n    case 0x17:\n    case 0x18:\n    case 0x19:\n    case 0x1a:\n    case 0x1b:\n    case 0x1c:\n    case 0x1d:\n    case 0x1e:\n    case 0x1f:\n    case 0x20:\n    case 0x21:\n    case 0x22:\n    case 0x23:\n    case 0x24:\n    case 0x25:\n    case 0x26:\n    case 0x27:\n    case 0x28:\n    case 0x29:\n    case 0x2a:\n    case 0x2b:\n    case 0x2c:\n    case 0x2d:\n    case 0x2e:\n    case 0x2f:\n    case 0x30:\n    case 0x31:\n    case 0x32:\n    case 0x33:\n    case 0x34:\n    case 0x35:\n    case 0x36:\n    case 0x37:\n    case 0x38:\n    case 0x39:\n    case 0x3a:\n    case 0x3b:\n    case 0x3c:\n    case 0x3d:\n    case 0x3e:\n    case 0x3f:\n    case 0x40:\n    case 0x41:\n    case 0x42:\n    case 0x43:\n    case 0x45:\n    case 0x47:\n    case 0x48:\n    case 0x49:\n    case 0x4b:\n    case 0x4c:\n    case 0x4d:\n    case 0x4f:\n    case 0x50:\n    case 0x51:\n    case 0x52:\n    case 0x55:\n    case 0x56:\n    case 0x58:\n    case 0x59:\n    case 0x5a:\n    case 0x5b:\n    case 0x5c:\n    case 0x5d:\n    case 0x5e:\n    case 0x5f:\n    case 0x60:\n    case 0x67:\n    case 0x6a:\n    case 0x6b:\n    case 0x70:\n    case 0x71:\n    case 0x75:\n    case 0x78:\n    case 0x79:\n    case 0x7a:\n    case 0x7b:\n    case 0x7c:\n    case 0x7d:\n    case 0x7e:\n    case 0x7f:\nswitchD_0010085a_caseD_2:\n      usage(1);\n    }\n  } while( true );\nswitchD_0010085a_caseD_81:\n  if (_optarg == (char *)0x0) {\n    local_48 = gettext(\"\\'--pages=FIRST_PAGE[:LAST_PAGE]\\' missing argument\");\n    local_90 = 1;\n    local_8c = 0;\n    error(1,0,local_48);\n  }\n  cVar4 = first_last_page(local_a4,0,_optarg);\n  if (cVar4 != '\\x01') {\n    uVar8 = quote(_optarg);\n    local_40 = gettext(\"invalid page range %s\");\n    local_88 = 1;\n    local_84 = 0;\n    error(1,0,local_40,uVar8);\nswitchD_0010085a_caseD_80:\n    parse_column_count(_optarg);\n    free(local_60);\n    local_60 = (void *)0x0;\n    local_68 = 0;\n  }\n  goto LAB_0010070f;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "xnmalloc",
+                        "getopt_long",
+                        "parse_column_count",
+                        "free",
+                        "getenv",
+                        "hard_locale",
+                        "tzalloc",
+                        "gettext",
+                        "error",
+                        "print_files",
+                        "cleanup",
+                        "rpl_fclose",
+                        "__errno_location",
+                        "exit",
+                        "c_isdigit",
+                        "xpalloc",
+                        "first_last_page",
+                        "getoptnum",
+                        "separator_string",
+                        "getoptarg",
+                        "proper_name_lite",
+                        "version_etc",
+                        "usage",
+                        "quote"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getoptnum",
+                "func_c_signature": "void getoptnum(undefined8 param_1,int param_2,undefined8 param_3)",
+                "decompiled_code": "void getoptnum(undefined8 param_1,int param_2,undefined8 param_3) {\n  undefined8 uVar1;\n  \n  if (param_2 < 1) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 4;\n  }\n  xnumtoimax(param_1,10,(long)param_2,0x7fffffff,&DAT_0010426c,param_3,0,uVar1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getoptnum",
+                        "xnumtoimax"
+                    ],
+                    "calling_functions": [
+                        "parse_column_count",
+                        "main",
+                        "getoptnum"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getoptarg",
+                "func_c_signature": "void getoptarg(char *param_1,char param_2,char *param_3,undefined4 *param_4)",
+                "decompiled_code": "void getoptarg(char *param_1,char param_2,char *param_3,undefined4 *param_4) {\n  char cVar1;\n  undefined8 uVar2;\n  undefined4 uVar3;\n  long in_FS_OFFSET;\n  char *local_60;\n  uint local_4c;\n  long local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (*param_1 == '\\0') {\n    uVar2 = quote(param_1);\n    local_30 = gettext(\"\\'-%c\\': Invalid argument: %s\");\n    error(0,0,local_30,(int)param_2,uVar2);\n    usage(1);\n  }\n  cVar1 = c_isdigit((int)*param_1);\n  local_60 = param_1;\n  if (cVar1 != '\\x01') {\n    local_60 = param_1 + 1;\n    *param_3 = *param_1;\n  }\n  if (*local_60 != '\\0') {\n    local_4c = xstrtol(local_60,0,10,&local_38,&DAT_0010426c);\n    if (local_4c == 0) {\n      if (local_38 < 1) {\n        local_4c = 4;\n      }\n      else if (0x7fffffff < local_38) {\n        local_4c = 1;\n      }\n    }\n    if (local_4c != 0) {\n      uVar2 = quote(local_60);\n      local_28 = gettext(\"\\'-%c\\' extra characters or invalid number in the argument: %s\");\n      if ((local_4c & 1) == 0) {\n        uVar3 = 0;\n      }\n      else {\n        uVar3 = 0x4b;\n      }\n      error(0,uVar3,local_28,(int)param_2,uVar2);\n      usage(1);\n    }\n    *param_4 = (int)local_38;\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getoptarg",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "c_isdigit",
+                        "xstrtol",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "getoptarg"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_parameters",
+                "func_c_signature": "void init_parameters(int param_1)",
+                "decompiled_code": "void init_parameters(int param_1) {\n  long lVar1;\n  int iVar2;\n  undefined8 uVar3;\n  long lVar4;\n  long in_FS_OFFSET;\n  int local_30;\n  int local_2c;\n  int local_28;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  local_28 = 0;\n  lines_per_body = lines_per_page + -10;\n  if (lines_per_body < 1) {\n    extremities = '\\0';\n    keep_FF = 1;\n  }\n  if (extremities != '\\x01') {\n    lines_per_body = lines_per_page;\n  }\n  if (double_space != '\\0') {\n    if (lines_per_body < 2) {\n      lines_per_body = 1;\n    }\n    else {\n      lines_per_body = lines_per_body / 2;\n    }\n  }\n  if (param_1 == 0) {\n    parallel_files = '\\0';\n  }\n  if (parallel_files != '\\0') {\n    columns = param_1;\n  }\n  if (storing_columns != '\\0') {\n    balance_columns = 1;\n  }\n  if (columns < 2) {\n    storing_columns = '\\0';\n  }\n  else {\n    if (use_col_separator == '\\x01') {\n      if (((join_lines != '\\x01') && (col_sep_length == 1)) && (*col_sep_string == '\\t')) {\n        col_sep_string = column_separator;\n      }\n    }\n    else {\n      if (join_lines == '\\0') {\n        col_sep_string = column_separator;\n      }\n      else {\n        col_sep_string = line_separator;\n      }\n      col_sep_length = 1;\n      use_col_separator = '\\x01';\n    }\n    truncate_lines = 1;\n    if ((col_sep_length != 1) || (*col_sep_string != '\\t')) {\n      untabify_input = 1;\n    }\n    tabify_output = 1;\n  }\n  if (join_lines != '\\0') {\n    truncate_lines = 0;\n  }\n  if (numbered_lines != '\\0') {\n    line_count = start_line_num;\n    if (number_separator == '\\t') {\n      number_width = chars_per_number + (8 - (int)chars_per_number % 8);\n    }\n    else {\n      number_width = chars_per_number + 1;\n    }\n    if (parallel_files != '\\0') {\n      local_28 = number_width;\n    }\n  }\n  lVar4 = (long)col_sep_length * (long)(columns + -1);\n  local_30 = (int)lVar4;\n  if (local_30 != lVar4) {\n    local_30 = 0x7fffffff;\n  }\n  local_2c = (chars_per_line - local_28) - local_30;\n  if (SBORROW4(chars_per_line - local_28,local_30)) {\n    local_2c = 0;\n  }\n  chars_per_column = local_2c / columns;\n  if (chars_per_column < 1) {\n    uVar3 = gettext(\"page width too narrow\",columns,(long)local_2c % (long)columns & 0xffffffff);\n    error(1,0,uVar3);\n  }\n  if (numbered_lines != '\\0') {\n    free(number_buff);\n    if (chars_per_number < 0xc) {\n      lVar4 = 0xc;\n    }\n    else {\n      lVar4 = (long)(int)chars_per_number + 1;\n    }\n    number_buff = (void *)xmalloc(lVar4);\n  }\n  free(clump_buff);\n  iVar2 = chars_per_input_tab;\n  if (chars_per_input_tab < 8) {\n    iVar2 = 8;\n  }\n  clump_buff = (void *)xmalloc((long)iVar2);\n  if (lVar1 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "SBORROW4"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_parameters",
+                        "SBORROW4",
+                        "gettext",
+                        "error",
+                        "free",
+                        "xmalloc",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "init_parameters",
+                        "print_files"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_fps",
+                "func_c_signature": "undefined8 init_fps(int param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined8 init_fps(int param_1,undefined8 *param_2) {\n  FILE *pFVar1;\n  FILE **ppFVar2;\n  char cVar3;\n  int iVar4;\n  FILE *pFVar5;\n  undefined8 *local_38;\n  int local_28;\n  int local_24;\n  FILE **local_20;\n  \n  total_files = 0;\n  free(column_vector);\n  local_20 = (FILE **)xnmalloc((long)columns,0x40);\n  column_vector = local_20;\n  local_38 = param_2;\n  local_28 = param_1;\n  if (parallel_files == '\\0') {\n    if (param_1 < 1) {\n      pFVar5 = (FILE *)gettext(\"standard input\");\n      local_20[1] = pFVar5;\n      *local_20 = _stdin;\n      have_read_stdin = 1;\n      *(undefined4 *)(local_20 + 2) = 0;\n      *(undefined *)((long)local_20 + 0x39) = 0;\n      total_files = total_files + 1;\n      init_header(&DAT_0010426c,0xffffffff);\n      *(undefined4 *)((long)local_20 + 0x2c) = 0;\n    }\n    else {\n      cVar3 = open_file(*param_2,local_20);\n      if (cVar3 != '\\x01') {\n        return 0;\n      }\n      iVar4 = fileno_unlocked(*local_20);\n      init_header(*param_2,iVar4);\n      *(undefined4 *)((long)local_20 + 0x2c) = 0;\n    }\n    pFVar5 = local_20[1];\n    pFVar1 = *local_20;\n    local_24 = columns;\n    ppFVar2 = local_20;\n    while( true ) {\n      local_20 = ppFVar2 + 8;\n      local_24 = local_24 + -1;\n      if (local_24 == 0) break;\n      ppFVar2[9] = pFVar5;\n      *local_20 = pFVar1;\n      *(undefined4 *)(ppFVar2 + 10) = 0;\n      *(undefined *)((long)ppFVar2 + 0x79) = 0;\n      *(undefined4 *)((long)ppFVar2 + 0x6c) = 0;\n      ppFVar2 = local_20;\n    }\n  }\n  else {\n    while (local_28 != 0) {\n      cVar3 = open_file(*local_38,local_20);\n      if (cVar3 != '\\x01') {\n        local_20 = local_20 + -8;\n        columns = columns + -1;\n      }\n      local_20 = local_20 + 8;\n      local_38 = local_38 + 1;\n      local_28 = local_28 + -1;\n    }\n    if (columns == 0) {\n      return 0;\n    }\n    init_header(&DAT_0010426c,0xffffffff);\n  }\n  files_ready_to_read = total_files;\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_fps",
+                        "free",
+                        "xnmalloc",
+                        "gettext",
+                        "init_header",
+                        "open_file",
+                        "fileno_unlocked"
+                    ],
+                    "calling_functions": [
+                        "init_fps",
+                        "print_files"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_funcs",
+                "func_c_signature": "void init_funcs(void)",
+                "decompiled_code": "void init_funcs(void) {\n  undefined uVar1;\n  int local_1c;\n  int local_18;\n  int local_14;\n  long local_10;\n  \n  if (truncate_lines == '\\x01') {\n    if ((parallel_files == '\\0') || (numbered_lines == '\\0')) {\n      local_14 = chars_per_margin + chars_per_column;\n    }\n    else {\n      local_14 = number_width + chars_per_column + chars_per_margin;\n    }\n  }\n  else {\n    local_14 = 0;\n  }\n  local_18 = chars_per_margin + col_sep_length;\n  local_10 = column_vector;\n  for (local_1c = 1; local_1c < columns; local_1c = local_1c + 1) {\n    if (storing_columns == '\\0') {\n      *(code **)(local_10 + 0x20) = print_char;\n      *(code **)(local_10 + 0x18) = read_line;\n    }\n    else {\n      *(code **)(local_10 + 0x20) = store_char;\n      *(code **)(local_10 + 0x18) = print_stored;\n    }\n    if ((numbered_lines == '\\0') || ((parallel_files == '\\x01' && (local_1c != 1)))) {\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = 1;\n    }\n    *(undefined *)(local_10 + 0x38) = uVar1;\n    *(int *)(local_10 + 0x34) = local_18;\n    if (truncate_lines == '\\x01') {\n      local_18 = local_14 + col_sep_length;\n      local_14 = local_18 + chars_per_column;\n    }\n    else {\n      local_18 = 0;\n      local_14 = 0;\n    }\n    local_10 = local_10 + 0x40;\n  }\n  if ((storing_columns == '\\0') || (balance_columns == '\\0')) {\n    *(code **)(local_10 + 0x20) = print_char;\n    *(code **)(local_10 + 0x18) = read_line;\n  }\n  else {\n    *(code **)(local_10 + 0x20) = store_char;\n    *(code **)(local_10 + 0x18) = print_stored;\n  }\n  if ((numbered_lines == '\\0') || ((parallel_files == '\\x01' && (local_1c != 1)))) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 1;\n  }\n  *(undefined *)(local_10 + 0x38) = uVar1;\n  *(int *)(local_10 + 0x34) = local_18;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_funcs"
+                    ],
+                    "calling_functions": [
+                        "init_funcs",
+                        "print_files"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "open_file",
+                "func_c_signature": "undefined8 open_file(long param_1,long *param_2)",
+                "decompiled_code": "undefined8 open_file(long param_1,long *param_2) {\n  char cVar1;\n  long lVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  \n  cVar1 = streq(param_1,&DAT_001048e3);\n  if (cVar1 == '\\0') {\n    param_2[1] = param_1;\n    lVar2 = fopen_safer(param_1,&DAT_001048e5);\n    *param_2 = lVar2;\n  }\n  else {\n    lVar2 = gettext(\"standard input\");\n    param_2[1] = lVar2;\n    *param_2 = _stdin;\n    have_read_stdin = 1;\n  }\n  if (*param_2 == 0) {\n    failed_opens = 1;\n    if (ignore_failed_opens != '\\x01') {\n      uVar3 = quotearg_n_style_colon(0,3,param_1);\n      piVar4 = __errno_location();\n      error(0,*piVar4,&DAT_001048e7,uVar3);\n    }\n    uVar3 = 0;\n  }\n  else {\n    fadvise(*param_2,2);\n    *(undefined4 *)(param_2 + 2) = 0;\n    *(undefined *)((long)param_2 + 0x39) = 0;\n    total_files = total_files + 1;\n    uVar3 = 1;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "open_file",
+                        "streq",
+                        "fopen_safer",
+                        "gettext",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "fadvise"
+                    ],
+                    "calling_functions": [
+                        "init_fps",
+                        "open_file"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "close_file",
+                "func_c_signature": "void close_file(FILE **param_1)",
+                "decompiled_code": "void close_file(FILE **param_1) {\n  int iVar1;\n  int *piVar2;\n  undefined8 uVar3;\n  int local_28;\n  int local_24;\n  long local_18;\n  \n  if (*(int *)(param_1 + 2) != 3) {\n    piVar2 = __errno_location();\n    local_24 = *piVar2;\n    iVar1 = ferror_unlocked(*param_1);\n    if (iVar1 == 0) {\n      local_24 = 0;\n    }\n    iVar1 = fileno_unlocked(*param_1);\n    if (iVar1 == 0) {\n      clearerr_unlocked(*param_1);\n    }\n    else {\n      iVar1 = rpl_fclose(*param_1);\n      if ((iVar1 != 0) && (local_24 == 0)) {\n        piVar2 = __errno_location();\n        local_24 = *piVar2;\n      }\n    }\n    if (local_24 != 0) {\n      uVar3 = quotearg_n_style_colon(0,3,param_1[1]);\n      error(1,local_24,&DAT_001048e7,uVar3);\n    }\n    if (parallel_files == '\\x01') {\n      *(undefined4 *)(param_1 + 2) = 3;\n      *(undefined4 *)(param_1 + 6) = 0;\n    }\n    else {\n      local_18 = column_vector;\n      for (local_28 = columns; local_28 != 0; local_28 = local_28 + -1) {\n        *(undefined4 *)(local_18 + 0x10) = 3;\n        if (*(int *)(local_18 + 0x2c) == 0) {\n          *(undefined4 *)(local_18 + 0x30) = 0;\n        }\n        local_18 = local_18 + 0x40;\n      }\n    }\n    files_ready_to_read = files_ready_to_read + -1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "close_file",
+                        "__errno_location",
+                        "ferror_unlocked",
+                        "fileno_unlocked",
+                        "clearerr_unlocked",
+                        "rpl_fclose",
+                        "quotearg_n_style_colon",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "close_file",
+                        "read_rest_of_line",
+                        "skip_read",
+                        "read_line"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "hold_file",
+                "func_c_signature": "void hold_file(long param_1)",
+                "decompiled_code": "void hold_file(long param_1) {\n  int local_14;\n  long local_10;\n  \n  if (parallel_files == '\\x01') {\n    *(undefined4 *)(param_1 + 0x10) = 2;\n  }\n  else {\n    local_10 = column_vector;\n    for (local_14 = columns; local_14 != 0; local_14 = local_14 + -1) {\n      if (storing_columns == '\\0') {\n        *(undefined4 *)(local_10 + 0x10) = 2;\n      }\n      else {\n        *(undefined4 *)(local_10 + 0x10) = 1;\n      }\n      local_10 = local_10 + 0x40;\n    }\n  }\n  *(undefined4 *)(param_1 + 0x30) = 0;\n  files_ready_to_read = files_ready_to_read + -1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "hold_file"
+                    ],
+                    "calling_functions": [
+                        "hold_file",
+                        "read_rest_of_line",
+                        "skip_read",
+                        "read_line"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "reset_status",
+                "func_c_signature": "void reset_status(void)",
+                "decompiled_code": "void reset_status(void) {\n  int local_14;\n  long local_10;\n  \n  local_10 = column_vector;\n  for (local_14 = columns; local_14 != 0; local_14 = local_14 + -1) {\n    if (*(int *)(local_10 + 0x10) == 2) {\n      *(undefined4 *)(local_10 + 0x10) = 0;\n      files_ready_to_read = files_ready_to_read + 1;\n    }\n    local_10 = local_10 + 0x40;\n  }\n  if (storing_columns != '\\0') {\n    if (*(int *)(column_vector + 0x10) == 3) {\n      files_ready_to_read = 0;\n    }\n    else {\n      files_ready_to_read = 1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "reset_status"
+                    ],
+                    "calling_functions": [
+                        "reset_status",
+                        "print_page",
+                        "skip_to_page"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_files",
+                "func_c_signature": "void print_files(undefined4 param_1,undefined8 param_2)",
+                "decompiled_code": "void print_files(undefined4 param_1,undefined8 param_2) {\n  char cVar1;\n  \n  init_parameters(param_1);\n  cVar1 = init_fps(param_1,param_2);\n  if (cVar1 == '\\x01') {\n    if (storing_columns != '\\0') {\n      init_store_cols();\n    }\n    if (first_page_number < 2) {\n      page_number = 1;\n    }\n    else {\n      cVar1 = skip_to_page(first_page_number);\n      if (cVar1 != '\\x01') {\n        return;\n      }\n      page_number = first_page_number;\n    }\n    init_funcs();\n    line_number = line_count;\n    do {\n      cVar1 = print_page();\n    } while (cVar1 != '\\0');\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_files",
+                        "init_parameters",
+                        "init_fps",
+                        "init_store_cols",
+                        "skip_to_page",
+                        "init_funcs",
+                        "print_page"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "print_files"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_header",
+                "func_c_signature": "void init_header(undefined1 *param_1,int param_2)",
+                "decompiled_code": "void init_header(undefined1 *param_1,int param_2) {\n  ulong uVar1;\n  char cVar2;\n  int iVar3;\n  int iVar4;\n  int iVar5;\n  long lVar6;\n  undefined8 uVar7;\n  long in_FS_OFFSET;\n  int local_144;\n  char *local_128;\n  undefined local_118 [16];\n  undefined local_108 [64];\n  stat local_c8;\n  undefined local_38 [24];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  cVar2 = streq(param_1,&DAT_001048e3);\n  local_144 = param_2;\n  if (cVar2 != '\\0') {\n    local_144 = -1;\n  }\n  if ((local_144 < 0) || (iVar3 = fstat(local_144,&local_c8), iVar3 != 0)) {\n    if (timespec_0 == 0) {\n      gettime(&timespec_0);\n    }\n    local_118._8_8_ = DAT_001040c8;\n    local_118._0_8_ = timespec_0;\n  }\n  else {\n    local_118 = get_stat_mtime(&local_c8);\n  }\n  uVar1 = local_118._8_8_;\n  lVar6 = localtime_rz(localtz,local_118,local_108);\n  if (lVar6 == 0) {\n    local_128 = (char *)xmalloc(0x21);\n    uVar7 = timetostr(local_118._0_8_,local_38);\n    sprintf(local_128,\"%s.%09d\",uVar7,uVar1 & 0xffffffff);\n  }\n  else {\n    lVar6 = nstrftime(0,0xffffffffffffffff,date_format,local_108,localtz,uVar1 & 0xffffffff);\n    local_128 = (char *)xmalloc(lVar6 + 1);\n    nstrftime(local_128,lVar6 + 1,date_format,local_108,localtz,uVar1 & 0xffffffff);\n  }\n  free(date_text);\n  iVar3 = chars_per_line;\n  date_text = local_128;\n  file_text = custom_header;\n  if ((custom_header == (undefined1 *)0x0) && (file_text = param_1, local_144 < 0)) {\n    file_text = &DAT_0010426c;\n  }\n  iVar4 = gnu_mbswidth(local_128,0);\n  iVar5 = gnu_mbswidth(file_text,0);\n  header_width_available = (iVar3 - iVar4) - iVar5;\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_header",
+                        "streq",
+                        "fstat",
+                        "gettime",
+                        "get_stat_mtime",
+                        "localtime_rz",
+                        "xmalloc",
+                        "timetostr",
+                        "sprintf",
+                        "nstrftime",
+                        "free",
+                        "gnu_mbswidth",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "init_fps",
+                        "init_header"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_page",
+                "func_c_signature": "void init_page(void)",
+                "decompiled_code": "void init_page(void) {\n  int local_14;\n  long local_10;\n  \n  if (storing_columns == '\\0') {\n    local_10 = column_vector;\n    for (local_14 = columns; local_14 != 0; local_14 = local_14 + -1) {\n      if (*(int *)(local_10 + 0x10) == 0) {\n        *(undefined4 *)(local_10 + 0x30) = lines_per_body;\n      }\n      else {\n        *(undefined4 *)(local_10 + 0x30) = 0;\n      }\n      local_10 = local_10 + 0x40;\n    }\n  }\n  else {\n    store_columns();\n    local_10 = column_vector;\n    local_14 = columns;\n    while (local_14 = local_14 + -1, local_14 != 0) {\n      *(undefined4 *)(local_10 + 0x30) = *(undefined4 *)(local_10 + 0x2c);\n      local_10 = local_10 + 0x40;\n    }\n    if (balance_columns == '\\0') {\n      if (*(int *)(local_10 + 0x10) == 0) {\n        *(undefined4 *)(local_10 + 0x30) = lines_per_body;\n      }\n      else {\n        *(undefined4 *)(local_10 + 0x30) = 0;\n      }\n    }\n    else {\n      *(undefined4 *)(local_10 + 0x30) = *(undefined4 *)(local_10 + 0x2c);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_page",
+                        "store_columns"
+                    ],
+                    "calling_functions": [
+                        "init_page",
+                        "print_page"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "align_column",
+                "func_c_signature": "void align_column(long param_1)",
+                "decompiled_code": "void align_column(long param_1) {\n  padding_not_printed = *(int *)(param_1 + 0x34);\n  if (col_sep_length < padding_not_printed) {\n    pad_across_to(padding_not_printed - col_sep_length);\n    padding_not_printed = 0;\n  }\n  if (use_col_separator != '\\0') {\n    print_sep_string();\n  }\n  if (*(char *)(param_1 + 0x38) != '\\0') {\n    add_line_number(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "align_column",
+                        "pad_across_to",
+                        "print_sep_string",
+                        "add_line_number"
+                    ],
+                    "calling_functions": [
+                        "align_column",
+                        "print_page",
+                        "read_line"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_page",
+                "func_c_signature": "undefined8 print_page(void)",
+                "decompiled_code": "undefined8 print_page(void) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  bool local_19;\n  int local_18;\n  int local_14;\n  long local_10;\n  \n  init_page();\n  iVar2 = cols_ready_to_print();\n  if (iVar2 == 0) {\n    uVar3 = 0;\n  }\n  else {\n    if (extremities != '\\0') {\n      print_a_header = 1;\n    }\n    pad_vertically = 0;\n    local_19 = false;\n    local_14 = lines_per_body;\n    if (double_space != '\\0') {\n      local_14 = lines_per_body << 1;\n    }\n    while ((0 < local_14 && (iVar2 = cols_ready_to_print(), iVar2 != 0))) {\n      output_position = 0;\n      spaces_not_printed = 0;\n      separators_not_printed = 0;\n      pad_vertically = 0;\n      align_empty_cols = 0;\n      empty_line = '\\x01';\n      local_10 = column_vector;\n      for (local_18 = 1; local_18 <= columns; local_18 = local_18 + 1) {\n        input_position = 0;\n        if ((*(int *)(local_10 + 0x30) < 1) && (*(int *)(local_10 + 0x10) != 1)) {\n          if (parallel_files != '\\0') {\n            if (empty_line == '\\0') {\n              align_column(local_10);\n            }\n            else {\n              align_empty_cols = 1;\n            }\n          }\n        }\n        else {\n          FF_only = '\\0';\n          padding_not_printed = *(undefined4 *)(local_10 + 0x34);\n          cVar1 = (**(code **)(local_10 + 0x18))(local_10);\n          if (cVar1 != '\\x01') {\n            read_rest_of_line(local_10);\n          }\n          local_19 = (pad_vertically | local_19) != 0;\n          *(int *)(local_10 + 0x30) = *(int *)(local_10 + 0x30) + -1;\n          if ((*(int *)(local_10 + 0x30) < 1) && (iVar2 = cols_ready_to_print(), iVar2 == 0)) break;\n          if ((parallel_files != '\\0') && (*(int *)(local_10 + 0x10) != 0)) {\n            if (empty_line == '\\0') {\n              if ((*(int *)(local_10 + 0x10) == 3) ||\n                 ((*(int *)(local_10 + 0x10) == 2 && (FF_only != '\\0')))) {\n                align_column(local_10);\n              }\n            }\n            else {\n              align_empty_cols = 1;\n            }\n          }\n        }\n        if (use_col_separator != '\\0') {\n          separators_not_printed = separators_not_printed + 1;\n        }\n        local_10 = local_10 + 0x40;\n      }\n      if (pad_vertically != 0) {\n        putchar_unlocked(10);\n        local_14 = local_14 + -1;\n      }\n      iVar2 = cols_ready_to_print();\n      if ((iVar2 == 0) && (extremities != '\\x01')) break;\n      if ((double_space != '\\0') && (local_19 != false)) {\n        putchar_unlocked(10);\n        local_14 = local_14 + -1;\n      }\n    }\n    if (local_14 == 0) {\n      local_10 = column_vector;\n      for (local_18 = 1; local_18 <= columns; local_18 = local_18 + 1) {\n        if (*(int *)(local_10 + 0x10) == 0) {\n          *(undefined *)(local_10 + 0x39) = 1;\n        }\n        local_10 = local_10 + 0x40;\n      }\n    }\n    pad_vertically = local_19;\n    if ((local_19 == false) || (extremities == '\\0')) {\n      if ((keep_FF != '\\0') && (print_a_FF != '\\0')) {\n        putchar_unlocked(0xc);\n        print_a_FF = '\\0';\n      }\n    }\n    else {\n      pad_down(local_14 + 5);\n    }\n    iVar2 = ferror_unlocked(_stdout);\n    if (iVar2 != 0) {\n      write_error();\n    }\n    page_number = page_number + 1;\n    if (last_page_number < page_number) {\n      uVar3 = 0;\n    }\n    else {\n      reset_status();\n      uVar3 = 1;\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_page",
+                        "init_page",
+                        "cols_ready_to_print",
+                        "align_column",
+                        "read_rest_of_line",
+                        "putchar_unlocked",
+                        "pad_down",
+                        "ferror_unlocked",
+                        "write_error",
+                        "reset_status"
+                    ],
+                    "calling_functions": [
+                        "print_files",
+                        "print_page"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_store_cols",
+                "func_c_signature": "void init_store_cols(void)",
+                "decompiled_code": "void init_store_cols(void) {\n  long lVar1;\n  long lVar2;\n  int iVar3;\n  int iVar4;\n  long in_FS_OFFSET;\n  int local_1c;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  iVar3 = (int)((long)columns * (long)lines_per_body);\n  if (((((long)iVar3 != (long)columns * (long)lines_per_body) ||\n       (local_1c = iVar3 + 1, SCARRY4(iVar3,1))) || (SCARRY4(chars_per_column,1))) ||\n     (lVar2 = (long)(chars_per_column + 1) * (long)iVar3, iVar4 = (int)lVar2, iVar4 != lVar2)) {\n    integer_overflow();\n  }\n  else {\n    buff_allocated = (long)(int)(use_col_separator + 1) * (long)iVar4;\n  }\n  free(line_vector);\n  line_vector = (void *)xnmalloc((long)local_1c,4);\n  free(end_vector);\n  end_vector = (void *)xnmalloc((long)iVar3,4);\n  free(buff);\n  buff = (void *)ximalloc(buff_allocated);\n  if (lVar1 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY4"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_store_cols",
+                        "SCARRY4",
+                        "integer_overflow",
+                        "free",
+                        "xnmalloc",
+                        "ximalloc",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_files",
+                        "init_store_cols"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "store_columns",
+                "func_c_signature": "void store_columns(void)",
+                "decompiled_code": "void store_columns(void) {\n  char cVar1;\n  int local_24;\n  int local_20;\n  uint local_1c;\n  int local_18;\n  int local_14;\n  long local_10;\n  \n  local_1c = 0;\n  buff_current = 0;\n  local_18 = 0;\n  if (balance_columns == '\\0') {\n    local_14 = columns + -1;\n  }\n  else {\n    local_14 = columns;\n  }\n  local_10 = column_vector;\n  for (local_24 = 1; local_24 <= local_14; local_24 = local_24 + 1) {\n    *(undefined4 *)(local_10 + 0x2c) = 0;\n    local_10 = local_10 + 0x40;\n  }\n  local_24 = 1;\n  local_10 = column_vector;\n  while ((local_24 <= local_14 && (files_ready_to_read != 0))) {\n    *(uint *)(local_10 + 0x28) = local_1c;\n    local_20 = lines_per_body;\n    while ((local_20 != 0 && (files_ready_to_read != 0))) {\n      if (*(int *)(local_10 + 0x10) == 0) {\n        input_position = 0;\n        cVar1 = read_line(local_10);\n        if (cVar1 != '\\x01') {\n          read_rest_of_line(local_10);\n        }\n        if ((*(int *)(local_10 + 0x10) == 0) || (local_18 != buff_current)) {\n          *(int *)(local_10 + 0x2c) = *(int *)(local_10 + 0x2c) + 1;\n          *(int *)((ulong)local_1c * 4 + line_vector) = local_18;\n          *(undefined4 *)(end_vector + (ulong)local_1c * 4) = input_position;\n          local_18 = buff_current;\n          local_1c = local_1c + 1;\n        }\n      }\n      local_20 = local_20 + -1;\n    }\n    local_24 = local_24 + 1;\n    local_10 = local_10 + 0x40;\n  }\n  *(int *)((ulong)local_1c * 4 + line_vector) = local_18;\n  if (balance_columns != '\\0') {\n    balance(local_1c);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "store_columns",
+                        "read_line",
+                        "read_rest_of_line",
+                        "balance"
+                    ],
+                    "calling_functions": [
+                        "init_page",
+                        "store_columns"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "balance",
+                "func_c_signature": "void balance(int param_1)",
+                "decompiled_code": "void balance(int param_1) {\n  int local_1c;\n  int local_18;\n  int local_14;\n  long local_10;\n  \n  local_14 = 0;\n  local_10 = column_vector;\n  for (local_1c = 1; local_1c <= columns; local_1c = local_1c + 1) {\n    local_18 = param_1 / columns;\n    if (local_1c <= param_1 % columns) {\n      local_18 = local_18 + 1;\n    }\n    *(int *)(local_10 + 0x2c) = local_18;\n    *(int *)(local_10 + 0x28) = local_14;\n    local_14 = local_14 + local_18;\n    local_10 = local_10 + 0x40;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "balance"
+                    ],
+                    "calling_functions": [
+                        "store_columns",
+                        "balance"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "store_char",
+                "func_c_signature": "void store_char(undefined param_1)",
+                "decompiled_code": "void store_char(undefined param_1) {\n  ulong uVar1;\n  \n  if (buff_allocated <= (long)(ulong)buff_current) {\n    buff = xpalloc(buff,&buff_allocated,1,0xffffffffffffffff,1);\n  }\n  uVar1 = (ulong)buff_current;\n  buff_current = buff_current + 1;\n  *(undefined *)(buff + uVar1) = param_1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "store_char",
+                        "xpalloc"
+                    ],
+                    "calling_functions": [
+                        "store_char"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_line_number",
+                "func_c_signature": "void add_line_number(long param_1)",
+                "decompiled_code": "void add_line_number(long param_1) {\n  int iVar1;\n  uint local_18;\n  char *local_10;\n  \n  iVar1 = sprintf(number_buff,\"%*d\",(ulong)chars_per_number,(ulong)line_number);\n  line_number = line_number + 1;\n  local_10 = number_buff + (int)(iVar1 - chars_per_number);\n  for (local_18 = chars_per_number; 0 < (int)local_18; local_18 = local_18 - 1) {\n    (**(code **)(param_1 + 0x20))((int)*local_10);\n    local_10 = local_10 + 1;\n  }\n  if (columns < 2) {\n    (**(code **)(param_1 + 0x20))((int)number_separator);\n    if (number_separator == '\\t') {\n      output_position =\n           output_position + (chars_per_output_tab - output_position % chars_per_output_tab);\n    }\n  }\n  else if (number_separator == '\\t') {\n    local_18 = number_width - chars_per_number;\n    while (0 < (int)local_18) {\n      (**(code **)(param_1 + 0x20))(0x20);\n      local_18 = local_18 + -1;\n    }\n  }\n  else {\n    (**(code **)(param_1 + 0x20))((int)number_separator);\n  }\n  if ((truncate_lines != '\\0') && (parallel_files != '\\x01')) {\n    input_position = number_width + input_position;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_line_number",
+                        "sprintf"
+                    ],
+                    "calling_functions": [
+                        "align_column",
+                        "add_line_number",
+                        "read_line"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "pad_across_to",
+                "func_c_signature": "void pad_across_to(int param_1)",
+                "decompiled_code": "void pad_across_to(int param_1) {\n  int iVar1;\n  int local_c;\n  \n  local_c = output_position;\n  if (tabify_output == '\\0') {\n    while (local_c = local_c + 1, iVar1 = param_1, local_c <= param_1) {\n      putchar_unlocked(0x20);\n    }\n  }\n  else {\n    spaces_not_printed = param_1 - output_position;\n    iVar1 = output_position;\n  }\n  output_position = iVar1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "pad_across_to",
+                        "putchar_unlocked"
+                    ],
+                    "calling_functions": [
+                        "align_column",
+                        "pad_across_to",
+                        "print_header",
+                        "read_line",
+                        "print_stored"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "pad_down",
+                "func_c_signature": "void pad_down(int param_1)",
+                "decompiled_code": "void pad_down(int param_1) {\n  int local_c;\n  \n  local_c = param_1;\n  if (use_form_feed == '\\0') {\n    for (; local_c != 0; local_c = local_c + -1) {\n      putchar_unlocked(10);\n    }\n  }\n  else {\n    putchar_unlocked(0xc);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "pad_down",
+                        "putchar_unlocked"
+                    ],
+                    "calling_functions": [
+                        "print_page",
+                        "pad_down"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_rest_of_line",
+                "func_c_signature": "void read_rest_of_line(FILE **param_1)",
+                "decompiled_code": "void read_rest_of_line(FILE **param_1) {\n  FILE *__stream;\n  int iVar1;\n  \n  __stream = *param_1;\n  while( true ) {\n    iVar1 = getc_unlocked(__stream);\n    if (iVar1 == 10) {\n      return;\n    }\n    if (iVar1 == 0xc) break;\n    if (iVar1 == -1) {\n      close_file(param_1);\n      return;\n    }\n  }\n  iVar1 = getc_unlocked(__stream);\n  if (iVar1 != 10) {\n    ungetc(iVar1,__stream);\n  }\n  if (keep_FF != '\\0') {\n    print_a_FF = 1;\n  }\n  hold_file(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_rest_of_line",
+                        "getc_unlocked",
+                        "close_file",
+                        "ungetc",
+                        "hold_file"
+                    ],
+                    "calling_functions": [
+                        "print_page",
+                        "store_columns",
+                        "read_rest_of_line"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "skip_read",
+                "func_c_signature": "void skip_read(FILE **param_1,int param_2)",
+                "decompiled_code": "void skip_read(FILE **param_1,int param_2) {\n  FILE *__stream;\n  int __c;\n  bool bVar1;\n  int local_20;\n  int local_1c;\n  long local_18;\n  \n  __stream = *param_1;\n  local_20 = getc_unlocked(__stream);\n  if (((local_20 == 0xc) && (*(char *)((long)param_1 + 0x39) != '\\0')) &&\n     (local_20 = getc_unlocked(__stream), local_20 == 10)) {\n    local_20 = getc_unlocked(__stream);\n  }\n  *(undefined *)((long)param_1 + 0x39) = 0;\n  bVar1 = local_20 != 0xc;\n  if (last_line != '\\0') {\n    *(undefined *)((long)param_1 + 0x39) = 1;\n  }\n  while( true ) {\n    if (local_20 == 10) goto LAB_00102e27;\n    if (local_20 == 0xc) break;\n    if (local_20 == -1) {\n      close_file(param_1);\n      goto LAB_00102e27;\n    }\n    local_20 = getc_unlocked(__stream);\n  }\n  if (last_line != '\\0') {\n    if (parallel_files == '\\x01') {\n      *(undefined *)((long)param_1 + 0x39) = 0;\n    }\n    else {\n      local_18 = column_vector;\n      for (local_1c = columns; local_1c != 0; local_1c = local_1c + -1) {\n        *(undefined *)(local_18 + 0x39) = 0;\n        local_18 = local_18 + 0x40;\n      }\n    }\n  }\n  __c = getc_unlocked(__stream);\n  if (__c != 10) {\n    ungetc(__c,__stream);\n  }\n  hold_file(param_1);\nLAB_00102e27:\n  if (((skip_count != '\\0') && ((parallel_files != '\\x01' || (param_2 == 1)))) && (bVar1)) {\n    line_count = line_count + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "skip_read",
+                        "getc_unlocked",
+                        "close_file",
+                        "ungetc",
+                        "hold_file"
+                    ],
+                    "calling_functions": [
+                        "skip_read",
+                        "skip_to_page"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_white_space",
+                "func_c_signature": "void print_white_space(void)",
+                "decompiled_code": "void print_white_space(void) {\n  int iVar1;\n  int iVar2;\n  int local_14;\n  \n  local_14 = output_position;\n  iVar1 = output_position + spaces_not_printed;\n  while ((1 < iVar1 - local_14 &&\n         (iVar2 = local_14 + (chars_per_output_tab - local_14 % chars_per_output_tab),\n         iVar2 <= iVar1))) {\n    putchar_unlocked((int)output_tab_char);\n    local_14 = iVar2;\n  }\n  while (local_14 = local_14 + 1, local_14 <= iVar1) {\n    putchar_unlocked(0x20);\n  }\n  output_position = iVar1;\n  spaces_not_printed = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_white_space",
+                        "putchar_unlocked"
+                    ],
+                    "calling_functions": [
+                        "print_white_space",
+                        "print_sep_string",
+                        "print_char",
+                        "print_header"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_sep_string",
+                "func_c_signature": "void print_sep_string(void)",
+                "decompiled_code": "void print_sep_string(void) {\n  int iVar1;\n  int local_14;\n  char *local_10;\n  \n  local_10 = col_sep_string;\n  local_14 = col_sep_length;\n  if (separators_not_printed < 1) {\n    if (0 < spaces_not_printed) {\n      print_white_space();\n    }\n  }\n  else {\n    for (; 0 < separators_not_printed; separators_not_printed = separators_not_printed + -1) {\n      while( true ) {\n        iVar1 = local_14 + -1;\n        if (local_14 < 1) break;\n        if (*local_10 == ' ') {\n          spaces_not_printed = spaces_not_printed + 1;\n          local_14 = iVar1;\n          local_10 = local_10 + 1;\n        }\n        else {\n          if (0 < spaces_not_printed) {\n            print_white_space();\n          }\n          putchar_unlocked((int)*local_10);\n          output_position = output_position + 1;\n          local_14 = iVar1;\n          local_10 = local_10 + 1;\n        }\n      }\n      if (0 < spaces_not_printed) {\n        print_white_space();\n      }\n      local_14 = iVar1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_sep_string",
+                        "print_white_space",
+                        "putchar_unlocked"
+                    ],
+                    "calling_functions": [
+                        "align_column",
+                        "print_sep_string",
+                        "read_line",
+                        "print_stored"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_clump",
+                "func_c_signature": "void print_clump(long param_1,int param_2,char *param_3)",
+                "decompiled_code": "void print_clump(long param_1,int param_2,char *param_3) {\n  int iVar1;\n  char *local_20;\n  int local_14;\n  \n  local_20 = param_3;\n  local_14 = param_2;\n  while (local_14 != 0) {\n    (**(code **)(param_1 + 0x20))((int)*local_20);\n    local_20 = local_20 + 1;\n    local_14 = local_14 + -1;\n  }\n  iVar1 = ferror_unlocked(_stdout);\n  if (iVar1 != 0) {\n    write_error();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_clump",
+                        "ferror_unlocked",
+                        "write_error"
+                    ],
+                    "calling_functions": [
+                        "print_clump",
+                        "read_line"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_char",
+                "func_c_signature": "void print_char(char param_1)",
+                "decompiled_code": "void print_char(char param_1) {\n  ushort *puVar1;\n  byte bVar2;\n  ushort **ppuVar3;\n  \n  if (tabify_output != '\\0') {\n    if (param_1 == ' ') {\n      spaces_not_printed = spaces_not_printed + 1;\n      return;\n    }\n    if (0 < spaces_not_printed) {\n      print_white_space();\n    }\n    ppuVar3 = __ctype_b_loc();\n    puVar1 = *ppuVar3;\n    bVar2 = to_uchar((int)param_1);\n    if ((puVar1[bVar2] & 0x4000) == 0) {\n      if (param_1 == '\\b') {\n        output_position = output_position + -1;\n      }\n    }\n    else {\n      output_position = output_position + 1;\n    }\n  }\n  putchar_unlocked((int)param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_char",
+                        "print_white_space",
+                        "__ctype_b_loc",
+                        "to_uchar",
+                        "putchar_unlocked"
+                    ],
+                    "calling_functions": [
+                        "print_char",
+                        "print_stored"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "skip_to_page",
+                "func_c_signature": "bool skip_to_page(ulong param_1)",
+                "decompiled_code": "bool skip_to_page(ulong param_1) {\n  undefined8 uVar1;\n  int local_30;\n  int local_2c;\n  ulong local_20;\n  long local_18;\n  \n  local_20 = 1;\n  do {\n    if (param_1 <= local_20) {\nLAB_00103258:\n      return 0 < files_ready_to_read;\n    }\n    for (local_2c = 1; local_2c < lines_per_body; local_2c = local_2c + 1) {\n      local_18 = column_vector;\n      for (local_30 = 1; local_30 <= columns; local_30 = local_30 + 1) {\n        if (*(int *)(local_18 + 0x10) == 0) {\n          skip_read(local_18,local_30);\n        }\n        local_18 = local_18 + 0x40;\n      }\n    }\n    last_line = 1;\n    local_18 = column_vector;\n    for (local_30 = 1; local_30 <= columns; local_30 = local_30 + 1) {\n      if (*(int *)(local_18 + 0x10) == 0) {\n        skip_read(local_18,local_30);\n      }\n      local_18 = local_18 + 0x40;\n    }\n    if (storing_columns != '\\0') {\n      local_18 = column_vector;\n      for (local_30 = 1; local_30 <= columns; local_30 = local_30 + 1) {\n        if (*(int *)(local_18 + 0x10) != 3) {\n          *(undefined4 *)(local_18 + 0x10) = 2;\n        }\n        local_18 = local_18 + 0x40;\n      }\n    }\n    reset_status();\n    last_line = 0;\n    if (files_ready_to_read < 1) {\n      uVar1 = gettext(\"starting page number %ju exceeds page count %ju\");\n      error(0,0,uVar1,param_1,local_20);\n      goto LAB_00103258;\n    }\n    local_20 = local_20 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "skip_to_page",
+                        "skip_read",
+                        "reset_status",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "print_files",
+                        "skip_to_page"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_header",
+                "func_c_signature": "void print_header(void)",
+                "decompiled_code": "void print_header(void) {\n  long lVar1;\n  int iVar2;\n  undefined8 uVar3;\n  char *__format;\n  int iVar4;\n  long in_FS_OFFSET;\n  char local_138 [280];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  output_position = 0;\n  pad_across_to(chars_per_margin);\n  print_white_space();\n  if (page_number == 0) {\n    uVar3 = gettext(\"page number overflow\");\n    error(1,0,uVar3);\n  }\n  lVar1 = page_number;\n  __format = (char *)gettext(\"Page %ju\");\n  sprintf(local_138,__format,lVar1);\n  iVar4 = header_width_available;\n  iVar2 = gnu_mbswidth(local_138,0);\n  iVar4 = iVar4 - iVar2;\n  if (iVar4 < 0) {\n    iVar4 = 0;\n  }\n  printf(\"\\n\\n%*s%s%*s%s%*s%s\\n\\n\\n\",(ulong)chars_per_margin,&DAT_0010426c,date_text,\n         (ulong)(uint)(iVar4 >> 1),&DAT_001042af,file_text,(ulong)(uint)(iVar4 - (iVar4 >> 1)),\n         &DAT_001042af,local_138);\n  print_a_header = 0;\n  output_position = 0;\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_header",
+                        "pad_across_to",
+                        "print_white_space",
+                        "gettext",
+                        "error",
+                        "sprintf",
+                        "gnu_mbswidth",
+                        "printf",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_header",
+                        "read_line",
+                        "print_stored"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_line",
+                "func_c_signature": "undefined8 read_line(FILE **param_1)",
+                "decompiled_code": "undefined8 read_line(FILE **param_1) {\n  int iVar1;\n  int iVar2;\n  undefined4 uVar3;\n  undefined8 uVar4;\n  int local_24;\n  undefined4 local_20;\n  int local_1c;\n  long local_10;\n  \n  local_20 = 0;\n  local_24 = getc_unlocked(*param_1);\n  iVar2 = input_position;\n  if (((local_24 == 0xc) && (*(char *)((long)param_1 + 0x39) != '\\0')) &&\n     (local_24 = getc_unlocked(*param_1), local_24 == 10)) {\n    local_24 = getc_unlocked(*param_1);\n  }\n  *(undefined *)((long)param_1 + 0x39) = 0;\n  if (local_24 == 0xc) {\n    iVar2 = getc_unlocked(*param_1);\n    if (iVar2 != 10) {\n      ungetc(iVar2,*param_1);\n    }\n    FF_only = 1;\n    if ((print_a_header == '\\0') || (storing_columns == '\\x01')) {\n      if (keep_FF != '\\0') {\n        print_a_FF = 1;\n      }\n    }\n    else {\n      pad_vertically = 1;\n      print_header();\n    }\n    hold_file(param_1);\n    return 1;\n  }\n  if (local_24 < 0xd) {\n    if (local_24 == -1) {\n      close_file(param_1);\n      return 1;\n    }\n    if (local_24 == 10) goto LAB_0010355b;\n  }\n  local_20 = char_to_clump((int)(char)local_24);\nLAB_0010355b:\n  if ((truncate_lines == '\\0') || (input_position <= chars_per_column)) {\n    if (param_1[4] != (FILE *)store_char) {\n      pad_vertically = 1;\n      if ((print_a_header != '\\0') && (storing_columns != '\\x01')) {\n        print_header();\n      }\n      iVar2 = separators_not_printed;\n      if ((parallel_files != '\\0') && (align_empty_cols != '\\0')) {\n        separators_not_printed = 0;\n        local_10 = column_vector;\n        for (local_1c = 1; local_1c <= iVar2; local_1c = local_1c + 1) {\n          align_column(local_10);\n          separators_not_printed = separators_not_printed + 1;\n          local_10 = local_10 + 0x40;\n        }\n        padding_not_printed = *(int *)((long)param_1 + 0x34);\n        if (truncate_lines == '\\0') {\n          spaces_not_printed = 0;\n        }\n        else {\n          spaces_not_printed = chars_per_column;\n        }\n        align_empty_cols = '\\0';\n      }\n      if (col_sep_length < padding_not_printed) {\n        pad_across_to(padding_not_printed - col_sep_length);\n        padding_not_printed = 0;\n      }\n      if (use_col_separator != '\\0') {\n        print_sep_string();\n      }\n    }\n    if (*(char *)(param_1 + 7) != '\\0') {\n      add_line_number(param_1);\n    }\n    empty_line = 0;\n    if (local_24 == 10) {\n      uVar4 = 1;\n    }\n    else {\n      print_clump(param_1,local_20,clump_buff);\n      while (iVar1 = getc_unlocked(*param_1), iVar2 = input_position, iVar1 != 0xc) {\n        if (iVar1 < 0xd) {\n          if (iVar1 == -1) {\n            close_file(param_1);\n            return 1;\n          }\n          if (iVar1 == 10) {\n            return 1;\n          }\n        }\n        uVar3 = char_to_clump((int)(char)iVar1);\n        if ((truncate_lines != '\\0') && (chars_per_column < input_position)) {\n          input_position = iVar2;\n          return 0;\n        }\n        print_clump(param_1,uVar3,clump_buff);\n      }\n      iVar2 = getc_unlocked(*param_1);\n      if (iVar2 != 10) {\n        ungetc(iVar2,*param_1);\n      }\n      if (keep_FF != '\\0') {\n        print_a_FF = 1;\n      }\n      hold_file(param_1);\n      uVar4 = 1;\n    }\n  }\n  else {\n    uVar4 = 0;\n    input_position = iVar2;\n  }\n  return uVar4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_line",
+                        "getc_unlocked",
+                        "ungetc",
+                        "print_header",
+                        "hold_file",
+                        "close_file",
+                        "char_to_clump",
+                        "align_column",
+                        "pad_across_to",
+                        "print_sep_string",
+                        "add_line_number",
+                        "print_clump"
+                    ],
+                    "calling_functions": [
+                        "store_columns",
+                        "read_line"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_stored",
+                "func_c_signature": "undefined8 print_stored(long param_1)",
+                "decompiled_code": "undefined8 print_stored(long param_1) {\n  int iVar1;\n  char *pcVar2;\n  int local_28;\n  long local_20;\n  char *local_18;\n  \n  iVar1 = *(int *)(param_1 + 0x28);\n  *(int *)(param_1 + 0x28) = iVar1 + 1;\n  local_18 = (char *)(*(int *)(line_vector + (long)iVar1 * 4) + buff);\n  pcVar2 = (char *)(*(int *)(line_vector + ((long)iVar1 + 1) * 4) + buff);\n  pad_vertically = 1;\n  if (print_a_header != '\\0') {\n    print_header();\n  }\n  if (*(int *)(param_1 + 0x10) == 1) {\n    local_20 = column_vector;\n    for (local_28 = 1; local_28 <= columns; local_28 = local_28 + 1) {\n      *(undefined4 *)(local_20 + 0x10) = 2;\n      local_20 = local_20 + 0x40;\n    }\n    if (*(int *)(column_vector + 0x30) < 1) {\n      if (extremities == '\\x01') {\n        return 1;\n      }\n      pad_vertically = 0;\n      return 1;\n    }\n  }\n  if (col_sep_length < padding_not_printed) {\n    pad_across_to(padding_not_printed - col_sep_length);\n    padding_not_printed = 0;\n  }\n  if (use_col_separator != '\\0') {\n    print_sep_string();\n  }\n  while (local_18 != pcVar2) {\n    print_char((int)*local_18);\n    local_18 = local_18 + 1;\n  }\n  if ((spaces_not_printed == 0) &&\n     (output_position = *(int *)(end_vector + (long)iVar1 * 4) + *(int *)(param_1 + 0x34),\n     *(int *)(param_1 + 0x34) - col_sep_length == chars_per_margin)) {\n    output_position = output_position - col_sep_length;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_stored",
+                        "print_header",
+                        "pad_across_to",
+                        "print_sep_string",
+                        "print_char"
+                    ],
+                    "calling_functions": [
+                        "print_stored"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "char_to_clump",
+                "func_c_signature": "int char_to_clump(byte param_1)",
+                "decompiled_code": "int char_to_clump(byte param_1) {\n  byte *pbVar1;\n  ushort **ppuVar2;\n  long in_FS_OFFSET;\n  int local_30;\n  int local_2c;\n  int local_28;\n  int local_24;\n  byte *local_20;\n  byte local_14 [4];\n  long local_10;\n  \n  pbVar1 = clump_buff;\n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_20 = clump_buff;\n  local_24 = 8;\n  local_2c = chars_per_input_tab;\n  if ((param_1 == input_tab_char) || (local_2c = local_24, param_1 == 9)) {\n    local_2c = local_2c - input_position % local_2c;\n    local_30 = local_2c;\n    if (untabify_input == '\\0') {\n      *clump_buff = param_1;\n      local_28 = 1;\n    }\n    else {\n      for (; local_28 = local_2c, local_30 != 0; local_30 = local_30 + -1) {\n        *local_20 = 0x20;\n        local_20 = local_20 + 1;\n      }\n    }\n  }\n  else {\n    ppuVar2 = __ctype_b_loc();\n    if (((*ppuVar2)[param_1] & 0x4000) == 0) {\n      if (use_esc_sequence == '\\0') {\n        if (use_cntrl_prefix == '\\0') {\n          if (param_1 == 8) {\n            local_2c = -1;\n            local_28 = 1;\n            *pbVar1 = 8;\n          }\n          else {\n            local_2c = 0;\n            local_28 = 1;\n            *pbVar1 = param_1;\n          }\n        }\n        else if ((char)param_1 < '\\0') {\n          local_2c = 4;\n          local_28 = 4;\n          *pbVar1 = 0x5c;\n          sprintf((char *)local_14,\"%03o\",(ulong)param_1);\n          local_20 = pbVar1 + 1;\n          for (local_30 = 0; local_30 < 3; local_30 = local_30 + 1) {\n            *local_20 = local_14[local_30];\n            local_20 = local_20 + 1;\n          }\n        }\n        else {\n          local_2c = 2;\n          local_28 = 2;\n          *pbVar1 = 0x5e;\n          pbVar1[1] = param_1 ^ 0x40;\n        }\n      }\n      else {\n        local_2c = 4;\n        local_28 = 4;\n        *pbVar1 = 0x5c;\n        sprintf((char *)local_14,\"%03o\",(ulong)param_1);\n        local_20 = pbVar1 + 1;\n        for (local_30 = 0; local_30 < 3; local_30 = local_30 + 1) {\n          *local_20 = local_14[local_30];\n          local_20 = local_20 + 1;\n        }\n      }\n    }\n    else {\n      local_2c = 1;\n      local_28 = 1;\n      *pbVar1 = param_1;\n    }\n  }\n  if ((local_2c < 0) && (input_position == 0)) {\n    local_28 = 0;\n    input_position = 0;\n  }\n  else if ((local_2c < 0) && (input_position <= -local_2c)) {\n    input_position = 0;\n  }\n  else {\n    input_position = local_2c + input_position;\n  }\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return local_28;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "char_to_clump",
+                        "__ctype_b_loc",
+                        "sprintf",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "read_line",
+                        "char_to_clump"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cleanup",
+                "func_c_signature": "void cleanup(EVP_PKEY_CTX *ctx)",
+                "decompiled_code": "void cleanup(EVP_PKEY_CTX *ctx) {\n  free(number_buff);\n  free(clump_buff);\n  free(column_vector);\n  free(line_vector);\n  free(end_vector);\n  free(buff);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cleanup",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "cleanup"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [FILE]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"Paginate or columnate FILE(s) for printing.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_stdin_note();\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  +FIRST_PAGE[:LAST_PAGE], --pages=FIRST_PAGE[:LAST_PAGE]\\n                    begin [stop] printing with page FIRST_[LAST_]PAGE\\n  -COLUMN, --columns=COLUMN\\n                    output COLUMN columns and print columns down,\\n                    unless -a is used. Balance number of lines in the\\n                    columns on each page\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -a, --across      print columns across rather than down, used together\\n                    with -COLUMN\\n  -c, --show-control-chars\\n                    use hat notation (^G) and octal backslash notation\\n  -d, --double-space\\n                    double space the output\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -D, --date-format=FORMAT\\n                    use FORMAT for the header date\\n  -e[CHAR[WIDTH]], --expand-tabs[=CHAR[WIDTH]]\\n                    expand input CHARs (TABs) to tab WIDTH (8)\\n  -F, -f, --form-feed\\n                    use form feeds instead of newlines to separate pages\\n                    (by a 3-line page header with -F or a 5-line header\\n                    and trailer without -F)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -h, --header=HEADER\\n                    use a centered HEADER instead of filename in page header,\\n                    -h \\\"\\\" prints a blank line, don\\'t use -h\\\"\\\"\\n  -i[CHAR[WIDTH]], --output-tabs[=CHAR[WIDTH]]\\n                    replace spaces with CHARs (TABs) to tab WIDTH (8)\\n  -J, --join-lines  merge full lines, turns off -W line truncation, no column\\n                    alignment, --sep-string[=STRING] sets separators\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -l, --length=PAGE_LENGTH\\n                    set the page length to PAGE_LENGTH (66) lines\\n                    (default number of lines of text 56, and with -F 63).\\n                    implies -t if PAGE_LENGTH <= 10\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -m, --merge       print all files in parallel, one in each column,\\n                    truncate lines, but join lines of full length with -J\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -n[SEP[DIGITS]], --number-lines[=SEP[DIGITS]]\\n                    number lines, use DIGITS (5) digits, then SEP (TAB),\\n                    default counting starts with 1st line of input file\\n  -N, --first-line-number=NUMBER\\n                    start counting with NUMBER at 1st line of first\\n                    page printed (see +FIRST_PAGE)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -o, --indent=MARGIN\\n                    offset each line with MARGIN (zero) spaces, do not\\n                    affect -w or -W, MARGIN will be added to PAGE_WIDTH\\n  -r, --no-file-warnings\\n                    omit warning when a file cannot be opened\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -s[CHAR], --separator[=CHAR]\\n                    separate columns by a single character, default for CHAR\\n                    is the <TAB> character without -w and \\'no char\\' with -w.\\n                    -s[CHAR] turns off line truncation of all 3 column\\n                    options (-COLUMN|-a -COLUMN|-m) except -w is set\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -S[STRING], --sep-string[=STRING]\\n                    separate columns by STRING,\\n                    without -S: Default separator <TAB> with -J and <space>\\n                    otherwise (same as -S\\\" \\\"), no effect on column options\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -t, --omit-header  omit page headers and trailers;\\n                     implied if PAGE_LENGTH <= 10\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -T, --omit-pagination\\n                    omit page headers and trailers, eliminate any pagination\\n                    by form feeds set in input files\\n  -v, --show-nonprinting\\n                    use octal backslash notation\\n  -w, --width=PAGE_WIDTH\\n                    set page width to PAGE_WIDTH (72) characters for\\n                    multiple text-column output only, -s[char] turns off (72)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -W, --page-width=PAGE_WIDTH\\n                    set page width to PAGE_WIDTH (72) characters always,\\n                    truncate lines, except -J option is set, no interference\\n                    with -S or -s\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(&DAT_001045a7);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "FILE",
+                    "notation",
+                    "CHARs",
+                    "WIDTH",
+                    "n",
+                    "PAGE_LENGTH",
+                    "DIGITS",
+                    "SEP",
+                    "printed",
+                    "MARGIN",
+                    "options",
+                    "otherwise",
+                    "PAGE_WIDTH",
+                    "off"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "FILE",
+                        "fputs_unlocked",
+                        "emit_stdin_note",
+                        "emit_mandatory_arg_note",
+                        "notation",
+                        "CHARs",
+                        "WIDTH",
+                        "n",
+                        "PAGE_LENGTH",
+                        "DIGITS",
+                        "SEP",
+                        "printed",
+                        "MARGIN",
+                        "options",
+                        "otherwise",
+                        "PAGE_WIDTH",
+                        "off",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "getoptarg",
+                        "usage"
+                    ],
+                    "defined_in_file": "pr_decompiled.c"
+                }
+            }
+        ]
+    }
+}

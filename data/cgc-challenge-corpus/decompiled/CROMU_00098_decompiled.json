@@ -1,0 +1,384 @@
+{
+    "file": "CROMU_00098",
+    "decompiled_code": {
+        "crackaddr.c": [
+            {
+                "func_name": "crackaddr",
+                "func_c_signature": "char * crackaddr(char *param_1,char *param_2)",
+                "decompiled_code": "char * crackaddr(char *param_1,char *param_2) {\n  char *pcVar1;\n  char cVar2;\n  bool bVar3;\n  bool bVar4;\n  bool bVar5;\n  int iVar6;\n  bool bVar7;\n  int local_2c;\n  int local_24;\n  int local_20;\n  char *local_14;\n  char *local_10;\n  \n  local_10 = param_2;\n  local_14 = param_2 + 0x3fb;\n  if (param_1 == (char *)0x0) {\n    param_2 = (char *)0x0;\n  }\n  else {\n    while ((*param_1 != '\\0' && (iVar6 = isspace((int)*param_1), iVar6 != 0))) {\n      param_1 = param_1 + 1;\n    }\n    bVar4 = false;\n    bVar3 = false;\n    local_24 = 0;\n    local_20 = 0;\n    bVar5 = false;\n    local_2c = 0;\n    pcVar1 = param_1;\n    while (param_1 = pcVar1, *param_1 != '\\0') {\n      pcVar1 = param_1 + 1;\n      cVar2 = *param_1;\n      bVar7 = local_14 <= local_10;\n      if ((!bVar7) && (0 < local_2c)) {\n        *local_10 = cVar2;\n        local_10 = local_10 + 1;\n      }\n      if ((cVar2 == 'A') && (local_2c = 0, !bVar3)) {\n        bVar3 = true;\n        local_14 = local_14 + -1;\n      }\n      if (cVar2 == 'a') {\n        local_2c = local_2c + 1;\n        if (local_2c < 2) {\n          *local_10 = 'a';\n          local_10 = local_10 + 1;\n        }\n        if (bVar3) {\n          bVar3 = false;\n          local_14 = local_14 + 1;\n        }\n      }\n      if ((cVar2 == 'B') && (local_20 = local_20 + 1, !bVar7)) {\n        local_24 = local_24 + 1;\n        local_14 = local_14 + -1;\n        local_2c = local_2c + 1;\n      }\n      if ((cVar2 == 'b') && (0 < local_20)) {\n        local_20 = local_20 + -1;\n        local_2c = local_2c + -1;\n        if (!bVar7) {\n          local_24 = local_24 + -1;\n          local_14 = local_14 + 1;\n        }\n      }\n      else {\n        if ((cVar2 == 'b') && ((!bVar7 && (0 < local_2c)))) {\n          local_10 = local_10 + -1;\n        }\n        if ((cVar2 == 'C') && (!bVar4)) {\n          bVar4 = true;\n        }\n        if ((cVar2 == 'c') && (bVar4)) {\n          bVar4 = false;\n          local_14 = local_14 + 1;\n        }\n        if (cVar2 == 'D') {\n          bVar5 = !bVar5;\n        }\n        if ((cVar2 != 'F') || (bVar7)) {\n          if ((cVar2 == 'G') && (*pcVar1 != '\\0')) {\n            pcVar1 = param_1 + 2;\n          }\n        }\n        else if (*pcVar1 != '\\0') {\n          *local_10 = *pcVar1;\n          pcVar1 = param_1 + 2;\n          local_10 = local_10 + 1;\n        }\n      }\n    }\n    if (bVar3) {\n      *local_10 = 'a';\n      local_10 = local_10 + 1;\n    }\n    while ((0 < local_24 && (local_10 < local_14 + -2))) {\n      *local_10 = 'b';\n      local_24 = local_24 + -1;\n      local_10 = local_10 + 1;\n    }\n    if (bVar4) {\n      *local_10 = 'c';\n      local_10 = local_10 + 1;\n    }\n    if (bVar5) {\n      *local_10 = 'D';\n      local_10 = local_10 + 1;\n    }\n    *local_10 = '\\0';\n  }\n  return param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "crackaddr",
+                        "isspace"
+                    ],
+                    "calling_functions": [
+                        "crackaddr",
+                        "sendmail_post"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            }
+        ],
+        "sendmail.c": [
+            {
+                "func_name": "gen_random_string",
+                "func_c_signature": "void * gen_random_string(undefined4 param_1,size_t param_2)",
+                "decompiled_code": "void * gen_random_string(undefined4 param_1,size_t param_2) {\n  undefined uVar1;\n  size_t __nmemb;\n  void *pvVar2;\n  int local_10;\n  \n  __nmemb = random_in_range(param_1);\n  pvVar2 = calloc(__nmemb,param_2);\n  for (local_10 = 0; local_10 < (int)(__nmemb - 2); local_10 = local_10 + 1) {\n    uVar1 = random_in_range(0x2e,0x7e);\n    *(undefined *)((int)pvVar2 + local_10) = uVar1;\n  }\n  return pvVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "gen_random_string",
+                        "random_in_range",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "gen_random_string",
+                        "add_random_addressbook_entry",
+                        "add_random_message"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_random_addressbook_entry",
+                "func_c_signature": "undefined4 * add_random_addressbook_entry(void)",
+                "decompiled_code": "undefined4 * add_random_addressbook_entry(void) {\n  undefined4 *puVar1;\n  undefined4 uVar2;\n  size_t in_stack_ffffffd8;\n  int local_10;\n  \n  puVar1 = (undefined4 *)calloc(0x10,in_stack_ffffffd8);\n  uVar2 = gen_random_string(5,0x20);\n  *puVar1 = uVar2;\n  uVar2 = gen_random_string(5,0x20);\n  puVar1[1] = uVar2;\n  uVar2 = random_in_range(0,1);\n  puVar1[2] = uVar2;\n  local_10 = abook[1];\n  if (local_10 == 0) {\n    abook[1] = (int)puVar1;\n  }\n  else {\n    for (; *(int *)(local_10 + 0xc) != 0; local_10 = *(int *)(local_10 + 0xc)) {\n    }\n    *(undefined4 **)(local_10 + 0xc) = puVar1;\n  }\n  *abook = *abook + 1;\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_random_addressbook_entry",
+                        "calloc",
+                        "gen_random_string",
+                        "random_in_range"
+                    ],
+                    "calling_functions": [
+                        "add_random_addressbook_entry",
+                        "initialize_address_book"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initialize_address_book",
+                "func_c_signature": "void initialize_address_book(void)",
+                "decompiled_code": "void initialize_address_book(void) {\n  int local_10;\n  \n  *abook = 0;\n  abook[1] = 0;\n  for (local_10 = 0; local_10 < 0x14; local_10 = local_10 + 1) {\n    add_random_addressbook_entry();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initialize_address_book",
+                        "add_random_addressbook_entry"
+                    ],
+                    "calling_functions": [
+                        "initialize_address_book",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "pick_address",
+                "func_c_signature": "int pick_address(void)",
+                "decompiled_code": "int pick_address(void) {\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  for (local_14 = *(int *)(abook + 4); local_14 != 0; local_14 = *(int *)(local_14 + 0xc)) {\n    local_10 = local_10 + 1;\n  }\n  local_18 = random_in_range(0,local_10 + -1);\n  local_14 = *(int *)(abook + 4);\n  for (; (*(int *)(local_14 + 0xc) != 0 && (0 < local_18)); local_18 = local_18 + -1) {\n    local_14 = *(int *)(local_14 + 0xc);\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "pick_address",
+                        "random_in_range"
+                    ],
+                    "calling_functions": [
+                        "pick_address",
+                        "add_random_queue",
+                        "add_random_message"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "lookup_name",
+                "func_c_signature": "char ** lookup_name(char *param_1)",
+                "decompiled_code": "char ** lookup_name(char *param_1) {\n  int iVar1;\n  char **local_10;\n  \n  local_10 = *(char ***)(abook + 4);\n  while ((local_10 != (char **)0x0 && (iVar1 = strcmp(*local_10,param_1), iVar1 != 0))) {\n    local_10 = (char **)local_10[3];\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "lookup_name",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "lookup_name",
+                        "sendmail_post"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_random_queue",
+                "func_c_signature": "void * add_random_queue(void)",
+                "decompiled_code": "void * add_random_queue(void) {\n  void *pvVar1;\n  undefined4 *puVar2;\n  undefined4 uVar3;\n  size_t in_stack_ffffffd8;\n  int local_10;\n  \n  pvVar1 = calloc(0x10,in_stack_ffffffd8);\n  puVar2 = (undefined4 *)pick_address();\n  *(undefined4 *)((int)pvVar1 + 4) = *puVar2;\n  uVar3 = add_random_message(pvVar1);\n  *(undefined4 *)((int)pvVar1 + 8) = uVar3;\n  if (root_queue != 0) {\n    for (local_10 = root_queue; *(int *)(local_10 + 0xc) != 0; local_10 = *(int *)(local_10 + 0xc))\n    {\n    }\n    *(void **)(local_10 + 0xc) = pvVar1;\n  }\n  return pvVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_random_queue",
+                        "calloc",
+                        "pick_address",
+                        "add_random_message"
+                    ],
+                    "calling_functions": [
+                        "add_random_queue",
+                        "initialize_mail_queues"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_random_message",
+                "func_c_signature": "undefined4 * add_random_message(int param_1)",
+                "decompiled_code": "undefined4 * add_random_message(int param_1) {\n  undefined4 *puVar1;\n  undefined4 uVar2;\n  size_t sVar3;\n  size_t in_stack_ffffffd8;\n  int local_10;\n  \n  puVar1 = (undefined4 *)calloc(0x1c,in_stack_ffffffd8);\n  uVar2 = pick_address();\n  *puVar1 = uVar2;\n  uVar2 = pick_address();\n  puVar1[1] = uVar2;\n  uVar2 = gen_random_string(5,0x20);\n  puVar1[2] = uVar2;\n  uVar2 = gen_random_string(5,0x100);\n  puVar1[4] = uVar2;\n  sVar3 = strlen((char *)puVar1[4]);\n  puVar1[5] = sVar3;\n  if (*(int *)(param_1 + 8) != 0) {\n    for (local_10 = *(int *)(param_1 + 8); *(int *)(local_10 + 0x18) != 0;\n        local_10 = *(int *)(local_10 + 0x18)) {\n    }\n    *(undefined4 **)(local_10 + 0x18) = puVar1;\n  }\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_random_message",
+                        "calloc",
+                        "pick_address",
+                        "gen_random_string",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "add_random_queue",
+                        "add_random_message"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initialize_mail_queues",
+                "func_c_signature": "void initialize_mail_queues(void)",
+                "decompiled_code": "void initialize_mail_queues(void) {\n  int local_10;\n  \n  root_queue = add_random_queue();\n  for (local_10 = 0; local_10 < 0x20; local_10 = local_10 + 1) {\n    add_random_queue();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initialize_mail_queues",
+                        "add_random_queue"
+                    ],
+                    "calling_functions": [
+                        "initialize_mail_queues",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_address_book",
+                "func_c_signature": "void print_address_book(void)",
+                "decompiled_code": "void print_address_book(void) {\n  int local_14;\n  undefined4 *local_10;\n  \n  printf(\"Address Book:\\n\");\n  local_10 = *(undefined4 **)(abook + 4);\n  local_14 = 1;\n  for (; local_10 != (undefined4 *)0x0; local_10 = (undefined4 *)local_10[3]) {\n    printf(\"$d) $s@$s [$d]\\n\",local_14,*local_10,local_10[1],local_10[2]);\n    local_14 = local_14 + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_address_book",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_address_book",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "make_string",
+                "func_c_signature": "char * make_string(char *param_1)",
+                "decompiled_code": "char * make_string(char *param_1) {\n  char *__dest;\n  size_t sVar1;\n  size_t in_stack_ffffffd8;\n  \n  if (param_1 == (char *)0x0) {\n    __dest = (char *)0x0;\n  }\n  else {\n    sVar1 = strlen(param_1);\n    __dest = (char *)calloc(sVar1 + 1,in_stack_ffffffd8);\n    strcpy(__dest,param_1);\n  }\n  return __dest;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "make_string",
+                        "strlen",
+                        "calloc",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "make_string",
+                        "sendmail_post"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sendmail_post",
+                "func_c_signature": "void sendmail_post(char *param_1)",
+                "decompiled_code": "void sendmail_post(char *param_1) {\n  int iVar1;\n  size_t sVar2;\n  undefined4 uVar3;\n  undefined *__size;\n  undefined local_430 [1024];\n  void *local_30;\n  int *local_2c;\n  char *local_28;\n  char *local_24;\n  char *local_20;\n  char *local_1c;\n  char *local_18;\n  int local_14;\n  int local_10;\n  \n  local_18 = strstr(param_1,\"sender:\");\n  if (local_18 != (char *)0x0) {\n    local_18 = local_18 + 7;\n    local_1c = strstr(param_1,\"recipient:\");\n    if (local_1c != (char *)0x0) {\n      local_1c = local_1c + 10;\n      local_20 = strstr(param_1,\"body:\");\n      if (local_20 != (char *)0x0) {\n        local_20 = local_20 + 5;\n        local_24 = strstr(param_1,\"subject:\");\n        if (local_24 != (char *)0x0) {\n          local_24 = local_24 + 8;\n          local_28 = strstr(local_18,\"!\");\n          if (local_28 != (char *)0x0) {\n            *local_28 = '\\0';\n          }\n          local_28 = strstr(local_1c,\"!\");\n          if (local_28 != (char *)0x0) {\n            *local_28 = '\\0';\n          }\n          local_28 = strstr(local_20,\"!\");\n          if (local_28 != (char *)0x0) {\n            *local_28 = '\\0';\n          }\n          __size = &DAT_00016041;\n          local_28 = strstr(local_24,\"!\");\n          if (local_28 != (char *)0x0) {\n            *local_28 = '\\0';\n          }\n          local_2c = (int *)calloc(0x1c,(size_t)__size);\n          iVar1 = lookup_name(local_18);\n          *local_2c = iVar1;\n          if (*local_1c == '+') {\n            crackaddr(local_1c,local_430);\n            printf(\"addr:$s\\n\",local_430);\n          }\n          else {\n            iVar1 = lookup_name(local_1c);\n            local_2c[1] = iVar1;\n            if ((local_2c[1] != 0) && (*local_2c != 0)) {\n              iVar1 = make_string(local_20);\n              local_2c[4] = iVar1;\n              sVar2 = strlen(local_20);\n              local_2c[5] = sVar2;\n              iVar1 = make_string(local_24);\n              local_2c[2] = iVar1;\n              local_30 = (void *)locate_queue(*(undefined4 *)*local_2c);\n              if (local_30 == (void *)0x0) {\n                local_30 = calloc(0x10,(size_t)__size);\n                uVar3 = make_string(*(undefined4 *)*local_2c);\n                *(undefined4 *)((int)local_30 + 4) = uVar3;\n                *(int **)((int)local_30 + 8) = local_2c;\n                for (local_10 = root_queue; *(int *)(local_10 + 0xc) != 0;\n                    local_10 = *(int *)(local_10 + 0xc)) {\n                }\n                *(void **)(local_10 + 0xc) = local_30;\n              }\n              else {\n                local_14 = *(int *)((int)local_30 + 8);\n                if (local_14 == 0) {\n                  *(int **)((int)local_30 + 8) = local_2c;\n                }\n                else {\n                  for (; *(int *)(local_14 + 0x18) != 0; local_14 = *(int *)(local_14 + 0x18)) {\n                  }\n                  *(int **)(local_14 + 0x18) = local_2c;\n                }\n              }\n              printf(\"Message Received\\n\");\n            }\n          }\n        }\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sendmail_post",
+                        "strstr",
+                        "calloc",
+                        "lookup_name",
+                        "crackaddr",
+                        "printf",
+                        "make_string",
+                        "strlen",
+                        "locate_queue"
+                    ],
+                    "calling_functions": [
+                        "sendmail_post",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "locate_queue",
+                "func_c_signature": "int locate_queue(char *param_1)",
+                "decompiled_code": "int locate_queue(char *param_1) {\n  int iVar1;\n  int local_10;\n  \n  local_10 = root_queue;\n  while( true ) {\n    if (local_10 == 0) {\n      return 0;\n    }\n    iVar1 = strcmp(*(char **)(local_10 + 4),param_1);\n    if (iVar1 == 0) break;\n    local_10 = *(int *)(local_10 + 0xc);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "locate_queue",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "sendmail_post",
+                        "locate_queue",
+                        "list_queue",
+                        "read_message"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "list_queue",
+                "func_c_signature": "void list_queue(undefined4 param_1)",
+                "decompiled_code": "void list_queue(undefined4 param_1) {\n  int iVar1;\n  int *local_14;\n  int local_10;\n  \n  iVar1 = locate_queue(param_1);\n  if (iVar1 == 0) {\n    printf(\"Mail Queue Not Found\\n\");\n  }\n  else {\n    local_10 = 0;\n    for (local_14 = *(int **)(iVar1 + 8); local_14 != (int *)0x0; local_14 = (int *)local_14[6]) {\n      if ((*local_14 == 0) || (local_14[1] == 0)) {\n        printf(\"$d) Malformed Message\\n\");\n      }\n      else {\n        printf(\"$d) From:$s To: $s SUBJECT:$s\\n\",local_10,*(undefined4 *)*local_14,\n               *(undefined4 *)local_14[1],local_14[2]);\n      }\n      local_10 = local_10 + 1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "list_queue",
+                        "locate_queue",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "list_queue",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "list_all_queues",
+                "func_c_signature": "void list_all_queues(void)",
+                "decompiled_code": "void list_all_queues(void) {\n  undefined4 uVar1;\n  int *local_18;\n  int local_14;\n  int local_10;\n  \n  for (local_10 = root_queue; local_10 != 0; local_10 = *(int *)(local_10 + 0xc)) {\n    local_14 = 0;\n    uVar1 = *(undefined4 *)(local_10 + 4);\n    printf(\"QUEUE: $s\\n\",uVar1);\n    for (local_18 = *(int **)(local_10 + 8); local_18 != (int *)0x0; local_18 = (int *)local_18[6])\n    {\n      if ((*local_18 == 0) || (local_18[1] == 0)) {\n        printf(\"$d) Malformed Message\\n\",uVar1);\n      }\n      else {\n        printf(\"$d) From:$s To: $s SUBJECT:$s\\n\",local_14,*(undefined4 *)*local_18,\n               *(undefined4 *)local_18[1],local_18[2]);\n      }\n      local_14 = local_14 + 1;\n    }\n    printf(\"\\n\",uVar1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "list_all_queues",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "list_all_queues",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_message",
+                "func_c_signature": "void read_message(char *param_1)",
+                "decompiled_code": "void read_message(char *param_1) {\n  char *pcVar1;\n  int iVar2;\n  int iVar3;\n  int local_14;\n  int local_10;\n  \n  pcVar1 = param_1;\n  for (; (*param_1 != ' ' && (*param_1 != '\\0')); param_1 = param_1 + 1) {\n  }\n  *param_1 = '\\0';\n  iVar2 = atoi(param_1 + 1);\n  iVar3 = locate_queue(pcVar1);\n  if (iVar3 != 0) {\n    local_10 = 0;\n    local_14 = *(int *)(iVar3 + 8);\n    for (; (local_14 != 0 && (local_10 != iVar2)); local_10 = local_10 + 1) {\n      local_14 = *(int *)(local_14 + 0x18);\n    }\n    if (iVar2 == local_10) {\n      printf(\"$d) Subject:$s Body:$s\\n\",local_10,*(undefined4 *)(local_14 + 8),\n             *(undefined4 *)(local_14 + 0x10));\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_message",
+                        "atoi",
+                        "locate_queue",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "read_message",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  char *pcVar1;\n  int iVar2;\n  size_t in_stack_fffff604;\n  char local_9e5 [2501];\n  int local_20;\n  undefined4 local_1c;\n  char *local_18;\n  int local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_14 = 0;\n  seed_prng(_DAT_4347c000);\n  local_1c = 0;\n  abook = calloc(8,in_stack_fffff604);\n  initialize_address_book();\n  initialize_mail_queues();\n  local_20 = 0;\n  printf(\"sendmail:\");\n  do {\n    local_20 = receive_until(local_9e5,0x9c4,10);\n    if (local_20 < 1) break;\n    local_9e5[local_20] = '\\0';\n    for (local_18 = local_9e5; (*local_18 != ' ' && (*local_18 != '\\0')); local_18 = local_18 + 1) {\n    }\n    pcVar1 = local_18 + 1;\n    *local_18 = '\\0';\n    local_18 = pcVar1;\n    iVar2 = strcmp(local_9e5,\"LIST\");\n    if (iVar2 == 0) {\n      list_queue(local_18);\n    }\n    else {\n      iVar2 = strcmp(local_9e5,\"LISTALL\");\n      if (iVar2 == 0) {\n        list_all_queues();\n      }\n      else {\n        iVar2 = strcmp(local_9e5,\"POST\");\n        if (iVar2 == 0) {\n          sendmail_post(local_18);\n        }\n        else {\n          iVar2 = strcmp(local_9e5,\"READ\");\n          if (iVar2 == 0) {\n            read_message(local_18);\n          }\n          else {\n            iVar2 = strcmp(local_9e5,\"ADDRESSBOOK\");\n            if (iVar2 == 0) {\n              print_address_book();\n            }\n            else {\n              iVar2 = strcmp(local_9e5,\"QUIT\");\n              if (iVar2 == 0) break;\n              printf(\"Invalid Command!\\n\");\n              local_14 = 1;\n            }\n          }\n        }\n      }\n    }\n  } while (local_14 == 0);\n  printf(\"Goodbye.\\n\");\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "seed_prng",
+                        "calloc",
+                        "initialize_address_book",
+                        "initialize_mail_queues",
+                        "printf",
+                        "receive_until",
+                        "strcmp",
+                        "list_queue",
+                        "list_all_queues",
+                        "sendmail_post",
+                        "read_message",
+                        "print_address_book"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00098_decompiled.c"
+                }
+            }
+        ]
+    }
+}

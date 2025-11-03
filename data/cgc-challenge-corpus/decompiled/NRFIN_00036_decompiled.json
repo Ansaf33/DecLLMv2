@@ -1,0 +1,233 @@
+{
+    "file": "NRFIN_00036",
+    "decompiled_code": {
+        "map.c": [
+            {
+                "func_name": "initMap",
+                "func_c_signature": "int initMap(int param_1)",
+                "decompiled_code": "int initMap(int param_1) {\n  int local_14;\n  int local_10;\n  \n  if (param_1 == 0) {\n    local_10 = allocate(0x1000,0,&local_14,0x1100c);\n    if (local_10 != 0) {\n      _terminate(3);\n    }\n    local_14 = local_14 + 0xfe0;\n  }\n  else {\n    for (local_14 = param_1; *(char *)(local_14 + 8) != '\\0'; local_14 = local_14 + -0x20) {\n    }\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initMap",
+                        "allocate",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "initMap",
+                        "setMap"
+                    ],
+                    "defined_in_file": "NRFIN_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "setMap",
+                "func_c_signature": "undefined4 setMap(undefined4 *param_1,char *param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 setMap(undefined4 *param_1,char *param_2,undefined4 param_3) {\n  int iVar1;\n  undefined4 *local_14;\n  undefined4 *local_10;\n  \n  local_14 = (undefined4 *)0x0;\n  local_10 = (undefined4 *)*param_1;\n  while ((local_10 != (undefined4 *)0x0 &&\n         (iVar1 = strcmp(param_2,(char *)(local_10 + 2)), iVar1 != 0))) {\n    local_14 = local_10;\n    local_10 = (undefined4 *)*local_10;\n  }\n  if (local_10 == (undefined4 *)0x0) {\n    iVar1 = getSize(*param_1);\n    if (iVar1 == 0x81) {\n      return 0;\n    }\n    local_10 = (undefined4 *)initMap(local_14);\n    *local_10 = *param_1;\n    *param_1 = local_10;\n  }\n  if (*(char *)(local_10 + 2) == '\\0') {\n    strcpy((char *)(local_10 + 2),param_2);\n  }\n  local_10[1] = param_3;\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "setMap",
+                        "strcmp",
+                        "getSize",
+                        "initMap",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "setMap",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getValue",
+                "func_c_signature": "undefined4 getValue(undefined4 *param_1,char *param_2)",
+                "decompiled_code": "undefined4 getValue(undefined4 *param_1,char *param_2) {\n  int iVar1;\n  undefined4 *local_10;\n  \n  local_10 = param_1;\n  while( true ) {\n    if (local_10 == (undefined4 *)0x0) {\n      return 0;\n    }\n    if ((local_10 != (undefined4 *)0xfffffff8) &&\n       (iVar1 = strcmp(param_2,(char *)(local_10 + 2)), iVar1 == 0)) break;\n    local_10 = (undefined4 *)*local_10;\n  }\n  return local_10[1];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getValue",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "getValue",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getSize",
+                "func_c_signature": "int getSize(int **param_1)",
+                "decompiled_code": "int getSize(int **param_1) {\n  int iVar1;\n  int **local_8;\n  \n  if (param_1 == (int **)0x0) {\n    iVar1 = 0;\n  }\n  else {\n    for (local_8 = param_1; *local_8 != (int *)0x0; local_8 = (int **)*local_8) {\n    }\n    iVar1 = ((uint)((int)local_8 - (int)param_1) >> 5) + 1;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getSize"
+                    ],
+                    "calling_functions": [
+                        "setMap",
+                        "getSize",
+                        "sendReport"
+                    ],
+                    "defined_in_file": "NRFIN_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "removeMap",
+                "func_c_signature": "void removeMap(undefined4 *param_1,char *param_2)",
+                "decompiled_code": "void removeMap(undefined4 *param_1,char *param_2) {\n  int iVar1;\n  undefined4 *local_14;\n  undefined4 *local_10;\n  \n  local_14 = (undefined4 *)0x0;\n  local_10 = (undefined4 *)*param_1;\n  while (((local_10 != (undefined4 *)0x0 && (*(char *)(local_10 + 2) != '\\0')) &&\n         (iVar1 = strcmp(param_2,(char *)(local_10 + 2)), iVar1 != 0))) {\n    local_14 = local_10;\n    local_10 = (undefined4 *)*local_10;\n  }\n  if (local_10 != (undefined4 *)0x0) {\n    if (local_14 == (undefined4 *)0x0) {\n      *param_1 = *local_10;\n    }\n    else {\n      *local_14 = *local_10;\n    }\n    memset(local_10 + 2,0,0x18);\n    local_10[1] = 0;\n    *local_10 = 0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "removeMap",
+                        "strcmp",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "removeMap",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00036_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "receiveInstruction",
+                "func_c_signature": "void receiveInstruction(void *param_1)",
+                "decompiled_code": "void receiveInstruction(void *param_1) {\n  ssize_t sVar1;\n  \n  sVar1 = recv(0,param_1,4,0x115d1);\n  if (sVar1 < 0) {\n    _terminate(2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "receiveInstruction",
+                        "recv",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "receiveInstruction",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "receiveValue",
+                "func_c_signature": "void receiveValue(void *param_1)",
+                "decompiled_code": "void receiveValue(void *param_1) {\n  ssize_t sVar1;\n  \n  sVar1 = recv(0,param_1,4,0x1160e);\n  if (sVar1 < 0) {\n    _terminate(2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "receiveValue",
+                        "recv",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "receiveValue",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "receiveKey",
+                "func_c_signature": "void receiveKey(void *param_1)",
+                "decompiled_code": "void receiveKey(void *param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  \n  uVar2 = 0x1164b;\n  memset(param_1,0,0x18);\n  iVar1 = recvline(0,param_1,0x17,uVar2);\n  if (iVar1 < 0) {\n    _terminate(2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "receiveKey",
+                        "memset",
+                        "recvline",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "receiveKey",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sendReport",
+                "func_c_signature": "void sendReport(undefined4 *param_1)",
+                "decompiled_code": "void sendReport(undefined4 *param_1) {\n  undefined *puVar1;\n  undefined *puVar2;\n  undefined *puVar3;\n  undefined auStack_4c [8];\n  undefined4 local_44;\n  undefined4 local_40;\n  undefined4 local_3c;\n  undefined4 local_38;\n  undefined4 local_34;\n  undefined4 local_30;\n  undefined4 local_2c;\n  undefined4 local_28;\n  undefined4 local_24;\n  undefined4 local_20;\n  int local_1c;\n  undefined4 *local_18;\n  int local_14;\n  int local_10;\n  \n  puVar2 = auStack_4c;\n  local_44 = 0;\n  local_40 = 0;\n  local_3c = 0;\n  local_38 = 0;\n  local_34 = 0;\n  local_30 = 0;\n  local_2c = 0;\n  local_28 = 0;\n  local_24 = 0;\n  local_20 = 0;\n  local_14 = 0;\n  local_10 = getSize(param_1);\n  local_18 = param_1;\n  while (local_10 != 0) {\n    local_14 = local_14 + local_18[1];\n    *(undefined4 *)(puVar2 + -8) = 0x18;\n    *(undefined4 **)(puVar2 + -0xc) = local_18 + 2;\n    *(undefined4 *)(puVar2 + -0x10) = 1;\n    *(undefined4 *)(puVar2 + -0x14) = 0x11725;\n    local_10 = local_10 + -1;\n    local_1c = transmit_all();\n    puVar3 = puVar2;\n    if (local_1c != 0) {\n      puVar3 = puVar2 + -0x10;\n      *(undefined4 *)(puVar2 + -0x10) = 1;\n      *(undefined4 *)(puVar2 + -0x14) = 0x1173b;\n      _terminate();\n    }\n    *(undefined4 *)(puVar3 + -8) = local_18[1];\n    *(undefined4 *)(puVar3 + -0xc) = 0x28;\n    *(undefined4 **)(puVar3 + -0x10) = &local_44;\n    *(undefined4 *)(puVar3 + -0x14) = 0x11750;\n    local_1c = int2str();\n    puVar1 = puVar3;\n    if (local_1c != 0) {\n      puVar1 = puVar3 + -0x10;\n      *(undefined4 *)(puVar3 + -0x10) = 6;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11766;\n      _terminate();\n    }\n    *(undefined4 *)(puVar1 + -8) = 0x28;\n    *(undefined4 **)(puVar1 + -0xc) = &local_44;\n    *(undefined4 *)(puVar1 + -0x10) = 1;\n    *(undefined4 *)(puVar1 + -0x14) = 0x11776;\n    local_1c = transmit_all();\n    puVar2 = puVar1;\n    if (local_1c != 0) {\n      puVar2 = puVar1 + -0x10;\n      *(undefined4 *)(puVar1 + -0x10) = 1;\n      *(undefined4 *)(puVar1 + -0x14) = 0x1178c;\n      _terminate();\n    }\n    *(undefined4 *)(puVar2 + -8) = 0x28;\n    *(undefined4 *)(puVar2 + -0xc) = 0;\n    *(undefined4 **)(puVar2 + -0x10) = &local_44;\n    *(undefined4 *)(puVar2 + -0x14) = 0x1179c;\n    memset(*(void **)(puVar2 + -0x10),*(int *)(puVar2 + -0xc),*(size_t *)(puVar2 + -8));\n    local_18 = (undefined4 *)*local_18;\n  }\n  *(int *)(puVar2 + -8) = local_14;\n  *(undefined4 *)(puVar2 + -0xc) = 0x28;\n  *(undefined4 **)(puVar2 + -0x10) = &local_44;\n  *(undefined4 *)(puVar2 + -0x14) = 0x117c9;\n  local_10 = local_10 + -1;\n  local_1c = int2str();\n  puVar3 = puVar2;\n  if (local_1c != 0) {\n    puVar3 = puVar2 + -0x10;\n    *(undefined4 *)(puVar2 + -0x10) = 6;\n    *(undefined4 *)(puVar2 + -0x14) = 0x117df;\n    _terminate();\n  }\n  *(undefined4 *)(puVar3 + -8) = 0x28;\n  *(undefined4 **)(puVar3 + -0xc) = &local_44;\n  *(undefined4 *)(puVar3 + -0x10) = 1;\n  *(undefined4 *)(puVar3 + -0x14) = 0x117ef;\n  local_1c = transmit_all();\n  if (local_1c != 0) {\n    *(undefined4 *)(puVar3 + -0x10) = 1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x11805;\n    _terminate();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sendReport",
+                        "getSize",
+                        "transmit_all",
+                        "_terminate",
+                        "int2str",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "sendReport",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00036_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  size_t sVar1;\n  int iVar2;\n  undefined *puVar3;\n  undefined *puVar4;\n  undefined auStack_70 [8];\n  undefined4 local_68;\n  undefined4 local_64;\n  undefined4 local_60;\n  undefined4 local_5c;\n  undefined4 local_58;\n  undefined4 local_54;\n  undefined4 local_50;\n  undefined4 local_4c;\n  undefined4 local_48;\n  undefined4 local_44;\n  int local_40;\n  undefined local_3c [24];\n  uint local_24;\n  undefined4 local_20;\n  undefined4 local_1c;\n  int local_18;\n  int local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  puVar3 = auStack_70;\n  local_20 = 0;\nLAB_0001182f:\n  do {\n    *(uint **)(puVar3 + -0x10) = &local_24;\n    *(undefined4 *)(puVar3 + -0x14) = 0x1183b;\n    receiveInstruction();\n    if (local_24 == 1) {\n      *(undefined **)(puVar3 + -0x10) = local_3c;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11856;\n      receiveKey();\n      *(int **)(puVar3 + -0x10) = &local_40;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11865;\n      receiveValue();\n      if (local_40 < 0) goto LAB_0001182f;\n      *(int *)(puVar3 + -8) = local_40;\n      *(undefined **)(puVar3 + -0xc) = local_3c;\n      *(undefined4 **)(puVar3 + -0x10) = &local_20;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11887;\n      local_14 = setMap();\n      puVar4 = puVar3;\n      if (local_14 == 1) {\n        *(undefined4 *)(puVar3 + -8) = 0x14;\n        *(char **)(puVar3 + -0xc) = \"New budget created!\\n\";\n        *(undefined4 *)(puVar3 + -0x10) = 1;\n        *(undefined4 *)(puVar3 + -0x14) = 0x118a6;\n        local_14 = transmit_all();\n        if (local_14 == 0) goto LAB_000118e5;\n        *(undefined4 *)(puVar3 + -0x10) = 1;\n        *(undefined4 *)(puVar3 + -0x14) = 0x118bc;\n        _terminate();\n        puVar4 = puVar3 + -0x10;\n      }\n      *(undefined4 *)(puVar4 + -8) = 0x10;\n      *(char **)(puVar4 + -0xc) = \"No more entries\\n\";\n      *(undefined4 *)(puVar4 + -0x10) = 1;\n      *(undefined4 *)(puVar4 + -0x14) = 0x118cf;\n      local_14 = transmit_all();\n      puVar3 = puVar4;\n      if (local_14 != 0) {\n        puVar3 = puVar4 + -0x10;\n        *(undefined4 *)(puVar4 + -0x10) = 1;\n        *(undefined4 *)(puVar4 + -0x14) = 0x118e5;\n        _terminate();\n      }\n    }\nLAB_000118e5:\n    if (local_24 == 2) {\n      *(undefined **)(puVar3 + -0x10) = local_3c;\n      *(undefined4 *)(puVar3 + -0x14) = 0x118fd;\n      receiveKey();\n      *(int **)(puVar3 + -0x10) = &local_40;\n      *(undefined4 *)(puVar3 + -0x14) = 0x1190c;\n      receiveValue();\n      *(undefined **)(puVar3 + -0xc) = local_3c;\n      *(undefined4 *)(puVar3 + -0x10) = local_20;\n      *(undefined4 *)(puVar3 + -0x14) = 0x1191f;\n      local_18 = getValue();\n      local_18 = local_18 - local_40;\n      *(int *)(puVar3 + -8) = local_18;\n      *(undefined **)(puVar3 + -0xc) = local_3c;\n      *(undefined4 **)(puVar3 + -0x10) = &local_20;\n      *(undefined4 *)(puVar3 + -0x14) = 0x1193e;\n      setMap();\n      if (local_18 < 0) {\n        *(undefined **)(puVar3 + -0x10) = local_3c;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11953;\n        sVar1 = strlen(*(char **)(puVar3 + -0x10));\n        *(size_t *)(puVar3 + -8) = sVar1;\n        *(undefined **)(puVar3 + -0xc) = local_3c;\n        *(undefined4 *)(puVar3 + -0x10) = 1;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11965;\n        local_14 = transmit_all();\n        puVar4 = puVar3;\n        if (local_14 != 0) {\n          *(undefined4 *)(puVar3 + -0x10) = 1;\n          *(undefined4 *)(puVar3 + -0x14) = 0x1197b;\n          _terminate();\n          puVar4 = puVar3 + -0x10;\n        }\n        *(undefined4 *)(puVar4 + -8) = 0x11;\n        *(char **)(puVar4 + -0xc) = \" is over budget!\\n\";\n        *(undefined4 *)(puVar4 + -0x10) = 1;\n        *(undefined4 *)(puVar4 + -0x14) = 0x1198e;\n        local_14 = transmit_all();\n        puVar3 = puVar4;\n        if (local_14 != 0) {\n          puVar3 = puVar4 + -0x10;\n          *(undefined4 *)(puVar4 + -0x10) = 1;\n          *(undefined4 *)(puVar4 + -0x14) = 0x119a4;\n          _terminate();\n        }\n      }\n    }\n    if (local_24 == 3) {\n      local_68 = 0;\n      local_64 = 0;\n      local_60 = 0;\n      local_5c = 0;\n      local_58 = 0;\n      local_54 = 0;\n      local_50 = 0;\n      local_4c = 0;\n      local_48 = 0;\n      local_44 = 0;\n      *(undefined **)(puVar3 + -0x10) = local_3c;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11a02;\n      receiveKey();\n      *(undefined **)(puVar3 + -0xc) = local_3c;\n      *(undefined4 *)(puVar3 + -0x10) = local_20;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11a15;\n      local_1c = getValue();\n      *(undefined4 *)(puVar3 + -8) = local_1c;\n      *(undefined4 *)(puVar3 + -0xc) = 0x28;\n      *(undefined4 **)(puVar3 + -0x10) = &local_68;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11a2c;\n      local_14 = int2str();\n      puVar4 = puVar3;\n      if (local_14 != 0) {\n        *(undefined4 *)(puVar3 + -0x10) = 6;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11a42;\n        _terminate();\n        puVar4 = puVar3 + -0x10;\n      }\n      *(undefined4 *)(puVar4 + -8) = 0x28;\n      *(undefined4 **)(puVar4 + -0xc) = &local_68;\n      *(undefined4 *)(puVar4 + -0x10) = 1;\n      *(undefined4 *)(puVar4 + -0x14) = 0x11a52;\n      local_14 = transmit_all();\n      puVar3 = puVar4;\n      if (local_14 != 0) {\n        puVar3 = puVar4 + -0x10;\n        *(undefined4 *)(puVar4 + -0x10) = 1;\n        *(undefined4 *)(puVar4 + -0x14) = 0x11a68;\n        _terminate();\n      }\n    }\n    if (local_24 == 6) {\n      *(undefined **)(puVar3 + -0x10) = local_3c;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11a7c;\n      receiveKey();\n      *(char **)(puVar3 + -0xc) = \"BACON\";\n      *(undefined **)(puVar3 + -0x10) = local_3c;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11a92;\n      iVar2 = strcmp(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc));\n      if (iVar2 == 0) {\n        *(undefined **)(puVar3 + -0xc) = local_3c;\n        *(undefined4 **)(puVar3 + -0x10) = &local_20;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11aa9;\n        removeMap();\n      }\n    }\n    if (local_24 == 7) {\n      *(undefined4 *)(puVar3 + -0x10) = local_20;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11ac0;\n      sendReport();\n    }\n    if (7 < local_24) {\n      return 0;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "receiveInstruction",
+                        "receiveKey",
+                        "receiveValue",
+                        "setMap",
+                        "transmit_all",
+                        "_terminate",
+                        "getValue",
+                        "strlen",
+                        "int2str",
+                        "strcmp",
+                        "removeMap",
+                        "sendReport"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00036_decompiled.c"
+                }
+            }
+        ]
+    }
+}

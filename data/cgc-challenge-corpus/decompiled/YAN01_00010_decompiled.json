@@ -1,0 +1,210 @@
+{
+    "file": "YAN01_00010",
+    "decompiled_code": {
+        "main.c": [
+            {
+                "func_name": "transmit_all",
+                "func_c_signature": "uint transmit_all(undefined4 param_1,int param_2,uint param_3)",
+                "decompiled_code": "uint transmit_all(undefined4 param_1,int param_2,uint param_3) {\n  int iVar1;\n  int local_18;\n  undefined4 local_14;\n  uint local_10;\n  \n  local_18 = 0;\n  local_10 = 0;\n  if (param_2 == 0) {\n    param_3 = 0;\n  }\n  else {\n    do {\n      local_14 = 0;\n      iVar1 = transmit(param_1,param_2,param_3 - local_10,&local_18);\n      if ((iVar1 != 0) || (local_18 == 0)) {\n        return 0;\n      }\n      local_10 = local_10 + local_18;\n    } while (local_10 < param_3);\n  }\n  return param_3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "transmit_all",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "transmit_all",
+                        "printBoard",
+                        "main"
+                    ],
+                    "defined_in_file": "YAN01_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "receive_all",
+                "func_c_signature": "uint receive_all(undefined4 param_1,int param_2,uint param_3)",
+                "decompiled_code": "uint receive_all(undefined4 param_1,int param_2,uint param_3) {\n  int iVar1;\n  int local_18;\n  undefined4 local_14;\n  uint local_10;\n  \n  local_18 = 0;\n  local_10 = 0;\n  if (param_2 == 0) {\n    param_3 = 0;\n  }\n  else {\n    do {\n      local_14 = 0;\n      iVar1 = receive(param_1,param_2,param_3 - local_10,&local_18);\n      if ((iVar1 != 0) || (local_18 == 0)) {\n        return 0;\n      }\n      local_10 = local_10 + local_18;\n    } while (local_10 < param_3);\n  }\n  return param_3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "receive_all",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "receive_all",
+                        "main"
+                    ],
+                    "defined_in_file": "YAN01_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rotate_right",
+                "func_c_signature": "void rotate_right(int param_1)",
+                "decompiled_code": "void rotate_right(int param_1) {\n  if ((-1 < param_1) && (param_1 < 0x20)) {\n    (&gBoard)[param_1] = (&gBoard)[param_1] * 2 | (uint)(&gBoard)[param_1] >> 0x1f;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rotate_right"
+                    ],
+                    "calling_functions": [
+                        "rotate_right",
+                        "makeMove"
+                    ],
+                    "defined_in_file": "YAN01_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rotate_down",
+                "func_c_signature": "void rotate_down(int param_1)",
+                "decompiled_code": "void rotate_down(int param_1) {\n  uint uVar1;\n  int local_c;\n  \n  uVar1 = DAT_0001417c;\n  if ((-1 < param_1) && (param_1 < 0x20)) {\n    for (local_c = 0x1f; 0 < local_c; local_c = local_c + -1) {\n      (&gBoard)[local_c] =\n           (&gBoard)[local_c] & *(uint *)(neg_mask + param_1 * 4) |\n           *(uint *)(mask + param_1 * 4) & (&gBoard)[local_c + -1];\n    }\n    gBoard = *(uint *)(mask + param_1 * 4) & uVar1 | gBoard & *(uint *)(neg_mask + param_1 * 4);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rotate_down"
+                    ],
+                    "calling_functions": [
+                        "rotate_down",
+                        "makeMove"
+                    ],
+                    "defined_in_file": "YAN01_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "printBoard",
+                "func_c_signature": "void printBoard(void)",
+                "decompiled_code": "void printBoard(void) {\n  undefined *puVar1;\n  undefined local_458 [1088];\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_14 = 0;\n  local_18 = 0;\n  for (local_10 = 0; local_10 < 0x20; local_10 = local_10 + 1) {\n    for (local_14 = 0; local_14 < 0x20; local_14 = local_14 + 1) {\n      if ((*(uint *)(mask + local_14 * 4) & (&gBoard)[local_10]) == 0) {\n        puVar1 = local_458 + local_18;\n        local_18 = local_18 + 1;\n        *puVar1 = 0x2e;\n      }\n      else {\n        puVar1 = local_458 + local_18;\n        local_18 = local_18 + 1;\n        *puVar1 = 0x31;\n      }\n    }\n    puVar1 = local_458 + local_18;\n    local_18 = local_18 + 1;\n    *puVar1 = 10;\n  }\n  local_458[local_18] = 0;\n  transmit_all(1,local_458,local_18);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "printBoard",
+                        "transmit_all"
+                    ],
+                    "calling_functions": [
+                        "printBoard",
+                        "main"
+                    ],
+                    "defined_in_file": "YAN01_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initBoard",
+                "func_c_signature": "void initBoard(void)",
+                "decompiled_code": "void initBoard(void) {\n  DAT_0001417c = 0xffffffff;\n  DAT_00014178 = 0xffffffff;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initBoard"
+                    ],
+                    "calling_functions": [
+                        "initBoard",
+                        "main"
+                    ],
+                    "defined_in_file": "YAN01_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove_bits",
+                "func_c_signature": "void remove_bits(void)",
+                "decompiled_code": "void remove_bits(void) {\n  if (((DAT_0001417c & 3) == 3) && ((DAT_00014178 & 3) == 3)) {\n    DAT_0001417c = DAT_0001417c & 0xfffffffc;\n    DAT_00014178 = DAT_00014178 & 0xfffffffc;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_bits"
+                    ],
+                    "calling_functions": [
+                        "remove_bits",
+                        "makeMove"
+                    ],
+                    "defined_in_file": "YAN01_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "makeMove",
+                "func_c_signature": "void makeMove(uint param_1)",
+                "decompiled_code": "void makeMove(uint param_1) {\n  if ((param_1 & 0x20) == 0) {\n    rotate_down(param_1 & 0x1f);\n  }\n  else {\n    rotate_right(param_1 & 0x1f);\n  }\n  remove_bits();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "makeMove",
+                        "rotate_down",
+                        "rotate_right",
+                        "remove_bits"
+                    ],
+                    "calling_functions": [
+                        "makeMove",
+                        "main"
+                    ],
+                    "defined_in_file": "YAN01_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "isWinner",
+                "func_c_signature": "undefined4 isWinner(void)",
+                "decompiled_code": "undefined4 isWinner(void) {\n  int local_8;\n  \n  local_8 = 0;\n  while( true ) {\n    if (0x1f < local_8) {\n      return 1;\n    }\n    if ((&gBoard)[local_8] != 0) break;\n    local_8 = local_8 + 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "isWinner"
+                    ],
+                    "calling_functions": [
+                        "isWinner",
+                        "main"
+                    ],
+                    "defined_in_file": "YAN01_00010_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  char local_11;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  initBoard();\n  while( true ) {\n    iVar1 = isWinner();\n    if (iVar1 != 0) {\n      (*(code *)0x0)();\n      transmit_all(1,\"You Win\\n\",8);\n      return 0;\n    }\n    iVar1 = receive_all(0,&local_11,1);\n    if (iVar1 != 1) break;\n    if (local_11 == -1) {\n      printBoard();\n      return 0;\n    }\n    makeMove(local_11);\n  }\n  printBoard();\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "initBoard",
+                        "isWinner",
+                        "transmit_all",
+                        "receive_all",
+                        "printBoard",
+                        "makeMove"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "YAN01_00010_decompiled.c"
+                }
+            }
+        ]
+    }
+}

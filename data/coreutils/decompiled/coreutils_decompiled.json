@@ -1,0 +1,86 @@
+{
+    "file": "coreutils",
+    "decompiled_code": {
+        "coreutils.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s --coreutils-prog=PROGRAM_NAME [PARAMETERS]... \\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Execute the PROGRAM_NAME built-in program with the given PARAMETERS.\\n\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    uVar2 = _program_name;\n    pcVar3 = (char *)gettext(\n                            \"\\nUse: \\'%s --coreutils-prog=PROGRAM_NAME --help\\' for individual program help.\\n\"\n                            );\n    printf(pcVar3,uVar2);\n    emit_ancillary_info(\"coreutils\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "coreutils_decompiled.c"
+                }
+            },
+            {
+                "func_name": "launch_program",
+                "func_c_signature": "void launch_program(void)",
+                "decompiled_code": "void launch_program(void) {\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "launch_program"
+                    ],
+                    "calling_functions": [
+                        "launch_program",
+                        "main"
+                    ],
+                    "defined_in_file": "coreutils_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "void main(int param_1,undefined8 *param_2) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  long in_FS_OFFSET;\n  undefined8 *local_58;\n  long local_50;\n  undefined8 *local_48;\n  undefined8 local_29;\n  undefined local_21;\n  undefined8 local_20;\n  \n  local_20 = *(undefined8 *)(in_FS_OFFSET + 0x28);\n  local_58 = (undefined8 *)last_component(*param_2);\n  local_29 = 0x6c6c6174736e6967;\n  local_21 = 0;\n  cVar1 = streq(local_58,\"install\");\n  if (cVar1 != '\\0') {\n    local_58 = &local_29;\n  }\n  launch_program(local_58,param_1,param_2);\n  if (1 < param_1) {\n    local_50 = 0;\n    local_48 = (undefined8 *)0x0;\n    iVar2 = strncmp((char *)param_2[1],\"--coreutils-prog=\",0x11);\n    if (iVar2 == 0) {\n      local_50 = 1;\n      local_58 = (undefined8 *)(param_2[1] + 0x11);\n      local_48 = local_58;\n    }\n    else {\n      iVar2 = strncmp((char *)param_2[1],\"--coreutils-prog-shebang=\",0x19);\n      if (iVar2 == 0) {\n        local_50 = 2;\n        local_58 = (undefined8 *)(param_2[1] + 0x19);\n        local_48 = local_58;\n        if (2 < param_1) {\n          local_48 = (undefined8 *)last_component(param_2[2]);\n        }\n      }\n    }\n    if (local_50 != 0) {\n      param_2[local_50] = local_48;\n      launch_program(local_58,param_1 - (int)local_50,param_2 + local_50);\n      uVar3 = quote(local_58);\n      uVar4 = gettext(\"unknown program %s\");\n      error(1,0,uVar4,uVar3);\n    }\n  }\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  iVar2 = getopt_long(param_1,param_2,&DAT_001008a4,long_options,0);\n  if (iVar2 != -1) {\n    if (iVar2 == -0x83) {\n      uVar3 = proper_name_lite(\"Alex Deymo\",\"Alex Deymo\");\n      version_etc(_stdout,\"coreutils\",\"GNU coreutils\",_Version,uVar3,0);\n                    /* WARNING: Subroutine does not return */\n      exit(0);\n    }\n    if (iVar2 == -0x82) {\n                    /* WARNING: Subroutine does not return */\n      usage(0);\n    }\n  }\n  if (((_optind == 1) && (local_58 != (undefined8 *)0x0)) &&\n     (cVar1 = streq(local_58,\"coreutils\"), cVar1 != '\\x01')) {\n    uVar3 = quote(local_58);\n    uVar4 = gettext(\"unknown program %s\");\n    error(0,0,uVar4,uVar3);\n  }\n                    /* WARNING: Subroutine does not return */\n  usage(1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "last_component",
+                        "streq",
+                        "launch_program",
+                        "strncmp",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "coreutils_decompiled.c"
+                }
+            }
+        ]
+    }
+}

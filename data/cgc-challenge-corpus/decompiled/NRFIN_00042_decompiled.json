@@ -1,0 +1,339 @@
+{
+    "file": "NRFIN_00042",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "int main(void)",
+                "decompiled_code": "int main(void) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 local_1024 [1024];\n  int local_24;\n  undefined *local_14;\n  \n  local_14 = &stack0x00000004;\n  puVar2 = local_1024;\n  for (iVar1 = 0x400; iVar1 != 0; iVar1 = iVar1 + -1) {\n    *puVar2 = 0;\n    puVar2 = puVar2 + 1;\n  }\n  local_24 = recvuntil(0,local_1024,0x1000,0);\n  if (-1 < local_24) {\n    local_24 = run_viewscript(local_1024);\n  }\n  return local_24;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "recvuntil",
+                        "run_viewscript"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            }
+        ],
+        "viewscript.c": [
+            {
+                "func_name": "delvar",
+                "func_c_signature": "undefined4 delvar(undefined4 param_1)",
+                "decompiled_code": "undefined4 delvar(undefined4 param_1) {\n  int *piVar1;\n  int iVar2;\n  int **local_14;\n  int **local_10;\n  \n  local_10 = global_nspace;\n  local_14 = (int **)0x0;\n  while( true ) {\n    if (local_10 == (int **)0x0) {\n      return 9;\n    }\n    iVar2 = streq(local_10[1],param_1);\n    if (iVar2 != 0) break;\n    local_14 = local_10;\n    local_10 = (int **)*local_10;\n  }\n  if (local_14 == (int **)0x0) {\n    global_nspace = (int **)*local_10;\n  }\n  else {\n    *local_14 = *local_10;\n  }\n  if (*local_10 == (int *)0x0) {\n    DAT_00016084 = local_14;\n  }\n  if (local_10[2] == (int *)0x2) {\n    piVar1 = local_10[4];\n    piVar1[3] = piVar1[3] + -1;\n    if (piVar1[3] == 0) {\n      free(local_10[4]);\n    }\n  }\n  if ((int)local_10[3] < 1) {\n    free(local_10);\n  }\n  DAT_00016088 = DAT_00016088 + -1;\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "delvar",
+                        "streq",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "delvar",
+                        "handledel"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            },
+            {
+                "func_name": "addvar",
+                "func_c_signature": "undefined4 addvar(undefined4 *param_1,char *param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 addvar(undefined4 *param_1,char *param_2,undefined4 param_3) {\n  size_t sVar1;\n  void *pvVar2;\n  undefined4 uVar3;\n  size_t in_stack_ffffffe8;\n  \n  sVar1 = strlen(param_2);\n  pvVar2 = calloc(sVar1 + 1,in_stack_ffffffe8);\n  param_1[1] = pvVar2;\n  if (param_1[1] == 0) {\n    uVar3 = 10;\n  }\n  else {\n    strcpy((char *)param_1[1],param_2);\n    param_1[2] = param_3;\n    if (DAT_00016084 != (undefined4 *)0x0) {\n      *DAT_00016084 = param_1;\n    }\n    DAT_00016084 = param_1;\n    if (global_nspace == (undefined4 *)0x0) {\n      global_nspace = param_1;\n    }\n    *param_1 = 0;\n    DAT_00016088 = DAT_00016088 + 1;\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "addvar",
+                        "strlen",
+                        "calloc",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "addvar",
+                        "newnum",
+                        "newarr",
+                        "newview"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getvar",
+                "func_c_signature": "undefined4 * getvar(undefined4 param_1)",
+                "decompiled_code": "undefined4 * getvar(undefined4 param_1) {\n  int iVar1;\n  undefined4 *local_10;\n  \n  if ((0 < DAT_00016088) && (global_nspace != (undefined4 *)0x0)) {\n    for (local_10 = global_nspace; local_10 != (undefined4 *)0x0; local_10 = (undefined4 *)*local_10\n        ) {\n      iVar1 = streq(local_10[1],param_1);\n      if (iVar1 != 0) {\n        return local_10;\n      }\n    }\n  }\n  return (undefined4 *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getvar",
+                        "streq"
+                    ],
+                    "calling_functions": [
+                        "getvar",
+                        "calc_bytesize",
+                        "newview",
+                        "handlenew",
+                        "handleget",
+                        "handleset"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            },
+            {
+                "func_name": "calc_bytesize",
+                "func_c_signature": "int calc_bytesize(char *param_1)",
+                "decompiled_code": "int calc_bytesize(char *param_1) {\n  size_t sVar1;\n  char *__dest;\n  int iVar2;\n  char *__s;\n  size_t in_stack_ffffffc8;\n  int local_14;\n  char *local_10;\n  \n  local_14 = 0;\n  sVar1 = strlen(param_1);\n  __dest = (char *)calloc(sVar1 + 1,in_stack_ffffffc8);\n  if (__dest == (char *)0x0) {\n    local_14 = 0;\n  }\n  else {\n    strcpy(__dest,param_1);\n    local_10 = __dest;\n    while (__s = strtok(local_10,(char *)0x2c), __s != (char *)0x0) {\n      local_10 = (char *)0x0;\n      sVar1 = strlen(__s);\n      if (sVar1 == 0) break;\n      iVar2 = getvar(__s);\n      if (iVar2 == 0) {\n        local_14 = 0;\n        break;\n      }\n      if (*(int *)(iVar2 + 8) != 0) {\n        local_14 = 0;\n        break;\n      }\n      local_14 = local_14 + *(int *)(iVar2 + 0x10);\n    }\n    free(__dest);\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "calc_bytesize",
+                        "strlen",
+                        "calloc",
+                        "strcpy",
+                        "strtok",
+                        "getvar",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "calc_bytesize",
+                        "handleget",
+                        "handleset"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            },
+            {
+                "func_name": "newnum",
+                "func_c_signature": "int newnum(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "int newnum(undefined4 param_1,undefined4 param_2) {\n  void *__ptr;\n  int iVar1;\n  undefined4 uVar2;\n  size_t in_stack_ffffffd8;\n  undefined4 uVar3;\n  \n  uVar3 = 0x116d0;\n  __ptr = calloc(0x14,in_stack_ffffffd8);\n  if (__ptr == (void *)0x0) {\n    iVar1 = 10;\n  }\n  else {\n    uVar2 = str2int(param_2);\n    *(undefined4 *)((int)__ptr + 0x10) = uVar2;\n    iVar1 = addvar(__ptr,param_1,0,uVar3);\n    if (iVar1 != 0) {\n      free(__ptr);\n    }\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "newnum",
+                        "calloc",
+                        "str2int",
+                        "addvar",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "newnum"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            },
+            {
+                "func_name": "newarr",
+                "func_c_signature": "int newarr(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "int newarr(undefined4 param_1,undefined4 param_2) {\n  uint uVar1;\n  int iVar2;\n  void *__ptr;\n  size_t in_stack_ffffffd8;\n  undefined4 uVar3;\n  \n  uVar3 = 0x11753;\n  uVar1 = str2uint(param_2);\n  if (uVar1 < 0x200001) {\n    __ptr = calloc((uVar1 + 5) * 4,in_stack_ffffffd8);\n    if (__ptr == (void *)0x0) {\n      iVar2 = 10;\n    }\n    else {\n      *(uint *)((int)__ptr + 0x10) = uVar1 * 4;\n      iVar2 = addvar(__ptr,param_1,1,uVar3);\n      if (iVar2 != 0) {\n        free(__ptr);\n      }\n    }\n  }\n  else {\n    iVar2 = 0xb;\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "newarr",
+                        "str2uint",
+                        "calloc",
+                        "addvar",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "newarr"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            },
+            {
+                "func_name": "newview",
+                "func_c_signature": "int newview(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "int newview(undefined4 param_1,undefined4 param_2) {\n  char *__s;\n  size_t sVar1;\n  int iVar2;\n  void *__ptr;\n  int iVar3;\n  size_t __size;\n  uint local_10;\n  \n  __size = 0x20;\n  __s = strtok((char *)0x0,(char *)0x20);\n  if ((__s == (char *)0x0) || (sVar1 = strlen(__s), sVar1 == 0)) {\n    iVar2 = 6;\n  }\n  else {\n    iVar2 = getvar(param_2);\n    if (iVar2 == 0) {\n      iVar2 = 9;\n    }\n    else if (*(int *)(iVar2 + 8) == 1) {\n      __ptr = calloc(0x20,__size);\n      if (__ptr == (void *)0x0) {\n        iVar2 = 10;\n      }\n      else {\n        for (local_10 = 0; local_10 < 6; local_10 = local_10 + 1) {\n          iVar3 = streq(__s,*(undefined4 *)(viewtypes + local_10 * 0xc));\n          if (iVar3 != 0) {\n            *(undefined1 **)((int)__ptr + 0x14) = viewtypes + local_10 * 0xc;\n            break;\n          }\n        }\n        if (*(int *)((int)__ptr + 0x14) == 0) {\n          free(__ptr);\n          iVar2 = 4;\n        }\n        else {\n          *(int *)((int)__ptr + 0x10) = iVar2;\n          iVar2 = addvar(__ptr,param_1,2);\n          if (iVar2 != 0) {\n            free(__ptr);\n          }\n        }\n      }\n    }\n    else {\n      iVar2 = 0xc;\n    }\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "newview",
+                        "strtok",
+                        "strlen",
+                        "getvar",
+                        "calloc",
+                        "streq",
+                        "free",
+                        "addvar"
+                    ],
+                    "calling_functions": [
+                        "newview"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handlenew",
+                "func_c_signature": "undefined4 handlenew(void)",
+                "decompiled_code": "undefined4 handlenew(void) {\n  char *__s;\n  size_t sVar1;\n  char *pcVar2;\n  int iVar3;\n  char *__s_00;\n  undefined4 uVar4;\n  uint local_10;\n  \n  __s = strtok((char *)0x0,(char *)0x20);\n  if ((__s == (char *)0x0) || (sVar1 = strlen(__s), sVar1 == 0)) {\n    return 6;\n  }\n  pcVar2 = strtok((char *)0x0,(char *)0x20);\n  if (pcVar2 == (char *)0x0) {\n    return 7;\n  }\n  iVar3 = getvar(pcVar2);\n  if (iVar3 != 0) {\n    return 8;\n  }\n  __s_00 = strtok((char *)0x0,(char *)0x20);\n  if ((__s_00 != (char *)0x0) && (sVar1 = strlen(__s_00), sVar1 != 0)) {\n    local_10 = 0;\n    while( true ) {\n      if (2 < local_10) {\n        return 4;\n      }\n      iVar3 = streq(__s,*(undefined4 *)(types + local_10 * 4));\n      if (iVar3 != 0) break;\n      local_10 = local_10 + 1;\n    }\n    uVar4 = (**(code **)(constructors + local_10 * 4))(pcVar2,__s_00);\n    return uVar4;\n  }\n  return 3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handlenew",
+                        "strtok",
+                        "strlen",
+                        "getvar",
+                        "streq"
+                    ],
+                    "calling_functions": [
+                        "handlenew"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handleget",
+                "func_c_signature": "undefined4 handleget(void)",
+                "decompiled_code": "undefined4 handleget(void) {\n  uint uVar1;\n  size_t sVar2;\n  uint uVar3;\n  int iVar4;\n  undefined4 uVar5;\n  undefined4 local_3c;\n  undefined4 local_38;\n  undefined4 local_34;\n  uint local_30;\n  undefined4 local_2c;\n  undefined4 local_28;\n  char *local_24;\n  char *local_20;\n  int local_1c;\n  int local_18;\n  uint local_14;\n  uint local_10;\n  \n  uVar5 = 0x11a8f;\n  local_18 = 0;\n  local_1c = 0;\n  local_3c = 0;\n  local_38 = 0;\n  local_34 = 0;\n  local_20 = strtok((char *)0x0,(char *)0x20);\n  local_24 = (char *)0x0;\n  local_28 = 0;\n  local_10 = 0;\n  local_2c = 0;\n  local_30 = 0;\n  local_14 = 0;\n  if ((local_20 == (char *)0x0) || (sVar2 = strlen(local_20), sVar2 == 0)) {\n    return 7;\n  }\n  local_18 = getvar(local_20);\n  if (local_18 == 0) {\n    return 9;\n  }\n  uVar1 = *(uint *)(local_18 + 8);\n  if (uVar1 == 2) {\n    local_1c = local_18;\n    local_24 = strtok((char *)0x0,(char *)0x20);\n    if (local_24 == (char *)0x0) {\n      return 3;\n    }\n    iVar4 = str2uint(local_24);\n    local_30 = iVar4 * *(int *)(*(int *)(local_1c + 0x14) + 4);\n    if (*(int *)(local_1c + 0x1c) == 0) {\n      if (*(uint *)(*(int *)(local_1c + 0x10) + 0x10) <\n          *(int *)(*(int *)(local_1c + 0x14) + 4) + local_30) {\n        return 0xd;\n      }\n    }\n    else {\n      uVar1 = *(int *)(*(int *)(local_1c + 0x14) + 4) + local_30;\n      uVar3 = calc_bytesize(*(undefined4 *)(local_1c + 0x1c));\n      if (uVar3 <= uVar1) {\n        return 0xd;\n      }\n    }\n    for (local_14 = 0; local_14 < *(uint *)(*(int *)(local_1c + 0x14) + 4); local_14 = local_14 + 1)\n    {\n      local_10 = local_10 |\n                 (uint)*(byte *)(*(int *)(local_1c + 0x10) + 0x14 + local_30 + local_14) <<\n                 ((byte)(local_14 << 3) & 0x1f);\n    }\n    if (*(int *)(*(int *)(local_1c + 0x14) + 8) == 0) {\n      uint2str(&local_3c,0xc,local_10);\n    }\n    else if (*(int *)(*(int *)(local_1c + 0x14) + 4) == 4) {\n      int2str(&local_3c,0xc,local_10);\n    }\n    else if (*(int *)(*(int *)(local_1c + 0x14) + 4) == 2) {\n      int2str(&local_3c,0xc,(int)(short)local_10);\n    }\n    else if (*(int *)(*(int *)(local_1c + 0x14) + 4) == 1) {\n      int2str(&local_3c,0xc,(int)(char)local_10);\n    }\n  }\n  else {\n    if (2 < uVar1) {\n      return 4;\n    }\n    if (uVar1 == 0) {\n      int2str(&local_3c,0xc,*(undefined4 *)(local_18 + 0x10),uVar5);\n    }\n    else {\n      if (uVar1 != 1) {\n        return 4;\n      }\n      local_24 = strtok((char *)0x0,(char *)0x20);\n      if (local_24 == (char *)0x0) {\n        return 3;\n      }\n      local_30 = str2uint(local_24);\n      if (*(uint *)(local_18 + 0x10) >> 2 <= local_30) {\n        return 0xd;\n      }\n      int2str(&local_3c,0xc,*(undefined4 *)(local_30 * 4 + local_18 + 0x14));\n    }\n  }\n  sVar2 = strlen((char *)&local_3c);\n  iVar4 = sendline(1,&local_3c,sVar2);\n  if (iVar4 < 0) {\n    _terminate(6);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handleget",
+                        "strtok",
+                        "strlen",
+                        "getvar",
+                        "str2uint",
+                        "calc_bytesize",
+                        "uint2str",
+                        "int2str",
+                        "sendline",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "handleget"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handleset",
+                "func_c_signature": "undefined4 handleset(void)",
+                "decompiled_code": "undefined4 handleset(void) {\n  char *pcVar1;\n  size_t sVar2;\n  undefined4 uVar3;\n  int iVar4;\n  char *pcVar5;\n  uint uVar6;\n  char *__s;\n  size_t sVar7;\n  char *__dest;\n  \n  pcVar1 = strtok((char *)0x0,(char *)0x20);\n  if ((pcVar1 == (char *)0x0) || (sVar2 = strlen(pcVar1), sVar2 == 0)) {\n    uVar3 = 7;\n  }\n  else {\n    iVar4 = getvar(pcVar1);\n    if (iVar4 == 0) {\n      uVar3 = 9;\n    }\n    else {\n      pcVar5 = strtok((char *)0x0,(char *)0x20);\n      if (pcVar5 == (char *)0x0) {\n        uVar3 = 3;\n      }\n      else {\n        uVar6 = *(uint *)(iVar4 + 8);\n        if (uVar6 == 2) {\n          sVar2 = 0x20;\n          __s = strtok((char *)0x0,(char *)0x20);\n          if (__s == (char *)0x0) {\n            uVar3 = 3;\n          }\n          else {\n            sVar7 = strlen(__s);\n            __dest = (char *)calloc(sVar7 + 1,sVar2);\n            if (__dest == (char *)0x0) {\n              uVar3 = 10;\n            }\n            else {\n              strcpy(__dest,__s);\n              iVar4 = streq(pcVar5,\"byteSize\");\n              if (iVar4 == 0) {\n                free(__dest);\n                uVar3 = 9;\n              }\n              else {\n                uVar6 = calc_bytesize(__s);\n                iVar4 = getvar(pcVar1);\n                if (iVar4 == 0) {\n                  free(__dest);\n                  uVar3 = 9;\n                }\n                else if (*(uint *)(*(int *)(iVar4 + 0x10) + 0x10) < uVar6) {\n                  free(__dest);\n                  uVar3 = 0xb;\n                }\n                else {\n                  if (*(int *)(iVar4 + 0x1c) != 0) {\n                    free(*(void **)(iVar4 + 0x1c));\n                  }\n                  *(char **)(iVar4 + 0x1c) = __dest;\n                  uVar3 = 0;\n                }\n              }\n            }\n          }\n        }\n        else {\n          if (uVar6 < 3) {\n            if (uVar6 == 0) {\n              uVar3 = str2int(pcVar5);\n              *(undefined4 *)(iVar4 + 0x10) = uVar3;\n              return 0;\n            }\n            if (uVar6 == 1) {\n              uVar6 = str2int(pcVar5);\n              if (*(uint *)(iVar4 + 0x10) >> 2 <= uVar6) {\n                return 0xd;\n              }\n              pcVar1 = strtok((char *)0x0,(char *)0x20);\n              if (pcVar1 == (char *)0x0) {\n                return 3;\n              }\n              uVar3 = str2int(pcVar1);\n              *(undefined4 *)(iVar4 + 0x14 + uVar6 * 4) = uVar3;\n              return 0;\n            }\n          }\n          uVar3 = 4;\n        }\n      }\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handleset",
+                        "strtok",
+                        "strlen",
+                        "getvar",
+                        "calloc",
+                        "strcpy",
+                        "streq",
+                        "free",
+                        "calc_bytesize",
+                        "str2int"
+                    ],
+                    "calling_functions": [
+                        "handleset"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handledel",
+                "func_c_signature": "undefined4 handledel(void)",
+                "decompiled_code": "undefined4 handledel(void) {\n  char *__s;\n  size_t sVar1;\n  undefined4 uVar2;\n  \n  __s = strtok((char *)0x0,(char *)0x20);\n  if ((__s != (char *)0x0) && (sVar1 = strlen(__s), sVar1 != 0)) {\n    uVar2 = delvar(__s);\n    return uVar2;\n  }\n  return 7;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handledel",
+                        "strtok",
+                        "strlen",
+                        "delvar"
+                    ],
+                    "calling_functions": [
+                        "handledel"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            },
+            {
+                "func_name": "runcmd",
+                "func_c_signature": "undefined4 runcmd(char *param_1)",
+                "decompiled_code": "undefined4 runcmd(char *param_1) {\n  char *__s;\n  size_t sVar1;\n  int iVar2;\n  undefined4 uVar3;\n  uint local_10;\n  \n  __s = strtok(param_1,(char *)0x20);\n  if ((__s != (char *)0x0) && (sVar1 = strlen(__s), sVar1 != 0)) {\n    local_10 = 0;\n    while( true ) {\n      if (3 < local_10) {\n        return 5;\n      }\n      iVar2 = streq(__s,*(undefined4 *)(cmds + local_10 * 4));\n      if (iVar2 != 0) break;\n      local_10 = local_10 + 1;\n    }\n    uVar3 = (**(code **)(handlers + local_10 * 4))();\n    return uVar3;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "runcmd",
+                        "strtok",
+                        "strlen",
+                        "streq"
+                    ],
+                    "calling_functions": [
+                        "runcmd",
+                        "run_viewscript"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            },
+            {
+                "func_name": "run_viewscript",
+                "func_c_signature": "int run_viewscript(char *param_1)",
+                "decompiled_code": "int run_viewscript(char *param_1) {\n  size_t sVar1;\n  int iVar2;\n  char **__ptr;\n  char *pcVar3;\n  size_t in_stack_ffffffc8;\n  int local_18;\n  int local_14;\n  char *local_10;\n  \n  local_10 = param_1;\n  local_14 = 0;\n  local_18 = 0;\n  sVar1 = strlen(param_1);\n  if ((int)sVar1 < 0x200001) {\n    for (; *local_10 != '\\0'; local_10 = local_10 + 1) {\n      if (*local_10 == '\\n') {\n        local_18 = local_18 + 1;\n      }\n    }\n    if (local_18 == 0) {\n      iVar2 = 1;\n    }\n    else {\n      __ptr = (char **)calloc((local_18 + 1) * 4,in_stack_ffffffc8);\n      if (__ptr == (char **)0x0) {\n        iVar2 = 10;\n      }\n      else {\n        pcVar3 = strtok(param_1,(char *)0xa);\n        *__ptr = pcVar3;\n        do {\n          local_14 = local_14 + 1;\n          pcVar3 = strtok((char *)0x0,(char *)0xa);\n          __ptr[local_14] = pcVar3;\n        } while (__ptr[local_14] != (char *)0x0);\n        for (local_14 = 0; local_14 < local_18; local_14 = local_14 + 1) {\n          iVar2 = runcmd(__ptr[local_14]);\n          if (iVar2 != 0) {\n            return iVar2;\n          }\n        }\n        free(__ptr);\n        iVar2 = sendline(1,\"Done.\",5);\n        if (iVar2 < 0) {\n          _terminate(6);\n        }\n        iVar2 = 0;\n      }\n    }\n  }\n  else {\n    iVar2 = 0xb;\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "run_viewscript",
+                        "strlen",
+                        "calloc",
+                        "strtok",
+                        "runcmd",
+                        "free",
+                        "sendline",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "run_viewscript"
+                    ],
+                    "defined_in_file": "NRFIN_00042_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,772 @@
+{
+    "file": "CROMU_00051",
+    "decompiled_code": {
+        "fs.c": [
+            {
+                "func_name": "InitFilesystem",
+                "func_c_signature": "void InitFilesystem(void)",
+                "decompiled_code": "void InitFilesystem(void) {\n  undefined uVar1;\n  size_t sVar2;\n  undefined local_54 [31];\n  undefined auStack_35 [11];\n  undefined auStack_2a [22];\n  char *local_14;\n  byte local_d;\n  \n  local_14 = &DAT_4347c000;\n  bzero(FS,0x10640);\n  bzero(FH,0xc0);\n  bzero(auStack_35 + 1,0x20);\n  for (local_d = 0; local_d < 10; local_d = local_d + 1) {\n    uVar1 = random_in_range(0x41,0x7a);\n    auStack_35[local_d + 1] = uVar1;\n  }\n  auStack_35[local_d + 1] = 0;\n  bzero(local_54,0x20);\n  for (local_d = 0; local_d < 0x1f; local_d = local_d + 1) {\n    uVar1 = random_in_range(0x41,0x7a);\n    local_54[local_d] = uVar1;\n  }\n  local_54[local_d] = 0;\n  strcpy(FS,\"passwd\");\n  strcpy(FS + 0x1020,\"root\");\n  strcpy(FS + 0x1040,\"root\");\n  FS._4192_2_ = 0x700;\n  sprintf(FS + 0x20,\"$s:secure:secure\\ncrs:crs:crs\\n$s:root:root\",local_54,auStack_35 + 1);\n  sVar2 = strlen(FS + 0x20);\n  FS._4194_2_ = (undefined2)sVar2;\n  strcpy(FS + 0x1064,\"confidential\");\n  strcpy(FS + 0x2084,\"secure\");\n  strcpy(FS + 0x20a4,\"secure\");\n  FS._8388_2_ = 0x700;\n  local_14 = local_14 + 4;\n  local_d = 0;\n  while (local_d < 4) {\n    if ((*local_14 == '\\0') || (*local_14 == '\\n')) {\n      local_d = 0;\n      local_14 = local_14 + 1;\n    }\n    else {\n      FS[local_d + 0x1084] = *local_14;\n      local_14 = local_14 + 1;\n      local_d = local_d + 1;\n    }\n  }\n  FS._8390_2_ = 4;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitFilesystem",
+                        "bzero",
+                        "random_in_range",
+                        "strcpy",
+                        "sprintf",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "InitFilesystem",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ListFiles",
+                "func_c_signature": "void ListFiles(void)",
+                "decompiled_code": "void ListFiles(void) {\n  byte local_1d;\n  \n  puts(\"Directory listing\");\n  printf(\"$-32s $-32s $-32s $5s\\n\\r\",\"Filename\",\"Owner\",\"Group\",&DAT_0001705c);\n  for (local_1d = 0; local_1d < 0x10; local_1d = local_1d + 1) {\n    if (FS[(uint)local_1d * 0x1064] != '\\0') {\n      printf(\"$-32s $-32s $-32s $5d\\n\\r\",FS + (uint)local_1d * 0x1064,\n             (uint)local_1d * 0x1064 + 0x1b240,(uint)local_1d * 0x1064 + 0x1b260,\n             (uint)*(ushort *)(FS + (uint)local_1d * 0x1064 + 0x1062));\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ListFiles",
+                        "puts",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "ListFiles",
+                        "HandleListFiles"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "Mode2Perms",
+                "func_c_signature": "ushort Mode2Perms(char *param_1)",
+                "decompiled_code": "ushort Mode2Perms(char *param_1) {\n  ushort local_6;\n  \n  local_6 = 0;\n  if (*param_1 == 'r') {\n    local_6 = 4;\n  }\n  if (*param_1 == 'w') {\n    local_6 = local_6 | 2;\n  }\n  return local_6;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "Mode2Perms"
+                    ],
+                    "calling_functions": [
+                        "Mode2Perms",
+                        "fopen"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fopen",
+                "func_c_signature": "FILE * fopen(char *__filename,char *__modes)",
+                "decompiled_code": "FILE * fopen(char *__filename,char *__modes) {\n  ushort uVar1;\n  ushort uVar2;\n  FILE *pFVar3;\n  size_t sVar4;\n  int iVar5;\n  char in_stack_0000000c;\n  byte local_15;\n  char *local_14;\n  byte local_d;\n  \n  local_14 = (char *)0x0;\n  if ((__filename == (char *)0x0) || (__modes == (char *)0x0)) {\n    pFVar3 = (FILE *)0x0;\n  }\n  else {\n    sVar4 = strlen(__filename);\n    if (sVar4 < 0x20) {\n      sVar4 = strlen(__modes);\n      if (sVar4 < 2) {\n        if ((*__modes == 'r') || (*__modes == 'w')) {\n          for (local_15 = 0; local_15 < 0x10; local_15 = local_15 + 1) {\n            if ((FS[(uint)local_15 * 0x1064] == '\\0') && (local_14 == (char *)0x0)) {\n              local_14 = FS + (uint)local_15 * 0x1064;\n            }\n            iVar5 = strcmp(__filename,FS + (uint)local_15 * 0x1064);\n            if (iVar5 == 0) break;\n          }\n          if (local_15 == 0x10) {\n            if (*__modes == 'r') {\n              return (FILE *)0x0;\n            }\n          }\n          else if ((in_stack_0000000c == '\\0') && (iVar5 = strcmp(&DAT_0002b921,\"root\"), iVar5 != 0)\n                  ) {\n            iVar5 = strcmp(FS + (uint)local_15 * 0x1064 + 0x1020,&DAT_0002b921);\n            if (iVar5 == 0) {\n              uVar1 = *(ushort *)(FS + (uint)local_15 * 0x1064 + 0x1060);\n              uVar2 = Mode2Perms(__modes);\n              if ((uVar2 & uVar1 >> 8 & 0xf) == 0) {\n                return (FILE *)0x0;\n              }\n            }\n            else {\n              iVar5 = strcmp(FS + (uint)local_15 * 0x1064 + 0x1040,&DAT_0002b941);\n              if (iVar5 == 0) {\n                uVar1 = *(ushort *)(FS + (uint)local_15 * 0x1064 + 0x1060);\n                uVar2 = Mode2Perms(__modes);\n                if ((uVar2 & (ushort)((int)(uint)uVar1 >> 4) & 0xf) == 0) {\n                  return (FILE *)0x0;\n                }\n              }\n              else {\n                uVar1 = *(ushort *)(FS + (uint)local_15 * 0x1064 + 0x1060);\n                uVar2 = Mode2Perms(__modes);\n                if ((uVar2 & uVar1 & 0xf) == 0) {\n                  return (FILE *)0x0;\n                }\n              }\n            }\n          }\n          local_d = 0;\n          while ((local_d < 0x10 && (*(int *)(FH + (uint)local_d * 0xc) != 0))) {\n            local_d = local_d + 1;\n          }\n          if (local_d == 0x10) {\n            pFVar3 = (FILE *)0x0;\n          }\n          else {\n            if (*__modes == 'w') {\n              if (local_15 == 0x10) {\n                if (local_14 == (char *)0x0) {\n                  return (FILE *)0x0;\n                }\n                strcpy(local_14,__filename);\n                strcpy(local_14 + 0x1020,&DAT_0002b921);\n                strcpy(local_14 + 0x1040,&DAT_0002b941);\n                *(undefined2 *)(local_14 + 0x1060) = 0x700;\n                bzero(local_14 + 0x20,0x1000);\n                *(undefined2 *)(local_14 + 0x1062) = 0;\n                *(char **)(FH + (uint)local_d * 0xc) = local_14;\n                FH[(uint)local_d * 0xc + 8] = 2;\n              }\n              else {\n                *(undefined1 **)(FH + (uint)local_d * 0xc) = FS + (uint)local_15 * 0x1064;\n                FH[(uint)local_d * 0xc + 8] = 2;\n                bzero((void *)(*(int *)(FH + (uint)local_d * 0xc) + 0x20),0x1000);\n                *(undefined2 *)(*(int *)(FH + (uint)local_d * 0xc) + 0x1062) = 0;\n              }\n            }\n            else {\n              *(undefined1 **)(FH + (uint)local_d * 0xc) = FS + (uint)local_15 * 0x1064;\n              FH[(uint)local_d * 0xc + 8] = 4;\n            }\n            *(int *)(FH + (uint)local_d * 0xc + 4) = *(int *)(FH + (uint)local_d * 0xc) + 0x20;\n            pFVar3 = (FILE *)(FH + (uint)local_d * 0xc);\n          }\n        }\n        else {\n          pFVar3 = (FILE *)0x0;\n        }\n      }\n      else {\n        pFVar3 = (FILE *)0x0;\n      }\n    }\n    else {\n      pFVar3 = (FILE *)0x0;\n    }\n  }\n  return pFVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fopen",
+                        "strlen",
+                        "strcmp",
+                        "Mode2Perms",
+                        "strcpy",
+                        "bzero"
+                    ],
+                    "calling_functions": [
+                        "fopen",
+                        "Dump",
+                        "HandlePrint",
+                        "ChUser",
+                        "ChPw",
+                        "NewUser",
+                        "DelUser"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fgets",
+                "func_c_signature": "char * fgets(char *__s,int __n,FILE *__stream)",
+                "decompiled_code": "char * fgets(char *__s,int __n,FILE *__stream) {\n  char *pcVar1;\n  int local_8;\n  \n  if (((__s == (char *)0x0) || (__stream == (FILE *)0x0)) || (__n == 0)) {\n    __s = (char *)0x0;\n  }\n  else if (__stream->_IO_read_ptr == (char *)0x0) {\n    __s = (char *)0x0;\n  }\n  else if (*__stream->_IO_read_ptr == '\\0') {\n    __s = (char *)0x0;\n  }\n  else {\n    local_8 = 0;\n    for (; (*__stream->_IO_read_ptr != '\\0' && (__n != 1)); __n = __n + -1) {\n      if (*__stream->_IO_read_ptr == '\\n') {\n        __stream->_IO_read_ptr = __stream->_IO_read_ptr + 1;\n        __s[local_8] = '\\0';\n        return __s;\n      }\n      pcVar1 = __stream->_IO_read_ptr;\n      __stream->_IO_read_ptr = pcVar1 + 1;\n      __s[local_8] = *pcVar1;\n      local_8 = local_8 + 1;\n    }\n    __s[local_8] = '\\0';\n  }\n  return __s;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fgets"
+                    ],
+                    "calling_functions": [
+                        "fgets",
+                        "Dump",
+                        "ChUser",
+                        "ChPw",
+                        "NewUser",
+                        "DelUser"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fclose",
+                "func_c_signature": "int fclose(FILE *__stream)",
+                "decompiled_code": "int fclose(FILE *__stream) {\n  if (__stream != (FILE *)0x0) {\n    __stream->_flags = 0;\n    __stream->_IO_read_ptr = (char *)0x0;\n  }\n  return (uint)(__stream != (FILE *)0x0);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fclose"
+                    ],
+                    "calling_functions": [
+                        "fclose",
+                        "Dump",
+                        "HandlePrint",
+                        "ChUser",
+                        "ChPw",
+                        "NewUser",
+                        "DelUser"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fread",
+                "func_c_signature": "size_t fread(void *__ptr,size_t __size,size_t __n,FILE *__stream)",
+                "decompiled_code": "size_t fread(void *__ptr,size_t __size,size_t __n,FILE *__stream) {\n  size_t sVar1;\n  \n  if ((((__ptr == (void *)0x0) || (__stream == (FILE *)0x0)) || (__size == 0)) || (__n == 0)) {\n    sVar1 = 0;\n  }\n  else if (((__stream->_flags == 0) || (__stream->_IO_read_ptr == (char *)0x0)) ||\n          (0x1000 < __size * __n)) {\n    sVar1 = 0;\n  }\n  else if ((uint)*(ushort *)(__stream->_flags + 0x1062) < __size * __n) {\n    memcpy(__ptr,(void *)(__stream->_flags + 0x20),(uint)*(ushort *)(__stream->_flags + 0x1062));\n    sVar1 = (size_t)*(ushort *)(__stream->_flags + 0x1062);\n  }\n  else {\n    memcpy(__ptr,(void *)(__stream->_flags + 0x20),__size * __n);\n    sVar1 = __size * __n;\n  }\n  return sVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fread",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "fread"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fwrite",
+                "func_c_signature": "size_t fwrite(void *__ptr,size_t __size,size_t __n,FILE *__s)",
+                "decompiled_code": "size_t fwrite(void *__ptr,size_t __size,size_t __n,FILE *__s) {\n  size_t sVar1;\n  \n  if ((__ptr == (void *)0x0) || (__s == (FILE *)0x0)) {\n    sVar1 = 0;\n  }\n  else if ((__s->_flags == 0) ||\n          (((__s->_IO_read_ptr == (char *)0x0 || (0x1000 < __size * __n)) ||\n           (*(char *)&__s->_IO_read_end != '\\x02')))) {\n    sVar1 = 0;\n  }\n  else {\n    memcpy(__s->_IO_read_ptr,__ptr,__size * __n);\n    *(short *)(__s->_flags + 0x1062) = (short)__size * (short)__n + *(short *)(__s->_flags + 0x1062)\n    ;\n    sVar1 = __size * __n;\n  }\n  return sVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fwrite",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "fwrite",
+                        "HandlePrint",
+                        "ChPw",
+                        "NewUser",
+                        "DelUser"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "Dump",
+                "func_c_signature": "undefined4 Dump(char *param_1)",
+                "decompiled_code": "undefined4 Dump(char *param_1) {\n  undefined4 uVar1;\n  char *pcVar2;\n  char local_410 [1024];\n  FILE *local_10;\n  \n  if (param_1 == (char *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 0;\n    local_10 = fopen(param_1,\"r\");\n    if (local_10 == (FILE *)0x0) {\n      printf(\"Unable to open file \\'$s\\'\\n\\r\",param_1,uVar1);\n      uVar1 = 0;\n    }\n    else {\n      while( true ) {\n        pcVar2 = fgets(local_410,0x400,local_10);\n        if (pcVar2 == (char *)0x0) break;\n        puts(local_410);\n      }\n      fclose(local_10);\n      uVar1 = 1;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "Dump",
+                        "fopen",
+                        "printf",
+                        "fgets",
+                        "puts",
+                        "fclose"
+                    ],
+                    "calling_functions": [
+                        "Dump",
+                        "HandleDump"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            }
+        ],
+        "io.c": [
+            {
+                "func_name": "ReadShellPrompt",
+                "func_c_signature": "size_t ReadShellPrompt(undefined4 param_1,char *param_2,int param_3)",
+                "decompiled_code": "size_t ReadShellPrompt(undefined4 param_1,char *param_2,int param_3) {\n  int iVar1;\n  char local_123 [257];\n  undefined local_22;\n  char local_21;\n  int local_20;\n  size_t local_1c;\n  char local_15;\n  uint local_14;\n  size_t local_10;\n  \n  local_10 = 0;\n  local_22 = 0;\n  local_15 = -1;\n  local_1c = 0;\n  bzero(local_123,0x100);\n  do {\n    while( true ) {\n      while( true ) {\n        while( true ) {\n          while( true ) {\n            while( true ) {\n              iVar1 = receive(param_1,&local_21,1,&local_20);\n              if ((iVar1 != 0) || (param_3 - 1U <= local_10)) goto LAB_00012641;\n              if (local_20 == 0) {\n                *param_2 = '\\0';\n                return 0;\n              }\n              if (local_21 != '\\x7f') break;\n              if (local_1c == local_10) {\n                printf(\"\\b\\b\\b   \\b\\b\\b\");\n                local_1c = local_1c - 1;\n                local_10 = local_10 - 1;\n              }\n              else {\n                for (local_14 = local_1c - 1; local_14 < local_10 - 1; local_14 = local_14 + 1) {\n                  param_2[local_14] = param_2[local_14 + 1];\n                }\n                local_10 = local_10 - 1;\n                local_1c = local_1c - 1;\n                EraseLine(0);\n                PrintPrompt();\n                param_2[local_10] = '\\0';\n                printf(\"$s\",param_2);\n                CursorLeft(local_10 - local_1c & 0xff);\n              }\n            }\n            if (local_21 == '\\x03') {\n              return 0;\n            }\n            if (local_21 != '\\x05') break;\n            EraseLine(0);\n            PrintPrompt();\n            param_2[local_10] = '\\0';\n            printf(\"$s\",param_2);\n            local_1c = local_10;\n          }\n          if (local_21 != '\\x15') break;\n          EraseLine(0);\n          PrintPrompt();\n          local_10 = 0;\n          local_1c = 0;\n        }\n        if (local_21 != '\\x04') break;\n        if (local_10 == 0) {\n          printf(\"\\b\\b  \\b\\b\");\n          printf(\"exit  \");\n          strcpy(param_2,\"exit\");\n          return 1;\n        }\n        printf(\"\\b\\b  \\b\\b\");\n      }\n      if (local_21 != '\\x1b') break;\n      iVar1 = receive(param_1,&local_21,1,&local_20);\n      if (iVar1 != 0) {\n        *param_2 = '\\0';\n        return 0;\n      }\n      if (local_20 == 0) {\n        *param_2 = '\\0';\n        return 0;\n      }\n      if (local_21 != '[') break;\n      iVar1 = receive(param_1,&local_21,1,&local_20);\n      if (iVar1 != 0) {\n        *param_2 = '\\0';\n        return 0;\n      }\n      if (local_20 == 0) {\n        *param_2 = '\\0';\n        return 0;\n      }\n      if (local_21 == 'A') {\n        if (ENV == 0) {\n          EraseLine(0);\n          PrintPrompt();\n          param_2[local_10] = '\\0';\n          printf(\"$s\",param_2);\n          local_1c = local_10;\n        }\n        else {\n          if (local_15 == -1) {\n            param_2[local_10] = '\\0';\n            strcpy(local_123,param_2);\n          }\n          local_15 = local_15 + '\\x01';\n          if ((int)(uint)ENV <= (int)local_15) {\n            local_15 = ENV - 1;\n          }\n          EraseLine(0);\n          PrintPrompt();\n          strcpy(param_2,&DAT_0002a921 + local_15 * 0x100);\n          local_1c = strlen(&DAT_0002a921 + local_15 * 0x100);\n          local_10 = local_1c;\n          printf(\"$s\",&DAT_0002a921 + local_15 * 0x100);\n        }\n      }\n      else if (local_21 == 'B') {\n        if (local_15 == -1) {\n          EraseLine(0);\n          PrintPrompt();\n          param_2[local_10] = '\\0';\n          printf(\"$s\",param_2);\n        }\n        else if (local_15 == '\\0') {\n          EraseLine(0);\n          PrintPrompt();\n          strcpy(param_2,local_123);\n          local_1c = strlen(param_2);\n          local_10 = local_1c;\n          printf(\"$s\",param_2);\n          local_15 = -1;\n        }\n        else {\n          local_15 = local_15 + -1;\n          EraseLine(0);\n          PrintPrompt();\n          strcpy(param_2,&DAT_0002a921 + local_15 * 0x100);\n          local_1c = strlen(&DAT_0002a921 + local_15 * 0x100);\n          local_10 = local_1c;\n          printf(\"$s\",&DAT_0002a921 + local_15 * 0x100);\n        }\n      }\n      else if (local_21 == 'C') {\n        if (local_1c == local_10) {\n          EraseLine(0);\n          PrintPrompt();\n          param_2[local_10] = '\\0';\n          printf(\"$s\",param_2);\n        }\n        else {\n          local_1c = local_1c + 1;\n          EraseLine(0);\n          PrintPrompt();\n          param_2[local_10] = '\\0';\n          printf(\"$s\",param_2);\n          if (local_10 != local_1c) {\n            CursorLeft(local_10 - local_1c & 0xff);\n          }\n        }\n      }\n      else {\n        if (local_21 != 'D') break;\n        if (local_1c == 0) {\n          EraseLine(0);\n          PrintPrompt();\n          param_2[local_10] = '\\0';\n          printf(\"$s\",param_2);\n          CursorLeft(local_10 & 0xff);\n        }\n        else {\n          local_1c = local_1c - 1;\n          EraseLine(0);\n          PrintPrompt();\n          param_2[local_10] = '\\0';\n          printf(\"$s\",param_2);\n          CursorLeft(local_10 - local_1c & 0xff);\n        }\n      }\n    }\n    if (local_21 == '\\r') {\n      param_2[local_1c] = '\\0';\n      goto LAB_00012641;\n    }\n    if (local_21 == '\\n') {\n      iVar1 = receive(param_1,&local_21,1,&local_20);\n      if (iVar1 != 0) {\n        *param_2 = '\\0';\n        return 0;\n      }\n      if (local_20 == 0) {\n        *param_2 = '\\0';\n        return 0;\n      }\n      if (local_21 != '\\r') {\n        *param_2 = '\\0';\n        return 0;\n      }\n      param_2[local_1c] = '\\0';\nLAB_00012641:\n      if (local_20 == 0) {\n        *param_2 = '\\0';\n        local_10 = 0;\n      }\n      else {\n        param_2[local_10] = '\\0';\n      }\n      return local_10;\n    }\n    if (local_1c == local_10) {\n      param_2[local_10] = local_21;\n      local_1c = local_1c + 1;\n      local_10 = local_10 + 1;\n    }\n    else {\n      param_2[local_1c] = local_21;\n      local_1c = local_1c + 1;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReadShellPrompt",
+                        "bzero",
+                        "receive",
+                        "printf",
+                        "EraseLine",
+                        "PrintPrompt",
+                        "CursorLeft",
+                        "strcpy",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "ReadShellPrompt",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReadUntilNewline",
+                "func_c_signature": "uint ReadUntilNewline(undefined4 param_1,undefined *param_2,int param_3)",
+                "decompiled_code": "uint ReadUntilNewline(undefined4 param_1,undefined *param_2,int param_3) {\n  int iVar1;\n  char local_19;\n  int local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  while( true ) {\n    while( true ) {\n      iVar1 = receive(param_1,&local_19,1,&local_18);\n      if ((iVar1 != 0) || (param_3 - 1U <= local_10)) goto LAB_000127dd;\n      if (local_18 == 0) {\n        *param_2 = 0;\n        return 0;\n      }\n      if (local_19 != '\\x7f') break;\n      if (local_14 == 0) {\n        printf(\"\\b\\b  \\b\\b\");\n      }\n      else {\n        printf(\"\\b\\b\\b   \\b\\b\\b\");\n        local_14 = local_14 - 1;\n        local_10 = local_10 - 1;\n      }\n    }\n    if (local_19 == '\\x03') {\n      return 0;\n    }\n    if (local_19 == '\\r') break;\n    if (local_19 == '\\n') {\n      iVar1 = receive(param_1,&local_19,1,&local_18);\n      if (iVar1 != 0) {\n        *param_2 = 0;\n        return 0;\n      }\n      if (local_18 == 0) {\n        *param_2 = 0;\n        return 0;\n      }\n      if (local_19 != '\\r') {\n        *param_2 = 0;\n        return 0;\n      }\n      param_2[local_14] = 0;\nLAB_000127dd:\n      if (local_18 == 0) {\n        *param_2 = 0;\n        local_10 = 0;\n      }\n      else {\n        param_2[local_10] = 0;\n      }\n      return local_10;\n    }\n    if (local_14 == local_10) {\n      param_2[local_10] = local_19;\n      local_14 = local_14 + 1;\n      local_10 = local_10 + 1;\n    }\n    else {\n      param_2[local_14] = local_19;\n      local_14 = local_14 + 1;\n    }\n  }\n  param_2[local_14] = 0;\n  goto LAB_000127dd;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReadUntilNewline",
+                        "receive",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "ReadUntilNewline",
+                        "ChUser",
+                        "ChPw",
+                        "NewUser"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            }
+        ],
+        "screen.c": [
+            {
+                "func_name": "EraseToEOL",
+                "func_c_signature": "void EraseToEOL(void)",
+                "decompiled_code": "void EraseToEOL(void) {\n  printf(\"$sK\",&DAT_000170e3);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "EraseToEOL",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "EraseToEOL",
+                        "EraseLine"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "EraseLine",
+                "func_c_signature": "void EraseLine(uint param_1)",
+                "decompiled_code": "void EraseLine(uint param_1) {\n  printf(\"$s$dG\",&DAT_000170e3,param_1 & 0xff);\n  EraseToEOL();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "EraseLine",
+                        "printf",
+                        "EraseToEOL"
+                    ],
+                    "calling_functions": [
+                        "ReadShellPrompt",
+                        "EraseLine"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "MoveCursor",
+                "func_c_signature": "void MoveCursor(uint param_1,uint param_2)",
+                "decompiled_code": "void MoveCursor(uint param_1,uint param_2) {\n  printf(\"$s$d;$dH\",&DAT_000170e3,param_1 & 0xff,param_2 & 0xff);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "MoveCursor",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "MoveCursor",
+                        "ClearScreen"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ClearScreen",
+                "func_c_signature": "void ClearScreen(void)",
+                "decompiled_code": "void ClearScreen(void) {\n  printf(\"$s$d$c\",&DAT_000170e3,2,0x4a);\n  MoveCursor(1,1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ClearScreen",
+                        "printf",
+                        "MoveCursor"
+                    ],
+                    "calling_functions": [
+                        "ClearScreen"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CursorRight",
+                "func_c_signature": "void CursorRight(uint param_1)",
+                "decompiled_code": "void CursorRight(uint param_1) {\n  printf(\"$s$dC\",&DAT_000170e3,param_1 & 0xff);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CursorRight",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "CursorRight"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CursorLeft",
+                "func_c_signature": "void CursorLeft(uint param_1)",
+                "decompiled_code": "void CursorLeft(uint param_1) {\n  printf(\"$s$dD\",&DAT_000170e3,param_1 & 0xff);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CursorLeft",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "ReadShellPrompt",
+                        "CursorLeft"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined local_31c [256];\n  undefined local_21c [4];\n  char acStack_218 [515];\n  char local_15;\n  undefined *local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_14 = &DAT_4347c000;\n  seed_prng(_DAT_4347c000);\n  InitFilesystem();\n  bzero(&DAT_0002a921,0x1000);\n  ENV = 0;\n  Login();\n  while( true ) {\n    while( true ) {\n      PrintPrompt();\n      iVar1 = ReadShellPrompt(0,local_31c,0xff);\n      if (iVar1 != 0) break;\n      printf(\"\\b\\b  \\b\\b\\n\\r\");\n    }\n    printf(\"\\b\\b  \\b\\b\\n\\r\");\n    PrependCommandHistory(local_31c);\n    local_15 = ParseCli(local_31c,local_21c);\n    if (local_15 == '\\0') break;\n    if (local_15 == '\\x01') {\n      puts(\"Invalid input\");\n    }\n    else {\n      iVar1 = strcmp(acStack_218,\"list\");\n      if (iVar1 == 0) {\n        HandleListFiles(local_21c);\n      }\n      else {\n        iVar1 = strcmp(acStack_218,\"chuser\");\n        if (iVar1 == 0) {\n          ChUser(local_21c);\n        }\n        else {\n          iVar1 = strcmp(acStack_218,\"chpw\");\n          if (iVar1 == 0) {\n            ChPw(local_21c);\n          }\n          else {\n            iVar1 = strcmp(acStack_218,\"exit\");\n            if (iVar1 == 0) {\n              HandleExit(local_21c);\n            }\n            else {\n              iVar1 = strcmp(acStack_218,\"id\");\n              if (iVar1 == 0) {\n                ID(local_21c);\n              }\n              else {\n                iVar1 = strcmp(acStack_218,\"?\");\n                if (iVar1 == 0) {\n                  HandleHelp(local_21c);\n                }\n                else {\n                  iVar1 = strcmp(acStack_218,\"help\");\n                  if (iVar1 == 0) {\n                    HandleHelp(local_21c);\n                  }\n                  else {\n                    iVar1 = strcmp(acStack_218,\"newuser\");\n                    if (iVar1 == 0) {\n                      NewUser(local_21c);\n                    }\n                    else {\n                      iVar1 = strcmp(acStack_218,\"deluser\");\n                      if (iVar1 == 0) {\n                        DelUser(local_21c);\n                      }\n                      else {\n                        iVar1 = strcmp(acStack_218,\"dump\");\n                        if (iVar1 == 0) {\n                          HandleDump(local_21c);\n                        }\n                        else {\n                          iVar1 = strcmp(acStack_218,\"print\");\n                          if (iVar1 == 0) {\n                            HandlePrint(local_21c);\n                          }\n                          else {\n                            printf(\"Invalid command: $s\\n\\r\",local_31c);\n                          }\n                        }\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "seed_prng",
+                        "InitFilesystem",
+                        "bzero",
+                        "Login",
+                        "PrintPrompt",
+                        "ReadShellPrompt",
+                        "printf",
+                        "PrependCommandHistory",
+                        "ParseCli",
+                        "puts",
+                        "strcmp",
+                        "HandleListFiles",
+                        "ChUser",
+                        "ChPw",
+                        "HandleExit",
+                        "ID",
+                        "HandleHelp",
+                        "NewUser",
+                        "DelUser",
+                        "HandleDump",
+                        "HandlePrint"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            }
+        ],
+        "shell.c": [
+            {
+                "func_name": "PrintPrompt",
+                "func_c_signature": "void PrintPrompt(void)",
+                "decompiled_code": "void PrintPrompt(void) {\n  printf(\"$s@CB> \",&DAT_0002b921);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintPrompt",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "ReadShellPrompt",
+                        "main",
+                        "PrintPrompt"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ParseCli",
+                "func_c_signature": "undefined4 ParseCli(char *param_1,uint *param_2)",
+                "decompiled_code": "undefined4 ParseCli(char *param_1,uint *param_2) {\n  uint uVar1;\n  bool bVar2;\n  undefined4 uVar3;\n  size_t sVar4;\n  size_t sVar5;\n  char *pcVar6;\n  char *__src;\n  \n  bVar2 = false;\n  if ((param_1 == (char *)0x0) || (param_2 == (uint *)0x0)) {\n    uVar3 = 0;\n  }\n  else {\n    *param_2 = 0;\n    while ((__src = strtok(param_1,\" \"), __src != (char *)0x0 && (*param_2 < 9))) {\n      param_1 = (char *)0x0;\n      if (bVar2) {\n        sVar4 = strlen(__src);\n        if (__src[sVar4 - 1] == '\\\"') {\n          sVar4 = strlen(__src);\n          __src[sVar4 - 1] = '\\0';\n          sVar4 = strlen((char *)(param_2 + *param_2 * 0x10 + 1));\n          sVar5 = strlen(__src);\n          if (0x3f < sVar5 + sVar4 + 1) {\n            return 1;\n          }\n          strcat((char *)(param_2 + *param_2 * 0x10 + 1),\" \");\n          uVar1 = *param_2;\n          *param_2 = uVar1 + 1;\n          strcat((char *)(param_2 + uVar1 * 0x10 + 1),__src);\n          bVar2 = false;\n        }\n        else if ((*__src == '\\\"') && (__src[1] == '\\0')) {\n          *param_2 = *param_2 + 1;\n          bVar2 = false;\n        }\n        else {\n          pcVar6 = strchr(__src,0x22);\n          if (pcVar6 != (char *)0x0) {\n            return 1;\n          }\n          sVar4 = strlen((char *)(param_2 + *param_2 * 0x10 + 1));\n          sVar5 = strlen(__src);\n          if (0x3f < sVar5 + sVar4 + 1) {\n            return 1;\n          }\n          strcat((char *)(param_2 + *param_2 * 0x10 + 1),\" \");\n          strcat((char *)(param_2 + *param_2 * 0x10 + 1),__src);\n        }\n      }\n      else if (*__src == '\\\"') {\n        sVar4 = strlen(__src);\n        if (__src[sVar4 - 1] == '\\\"') {\n          sVar4 = strlen(__src);\n          __src[sVar4 - 1] = '\\0';\n          uVar1 = *param_2;\n          *param_2 = uVar1 + 1;\n          strncpy((char *)(param_2 + uVar1 * 0x10 + 1),__src + 1,0x3f);\n        }\n        else {\n          pcVar6 = strchr(__src + 1,0x22);\n          if (pcVar6 != (char *)0x0) {\n            return 1;\n          }\n          bVar2 = true;\n          strncpy((char *)(param_2 + *param_2 * 0x10 + 1),__src + 1,0x3f);\n        }\n      }\n      else {\n        uVar1 = *param_2;\n        *param_2 = uVar1 + 1;\n        strncpy((char *)(param_2 + uVar1 * 0x10 + 1),__src,0x3f);\n      }\n    }\n    uVar3 = 2;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ParseCli",
+                        "strtok",
+                        "strlen",
+                        "strcat",
+                        "strchr",
+                        "strncpy"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "ParseCli"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandleListFiles",
+                "func_c_signature": "undefined4 HandleListFiles(int *param_1)",
+                "decompiled_code": "undefined4 HandleListFiles(int *param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == (int *)0x0) {\n    uVar1 = 0;\n  }\n  else if (*param_1 == 1) {\n    ListFiles();\n    uVar1 = 1;\n  }\n  else {\n    puts(\"Invalid arguments\");\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandleListFiles",
+                        "ListFiles",
+                        "puts"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "HandleListFiles"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandleExit",
+                "func_c_signature": "undefined4 HandleExit(int *param_1)",
+                "decompiled_code": "undefined4 HandleExit(int *param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == (int *)0x0) {\n    uVar1 = 0;\n  }\n  else if (*param_1 == 1) {\n    puts(\"logout\");\n    uVar1 = _terminate(0);\n  }\n  else {\n    puts(\"Invalid arguments\");\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandleExit",
+                        "puts",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "HandleExit"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandleHelp",
+                "func_c_signature": "undefined4 HandleHelp(int *param_1)",
+                "decompiled_code": "undefined4 HandleHelp(int *param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  \n  if (param_1 == (int *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    if (*param_1 == 1) {\n      puts(\"Available commands:\");\n      puts(\"chuser\");\n      puts(\"chpw\");\n      puts(\"exit\");\n      puts(\"id\");\n      puts(\"help\");\n      puts(\"?\");\n      puts(\"newuser\");\n      puts(\"deluser\");\n      puts(\"dump\");\n      puts(\"print\");\n    }\n    else if (*param_1 == 2) {\n      iVar2 = strcmp((char *)(param_1 + 0x11),\"chuser\");\n      if (iVar2 == 0) {\n        puts(\"Usage: chuser <username>\");\n      }\n      else {\n        iVar2 = strcmp((char *)(param_1 + 0x11),\"passwd\");\n        if (iVar2 == 0) {\n          iVar2 = strcmp(&DAT_0002b921,\"root\");\n          if (iVar2 == 0) {\n            puts(\"Usage: passwd <username>\");\n          }\n          else {\n            puts(\"Usage: passwd\");\n          }\n        }\n        else {\n          iVar2 = strcmp((char *)(param_1 + 0x11),\"exit\");\n          if (iVar2 == 0) {\n            puts(\"Usage: exit\");\n          }\n          else {\n            iVar2 = strcmp((char *)(param_1 + 0x11),\"id\");\n            if (iVar2 == 0) {\n              puts(\"Usage: id\");\n            }\n            else {\n              iVar2 = strcmp((char *)(param_1 + 0x11),\"help\");\n              if (iVar2 == 0) {\n                puts(\"Usage: help <command>\");\n              }\n              else {\n                iVar2 = strcmp((char *)(param_1 + 0x11),\"?\");\n                if (iVar2 == 0) {\n                  puts(\"Usage: ? <command>\");\n                }\n                else {\n                  iVar2 = strcmp((char *)(param_1 + 0x11),\"newuser\");\n                  if (iVar2 == 0) {\n                    puts(\"Usage: newuser <username> <group>\");\n                  }\n                  else {\n                    iVar2 = strcmp((char *)(param_1 + 0x11),\"deluser\");\n                    if (iVar2 == 0) {\n                      puts(\"Usage: deluser <username>\");\n                    }\n                    else {\n                      iVar2 = strcmp((char *)(param_1 + 0x11),\"cat\");\n                      if (iVar2 == 0) {\n                        puts(\"Usage: dump <filename>\");\n                      }\n                      else {\n                        iVar2 = strcmp((char *)(param_1 + 0x11),\"echo\");\n                        if (iVar2 == 0) {\n                          puts(\"Usage: print <text> [> file]\");\n                        }\n                        else {\n                          printf(\"Unknown command: $s\\n\",param_1 + 0x11);\n                        }\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandleHelp",
+                        "puts",
+                        "strcmp",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "HandleHelp"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandleDump",
+                "func_c_signature": "undefined4 HandleDump(int *param_1)",
+                "decompiled_code": "undefined4 HandleDump(int *param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == (int *)0x0) {\n    uVar1 = 0;\n  }\n  else if (*param_1 == 2) {\n    uVar1 = Dump(param_1 + 0x11);\n  }\n  else {\n    puts(\"Input error\");\n    puts(\"Usage: dump <filename>\");\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandleDump",
+                        "Dump",
+                        "puts"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "HandleDump"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "HandlePrint",
+                "func_c_signature": "undefined4 HandlePrint(uint *param_1)",
+                "decompiled_code": "undefined4 HandlePrint(uint *param_1) {\n  undefined4 uVar1;\n  FILE *__s;\n  size_t sVar2;\n  size_t sVar3;\n  uint local_14;\n  uint *local_10;\n  \n  local_10 = (uint *)0x0;\n  if (param_1 == (uint *)0x0) {\n    uVar1 = 0;\n  }\n  else if (*param_1 < 2) {\n    puts(\"Input error\");\n    puts(\"Usage: print \\\"<text>\\\" [> file]\");\n    uVar1 = 0;\n  }\n  else {\n    for (local_14 = 2; local_14 < *param_1; local_14 = local_14 + 1) {\n      if ((*(char *)(param_1 + local_14 * 0x10 + 1) == '>') &&\n         (*(char *)((int)param_1 + local_14 * 0x40 + 5) == '\\0')) {\n        if (local_14 + 1 != *param_1 - 1) {\n          puts(\"Input error\");\n          puts(\"Usage: print \\\"<text>\\\" [> file]\");\n          return 0;\n        }\n        local_10 = param_1 + (local_14 + 1) * 0x10 + 1;\n        break;\n      }\n    }\n    if (local_10 == (uint *)0x0) {\n      printf(\"$s\",param_1 + 0x11);\n      for (local_14 = 2; local_14 < *param_1; local_14 = local_14 + 1) {\n        printf(\" $s\",param_1 + local_14 * 0x10 + 1);\n      }\n      puts(\"\");\n    }\n    else {\n      uVar1 = 0;\n      __s = fopen((char *)local_10,\"w\");\n      if (__s == (FILE *)0x0) {\n        printf(\"Unable to open file \\'$s\\'\\n\\r\",local_10,uVar1);\n        return 0;\n      }\n      sVar2 = strlen((char *)(param_1 + 0x11));\n      sVar2 = fwrite(param_1 + 0x11,sVar2,1,__s);\n      sVar3 = strlen((char *)(param_1 + 0x11));\n      if (sVar2 != sVar3) {\n        fclose(__s);\n        return 0;\n      }\n      fclose(__s);\n    }\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "HandlePrint",
+                        "puts",
+                        "printf",
+                        "fopen",
+                        "strlen",
+                        "fwrite",
+                        "fclose"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "HandlePrint"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrependCommandHistory",
+                "func_c_signature": "void PrependCommandHistory(char *param_1)",
+                "decompiled_code": "void PrependCommandHistory(char *param_1) {\n  byte local_d;\n  \n  ENV = 0;\n  for (local_d = 0x10; local_d != 0; local_d = local_d - 1) {\n    if ((&DAT_0002a921)[(local_d - 1) * 0x100] != '\\0') {\n      strcpy(&DAT_0002a921 + (uint)local_d * 0x100,&DAT_0002a921 + (local_d - 1) * 0x100);\n      if (ENV == 0) {\n        ENV = local_d;\n      }\n    }\n  }\n  strcpy(&DAT_0002a921,param_1);\n  ENV = ENV + 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrependCommandHistory",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "PrependCommandHistory"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            }
+        ],
+        "user.c": [
+            {
+                "func_name": "Login",
+                "func_c_signature": "void Login(void)",
+                "decompiled_code": "void Login(void) {\n  strcpy(&DAT_0002b921,\"crs\");\n  strcpy(&DAT_0002b941,\"crs\");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "Login",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "Login"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ChUser",
+                "func_c_signature": "undefined4 ChUser(int *param_1)",
+                "decompiled_code": "undefined4 ChUser(int *param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  char *pcVar3;\n  char local_bc [32];\n  char local_9c [128];\n  char *local_1c;\n  char *local_18;\n  char *local_14;\n  FILE *local_10;\n  \n  if (param_1 == (int *)0x0) {\n    uVar1 = 0;\n  }\n  else if (*param_1 == 2) {\n    local_10 = fopen(\"passwd\",\"r\");\n    if (local_10 == (FILE *)0x0) {\n      puts(\"Unable to open passwd file\");\n      uVar1 = 0;\n    }\n    else {\n      do {\n        pcVar3 = fgets(local_9c,0x80,local_10);\n        if (pcVar3 == (char *)0x0) {\n          printf(\"No passwd entry for user \\'$s\\'\\n\\r\",param_1 + 0x11);\n          fclose(local_10);\n          return 0;\n        }\n        local_14 = strtok(local_9c,\":\");\n        if (local_14 == (char *)0x0) {\n          fclose(local_10);\n          puts(\"Passwd file is corrupted\");\n          return 0;\n        }\n        local_18 = strtok((char *)0x0,\":\");\n        if (local_18 == (char *)0x0) {\n          fclose(local_10);\n          puts(\"Passwd file is corrupted\");\n          return 0;\n        }\n        iVar2 = strcmp(local_18,(char *)(param_1 + 0x11));\n      } while (iVar2 != 0);\n      local_1c = strtok((char *)0x0,\":\");\n      if (local_1c == (char *)0x0) {\n        fclose(local_10);\n        puts(\"Passwd file is corrupted\");\n        uVar1 = 0;\n      }\n      else {\n        iVar2 = strcmp(&DAT_0002b921,\"root\");\n        if (iVar2 == 0) {\n          strcpy(&DAT_0002b921,local_18);\n          strcpy(&DAT_0002b941,local_1c);\n          printf(\"Authentication success for user \\'$s\\'\\n\\r\",&DAT_0002b921);\n          fclose(local_10);\n          uVar1 = 1;\n        }\n        else {\n          printf(\"Password: \");\n          iVar2 = ReadUntilNewline(0,local_bc,0x20);\n          if (iVar2 == 0) {\n            fclose(local_10);\n            uVar1 = 0;\n          }\n          else {\n            printf(\"\\b\\b  \\b\\b\\n\\r\");\n            iVar2 = strcmp(local_14,local_bc);\n            if (iVar2 == 0) {\n              strcpy(&DAT_0002b921,local_18);\n              strcpy(&DAT_0002b941,local_1c);\n              printf(\"Authentication success for user \\'$s\\'\\n\\r\",&DAT_0002b921);\n              fclose(local_10);\n              uVar1 = 1;\n            }\n            else {\n              puts(\"Authentication failure\");\n              uVar1 = 0;\n            }\n          }\n        }\n      }\n    }\n  }\n  else {\n    puts(\"Input error\");\n    puts(\"Usage: chuser <username>\");\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ChUser",
+                        "fopen",
+                        "puts",
+                        "fgets",
+                        "printf",
+                        "fclose",
+                        "strtok",
+                        "strcmp",
+                        "strcpy",
+                        "ReadUntilNewline"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "ChUser"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ChPw",
+                "func_c_signature": "undefined4 ChPw(int *param_1)",
+                "decompiled_code": "undefined4 ChPw(int *param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  char *pcVar3;\n  size_t sVar4;\n  size_t sVar5;\n  char local_115c [128];\n  char local_10dc [4096];\n  char local_dc [32];\n  undefined local_bc [32];\n  char local_9c [128];\n  char *local_1c;\n  char *local_18;\n  char *local_14;\n  FILE *local_10;\n  \n  if (param_1 == (int *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    iVar2 = strcmp(&DAT_0002b921,\"root\");\n    if (iVar2 == 0) {\n      if (*param_1 != 2) {\n        puts(\"Input error\");\n        puts(\"Usage: chpw <username>\");\n        return 0;\n      }\n      strcpy(local_dc,(char *)(param_1 + 0x11));\n    }\n    else {\n      if (*param_1 != 1) {\n        puts(\"Input error\");\n        puts(\"Usage: chpw\");\n        return 0;\n      }\n      strcpy(local_dc,&DAT_0002b921);\n    }\n    local_10 = fopen(\"passwd\",\"r\");\n    if (local_10 == (FILE *)0x0) {\n      puts(\"Unable to open passwd file\");\n      uVar1 = 0;\n    }\n    else {\n      bzero(local_10dc,0x1000);\n      while (pcVar3 = fgets(local_9c,0x80,local_10), pcVar3 != (char *)0x0) {\n        if (local_9c[0] != '\\0') {\n          local_14 = strtok(local_9c,\":\");\n          if (local_14 == (char *)0x0) {\n            fclose(local_10);\n            puts(\"Passwd file is corrupted\");\n            fclose(local_10);\n            return 0;\n          }\n          local_18 = strtok((char *)0x0,\":\");\n          if (local_18 == (char *)0x0) {\n            fclose(local_10);\n            puts(\"Passwd file is corrupted\");\n            fclose(local_10);\n            return 0;\n          }\n          iVar2 = strcmp(local_18,local_dc);\n          if (iVar2 == 0) {\n            local_1c = strtok((char *)0x0,\":\");\n            if (local_1c == (char *)0x0) {\n              fclose(local_10);\n              puts(\"Passwd file is corrupted\");\n              return 0;\n            }\n            printf(\"New password: \");\n            iVar2 = ReadUntilNewline(0,local_bc,0x20);\n            if (iVar2 == 0) {\n              fclose(local_10);\n              printf(\"\\b\\b  \\b\\b\\n\\r\");\n              puts(\"Password not changed\");\n              return 0;\n            }\n            printf(\"\\b\\b  \\b\\b\\n\\r\");\n            sprintf(local_115c,\"$s:$s:$s\\n\",local_bc,local_18,local_1c);\n            sVar4 = strlen(local_10dc);\n            sVar5 = strlen(local_115c);\n            if (0x1000 < sVar5 + sVar4) {\n              puts(\"Password file is too large\");\n              fclose(local_10);\n              return 0;\n            }\n            strcat(local_10dc,local_115c);\n          }\n          else {\n            sVar4 = strlen(local_14);\n            local_14[sVar4] = ':';\n            sVar4 = strlen(local_18);\n            local_18[sVar4] = ':';\n            strcat(local_10dc,local_9c);\n            strcat(local_10dc,\"\\n\");\n          }\n        }\n      }\n      fclose(local_10);\n      sVar4 = strlen(local_10dc);\n      if (sVar4 != 0) {\n        local_10 = fopen(\"passwd\",\"w\");\n        if (local_10 == (FILE *)0x0) {\n          puts(\"Unable to open passwd file\");\n          return 0;\n        }\n        sVar4 = strlen(local_10dc);\n        sVar4 = fwrite(local_10dc,sVar4 + 1,1,local_10);\n        sVar5 = strlen(local_10dc);\n        if (sVar4 != sVar5 + 1) {\n          puts(\"Password file update failed\\n\\r\");\n          fclose(local_10);\n          return 0;\n        }\n        fclose(local_10);\n      }\n      uVar1 = 1;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ChPw",
+                        "strcmp",
+                        "puts",
+                        "strcpy",
+                        "fopen",
+                        "bzero",
+                        "fgets",
+                        "strtok",
+                        "fclose",
+                        "printf",
+                        "ReadUntilNewline",
+                        "sprintf",
+                        "strlen",
+                        "strcat",
+                        "fwrite"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "ChPw"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ID",
+                "func_c_signature": "undefined4 ID(int *param_1)",
+                "decompiled_code": "undefined4 ID(int *param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == (int *)0x0) {\n    uVar1 = 0;\n  }\n  else if (*param_1 == 1) {\n    printf(\"uid=$s gid=$s\\n\\r\",&DAT_0002b921,&DAT_0002b941);\n    uVar1 = 1;\n  }\n  else {\n    puts(\"Input error\");\n    puts(\"Usage: id\");\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ID",
+                        "printf",
+                        "puts"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "ID"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "NewUser",
+                "func_c_signature": "undefined4 NewUser(int *param_1)",
+                "decompiled_code": "undefined4 NewUser(int *param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  char *pcVar3;\n  size_t sVar4;\n  size_t sVar5;\n  char local_1138 [128];\n  char local_10b8 [4096];\n  undefined local_b8 [32];\n  char local_98 [128];\n  char *local_18;\n  char *local_14;\n  FILE *local_10;\n  \n  if (param_1 == (int *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    iVar2 = strcmp(&DAT_0002b921,\"root\");\n    if (iVar2 == 0) {\n      if (*param_1 == 3) {\n        local_10 = fopen(\"passwd\",\"r\");\n        if (local_10 == (FILE *)0x0) {\n          puts(\"Unable to open passwd file\");\n          uVar1 = 0;\n        }\n        else {\n          bzero(local_10b8,0x1000);\n          while (pcVar3 = fgets(local_98,0x80,local_10), pcVar3 != (char *)0x0) {\n            if (local_98[0] != '\\0') {\n              local_14 = strtok(local_98,\":\");\n              if (local_14 == (char *)0x0) {\n                fclose(local_10);\n                puts(\"Passwd file is corrupted\");\n                fclose(local_10);\n                return 0;\n              }\n              local_18 = strtok((char *)0x0,\":\");\n              if (local_18 == (char *)0x0) {\n                fclose(local_10);\n                puts(\"Passwd file is corrupted\");\n                fclose(local_10);\n                return 0;\n              }\n              iVar2 = strcmp(local_18,(char *)(param_1 + 0x11));\n              if (iVar2 == 0) {\n                printf(\"User \\'$s\\' already exists\\n\\r\",param_1 + 0x11);\n                fclose(local_10);\n                return 0;\n              }\n              sVar4 = strlen(local_14);\n              local_14[sVar4] = ':';\n              sVar4 = strlen(local_18);\n              local_18[sVar4] = ':';\n              strcat(local_10b8,local_98);\n              strcat(local_10b8,\"\\n\");\n            }\n          }\n          fclose(local_10);\n          printf(\"New user password: \");\n          iVar2 = ReadUntilNewline(0,local_b8,0x20);\n          if (iVar2 == 0) {\n            fclose(local_10);\n            uVar1 = 0;\n          }\n          else {\n            printf(\"\\b\\b  \\b\\b\\n\\r\");\n            sprintf(local_1138,\"$s:$s:$s\\n\",local_b8,param_1 + 0x11,param_1 + 0x21);\n            sVar4 = strlen(local_10b8);\n            sVar5 = strlen(local_1138);\n            if (sVar5 + sVar4 < 0x1001) {\n              strcat(local_10b8,local_1138);\n              sVar4 = strlen(local_10b8);\n              if (sVar4 != 0) {\n                local_10 = fopen(\"passwd\",\"w\");\n                if (local_10 == (FILE *)0x0) {\n                  puts(\"Unable to open passwd file\");\n                  return 0;\n                }\n                sVar4 = strlen(local_10b8);\n                sVar4 = fwrite(local_10b8,sVar4 + 1,1,local_10);\n                sVar5 = strlen(local_10b8);\n                if (sVar4 != sVar5 + 1) {\n                  puts(\"Password file update failed\\n\\r\");\n                  fclose(local_10);\n                  return 0;\n                }\n                fclose(local_10);\n              }\n              printf(\"User \\'$s\\' added\\n\\r\",param_1 + 0x11);\n              uVar1 = 1;\n            }\n            else {\n              puts(\"Password file is too large\");\n              fclose(local_10);\n              uVar1 = 0;\n            }\n          }\n        }\n      }\n      else {\n        puts(\"Input error\");\n        puts(\"Usage: newuser <username> <group>\");\n        uVar1 = 0;\n      }\n    }\n    else {\n      puts(\"Must be root\");\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "NewUser",
+                        "strcmp",
+                        "fopen",
+                        "puts",
+                        "bzero",
+                        "fgets",
+                        "strtok",
+                        "fclose",
+                        "printf",
+                        "strlen",
+                        "strcat",
+                        "ReadUntilNewline",
+                        "sprintf",
+                        "fwrite"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "NewUser"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DelUser",
+                "func_c_signature": "undefined4 DelUser(int *param_1)",
+                "decompiled_code": "undefined4 DelUser(int *param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  char *pcVar3;\n  size_t sVar4;\n  size_t sVar5;\n  char local_109c [4096];\n  char local_9c [128];\n  char *local_1c;\n  char *local_18;\n  FILE *local_14;\n  char local_d;\n  \n  local_d = '\\0';\n  if (param_1 == (int *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    iVar2 = strcmp(&DAT_0002b921,\"root\");\n    if (iVar2 == 0) {\n      if (*param_1 == 2) {\n        local_14 = fopen(\"passwd\",\"r\");\n        if (local_14 == (FILE *)0x0) {\n          puts(\"Unable to open passwd file\");\n          uVar1 = 0;\n        }\n        else {\n          bzero(local_109c,0x1000);\n          while (pcVar3 = fgets(local_9c,0x80,local_14), pcVar3 != (char *)0x0) {\n            if (local_9c[0] != '\\0') {\n              local_18 = strtok(local_9c,\":\");\n              if (local_18 == (char *)0x0) {\n                fclose(local_14);\n                puts(\"Passwd file is corrupted\");\n                fclose(local_14);\n                return 0;\n              }\n              local_1c = strtok((char *)0x0,\":\");\n              if (local_1c == (char *)0x0) {\n                fclose(local_14);\n                puts(\"Passwd file is corrupted\");\n                fclose(local_14);\n                return 0;\n              }\n              iVar2 = strcmp(local_1c,(char *)(param_1 + 0x11));\n              if (iVar2 == 0) {\n                local_d = '\\x01';\n              }\n              else {\n                sVar4 = strlen(local_18);\n                local_18[sVar4] = ':';\n                sVar4 = strlen(local_1c);\n                local_1c[sVar4] = ':';\n                strcat(local_109c,local_9c);\n                strcat(local_109c,\"\\n\");\n              }\n            }\n          }\n          fclose(local_14);\n          if (local_d == '\\0') {\n            printf(\"User \\'$s\\' not found\\n\\r\",param_1 + 0x11);\n            uVar1 = 0;\n          }\n          else {\n            sVar4 = strlen(local_109c);\n            if (sVar4 != 0) {\n              local_14 = fopen(\"passwd\",\"w\");\n              if (local_14 == (FILE *)0x0) {\n                puts(\"Unable to open passwd file\");\n                return 0;\n              }\n              sVar4 = strlen(local_109c);\n              sVar4 = fwrite(local_109c,sVar4 + 1,1,local_14);\n              sVar5 = strlen(local_109c);\n              if (sVar4 != sVar5 + 1) {\n                puts(\"Password file update failed\\n\\r\");\n                fclose(local_14);\n                return 0;\n              }\n              fclose(local_14);\n            }\n            printf(\"User \\'$s\\' deleted\\n\\r\",param_1 + 0x11);\n            uVar1 = 1;\n          }\n        }\n      }\n      else {\n        puts(\"Input error\");\n        puts(\"Usage: deluser <username>\");\n        uVar1 = 0;\n      }\n    }\n    else {\n      puts(\"Must be root\");\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DelUser",
+                        "strcmp",
+                        "fopen",
+                        "puts",
+                        "bzero",
+                        "fgets",
+                        "strtok",
+                        "fclose",
+                        "strlen",
+                        "strcat",
+                        "printf",
+                        "fwrite"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "DelUser"
+                    ],
+                    "defined_in_file": "CROMU_00051_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,697 @@
+{
+    "file": "CROMU_00076",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "check_egg",
+                "func_c_signature": "void check_egg(int param_1,char param_2)",
+                "decompiled_code": "void check_egg(int param_1,char param_2) {\n  if (param_2 == easteregg[eggindex]) {\n    eggindex = eggindex + 1;\n  }\n  else {\n    eggindex = 0;\n  }\n  if (easteregg[eggindex] == '\\0') {\n    printf(\"YOU FOUND THE EGG!!!! Have a prize.\\n\");\n    *(undefined4 *)(*(int *)(param_1 + 0x18) + 8) = 99;\n    *(undefined4 *)(*(int *)(param_1 + 0x18) + 4) = 99;\n    *(undefined4 *)(*(int *)(param_1 + 0x18) + 0xc) = 99;\n    eggindex = 0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_egg",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "check_egg",
+                        "movement_loop"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_line",
+                "func_c_signature": "uint read_line(int param_1,uint param_2)",
+                "decompiled_code": "uint read_line(int param_1,uint param_2) {\n  int iVar1;\n  undefined *puVar2;\n  undefined *puVar3;\n  undefined auStack_1c [4];\n  int local_18;\n  char local_11;\n  uint local_10;\n  \n  puVar3 = auStack_1c;\n  local_11 = '\\0';\n  local_10 = 0;\n  local_18 = 0;\n  if (param_1 != 0) goto LAB_0001116e;\n  puVar3 = &stack0xffffffd4;\n  printf(\"[ERROR] invalid arg\\n\");\n  _terminate();\n  while( true ) {\n    *(int **)(puVar3 + -4) = &local_18;\n    *(undefined4 *)(puVar3 + -8) = 1;\n    *(char **)(puVar3 + -0xc) = &local_11;\n    *(undefined4 *)(puVar3 + -0x10) = 0;\n    *(undefined4 *)(puVar3 + -0x14) = 0x11109;\n    iVar1 = receive();\n    puVar2 = puVar3;\n    if (iVar1 != 0) {\n      puVar2 = puVar3 + -0x10;\n      *(char **)(puVar3 + -0x10) = \"[ERROR] Failed to read byte\\n\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x1111f;\n      printf(*(char **)(puVar3 + -0x10));\n      *(undefined4 *)(puVar3 + -0x10) = 0xfffffffd;\n      *(undefined4 *)(puVar3 + -0x14) = 0x1112c;\n      _terminate();\n    }\n    puVar3 = puVar2;\n    if (local_18 == 0) {\n      puVar3 = puVar2 + -0x10;\n      *(char **)(puVar2 + -0x10) = \"[ERROR] Error in receive\\n\";\n      *(undefined4 *)(puVar2 + -0x14) = 0x11142;\n      printf(*(char **)(puVar2 + -0x10));\n      *(undefined4 *)(puVar2 + -0x10) = 0xfffffffc;\n      *(undefined4 *)(puVar2 + -0x14) = 0x1114f;\n      _terminate();\n    }\n    if (local_11 == '\\n') break;\n    *(char *)(param_1 + local_10) = local_11;\n    local_10 = local_10 + 1;\nLAB_0001116e:\n    if (param_2 <= local_10) {\n      return local_10;\n    }\n    if (local_11 == '\\n') {\n      return local_10;\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_line",
+                        "printf",
+                        "_terminate",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "read_line",
+                        "select_monster",
+                        "capture_boss",
+                        "capture_monster",
+                        "movement_loop",
+                        "generate_player"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_line_u",
+                "func_c_signature": "int read_line_u(int param_1)",
+                "decompiled_code": "int read_line_u(int param_1) {\n  int iVar1;\n  undefined *puVar2;\n  undefined *puVar3;\n  undefined auStack_1c [4];\n  int local_18;\n  char local_11;\n  int local_10;\n  \n  puVar3 = auStack_1c;\n  local_11 = '\\0';\n  local_10 = 0;\n  local_18 = 0;\n  if (param_1 == 0) {\n    local_10 = 0;\n  }\n  else {\n    while (local_11 != '\\n') {\n      *(int **)(puVar3 + -4) = &local_18;\n      *(undefined4 *)(puVar3 + -8) = 1;\n      *(char **)(puVar3 + -0xc) = &local_11;\n      *(undefined4 *)(puVar3 + -0x10) = 0;\n      *(undefined4 *)(puVar3 + -0x14) = 0x111cc;\n      iVar1 = receive();\n      puVar2 = puVar3;\n      if (iVar1 != 0) {\n        puVar2 = puVar3 + -0x10;\n        *(char **)(puVar3 + -0x10) = \"[ERROR] Failed to read byte\\n\";\n        *(undefined4 *)(puVar3 + -0x14) = 0x111e2;\n        printf(*(char **)(puVar3 + -0x10));\n        *(undefined4 *)(puVar3 + -0x10) = 0;\n        *(undefined4 *)(puVar3 + -0x14) = 0x111ef;\n        _terminate();\n      }\n      puVar3 = puVar2;\n      if (local_18 == 0) {\n        puVar3 = puVar2 + -0x10;\n        *(char **)(puVar2 + -0x10) = \"[ERROR] Error in receive\\n\";\n        *(undefined4 *)(puVar2 + -0x14) = 0x11205;\n        printf(*(char **)(puVar2 + -0x10));\n        *(undefined4 *)(puVar2 + -0x10) = 0;\n        *(undefined4 *)(puVar2 + -0x14) = 0x11212;\n        _terminate();\n      }\n      if (local_11 != '\\n') {\n        *(char *)(param_1 + local_10) = local_11;\n        local_10 = local_10 + 1;\n      }\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_line_u",
+                        "receive",
+                        "printf",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "read_line_u",
+                        "change_monster_name"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_queue",
+                "func_c_signature": "void add_queue(int param_1,int param_2,int param_3)",
+                "decompiled_code": "void add_queue(int param_1,int param_2,int param_3) {\n  undefined *puVar1;\n  undefined auStack_1c [4];\n  int local_18;\n  int *local_14;\n  int *local_10;\n  \n  puVar1 = auStack_1c;\n  local_14 = (int *)0x0;\n  local_10 = (int *)0x0;\n  local_18 = param_1 + (param_3 + 1) * param_2;\n  if (*(char *)(local_18 + queue_matrix) != '\\x01') {\n    local_14 = (int *)malloc(0xc);\n    if (local_14 == (int *)0x0) {\n      puVar1 = &stack0xffffffd4;\n      printf(\"[ERROR] malloc() queue structure failed.\\n\");\n      _terminate();\n    }\n    *(undefined4 *)(puVar1 + -0xc) = 0xc;\n    *(int **)(puVar1 + -0x10) = local_14;\n    *(undefined4 *)(puVar1 + -0x14) = 0x112ca;\n    bzero(*(void **)(puVar1 + -0x10),*(size_t *)(puVar1 + -0xc));\n    *local_14 = param_1;\n    local_14[1] = param_2;\n    if (root == (int *)0x0) {\n      root = local_14;\n    }\n    else {\n      for (local_10 = root; local_10[2] != 0; local_10 = (int *)local_10[2]) {\n      }\n      local_10[2] = (int)local_14;\n    }\n    *(undefined *)(local_18 + queue_matrix) = 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_queue",
+                        "malloc",
+                        "printf",
+                        "_terminate",
+                        "bzero"
+                    ],
+                    "calling_functions": [
+                        "add_queue",
+                        "find_path"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dequeue",
+                "func_c_signature": "int dequeue(void)",
+                "decompiled_code": "int dequeue(void) {\n  int iVar1;\n  \n  iVar1 = root;\n  if (root != 0) {\n    root = *(int *)(root + 8);\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dequeue"
+                    ],
+                    "calling_functions": [
+                        "dequeue",
+                        "find_path"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_adjacent",
+                "func_c_signature": "undefined4 check_adjacent(int param_1,int param_2,int param_3,int param_4)",
+                "decompiled_code": "undefined4 check_adjacent(int param_1,int param_2,int param_3,int param_4) {\n  if (param_1 == param_3) {\n    if ((param_4 == param_2 + 1) || (param_4 == param_2 + -1)) {\n      return 1;\n    }\n  }\n  else if ((param_2 == param_4) && ((param_3 == param_1 + 1 || (param_3 == param_1 + -1)))) {\n    return 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_adjacent"
+                    ],
+                    "calling_functions": [
+                        "check_adjacent",
+                        "find_path"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_map",
+                "func_c_signature": "void print_map(uint *param_1)",
+                "decompiled_code": "void print_map(uint *param_1) {\n  uint *puVar1;\n  uint local_1c;\n  void *local_18;\n  int local_14;\n  uint local_10;\n  \n  puVar1 = &local_1c;\n  local_14 = 0;\n  local_18 = (void *)0x0;\n  local_10 = 0;\n  local_1c = *param_1 * param_1[1];\n  local_18 = malloc(local_1c + param_1[1] + 1);\n  if (local_18 == (void *)0x0) {\n    puVar1 = (uint *)&stack0xffffffd4;\n    printf(\"[ERROR] Failed to allocate map.\\n\");\n    _terminate();\n  }\n  *(uint *)((int)puVar1 + -0xc) = local_1c + param_1[1] + 1;\n  *(void **)((int)puVar1 + -0x10) = local_18;\n  *(undefined4 *)((int)puVar1 + -0x14) = 0x11466;\n  bzero(*(void **)((int)puVar1 + -0x10),*(size_t *)((int)puVar1 + -0xc));\n  for (; local_10 < local_1c; local_10 = local_10 + 1) {\n    if ((local_10 != 0) && (local_10 % *param_1 == 0)) {\n      *(undefined *)(local_14 + (int)local_18) = 10;\n      local_14 = local_14 + 1;\n    }\n    if (*(char *)(local_10 + param_1[10]) == '\\0') {\n      *(undefined *)(local_14 + (int)local_18) = 0x2e;\n    }\n    else {\n      *(undefined *)(local_14 + (int)local_18) = *(undefined *)(local_10 + param_1[10]);\n    }\n    local_14 = local_14 + 1;\n  }\n  *(undefined *)(local_14 + (int)local_18) = 10;\n  *(void **)((int)puVar1 + -0xc) = local_18;\n  *(undefined **)((int)puVar1 + -0x10) = &DAT_00019385;\n  *(undefined4 *)((int)puVar1 + -0x14) = 0x114fb;\n  printf(*(char **)((int)puVar1 + -0x10));\n  *(void **)((int)puVar1 + -0x10) = local_18;\n  *(undefined4 *)((int)puVar1 + -0x14) = 0x11509;\n  free(*(void **)((int)puVar1 + -0x10));\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_map",
+                        "malloc",
+                        "printf",
+                        "_terminate",
+                        "bzero",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "print_map",
+                        "place_marker",
+                        "generate_map",
+                        "movement_loop"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "find_path",
+                "func_c_signature": "undefined4 find_path(uint param_1,uint param_2,int *param_3)",
+                "decompiled_code": "undefined4 find_path(uint param_1,uint param_2,int *param_3) {\n  undefined4 uVar1;\n  int iVar2;\n  undefined4 *local_10;\n  \n  if (param_3 == (int *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    iVar2 = check_adjacent(param_1,param_2,param_3[4],param_3[5]);\n    if (iVar2 == 1) {\n      uVar1 = 1;\n    }\n    else {\n      if (param_2 != 0) {\n        add_queue(param_1,param_2 - 1,*param_3 + -1,param_3[1] + -1);\n      }\n      if (param_1 < *param_3 - 1U) {\n        add_queue(param_1 + 1,param_2,*param_3 + -1,param_3[1] + -1);\n      }\n      if (param_2 < param_3[1] - 1U) {\n        add_queue(param_1,param_2 + 1,*param_3 + -1,param_3[1] + -1);\n      }\n      if (param_1 != 0) {\n        add_queue(param_1 - 1,param_2,*param_3 + -1,param_3[1] + -1);\n      }\n      local_10 = (undefined4 *)dequeue();\n      while (local_10 != (undefined4 *)0x0) {\n        iVar2 = find_path(*local_10,local_10[1],param_3);\n        if (iVar2 == 1) {\n          free(local_10);\n          return 1;\n        }\n        free(local_10);\n        local_10 = (undefined4 *)dequeue();\n      }\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "find_path",
+                        "check_adjacent",
+                        "add_queue",
+                        "dequeue",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "find_path",
+                        "generate_map"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "update_page_index",
+                "func_c_signature": "void update_page_index(void)",
+                "decompiled_code": "void update_page_index(void) {\n  page_index = page_index + 3 & 0xfff;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "update_page_index"
+                    ],
+                    "calling_functions": [
+                        "update_page_index",
+                        "place_marker",
+                        "initialize_map",
+                        "generate_boss",
+                        "daboss",
+                        "fight",
+                        "movement_loop",
+                        "select_name",
+                        "generate_monster",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "place_marker",
+                "func_c_signature": "void place_marker(uint *param_1)",
+                "decompiled_code": "void place_marker(uint *param_1) {\n  uint local_14;\n  uint local_10;\n  \n  local_14 = 0;\n  param_1[8] = (uint)*(byte *)(page_index + secret_page) % *param_1;\n  update_page_index();\n  param_1[9] = (uint)*(byte *)(page_index + secret_page) % param_1[1];\n  update_page_index();\n  local_10 = param_1[8] + *param_1 * param_1[9];\n  for (; (*(char *)(local_10 + param_1[10]) != '\\0' && (local_14 < 100)); local_14 = local_14 + 1) {\n    param_1[8] = (uint)*(byte *)(page_index + secret_page) % *param_1;\n    update_page_index();\n    param_1[9] = (uint)*(byte *)(page_index + secret_page) % param_1[1];\n    update_page_index();\n    local_10 = param_1[8] + *param_1 * param_1[9];\n  }\n  if (local_14 == 100) {\n    for (local_10 = 0;\n        (*(char *)(local_10 + param_1[10]) != '\\0' && (local_10 < param_1[1] * *param_1));\n        local_10 = local_10 + 1) {\n    }\n    if (local_10 == param_1[1] * *param_1) {\n      printf(\"FAILED\\n\");\n      print_map(param_1);\n      _terminate(0);\n    }\n    param_1[9] = local_10 / *param_1;\n    param_1[8] = local_10 % *param_1;\n  }\n  *(undefined *)(local_10 + param_1[10]) = 0x23;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "place_marker",
+                        "update_page_index",
+                        "printf",
+                        "print_map",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "place_marker",
+                        "generate_map"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_marker",
+                "func_c_signature": "void set_marker(int param_1,int param_2,int *param_3,undefined param_4)",
+                "decompiled_code": "void set_marker(int param_1,int param_2,int *param_3,undefined param_4) {\n  *(undefined *)(param_3[10] + param_1 + *param_3 * param_2) = param_4;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_marker"
+                    ],
+                    "calling_functions": [
+                        "set_marker",
+                        "initialize_map",
+                        "movement_loop"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initialize_map",
+                "func_c_signature": "void initialize_map(uint *param_1)",
+                "decompiled_code": "void initialize_map(uint *param_1) {\n  uint uVar1;\n  uint uVar2;\n  void *pvVar3;\n  undefined *puVar4;\n  undefined *puVar5;\n  void *apvStack_40 [2];\n  size_t sStack_38;\n  uint *apuStack_34 [6];\n  undefined4 uStack_10;\n  undefined auStack_c [4];\n  \n  puVar4 = auStack_c;\n  uStack_10 = 0x118f0;\n  if (param_1 == (uint *)0x0) {\n    puVar4 = &stack0xffffffe4;\n    printf(\"[ERROR] initialize_map() invalid argumenet.\\n\");\n    _terminate();\n  }\n  *(uint *)(puVar4 + -0x10) = param_1[1] * *param_1;\n  *(undefined4 *)(puVar4 + -0x14) = 0x1192f;\n  pvVar3 = malloc(*(size_t *)(puVar4 + -0x10));\n  param_1[10] = (uint)pvVar3;\n  puVar5 = puVar4;\n  if (param_1[10] == 0) {\n    puVar5 = puVar4 + -0x10;\n    *(char **)(puVar4 + -0x10) = \"[ERROR] Failed to allocate map.\\n\";\n    *(undefined4 *)(puVar4 + -0x14) = 0x11951;\n    printf(*(char **)(puVar4 + -0x10));\n    *(undefined4 *)(puVar4 + -0x10) = 0;\n    *(undefined4 *)(puVar4 + -0x14) = 0x1195e;\n    _terminate();\n  }\n  uVar1 = param_1[10];\n  *(uint *)(puVar5 + -0xc) = *param_1 * param_1[1];\n  *(uint *)(puVar5 + -0x10) = uVar1;\n  *(undefined4 *)(puVar5 + -0x14) = 0x1197c;\n  bzero(*(void **)(puVar5 + -0x10),*(size_t *)(puVar5 + -0xc));\n  param_1[2] = 0;\n  param_1[3] = 0;\n  param_1[4] = 0;\n  param_1[5] = 0;\n  while ((((param_1[2] == param_1[4] || (param_1[2] - 1 == param_1[4])) ||\n          (param_1[2] + 1 == param_1[4])) ||\n         (((param_1[3] == param_1[5] || (param_1[3] + 1 == param_1[5])) ||\n          (param_1[3] - 1 == param_1[5]))))) {\n    param_1[2] = (uint)*(byte *)(page_index + secret_page) % *param_1;\n    *(undefined4 *)(puVar5 + -4) = 0x119d9;\n    update_page_index();\n    param_1[3] = (uint)*(byte *)(page_index + secret_page) % param_1[1];\n    *(undefined4 *)(puVar5 + -4) = 0x11a07;\n    update_page_index();\n    param_1[4] = (uint)*(byte *)(page_index + secret_page) % *param_1;\n    *(undefined4 *)(puVar5 + -4) = 0x11a34;\n    update_page_index();\n    param_1[5] = (uint)*(byte *)(page_index + secret_page) % param_1[1];\n    *(undefined4 *)(puVar5 + -4) = 0x11a62;\n    update_page_index();\n  }\n  uVar1 = param_1[3];\n  uVar2 = param_1[2];\n  *(undefined4 *)(puVar5 + -4) = 0x40;\n  *(uint **)(puVar5 + -8) = param_1;\n  *(uint *)(puVar5 + -0xc) = uVar1;\n  *(uint *)(puVar5 + -0x10) = uVar2;\n  *(undefined4 *)(puVar5 + -0x14) = 0x11afe;\n  set_marker();\n  uVar1 = param_1[5];\n  uVar2 = param_1[4];\n  *(undefined4 *)(puVar5 + -4) = 0x58;\n  *(uint **)(puVar5 + -8) = param_1;\n  *(uint *)(puVar5 + -0xc) = uVar1;\n  *(uint *)(puVar5 + -0x10) = uVar2;\n  *(undefined4 *)(puVar5 + -0x14) = 0x11b19;\n  set_marker();\n  param_1[6] = param_1[2];\n  param_1[7] = param_1[3];\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initialize_map",
+                        "printf",
+                        "_terminate",
+                        "malloc",
+                        "bzero",
+                        "update_page_index",
+                        "set_marker"
+                    ],
+                    "calling_functions": [
+                        "initialize_map",
+                        "generate_map"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initialize_queue_matrix",
+                "func_c_signature": "void initialize_queue_matrix(int *param_1)",
+                "decompiled_code": "void initialize_queue_matrix(int *param_1) {\n  undefined *puVar1;\n  undefined auStack_1c [12];\n  uint local_10;\n  \n  puVar1 = auStack_1c;\n  if (queue_matrix != (void *)0x0) {\n    free(queue_matrix);\n  }\n  queue_matrix = malloc(param_1[1] * *param_1);\n  if (queue_matrix == (void *)0x0) {\n    puVar1 = &stack0xffffffd4;\n    printf(\"[ERROR] Failed to allocate queue matrix\\n\");\n    _terminate();\n  }\n  *(int *)(puVar1 + -0xc) = *param_1 * param_1[1];\n  *(void **)(puVar1 + -0x10) = queue_matrix;\n  *(undefined4 *)(puVar1 + -0x14) = 0x11bd6;\n  bzero(*(void **)(puVar1 + -0x10),*(size_t *)(puVar1 + -0xc));\n  for (local_10 = 0; local_10 < (uint)(param_1[1] * *param_1); local_10 = local_10 + 1) {\n    if (*(char *)(local_10 + param_1[10]) != '\\0') {\n      *(undefined *)(local_10 + (int)queue_matrix) = 1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initialize_queue_matrix",
+                        "free",
+                        "malloc",
+                        "printf",
+                        "_terminate",
+                        "bzero"
+                    ],
+                    "calling_functions": [
+                        "initialize_queue_matrix",
+                        "generate_map"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "generate_map",
+                "func_c_signature": "int * generate_map(int param_1,int param_2)",
+                "decompiled_code": "int * generate_map(int param_1,int param_2) {\n  int iVar1;\n  int iVar2;\n  int iVar3;\n  undefined *puVar4;\n  undefined auStack_2c [4];\n  undefined4 local_28;\n  undefined4 local_24;\n  undefined4 local_20;\n  undefined4 local_1c;\n  int local_18;\n  int *local_14;\n  int local_10;\n  \n  puVar4 = auStack_2c;\n  local_14 = (int *)0x0;\n  local_18 = 0;\n  local_1c = 0;\n  local_20 = 0;\n  local_24 = 0;\n  local_28 = 0;\n  local_10 = 1;\n  local_14 = (int *)malloc(0x2c);\n  if (local_14 == (int *)0x0) {\n    puVar4 = &stack0xffffffc4;\n    printf(\"[ERROR] Failed to allocate map strucure\\n\");\n    _terminate();\n  }\n  *(undefined4 *)(puVar4 + -0xc) = 0x2c;\n  *(int **)(puVar4 + -0x10) = local_14;\n  *(undefined4 *)(puVar4 + -0x14) = 0x11ca4;\n  bzero(*(void **)(puVar4 + -0x10),*(size_t *)(puVar4 + -0xc));\n  local_14[1] = param_2;\n  *local_14 = param_1;\n  *(int **)(puVar4 + -0x10) = local_14;\n  *(undefined4 *)(puVar4 + -0x14) = 0x11cc3;\n  initialize_map();\n  iVar3 = local_14[4];\n  iVar1 = local_14[3];\n  iVar2 = local_14[2];\n  *(int *)(puVar4 + -8) = local_14[5];\n  *(int *)(puVar4 + -0xc) = iVar3;\n  *(int *)(puVar4 + -0x10) = iVar1;\n  *(int *)(puVar4 + -0x14) = iVar2;\n  *(int *)(puVar4 + -0x18) = param_2;\n  *(int *)(puVar4 + -0x1c) = param_1;\n  *(char **)(puVar4 + -0x20) = \"Width: $d Height: $d\\nStartX: $d StartY: $d\\nEndX: $d EndY: $d\\n\\n\";\n  *(undefined4 *)(puVar4 + -0x24) = 0x11cf7;\n  printf(*(char **)(puVar4 + -0x20));\n  while (local_10 != 0) {\n    *(int **)(puVar4 + -0x10) = local_14;\n    *(undefined4 *)(puVar4 + -0x14) = 0x11d0a;\n    place_marker();\n    *(int **)(puVar4 + -0x10) = local_14;\n    *(undefined4 *)(puVar4 + -0x14) = 0x11d18;\n    initialize_queue_matrix();\n    iVar3 = local_14[3];\n    iVar1 = local_14[2];\n    *(int **)(puVar4 + -8) = local_14;\n    *(int *)(puVar4 + -0xc) = iVar3;\n    *(int *)(puVar4 + -0x10) = iVar1;\n    *(undefined4 *)(puVar4 + -0x14) = 0x11d34;\n    iVar3 = find_path();\n    if (iVar3 != 1) {\n      *(undefined *)(local_14[8] + *local_14 * local_14[9] + local_14[10]) = 0;\n      local_10 = 0;\n    }\n    while (root != 0) {\n      local_18 = root;\n      iVar3 = *(int *)(root + 8);\n      *(int *)(puVar4 + -0x10) = root;\n      *(undefined4 *)(puVar4 + -0x14) = 0x11d8f;\n      root = iVar3;\n      free(*(void **)(puVar4 + -0x10));\n    }\n    root = 0;\n  }\n  *(undefined4 *)(puVar4 + -0x10) = queue_matrix;\n  *(undefined4 *)(puVar4 + -0x14) = 0x11dc5;\n  free(*(void **)(puVar4 + -0x10));\n  *(int **)(puVar4 + -0x10) = local_14;\n  *(undefined4 *)(puVar4 + -0x14) = 0x11dd3;\n  print_map();\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "generate_map",
+                        "malloc",
+                        "printf",
+                        "_terminate",
+                        "bzero",
+                        "initialize_map",
+                        "place_marker",
+                        "initialize_queue_matrix",
+                        "find_path",
+                        "free",
+                        "print_map"
+                    ],
+                    "calling_functions": [
+                        "generate_map",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "select_monster",
+                "func_c_signature": "undefined4 select_monster(int param_1)",
+                "decompiled_code": "undefined4 select_monster(int param_1) {\n  bool bVar1;\n  undefined4 uVar2;\n  undefined4 local_1c;\n  uint local_18;\n  int local_14;\n  uint local_10;\n  \n  local_1c = 0;\n  bVar1 = false;\n  local_18 = 0;\n  if (param_1 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 0x14); local_10 = local_10 + 1) {\n      if (0 < *(int *)(*(int *)(param_1 + 8 + (local_10 + 4) * 4) + 4)) {\n        bVar1 = true;\n      }\n    }\n    if (bVar1) {\n      local_14 = 0;\n      printf(\"Monsters: \\n\");\n      for (local_10 = 0; local_10 < *(uint *)(param_1 + 0x14); local_10 = local_10 + 1) {\n        printf(\"\\t$d} \\n\",local_10 + 1);\n        printf(\"\\tType: $s\\n\",**(undefined4 **)(param_1 + 8 + (local_10 + 4) * 4));\n        printf(\"\\tLevel: $d\\n\",*(undefined4 *)(*(int *)(param_1 + 8 + (local_10 + 4) * 4) + 0x14));\n        printf(\"\\tHealth: $d\\n\",*(undefined4 *)(*(int *)(param_1 + 8 + (local_10 + 4) * 4) + 4));\n        printf(\"\\tPower: $d\\n\\n\",*(undefined4 *)(*(int *)(param_1 + 8 + (local_10 + 4) * 4) + 0xc));\n      }\n      while (local_14 == 0) {\n        printf(\"Selection: \");\n        local_1c = 0;\n        read_line(&local_1c,2);\n        local_18 = atoi((char *)&local_1c);\n        if (((int)local_18 < 1) || (*(uint *)(param_1 + 0x14) < local_18)) {\n          printf(\"bad choice: $x\\n\",local_1c);\n        }\n        else if (*(int *)(param_1 + 8 + (local_18 + 3) * 4) == 0) {\n          printf(\"bad choice: $x\\n\",local_1c);\n        }\n        else if (*(int *)(*(int *)(param_1 + 8 + (local_18 + 3) * 4) + 4) < 1) {\n          printf(\"he dead\\n\");\n        }\n        else {\n          local_14 = 1;\n        }\n      }\n      uVar2 = *(undefined4 *)(param_1 + 8 + (local_18 + 3) * 4);\n    }\n    else {\n      uVar2 = 0;\n    }\n  }",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "select_monster",
+                        "printf",
+                        "read_line",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "select_monster",
+                        "daboss",
+                        "fight"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "reset_monsters",
+                "func_c_signature": "undefined ** reset_monsters(int param_1)",
+                "decompiled_code": "undefined ** reset_monsters(int param_1) {\n  undefined **ppuVar1;\n  undefined **local_8;\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  if (param_1 != 0) {\n    for (local_8 = (undefined **)0x0; ppuVar1 = *(undefined ***)(param_1 + 0x14), local_8 < ppuVar1;\n        local_8 = (undefined **)((int)local_8 + 1)) {\n      *(undefined4 *)(*(int *)(param_1 + 8 + (int)(local_8 + 1) * 4) + 4) =\n           *(undefined4 *)(*(int *)(param_1 + 8 + (int)(local_8 + 1) * 4) + 8);\n    }\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "reset_monsters"
+                    ],
+                    "calling_functions": [
+                        "reset_monsters",
+                        "daboss",
+                        "fight"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_monster",
+                "func_c_signature": "void print_monster(undefined4 *param_1)",
+                "decompiled_code": "void print_monster(undefined4 *param_1) {\n  if (param_1 != (undefined4 *)0x0) {\n    printf(\"\\tType: $s\\n\",*param_1);\n    printf(\"\\tLevel: $d\\n\",param_1[5]);\n    printf(\"\\tHealth: $d\\n\",param_1[1]);\n    printf(\"\\tHit Points: $d\\n\",param_1[2]);\n    printf(\"\\tPower: $d\\n\\n\",param_1[3]);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_monster",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_monster",
+                        "capture_boss",
+                        "daboss",
+                        "capture_monster",
+                        "fight"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "oneup_monster",
+                "func_c_signature": "undefined4 oneup_monster(undefined4 *param_1)",
+                "decompiled_code": "undefined4 oneup_monster(undefined4 *param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == (undefined4 *)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    param_1[4] = param_1[4] + 1;\n    if (param_1[4] == ((uint)param_1[4] / 0xf) * 0xf) {\n      printf(\"$s gained a level\\n\",*param_1);\n      param_1[2] = param_1[2] + 1;\n      param_1[3] = param_1[3] + 1;\n      param_1[1] = param_1[2];\n      param_1[5] = param_1[5] + 1;\n      param_1[4] = 0;\n    }\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "oneup_monster",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "oneup_monster",
+                        "daboss",
+                        "fight"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "generate_boss",
+                "func_c_signature": "undefined4 * generate_boss(void)",
+                "decompiled_code": "undefined4 * generate_boss(void) {\n  undefined4 uVar1;\n  undefined *puVar2;\n  undefined auStack_1c [12];\n  undefined4 *local_10;\n  \n  puVar2 = auStack_1c;\n  local_10 = (undefined4 *)0x0;\n  local_10 = (undefined4 *)malloc(0x18);\n  if (local_10 == (undefined4 *)0x0) {\n    puVar2 = &stack0xffffffd4;\n    printf(\"[ERROR] Failed to allocate boss monster structure\\n\");\n    _terminate();\n  }\n  *(undefined4 *)(puVar2 + -0xc) = 0x18;\n  *(undefined4 **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x1222a;\n  bzero(*(void **)(puVar2 + -0x10),*(size_t *)(puVar2 + -0xc));\n  *(undefined4 *)(puVar2 + -4) = 0x12232;\n  uVar1 = select_name();\n  *local_10 = uVar1;\n  local_10[1] = ((uint)*(byte *)(page_index + secret_page) +\n                 (uint)(*(byte *)(page_index + secret_page) / 10) * -10 & 0xff) + 9;\n  local_10[2] = local_10[1];\n  *(undefined4 *)(puVar2 + -4) = 0x12288;\n  update_page_index();\n  local_10[3] = ((uint)*(byte *)(page_index + secret_page) +\n                 (uint)(*(byte *)(page_index + secret_page) / 6) * -6 & 0xff) + 4;\n  *(undefined4 *)(puVar2 + -4) = 0x122cc;\n  update_page_index();\n  local_10[5] = 4;\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "generate_boss",
+                        "malloc",
+                        "printf",
+                        "_terminate",
+                        "bzero",
+                        "select_name",
+                        "update_page_index"
+                    ],
+                    "calling_functions": [
+                        "generate_boss",
+                        "daboss"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "change_monster_name",
+                "func_c_signature": "undefined4 change_monster_name(void **param_1)",
+                "decompiled_code": "undefined4 change_monster_name(void **param_1) {\n  undefined *puVar1;\n  undefined auStack_3c [8];\n  undefined local_34 [32];\n  void *local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_14 = (void *)0x0;\n  bzero(local_34,0x20);\n  printf(\"New name: \");\n  local_10 = read_line_u();\n  local_14 = malloc(local_10 + 1);\n  puVar1 = auStack_3c;\n  if (local_14 == (void *)0x0) {\n    printf(\"[ERROR] Failed to malloc name buffer\\n\");\n    _terminate();\n    puVar1 = &stack0xffffffb4;\n  }\n  *(int *)(puVar1 + -0xc) = local_10 + 1;\n  *(void **)(puVar1 + -0x10) = local_14;\n  *(undefined4 *)(puVar1 + -0x14) = 0x1237c;\n  bzero(*(void **)(puVar1 + -0x10),*(size_t *)(puVar1 + -0xc));\n  *(int *)(puVar1 + -8) = local_10;\n  *(undefined **)(puVar1 + -0xc) = local_34;\n  *(void **)(puVar1 + -0x10) = local_14;\n  *(undefined4 *)(puVar1 + -0x14) = 0x12391;\n  memcpy(*(void **)(puVar1 + -0x10),*(void **)(puVar1 + -0xc),*(size_t *)(puVar1 + -8));\n  *param_1 = local_14;\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "change_monster_name",
+                        "bzero",
+                        "printf",
+                        "read_line_u",
+                        "malloc",
+                        "_terminate",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "change_monster_name",
+                        "capture_boss"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "capture_boss",
+                "func_c_signature": "undefined4 capture_boss(void *param_1,int param_2)",
+                "decompiled_code": "undefined4 capture_boss(void *param_1,int param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  char local_13 [3];\n  uint local_10;\n  \n  local_10 = 0;\n  if ((param_1 == (void *)0x0) || (param_2 == 0)) {\n    uVar1 = 0;\n  }\n  else {\n    printf(\"capture monster? (y\\\\n): \");\n    bzero(local_13,3);\n    read_line(local_13,2);\n    if (local_13[0] == 'y') {\n      printf(\"update boss name? (y\\\\n): \");\n      bzero(local_13,3);\n      iVar2 = 2;\n      read_line(local_13,2);\n      if (local_13[0] == 'y') {\n        change_monster_name(param_1);\n      }\n      if (*(uint *)(param_2 + 0x14) < 5) {\n        iVar2 = *(int *)(param_2 + 0x14);\n        *(int *)(param_2 + 0x14) = iVar2 + 1;\n        *(void **)(param_2 + 8 + (iVar2 + 4) * 4) = param_1;\n        uVar1 = 1;\n      }\n      else {\n        printf(\"your cart is full.\\n\");\n        for (local_10 = 0; local_10 < 5; local_10 = local_10 + 1) {\n          iVar2 = local_10 + 1;\n          printf(\"$d} \\n\",iVar2);\n          print_monster(*(undefined4 *)(param_2 + 8 + (local_10 + 4) * 4));\n        }\n        printf(\"*********************************\\n\",iVar2);\n        *(undefined4 *)((int)param_1 + 4) = *(undefined4 *)((int)param_1 + 8);\n        print_monster(param_1);\n        printf(\"*********************************\\n\");\n        printf(\"replace one of yours? (y\\\\n): \");\n        bzero(local_13,3);\n        read_line(local_13,2);\n        if (local_13[0] == 'y') {\n          bzero(local_13,3);\n          printf(\"which one: \");\n          read_line(local_13,3);\n          local_10 = atoi(local_13);\n          if ((local_10 == 0) || (5 < local_10)) {\n            printf(\"invalid\\n\");\n            free(param_1);\n            uVar1 = 0;\n          }\n          else {\n            free(*(void **)(param_2 + 8 + (local_10 + 3) * 4));\n            *(void **)(param_2 + 8 + (local_10 + 3) * 4) = param_1;\n            uVar1 = 1;\n          }\n        }\n        else {\n          free(param_1);\n          uVar1 = 0;\n        }\n      }\n    }\n    else {\n      free(param_1);\n      uVar1 = 0;\n    }\n  }",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "capture_boss",
+                        "printf",
+                        "bzero",
+                        "read_line",
+                        "change_monster_name",
+                        "print_monster",
+                        "atoi",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "capture_boss",
+                        "daboss"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "daboss",
+                "func_c_signature": "undefined4 daboss(int param_1)",
+                "decompiled_code": "undefined4 daboss(int param_1) {\n  undefined4 uVar1;\n  undefined4 *puVar2;\n  undefined4 *puVar3;\n  uint uVar4;\n  uint uVar5;\n  \n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    puVar2 = (undefined4 *)generate_boss();\n    reset_monsters(param_1);\n    printf(\"\\nDUN DUN DUUUUUUUUUUUUUUN\\n\");\n    printf(\"You have reached the boss!!!!!\\n\\n\");\n    print_monster(puVar2);\n    while (0 < (int)puVar2[1]) {\n      puVar3 = (undefined4 *)select_monster(param_1);\n      if (puVar3 == (undefined4 *)0x0) {\n        printf(\"You have no living monsters. You lose.\\n\");\n        return 0;\n      }\n      uVar4 = (uint)*(byte *)(page_index + secret_page) % (uint)puVar3[3];\n      update_page_index();\n      puVar2[1] = puVar2[1] - uVar4;\n      uVar1 = puVar2[1];\n      printf(\"You hit for $d. $d left\\n\",uVar4,uVar1);\n      oneup_monster(puVar3);\n      if ((int)puVar2[1] < 1) {\n        printf(\"You destroyed the boss!!!!\\n\",uVar4,uVar1);\n        reset_monsters(param_1);\n        capture_boss(puVar2,param_1);\n        return 1;\n      }\n      uVar5 = (uint)*(byte *)(page_index + secret_page) % (uint)puVar2[3];\n      update_page_index();\n      uVar1 = *puVar3;\n      uVar4 = uVar5;\n      printf(\"$s hits $s for $d\\n\",*puVar2,uVar1,uVar5);\n      puVar3[1] = puVar3[1] - uVar5;\n      if ((int)puVar3[1] < 1) {\n        printf(\"$s was knocked out\\n\",*puVar3,uVar1,uVar4);\n      }\n    }\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "daboss",
+                        "generate_boss",
+                        "reset_monsters",
+                        "printf",
+                        "print_monster",
+                        "select_monster",
+                        "update_page_index",
+                        "oneup_monster",
+                        "capture_boss"
+                    ],
+                    "calling_functions": [
+                        "daboss",
+                        "movement_loop"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "capture_monster",
+                "func_c_signature": "undefined4 capture_monster(void *param_1,int param_2)",
+                "decompiled_code": "undefined4 capture_monster(void *param_1,int param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  char local_13 [3];\n  uint local_10;\n  \n  local_10 = 0;\n  if ((param_1 == (void *)0x0) || (param_2 == 0)) {\n    uVar1 = 0;\n  }\n  else {\n    printf(\"capture monster? (y\\\\n): \");\n    bzero(local_13,3);\n    iVar2 = 2;\n    read_line(local_13,2);\n    if (local_13[0] == 'y') {\n      if (*(uint *)(param_2 + 0x14) < 5) {\n        iVar2 = *(int *)(param_2 + 0x14);\n        *(int *)(param_2 + 0x14) = iVar2 + 1;\n        *(void **)(param_2 + 8 + (iVar2 + 4) * 4) = param_1;\n        uVar1 = 1;\n      }\n      else {\n        printf(\"your cart is full.\\n\");\n        for (local_10 = 0; local_10 < 5; local_10 = local_10 + 1) {\n          iVar2 = local_10 + 1;\n          printf(\"$d} \\n\",iVar2);\n          print_monster(*(undefined4 *)(param_2 + 8 + (local_10 + 4) * 4));\n        }\n        printf(\"*********************************\\n\",iVar2);\n        print_monster(param_1);\n        printf(\"*********************************\\n\");\n        printf(\"replace one of yours? (y\\\\n): \");\n        bzero(local_13,3);\n        read_line(local_13,2);\n        if (local_13[0] == 'y') {\n          bzero(local_13,3);\n          printf(\"which one: \");\n          read_line(local_13,3);\n          local_10 = atoi(local_13);\n          if ((local_10 == 0) || (5 < local_10)) {\n            printf(\"invalid\\n\");\n            free(param_1);\n            uVar1 = 0;\n          }\n          else {\n            free(*(void **)(param_2 + 8 + (local_10 + 3) * 4));\n            *(void **)(param_2 + 8 + (local_10 + 3) * 4) = param_1;\n            uVar1 = 1;\n          }\n        }\n        else {\n          free(param_1);\n          uVar1 = 0;\n        }\n      }\n    }\n    else {\n      free(param_1);\n      uVar1 = 0;\n    }\n  }",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "capture_monster",
+                        "printf",
+                        "bzero",
+                        "read_line",
+                        "print_monster",
+                        "atoi",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "capture_monster",
+                        "fight"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fight",
+                "func_c_signature": "undefined4 fight(int param_1)",
+                "decompiled_code": "undefined4 fight(int param_1) {\n  undefined4 uVar1;\n  undefined4 *puVar2;\n  undefined4 *puVar3;\n  uint uVar4;\n  uint uVar5;\n  \n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    reset_monsters(param_1,0,0,0,0);\n    puVar2 = (undefined4 *)generate_monster();\n    printf(\"You are being attacked!!!\\n\");\n    print_monster(puVar2);\n    while (0 < (int)puVar2[1]) {\n      puVar3 = (undefined4 *)select_monster(param_1);\n      if (puVar3 == (undefined4 *)0x0) {\n        printf(\"You have no living monsters. You lose.\\n\");\n        return 0;\n      }\n      uVar4 = (uint)*(byte *)(page_index + secret_page) % (uint)puVar3[3];\n      update_page_index();\n      puVar2[1] = puVar2[1] - uVar4;\n      uVar1 = puVar2[1];\n      printf(\"You hit for $d. $d left\\n\",uVar4,uVar1);\n      oneup_monster(puVar3);\n      if ((int)puVar2[1] < 1) {\n        printf(\"You knocked out $s\\n\",*puVar2,uVar1);\n        reset_monsters(param_1);\n        capture_monster(puVar2,param_1);\n        return 1;\n      }\n      uVar5 = (uint)*(byte *)(page_index + secret_page) % (uint)puVar2[3];\n      update_page_index();\n      uVar1 = *puVar3;\n      uVar4 = uVar5;\n      printf(\"$s hits $s for $d\\n\",*puVar2,uVar1,uVar5);\n      puVar3[1] = puVar3[1] - uVar4;\n      if ((int)puVar3[1] < 1) {\n        printf(\"$s was knocked out\\n\",*puVar3,uVar1,uVar5);\n      }\n    }\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fight",
+                        "reset_monsters",
+                        "generate_monster",
+                        "printf",
+                        "print_monster",
+                        "select_monster",
+                        "update_page_index",
+                        "oneup_monster",
+                        "capture_monster"
+                    ],
+                    "calling_functions": [
+                        "fight",
+                        "movement_loop"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "movement_loop",
+                "func_c_signature": "undefined4 movement_loop(int *param_1,int param_2)",
+                "decompiled_code": "undefined4 movement_loop(int *param_1,int param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  int iVar3;\n  undefined *puVar4;\n  char *apcStack_30 [2];\n  size_t asStack_28 [3];\n  undefined auStack_1c [6];\n  char local_16 [2];\n  int local_14;\n  int local_10;\n  \n  puVar4 = auStack_1c;\n  local_10 = 0;\n  if (param_1 == (int *)0x0) {\n    uVar2 = 0;\n  }\n  else {\n    while (local_10 == 0) {\n      *(undefined4 *)(puVar4 + -0xc) = 2;\n      *(char **)(puVar4 + -0x10) = local_16;\n      *(undefined4 *)(puVar4 + -0x14) = 0x12c9c;\n      bzero(*(void **)(puVar4 + -0x10),*(size_t *)(puVar4 + -0xc));\n      *(undefined **)(puVar4 + -0x10) = &DAT_000196e3;\n      *(undefined4 *)(puVar4 + -0x14) = 0x12cae;\n      printf(*(char **)(puVar4 + -0x10));\n      *(undefined4 *)(puVar4 + -0xc) = 2;\n      *(char **)(puVar4 + -0x10) = local_16;\n      *(undefined4 *)(puVar4 + -0x14) = 0x12cbf;\n      local_14 = read_line();\n      if (local_14 == 0) {\n        *(char **)(puVar4 + -0x10) = \"[ERROR] Failed to receive movement byte\\n\";\n        *(undefined4 *)(puVar4 + -0x14) = 0x12cda;\n        printf(*(char **)(puVar4 + -0x10));\n        *(undefined4 *)(puVar4 + -0x10) = 0xfffffffe;\n        *(undefined4 *)(puVar4 + -0x14) = 0x12ce7;\n        _terminate();\n        puVar4 = puVar4 + -0x10;\n      }\n      *(int *)(puVar4 + -0xc) = (int)local_16[0];\n      *(int *)(puVar4 + -0x10) = param_2;\n      *(undefined4 *)(puVar4 + -0x14) = 0x12cfa;\n      check_egg();\n      if (local_16[0] == 'u') {\n        if (param_1[7] == 0) {\n          *(char **)(puVar4 + -0x10) = \"off map\\n\";\n          *(undefined4 *)(puVar4 + -0x14) = 0x12d54;\n          printf(*(char **)(puVar4 + -0x10));\n        }\n        else if (*(char *)(param_1[6] + (param_1[7] + -1) * *param_1 + param_1[10]) == '#') {\n          *(char **)(puVar4 + -0x10) = \"blocked\\n\";\n          *(undefined4 *)(puVar4 + -0x14) = 0x12d93;\n          printf(*(char **)(puVar4 + -0x10));\n        }\n        else {\n          iVar3 = param_1[7];\n          iVar1 = param_1[6];\n          *(undefined4 *)(puVar4 + -4) = 0;\n          *(int **)(puVar4 + -8) = param_1;\n          *(int *)(puVar4 + -0xc) = iVar3;\n          *(int *)(puVar4 + -0x10) = iVar1;\n          *(undefined4 *)(puVar4 + -0x14) = 0x12db3;\n          set_marker();\n          param_1[7] = param_1[7] + -1;\n          iVar3 = param_1[7];\n          iVar1 = param_1[6];\n          *(undefined4 *)(puVar4 + -4) = 0x40;\n          *(int **)(puVar4 + -8) = param_1;\n          *(int *)(puVar4 + -0xc) = iVar3;\n          *(int *)(puVar4 + -0x10) = iVar1;\n          *(undefined4 *)(puVar4 + -0x14) = 0x12ddd;\n          set_marker();\n        }\nLAB_0001300d:\n        *(int **)(puVar4 + -0x10) = param_1;\n        *(undefined4 *)(puVar4 + -0x14) = 0x13018;\n        print_map();\n        if ((param_1[7] == param_1[5]) && (param_1[6] == param_1[4])) {\n          *(char **)(puVar4 + -0x10) = \"reached the end\\n\";\n          *(undefined4 *)(puVar4 + -0x14) = 0x1304a;\n          printf(*(char **)(puVar4 + -0x10));\n          *(int *)(puVar4 + -0x10) = param_2;\n          *(undefined4 *)(puVar4 + -0x14) = 0x13058;\n          iVar3 = daboss();\n          if (iVar3 == 1) {\n            *(char **)(puVar4 + -0x10) = \"You won!!!\\n\";\n            *(undefined4 *)(puVar4 + -0x14) = 0x1306f;\n            printf(*(char **)(puVar4 + -0x10));\n          }\n          else {\n            *(char **)(puVar4 + -0x10) = \"You failed!!!\\n\";\n            *(undefined4 *)(puVar4 + -0x14) = 0x13083;\n            printf(*(char **)(puVar4 + -0x10));\n          }\n          local_10 = 1;\n        }\n        else if ((byte)(*(byte *)(page_index + secret_page) +\n                       (byte)((ushort)((ushort)*(byte *)(page_index + secret_page) * 0x29) >> 0xc) *\n                       -100) < 10) {\n          *(undefined4 *)(puVar4 + -4) = 0x130cc;\n          update_page_index();\n          *(int *)(puVar4 + -0x10) = param_2;\n          *(undefined4 *)(puVar4 + -0x14) = 0x130d7;\n          iVar3 = fight();\n          if (iVar3 == 1) {\n            *(int *)(param_2 + 0x10) = *(int *)(param_2 + 0x10) + 1;\n            *(undefined4 *)(puVar4 + -0xc) = *(undefined4 *)(param_2 + 0x10);\n            *(char **)(puVar4 + -0x10) = \"player gains a level. now $d\\n\";\n            *(undefined4 *)(puVar4 + -0x14) = 0x13104;\n            printf(*(char **)(puVar4 + -0x10));\n          }\n          *(int **)(puVar4 + -0x10) = param_1;\n          *(undefined4 *)(puVar4 + -0x14) = 0x13112;\n          print_map();\n        }\n        else {\n          *(undefined4 *)(puVar4 + -4) = 0x1311c;\n          update_page_index();\n        }\n      }\n      else {\n        if (local_16[0] < 'v') {\n          if (local_16[0] == 'r') {\n            if (param_1[6] == *param_1 + -1) {\n              *(char **)(puVar4 + -0x10) = \"off map\\n\";\n              *(undefined4 *)(puVar4 + -0x14) = 0x12f63;\n              printf(*(char **)(puVar4 + -0x10));\n            }\n            else if (*(char *)(param_1[6] + *param_1 * param_1[7] + 1 + param_1[10]) == '#') {\n              *(char **)(puVar4 + -0x10) = \"blocked\\n\";\n              *(undefined4 *)(puVar4 + -0x14) = 0x12fa2;\n              printf(*(char **)(puVar4 + -0x10));\n            }\n            else {\n              iVar3 = param_1[7];\n              iVar1 = param_1[6];\n              *(undefined4 *)(puVar4 + -4) = 0;\n              *(int **)(puVar4 + -8) = param_1;\n              *(int *)(puVar4 + -0xc) = iVar3;\n              *(int *)(puVar4 + -0x10) = iVar1;\n              *(undefined4 *)(puVar4 + -0x14) = 0x12fbf;\n              set_marker();\n              param_1[6] = param_1[6] + 1;\n              iVar3 = param_1[7];\n              iVar1 = param_1[6];\n              *(undefined4 *)(puVar4 + -4) = 0x40;\n              *(int **)(puVar4 + -8) = param_1;\n              *(int *)(puVar4 + -0xc) = iVar3;\n              *(int *)(puVar4 + -0x10) = iVar1;\n              *(undefined4 *)(puVar4 + -0x14) = 0x12fe9;\n              set_marker();\n            }\n          }\n          else {\n            if ('r' < local_16[0]) goto LAB_00012fee;\n            if (local_16[0] == 'd') {\n              if (param_1[7] == param_1[1] + -1) {\n                *(char **)(puVar4 + -0x10) = \"off map\\n\";\n                *(undefined4 *)(puVar4 + -0x14) = 0x12e07;\n                printf(*(char **)(puVar4 + -0x10));\n              }\n              else if (*(char *)(param_1[6] + (param_1[7] + 1) * *param_1 + param_1[10]) == '#') {\n                *(char **)(puVar4 + -0x10) = \"blocked\\n\";\n                *(undefined4 *)(puVar4 + -0x14) = 0x12e46;\n                printf(*(char **)(puVar4 + -0x10));\n              }\n              else {\n                iVar3 = param_1[7];\n                iVar1 = param_1[6];\n                *(undefined4 *)(puVar4 + -4) = 0;\n                *(int **)(puVar4 + -8) = param_1;\n                *(int *)(puVar4 + -0xc) = iVar3;\n                *(int *)(puVar4 + -0x10) = iVar1;\n                *(undefined4 *)(puVar4 + -0x14) = 0x12e66;\n                set_marker();\n                param_1[7] = param_1[7] + 1;\n                iVar3 = param_1[7];\n                iVar1 = param_1[6];\n                *(undefined4 *)(puVar4 + -4) = 0x40;\n                *(int **)(puVar4 + -8) = param_1;\n                *(int *)(puVar4 + -0xc) = iVar3;\n                *(int *)(puVar4 + -0x10) = iVar1;\n                *(undefined4 *)(puVar4 + -0x14) = 0x12e90;\n                set_marker();\n              }\n            }\n            else {\n              if (local_16[0] != 'l') goto LAB_00012fee;\n              if (param_1[6] == 0) {\n                *(char **)(puVar4 + -0x10) = \"off map\\n\";\n                *(undefined4 *)(puVar4 + -0x14) = 0x12eb1;\n                printf(*(char **)(puVar4 + -0x10));\n              }\n              else if (*(char *)(param_1[6] + *param_1 * param_1[7] + -1 + param_1[10]) == '#') {\n                *(char **)(puVar4 + -0x10) = \"blocked\\n\";\n                *(undefined4 *)(puVar4 + -0x14) = 0x12ef0;\n                printf(*(char **)(puVar4 + -0x10));\n              }\n              else {\n                iVar3 = param_1[7];\n                iVar1 = param_1[6];\n                *(undefined4 *)(puVar4 + -4) = 0;\n                *(int **)(puVar4 + -8) = param_1;\n                *(int *)(puVar4 + -0xc) = iVar3;\n                *(int *)(puVar4 + -0x10) = iVar1;\n                *(undefined4 *)(puVar4 + -0x14) = 0x12f10;\n                set_marker();\n                param_1[6] = param_1[6] + -1;\n                iVar3 = param_1[7];\n                iVar1 = param_1[6];\n                *(undefined4 *)(puVar4 + -4) = 0x40;\n                *(int **)(puVar4 + -8) = param_1;\n                *(int *)(puVar4 + -0xc) = iVar3;\n                *(int *)(puVar4 + -0x10) = iVar1;\n                *(undefined4 *)(puVar4 + -0x14) = 0x12f3a;\n                set_marker();\n              }\n            }\n          }\n          goto LAB_0001300d;\n        }\nLAB_00012fee:\n        *(int *)(puVar4 + -0xc) = (int)local_16[0];\n        *(char **)(puVar4 + -0x10) = \"[ERROR] Invalid direction: $x\\n\";\n        *(undefined4 *)(puVar4 + -0x14) = 0x13005;\n        printf(*(char **)(puVar4 + -0x10));\n      }\n    }\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "movement_loop",
+                        "bzero",
+                        "printf",
+                        "read_line",
+                        "_terminate",
+                        "check_egg",
+                        "set_marker",
+                        "print_map",
+                        "daboss",
+                        "update_page_index",
+                        "fight"
+                    ],
+                    "calling_functions": [
+                        "movement_loop",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "select_name",
+                "func_c_signature": "undefined4 select_name(void)",
+                "decompiled_code": "undefined4 select_name(void) {\n  byte bVar1;\n  uint local_10;\n  int local_c;\n  \n  local_c = 0;\n  bVar1 = *(byte *)(page_index + secret_page);\n  update_page_index();\n  for (local_10 = (uint)bVar1; local_10 != 0; local_10 = local_10 - 1) {\n    local_c = local_c + 1;\n    if (*(int *)(names + local_c * 4) == 0) {\n      local_c = 0;\n    }\n  }\n  return *(undefined4 *)(names + local_c * 4);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "select_name",
+                        "update_page_index"
+                    ],
+                    "calling_functions": [
+                        "generate_boss",
+                        "select_name",
+                        "generate_monster"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "generate_monster",
+                "func_c_signature": "undefined4 * generate_monster(void)",
+                "decompiled_code": "undefined4 * generate_monster(void) {\n  undefined4 uVar1;\n  undefined *puVar2;\n  undefined auStack_1c [12];\n  undefined4 *local_10;\n  \n  puVar2 = auStack_1c;\n  local_10 = (undefined4 *)0x0;\n  local_10 = (undefined4 *)malloc(0x18);\n  if (local_10 == (undefined4 *)0x0) {\n    puVar2 = &stack0xffffffd4;\n    printf(\"[ERROR] Failed to allocate monster structure\\n\");\n    _terminate();\n  }\n  *(undefined4 *)(puVar2 + -0xc) = 0x18;\n  *(undefined4 **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x131f3;\n  bzero(*(void **)(puVar2 + -0x10),*(size_t *)(puVar2 + -0xc));\n  *(undefined4 *)(puVar2 + -4) = 0x131fb;\n  uVar1 = select_name();\n  *local_10 = uVar1;\n  local_10[1] = ((uint)*(byte *)(page_index + secret_page) +\n                 (uint)(*(byte *)(page_index + secret_page) / 10) * -10 & 0xff) + 4;\n  local_10[2] = local_10[1];\n  *(undefined4 *)(puVar2 + -4) = 0x13251;\n  update_page_index();\n  local_10[3] = ((uint)*(byte *)(page_index + secret_page) +\n                 (uint)(*(byte *)(page_index + secret_page) / 6) * -6 & 0xff) + 2;\n  *(undefined4 *)(puVar2 + -4) = 0x13295;\n  update_page_index();\n  local_10[5] = 1;\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "generate_monster",
+                        "malloc",
+                        "printf",
+                        "_terminate",
+                        "bzero",
+                        "select_name",
+                        "update_page_index"
+                    ],
+                    "calling_functions": [
+                        "fight",
+                        "generate_monster",
+                        "generate_player"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "generate_player",
+                "func_c_signature": "void * generate_player(void)",
+                "decompiled_code": "void * generate_player(void) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined *puVar3;\n  undefined auStack_2c [8];\n  undefined local_24 [16];\n  void *local_14;\n  uint local_10;\n  \n  local_14 = (void *)0x0;\n  local_10 = 0;\n  printf(\"Enter your name|| \");\n  bzero(local_24,0x10);\n  local_10 = read_line();\n  if (local_10 == 0) {\n    memcpy(local_24,\"Player One\",10);\n  }\n  local_14 = malloc(0x2c);\n  puVar3 = auStack_2c;\n  if (local_14 == (void *)0x0) {\n    printf(\"[ERROR] Failed to malloc player structure\\n\");\n    _terminate();\n    puVar3 = &stack0xffffffc4;\n  }\n  *(undefined4 *)(puVar3 + -0xc) = 0x2c;\n  *(void **)(puVar3 + -0x10) = local_14;\n  *(undefined4 *)(puVar3 + -0x14) = 0x1335b;\n  bzero(*(void **)(puVar3 + -0x10),*(size_t *)(puVar3 + -0xc));\n  *(undefined4 *)(puVar3 + -8) = 0x10;\n  *(undefined **)(puVar3 + -0xc) = local_24;\n  *(void **)(puVar3 + -0x10) = local_14;\n  *(undefined4 *)(puVar3 + -0x14) = 0x13370;\n  memcpy(*(void **)(puVar3 + -0x10),*(void **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n  for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {\n    iVar1 = *(int *)((int)local_14 + 0x14);\n    *(int *)((int)local_14 + 0x14) = iVar1 + 1;\n    *(undefined4 *)(puVar3 + -4) = 0x13390;\n    uVar2 = generate_monster();\n    *(undefined4 *)((int)local_14 + (iVar1 + 4) * 4 + 8) = uVar2;\n  }\n  *(undefined4 *)((int)local_14 + 0x10) = 1;\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "generate_player",
+                        "printf",
+                        "bzero",
+                        "read_line",
+                        "memcpy",
+                        "malloc",
+                        "_terminate",
+                        "generate_monster"
+                    ],
+                    "calling_functions": [
+                        "generate_player",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_player",
+                "func_c_signature": "void print_player(int param_1)",
+                "decompiled_code": "void print_player(int param_1) {\n  uint local_10;\n  \n  if (param_1 != 0) {\n    printf(\"Name: $s\\n\",param_1);\n    printf(\"Level: $d\\n\",*(undefined4 *)(param_1 + 0x10));\n    printf(\"Monsters: \\n\");\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 0x14); local_10 = local_10 + 1) {\n      printf(\"\\tType: $s\\n\",**(undefined4 **)(param_1 + 8 + (local_10 + 4) * 4));\n      printf(\"\\tHealth: $d\\n\",*(undefined4 *)(*(int *)(param_1 + 8 + (local_10 + 4) * 4) + 4));\n      printf(\"\\tPower: $d\\n\\n\",*(undefined4 *)(*(int *)(param_1 + 8 + (local_10 + 4) * 4) + 0xc));\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_player",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_player",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00076_decompiled.c"
+                }
+            }
+        ]
+    }
+}

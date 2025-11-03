@@ -1,0 +1,991 @@
+{
+    "file": "KPRCA_00018",
+    "decompiled_code": {
+        "deck.c": [
+            {
+                "func_name": "rng",
+                "func_c_signature": "uint rng(void)",
+                "decompiled_code": "uint rng(void) {\n  uint uVar1;\n  \n  uVar1 = a ^ a << 7;\n  a = b;\n  b = c;\n  c = d;\n  d = uVar1 >> 0x10 ^ uVar1 ^ d >> 0x16 ^ d;\n  return d;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rng"
+                    ],
+                    "calling_functions": [
+                        "rng",
+                        "shuffle_deck"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_deck",
+                "func_c_signature": "void init_deck(int param_1,undefined4 *param_2)",
+                "decompiled_code": "void init_deck(int param_1,undefined4 *param_2) {\n  int local_c;\n  int local_8;\n  \n  if (param_2 != (undefined4 *)0x0) {\n    a = *param_2;\n  }\n  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {\n    for (local_c = 0; local_c < 0xd; local_c = local_c + 1) {\n      *(int *)(param_1 + (local_8 * 0xd + local_c) * 8) = local_c + 1;\n      *(int *)(param_1 + 4 + (local_8 * 0xd + local_c) * 8) = local_8;\n    }\n  }\n  *(undefined4 *)(param_1 + 0x1a0) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_deck"
+                    ],
+                    "calling_functions": [
+                        "init_deck",
+                        "init_squarerabbit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "shuffle_deck",
+                "func_c_signature": "undefined4 shuffle_deck(int param_1)",
+                "decompiled_code": "undefined4 shuffle_deck(int param_1) {\n  undefined4 *puVar1;\n  undefined4 uVar2;\n  undefined4 uVar3;\n  undefined4 uVar4;\n  uint uVar5;\n  uint uVar6;\n  uint local_c;\n  \n  for (local_c = 0; local_c < 10000; local_c = local_c + 1) {\n    uVar5 = rng();\n    uVar5 = uVar5 % 0x34;\n    uVar6 = rng();\n    uVar6 = uVar6 % 0x34;\n    puVar1 = (undefined4 *)(param_1 + uVar5 * 8);\n    uVar2 = *puVar1;\n    uVar3 = puVar1[1];\n    puVar1 = (undefined4 *)(param_1 + uVar6 * 8);\n    uVar4 = puVar1[1];\n    *(undefined4 *)(param_1 + uVar5 * 8) = *puVar1;\n    *(undefined4 *)(param_1 + 4 + uVar5 * 8) = uVar4;\n    *(undefined4 *)(param_1 + uVar6 * 8) = uVar2;\n    *(undefined4 *)(param_1 + 4 + uVar6 * 8) = uVar3;\n  }\n  *(undefined4 *)(param_1 + 0x1a0) = 0;\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "shuffle_deck",
+                        "rng"
+                    ],
+                    "calling_functions": [
+                        "shuffle_deck",
+                        "shuffle_deck_if_needed",
+                        "init_squarerabbit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "shuffle_deck_if_needed",
+                "func_c_signature": "undefined4 shuffle_deck_if_needed(int param_1)",
+                "decompiled_code": "undefined4 shuffle_deck_if_needed(int param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  \n  if (*(int *)(param_1 + 0x1a0) < 0x22) {\n    uVar2 = 0;\n  }\n  else {\n    iVar1 = shuffle_deck(param_1);\n    if (iVar1 == 0) {\n      uVar2 = 0xffffffff;\n    }\n    else {\n      uVar2 = 1;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "shuffle_deck_if_needed",
+                        "shuffle_deck"
+                    ],
+                    "calling_functions": [
+                        "shuffle_deck_if_needed",
+                        "new_srabbit_game"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "draw_card",
+                "func_c_signature": "int draw_card(int param_1)",
+                "decompiled_code": "int draw_card(int param_1) {\n  int iVar1;\n  \n  iVar1 = *(int *)(param_1 + 0x1a0);\n  *(int *)(param_1 + 0x1a0) = iVar1 + 1;\n  return param_1 + iVar1 * 8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "draw_card"
+                    ],
+                    "calling_functions": [
+                        "draw_card",
+                        "deal_srabbit",
+                        "hit",
+                        "split",
+                        "dealer_hit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            }
+        ],
+        "game_sultan.c": [
+            {
+                "func_name": "readchar",
+                "func_c_signature": "uint readchar(undefined4 param_1)",
+                "decompiled_code": "uint readchar(undefined4 param_1) {\n  int iVar1;\n  uint uVar2;\n  char local_12;\n  byte local_11;\n  int local_10 [2];\n  \n  iVar1 = receive(param_1,&local_11,1,local_10);\n  if ((iVar1 == 0) && (local_10[0] != 0)) {\n    iVar1 = receive(param_1,&local_12,1,local_10);\n    if ((iVar1 == 0) && (local_10[0] != 0)) {\n      if (local_12 == '\\n') {\n        uVar2 = (uint)local_11;\n      }\n      else {\n        uVar2 = 0xffffffff;\n      }\n    }\n    else {\n      uVar2 = 0xffffffff;\n    }\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readchar",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "readchar",
+                        "play_squarerabbit",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "readline",
+                "func_c_signature": "undefined4 readline(undefined4 param_1,char *param_2,uint param_3)",
+                "decompiled_code": "undefined4 readline(undefined4 param_1,char *param_2,uint param_3) {\n  int iVar1;\n  undefined4 uVar2;\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  for (; (((local_10 < param_3 && (iVar1 = receive(param_1,param_2,1,&local_14), iVar1 == 0)) &&\n          (local_14 != 0)) && (*param_2 != '\\n')); param_2 = param_2 + 1) {\n    local_10 = local_10 + 1;\n  }\n  if ((local_10 == param_3) && (*param_2 != '\\n')) {\n    uVar2 = 0xffffffff;\n  }\n  else if (*param_2 == '\\n') {\n    *param_2 = '\\0';\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = 1;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readline",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "readline",
+                        "play_squarerabbit",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_player",
+                "func_c_signature": "void init_player(void)",
+                "decompiled_code": "void init_player(void) {\n  g_player = 100000;\n  DAT_000180a4 = 0;\n  DAT_000180a8 = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_player"
+                    ],
+                    "calling_functions": [
+                        "init_player",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_game_menu",
+                "func_c_signature": "void print_game_menu(void)",
+                "decompiled_code": "void print_game_menu(void) {\n  printf(\"Game Sultan: Main Menu\\n\");\n  printf(\"1. Square Rabbit\\n\");\n  printf(\"2. Quit\\n\\n\");\n  printf(\"Select:-@ \");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_game_menu",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_game_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cardtos",
+                "func_c_signature": "char * cardtos(undefined4 *param_1)",
+                "decompiled_code": "char * cardtos(undefined4 *param_1) {\n  char *pcVar1;\n  \n  switch(*param_1) {\n  case 0:\n    pcVar1 = \"W\";\n    break;\n  case 1:\n    pcVar1 = \"D\";\n    break;\n  case 2:\n    pcVar1 = \"2\";\n    break;\n  case 3:\n    pcVar1 = \"3\";\n    break;\n  case 4:\n    pcVar1 = \"4\";\n    break;\n  case 5:\n    pcVar1 = \"5\";\n    break;\n  case 6:\n    pcVar1 = \"6\";\n    break;\n  case 7:\n    pcVar1 = \"7\";\n    break;\n  case 8:\n    pcVar1 = \"8\";\n    break;\n  case 9:\n    pcVar1 = \"9\";\n    break;\n  case 10:\n    pcVar1 = \"10\";\n    break;\n  case 0xb:\n    pcVar1 = \"R\";\n    break;\n  case 0xc:\n    pcVar1 = \"B\";\n    break;\n  case 0xd:\n    pcVar1 = \"L\";\n    break;\n  default:\n    pcVar1 = \"ERROR\";\n  }\n  return pcVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cardtos"
+                    ],
+                    "calling_functions": [
+                        "cardtos",
+                        "print_cards"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "suittos",
+                "func_c_signature": "undefined * suittos(void)",
+                "decompiled_code": "undefined * suittos(void) {\n  return &DAT_0001509c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "suittos"
+                    ],
+                    "calling_functions": [
+                        "suittos",
+                        "print_cards"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_winner",
+                "func_c_signature": "void print_winner(int param_1,int param_2)",
+                "decompiled_code": "void print_winner(int param_1,int param_2) {\n  if (param_1 < 0x16) {\n    if ((param_2 < param_1) || (0x15 < param_2)) {\n      printf(\"  Winner!\\n\");\n    }\n    else if (param_1 == param_2) {\n      printf(\"  Pushed.\\n\");\n    }\n    else {\n      printf(\"  Dealer Wins.\\n\");\n    }\n  }\n  else {\n    printf(\"  Busted! Better luck next time\\n\");\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_winner",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_winner",
+                        "print_cards"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_cards",
+                "func_c_signature": "undefined4 print_cards(void)",
+                "decompiled_code": "undefined4 print_cards(void) {\n  int iVar1;\n  int iVar2;\n  undefined4 uVar3;\n  int iVar4;\n  undefined4 uVar5;\n  undefined4 uVar6;\n  undefined4 *local_1c;\n  undefined4 *local_18;\n  undefined4 local_14;\n  int local_10;\n  \n  iVar1 = get_srabbit_game();\n  iVar2 = get_split_hand();\n  local_18 = *(undefined4 **)(iVar1 + 8);\n  local_1c = *(undefined4 **)(iVar1 + 4);\n  uVar3 = calc_score(local_18,0);\n  iVar4 = is_player_finished();\n  if (iVar4 == 0) {\n    uVar6 = **(undefined4 **)(iVar1 + 4);\n    uVar5 = suittos(uVar6);\n    uVar6 = cardtos(uVar6);\n    printf(\"Dealer: |%s%s|?|\\n\",uVar6,uVar5);\n    printf(\"----------------\\n\");\n  }\n  else {\n    dealer_hit();\n    local_14 = calc_score(local_1c,0);\n    printf(\"Dealer: |\");\n    for (; local_1c != (undefined4 *)0x0; local_1c = (undefined4 *)local_1c[1]) {\n      uVar6 = *local_1c;\n      uVar5 = suittos(uVar6);\n      uVar6 = cardtos(uVar6);\n      printf(\"%s%s|\",uVar6,uVar5);\n    }\n    uVar6 = local_14;\n    printf(\"    Score: %d\\n\",local_14);\n    printf(\"-------------------------------\\n\");\n  }\n  printf(\"Player: |\",uVar6);\n  for (; local_18 != (undefined4 *)0x0; local_18 = (undefined4 *)local_18[1]) {\n    uVar6 = *local_18;\n    uVar5 = suittos(uVar6);\n    uVar6 = cardtos(uVar6);\n    printf(\"%s%s|\",uVar6,uVar5);\n  }\n  uVar6 = uVar3;\n  printf(\"    Score: %d\\n\",uVar3);\n  if (*(char *)(iVar1 + 0x14) == '\\0') {\n    printf(\"Select (H/S\",uVar6);\n    if (*(char *)(iVar1 + 0x15) != '\\0') {\n      printf(\"/D\",uVar6);\n      iVar1 = can_split(iVar1);\n      if (iVar1 != 0) {\n        iVar1 = split_len();\n        iVar2 = max_split();\n        if (iVar1 < iVar2) {\n          printf(\"/X\");\n        }\n      }\n    }\n    printf(\"): \",uVar6);\n    uVar3 = 1;\n  }\n  else {\n    iVar1 = is_player_finished();\n    if (iVar1 != 0) {\n      print_winner(uVar3,local_14);\n    }\n    for (local_10 = 0; iVar1 = split_len(), local_10 < iVar1; local_10 = local_10 + 1) {\n      iVar1 = iVar2 + local_10 * 0x18;\n      local_18 = *(undefined4 **)(iVar1 + 8);\n      uVar3 = calc_score(local_18,0);\n      printf(\"Split %d: |\",local_10 + 1);\n      for (; local_18 != (undefined4 *)0x0; local_18 = (undefined4 *)local_18[1]) {\n        uVar6 = *local_18;\n        uVar5 = suittos(uVar6);\n        uVar6 = cardtos(uVar6);\n        printf(\"%s%s|\",uVar6,uVar5);\n      }\n      uVar6 = uVar3;\n      printf(\"    Score: %d\\n\",uVar3);\n      if (*(char *)(iVar1 + 0x14) == '\\0') {\n        printf(\"Select (H/S\",uVar6);\n        if (*(char *)(iVar1 + 0x15) != '\\0') {\n          printf(\"/D\",uVar6);\n          iVar1 = can_split(iVar1);\n          if (iVar1 != 0) {\n            iVar1 = split_len();\n            iVar2 = max_split();\n            if (iVar1 < iVar2) {\n              printf(\"/X\");\n            }\n          }\n        }\n        printf(\"): \",uVar6);\n        return 1;\n      }\n      iVar1 = is_player_finished();\n      if (iVar1 != 0) {\n        print_winner(uVar3,local_14);\n      }\n    }\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [
+                    "Select"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_cards",
+                        "get_srabbit_game",
+                        "get_split_hand",
+                        "calc_score",
+                        "is_player_finished",
+                        "suittos",
+                        "cardtos",
+                        "printf",
+                        "dealer_hit",
+                        "Select",
+                        "can_split",
+                        "split_len",
+                        "max_split",
+                        "print_winner"
+                    ],
+                    "calling_functions": [
+                        "print_cards",
+                        "play_squarerabbit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "play_squarerabbit",
+                "func_c_signature": "void play_squarerabbit(void)",
+                "decompiled_code": "void play_squarerabbit(void) {\n  int iVar1;\n  undefined4 uVar2;\n  char local_21c [512];\n  int local_1c;\n  int local_18;\n  char local_11;\n  long local_10;\n  \n  local_18 = 0;\n  local_11 = '\\0';\n  printf(\"******************\\n\");\n  printf(\"* Square Rabbit! *\\n\");\n  printf(\"******************\\n\");\n  do {\n    while( true ) {\n      while( true ) {\n        do {\n          if (local_18 != 0) {\n            return;\n          }\n          printf(\"Total Money: $%d\\n\",g_player);\n          printf(\"\\nType QUIT to exit to main menu\\n\");\n          printf(\"Place Bet (100, 200, 500, 1000): \");\n          iVar1 = readline(0,local_21c,0x200);\n        } while (iVar1 != 0);\n        iVar1 = memcmp(local_21c,&DAT_000151fa,5);\n        if (iVar1 == 0) {\n          return;\n        }\n        local_10 = strtol(local_21c,(char **)0x0,10);\n        iVar1 = local_10;\n        if ((local_10 != 1000) &&\n           ((1000 < local_10 ||\n            ((iVar1 = local_10, local_10 != 500 &&\n             ((500 < local_10 ||\n              ((iVar1 = local_10, local_10 != 100 && (iVar1 = local_10, local_10 != 200)))))))))) {\n          local_10 = -1;\n          iVar1 = DAT_000180a8;\n        }\n        DAT_000180a8 = iVar1;\n        if (local_10 != -1) break;\n        printf(\"Bad Bet\\n\\n\");\n      }\n      if (DAT_000180a8 <= g_player) break;\n      printf(\"Not enough money, bet with a lower amount\\n\");\n    }\n    local_1c = deal_srabbit(DAT_000180a8);\n    if (local_1c == 3) goto LAB_00011fd7;\n    if (local_1c < 4) {\n      if (local_1c == 2) {\n        printf(\"Dealer has a Duck... Insurance? (y\\\\n): \");\n        local_11 = '\\0';\n        while ((local_11 != 'y' && (local_11 != 'n'))) {\n          local_11 = readchar(0);\n        }\n        if (local_11 == 'y') {\n          pay_insurance();\n        }\n        check_dealer_squarerabbit();\n        iVar1 = check_dealer_squarerabbit2();\n        if (iVar1 == 0) {\n          uVar2 = get_srabbit_game();\n          iVar1 = check_player_squarerabbit(uVar2);\n          if (iVar1 != 0) {\n            print_cards();\n            printf(\"Square Rabbit!\\n\");\n            goto LAB_00011fe4;\n          }\n        }\nLAB_00011fd7:\n        while (iVar1 = print_cards(), iVar1 != 0) {\n          local_11 = readchar(0);\n          if (local_11 == 'X') {\n            if ((g_player < DAT_000180a8) || (iVar1 = split(), iVar1 < 0)) {\n              printf(\"CAN\\'T SPLIT\");\n            }\n          }\n          else if (local_11 < 'Y') {\n            if (local_11 == 'S') {\n              iVar1 = stand();\n              if (iVar1 < 0) {\n                printf(\"INVALID CHOICE\");\n              }\n            }\n            else {\n              if ('S' < local_11) goto LAB_00011fa7;\n              if (local_11 == 'D') {\n                if ((g_player < DAT_000180a8) || (iVar1 = double_down(), iVar1 < 0)) {\n                  printf(\"CAN\\'T DOUBLE DOWN\\'\");\n                }\n              }\n              else {\n                if (local_11 != 'H') goto LAB_00011fa7;\n                iVar1 = hit();\n                if (iVar1 < 0) {\n                  printf(\"INVALID CHOICE\");\n                }\n              }\n            }\n          }\n          else {\nLAB_00011fa7:\n            printf(\"INVALID CHOICE\");\n          }\n          printf(\"\\n\");\n        }\n      }\n      else if (local_1c < 3) {\n        if (local_1c == 0) {\n          print_cards();\n          printf(\"Square Rabbit!\\n\");\n        }\n        else if (local_1c == 1) {\n          print_cards();\n        }\n      }\n    }\nLAB_00011fe4:\n    iVar1 = srabbit_payout();\n    g_player = iVar1 + g_player;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [
+                    "Bet"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "play_squarerabbit",
+                        "printf",
+                        "Bet",
+                        "readline",
+                        "memcmp",
+                        "strtol",
+                        "deal_srabbit",
+                        "readchar",
+                        "pay_insurance",
+                        "check_dealer_squarerabbit",
+                        "check_dealer_squarerabbit2",
+                        "get_srabbit_game",
+                        "check_player_squarerabbit",
+                        "print_cards",
+                        "split",
+                        "stand",
+                        "double_down",
+                        "hit",
+                        "srabbit_payout"
+                    ],
+                    "calling_functions": [
+                        "play_squarerabbit",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "play_poker",
+                "func_c_signature": "undefined ** play_poker(void)",
+                "decompiled_code": "undefined ** play_poker(void) {\n  return &_GLOBAL_OFFSET_TABLE_;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "play_poker"
+                    ],
+                    "calling_functions": [
+                        "play_poker"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  long local_218;\n  char local_211 [512];\n  char local_11;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_218 = 0;\n  printf(\"Enter a number greater than 0: \");\n  iVar1 = readline(0,local_211,0x200);\n  if (iVar1 == 0) {\n    local_218 = strtol(local_211,(char **)0x0,10);\n    if (local_218 == 0) {\n      printf(\"INVALID INPUT\\n\");\n      printf(\"Exiting...\\n\");\n    }\n    else {\n      printf(\"\\n\\n\");\n      printf(\"*************************\\n\");\n      printf(\"*Welcome to Game Sultan!*\\n\");\n      printf(\"*************************\\n\\n\");\n      init_player();\n      init_squarerabbit(&local_218);\n      local_11 = '0';\n      while (local_11 != '2') {\n        print_game_menu();\n        local_11 = readchar(0);\n        if (local_11 == '1') {\n          play_squarerabbit();\n        }\n        else if (local_11 != '2') {\n          printf(\"Bad Choice. Select another option\\n\\n\");\n        }\n      }\n      printf(\"Thanks for playing!\\n\");\n    }\n  }\n  else {\n    printf(\"INVALID INPUT\\n\");\n    printf(\"Exiting...\\n\");\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "printf",
+                        "readline",
+                        "strtol",
+                        "init_player",
+                        "init_squarerabbit",
+                        "print_game_menu",
+                        "readchar",
+                        "play_squarerabbit"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            }
+        ],
+        "hand.c": [
+            {
+                "func_name": "get_card",
+                "func_c_signature": "undefined4 get_card(int **param_1,int param_2)",
+                "decompiled_code": "undefined4 get_card(int **param_1,int param_2) {\n  undefined4 uVar1;\n  int *piVar2;\n  int *local_10;\n  \n  if (param_2 == 0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    piVar2 = (int *)malloc(8);\n    local_10 = *param_1;\n    *piVar2 = param_2;\n    piVar2[1] = 0;\n    if (*param_1 == (int *)0x0) {\n      *param_1 = piVar2;\n    }\n    else {\n      for (; local_10[1] != 0; local_10 = (int *)local_10[1]) {\n      }\n      local_10[1] = (int)piVar2;\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_card",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "get_card",
+                        "deal_srabbit",
+                        "hit",
+                        "split",
+                        "dealer_hit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_card_in_order",
+                "func_c_signature": "undefined4 get_card_in_order(uint **param_1,uint *param_2)",
+                "decompiled_code": "undefined4 get_card_in_order(uint **param_1,uint *param_2) {\n  undefined4 uVar1;\n  uint **ppuVar2;\n  uint **local_14;\n  uint **local_10;\n  \n  if (param_2 == (uint *)0x0) {\n    uVar1 = 0xffffffff;\n  }\n  else {\n    ppuVar2 = (uint **)malloc(8);\n    local_10 = (uint **)*param_1;\n    *ppuVar2 = param_2;\n    ppuVar2[1] = (uint *)0x0;\n    if (*param_1 == (uint *)0x0) {\n      *param_1 = (uint *)ppuVar2;\n    }\n    else {\n      for (; local_10 != (uint **)0x0; local_10 = (uint **)local_10[1]) {\n        if (**ppuVar2 < **local_10) {\n          ppuVar2[1] = (uint *)local_10;\n          if (local_10 == (uint **)*param_1) {\n            *param_1 = (uint *)ppuVar2;\n          }\n          return 0;\n        }\n        local_14 = local_10;\n      }\n      local_14[1] = (uint *)ppuVar2;\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_card_in_order",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "get_card_in_order"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "replace_card",
+                "func_c_signature": "undefined4 replace_card(int **param_1,int param_2,int param_3)",
+                "decompiled_code": "undefined4 replace_card(int **param_1,int param_2,int param_3) {\n  int *local_8;\n  \n  if (*param_1 != (int *)0x0) {\n    for (local_8 = *param_1; local_8 != (int *)0x0; local_8 = (int *)local_8[1]) {\n      if (param_3 == *local_8) {\n        *local_8 = param_2;\n        return 0;\n      }\n    }\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "replace_card"
+                    ],
+                    "calling_functions": [
+                        "replace_card"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "remove_card",
+                "func_c_signature": "undefined4 remove_card(int **param_1,int *param_2)",
+                "decompiled_code": "undefined4 remove_card(int **param_1,int *param_2) {\n  int **local_14;\n  int **local_10;\n  \n  if (*param_1 != (int *)0x0) {\n    local_14 = (int **)*param_1;\n    for (local_10 = (int **)*param_1; local_10 != (int **)0x0; local_10 = (int **)local_10[1]) {\n      if ((**local_10 == *param_2) && ((*local_10)[1] == param_2[1])) {\n        if (local_10 == (int **)*param_1) {\n          *param_1 = local_10[1];\n        }\n        else {\n          local_14[1] = local_10[1];\n        }\n        free(local_10);\n        return 0;\n      }\n      local_14 = local_10;\n    }\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "remove_card",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "remove_card",
+                        "split"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "discard_hand",
+                "func_c_signature": "void discard_hand(void **param_1)",
+                "decompiled_code": "void discard_hand(void **param_1) {\n  void *pvVar1;\n  void *local_10;\n  \n  if (*param_1 != (void *)0x0) {\n    local_10 = *param_1;\n    while (*(int *)((int)local_10 + 4) != 0) {\n      pvVar1 = *(void **)((int)local_10 + 4);\n      free(local_10);\n      local_10 = pvVar1;\n    }\n    free(local_10);\n    *param_1 = (void *)0x0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "discard_hand",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "discard_hand",
+                        "clear_squarerabbit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            }
+        ],
+        "squarerabbit.c": [
+            {
+                "func_name": "clear_squarerabbit",
+                "func_c_signature": "void clear_squarerabbit(int param_1)",
+                "decompiled_code": "void clear_squarerabbit(int param_1) {\n  discard_hand(param_1 + 4);\n  discard_hand(param_1 + 8);\n  *(undefined4 *)(param_1 + 0xc) = 0;\n  *(undefined4 *)(param_1 + 0x10) = 0;\n  *(undefined *)(param_1 + 0x14) = 0;\n  *(undefined *)(param_1 + 0x15) = 1;\n  *(undefined *)(param_1 + 0x16) = 0;\n  *(undefined *)(param_1 + 0x17) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clear_squarerabbit",
+                        "discard_hand"
+                    ],
+                    "calling_functions": [
+                        "clear_squarerabbit",
+                        "clear_split_squarerabbit",
+                        "new_srabbit_game"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "clear_split_squarerabbit",
+                "func_c_signature": "void clear_split_squarerabbit(void)",
+                "decompiled_code": "void clear_split_squarerabbit(void) {\n  int iVar1;\n  int local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    iVar1 = split_len();\n    if (iVar1 <= local_10) break;\n    *(undefined4 *)(split_hand + local_10 * 0x18 + 4) = 0;\n    clear_squarerabbit(split_hand + local_10 * 0x18);\n    local_10 = local_10 + 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "clear_split_squarerabbit",
+                        "split_len",
+                        "clear_squarerabbit"
+                    ],
+                    "calling_functions": [
+                        "clear_split_squarerabbit",
+                        "new_srabbit_game"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "new_srabbit_game",
+                "func_c_signature": "void new_srabbit_game(undefined4 param_1)",
+                "decompiled_code": "void new_srabbit_game(undefined4 param_1) {\n  clear_split_squarerabbit();\n  clear_squarerabbit(g_srabbit);\n  g_srabbit[3] = param_1;\n  shuffle_deck_if_needed(*g_srabbit);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "new_srabbit_game",
+                        "clear_split_squarerabbit",
+                        "clear_squarerabbit",
+                        "shuffle_deck_if_needed"
+                    ],
+                    "calling_functions": [
+                        "new_srabbit_game",
+                        "deal_srabbit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dealer_has_duck",
+                "func_c_signature": "bool dealer_has_duck(void)",
+                "decompiled_code": "bool dealer_has_duck(void) {\n  return ***(int ***)(g_srabbit + 4) == 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dealer_has_duck"
+                    ],
+                    "calling_functions": [
+                        "dealer_has_duck",
+                        "deal_srabbit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_squarerabbit",
+                "func_c_signature": "void init_squarerabbit(undefined4 param_1)",
+                "decompiled_code": "void init_squarerabbit(undefined4 param_1) {\n  void **ppvVar1;\n  void *pvVar2;\n  \n  ppvVar1 = (void **)malloc(0x18);\n  g_srabbit = ppvVar1;\n  pvVar2 = malloc(0x1a4);\n  *ppvVar1 = pvVar2;\n  g_srabbit[1] = (void *)0x0;\n  g_srabbit[2] = (void *)0x0;\n  g_srabbit[3] = (void *)0x0;\n  g_srabbit[4] = (void *)0x0;\n  *(undefined *)(g_srabbit + 5) = 0;\n  *(undefined *)((int)g_srabbit + 0x15) = 1;\n  *(undefined *)((int)g_srabbit + 0x16) = 0;\n  *(undefined *)((int)g_srabbit + 0x17) = 0;\n  init_deck(*g_srabbit,param_1);\n  shuffle_deck(*g_srabbit);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_squarerabbit",
+                        "malloc",
+                        "init_deck",
+                        "shuffle_deck"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "init_squarerabbit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_srabbit_game",
+                "func_c_signature": "undefined4 get_srabbit_game(void)",
+                "decompiled_code": "undefined4 get_srabbit_game(void) {\n  return g_srabbit;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_srabbit_game"
+                    ],
+                    "calling_functions": [
+                        "print_cards",
+                        "play_squarerabbit",
+                        "get_srabbit_game"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_split_hand",
+                "func_c_signature": "undefined1 * get_split_hand(void)",
+                "decompiled_code": "undefined1 * get_split_hand(void) {\n  return split_hand;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_split_hand"
+                    ],
+                    "calling_functions": [
+                        "print_cards",
+                        "get_split_hand"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "max_split",
+                "func_c_signature": "undefined4 max_split(void)",
+                "decompiled_code": "undefined4 max_split(void) {\n  return 2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "max_split"
+                    ],
+                    "calling_functions": [
+                        "print_cards",
+                        "max_split"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "split_len",
+                "func_c_signature": "int split_len(void)",
+                "decompiled_code": "int split_len(void) {\n  char cVar1;\n  \n  cVar1 = *(char *)(g_srabbit + 0x17);\n  if ('\\x02' < cVar1) {\n    cVar1 = '\\x02';\n  }\n  return (int)cVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "split_len"
+                    ],
+                    "calling_functions": [
+                        "print_cards",
+                        "clear_split_squarerabbit",
+                        "split_len",
+                        "all_hands_busted",
+                        "is_player_finished",
+                        "srabbit_payout",
+                        "hit",
+                        "stand",
+                        "double_down",
+                        "split",
+                        "dealer_hit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "all_hands_busted",
+                "func_c_signature": "undefined4 all_hands_busted(void)",
+                "decompiled_code": "undefined4 all_hands_busted(void) {\n  undefined4 uVar1;\n  int iVar2;\n  int local_c;\n  \n  if (*(char *)(g_srabbit + 0x16) == '\\0') {\n    uVar1 = 0;\n  }\n  else {\n    for (local_c = 0; iVar2 = split_len(), local_c < iVar2; local_c = local_c + 1) {\n      if (split_hand[local_c * 0x18 + 0x16] == '\\0') {\n        return 0;\n      }\n    }\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "all_hands_busted",
+                        "split_len"
+                    ],
+                    "calling_functions": [
+                        "all_hands_busted",
+                        "dealer_hit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_player_finished",
+                "func_c_signature": "undefined4 is_player_finished(void)",
+                "decompiled_code": "undefined4 is_player_finished(void) {\n  undefined4 uVar1;\n  int iVar2;\n  int local_c;\n  \n  if (*(char *)(g_srabbit + 0x14) == '\\0') {\n    uVar1 = 0;\n  }\n  else {\n    for (local_c = 0; iVar2 = split_len(), local_c < iVar2; local_c = local_c + 1) {\n      if (split_hand[local_c * 0x18 + 0x14] == '\\0') {\n        return 0;\n      }\n    }\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_player_finished",
+                        "split_len"
+                    ],
+                    "calling_functions": [
+                        "print_cards",
+                        "is_player_finished"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "calc_score",
+                "func_c_signature": "int calc_score(int **param_1,undefined4 *param_2)",
+                "decompiled_code": "int calc_score(int **param_1,undefined4 *param_2) {\n  int iVar1;\n  int local_c;\n  int local_8;\n  \n  local_8 = 0;\n  local_c = 0;\n  for (; param_1 != (int **)0x0; param_1 = (int **)param_1[1]) {\n    iVar1 = **param_1;\n    if (iVar1 == 1) {\n      local_c = local_c + 1;\n      local_8 = local_8 + 1;\n    }\n    else if ((iVar1 == 0) || (2 < iVar1 - 0xbU)) {\n      local_8 = local_8 + **param_1;\n    }\n    else {\n      local_8 = local_8 + 10;\n    }\n  }\n  if ((local_8 < 0xc) && (local_c != 0)) {\n    local_8 = local_8 + 10;\n    if (param_2 != (undefined4 *)0x0) {\n      *param_2 = 1;\n    }\n  }\n  else if (param_2 != (undefined4 *)0x0) {\n    *param_2 = 0;\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "calc_score"
+                    ],
+                    "calling_functions": [
+                        "print_cards",
+                        "calc_score",
+                        "srabbit_payout",
+                        "deal_srabbit",
+                        "check_player_squarerabbit",
+                        "check_dealer_squarerabbit2",
+                        "hit",
+                        "stand",
+                        "dealer_hit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "srabbit_payout",
+                "func_c_signature": "int srabbit_payout(void)",
+                "decompiled_code": "int srabbit_payout(void) {\n  int iVar1;\n  int iVar2;\n  int iVar3;\n  int iVar4;\n  int local_14;\n  int local_10;\n  \n  iVar4 = g_srabbit;\n  iVar1 = calc_score(*(undefined4 *)(g_srabbit + 4),0);\n  iVar2 = check_dealer_squarerabbit();\n  if ((iVar2 == 0) || (iVar2 = calc_score(*(undefined4 *)(iVar4 + 8),0), iVar2 == 0x15)) {\n    local_14 = -*(int *)(iVar4 + 0x10);\n    iVar2 = calc_score(*(undefined4 *)(iVar4 + 8),0);\n    iVar3 = check_player_squarerabbit(iVar4);\n    if ((iVar3 == 0) || (iVar1 == 0x15)) {\n      if (*(char *)(iVar4 + 0x16) == '\\0') {\n        if (iVar1 < 0x16) {\n          if (iVar2 < iVar1) {\n            local_14 = local_14 - *(int *)(iVar4 + 0xc);\n          }\n          else if (iVar1 < iVar2) {\n            local_14 = local_14 + *(int *)(iVar4 + 0xc);\n          }\n        }\n        else {\n          local_14 = local_14 + *(int *)(iVar4 + 0xc);\n        }\n      }\n      else {\n        local_14 = local_14 - *(int *)(iVar4 + 0xc);\n      }\n    }\n    else {\n      local_14 = local_14 + (*(int *)(iVar4 + 0xc) * 3) / 2;\n    }\n    for (local_10 = 0; iVar4 = split_len(), local_10 < iVar4; local_10 = local_10 + 1) {\n      iVar4 = local_10 * 0x18;\n      iVar2 = calc_score(*(undefined4 *)(split_hand + iVar4 + 8),0);\n      iVar3 = check_player_squarerabbit(split_hand + iVar4);\n      if ((iVar3 == 0) || (iVar1 == 0x15)) {\n        if (split_hand[iVar4 + 0x16] == '\\0') {\n          if (iVar1 < 0x16) {\n            if (iVar2 < iVar1) {\n              local_14 = local_14 - *(int *)(split_hand + iVar4 + 0xc);\n            }\n            else if (iVar1 < iVar2) {\n              local_14 = local_14 + *(int *)(split_hand + iVar4 + 0xc);\n            }\n          }\n          else {\n            local_14 = local_14 + *(int *)(split_hand + iVar4 + 0xc);\n          }\n        }\n        else {\n          local_14 = local_14 - *(int *)(split_hand + iVar4 + 0xc);\n        }\n      }\n      else {\n        local_14 = local_14 + (*(int *)(split_hand + iVar4 + 0xc) * 3) / 2;\n      }\n    }\n  }\n  else {\n    local_14 = *(int *)(iVar4 + 0x10) * 2 - *(int *)(iVar4 + 0xc);\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "srabbit_payout",
+                        "calc_score",
+                        "check_dealer_squarerabbit",
+                        "check_player_squarerabbit",
+                        "split_len"
+                    ],
+                    "calling_functions": [
+                        "play_squarerabbit",
+                        "srabbit_payout"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "deal_srabbit",
+                "func_c_signature": "undefined4 deal_srabbit(undefined4 param_1)",
+                "decompiled_code": "undefined4 deal_srabbit(undefined4 param_1) {\n  undefined4 *puVar1;\n  int iVar2;\n  undefined4 uVar3;\n  int local_10;\n  \n  puVar1 = g_srabbit;\n  new_srabbit_game(param_1);\n  local_10 = 0;\n  while( true ) {\n    if (1 < local_10) {\n      iVar2 = calc_score(puVar1[2],0);\n      if ((iVar2 == 0x15) && (iVar2 = calc_score(puVar1[1],0), iVar2 == 0x15)) {\n        *(undefined *)(puVar1 + 5) = 1;\n        return 1;\n      }\n      iVar2 = dealer_has_duck();\n      if (iVar2 == 0) {\n        iVar2 = calc_score(puVar1[2],0);\n        if (iVar2 == 0x15) {\n          *(undefined *)(puVar1 + 5) = 1;\n          uVar3 = 0;\n        }\n        else {\n          iVar2 = calc_score(puVar1[2],0);\n          if (iVar2 == 0x15) {\n            *(undefined *)(puVar1 + 5) = 1;\n            uVar3 = 0;\n          }\n          else {\n            uVar3 = 3;\n          }\n        }\n      }\n      else {\n        uVar3 = 2;\n      }\n      return uVar3;\n    }\n    uVar3 = draw_card(*g_srabbit);\n    iVar2 = get_card(g_srabbit + 2,uVar3);\n    if (iVar2 != 0) {\n      return 0xffffffff;\n    }\n    uVar3 = draw_card(*g_srabbit);\n    iVar2 = get_card(g_srabbit + 1,uVar3);\n    if (iVar2 != 0) break;\n    local_10 = local_10 + 1;\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "deal_srabbit",
+                        "new_srabbit_game",
+                        "calc_score",
+                        "dealer_has_duck",
+                        "draw_card",
+                        "get_card"
+                    ],
+                    "calling_functions": [
+                        "play_squarerabbit",
+                        "deal_srabbit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "pay_insurance",
+                "func_c_signature": "void pay_insurance(void)",
+                "decompiled_code": "void pay_insurance(void) {\n  *(int *)(g_srabbit + 0x10) = *(int *)(g_srabbit + 0xc) / 2;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "pay_insurance"
+                    ],
+                    "calling_functions": [
+                        "play_squarerabbit",
+                        "pay_insurance"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_player_squarerabbit",
+                "func_c_signature": "undefined4 check_player_squarerabbit(int param_1)",
+                "decompiled_code": "undefined4 check_player_squarerabbit(int param_1) {\n  int iVar1;\n  int iVar2;\n  undefined4 uVar3;\n  \n  iVar1 = *(int *)(param_1 + 8);\n  iVar2 = calc_score(iVar1,0);\n  if ((iVar2 == 0x15) && (*(int *)(*(int *)(iVar1 + 4) + 4) == 0)) {\n    *(undefined *)(param_1 + 0x14) = 1;\n    uVar3 = 1;\n  }\n  else {\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_player_squarerabbit",
+                        "calc_score"
+                    ],
+                    "calling_functions": [
+                        "play_squarerabbit",
+                        "srabbit_payout",
+                        "check_player_squarerabbit",
+                        "dealer_hit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_dealer_squarerabbit",
+                "func_c_signature": "undefined4 check_dealer_squarerabbit(void)",
+                "decompiled_code": "undefined4 check_dealer_squarerabbit(void) {\n  undefined4 uVar1;\n  \n  if (***(int ***)(g_srabbit + 4) == 1) {\n    if (*(int *)*(*(int ***)(g_srabbit + 4))[1] - 10U < 4) {\n      *(undefined *)(g_srabbit + 0x14) = 1;\n      uVar1 = 1;\n    }\n    else {\n      uVar1 = 0;\n    }\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_dealer_squarerabbit"
+                    ],
+                    "calling_functions": [
+                        "play_squarerabbit",
+                        "srabbit_payout",
+                        "check_dealer_squarerabbit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_dealer_squarerabbit2",
+                "func_c_signature": "undefined4 check_dealer_squarerabbit2(void)",
+                "decompiled_code": "undefined4 check_dealer_squarerabbit2(void) {\n  int iVar1;\n  int iVar2;\n  undefined4 uVar3;\n  \n  iVar1 = *(int *)(g_srabbit + 4);\n  iVar2 = calc_score(iVar1,0);\n  if ((iVar2 == 0x15) && (*(int *)(*(int *)(iVar1 + 4) + 4) == 0)) {\n    uVar3 = 1;\n  }\n  else {\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_dealer_squarerabbit2",
+                        "calc_score"
+                    ],
+                    "calling_functions": [
+                        "play_squarerabbit",
+                        "check_dealer_squarerabbit2"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "hit",
+                "func_c_signature": "int hit(void)",
+                "decompiled_code": "int hit(void) {\n  int iVar1;\n  undefined4 uVar2;\n  int local_14;\n  undefined4 *local_10;\n  \n  local_14 = 0;\n  local_10 = g_srabbit;\n  while (*(char *)(local_10 + 5) != '\\0') {\n    iVar1 = split_len();\n    if (iVar1 <= local_14) break;\n    local_10 = (undefined4 *)(split_hand + local_14 * 0x18);\n    local_14 = local_14 + 1;\n  }\n  uVar2 = draw_card(*local_10);\n  iVar1 = get_card(local_10 + 2,uVar2);\n  if (iVar1 == 0) {\n    iVar1 = calc_score(local_10[2],0);\n    if (0x15 < iVar1) {\n      *(undefined *)(local_10 + 5) = 1;\n      *(undefined *)((int)local_10 + 0x16) = 1;\n    }\n    *(undefined *)((int)local_10 + 0x15) = 0;\n  }\n  else {\n    iVar1 = -1;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "hit",
+                        "split_len",
+                        "draw_card",
+                        "get_card",
+                        "calc_score"
+                    ],
+                    "calling_functions": [
+                        "play_squarerabbit",
+                        "hit",
+                        "double_down"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "stand",
+                "func_c_signature": "void stand(void)",
+                "decompiled_code": "void stand(void) {\n  int iVar1;\n  undefined1 *local_10;\n  int local_c;\n  \n  local_c = 0;\n  local_10 = g_srabbit;\n  while (local_10[0x14] != '\\0') {\n    iVar1 = split_len();\n    if (iVar1 <= local_c) break;\n    local_10 = split_hand + local_c * 0x18;\n    local_c = local_c + 1;\n  }\n  local_10[0x14] = 1;\n  calc_score(*(undefined4 *)(local_10 + 8),0);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "stand",
+                        "split_len",
+                        "calc_score"
+                    ],
+                    "calling_functions": [
+                        "play_squarerabbit",
+                        "stand"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "double_down",
+                "func_c_signature": "undefined4 double_down(void)",
+                "decompiled_code": "undefined4 double_down(void) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined1 *local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_14 = g_srabbit;\n  while (local_14[0x14] != '\\0') {\n    iVar1 = split_len();\n    if (iVar1 <= local_10) break;\n    local_14 = split_hand + local_10 * 0x18;\n    local_10 = local_10 + 1;\n  }\n  if (local_14[0x15] == '\\0') {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    uVar2 = hit();\n    local_14[0x14] = 1;\n    *(int *)(local_14 + 0xc) = *(int *)(local_14 + 0xc) * 2;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "double_down",
+                        "split_len",
+                        "hit"
+                    ],
+                    "calling_functions": [
+                        "play_squarerabbit",
+                        "double_down"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "can_split",
+                "func_c_signature": "undefined4 can_split(int param_1)",
+                "decompiled_code": "undefined4 can_split(int param_1) {\n  undefined4 uVar1;\n  \n  if ((***(int ***)(param_1 + 8) == ***(int ***)(*(int *)(param_1 + 8) + 4)) ||\n     ((9 < ***(uint ***)(param_1 + 8) && (9 < ***(uint ***)(*(int *)(param_1 + 8) + 4))))) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "can_split"
+                    ],
+                    "calling_functions": [
+                        "print_cards",
+                        "can_split",
+                        "split"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "split",
+                "func_c_signature": "undefined4 split(void)",
+                "decompiled_code": "undefined4 split(void) {\n  char cVar1;\n  int iVar2;\n  int iVar3;\n  undefined4 uVar4;\n  undefined4 *local_14;\n  int local_10;\n  \n  local_14 = g_srabbit;\n  for (local_10 = 0; (*(char *)(local_14 + 5) != '\\0' && (iVar2 = split_len(), local_10 < iVar2));\n      local_10 = local_10 + 1) {\n    local_14 = (undefined4 *)(split_hand + local_10 * 0x18);\n  }\n  if (((*(char *)((int)local_14 + 0x15) != '\\0') && (iVar2 = can_split(local_14), iVar2 != 0)) &&\n     (cVar1 = *(char *)((int)g_srabbit + 0x17), *(char *)((int)g_srabbit + 0x17) = cVar1 + '\\x01',\n     cVar1 < '\\x02')) {\n    iVar2 = (*(char *)((int)g_srabbit + 0x17) + -1) * 0x18;\n    *(undefined4 *)(split_hand + iVar2) = *local_14;\n    *(undefined4 *)(split_hand + iVar2 + 4) = local_14[1];\n    *(undefined4 *)(split_hand + iVar2 + 8) = 0;\n    *(undefined4 *)(split_hand + iVar2 + 0xc) = local_14[3];\n    *(undefined4 *)(split_hand + iVar2 + 0x10) = 0;\n    split_hand[iVar2 + 0x14] = 0;\n    split_hand[iVar2 + 0x15] = 1;\n    split_hand[iVar2 + 0x16] = 0;\n    iVar3 = get_card(iVar2 + 0x180e8,**(undefined4 **)(local_14[2] + 4));\n    if ((iVar3 == 0) &&\n       (iVar3 = remove_card(local_14 + 2,**(undefined4 **)(local_14[2] + 4)), iVar3 == 0)) {\n      uVar4 = draw_card(*local_14);\n      iVar3 = get_card(local_14 + 2,uVar4);\n      if (iVar3 == 0) {\n        uVar4 = draw_card(*(undefined4 *)(split_hand + iVar2));\n        iVar2 = get_card(iVar2 + 0x180e8,uVar4);\n        if (iVar2 == 0) {\n          return 0;\n        }\n      }\n    }\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "split",
+                        "split_len",
+                        "can_split",
+                        "get_card",
+                        "remove_card",
+                        "draw_card"
+                    ],
+                    "calling_functions": [
+                        "play_squarerabbit",
+                        "split"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dealer_hit",
+                "func_c_signature": "int dealer_hit(void)",
+                "decompiled_code": "int dealer_hit(void) {\n  int iVar1;\n  undefined4 uVar2;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  if (*(char *)(g_srabbit + 5) == '\\0') {\n    local_10 = -1;\n  }\n  else {\n    local_10 = calc_score(g_srabbit[1],&local_14);\n    iVar1 = all_hands_busted();\n    if ((iVar1 == 0) &&\n       ((iVar1 = check_player_squarerabbit(g_srabbit), iVar1 == 0 ||\n        (iVar1 = split_len(), iVar1 != 0)))) {\n      while( true ) {\n        if (0x11 < local_10) {\n          return local_10;\n        }\n        if ((local_10 == 0x11) && (local_14 == 0)) {\n          return 0x11;\n        }\n        uVar2 = draw_card(*g_srabbit);\n        iVar1 = get_card(g_srabbit + 1,uVar2);\n        if (iVar1 != 0) break;\n        local_10 = calc_score(g_srabbit[1],&local_14);\n      }\n      local_10 = -1;\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dealer_hit",
+                        "calc_score",
+                        "all_hands_busted",
+                        "check_player_squarerabbit",
+                        "split_len",
+                        "draw_card",
+                        "get_card"
+                    ],
+                    "calling_functions": [
+                        "print_cards",
+                        "dealer_hit"
+                    ],
+                    "defined_in_file": "KPRCA_00018_decompiled.c"
+                }
+            }
+        ]
+    }
+}

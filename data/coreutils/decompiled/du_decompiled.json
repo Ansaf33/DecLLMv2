@@ -1,0 +1,360 @@
+{
+    "file": "du",
+    "decompiled_code": {
+        "du.c": [
+            {
+                "func_name": "duinfo_init",
+                "func_c_signature": "void duinfo_init(undefined8 *param_1)",
+                "decompiled_code": "void duinfo_init(undefined8 *param_1) {\n  *param_1 = 0;\n  param_1[1] = 0;\n  param_1[2] = 0x8000000000000000;\n  param_1[3] = 0xffffffffffffffff;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "duinfo_init"
+                    ],
+                    "calling_functions": [
+                        "duinfo_init",
+                        "process_file"
+                    ],
+                    "defined_in_file": "du_decompiled.c"
+                }
+            },
+            {
+                "func_name": "duinfo_set",
+                "func_c_signature": "void duinfo_set(undefined8 *param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4)",
+                "decompiled_code": "void duinfo_set(undefined8 *param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4) {\n  *param_1 = param_2;\n  param_1[1] = 1;\n  param_1[2] = param_3;\n  param_1[3] = param_4;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "duinfo_set"
+                    ],
+                    "calling_functions": [
+                        "duinfo_set",
+                        "process_file"
+                    ],
+                    "defined_in_file": "du_decompiled.c"
+                }
+            },
+            {
+                "func_name": "duinfo_add",
+                "func_c_signature": "void duinfo_add(ulong *param_1,long *param_2)",
+                "decompiled_code": "void duinfo_add(ulong *param_1,long *param_2) {\n  int iVar1;\n  ulong uVar2;\n  \n  uVar2 = *param_2 + *param_1;\n  if (uVar2 < *param_1) {\n    uVar2 = 0xffffffffffffffff;\n  }\n  *param_1 = uVar2;\n  param_1[1] = param_1[1] + param_2[1];\n  iVar1 = timespec_cmp(param_1[2],param_1[3],param_2[2],param_2[3]);\n  if (iVar1 < 0) {\n    uVar2 = param_2[3];\n    param_1[2] = param_2[2];\n    param_1[3] = uVar2;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "duinfo_add",
+                        "timespec_cmp"
+                    ],
+                    "calling_functions": [
+                        "duinfo_add",
+                        "process_file"
+                    ],
+                    "defined_in_file": "du_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\n                            \"Usage: %s [OPTION]... [FILE]...\\n  or:  %s [OPTION]... --files0-from=F\\n\"\n                            );\n    printf(pcVar3,uVar2,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Summarize device usage of the set of FILEs, recursively for directories.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -0, --null            end each output line with NUL, not newline\\n  -a, --all             write counts for all files, not just directories\\n      --apparent-size   print apparent sizes rather than device usage; although\\n                          the apparent size is usually smaller, it may be\\n                          larger due to holes in (\\'sparse\\') files, internal\\n                          fragmentation, indirect blocks, and the like\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -B, --block-size=SIZE  scale sizes by SIZE before printing them; e.g.,\\n                           \\'-BM\\' prints sizes in units of 1,048,576 bytes;\\n                           see SIZE format below\\n  -b, --bytes           equivalent to \\'--apparent-size --block-size=1\\'\\n  -c, --total           produce a grand total\\n  -D, --dereference-args  dereference only symlinks that are listed on the\\n                          command line\\n  -d, --max-depth=N     print the total for a directory (or file, with --all)\\n                          only if it is N or fewer levels below the command\\n                          line argument;  --max-depth=0 is the same as\\n                          --summarize\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --files0-from=F   summarize device usage of the\\n                          NUL-terminated file names specified in file F;\\n                          if F is -, then read names from standard input\\n  -H                    equivalent to --dereference-args (-D)\\n  -h, --human-readable  print sizes in human readable format (e.g., 1K 234M 2G)\\n      --inodes          list inode usage information instead of block usage\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -k                    like --block-size=1K\\n  -L, --dereference     dereference all symbolic links\\n  -l, --count-links     count sizes many times if hard linked\\n  -m                    like --block-size=1M\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -P, --no-dereference  don\\'t follow any symbolic links (this is the default)\\n  -S, --separate-dirs   for directories do not include size of subdirectories\\n      --si              like -h, but use powers of 1000 not 1024\\n  -s, --summarize       display only a total for each argument\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -t, --threshold=SIZE  exclude entries smaller than SIZE if positive,\\n                          or entries greater than SIZE if negative\\n      --time            show time of the last modification of any file in the\\n                          directory, or any of its subdirectories\\n      --time=WORD       show time as WORD instead of modification time:\\n                          atime, access, use, ctime or status\\n      --time-style=STYLE  show times using STYLE, which can be:\\n                            full-iso, long-iso, iso, or +FORMAT;\\n                            FORMAT is interpreted like in \\'date\\'\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -X, --exclude-from=FILE  exclude files that match any pattern in FILE\\n      --exclude=PATTERN    exclude files that match PATTERN\\n  -x, --one-file-system    skip directories on different file systems\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_blocksize_note(&DAT_00103941);\n    emit_size_note();\n    emit_ancillary_info(&DAT_00103944);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "in",
+                    "directory",
+                    "args",
+                    "format",
+                    "links"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "in",
+                        "directory",
+                        "args",
+                        "format",
+                        "links",
+                        "emit_blocksize_note",
+                        "emit_size_note",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "x_timestyle_match",
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "du_decompiled.c"
+                }
+            },
+            {
+                "func_name": "hash_ins",
+                "func_c_signature": "bool hash_ins(undefined8 param_1,undefined8 param_2,undefined8 param_3)",
+                "decompiled_code": "bool hash_ins(undefined8 param_1,undefined8 param_2,undefined8 param_3) {\n  int iVar1;\n  \n  iVar1 = di_set_insert(param_1,param_3,param_2);\n  if (iVar1 < 0) {\n    xalloc_die();\n  }\n  return iVar1 != 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "hash_ins",
+                        "di_set_insert",
+                        "xalloc_die"
+                    ],
+                    "calling_functions": [
+                        "hash_ins",
+                        "fill_mount_table",
+                        "process_file"
+                    ],
+                    "defined_in_file": "du_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_only_size",
+                "func_c_signature": "void print_only_size(long param_1)",
+                "decompiled_code": "void print_only_size(long param_1) {\n  FILE *__stream;\n  char *__s;\n  long in_FS_OFFSET;\n  undefined local_2b8 [664];\n  long local_20;\n  \n  __stream = _stdout;\n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (param_1 == -1) {\n    __s = (char *)gettext(\"Infinity\");\n  }\n  else {\n    __s = (char *)human_readable(param_1,local_2b8,human_output_opts,1,output_block_size);\n  }\n  fputs_unlocked(__s,__stream);\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_only_size",
+                        "gettext",
+                        "human_readable",
+                        "fputs_unlocked",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_only_size",
+                        "print_size"
+                    ],
+                    "defined_in_file": "du_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_size",
+                "func_c_signature": "void print_size(undefined8 *param_1,undefined8 param_2)",
+                "decompiled_code": "void print_size(undefined8 *param_1,undefined8 param_2) {\n  FILE *__stream;\n  char cVar1;\n  char *__s;\n  undefined8 uVar2;\n  long in_FS_OFFSET;\n  undefined local_38 [24];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (opt_inodes == '\\0') {\n    uVar2 = *param_1;\n  }\n  else {\n    uVar2 = param_1[1];\n  }\n  print_only_size(uVar2);\n  if (opt_time != '\\0') {\n    putchar_unlocked(9);\n    cVar1 = show_date(time_format,param_1[2],param_1[3],localtz);\n    __stream = _stdout;\n    if (cVar1 != '\\x01') {\n      __s = (char *)timetostr(param_1[2],local_38);\n      fputs_unlocked(__s,__stream);\n    }\n  }\n  if (opt_nul_terminate_output == '\\0') {\n    uVar2 = 10;\n  }\n  else {\n    uVar2 = 0;\n  }\n  printf(\"\\t%s%c\",param_2,uVar2);\n  fflush_unlocked(_stdout);\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_size",
+                        "print_only_size",
+                        "putchar_unlocked",
+                        "show_date",
+                        "timetostr",
+                        "fputs_unlocked",
+                        "printf",
+                        "fflush_unlocked",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_size",
+                        "process_file",
+                        "main"
+                    ],
+                    "defined_in_file": "du_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fill_mount_table",
+                "func_c_signature": "void fill_mount_table(void)",
+                "decompiled_code": "void fill_mount_table(void) {\n  long lVar1;\n  int iVar2;\n  long in_FS_OFFSET;\n  long local_b8;\n  stat local_a8;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_b8 = read_file_system_list(0);\n  while (local_b8 != 0) {\n    if (((*(byte *)(local_b8 + 0x28) & 2) == 0) && ((*(byte *)(local_b8 + 0x28) & 1) == 0)) {\n      iVar2 = stat(*(char **)(local_b8 + 8),&local_a8);\n      if (iVar2 == 0) {\n        hash_ins(di_mnt,local_a8.st_ino,local_a8.st_dev);\n      }\n    }\n    lVar1 = *(long *)(local_b8 + 0x30);\n    free_mount_entry(local_b8);\n    local_b8 = lVar1;\n  }\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fill_mount_table",
+                        "read_file_system_list",
+                        "stat",
+                        "hash_ins",
+                        "free_mount_entry",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "fill_mount_table",
+                        "mount_point_in_fts_cycle"
+                    ],
+                    "defined_in_file": "du_decompiled.c"
+                }
+            },
+            {
+                "func_name": "mount_point_in_fts_cycle",
+                "func_c_signature": "undefined8 mount_point_in_fts_cycle(long *param_1)",
+                "decompiled_code": "undefined8 mount_point_in_fts_cycle(long *param_1) {\n  long *plVar1;\n  int iVar2;\n  long *local_20;\n  \n  plVar1 = (long *)*param_1;\n  local_20 = param_1;\n  if (di_mnt == 0) {\n    di_mnt = di_set_alloc();\n    if (di_mnt == 0) {\n      xalloc_die();\n    }\n    fill_mount_table();\n  }\n  for (; (local_20 != (long *)0x0 && (local_20 != plVar1)); local_20 = (long *)local_20[1]) {\n    iVar2 = di_set_lookup(di_mnt,local_20[0xe],local_20[0xf]);\n    if (0 < iVar2) {\n      return 1;\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "mount_point_in_fts_cycle",
+                        "di_set_alloc",
+                        "xalloc_die",
+                        "fill_mount_table",
+                        "di_set_lookup"
+                    ],
+                    "calling_functions": [
+                        "mount_point_in_fts_cycle",
+                        "process_file"
+                    ],
+                    "defined_in_file": "du_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_file",
+                "func_c_signature": "undefined process_file(long param_1,long param_2)",
+                "decompiled_code": "undefined process_file(long param_1,long param_2) {\n  ushort uVar1;\n  char cVar2;\n  long *plVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  long lVar7;\n  ulong uVar8;\n  long in_FS_OFFSET;\n  bool bVar9;\n  undefined auVar10 [16];\n  undefined local_f6;\n  char local_f5;\n  long local_d0;\n  ulong local_78;\n  ulong local_70;\n  undefined8 local_68;\n  undefined8 local_60;\n  ulong local_58;\n  ulong local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  long local_30;\n  \n  local_30 = *(long *)(in_FS_OFFSET + 0x28);\n  local_f6 = 1;\n  uVar6 = *(undefined8 *)(param_2 + 0x38);\n  plVar3 = (long *)(param_2 + 0x70);\n  uVar1 = *(ushort *)(param_2 + 0x68);\n  if (uVar1 == 4) {\n    uVar4 = quotearg_style(4,uVar6);\n    uVar5 = gettext(\"cannot read directory %s\");\n    error(0,*(undefined4 *)(param_2 + 0x40),uVar5,uVar4);\n    local_f6 = 0;\n  }\n  else if (uVar1 != 6) {\n    local_f5 = excluded_file_name(exclude,uVar6);\n    if (local_f5 != '\\x01') {\n      if (uVar1 == 0xb) {\n        rpl_fts_set(param_1,param_2,1);\n        lVar7 = rpl_fts_read(param_1);\n        if (lVar7 != param_2) {\n                    /* WARNING: Subroutine does not return */\n          __assert_fail(\"e == ent\",\n                        \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/du.c\"\n                        ,0x1fb,\"process_file\");\n        }\n        uVar1 = *(ushort *)(param_2 + 0x68);\n      }\n      if ((uVar1 == 10) || (uVar1 == 0xd)) {\n        uVar6 = quotearg_style(4,uVar6);\n        uVar4 = gettext(\"cannot access %s\");\n        error(0,*(undefined4 *)(param_2 + 0x40),uVar4,uVar6);\n        local_f6 = 0;\n        goto LAB_0010143e;\n      }\n      if ((((*(uint *)(param_1 + 0x48) & 0x40) != 0) && (0 < *(long *)(param_2 + 0x58))) &&\n         (*(long *)(param_1 + 0x18) != *plVar3)) {\n        local_f5 = '\\x01';\n      }\n    }\n    if ((local_f5 != '\\0') ||\n       (((opt_count_all != '\\x01' &&\n         ((hash_all != '\\0' ||\n          (((*(uint *)(param_2 + 0x88) & 0xf000) != 0x4000 && (1 < *(ulong *)(param_2 + 0x80)))))))\n        && (cVar2 = hash_ins(di_files,*(undefined8 *)(param_2 + 0x78),*plVar3), cVar2 != '\\x01'))))\n    {\n      if (uVar1 == 1) {\n        rpl_fts_set(param_1,param_2,4);\n        lVar7 = rpl_fts_read(param_1);\n        if (lVar7 != param_2) {\n                    /* WARNING: Subroutine does not return */\n          __assert_fail(\"e == ent\",\n                        \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/du.c\"\n                        ,0x21c,\"process_file\");\n        }\n      }\n      local_f6 = 1;\n      goto LAB_0010143e;\n    }\n    if (uVar1 == 7) {\n      uVar4 = quotearg_n_style_colon(0,3,uVar6);\n      error(0,*(undefined4 *)(param_2 + 0x40),&DAT_001039d6,uVar4);\n      local_f6 = 0;\n    }\n    else if (uVar1 < 8) {\n      if (uVar1 == 1) {\n        local_f6 = 1;\n        goto LAB_0010143e;\n      }\n      if (uVar1 == 2) {\n        cVar2 = cycle_warning_required(param_1,param_2);\n        if ((cVar2 == '\\0') || (cVar2 = mount_point_in_fts_cycle(param_2), cVar2 == '\\x01')) {\n          local_f6 = 1;\n        }\n        else {\n          uVar6 = quotearg_n_style_colon(0,3,uVar6);\n          uVar4 = gettext(\n                         \"WARNING: Circular directory structure.\\nThis almost certainly means that you have a corrupted file system.\\nNOTIFY YOUR SYSTEM MANAGER.\\nThe following directory is part of the cycle:\\n  %s\\n\"\n                         );\n          error(0,0,uVar4,uVar6);\n          local_f6 = 0;\n        }\n        goto LAB_0010143e;\n      }\n    }\n  }\n  if (time_type == 0) {\n    auVar10 = get_stat_mtime(plVar3);\n  }\n  else if (time_type == 2) {\n    auVar10 = get_stat_atime(plVar3);\n  }\n  else {\n    auVar10 = get_stat_ctime(plVar3);\n  }\n  if (apparent_size == '\\0') {\n    lVar7 = *(long *)(param_2 + 0xb0) << 9;\n  }\n  else {\n    cVar2 = usable_st_size(plVar3);\n    if (cVar2 == '\\0') {\n      lVar7 = 0;\n    }\n    else {\n      lVar7 = *(long *)(param_2 + 0xa0);\n      if (lVar7 < 0) {\n        lVar7 = 0;\n      }\n    }\n  }\n  duinfo_set(&local_78,lVar7,auVar10._0_8_,auVar10._8_8_);\n  lVar7 = *(long *)(param_2 + 0x58);\n  local_58 = local_78;\n  local_50 = local_70;\n  local_48 = local_68;\n  local_40 = local_60;\n  if (n_alloc_5 == 0) {\n    n_alloc_5 = lVar7 + 10;\n    dulvl_4 = xcalloc(n_alloc_5,0x40);\n  }\n  else if (lVar7 != prev_level) {\n    if (prev_level < lVar7) {\n      local_d0 = prev_level;\n      if (n_alloc_5 <= lVar7) {\n        dulvl_4 = xpalloc(dulvl_4,&n_alloc_5,(lVar7 - n_alloc_5) + 1,0xffffffffffffffff,0x40);\n        local_d0 = prev_level;\n      }\n      while (local_d0 = local_d0 + 1, local_d0 <= lVar7) {\n        duinfo_init(dulvl_4 + local_d0 * 0x40);\n        duinfo_init(dulvl_4 + local_d0 * 0x40 + 0x20);\n      }\n    }\n    else {\n      if (lVar7 != prev_level + -1) {\n                    /* WARNING: Subroutine does not return */\n        __assert_fail(\"level == prev_level - 1\",\n                      \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/du.c\",\n                      0x268,\"process_file\");\n      }\n      duinfo_add(&local_58,dulvl_4 + prev_level * 0x40);\n      if (opt_separate_dirs != '\\x01') {\n        duinfo_add(&local_58,dulvl_4 + prev_level * 0x40 + 0x20);\n      }\n      duinfo_add(dulvl_4 + lVar7 * 0x40 + 0x20,dulvl_4 + prev_level * 0x40);\n      duinfo_add(dulvl_4 + lVar7 * 0x40 + 0x20,dulvl_4 + prev_level * 0x40 + 0x20);\n    }\n  }\n  prev_level = lVar7;\n  if ((opt_separate_dirs != '\\x01') || ((uVar1 != 6 && (uVar1 != 4)))) {\n    duinfo_add(dulvl_4 + lVar7 * 0x40,&local_78);\n  }\n  duinfo_add(tot_dui,&local_78);\n  if (((((uVar1 == 6) || (uVar1 == 4)) && (lVar7 <= max_depth)) ||\n      ((opt_all != '\\0' && (lVar7 <= max_depth)))) || (lVar7 == 0)) {\n    uVar8 = local_58;\n    if (opt_inodes != '\\0') {\n      uVar8 = local_50;\n    }\n    if ((long)opt_threshold < 0) {\n      bVar9 = uVar8 <= -opt_threshold;\n    }\n    else {\n      bVar9 = opt_threshold <= uVar8;\n    }\n    if (bVar9) {\n      print_size(&local_58,uVar6);\n    }\n  }\nLAB_0010143e:\n  if (local_30 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return local_f6;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_file",
+                        "quotearg_style",
+                        "gettext",
+                        "error",
+                        "excluded_file_name",
+                        "rpl_fts_set",
+                        "rpl_fts_read",
+                        "__assert_fail",
+                        "hash_ins",
+                        "quotearg_n_style_colon",
+                        "cycle_warning_required",
+                        "mount_point_in_fts_cycle",
+                        "get_stat_mtime",
+                        "get_stat_atime",
+                        "get_stat_ctime",
+                        "usable_st_size",
+                        "duinfo_set",
+                        "xcalloc",
+                        "xpalloc",
+                        "duinfo_init",
+                        "duinfo_add",
+                        "print_size",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "process_file",
+                        "du_files"
+                    ],
+                    "defined_in_file": "du_decompiled.c"
+                }
+            },
+            {
+                "func_name": "du_files",
+                "func_c_signature": "bool du_files(long *param_1,undefined4 param_2)",
+                "decompiled_code": "bool du_files(long *param_1,undefined4 param_2) {\n  byte bVar1;\n  int iVar2;\n  long lVar3;\n  long lVar4;\n  int *piVar5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  bool local_49;\n  \n  local_49 = true;\n  if (*param_1 != 0) {\n    lVar3 = xfts_open(param_1,param_2,0);\n    while( true ) {\n      lVar4 = rpl_fts_read(lVar3);\n      if (lVar4 == 0) break;\n      bVar1 = process_file(lVar3,lVar4);\n      local_49 = (bVar1 & local_49) != 0;\n    }\n    piVar5 = __errno_location();\n    if (*piVar5 != 0) {\n      uVar6 = quotearg_n_style_colon(0,3,*(undefined8 *)(lVar3 + 0x20));\n      uVar7 = gettext(\"fts_read failed: %s\");\n      piVar5 = __errno_location();\n      error(0,*piVar5,uVar7,uVar6);\n      local_49 = false;\n    }\n    prev_level = 0;\n    iVar2 = rpl_fts_close(lVar3);\n    if (iVar2 != 0) {\n      uVar6 = gettext(\"fts_close failed\");\n      piVar5 = __errno_location();\n      error(0,*piVar5,uVar6);\n      local_49 = false;\n    }\n  }\n  return local_49;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "du_files",
+                        "xfts_open",
+                        "rpl_fts_read",
+                        "process_file",
+                        "__errno_location",
+                        "quotearg_n_style_colon",
+                        "gettext",
+                        "error",
+                        "rpl_fts_close"
+                    ],
+                    "calling_functions": [
+                        "du_files",
+                        "main"
+                    ],
+                    "defined_in_file": "du_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  bool bVar2;\n  char cVar3;\n  byte bVar4;\n  int iVar5;\n  char *pcVar6;\n  undefined8 uVar7;\n  undefined8 uVar8;\n  undefined8 uVar9;\n  long lVar10;\n  undefined8 uVar11;\n  int *piVar12;\n  long in_FS_OFFSET;\n  bool local_17b;\n  undefined4 local_178;\n  uint local_174;\n  uint local_170;\n  int local_16c;\n  int local_168;\n  int local_164;\n  undefined4 local_160;\n  undefined4 local_15c;\n  undefined4 local_158;\n  undefined4 local_154;\n  undefined4 local_150;\n  int local_14c;\n  undefined4 local_148;\n  undefined4 local_144;\n  undefined4 local_140;\n  undefined4 local_13c;\n  undefined4 local_138;\n  undefined4 local_134;\n  undefined4 local_130;\n  undefined4 local_12c;\n  undefined4 local_128;\n  undefined4 local_124;\n  undefined4 local_120;\n  int local_11c;\n  undefined4 local_118;\n  int local_114;\n  undefined4 local_110;\n  undefined4 local_10c;\n  undefined4 local_108;\n  undefined4 local_104;\n  undefined4 local_100;\n  undefined4 local_fc;\n  undefined4 local_f8;\n  undefined4 local_f4;\n  uint local_f0;\n  undefined4 uStack_ec;\n  char *local_e8;\n  long local_e0;\n  char *local_d8;\n  undefined8 *local_d0;\n  char *local_c8;\n  undefined8 local_c0;\n  undefined8 local_b8;\n  undefined8 local_b0;\n  undefined *local_a8;\n  undefined8 local_a0;\n  undefined8 local_98;\n  undefined8 local_90;\n  undefined8 local_88;\n  undefined8 local_80;\n  undefined8 local_78;\n  undefined8 local_70;\n  undefined8 local_68;\n  undefined *local_60;\n  char *local_58;\n  undefined8 local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  long local_30;\n  \n  local_30 = *(long *)(in_FS_OFFSET + 0x28);\n  bVar2 = false;\n  local_17b = true;\n  local_e8 = (char *)0x0;\n  local_174 = 8;\n  local_170 = 0x10;\n  bVar1 = false;\n  local_48 = bad_cast(&DAT_00103ad7);\n  local_40 = 0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  exclude = new_exclude();\n  pcVar6 = getenv(\"DU_BLOCK_SIZE\");\n  human_options(pcVar6,&human_output_opts,&output_block_size);\nLAB_001016da:\n  local_178 = 0xffffffff;\n  local_16c = getopt_long(param_1,param_2,\"0abd:chHklmst:xB:DLPSX:\",long_options,&local_178);\n  if (local_16c != -1) {\n    if (0x86 < local_16c) {\nswitchD_001017a9_caseD_31:\n      local_17b = false;\n      goto LAB_001016da;\n    }\n    if (local_16c < 0x30) {\n      if (local_16c == -0x83) {\nLAB_00101c44:\n        uVar9 = proper_name_lite(\"Jim Meyering\",\"Jim Meyering\");\n        uVar11 = proper_name_lite(\"Paul Eggert\",\"Paul Eggert\");\n        uVar7 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n        uVar8 = proper_name_lite(\"Torbjorn Granlund\",&DAT_00103b95);\n        version_etc(_stdout,&DAT_00103944,\"GNU coreutils\",_Version,uVar8,uVar7,uVar11,uVar9,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (local_16c == -0x82) {\n        usage(0);\n        goto LAB_00101c44;\n      }\n      goto switchD_001017a9_caseD_31;\n    }\n    switch(local_16c) {\n    case 0x30:\n      opt_nul_terminate_output = 1;\n      break;\n    default:\n      goto switchD_001017a9_caseD_31;\n    case 0x42:\n      local_164 = human_options(_optarg,&human_output_opts,&output_block_size);\n      if (local_164 == 0) break;\n      xstrtol_fatal(local_164,local_178,(int)(char)local_16c,long_options,_optarg);\n    case 0x44:\n    case 0x48:\n      local_170 = 0x11;\n      break;\n    case 0x4c:\n      local_170 = 2;\n      break;\n    case 0x50:\n      local_170 = 0x10;\n      break;\n    case 0x53:\n      opt_separate_dirs = 1;\n      break;\n    case 0x58:\n      iVar5 = add_exclude_file(add_exclude,exclude,_optarg,0x10000000,10);\n      if (iVar5 != 0) {\n        uVar9 = quotearg_n_style_colon(0,3,_optarg);\n        piVar12 = __errno_location();\n        local_14c = *piVar12;\n        local_150 = 0;\n        local_a8 = &DAT_001039d6;\n        error(0,local_14c,&DAT_001039d6,uVar9);\n        local_17b = false;\n      }\n      break;\n    case 0x61:\n      opt_all = '\\x01';\n      break;\n    case 0x62:\n      apparent_size = '\\x01';\n      human_output_opts = 0;\n      output_block_size = 1;\n      break;\n    case 99:\n      print_grand_total = '\\x01';\n      break;\n    case 100:\n      iVar5 = xstrtoimax(_optarg,0,0,&local_f0,&DAT_00102ad4);\n      if (iVar5 == 0) {\n        bVar2 = true;\n        max_depth = CONCAT44(uStack_ec,local_f0);\n      }\n      else {\n        uVar9 = quote(_optarg);\n        local_b8 = gettext(\"invalid maximum depth %s\");\n        local_160 = 0;\n        local_15c = 0;\n        error(0,0,local_b8,uVar9);\n        local_17b = false;\n      }\n      break;\n    case 0x68:\n      human_output_opts = 0xb0;\n      output_block_size = 1;\n      break;\n    case 0x6b:\n      human_output_opts = 0;\n      output_block_size = 0x400;\n      break;\n    case 0x6c:\n      opt_count_all = '\\x01';\n      break;\n    case 0x6d:\n      human_output_opts = 0;\n      output_block_size = 0x100000;\n      break;\n    case 0x73:\n      bVar1 = true;\n      break;\n    case 0x74:\n      local_168 = xstrtoimax(_optarg,0,0,&opt_threshold,\"kKmMGTPEZYRQ0\");\n      if (local_168 != 0) {\n        xstrtol_fatal(local_168,local_178,(int)(char)local_16c,long_options,_optarg);\n      }\n      if ((opt_threshold == 0) && (*_optarg == '-')) {\n        local_b0 = gettext(\"invalid --threshold argument \\'-0\\'\");\n        local_158 = 1;\n        local_154 = 0;\n        error(1,0,local_b0);\n        goto switchD_001017a9_caseD_78;\n      }\n      break;\n    case 0x78:\nswitchD_001017a9_caseD_78:\n      local_174 = local_174 | 0x40;\n      break;\n    case 0x80:\n      apparent_size = '\\x01';\n      break;\n    case 0x81:\n      add_exclude(exclude,_optarg,0x10000000);\n      break;\n    case 0x82:\n      local_e8 = _optarg;\n      break;\n    case 0x83:\n      human_output_opts = 0x90;\n      output_block_size = 1;\n      break;\n    case 0x84:\n      opt_time = '\\x01';\n      if (_optarg == (char *)0x0) {\n        time_type = 0;\n      }\n      else {\n        lVar10 = __xargmatch_internal(\"--time\",_optarg,time_args,time_types,4,_argmatch_die,1);\n        time_type = *(undefined4 *)(time_types + lVar10 * 4);\n      }\n      pcVar6 = getenv(\"TZ\");\n      localtz = tzalloc(pcVar6);\n      break;\n    case 0x85:\n      time_style = _optarg;\n      break;\n    case 0x86:\n      goto switchD_001017a9_caseD_86;\n    }\n    goto LAB_001016da;\n  }\n  if (local_17b != true) {\n    usage(1);\n  }\n  if ((opt_all != '\\0') && (bVar1)) {\n    local_a0 = gettext(\"cannot both summarize and show all entries\");\n    local_148 = 0;\n    local_144 = 0;\n    error(0,0,local_a0);\n    usage(1);\n  }\n  if (((bVar1) && (bVar2)) && (max_depth == 0)) {\n    local_98 = gettext(\"warning: summarizing is the same as using --max-depth=0\");\n    local_140 = 0;\n    local_13c = 0;\n    error(0,0,local_98);\n  }\n  lVar10 = max_depth;\n  if (((bVar1) && (bVar2)) && (max_depth != 0)) {\n    local_90 = gettext(\"warning: summarizing conflicts with --max-depth=%td\");\n    local_138 = 0;\n    local_134 = 0;\n    error(0,0,local_90,lVar10);\n    usage(1);\n  }\n  if (bVar1) {\n    max_depth = 0;\n  }\n  if (opt_inodes != '\\0') {\n    if (apparent_size != '\\0') {\n      local_88 = gettext(\"warning: options --apparent-size and -b are ineffective with --inodes\");\n      local_130 = 0;\n      local_12c = 0;\n      error(0,0,local_88);\n    }\n    output_block_size = 1;\n  }\n  if (opt_time != '\\0') {\n    if (time_style == (char *)0x0) {\n      time_style = getenv(\"TIME_STYLE\");\n      if ((time_style == (char *)0x0) || (cVar3 = streq(time_style,\"locale\"), cVar3 != '\\0')) {\n        time_style = \"long-iso\";\n      }\n      else if (*time_style == '+') {\n        local_d8 = strchr(time_style,10);\n        if (local_d8 != (char *)0x0) {\n          *local_d8 = '\\0';\n        }\n      }\n      else {\n        while (iVar5 = strncmp(time_style,\"posix-\",prefix_len_3), iVar5 == 0) {\n          time_style = time_style + prefix_len_3;\n        }\n      }\n    }\n    if (*time_style == '+') {\n      time_format = time_style + 1;\n    }\n    else {\n      lVar10 = x_timestyle_match(time_style,0,time_style_args,time_style_types,4,1);\n      if (lVar10 == 2) {\n        time_format = \"%Y-%m-%d\";\n      }\n      else if (lVar10 < 3) {\n        if (lVar10 == 0) {\n          time_format = \"%Y-%m-%d %H:%M:%S.%N %z\";\n        }\n        else if (lVar10 == 1) {\n          time_format = \"%Y-%m-%d %H:%M\";\n        }\n      }\n    }\n  }\n  if (local_e8 == (char *)0x0) {\n    if (_optind < param_1) {\n      local_d0 = param_2 + _optind;\n    }\n    else {\n      local_d0 = &local_48;\n    }\n    local_e0 = argv_iter_init_argv(local_d0);\n    if ((_optind + 1 < param_1) || (local_170 == 2)) {\n      hash_all = '\\x01';\n    }\n    else {\n      hash_all = '\\0';\n    }\n  }\n  else {\n    if (_optind < param_1) {\n      uVar9 = quote(param_2[_optind]);\n      local_80 = gettext(\"extra operand %s\");\n      local_128 = 0;\n      local_124 = 0;\n      error(0,0,local_80,uVar9);\n      uVar9 = gettext(\"file operands cannot be combined with --files0-from\");\n      fprintf(_stderr,\"%s\\n\",uVar9);\n      usage(1);\n    }\n    cVar3 = streq(local_e8,&DAT_00103d40);\n    if ((cVar3 != '\\x01') && (lVar10 = freopen_safer(local_e8,&DAT_00103d42,_stdin), lVar10 == 0)) {\n      uVar9 = quotearg_style(4,local_e8);\n      uVar11 = gettext(\"cannot open %s for reading\");\n      piVar12 = __errno_location();\n      local_11c = *piVar12;\n      local_120 = 1;\n      local_78 = uVar11;\n      error(1,local_11c,uVar11,uVar9);\n    }\n    local_e0 = argv_iter_init_stream(_stdin);\n    hash_all = '\\x01';\n  }\n  if (local_e0 == 0) {\n    xalloc_die();\n  }\n  di_files = di_set_alloc();\n  if (di_files == 0) {\n    xalloc_die();\n  }\n  if ((opt_count_all != '\\0') || (hash_all != '\\x01')) {\n    local_174 = local_174 | 0x100;\n  }\n  local_174 = local_174 | local_170;\n  while( true ) {\n    bVar1 = false;\n    local_c8 = (char *)argv_iter(local_e0,&local_f0);\n    if (local_c8 == (char *)0x0) break;\n    if (((local_e8 != (char *)0x0) && (cVar3 = streq(local_e8,&DAT_00103d40), cVar3 != '\\0')) &&\n       (cVar3 = streq(local_c8,&DAT_00103d40), cVar3 != '\\0')) {\n      uVar9 = quotearg_style(4,local_c8);\n      local_68 = gettext(\"when reading file names from standard input, no file name of %s allowed\");\n      local_110 = 0;\n      local_10c = 0;\n      error(0,0,local_68,uVar9);\n      bVar1 = true;\n    }\n    if (*local_c8 == '\\0') {\n      if (local_e8 == (char *)0x0) {\n        uVar9 = gettext(\"invalid zero-length file name\");\n        local_108 = 0;\n        local_104 = 0;\n        local_60 = &DAT_001039d6;\n        error(0,0,&DAT_001039d6,uVar9);\n      }\n      else {\n        local_c0 = argv_iter_n_args(local_e0);\n        uVar9 = gettext(\"invalid zero-length file name\");\n        uVar11 = quotearg_n_style_colon(0,3,local_e8);\n        local_100 = 0;\n        local_fc = 0;\n        local_58 = \"%s:%td: %s\";\n        error(0,0,\"%s:%td: %s\",uVar11,local_c0,uVar9);\n      }\n      bVar1 = true;\n    }\n    if (bVar1) {\n      local_17b = false;\n    }\n    else {\n      temp_argv_0._0_8_ = local_c8;\n      bVar4 = du_files(temp_argv_0,local_174);\n      local_17b = (bVar4 & local_17b) != 0;\n    }\n  }\n  if (local_f0 == 4) {\n    uVar9 = quotearg_n_style_colon(0,3,local_e8);\n    uVar11 = gettext(\"%s: read error\");\n    piVar12 = __errno_location();\n    local_114 = *piVar12;\n    local_118 = 0;\n    local_70 = uVar11;\n    error(0,local_114,uVar11,uVar9);\n    local_17b = false;\nLAB_001025e3:\n    argv_iter_free(local_e0);\n    di_set_free(di_files);\n    if (di_mnt != 0) {\n      di_set_free(di_mnt);\n    }\n    if ((local_e8 != (char *)0x0) &&\n       (((iVar5 = ferror_unlocked(_stdin), iVar5 != 0 || (iVar5 = rpl_fclose(_stdin), iVar5 != 0))\n        && (local_17b != false)))) {\n      uVar9 = quotearg_style(4,local_e8);\n      local_50 = gettext(\"error reading %s\");\n      local_f8 = 1;\n      local_f4 = 0;\n      error(1,0,local_50,uVar9);\n    }\n    if (print_grand_total != '\\0') {\n      uVar9 = gettext(\"total\");\n      print_size(tot_dui,uVar9);\n    }\n    if (local_30 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n      __stack_chk_fail();\n    }\n    return local_17b ^ 1;\n  }\n  if (local_f0 < 5) {\n    if (local_f0 == 2) goto LAB_001025e3;\n    if (local_f0 == 3) {\n      xalloc_die();\n    }\n  }\n                    /* WARNING: Subroutine does not return */\n  __assert_fail(\"!\\\"unexpected error code from argv_iter\\\"\",\n                \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/du.c\",0x42a,\n                (char *)&__PRETTY_FUNCTION___1);\nswitchD_001017a9_caseD_86:\n  opt_inodes = '\\x01';\n  goto LAB_001016da;\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT44"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "bad_cast",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "new_exclude",
+                        "getenv",
+                        "human_options",
+                        "getopt_long",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage",
+                        "xstrtol_fatal",
+                        "add_exclude_file",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "xstrtoimax",
+                        "CONCAT44",
+                        "quote",
+                        "gettext",
+                        "add_exclude",
+                        "__xargmatch_internal",
+                        "tzalloc",
+                        "streq",
+                        "strchr",
+                        "strncmp",
+                        "x_timestyle_match",
+                        "argv_iter_init_argv",
+                        "fprintf",
+                        "freopen_safer",
+                        "quotearg_style",
+                        "argv_iter_init_stream",
+                        "xalloc_die",
+                        "di_set_alloc",
+                        "argv_iter",
+                        "argv_iter_n_args",
+                        "du_files",
+                        "argv_iter_free",
+                        "di_set_free",
+                        "ferror_unlocked",
+                        "rpl_fclose",
+                        "print_size",
+                        "__stack_chk_fail",
+                        "__assert_fail"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "du_decompiled.c"
+                }
+            }
+        ]
+    }
+}

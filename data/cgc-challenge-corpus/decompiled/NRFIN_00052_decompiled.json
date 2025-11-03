@@ -1,0 +1,415 @@
+{
+    "file": "NRFIN_00052",
+    "decompiled_code": {
+        "malloc.c": [
+            {
+                "func_name": "_addchunk",
+                "func_c_signature": "void _addchunk(int **param_1,int **param_2)",
+                "decompiled_code": "void _addchunk(int **param_1,int **param_2) {\n  *param_1 = *param_2;\n  param_1[1] = (int *)param_2;\n  (*param_2)[1] = (int)param_1;\n  *param_2 = (int *)param_1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_addchunk"
+                    ],
+                    "calling_functions": [
+                        "_addchunk",
+                        "malloc",
+                        "free"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_rmchunk",
+                "func_c_signature": "void _rmchunk(int *param_1)",
+                "decompiled_code": "void _rmchunk(int *param_1) {\n  *(int *)(*param_1 + 4) = param_1[1];\n  *(int *)param_1[1] = *param_1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_rmchunk"
+                    ],
+                    "calling_functions": [
+                        "_rmchunk",
+                        "malloc",
+                        "free"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "malloc",
+                "func_c_signature": "void * malloc(size_t __size)",
+                "decompiled_code": "void * malloc(size_t __size) {\n  void *pvVar1;\n  int iVar2;\n  uint uVar3;\n  uint *puVar4;\n  uint uStack_2c;\n  undefined4 uStack_28;\n  int *piStack_24;\n  undefined4 *puStack_20;\n  undefined auStack_1c [4];\n  int local_18;\n  uint local_14;\n  undefined4 *local_10;\n  \n  puVar4 = (uint *)auStack_1c;\n  puStack_20 = (undefined4 *)0x1106d;\n  local_10 = &freel;\n  if (__size == 0) {\n    pvVar1 = (void *)0x0;\n  }\n  else {\n    if (DAT_0001708c == (undefined4 *)0x0) {\n      DAT_0001708c = &freel;\n      freel = &freel;\n      _DAT_0001707c = &heapl;\n      heapl = &heapl;\n    }\n    local_14 = __size + 0xc;\n    do {\n      if (local_14 <= (uint)local_10[2]) {\n        puStack_20 = local_10;\n        piStack_24 = (int *)0x110f0;\n        _rmchunk();\n        puStack_20 = &heapl;\n        piStack_24 = local_10;\n        uStack_28 = 0x11102;\n        _addchunk();\n        return local_10 + 3;\n      }\n      local_10 = (undefined4 *)local_10[1];\n    } while ((undefined4 **)local_10 != &freel);\n    if (page != 0) {\n      if (local_14 <= page_remaining) {\n        piStack_24 = (int *)page;\n        *(uint *)(page + 8) = local_14;\n        page = page + local_14;\n        page_remaining = page_remaining - local_14;\n        puStack_20 = &heapl;\n        uStack_28 = 0x1118e;\n        local_10 = piStack_24;\n        _addchunk();\n        return (void *)((int)local_10 + 0xc);\n      }\n      if (page_remaining < 0xd) {\n        page = 0;\n      }\n      else {\n        piStack_24 = (int *)page;\n        puStack_20 = &freel;\n        uStack_28 = 0x111be;\n        _addchunk();\n        page = 0;\n      }\n    }\n    piStack_24 = &local_18;\n    uStack_28 = 1;\n    uStack_2c = local_14;\n    iVar2 = allocate();\n    if (iVar2 != 0) {\n      puVar4 = &uStack_2c;\n      uStack_2c = 0x80;\n      _terminate();\n    }\n    uVar3 = local_18 + local_14 & 0xfffff000;\n    page_remaining = (uVar3 - (local_14 + local_18)) + 0x1000;\n    page = uVar3 + (0x1000 - page_remaining);\n    if (page_remaining < 0xd) {\n      page = 0;\n    }\n    local_10 = (undefined4 *)local_18;\n    *(size_t *)(local_18 + 8) = __size;\n    *(undefined4 ***)((int)puVar4 + -0xc) = &heapl;\n    *(int *)((int)puVar4 + -0x10) = local_18;\n    *(undefined4 *)((int)puVar4 + -0x14) = 0x112a8;\n    _addchunk();\n    pvVar1 = (void *)((int)local_10 + 0xc);\n  }\n  return pvVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "malloc",
+                        "_rmchunk",
+                        "_addchunk",
+                        "allocate",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "malloc",
+                        "calloc",
+                        "read_instr",
+                        "list_create_node"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free",
+                "func_c_signature": "void free(void *__ptr)",
+                "decompiled_code": "void free(void *__ptr) {\n  _rmchunk((int)__ptr + -0xc);\n  _addchunk((int)__ptr + -0xc,&freel);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free",
+                        "_rmchunk",
+                        "_addchunk"
+                    ],
+                    "calling_functions": [
+                        "free",
+                        "free_parking",
+                        "read_instr",
+                        "main",
+                        "list_destroy_node"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "calloc",
+                "func_c_signature": "void * calloc(size_t __nmemb,size_t __size)",
+                "decompiled_code": "void * calloc(size_t __nmemb,size_t __size) {\n  void *__s;\n  \n  __s = malloc(__nmemb);\n  if (__s == (void *)0x0) {\n    __s = (void *)0x0;\n  }\n  else {\n    memset(__s,0,__nmemb);\n  }\n  return __s;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "calloc",
+                        "malloc",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "calloc",
+                        "read_instr"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "free_parking",
+                "func_c_signature": "void free_parking(int param_1)",
+                "decompiled_code": "void free_parking(int param_1) {\n  free(*(void **)(param_1 + 8));\n  free((void *)(param_1 + -4));\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_parking",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "free_parking"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dontfree",
+                "func_c_signature": "undefined ** dontfree(void)",
+                "decompiled_code": "undefined ** dontfree(void) {\n  return &_GLOBAL_OFFSET_TABLE_;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dontfree"
+                    ],
+                    "calling_functions": [
+                        "dontfree"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "compare_coupon",
+                "func_c_signature": "void compare_coupon(int param_1,undefined4 param_2)",
+                "decompiled_code": "void compare_coupon(int param_1,undefined4 param_2) {\n  streq(param_1 + 4,param_2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "compare_coupon",
+                        "streq"
+                    ],
+                    "calling_functions": [
+                        "compare_coupon"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "send_resp",
+                "func_c_signature": "bool send_resp(undefined4 param_1,char *param_2)",
+                "decompiled_code": "bool send_resp(undefined4 param_1,char *param_2) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 uVar3;\n  undefined4 local_110;\n  char acStack_10c [256];\n  \n  uVar3 = 0x11723;\n  puVar2 = &local_110;\n  for (iVar1 = 0x41; iVar1 != 0; iVar1 = iVar1 + -1) {\n    *puVar2 = 0;\n    puVar2 = puVar2 + 1;\n  }\n  local_110 = param_1;\n  strcpy(acStack_10c,param_2);\n  iVar1 = sendall(1,&local_110,0x104,uVar3);\n  return iVar1 != 0x104;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "send_resp",
+                        "strcpy",
+                        "sendall"
+                    ],
+                    "calling_functions": [
+                        "send_resp",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_pay",
+                "func_c_signature": "void do_pay(int param_1)",
+                "decompiled_code": "void do_pay(int param_1) {\n  stats = stats + 1;\n  DAT_00017114 = DAT_00017114 + *(int *)(param_1 + 4);\n  DAT_00017110 = (*(uint *)(param_1 + 4) >> 1) + DAT_00017110;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_pay"
+                    ],
+                    "calling_functions": [
+                        "do_pay",
+                        "add_to_stats"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_add_ticket",
+                "func_c_signature": "void do_add_ticket(int param_1)",
+                "decompiled_code": "void do_add_ticket(int param_1) {\n  int iVar1;\n  \n  DAT_00017104 = DAT_00017104 + 1;\n  DAT_00017110 = DAT_00017110 + 1;\n  iVar1 = list_find_node_with_data(ticketl,compare_ticket,param_1);\n  if (iVar1 == 0) {\n    list_insert_at_end(ticketl,param_1);\n    DAT_0001711a = DAT_0001711a + 1;\n    DAT_00017120 = DAT_00017120 + *(int *)(param_1 + 4);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_add_ticket",
+                        "list_find_node_with_data",
+                        "list_insert_at_end"
+                    ],
+                    "calling_functions": [
+                        "do_add_ticket",
+                        "add_to_stats"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_pay_ticket",
+                "func_c_signature": "void do_pay_ticket(int *param_1)",
+                "decompiled_code": "void do_pay_ticket(int *param_1) {\n  int **ppiVar1;\n  \n  DAT_0001711c = DAT_0001711c + param_1[1];\n  DAT_00017114 = DAT_00017114 + param_1[1];\n  DAT_00017120 = DAT_00017120 - param_1[1];\n  ppiVar1 = (int **)list_find_node_with_data(ticketl,compare_ticket,param_1);\n  if (((ppiVar1 != (int **)0x0) && (**ppiVar1 == *param_1)) &&\n     ((uint)(*ppiVar1)[1] <= (uint)param_1[1])) {\n    DAT_00017118 = DAT_00017118 + 1;\n    DAT_0001711a = DAT_0001711a + -1;\n    list_remove_node(ticketl,ppiVar1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_pay_ticket",
+                        "list_find_node_with_data",
+                        "list_remove_node"
+                    ],
+                    "calling_functions": [
+                        "do_pay_ticket",
+                        "add_to_stats"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_coupon",
+                "func_c_signature": "void do_coupon(int *param_1)",
+                "decompiled_code": "void do_coupon(int *param_1) {\n  int **ppiVar1;\n  \n  _DAT_00017108 = _DAT_00017108 + 1;\n  DAT_00017114 = DAT_00017114 + *param_1;\n  ppiVar1 = (int **)list_find_node_with_data(couponl,compare_coupon,param_1 + 1);\n  if (ppiVar1 != (int **)0x0) {\n    _DAT_00017124 = _DAT_00017124 - **ppiVar1;\n    DAT_00017110 = DAT_00017110 + **ppiVar1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_coupon",
+                        "list_find_node_with_data"
+                    ],
+                    "calling_functions": [
+                        "do_coupon",
+                        "add_to_stats"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_unknown",
+                "func_c_signature": "void do_unknown(void)",
+                "decompiled_code": "void do_unknown(void) {\n  _DAT_0001710c = _DAT_0001710c + 1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_unknown"
+                    ],
+                    "calling_functions": [
+                        "do_unknown",
+                        "add_to_stats"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_to_stats",
+                "func_c_signature": "void add_to_stats(uint *param_1)",
+                "decompiled_code": "void add_to_stats(uint *param_1) {\n  uint uVar1;\n  \n  uVar1 = *param_1;\n  if (uVar1 == 3) {\n    do_coupon(param_1[2]);\n    return;\n  }\n  if (uVar1 < 4) {\n    if (uVar1 == 2) {\n      do_pay_ticket(param_1[2]);\n      return;\n    }\n    if (uVar1 < 3) {\n      if (uVar1 == 0) {\n        do_pay(param_1[2]);\n        return;\n      }\n      if (uVar1 == 1) {\n        do_add_ticket(param_1[2]);\n        return;\n      }\n    }\n  }\n  do_unknown(param_1[2]);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_to_stats",
+                        "do_coupon",
+                        "do_pay_ticket",
+                        "do_pay",
+                        "do_add_ticket",
+                        "do_unknown"
+                    ],
+                    "calling_functions": [
+                        "add_to_stats"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_stats",
+                "func_c_signature": "void do_stats(undefined4 *param_1)",
+                "decompiled_code": "void do_stats(undefined4 *param_1) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 local_120;\n  char acStack_11c [268];\n  \n  puVar2 = &local_120;\n  for (iVar1 = 0x41; iVar1 != 0; iVar1 = iVar1 + -1) {\n    *puVar2 = 0;\n    puVar2 = puVar2 + 1;\n  }\n  memset(param_1,0,0x2c);\n  param_1[10] = do_stats;\n  list_init(ticketl,dontfree);\n  list_foreach(parkl,add_to_stats);\n  list_destroy(ticketl);\n  local_120 = 2;\n  sprintf(acStack_11c,\n          \"\\nPayments made: @i\\nTickets given: @i\\nCoupons used: @i\\nGross revenue: @i\\nOperating costs: @i\\nNet revenue: @i\\n\\n\"\n          ,*param_1,param_1[1],param_1[2],param_1[5],param_1[4],param_1[5] - param_1[4]);\n  iVar1 = sendall(1,&local_120,0x104);\n  if (iVar1 != 0x104) {\n    _terminate(0x23);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_stats",
+                        "memset",
+                        "list_init",
+                        "list_foreach",
+                        "list_destroy",
+                        "sprintf",
+                        "sendall",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "do_stats"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_cmd",
+                "func_c_signature": "void print_cmd(undefined4 *param_1)",
+                "decompiled_code": "void print_cmd(undefined4 *param_1) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 local_114;\n  char acStack_110 [256];\n  undefined4 *local_10;\n  \n  puVar2 = &local_114;\n  for (iVar1 = 0x41; iVar1 != 0; iVar1 = iVar1 + -1) {\n    *puVar2 = 0;\n    puVar2 = puVar2 + 1;\n  }\n  local_10 = param_1;\n  local_114 = 1;\n  sprintf(acStack_110,\"LogMessage - Type:@i, Size:@i\",*param_1,param_1[1]);\n  iVar1 = sendall(1,&local_114,0x104);\n  if (iVar1 != 0x104) {\n    _terminate(0x22);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_cmd",
+                        "sprintf",
+                        "sendall",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "print_cmd"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_instr",
+                "func_c_signature": "void * read_instr(void)",
+                "decompiled_code": "void * read_instr(void) {\n  void *__ptr;\n  size_t sVar1;\n  void *pvVar2;\n  int iVar3;\n  size_t in_stack_ffffffd8;\n  FILE *__stream;\n  \n  __stream = (FILE *)0x11ccf;\n  __ptr = calloc(0x10,in_stack_ffffffd8);\n  if (__ptr != (void *)0x0) {\n    sVar1 = fread(__ptr,0xc,(size_t)stdin,__stream);\n    if (sVar1 == 0xc) {\n      if (*(int *)((int)__ptr + 8) != -1) {\n        pvVar2 = malloc(*(int *)((int)__ptr + 8) + 1);\n        *(void **)((int)__ptr + 0xc) = pvVar2;\n        if (*(int *)((int)__ptr + 0xc) != 0) {\n          iVar3 = fread_until(*(undefined4 *)((int)__ptr + 0xc),0x24,*(int *)((int)__ptr + 8) + 1,\n                              stdin);\n          if (iVar3 != *(int *)((int)__ptr + 8)) {\n            free(*(void **)((int)__ptr + 0xc));\n            free(__ptr);\n            return (void *)0x0;\n          }\n          return __ptr;\n        }\n      }\n      free(__ptr);\n    }\n    else {\n      free(__ptr);\n    }\n  }\n  return (void *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_instr",
+                        "calloc",
+                        "fread",
+                        "malloc",
+                        "fread_until",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "read_instr",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined4 *__ptr;\n  \n  DAT_00017128 = do_stats;\n  statsp = &stats;\n  list_init(parkl,free_parking);\n  list_init(couponl,free);\n  iVar1 = send_resp(0,\"INITSTART\");\n  if (iVar1 != 0) {\n    return 1;\n  }\n  do {\n    __ptr = (undefined4 *)read_instr();\n    if (__ptr == (undefined4 *)0x0) goto LAB_00011fb2;\n    switch(*__ptr) {\n    case 0:\n      if (7 < (uint)__ptr[2]) {\n        list_insert_at_end(parkl,__ptr + 1);\n      }\n      break;\n    case 1:\n      if (0x83 < (uint)__ptr[2]) {\n        *(undefined *)(__ptr[3] + 0x83) = 0;\n        list_insert_at_end(couponl,__ptr[3]);\n        free(__ptr);\n      }\n      break;\n    case 2:\n      (*DAT_00017128)(statsp);\n      free((void *)__ptr[3]);\n      free(__ptr);\n      break;\n    case 3:\n      list_foreach(parkl,print_cmd);\n      free((void *)__ptr[3]);\n      free(__ptr);\n      break;\n    case 4:\n      free((void *)__ptr[3]);\n      free(__ptr);\nLAB_00011fb2:\n      (*DAT_00017128)(statsp);\n      list_destroy(parkl);\n      list_destroy(couponl);\n      iVar1 = send_resp(3,\"done.\");\n      if (iVar1 != 0) {\n        return 1;\n      }\n      return 0;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "list_init",
+                        "send_resp",
+                        "read_instr",
+                        "list_insert_at_end",
+                        "free",
+                        "list_foreach",
+                        "list_destroy"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00052_decompiled.c"
+                }
+            }
+        ]
+    }
+}

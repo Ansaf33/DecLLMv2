@@ -1,0 +1,149 @@
+{
+    "file": "tee",
+    "decompiled_code": {
+        "tee.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [FILE]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Copy standard input to each FILE, and also to standard output.\\n\\n  -a, --append              append to the given FILEs, do not overwrite\\n  -i, --ignore-interrupts   ignore interrupt signals\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -p                        operate in a more appropriate MODE with pipes\\n      --output-error[=MODE]   set behavior on write error.  See MODE below\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nMODE determines behavior with write errors on the outputs:\\n  warn           diagnose errors writing to any output\\n  warn-nopipe    diagnose errors writing to any output not a pipe\\n  exit           exit on error writing to any output\\n  exit-nopipe    exit on error writing to any output not a pipe\\nThe default MODE for the -p option is \\'warn-nopipe\\'.\\nWith \\\"nopipe\\\" MODEs, exit immediately if all outputs become broken pipes.\\nThe default operation when --output-error is not specified, is to\\nexit immediately on error writing to a pipe, and diagnose errors\\nwriting to non pipe outputs.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(&DAT_00101662);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "tee_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  char cVar1;\n  undefined uVar2;\n  byte bVar3;\n  int iVar4;\n  long lVar5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  undefined8 uVar8;\n  int *piVar9;\n  \n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  append = 0;\n  ignore_interrupts = '\\0';\nLAB_001005bd:\n  while( true ) {\n    iVar4 = getopt_long(param_1,param_2,&DAT_001016cb,long_options,0);\n    if (iVar4 == -1) {\n      if (ignore_interrupts != '\\0') {\n        signal(2,(__sighandler_t)0x1);\n      }\n      if (output_error != 0) {\n        signal(0xd,(__sighandler_t)0x1);\n      }\n      if (((output_error == 2) || (output_error == 4)) &&\n         (cVar1 = iopoll_input_ok(0), cVar1 != '\\0')) {\n        uVar2 = 1;\n      }\n      else {\n        uVar2 = 0;\n      }\n      bVar3 = tee_files(param_1 - _optind,param_2 + _optind,uVar2);\n      iVar4 = close(0);\n      if (iVar4 != 0) {\n        uVar8 = gettext(\"standard input\");\n        piVar9 = __errno_location();\n        error(1,*piVar9,&DAT_001016de,uVar8);\n      }\n      return bVar3 ^ 1;\n    }\n    if (iVar4 != 0x70) break;\n    if (_optarg == 0) {\n      output_error = 2;\n    }\n    else {\n      lVar5 = __xargmatch_internal\n                        (\"--output-error\",_optarg,output_error_args,output_error_types,4,\n                         _argmatch_die,1);\n      output_error = *(int *)(output_error_types + lVar5 * 4);\n    }\n  }\n  if (iVar4 < 0x71) {\n    if (iVar4 == 0x69) {\n      ignore_interrupts = '\\x01';\n      goto LAB_001005bd;\n    }\n    if (0x69 < iVar4) goto LAB_001005b3;\n    if (iVar4 == 0x61) {\n      append = 1;\n      goto LAB_001005bd;\n    }\n    if (iVar4 < 0x62) {\n      if (iVar4 == -0x83) {\nLAB_0010051c:\n        uVar8 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n        uVar6 = proper_name_lite(\"Richard M. Stallman\",\"Richard M. Stallman\");\n        uVar7 = proper_name_lite(\"Mike Parker\",\"Mike Parker\");\n        version_etc(_stdout,&DAT_00101662,\"GNU coreutils\",_Version,uVar7,uVar6,uVar8,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar4 == -0x82) {\n        usage(0);\n        goto LAB_0010051c;\n      }\n    }\n  }\nLAB_001005b3:\n  usage(1);\n  goto LAB_001005bd;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "signal",
+                        "iopoll_input_ok",
+                        "tee_files",
+                        "close",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "__xargmatch_internal",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "tee_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_next_out",
+                "func_c_signature": "int get_next_out(long param_1,int param_2,int param_3)",
+                "decompiled_code": "int get_next_out(long param_1,int param_2,int param_3) {\n  int local_18;\n  \n  local_18 = param_3 + 1;\n  while( true ) {\n    if (param_2 < local_18) {\n      return -1;\n    }\n    if (*(long *)(param_1 + (long)local_18 * 8) != 0) break;\n    local_18 = local_18 + 1;\n  }\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_next_out"
+                    ],
+                    "calling_functions": [
+                        "get_next_out",
+                        "tee_files"
+                    ],
+                    "defined_in_file": "tee_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fail_output",
+                "func_c_signature": "char fail_output(long param_1,long param_2,int param_3)",
+                "decompiled_code": "char fail_output(long param_1,long param_2,int param_3) {\n  int iVar1;\n  char cVar2;\n  undefined4 uVar3;\n  int *piVar4;\n  undefined8 uVar5;\n  \n  piVar4 = __errno_location();\n  iVar1 = *piVar4;\n  piVar4 = __errno_location();\n  if (((*piVar4 == 0x20) && (output_error != 3)) && (output_error != 1)) {\n    cVar2 = '\\0';\n  }\n  else {\n    cVar2 = '\\x01';\n  }\n  if (*(FILE **)(param_1 + (long)param_3 * 8) == _stdout) {\n    clearerr_unlocked(_stdout);\n  }\n  if (cVar2 != '\\0') {\n    if ((output_error == 3) || (output_error == 4)) {\n      uVar3 = 1;\n    }\n    else {\n      uVar3 = 0;\n    }\n    uVar5 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_2 + (long)param_3 * 8));\n    error(uVar3,iVar1,&DAT_001016de,uVar5);\n  }\n  *(undefined8 *)(param_1 + (long)param_3 * 8) = 0;\n  return cVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fail_output",
+                        "__errno_location",
+                        "clearerr_unlocked",
+                        "quotearg_n_style_colon",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "fail_output",
+                        "tee_files"
+                    ],
+                    "defined_in_file": "tee_decompiled.c"
+                }
+            },
+            {
+                "func_name": "tee_files",
+                "func_c_signature": "undefined tee_files(int param_1,long param_2,char param_3)",
+                "decompiled_code": "undefined tee_files(int param_1,long param_2,char param_3) {\n  undefined8 *puVar1;\n  undefined uVar2;\n  char cVar3;\n  int iVar4;\n  undefined4 uVar5;\n  undefined *puVar6;\n  FILE **__ptr;\n  undefined8 uVar7;\n  FILE *pFVar8;\n  int *piVar9;\n  long in_FS_OFFSET;\n  undefined local_20a1;\n  int local_20a0;\n  int local_209c;\n  long local_2070;\n  undefined *local_2068;\n  ssize_t local_2060;\n  undefined local_2028 [8200];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_2068 = (undefined *)0x0;\n  local_2060 = 0;\n  local_209c = 0;\n  local_20a1 = 1;\n  if (append == '\\0') {\n    puVar6 = &DAT_001016e3;\n  }\n  else {\n    puVar6 = &DAT_001016e1;\n  }\n  xset_binary_mode(0,0);\n  xset_binary_mode(1,0);\n  fadvise(_stdin,2);\n  __ptr = (FILE **)xnmalloc((long)(param_1 + 1),8);\n  if (param_3 != '\\0') {\n    local_2068 = (undefined *)xnmalloc((long)(param_1 + 1),1);\n  }\n  puVar1 = (undefined8 *)(param_2 + -8);\n  *__ptr = _stdout;\n  if (param_3 != '\\0') {\n    iVar4 = fileno_unlocked(*__ptr);\n    uVar2 = iopoll_output_ok(iVar4);\n    *local_2068 = uVar2;\n  }\n  uVar7 = gettext(\"standard output\");\n  uVar7 = bad_cast(uVar7);\n  *puVar1 = uVar7;\n  setvbuf(_stdout,(char *)0x0,2,0);\n  local_2070 = 1;\n  for (local_20a0 = 1; local_20a0 <= param_1; local_20a0 = local_20a0 + 1) {\n    pFVar8 = (FILE *)fopen_safer(puVar1[local_20a0],puVar6);\n    __ptr[local_20a0] = pFVar8;\n    if (__ptr[local_20a0] == (FILE *)0x0) {\n      if (param_3 != '\\0') {\n        local_2068[local_20a0] = 0;\n      }\n      if ((output_error == 3) || (output_error == 4)) {\n        uVar5 = 1;\n      }\n      else {\n        uVar5 = 0;\n      }\n      uVar7 = quotearg_n_style_colon(0,3,puVar1[local_20a0]);\n      piVar9 = __errno_location();\n      error(uVar5,*piVar9,&DAT_001016de,uVar7);\n      local_20a1 = 0;\n    }\n    else {\n      if (param_3 != '\\0') {\n        iVar4 = fileno_unlocked(__ptr[local_20a0]);\n        uVar2 = iopoll_output_ok(iVar4);\n        local_2068[local_20a0] = uVar2;\n      }\n      setvbuf(__ptr[local_20a0],(char *)0x0,2,0);\n      local_2070 = local_2070 + 1;\n    }\n  }\n  while (local_2070 != 0) {\n    if ((param_3 == '\\0') || (local_2068[local_209c] == '\\0')) {\nLAB_00100d51:\n      local_2060 = read(0,local_2028,0x2000);\n      if ((-1 < local_2060) || (piVar9 = __errno_location(), *piVar9 != 4)) {\n        if (local_2060 < 1) break;\n        for (local_20a0 = 0; local_20a0 <= param_1; local_20a0 = local_20a0 + 1) {\n          if ((__ptr[local_20a0] != (FILE *)0x0) &&\n             (cVar3 = fwrite_wait(local_2028,local_2060,__ptr[local_20a0]), cVar3 != '\\x01')) {\n            cVar3 = fail_output(__ptr,puVar1,local_20a0);\n            if (cVar3 != '\\0') {\n              local_20a1 = 0;\n            }\n            local_2070 = local_2070 + -1;\n            if (local_20a0 == local_209c) {\n              local_209c = get_next_out(__ptr,param_1,local_209c);\n            }\n          }\n        }\n      }\n    }\n    else {\n      iVar4 = fileno_unlocked(__ptr[local_209c]);\n      iVar4 = iopoll(0,iVar4,1);\n      if (iVar4 != -2) {\n        if (iVar4 == -3) {\n          uVar7 = gettext(\"iopoll error\");\n          piVar9 = __errno_location();\n          error(0,*piVar9,uVar7);\n          local_20a1 = 0;\n        }\n        goto LAB_00100d51;\n      }\n      piVar9 = __errno_location();\n      *piVar9 = 0x20;\n      cVar3 = fail_output(__ptr,puVar1,local_209c);\n      if (cVar3 != '\\0') {\n        local_20a1 = 0;\n      }\n      local_2070 = local_2070 + -1;\n      local_209c = get_next_out(__ptr,param_1,local_209c);\n    }\n  }\n  if (local_2060 == -1) {\n    uVar7 = gettext(\"read error\");\n    piVar9 = __errno_location();\n    error(0,*piVar9,uVar7);\n    local_20a1 = 0;\n  }\n  for (local_20a0 = 1; local_20a0 <= param_1; local_20a0 = local_20a0 + 1) {\n    if ((__ptr[local_20a0] != (FILE *)0x0) &&\n       (cVar3 = fclose_wait(__ptr[local_20a0]), cVar3 != '\\x01')) {\n      uVar7 = quotearg_n_style_colon(0,3,puVar1[local_20a0]);\n      piVar9 = __errno_location();\n      error(0,*piVar9,&DAT_001016de,uVar7);\n      local_20a1 = 0;\n    }\n  }\n  free(__ptr);\n  if (param_3 != '\\0') {\n    free(local_2068);\n  }\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return local_20a1;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "tee_files",
+                        "xset_binary_mode",
+                        "fadvise",
+                        "xnmalloc",
+                        "fileno_unlocked",
+                        "iopoll_output_ok",
+                        "gettext",
+                        "bad_cast",
+                        "setvbuf",
+                        "fopen_safer",
+                        "quotearg_n_style_colon",
+                        "__errno_location",
+                        "error",
+                        "read",
+                        "fwrite_wait",
+                        "fail_output",
+                        "get_next_out",
+                        "iopoll",
+                        "fclose_wait",
+                        "free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "tee_files"
+                    ],
+                    "defined_in_file": "tee_decompiled.c"
+                }
+            }
+        ]
+    }
+}

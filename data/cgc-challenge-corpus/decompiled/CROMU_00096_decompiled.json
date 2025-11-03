@@ -1,0 +1,728 @@
+{
+    "file": "CROMU_00096",
+    "decompiled_code": {
+        "cstring.c": [
+            {
+                "func_name": "ReceiveBytes",
+                "func_c_signature": "int ReceiveBytes(int param_1,int param_2)",
+                "decompiled_code": "int ReceiveBytes(int param_1,int param_2) {\n  undefined *puVar1;\n  undefined *puVar2;\n  undefined auStack_1c [4];\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  puVar2 = auStack_1c;\n  local_10 = 0;\n  if (param_1 == 0) {\n    local_10 = -1;\n  }\n  else {\n    for (; local_10 < param_2; local_10 = local_18 + local_10) {\n      *(int **)(puVar2 + -4) = &local_18;\n      *(int *)(puVar2 + -8) = param_2 - local_10;\n      *(int *)(puVar2 + -0xc) = local_10 + param_1;\n      *(undefined4 *)(puVar2 + -0x10) = 0;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11043;\n      local_14 = receive();\n      puVar1 = puVar2;\n      if (local_14 != 0) {\n        puVar1 = puVar2 + -0x10;\n        *(undefined4 *)(puVar2 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar2 + -0x14) = 0x11059;\n        _terminate();\n      }\n      puVar2 = puVar1;\n      if (local_18 == 0) {\n        puVar2 = puVar1 + -0x10;\n        *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n        *(undefined4 *)(puVar1 + -0x14) = 0x1106a;\n        _terminate();\n      }\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReceiveBytes",
+                        "receive",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "ReceiveBytes",
+                        "ReceiveCString",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "TransmitBytes",
+                "func_c_signature": "undefined4 TransmitBytes(int param_1,int param_2)",
+                "decompiled_code": "undefined4 TransmitBytes(int param_1,int param_2) {\n  undefined *puVar1;\n  undefined *puVar2;\n  undefined auStack_1c [4];\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  puVar2 = auStack_1c;\n  local_14 = 0;\n  for (local_10 = 0; local_10 < param_2; local_10 = local_18 + local_10) {\n    *(int **)(puVar2 + -4) = &local_18;\n    *(int *)(puVar2 + -8) = param_2 - local_10;\n    *(int *)(puVar2 + -0xc) = local_10 + param_1;\n    *(undefined4 *)(puVar2 + -0x10) = 1;\n    *(undefined4 *)(puVar2 + -0x14) = 0x110c4;\n    local_14 = transmit();\n    puVar1 = puVar2;\n    if (local_14 != 0) {\n      puVar1 = puVar2 + -0x10;\n      *(undefined4 *)(puVar2 + -0x10) = 0xffffffff;\n      *(undefined4 *)(puVar2 + -0x14) = 0x110da;\n      _terminate();\n    }\n    puVar2 = puVar1;\n    if (local_18 == 0) {\n      puVar2 = puVar1 + -0x10;\n      *(undefined4 *)(puVar1 + -0x10) = 0xffffffff;\n      *(undefined4 *)(puVar1 + -0x14) = 0x110eb;\n      _terminate();\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "TransmitBytes",
+                        "transmit",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "TransmitBytes",
+                        "TransmitCString"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReceiveCString",
+                "func_c_signature": "ushort * ReceiveCString(int param_1)",
+                "decompiled_code": "ushort * ReceiveCString(int param_1) {\n  undefined4 uVar1;\n  int iVar2;\n  void *pvVar3;\n  uint uVar4;\n  undefined *puVar5;\n  size_t in_stack_ffffffd8;\n  undefined auStack_1c [12];\n  ushort *local_10;\n  \n  local_10 = (ushort *)calloc(8,in_stack_ffffffd8);\n  iVar2 = ReceiveBytes();\n  if (iVar2 == 2) {\n    puVar5 = auStack_1c;\n    if (param_1 < (int)(uint)*local_10) {\n      printf(\"FATAL\\n\");\n      _terminate();\n      puVar5 = &stack0xffffffd4;\n    }\n    if (*local_10 != 0) {\n      *(uint *)(puVar5 + -0x10) = *local_10 + 1;\n      *(undefined4 *)(puVar5 + -0x14) = 0x111a2;\n      pvVar3 = calloc(*(size_t *)(puVar5 + -0x10),*(size_t *)(puVar5 + -0xc));\n      *(void **)(local_10 + 2) = pvVar3;\n      uVar1 = *(undefined4 *)(local_10 + 2);\n      *(uint *)(puVar5 + -0xc) = (uint)*local_10;\n      *(undefined4 *)(puVar5 + -0x10) = uVar1;\n      *(undefined4 *)(puVar5 + -0x14) = 0x111c4;\n      uVar4 = ReceiveBytes();\n      if (uVar4 != *local_10) {\n        *(ushort **)(puVar5 + -0x10) = local_10;\n        *(undefined4 *)(puVar5 + -0x14) = 0x111e1;\n        DestroyCString();\n        local_10 = (ushort *)0x0;\n      }\n    }\n  }\n  else {\n    DestroyCString();\n    local_10 = (ushort *)0x0;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReceiveCString",
+                        "calloc",
+                        "ReceiveBytes",
+                        "printf",
+                        "_terminate",
+                        "DestroyCString"
+                    ],
+                    "calling_functions": [
+                        "ReceiveCString",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DestroyCString",
+                "func_c_signature": "void DestroyCString(void *param_1)",
+                "decompiled_code": "void DestroyCString(void *param_1) {\n  if (param_1 != (void *)0x0) {\n    free(*(void **)((int)param_1 + 4));\n  }\n  free(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DestroyCString",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "ReceiveCString",
+                        "DestroyCString",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "TransmitCString",
+                "func_c_signature": "void TransmitCString(undefined2 *param_1)",
+                "decompiled_code": "void TransmitCString(undefined2 *param_1) {\n  TransmitBytes(param_1,2);\n  TransmitBytes(*(undefined4 *)(param_1 + 2),*param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "TransmitCString",
+                        "TransmitBytes"
+                    ],
+                    "calling_functions": [
+                        "TransmitCString"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            }
+        ],
+        "filesystem.c": [
+            {
+                "func_name": "InitializeFileSystem",
+                "func_c_signature": "void * InitializeFileSystem(void)",
+                "decompiled_code": "void * InitializeFileSystem(void) {\n  size_t in_stack_ffffffe8;\n  \n  root = calloc(0x60,in_stack_ffffffe8);\n  memcpy(root,&DAT_00016007,4);\n  *(undefined *)((int)root + 0x41) = 0xf7;\n  numFiles = 1;\n  return root;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitializeFileSystem",
+                        "calloc",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "InitializeFileSystem",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "NextFileID",
+                "func_c_signature": "undefined NextFileID(void)",
+                "decompiled_code": "undefined NextFileID(void) {\n  undefined2 *puVar1;\n  undefined2 uVar2;\n  \n  puVar1 = pNextFileID + 1;\n  uVar2 = *pNextFileID;\n  pNextFileID = puVar1;\n  if ((undefined2 *)0x4347cfff < puVar1) {\n    pNextFileID = (undefined2 *)&DAT_4347c000;\n  }\n  return (char)uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "NextFileID"
+                    ],
+                    "calling_functions": [
+                        "NextFileID",
+                        "CreateFile"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CreateFile",
+                "func_c_signature": "undefined4 CreateFile(char *param_1,byte param_2,uint param_3,void *param_4,int param_5)",
+                "decompiled_code": "undefined4 CreateFile(char *param_1,byte param_2,uint param_3,void *param_4,int param_5) {\n  undefined2 uVar1;\n  size_t __n;\n  undefined4 uVar2;\n  int iVar3;\n  char *pcVar4;\n  void *pvVar5;\n  char *local_14;\n  char *local_10;\n  \n  __n = strlen(param_1);\n  if (__n == 0) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    if ((param_5 == 0) || (*(char *)(param_5 + 0x41) != -9)) {\n      param_5 = root;\n    }\n    iVar3 = GetPathDepth(param_5);\n    if (iVar3 < 10) {\n      if (param_2 < 0xf8) {\n        if (param_3 < 0x801) {\n          if (numFiles < 0x100) {\n            pcVar4 = \"upone\";\n            iVar3 = strcmp(param_1,\"upone\");\n            if (iVar3 == 0) {\n              uVar2 = 0xffffffff;\n            }\n            else {\n              if (param_2 == 0xf7) {\n                param_3 = 0;\n              }\n              pcVar4 = (char *)calloc(0x60,(size_t)pcVar4);\n              memcpy(pcVar4,param_1,__n);\n              pcVar4[0x41] = param_2;\n              uVar1 = NextFileID();\n              *(undefined2 *)(pcVar4 + 0x48) = uVar1;\n              numFiles = numFiles + 1;\n              if ((param_3 != 0) && (param_4 != (void *)0x0)) {\n                pvVar5 = calloc(param_3,(size_t)param_1);\n                *(void **)(pcVar4 + 0x5c) = pvVar5;\n                memcpy(*(void **)(pcVar4 + 0x5c),param_4,param_3);\n                *(uint *)(pcVar4 + 0x44) = param_3;\n              }\n              local_14 = (char *)0x0;\n              local_10 = *(char **)(param_5 + 0x58);\n              *(int *)(pcVar4 + 0x54) = param_5;\n              if (local_10 == (char *)0x0) {\n                *(char **)(param_5 + 0x58) = pcVar4;\n                uVar2 = 0;\n              }\n              else {\n                for (; local_10 != (char *)0x0; local_10 = *(char **)(local_10 + 0x50)) {\n                  iVar3 = strcmp(pcVar4,local_10);\n                  if (iVar3 == 0) {\n                    DestroyNode(pcVar4);\n                    return 0xfffffffd;\n                  }\n                  if (iVar3 < 0) {\n                    if (*(int *)(local_10 + 0x4c) == 0) {\n                      *(char **)(pcVar4 + 0x50) = local_10;\n                      *(char **)(local_10 + 0x4c) = pcVar4;\n                      *(char **)(param_5 + 0x58) = pcVar4;\n                      return 0;\n                    }\n                    *(char **)(pcVar4 + 0x50) = local_10;\n                    *(undefined4 *)(pcVar4 + 0x4c) = *(undefined4 *)(local_10 + 0x4c);\n                    *(char **)(*(int *)(local_10 + 0x4c) + 0x50) = pcVar4;\n                    *(char **)(*(int *)(pcVar4 + 0x50) + 0x4c) = pcVar4;\n                    return 0;\n                  }\n                  local_14 = local_10;\n                }\n                *(char **)(local_14 + 0x50) = pcVar4;\n                *(char **)(pcVar4 + 0x4c) = local_14;\n                uVar2 = 0;\n              }\n            }\n          }\n          else {\n            uVar2 = 0xfffffffb;\n          }\n        }\n        else {\n          uVar2 = 0xffffffff;\n        }\n      }\n      else {\n        uVar2 = 0xffffffff;\n      }\n    }\n    else {\n      uVar2 = 0xfffffffc;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CreateFile",
+                        "strlen",
+                        "GetPathDepth",
+                        "strcmp",
+                        "calloc",
+                        "memcpy",
+                        "NextFileID",
+                        "DestroyNode"
+                    ],
+                    "calling_functions": [
+                        "CreateFile",
+                        "InitializeOSFiles",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DestroyNode",
+                "func_c_signature": "void DestroyNode(int param_1)",
+                "decompiled_code": "void DestroyNode(int param_1) {\n  if (param_1 != 0) {\n    numFiles = numFiles + -1;\n    DestroyNode(*(undefined4 *)(param_1 + 0x58));\n    DestroyNode(*(undefined4 *)(param_1 + 0x50));\n    free(*(void **)(param_1 + 0x5c));\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DestroyNode",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "CreateFile",
+                        "DestroyNode",
+                        "DeleteFile"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FindFile",
+                "func_c_signature": "char * FindFile(char *param_1,int param_2)",
+                "decompiled_code": "char * FindFile(char *param_1,int param_2) {\n  int iVar1;\n  char *local_10;\n  \n  if ((param_2 != 0) && (param_1 != (char *)0x0)) {\n    for (local_10 = *(char **)(param_2 + 0x58); local_10 != (char *)0x0;\n        local_10 = *(char **)(local_10 + 0x50)) {\n      iVar1 = strcmp(param_1,local_10);\n      if (iVar1 == 0) {\n        return local_10;\n      }\n      if (iVar1 < 0) {\n        return (char *)0x0;\n      }\n    }\n  }\n  return (char *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindFile",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "FindFile",
+                        "FindFileAbsolute",
+                        "DeleteFile",
+                        "InitializeOSFiles",
+                        "VerifyAndLoadFlavorFile",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FindFileAbsolute",
+                "func_c_signature": "undefined4 FindFileAbsolute(char *param_1)",
+                "decompiled_code": "undefined4 FindFileAbsolute(char *param_1) {\n  undefined4 uVar1;\n  undefined local_59 [65];\n  char *local_18;\n  int local_14;\n  char *local_10;\n  \n  if (param_1 != (char *)0x0) {\n    local_10 = param_1;\n    local_18 = param_1;\n    local_14 = root;\n    do {\n      if ((*local_10 == '\\0') || (local_18 = strchr(local_10,0x25), local_18 == (char *)0x0)) {\n        uVar1 = FindFile(local_10,local_14);\n        return uVar1;\n      }\n      memset(local_59,0,0x41);\n      memcpy(local_59,local_10,(int)local_18 - (int)local_10);\n      local_10 = local_18 + 1;\n      local_14 = FindFile(local_59,local_14);\n    } while (local_14 != 0);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FindFileAbsolute",
+                        "strchr",
+                        "FindFile",
+                        "memset",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "FindFileAbsolute",
+                        "ListFilesLong",
+                        "VerifyAndLoadFlavorFile"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DeleteFile",
+                "func_c_signature": "undefined4 DeleteFile(undefined4 param_1,int param_2)",
+                "decompiled_code": "undefined4 DeleteFile(undefined4 param_1,int param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  \n  iVar1 = FindFile(param_1,param_2);\n  if (iVar1 == 0) {\n    uVar2 = 0xfffffffe;\n  }\n  else if (iVar1 == root) {\n    uVar2 = 0xfffffffc;\n  }\n  else {\n    if (iVar1 == *(int *)(param_2 + 0x58)) {\n      *(undefined4 *)(param_2 + 0x58) = *(undefined4 *)(iVar1 + 0x50);\n    }\n    if (*(int *)(iVar1 + 0x4c) != 0) {\n      *(undefined4 *)(*(int *)(iVar1 + 0x4c) + 0x50) = *(undefined4 *)(iVar1 + 0x50);\n    }\n    if (*(int *)(iVar1 + 0x50) != 0) {\n      *(undefined4 *)(*(int *)(iVar1 + 0x50) + 0x4c) = *(undefined4 *)(iVar1 + 0x4c);\n    }\n    *(undefined4 *)(iVar1 + 0x4c) = 0;\n    *(undefined4 *)(iVar1 + 0x50) = 0;\n    DestroyNode(iVar1);\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DeleteFile",
+                        "FindFile",
+                        "DestroyNode"
+                    ],
+                    "calling_functions": [
+                        "DeleteFile",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GetFileType",
+                "func_c_signature": "undefined GetFileType(int param_1)",
+                "decompiled_code": "undefined GetFileType(int param_1) {\n  undefined uVar1;\n  \n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = *(undefined *)(param_1 + 0x41);\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GetFileType"
+                    ],
+                    "calling_functions": [
+                        "GetFileType",
+                        "ListFilesLong",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GetFileSize",
+                "func_c_signature": "undefined4 GetFileSize(int param_1)",
+                "decompiled_code": "undefined4 GetFileSize(int param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = *(undefined4 *)(param_1 + 0x44);\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GetFileSize"
+                    ],
+                    "calling_functions": [
+                        "GetFileSize",
+                        "ListFilesLong"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GetFileID",
+                "func_c_signature": "undefined2 GetFileID(int param_1)",
+                "decompiled_code": "undefined2 GetFileID(int param_1) {\n  undefined2 uVar1;\n  \n  if (param_1 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = *(undefined2 *)(param_1 + 0x48);\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GetFileID"
+                    ],
+                    "calling_functions": [
+                        "GetFileID",
+                        "ListFilesRecurse"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GetFilePath",
+                "func_c_signature": "void * GetFilePath(char *param_1)",
+                "decompiled_code": "void * GetFilePath(char *param_1) {\n  void *__dest;\n  size_t sVar1;\n  size_t __n;\n  size_t in_stack_ffffffd8;\n  undefined *local_18;\n  char *local_14;\n  int local_10;\n  \n  if (param_1 == (char *)0x0) {\n    __dest = (void *)0x0;\n  }\n  else if (param_1 == root) {\n    __dest = (void *)0x0;\n  }\n  else {\n    local_10 = 5;\n    for (local_14 = *(char **)(param_1 + 0x54); local_14 != root;\n        local_14 = *(char **)(local_14 + 0x54)) {\n      sVar1 = strlen(local_14);\n      local_10 = local_10 + sVar1 + 1;\n    }\n    __dest = calloc(local_10 + 1,in_stack_ffffffd8);\n    local_14 = *(char **)(param_1 + 0x54);\n    local_18 = (undefined *)((int)__dest + local_10 + -1);\n    *local_18 = 0x25;\n    for (; local_14 != root; local_14 = *(char **)(local_14 + 0x54)) {\n      sVar1 = strlen(local_14);\n      __n = strlen(local_14);\n      memcpy(local_18 + -sVar1,local_14,__n);\n      local_18 = local_18 + -sVar1 + -1;\n      *local_18 = 0x25;\n    }\n    memcpy(__dest,&DAT_00016007,4);\n  }\n  return __dest;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GetFilePath",
+                        "strlen",
+                        "calloc",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "GetFilePath",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GetPathDepth",
+                "func_c_signature": "int GetPathDepth(int param_1)",
+                "decompiled_code": "int GetPathDepth(int param_1) {\n  int local_c;\n  int local_8;\n  \n  local_8 = 0;\n  for (local_c = param_1; (local_c != root && (local_c != 0)); local_c = *(int *)(local_c + 0x54)) {\n    local_8 = local_8 + 1;\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GetPathDepth"
+                    ],
+                    "calling_functions": [
+                        "CreateFile",
+                        "GetPathDepth"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReadFile",
+                "func_c_signature": "void * ReadFile(int param_1)",
+                "decompiled_code": "void * ReadFile(int param_1) {\n  size_t in_stack_ffffffd8;\n  void *local_10;\n  \n  local_10 = (void *)0x0;\n  if (param_1 == 0) {\n    local_10 = (void *)0x0;\n  }\n  else if (*(int *)(param_1 + 0x44) != 0) {\n    local_10 = calloc(*(int *)(param_1 + 0x44) + 1,in_stack_ffffffd8);\n    memcpy(local_10,*(void **)(param_1 + 0x5c),*(size_t *)(param_1 + 0x44));\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReadFile",
+                        "calloc",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "ReadFile",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GetFileName",
+                "func_c_signature": "undefined4 GetFileName(undefined4 param_1)",
+                "decompiled_code": "undefined4 GetFileName(undefined4 param_1) {\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GetFileName"
+                    ],
+                    "calling_functions": [
+                        "GetFileName",
+                        "ListFilesLong",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GetParent",
+                "func_c_signature": "int GetParent(int param_1)",
+                "decompiled_code": "int GetParent(int param_1) {\n  int iVar1;\n  \n  iVar1 = root;\n  if (param_1 != root) {\n    iVar1 = *(int *)(param_1 + 0x54);\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GetParent"
+                    ],
+                    "calling_functions": [
+                        "GetParent",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            }
+        ],
+        "loader.c": [
+            {
+                "func_name": "LoadSharedLibrary",
+                "func_c_signature": "undefined * LoadSharedLibrary(int param_1)",
+                "decompiled_code": "undefined * LoadSharedLibrary(int param_1) {\n  int *piVar1;\n  undefined *puVar2;\n  void *pvVar3;\n  undefined4 uVar4;\n  size_t in_stack_ffffffd8;\n  int local_10;\n  \n  if (param_1 == 0) {\n    puVar2 = (undefined *)0x0;\n  }\n  else {\n    puVar2 = (undefined *)calloc(0x14,in_stack_ffffffd8);\n    piVar1 = *(int **)(param_1 + 0x5c);\n    if (*piVar1 == *(int *)(param_1 + 0x44)) {\n      if (piVar1[1] == -0x39833894) {\n        if ((*(char *)(piVar1 + 2) == -0x1f) || (*(char *)(piVar1 + 2) == -0x1e)) {\n          if (*(short *)((int)piVar1 + 9) == 0) {\n            debug_print(\"Invalid file header: functions\\n\");\n            puVar2 = (undefined *)0x0;\n          }\n          else if (*(short *)((int)piVar1 + 0xb) == 0x15) {\n            if ((*(int *)(param_1 + 0x44) + (uint)*(ushort *)((int)piVar1 + 9) * -0x46) - 0x15 <\n                (uint)*(ushort *)((int)piVar1 + 0xd) * 0x42) {\n              debug_print(\"Invalid file header: resource size\\n\");\n              puVar2 = (undefined *)0x0;\n            }\n            else if (*(int *)(param_1 + 0x44) + (uint)*(ushort *)((int)piVar1 + 0xd) * -0x42 <\n                     (uint)*(ushort *)((int)piVar1 + 0xf)) {\n              debug_print(\"Invalid file header: resource offset\\n\");\n              puVar2 = (undefined *)0x0;\n            }\n            else if ((*(int *)(param_1 + 0x44) + (uint)*(ushort *)((int)piVar1 + 9) * -0x46 +\n                     (uint)*(ushort *)((int)piVar1 + 0xd) * -0x42) - 0x15 <\n                     (uint)*(ushort *)((int)piVar1 + 0x11)) {\n              debug_print(\"Invalid file header: functions size\\n\");\n              puVar2 = (undefined *)0x0;\n            }\n            else if (*(int *)(param_1 + 0x44) - (uint)*(ushort *)((int)piVar1 + 0x11) <\n                     (uint)*(ushort *)((int)piVar1 + 0x13)) {\n              debug_print(\"Invalid file header: functions size\\n\");\n              puVar2 = (undefined *)0x0;\n            }\n            else {\n              *puVar2 = *(undefined *)(piVar1 + 2);\n              *(undefined2 *)(puVar2 + 2) = *(undefined2 *)((int)piVar1 + 9);\n              pvVar3 = calloc((uint)*(ushort *)((int)piVar1 + 9) * 0x46,in_stack_ffffffd8);\n              *(void **)(puVar2 + 4) = pvVar3;\n              pvVar3 = (void *)(*(int *)(param_1 + 0x5c) + (uint)*(ushort *)((int)piVar1 + 0xb));\n              memcpy(*(void **)(puVar2 + 4),pvVar3,(uint)*(ushort *)((int)piVar1 + 9) * 0x46);\n              for (local_10 = 0; local_10 < (int)(uint)*(ushort *)(puVar2 + 2);\n                  local_10 = local_10 + 1) {\n                *(uint *)(local_10 * 0x46 + *(int *)(puVar2 + 4) + 0x42) =\n                     *(int *)(local_10 * 0x46 + *(int *)(puVar2 + 4) + 0x42) -\n                     (uint)*(ushort *)((int)piVar1 + 0x13);\n              }\n              *(undefined2 *)(puVar2 + 8) = *(undefined2 *)((int)piVar1 + 0xd);\n              pvVar3 = calloc((uint)*(ushort *)((int)piVar1 + 0xd) * 0x42,(size_t)pvVar3);\n              *(void **)(puVar2 + 0xc) = pvVar3;\n              pvVar3 = (void *)(*(int *)(param_1 + 0x5c) + (uint)*(ushort *)((int)piVar1 + 0xf));\n              memcpy(*(void **)(puVar2 + 0xc),pvVar3,(uint)*(ushort *)((int)piVar1 + 0xd) * 0x42);\n              pvVar3 = calloc((uint)*(ushort *)((int)piVar1 + 0x11),(size_t)pvVar3);\n              *(void **)(puVar2 + 0x10) = pvVar3;\n              memcpy(*(void **)(puVar2 + 0x10),\n                     (void *)(*(int *)(param_1 + 0x5c) + (uint)*(ushort *)((int)piVar1 + 0x13)),\n                     (uint)*(ushort *)((int)piVar1 + 0x11));\n              uVar4 = GetFunctionAddress(\"SharedLibraryMain\",puVar2);\n              ExecuteFunction(uVar4);\n            }\n          }\n          else {\n            debug_print(\"Invalid file header: function table offset\\n\");\n            puVar2 = (undefined *)0x0;\n          }\n        }\n        else {\n          debug_print(\"Invalid file header: type\\n\");\n          puVar2 = (undefined *)0x0;\n        }\n      }\n      else {\n        debug_print(\"Invalid file header: magic\\n\");\n        puVar2 = (undefined *)0x0;\n      }\n    }\n    else {\n      debug_print(\"Invalid file header: size $d != $d\\n\",*piVar1,*(undefined4 *)(param_1 + 0x44));\n      puVar2 = (undefined *)0x0;\n    }\n  }\n  return puVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "LoadSharedLibrary",
+                        "calloc",
+                        "debug_print",
+                        "memcpy",
+                        "GetFunctionAddress",
+                        "ExecuteFunction"
+                    ],
+                    "calling_functions": [
+                        "LoadSharedLibrary",
+                        "ListFilesLong",
+                        "VerifyAndLoadFlavorFile"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "GetFunctionAddress",
+                "func_c_signature": "int GetFunctionAddress(char *param_1,int param_2)",
+                "decompiled_code": "int GetFunctionAddress(char *param_1,int param_2) {\n  int iVar1;\n  int local_10;\n  \n  if (param_2 != 0) {\n    for (local_10 = 0; local_10 < (int)(uint)*(ushort *)(param_2 + 2); local_10 = local_10 + 1) {\n      iVar1 = strcmp(param_1,(char *)(local_10 * 0x46 + *(int *)(param_2 + 4)));\n      if (iVar1 == 0) {\n        return *(int *)(local_10 * 0x46 + *(int *)(param_2 + 4) + 0x42) + *(int *)(param_2 + 0x10);\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "GetFunctionAddress",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "LoadSharedLibrary",
+                        "GetFunctionAddress"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "FreeLibrary",
+                "func_c_signature": "void FreeLibrary(void *param_1)",
+                "decompiled_code": "void FreeLibrary(void *param_1) {\n  if (param_1 != (void *)0x0) {\n    free(*(void **)((int)param_1 + 0x10));\n    free(param_1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "FreeLibrary",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "FreeLibrary"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ExecuteFunction",
+                "func_c_signature": "undefined4 ExecuteFunction(undefined4 *param_1)",
+                "decompiled_code": "undefined4 ExecuteFunction(undefined4 *param_1) {\n  undefined *puVar1;\n  char *apcStack_40 [5];\n  undefined auStack_2c [8];\n  undefined4 local_24;\n  undefined4 *local_20;\n  undefined4 local_1c;\n  undefined4 *local_18;\n  undefined4 *local_14;\n  char local_d;\n  \n  puVar1 = auStack_2c;\n  if (param_1 == (undefined4 *)0x0) {\n    local_24 = 0xffffffff;\n  }\n  else {\n    local_24 = 0;\n    local_d = *(char *)param_1;\n    param_1 = (undefined4 *)((int)param_1 + 1);\n    while (local_d != '@') {\n      if (local_d == 'A') {\n        *(undefined4 *)(puVar1 + -0xc) = 4;\n        *(undefined4 **)(puVar1 + -0x10) = &local_24;\n        *(undefined4 *)(puVar1 + -0x14) = 0x122e5;\n        transmit_fixed();\n      }\n      else if (local_d < 'B') {\n        if (local_d == '9') {\n          local_14 = (undefined4 *)*param_1;\n          param_1 = param_1 + 1;\n          *local_14 = local_24;\n        }\n        else {\n          if ('9' < local_d) goto LAB_000122ea;\n          if (local_d == '7') {\n            local_20 = (undefined4 *)*param_1;\n            param_1 = param_1 + 1;\n            local_24 = *local_20;\n          }\n          else {\n            if (local_d != '8') goto LAB_000122ea;\n            local_18 = (undefined4 *)*param_1;\n            local_1c = param_1[1];\n            param_1 = param_1 + 2;\n            *local_18 = local_1c;\n          }\n        }\n      }\n      else {\nLAB_000122ea:\n        *(char **)(puVar1 + -0x10) = \"Invalid Instruction\\n\";\n        *(undefined4 *)(puVar1 + -0x14) = 0x122f9;\n        debug_print();\n        *(undefined4 *)(puVar1 + -0x10) = 0xfffffffe;\n        *(undefined4 *)(puVar1 + -0x14) = 0x12306;\n        _terminate();\n        puVar1 = puVar1 + -0x10;\n      }\n      local_d = *(char *)param_1;\n      param_1 = (undefined4 *)((int)param_1 + 1);\n    }\n  }\n  return local_24;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ExecuteFunction",
+                        "transmit_fixed",
+                        "debug_print",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "LoadSharedLibrary",
+                        "ExecuteFunction"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "LookupResource",
+                "func_c_signature": "int LookupResource(int param_1,ushort param_2)",
+                "decompiled_code": "int LookupResource(int param_1,ushort param_2) {\n  int iVar1;\n  \n  if (param_1 == 0) {\n    iVar1 = 0;\n  }\n  else if (param_2 < *(ushort *)(param_1 + 8)) {\n    iVar1 = (uint)param_2 * 0x42 + *(int *)(param_1 + 0xc) + 2;\n  }\n  else {\n    debug_print(\"Invalid Resource index $d\\n\",param_2);\n    iVar1 = 0;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "LookupResource",
+                        "debug_print"
+                    ],
+                    "calling_functions": [
+                        "LookupResource",
+                        "ListFilesLong"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            }
+        ],
+        "osfiles.c": [
+            {
+                "func_name": "InitializeOSFiles",
+                "func_c_signature": "void InitializeOSFiles(void)",
+                "decompiled_code": "void InitializeOSFiles(void) {\n  undefined4 uVar1;\n  \n  CreateFile(&DAT_00016170,0xf7,0,0,root);\n  CreateFile(\"Documents\",0xf7,0,0,root);\n  CreateFile(\"System\",0xf7,0,0,root);\n  uVar1 = FindFile(\"System\",root);\n  CreateFile(\"Special\",0xf7,0,0,uVar1);\n  uVar1 = FindFile(\"Special\",uVar1);\n  CreateFile(\"Flavor.sl\",0xf6,0x22f,&DAT_00016190,uVar1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitializeOSFiles",
+                        "CreateFile",
+                        "FindFile"
+                    ],
+                    "calling_functions": [
+                        "InitializeOSFiles",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            }
+        ],
+        "shell.c": [
+            {
+                "func_name": "ListFilesRecurse",
+                "func_c_signature": "void ListFilesRecurse(int param_1,int param_2)",
+                "decompiled_code": "void ListFilesRecurse(int param_1,int param_2) {\n  undefined4 uVar1;\n  int local_10;\n  \n  if (param_1 != 0) {\n    for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {\n      printf(\"    \");\n    }\n    uVar1 = GetFileID(param_1);\n    printf(\"$s ($d)\\n\",param_1,uVar1);\n    ListFilesRecurse(*(undefined4 *)(param_1 + 0x58),param_2 + 1);\n    ListFilesRecurse(*(undefined4 *)(param_1 + 0x50),param_2);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "s"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ListFilesRecurse",
+                        "printf",
+                        "GetFileID",
+                        "s"
+                    ],
+                    "calling_functions": [
+                        "ListFilesRecurse",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ListFilesLong",
+                "func_c_signature": "void ListFilesLong(int param_1)",
+                "decompiled_code": "void ListFilesLong(int param_1) {\n  char cVar1;\n  uint uVar2;\n  undefined4 uVar3;\n  undefined4 uVar4;\n  uint local_24;\n  undefined4 local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  undefined4 local_14;\n  int local_10;\n  \n  local_14 = FindFileAbsolute(\"System%Special%Flavor.sl\");\n  local_18 = LoadSharedLibrary(local_14);\n  for (local_10 = *(int *)(param_1 + 0x58); local_10 != 0; local_10 = *(int *)(local_10 + 0x50)) {\n    local_20 = local_18;\n    uVar2 = GetFileType(local_10);\n    local_24 = (uVar2 & 0xff) - 0xf1;\n    cVar1 = GetFileType(local_10);\n    if (cVar1 == -0xc) {\n      ExtractLinkTargetAndID(*(undefined4 *)(local_10 + 0x5c),param_1,&local_20,&local_24);\n    }\n    local_1c = LookupResource(local_20,local_24 & 0xffff);\n    uVar3 = GetFileSize(local_10);\n    uVar4 = GetFileName(local_10);\n    printf(\"$s \\t$d\\t$s\\n\",uVar4,uVar3,local_1c);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ListFilesLong",
+                        "FindFileAbsolute",
+                        "LoadSharedLibrary",
+                        "GetFileType",
+                        "ExtractLinkTargetAndID",
+                        "LookupResource",
+                        "GetFileSize",
+                        "GetFileName",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "ListFilesLong",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ExtractLinkTargetAndID",
+                "func_c_signature": "void ExtractLinkTargetAndID(uint *param_1,undefined4 param_2,int *param_3,int *param_4)",
+                "decompiled_code": "void ExtractLinkTargetAndID(uint *param_1,undefined4 param_2,int *param_3,int *param_4) {\n  int iVar1;\n  char *__size;\n  char local_6d [77];\n  char *local_20;\n  char *local_1c;\n  char *local_18;\n  undefined4 local_14;\n  int local_10;\n  \n  local_14 = 0;\n  local_10 = 0xffffffff;\n  if ((*param_1 < 0x801) && (param_1[1] == 0x4c494e4b)) {\n    iVar1 = strncmp((char *)(param_1 + 2),\"System%Special%\",0xf);\n    if (iVar1 == 0) {\n      local_10 = *(undefined4 *)((int)param_1 + 0x49);\n    }\n    else {\n      local_10 = 0xffffffff;\n    }\n    local_18 = strchr((char *)(param_1 + 2),0x2b);\n    if (local_18 == (char *)0x0) {\n      __size = \"$s+$d\";\n      sprintf(local_6d,\"$s+$d\",param_1 + 2,local_10);\n      local_1c = (char *)calloc(0x43,(size_t)__size);\n      strncpy(local_1c,local_6d,0x42);\n      local_20 = strchr(local_1c,0x2b);\n      if (((local_20 != (char *)0x0) && (local_10 = atoi(local_20 + 1), -1 < local_10)) &&\n         (iVar1 = VerifyAndLoadFlavorFile(param_1 + 2,param_2), iVar1 != 0)) {\n        *param_4 = local_10;\n        *param_3 = iVar1;\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ExtractLinkTargetAndID",
+                        "strncmp",
+                        "strchr",
+                        "sprintf",
+                        "calloc",
+                        "strncpy",
+                        "atoi",
+                        "VerifyAndLoadFlavorFile"
+                    ],
+                    "calling_functions": [
+                        "ListFilesLong",
+                        "ExtractLinkTargetAndID"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "VerifyAndLoadFlavorFile",
+                "func_c_signature": "undefined4 VerifyAndLoadFlavorFile(char *param_1,undefined4 param_2)",
+                "decompiled_code": "undefined4 VerifyAndLoadFlavorFile(char *param_1,undefined4 param_2) {\n  size_t sVar1;\n  size_t sVar2;\n  undefined4 uVar3;\n  char local_59 [65];\n  undefined4 local_18;\n  int local_14;\n  char *local_10;\n  \n  memset(local_59,0,0x41);\n  strncpy(local_59,param_1,0x40);\n  local_10 = strchr(local_59,0x5f);\n  if (local_10 == (char *)0x0) {\n    sVar1 = strlen(local_59);\n    local_10 = local_59 + sVar1;\n  }\n  else {\n    *local_10 = '\\0';\n  }\n  sVar1 = strlen(local_59);\n  sVar2 = strlen(\".listofiles\");\n  if (0x40 - sVar2 < sVar1) {\n    uVar3 = 0;\n  }\n  else {\n    strcpy(local_10,\".listofiles\");\n    local_18 = FindFile(local_59,param_2);\n    local_14 = FindFile(param_1,param_2);\n    if (local_14 == 0) {\n      local_14 = FindFileAbsolute(param_1);\n    }\n    uVar3 = LoadSharedLibrary(local_14);\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "VerifyAndLoadFlavorFile",
+                        "memset",
+                        "strncpy",
+                        "strchr",
+                        "strlen",
+                        "strcpy",
+                        "FindFile",
+                        "FindFileAbsolute",
+                        "LoadSharedLibrary"
+                    ],
+                    "calling_functions": [
+                        "ExtractLinkTargetAndID",
+                        "VerifyAndLoadFlavorFile"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReceiveCommand",
+                "func_c_signature": "undefined ReceiveCommand(void)",
+                "decompiled_code": "undefined ReceiveCommand(void) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 uStack_2c;\n  undefined *puStack_28;\n  undefined4 uStack_24;\n  undefined4 uStack_20;\n  undefined auStack_1c [14];\n  char local_e;\n  undefined local_d [5];\n  \n  puVar2 = (undefined4 *)auStack_1c;\n  uStack_20 = 0;\n  uStack_24 = 1;\n  puStack_28 = local_d;\n  uStack_2c = 0;\n  iVar1 = receive();\n  if (iVar1 != 0) {\n    puVar2 = &uStack_2c;\n    uStack_2c = 0xffffffff;\n    _terminate();\n  }\n  *(undefined4 *)((int)puVar2 + -4) = 0;\n  *(undefined4 *)((int)puVar2 + -8) = 1;\n  *(char **)((int)puVar2 + -0xc) = &local_e;\n  *(undefined4 *)((int)puVar2 + -0x10) = 0;\n  *(undefined4 *)((int)puVar2 + -0x14) = 0x128c4;\n  iVar1 = receive();\n  if (iVar1 != 0) {\n    *(undefined4 *)((int)puVar2 + -0x10) = 0xffffffff;\n    *(undefined4 *)((int)puVar2 + -0x14) = 0x128d5;\n    _terminate();\n  }\n  if (local_e != '\\n') {\n    local_d[0] = 0x78;\n  }\n  return local_d[0];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReceiveCommand",
+                        "receive",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "ReceiveCommand",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  char cVar1;\n  int iVar2;\n  undefined4 uVar3;\n  undefined4 uVar4;\n  undefined local_51;\n  int local_50;\n  int local_4c;\n  undefined4 local_48;\n  int local_44;\n  void *local_40;\n  int local_3c;\n  int local_38;\n  undefined2 *local_34;\n  int local_30;\n  undefined local_29;\n  int local_28;\n  undefined4 local_24;\n  undefined *local_14;\n  \n  local_14 = &stack0x00000004;\n  local_24 = InitializeFileSystem();\n  local_28 = 1;\n  InitializeOSFiles();\n  while (local_28 != 0) {\n    printf(\">\");\n    local_29 = ReceiveCommand();\n    switch(local_29) {\n    case 99:\n      local_50 = ReceiveCString(0x40);\n      iVar2 = CreateFile(*(undefined4 *)(local_50 + 4),0xf7,0,0,local_24);\n      if (iVar2 != 0) {\n        printf(\"FAILED\\n\");\n      }\n      DestroyCString(local_50);\n      break;\n    case 100:\n      local_4c = ReceiveCString(0x40);\n      iVar2 = DeleteFile(*(undefined4 *)(local_4c + 4),local_24);\n      if (iVar2 != 0) {\n        printf(\"FAILED\\n\");\n      }\n      DestroyCString(local_4c);\n      break;\n    default:\n      printf(\"Invalid Command\\n\");\n      break;\n    case 0x67:\n      ListFilesLong(local_24);\n      break;\n    case 0x68:\n      local_44 = ReceiveCString(0x40);\n      iVar2 = strcmp(\"upone\",*(char **)(local_44 + 4));\n      if (iVar2 == 0) {\n        local_24 = GetParent(local_24);\n      }\n      else {\n        local_48 = FindFile(*(undefined4 *)(local_44 + 4),local_24);\n        cVar1 = GetFileType(local_48);\n        if (cVar1 == -9) {\n          local_24 = local_48;\n        }\n        else {\n          printf(\"File Not Found\\n\");\n        }\n      }\n      break;\n    case 0x6c:\n      ListFilesRecurse(local_24,0);\n      break;\n    case 0x72:\n      local_38 = ReceiveCString(0x40);\n      local_3c = FindFile(*(undefined4 *)(local_38 + 4),local_24);\n      if (local_3c != 0) {\n        local_40 = (void *)ReadFile(local_3c);\n        printf(\"$s\\n\",local_40);\n        free(local_40);\n      }\n      DestroyCString(local_38);\n      break;\n    case 0x75:\n      local_30 = ReceiveCString(0x40);\n      ReceiveBytes(&local_51,1);\n      local_34 = (undefined2 *)ReceiveCString(0x800);\n      iVar2 = CreateFile(*(undefined4 *)(local_30 + 4),local_51,*local_34,\n                         *(undefined4 *)(local_34 + 2),local_24);\n      if (iVar2 != 0) {\n        printf(\"FAILED\\n\");\n      }\n      DestroyCString(local_30);\n      DestroyCString(local_34);\n      break;\n    case 0x77:\n      uVar3 = GetFileName(local_24);\n      uVar4 = GetFilePath(local_24);\n      printf(\"$s$s\\n\",uVar4,uVar3);\n      break;\n    case 0x78:\n      local_28 = 0;\n    }\n  }\n  printf(\"\\n\");\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "InitializeFileSystem",
+                        "InitializeOSFiles",
+                        "printf",
+                        "ReceiveCommand",
+                        "ReceiveCString",
+                        "CreateFile",
+                        "DestroyCString",
+                        "DeleteFile",
+                        "ListFilesLong",
+                        "strcmp",
+                        "GetParent",
+                        "FindFile",
+                        "GetFileType",
+                        "ListFilesRecurse",
+                        "ReadFile",
+                        "free",
+                        "ReceiveBytes",
+                        "GetFileName",
+                        "GetFilePath"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00096_decompiled.c"
+                }
+            }
+        ]
+    }
+}

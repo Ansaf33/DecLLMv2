@@ -1,0 +1,163 @@
+{
+    "file": "id",
+    "decompiled_code": {
+        "id.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [USER]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Print user and group information for each specified USER,\\nor (when USER omitted) for the current process.\\n\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -a             ignore, for compatibility with other versions\\n  -Z, --context  print only the security context of the process\\n  -g, --group    print only the effective group ID\\n  -G, --groups   print all group IDs\\n  -n, --name     print a name instead of a number, for -u,-g,-G\\n  -r, --real     print the real ID instead of the effective ID, with -u,-g,-G\\n  -u, --user     print only the effective user ID\\n  -z, --zero     delimit entries with NUL characters, not whitespace;\\n                   not permitted in default format\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nWithout any OPTION, print some useful set of identified information.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(&DAT_0010193f);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "nor"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "nor",
+                        "fputs_unlocked",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "id_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  char cVar1;\n  bool bVar2;\n  byte bVar3;\n  int iVar4;\n  char *pcVar5;\n  long lVar6;\n  undefined8 uVar7;\n  undefined8 uVar8;\n  int *piVar9;\n  long in_FS_OFFSET;\n  char *local_98;\n  passwd *local_90;\n  ulong local_88;\n  char *local_80;\n  undefined8 local_78;\n  undefined8 local_70;\n  undefined8 local_68;\n  undefined8 local_60;\n  undefined8 local_58;\n  undefined8 local_50;\n  undefined8 local_48;\n  undefined8 local_40;\n  undefined8 local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  cVar1 = is_smack_enabled();\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\nLAB_00100605:\n  iVar4 = getopt_long(param_1,param_2,\"agnruzGZ\",longopts,0);\n  if (iVar4 == -1) {\n    local_88 = (ulong)(param_1 - _optind);\n    if ((local_88 != 0) && (just_context != 0)) {\n      local_70 = gettext(\"cannot print security context when user specified\");\n      error(1,0,local_70);\n    }\n    if (1 < (uint)just_context + (uint)just_user + (uint)just_group + (uint)just_group_list) {\n      local_68 = gettext(\"cannot print \\\"only\\\" of more than one choice\");\n      error(1,0,local_68);\n    }\n    if ((((just_user == 1) || (just_group == 1)) || (just_group_list == 1)) || (just_context == 1))\n    {\n      bVar2 = false;\n    }\n    else {\n      bVar2 = true;\n    }\n    if ((bVar2) && ((use_real != 0 || (use_name != '\\0')))) {\n      local_60 = gettext(\"printing only names or real IDs requires -u, -g, or -G\");\n      error(1,0,local_60);\n    }\n    if ((bVar2) && (opt_zero != '\\0')) {\n      local_58 = gettext(\"option --zero not permitted in default format\");\n      error(1,0,local_58);\n    }\n    if ((local_88 == 0) &&\n       ((((just_context != 0 ||\n          ((bVar2 && (pcVar5 = getenv(\"POSIXLY_CORRECT\"), pcVar5 == (char *)0x0)))) &&\n         (cVar1 != '\\0')) &&\n        ((lVar6 = smack_new_label_from_self(&context), lVar6 < 0 && (just_context != 0)))))) {\n      local_50 = gettext(\"can\\'t get process context\");\n      error(1,0,local_50);\n    }\n    if (local_88 == 0) {\n      if (just_user == 0) {\n        if (((just_group == 1) || (just_group_list == 1)) || (just_context == 1)) {\n          bVar3 = 0;\n        }\n        else {\n          bVar3 = 1;\n        }\n      }\n      else {\n        bVar3 = use_real ^ 1;\n      }\n      if (bVar3 != 0) {\n        piVar9 = __errno_location();\n        *piVar9 = 0;\n        euid = geteuid();\n        if ((euid == 0xffffffff) && (piVar9 = __errno_location(), *piVar9 != 0)) {\n          uVar7 = gettext(\"cannot get effective UID\");\n          piVar9 = __errno_location();\n          local_40 = uVar7;\n          error(1,*piVar9,uVar7);\n        }\n      }\n      bVar3 = use_real;\n      if (just_user == 0) {\n        if ((just_group == 1) || ((just_group_list == 0 && (just_context == 1)))) {\n          bVar3 = 0;\n        }\n        else {\n          bVar3 = 1;\n        }\n      }\n      if (bVar3 != 0) {\n        piVar9 = __errno_location();\n        *piVar9 = 0;\n        ruid = getuid();\n        if ((ruid == 0xffffffff) && (piVar9 = __errno_location(), *piVar9 != 0)) {\n          uVar7 = gettext(\"cannot get real UID\");\n          piVar9 = __errno_location();\n          local_38 = uVar7;\n          error(1,*piVar9,uVar7);\n        }\n      }\n      if ((just_user != 1) && (((just_group != 0 || (just_group_list != 0)) || (just_context != 1)))\n         ) {\n        piVar9 = __errno_location();\n        *piVar9 = 0;\n        egid = getegid();\n        if ((egid == 0xffffffff) && (piVar9 = __errno_location(), *piVar9 != 0)) {\n          uVar7 = gettext(\"cannot get effective GID\");\n          piVar9 = __errno_location();\n          local_30 = uVar7;\n          error(1,*piVar9,uVar7);\n        }\n        piVar9 = __errno_location();\n        *piVar9 = 0;\n        rgid = getgid();\n        if ((rgid == 0xffffffff) && (piVar9 = __errno_location(), *piVar9 != 0)) {\n          uVar7 = gettext(\"cannot get real GID\");\n          piVar9 = __errno_location();\n          local_28 = uVar7;\n          error(1,*piVar9,uVar7);\n        }\n      }\n      print_stuff(0);\n    }\n    else {\n      multiple_users = 1 < local_88;\n      local_88 = local_88 + (long)_optind;\n      for (; (ulong)(long)_optind < local_88; _optind = _optind + 1) {\n        local_98 = (char *)0x0;\n        local_90 = (passwd *)0x0;\n        local_80 = (char *)param_2[_optind];\n        if ((*local_80 != '\\0') &&\n           (lVar6 = parse_user_spec(local_80,&euid,0,&local_98,0), lVar6 == 0)) {\n          if (local_98 == (char *)0x0) {\n            local_90 = getpwuid(euid);\n          }\n          else {\n            local_90 = getpwnam(local_98);\n          }\n        }\n        if (local_90 == (passwd *)0x0) {\n          uVar7 = quote(local_80);\n          uVar8 = gettext(\"%s: no such user\");\n          piVar9 = __errno_location();\n          local_48 = uVar8;\n          error(0,*piVar9,uVar8,uVar7);\n          ok = 0;\n        }\n        else {\n          if (local_98 == (char *)0x0) {\n            local_98 = (char *)xstrdup(local_90->pw_name);\n          }\n          ruid = local_90->pw_uid;\n          rgid = local_90->pw_gid;\n          euid = ruid;\n          egid = rgid;\n          print_stuff(local_98);\n        }\n        free(local_98);\n      }\n    }\n    if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n      return ok ^ 1;\n    }\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  if (iVar4 < 0x7b) {\n    if (iVar4 < 0x47) {\n      if (iVar4 == -0x83) {\nLAB_0010057c:\n        uVar7 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n        uVar8 = proper_name_lite(\"Arnold Robbins\",\"Arnold Robbins\");\n        version_etc(_stdout,&DAT_0010193f,\"GNU coreutils\",_Version,uVar8,uVar7,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar4 == -0x82) {\n        usage(0);\n        goto LAB_0010057c;\n      }\n      goto switchD_001004cc_caseD_48;\n    }\n    goto code_r0x001004ac;\n  }\n  goto switchD_001004cc_caseD_48;\ncode_r0x001004ac:\n  switch(iVar4) {\n  case 0x47:\n    just_group_list = 1;\n    break;\n  default:\nswitchD_001004cc_caseD_48:\n    usage(1);\n    break;\n  case 0x5a:\n    local_78 = gettext(\"--context (-Z) works only on an SELinux-enabled kernel\");\n    error(1,0,local_78);\n    just_context = 1;\n    break;\n  case 0x61:\n    break;\n  case 0x67:\n    just_group = 1;\n    break;\n  case 0x6e:\n    use_name = '\\x01';\n    break;\n  case 0x72:\n    use_real = 1;\n    break;\n  case 0x75:\n    just_user = 1;\n    break;\n  case 0x7a:\n    opt_zero = '\\x01';\n  }\n  goto LAB_00100605;\n}",
+                "globals": [],
+                "externs": [
+                    "context"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "is_smack_enabled",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "getenv",
+                        "smack_new_label_from_self",
+                        "__errno_location",
+                        "geteuid",
+                        "getuid",
+                        "getegid",
+                        "getgid",
+                        "print_stuff",
+                        "parse_user_spec",
+                        "getpwuid",
+                        "getpwnam",
+                        "quote",
+                        "xstrdup",
+                        "free",
+                        "__stack_chk_fail",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage",
+                        "context"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "id_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_user",
+                "func_c_signature": "void print_user(__uid_t param_1)",
+                "decompiled_code": "void print_user(__uid_t param_1) {\n  undefined8 uVar1;\n  passwd *local_28;\n  \n  local_28 = (passwd *)0x0;\n  if (use_name != '\\0') {\n    local_28 = getpwuid(param_1);\n    if (local_28 == (passwd *)0x0) {\n      uVar1 = gettext(\"cannot find name for user ID %ju\");\n      error(0,0,uVar1,param_1);\n      ok = 0;\n    }\n  }\n  if (local_28 == (passwd *)0x0) {\n    printf(\"%ju\",(ulong)param_1);\n  }\n  else {\n    printf(\"%s\",local_28->pw_name);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_user",
+                        "getpwuid",
+                        "gettext",
+                        "error",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_user",
+                        "print_stuff"
+                    ],
+                    "defined_in_file": "id_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_full_info",
+                "func_c_signature": "void print_full_info(long param_1)",
+                "decompiled_code": "void print_full_info(long param_1) {\n  long lVar1;\n  FILE *__stream;\n  int iVar2;\n  char *pcVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  int *piVar6;\n  ulong uVar7;\n  long in_FS_OFFSET;\n  uint local_64;\n  int local_60;\n  void *local_48;\n  passwd *local_40;\n  group *local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  uVar7 = (ulong)ruid;\n  pcVar3 = (char *)gettext(\"uid=%ju\");\n  printf(pcVar3,uVar7);\n  local_40 = getpwuid(ruid);\n  if (local_40 != (passwd *)0x0) {\n    printf(\"(%s)\",local_40->pw_name);\n  }\n  uVar7 = (ulong)rgid;\n  pcVar3 = (char *)gettext(\" gid=%ju\");\n  printf(pcVar3,uVar7);\n  local_38 = getgrgid(rgid);\n  if (local_38 != (group *)0x0) {\n    printf(\"(%s)\",local_38->gr_name);\n  }\n  if (euid != ruid) {\n    uVar7 = (ulong)euid;\n    pcVar3 = (char *)gettext(\" euid=%ju\");\n    printf(pcVar3,uVar7);\n    local_40 = getpwuid(euid);\n    if (local_40 != (passwd *)0x0) {\n      printf(\"(%s)\",local_40->pw_name);\n    }\n  }\n  if (egid != rgid) {\n    uVar7 = (ulong)egid;\n    pcVar3 = (char *)gettext(\" egid=%ju\");\n    printf(pcVar3,uVar7);\n    local_38 = getgrgid(egid);\n    if (local_38 != (group *)0x0) {\n      printf(\"(%s)\",local_38->gr_name);\n    }\n  }\n  if (param_1 == 0) {\n    local_64 = egid;\n  }\n  else if (local_40 == (passwd *)0x0) {\n    local_64 = 0xffffffff;\n  }\n  else {\n    local_64 = local_40->pw_gid;\n  }\n  iVar2 = xgetgroups(param_1,local_64,&local_48);\n  __stream = _stdout;\n  if (iVar2 < 0) {\n    if (param_1 == 0) {\n      uVar4 = gettext(\"failed to get groups for the current process\");\n      piVar6 = __errno_location();\n      local_28 = uVar4;\n      error(0,*piVar6,uVar4);\n    }\n    else {\n      uVar4 = quote(param_1);\n      uVar5 = gettext(\"failed to get groups for user %s\");\n      piVar6 = __errno_location();\n      local_30 = uVar5;\n      error(0,*piVar6,uVar5,uVar4);\n    }\n    ok = 0;\n  }\n  else {\n    if (0 < iVar2) {\n      pcVar3 = (char *)gettext(\" groups=\");\n      fputs_unlocked(pcVar3,__stream);\n    }\n    for (local_60 = 0; local_60 < iVar2; local_60 = local_60 + 1) {\n      if (0 < local_60) {\n        putchar_unlocked(0x2c);\n      }\n      printf(\"%ju\",(ulong)*(uint *)((long)local_48 + (long)local_60 * 4));\n      local_38 = getgrgid(*(__gid_t *)((long)local_48 + (long)local_60 * 4));\n      if (local_38 != (group *)0x0) {\n        printf(\"(%s)\",local_38->gr_name);\n      }\n    }\n    free(local_48);\n    lVar1 = context;\n    if (context != 0) {\n      pcVar3 = (char *)gettext(\" context=%s\");\n      printf(pcVar3,lVar1);\n    }\n  }\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_full_info",
+                        "gettext",
+                        "printf",
+                        "getpwuid",
+                        "getgrgid",
+                        "xgetgroups",
+                        "__errno_location",
+                        "error",
+                        "quote",
+                        "fputs_unlocked",
+                        "putchar_unlocked",
+                        "free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "print_full_info",
+                        "print_stuff"
+                    ],
+                    "defined_in_file": "id_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_stuff",
+                "func_c_signature": "void print_stuff(undefined8 param_1)",
+                "decompiled_code": "void print_stuff(undefined8 param_1) {\n  byte bVar1;\n  undefined4 uVar2;\n  int __c;\n  \n  if (just_user == '\\0') {\n    if (just_group == '\\0') {\n      if (just_group_list == '\\0') {\n        if (just_context == '\\0') {\n          print_full_info(param_1);\n        }\n        else {\n          fputs_unlocked(context,_stdout);\n        }\n      }\n      else {\n        if (opt_zero == '\\0') {\n          uVar2 = 0x20;\n        }\n        else {\n          uVar2 = 0;\n        }\n        bVar1 = print_group_list(param_1,ruid,rgid,egid,use_name,uVar2);\n        ok = (bVar1 & ok) != 0;\n      }\n    }\n    else {\n      uVar2 = egid;\n      if (use_real != '\\0') {\n        uVar2 = rgid;\n      }\n      bVar1 = print_group(uVar2,use_name);\n      ok = (bVar1 & ok) != 0;\n    }\n  }\n  else {\n    uVar2 = euid;\n    if (use_real != '\\0') {\n      uVar2 = ruid;\n    }\n    print_user(uVar2);\n  }\n  if (((opt_zero == '\\0') || (just_group_list == '\\0')) || (multiple_users == '\\0')) {\n    if (opt_zero == '\\0') {\n      __c = 10;\n    }\n    else {\n      __c = 0;\n    }\n    putchar_unlocked(__c);\n  }\n  else {\n    putchar_unlocked(0);\n    putchar_unlocked(0);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_stuff",
+                        "print_full_info",
+                        "fputs_unlocked",
+                        "print_group_list",
+                        "print_group",
+                        "print_user",
+                        "putchar_unlocked"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "print_stuff"
+                    ],
+                    "defined_in_file": "id_decompiled.c"
+                }
+            }
+        ]
+    }
+}

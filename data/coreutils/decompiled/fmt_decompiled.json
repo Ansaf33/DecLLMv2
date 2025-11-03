@@ -1,0 +1,485 @@
+{
+    "file": "fmt",
+    "decompiled_code": {
+        "fmt.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [-WIDTH] [OPTION]... [FILE]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Reformat each paragraph in the FILE(s), writing to standard output.\\nThe option -WIDTH is an abbreviated form of --width=DIGITS.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_stdin_note();\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -c, --crown-margin        preserve indentation of first two lines\\n  -p, --prefix=STRING       reformat only lines beginning with STRING,\\n                              reattaching the prefix to reformatted lines\\n  -s, --split-only          split long lines, but do not refill\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -t, --tagged-paragraph    indentation of first line different from second\\n  -u, --uniform-spacing     one space between words, two after sentences\\n  -w, --width=WIDTH         maximum line width (default of 75 columns)\\n  -g, --goal=WIDTH          goal width (default of 93% of width)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(&DAT_0010d219);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "FILE",
+                    "width"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "FILE",
+                        "fputs_unlocked",
+                        "emit_stdin_note",
+                        "emit_mandatory_arg_note",
+                        "width",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  undefined uVar2;\n  undefined uVar3;\n  undefined uVar4;\n  char cVar5;\n  byte bVar6;\n  int iVar7;\n  undefined8 uVar8;\n  long lVar9;\n  undefined8 uVar10;\n  int *piVar11;\n  undefined8 *local_88;\n  int local_7c;\n  byte local_6e;\n  long local_50;\n  long local_48;\n  \n  local_6e = true;\n  local_50 = 0;\n  local_48 = 0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  uniform = 0;\n  split = 0;\n  tagged = 0;\n  crown = 0;\n  max_width = 0x4b;\n  prefix = &DAT_0010ce54;\n  prefix_full_length = 0;\n  prefix_lead_space = 0;\n  prefix_length = 0;\n  uVar2 = 0;\n  uVar3 = 0;\n  uVar4 = 0;\n  local_88 = param_2;\n  local_7c = param_1;\n  if (((1 < param_1) && (uVar2 = crown, uVar3 = tagged, uVar4 = split, *(char *)param_2[1] == '-'))\n     && (crown = 0, tagged = 0, split = 0, cVar5 = c_isdigit((int)*(char *)(param_2[1] + 1)),\n        uVar2 = crown, uVar3 = tagged, uVar4 = split, cVar5 != '\\0')) {\n    local_50 = param_2[1] + 1;\n    param_2[1] = *param_2;\n    local_88 = param_2 + 1;\n    local_7c = param_1 + -1;\n    uVar2 = crown;\n    uVar3 = tagged;\n    uVar4 = split;\n  }\n  do {\n    while( true ) {\n      split = uVar4;\n      tagged = uVar3;\n      crown = uVar2;\n      iVar7 = getopt_long(local_7c,local_88,\"0123456789cstuw:p:g:\",long_options,0);\n      if (iVar7 == -1) {\n        if (local_50 != 0) {\n          uVar8 = gettext(\"invalid width\");\n          max_width = xnumtoumax(local_50,10,0,0x9c4,&DAT_0010ce54,uVar8,0,8);\n        }\n        if (local_48 == 0) {\n          goal_width = (max_width * 0xbb) / 200;\n        }\n        else {\n          uVar8 = gettext(\"invalid width\");\n          goal_width = xdectoumax(local_48,0,(long)max_width,&DAT_0010ce54,uVar8,0);\n          if (local_50 == 0) {\n            max_width = goal_width + 10;\n          }\n        }\n        bVar1 = false;\n        if (local_7c == _optind) {\n          bVar1 = true;\n          local_6e = fmt(_stdin,&DAT_0010d32d);\n        }\n        else {\n          for (; _optind < local_7c; _optind = _optind + 1) {\n            uVar8 = local_88[_optind];\n            cVar5 = streq(uVar8,&DAT_0010d32d);\n            if (cVar5 == '\\0') {\n              lVar9 = rpl_fopen(uVar8,&DAT_0010d32f);\n              if (lVar9 == 0) {\n                uVar8 = quotearg_style(4,uVar8);\n                uVar10 = gettext(\"cannot open %s for reading\");\n                piVar11 = __errno_location();\n                error(0,*piVar11,uVar10,uVar8);\n                local_6e = false;\n              }\n              else {\n                bVar6 = fmt(lVar9,uVar8);\n                local_6e = (bVar6 & local_6e) != 0;\n              }\n            }\n            else {\n              bVar6 = fmt(_stdin,uVar8);\n              local_6e = (bVar6 & local_6e) != 0;\n              bVar1 = true;\n            }\n          }\n        }\n        if ((bVar1) && (iVar7 = rpl_fclose(_stdin), iVar7 != 0)) {\n          uVar8 = gettext(\"closing standard input\");\n          piVar11 = __errno_location();\n          error(1,*piVar11,&DAT_0010d363,uVar8);\n        }\n        return local_6e ^ 1;\n      }\n      if (iVar7 < 0x78) break;\nswitchD_00100638_caseD_64:\n      cVar5 = c_isdigit(iVar7);\n      if (cVar5 != '\\0') {\n        uVar8 = gettext(\n                       \"invalid option -- %c; -WIDTH is recognized only when it is the first\\noption; use -w N instead\"\n                       );\n        error(0,0,uVar8,iVar7);\n      }\n      usage(1);\nswitchD_00100638_caseD_63:\n      crown = 1;\n      uVar2 = crown;\n      uVar3 = tagged;\n      uVar4 = split;\n    }\n    if (iVar7 < 99) {\n      if (iVar7 == -0x83) {\nLAB_001006f6:\n        uVar8 = proper_name_lite(\"Ross Paterson\",\"Ross Paterson\");\n        version_etc(_stdout,&DAT_0010d219,\"GNU coreutils\",_Version,uVar8,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar7 == -0x82) {\n        usage(0);\n        goto LAB_001006f6;\n      }\n      goto switchD_00100638_caseD_64;\n    }\n    uVar2 = crown;\n    uVar3 = tagged;\n    uVar4 = split;\n    switch(iVar7) {\n    case 99:\n      goto switchD_00100638_caseD_63;\n    default:\n      goto switchD_00100638_caseD_64;\n    case 0x67:\n      local_48 = _optarg;\n      break;\n    case 0x70:\n      set_prefix(_optarg);\n      uVar2 = crown;\n      uVar3 = tagged;\n      uVar4 = split;\n      break;\n    case 0x73:\n      split = 1;\n      uVar4 = split;\n      break;\n    case 0x74:\n      tagged = 1;\n      uVar3 = tagged;\n      break;\n    case 0x75:\n      uniform = 1;\n      break;\n    case 0x77:\n      local_50 = _optarg;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "c_isdigit",
+                        "getopt_long",
+                        "gettext",
+                        "xnumtoumax",
+                        "xdectoumax",
+                        "fmt",
+                        "streq",
+                        "rpl_fopen",
+                        "quotearg_style",
+                        "__errno_location",
+                        "error",
+                        "rpl_fclose",
+                        "usage",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "set_prefix"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_prefix",
+                "func_c_signature": "void set_prefix(char *param_1)",
+                "decompiled_code": "void set_prefix(char *param_1) {\n  size_t sVar1;\n  char *local_20;\n  char *local_10;\n  \n  prefix_lead_space = 0;\n  for (local_20 = param_1; *local_20 == ' '; local_20 = local_20 + 1) {\n    prefix_lead_space = prefix_lead_space + 1;\n  }\n  prefix = local_20;\n  sVar1 = strlen(local_20);\n  prefix_full_length = (int)sVar1;\n  for (local_10 = local_20 + prefix_full_length; (local_20 < local_10 && (local_10[-1] == ' '));\n      local_10 = local_10 + -1) {\n  }\n  *local_10 = '\\0';\n  prefix_length = (int)local_10 - (int)local_20;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_prefix",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "set_prefix"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fmt",
+                "func_c_signature": "uint fmt(FILE *param_1,undefined8 param_2)",
+                "decompiled_code": "uint fmt(FILE *param_1,undefined8 param_2) {\n  char cVar1;\n  int iVar2;\n  uint *puVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  uint local_3c;\n  \n  fadvise(param_1,2);\n  tabs = 0;\n  other_indent = 0;\n  next_char = get_prefix(param_1);\n  while( true ) {\n    cVar1 = get_paragraph(param_1);\n    if (cVar1 == '\\0') break;\n    fmt_paragraph();\n    put_paragraph(word_limit);\n  }\n  iVar2 = ferror_unlocked(param_1);\n  if (iVar2 == 0) {\n    local_3c = 0xffffffff;\n  }\n  else {\n    local_3c = 0;\n  }\n  if (param_1 == _stdin) {\n    clearerr_unlocked(param_1);\n  }\n  else {\n    iVar2 = rpl_fclose(param_1);\n    if ((iVar2 != 0) && ((int)local_3c < 0)) {\n      puVar3 = (uint *)__errno_location();\n      local_3c = *puVar3;\n    }\n  }\n  if (-1 < (int)local_3c) {\n    if (param_1 == _stdin) {\n      uVar4 = gettext(\"read error\");\n      error(0,local_3c,uVar4);\n    }\n    else {\n      uVar4 = quotearg_style(4,param_2);\n      uVar5 = gettext(\"error reading %s\");\n      error(0,local_3c,uVar5,uVar4);\n    }\n  }\n  return local_3c >> 0x1f;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fmt",
+                        "fadvise",
+                        "get_prefix",
+                        "get_paragraph",
+                        "fmt_paragraph",
+                        "put_paragraph",
+                        "ferror_unlocked",
+                        "clearerr_unlocked",
+                        "rpl_fclose",
+                        "__errno_location",
+                        "gettext",
+                        "error",
+                        "quotearg_style"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "fmt"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_other_indent",
+                "func_c_signature": "void set_other_indent(char param_1)",
+                "decompiled_code": "void set_other_indent(char param_1) {\n  if (split == '\\0') {\n    if (crown == '\\0') {\n      if (tagged == '\\0') {\n        other_indent = first_indent;\n      }\n      else if ((param_1 == '\\0') || (in_column == first_indent)) {\n        if (other_indent == first_indent) {\n          if (first_indent == 0) {\n            other_indent = 3;\n          }\n          else {\n            other_indent = 0;\n          }\n        }\n      }\n      else {\n        other_indent = in_column;\n      }\n    }\n    else {\n      other_indent = first_indent;\n      if (param_1 != '\\0') {\n        other_indent = in_column;\n      }\n    }\n  }\n  else {\n    other_indent = first_indent;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_other_indent"
+                    ],
+                    "calling_functions": [
+                        "set_other_indent",
+                        "get_paragraph",
+                        "get_line"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_paragraph",
+                "func_c_signature": "undefined8 get_paragraph(undefined8 param_1)",
+                "decompiled_code": "undefined8 get_paragraph(undefined8 param_1) {\n  undefined1 *puVar1;\n  undefined uVar2;\n  char cVar3;\n  int iVar4;\n  int local_c;\n  \n  last_line_length = 0;\n  local_c = next_char;\n  while ((((local_c == 10 || (local_c == -1)) || (next_prefix_indent < prefix_lead_space)) ||\n         (in_column < next_prefix_indent + prefix_full_length))) {\n    iVar4 = copy_rest(param_1,local_c);\n    if (iVar4 == -1) {\n      next_char = 0xffffffff;\n      return 0;\n    }\n    putchar_unlocked(10);\n    local_c = get_prefix(param_1);\n  }\n  prefix_indent = next_prefix_indent;\n  first_indent = in_column;\n  _wptr = parabuf;\n  word_limit = unused_word_type;\n  local_c = get_line(param_1,local_c);\n  uVar2 = same_para(local_c);\n  set_other_indent(uVar2);\n  if (split == '\\0') {\n    if (crown == '\\0') {\n      if (tagged == '\\0') {\n        while ((cVar3 = same_para(local_c), cVar3 != '\\0' && (in_column == other_indent))) {\n          local_c = get_line(param_1,local_c);\n        }\n      }\n      else {\n        cVar3 = same_para(local_c);\n        if ((cVar3 != '\\0') && (in_column != first_indent)) {\n          do {\n            local_c = get_line(param_1,local_c);\n            cVar3 = same_para(local_c);\n            if (cVar3 == '\\0') break;\n          } while (in_column == other_indent);\n        }\n      }\n    }\n    else {\n      cVar3 = same_para(local_c);\n      if (cVar3 != '\\0') {\n        do {\n          local_c = get_line(param_1,local_c);\n          cVar3 = same_para(local_c);\n          if (cVar3 == '\\0') break;\n        } while (in_column == other_indent);\n      }\n    }\n  }\n  puVar1 = word_limit;\n  word_limit[-0x18] = word_limit[-0x18] | 8;\n  word_limit[-0x18] = word_limit[-0x18] & 0xfd | ((byte)puVar1[-0x18] >> 3 & 1) * '\\x02';\n  next_char = local_c;\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_paragraph",
+                        "copy_rest",
+                        "putchar_unlocked",
+                        "get_prefix",
+                        "get_line",
+                        "same_para",
+                        "set_other_indent"
+                    ],
+                    "calling_functions": [
+                        "fmt",
+                        "get_paragraph"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "copy_rest",
+                "func_c_signature": "int copy_rest(FILE *param_1,int param_2)",
+                "decompiled_code": "int copy_rest(FILE *param_1,int param_2) {\n  int local_24;\n  char *local_10;\n  \n  out_column = 0;\n  local_24 = param_2;\n  if ((next_prefix_indent < in_column) || ((param_2 != 10 && (param_2 != -1)))) {\n    put_space(next_prefix_indent);\n    local_10 = prefix;\n    while ((out_column != in_column && (*local_10 != '\\0'))) {\n      putchar_unlocked((int)*local_10);\n      out_column = out_column + 1;\n      local_10 = local_10 + 1;\n    }\n    if ((param_2 != -1) && (param_2 != 10)) {\n      put_space(in_column - out_column);\n    }\n    if ((param_2 == -1) && (next_prefix_indent + prefix_length <= in_column)) {\n      putchar_unlocked(10);\n    }\n  }\n  while ((local_24 != 10 && (local_24 != -1))) {\n    putchar_unlocked(local_24);\n    local_24 = getc_unlocked(param_1);\n  }\n  return local_24;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copy_rest",
+                        "put_space",
+                        "putchar_unlocked",
+                        "getc_unlocked"
+                    ],
+                    "calling_functions": [
+                        "get_paragraph",
+                        "copy_rest"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "same_para",
+                "func_c_signature": "undefined4 same_para(int param_1)",
+                "decompiled_code": "undefined4 same_para(int param_1) {\n  undefined4 uVar1;\n  \n  if ((((next_prefix_indent == prefix_indent) &&\n       (next_prefix_indent + prefix_full_length <= in_column)) && (param_1 != 10)) &&\n     (param_1 != -1)) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "same_para"
+                    ],
+                    "calling_functions": [
+                        "get_paragraph",
+                        "same_para"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_line",
+                "func_c_signature": "void get_line(FILE *param_1,int param_2)",
+                "decompiled_code": "void get_line(FILE *param_1,int param_2) {\n  int iVar1;\n  undefined8 *puVar2;\n  undefined1 *puVar3;\n  char cVar4;\n  undefined4 uVar5;\n  int local_34;\n  \n  local_34 = param_2;\n  do {\n    *word_limit = _wptr;\n    do {\n      if (_wptr == &wptr) {\n        set_other_indent(1);\n        flush_paragraph();\n      }\n      puVar3 = _wptr + 1;\n      *_wptr = (char)local_34;\n      _wptr = puVar3;\n      local_34 = getc_unlocked(param_1);\n      if (local_34 == -1) break;\n      cVar4 = c_isspace(local_34);\n    } while (cVar4 != '\\x01');\n    puVar2 = word_limit;\n    *(int *)(word_limit + 1) = (int)_wptr - (int)*word_limit;\n    in_column = in_column + *(int *)(puVar2 + 1);\n    check_punctuation(word_limit);\n    iVar1 = in_column;\n    local_34 = get_space(param_1,local_34);\n    *(int *)((long)word_limit + 0xc) = in_column - iVar1;\n    if ((local_34 == -1) ||\n       (((*(byte *)(word_limit + 2) & 2) != 0 &&\n        ((local_34 == 10 || (1 < *(int *)((long)word_limit + 0xc))))))) {\n      cVar4 = '\\x01';\n    }\n    else {\n      cVar4 = '\\0';\n    }\n    *(byte *)(word_limit + 2) = *(byte *)(word_limit + 2) & 0xf7 | cVar4 * '\\b';\n    if (((local_34 == 10) || (local_34 == -1)) || (uniform != '\\0')) {\n      if ((*(byte *)(word_limit + 2) & 8) == 0) {\n        uVar5 = 1;\n      }\n      else {\n        uVar5 = 2;\n      }\n      *(undefined4 *)((long)word_limit + 0xc) = uVar5;\n    }\n    if (word_limit == (undefined8 *)(unused_word_type + 0x9bf0)) {\n      set_other_indent(1);\n      flush_paragraph();\n    }\n    word_limit = word_limit + 5;\n    if ((local_34 == 10) || (local_34 == -1)) {\n      get_prefix(param_1);\n      return;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_line",
+                        "set_other_indent",
+                        "flush_paragraph",
+                        "getc_unlocked",
+                        "c_isspace",
+                        "check_punctuation",
+                        "get_space",
+                        "get_prefix"
+                    ],
+                    "calling_functions": [
+                        "get_paragraph",
+                        "get_line"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_prefix",
+                "func_c_signature": "uint get_prefix(FILE *param_1)",
+                "decompiled_code": "uint get_prefix(FILE *param_1) {\n  int iVar1;\n  uint local_14;\n  byte *local_10;\n  \n  in_column = 0;\n  iVar1 = getc_unlocked(param_1);\n  local_14 = get_space(param_1,iVar1);\n  if (prefix_length == 0) {\n    next_prefix_indent = prefix_lead_space;\n    if (in_column <= prefix_lead_space) {\n      next_prefix_indent = in_column;\n    }\n  }\n  else {\n    next_prefix_indent = in_column;\n    for (local_10 = prefix; *local_10 != 0; local_10 = local_10 + 1) {\n      if (local_14 != *local_10) {\n        return local_14;\n      }\n      in_column = in_column + 1;\n      local_14 = getc_unlocked(param_1);\n    }\n    local_14 = get_space(param_1,local_14);\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_prefix",
+                        "getc_unlocked",
+                        "get_space"
+                    ],
+                    "calling_functions": [
+                        "fmt",
+                        "get_paragraph",
+                        "get_line",
+                        "get_prefix"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_space",
+                "func_c_signature": "int get_space(FILE *param_1,int param_2)",
+                "decompiled_code": "int get_space(FILE *param_1,int param_2) {\n  int local_14;\n  \n  local_14 = param_2;\n  do {\n    if (local_14 == 0x20) {\n      in_column = in_column + 1;\n    }\n    else {\n      if (local_14 != 9) {\n        return local_14;\n      }\n      tabs = 1;\n      if (in_column < 0) {\n        in_column = in_column + 7;\n      }\n      in_column = ((in_column >> 3) + 1) * 8;\n    }\n    local_14 = getc_unlocked(param_1);\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_space",
+                        "getc_unlocked"
+                    ],
+                    "calling_functions": [
+                        "get_line",
+                        "get_prefix",
+                        "get_space"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "check_punctuation",
+                "func_c_signature": "void check_punctuation(byte **param_1)",
+                "decompiled_code": "void check_punctuation(byte **param_1) {\n  byte bVar1;\n  byte *pbVar2;\n  char *pcVar3;\n  ushort **ppuVar4;\n  byte *local_18;\n  \n  pbVar2 = *param_1;\n  local_18 = pbVar2 + (long)*(int *)(param_1 + 1) + -1;\n  bVar1 = *local_18;\n  pcVar3 = strchr(\"([\\'`\\\"\",(int)(char)*pbVar2);\n  *(byte *)(param_1 + 2) = *(byte *)(param_1 + 2) & 0xfe | pcVar3 != (char *)0x0;\n  ppuVar4 = __ctype_b_loc();\n  *(byte *)(param_1 + 2) = *(byte *)(param_1 + 2) & 0xfb | (((*ppuVar4)[bVar1] & 4) != 0) * '\\x04';\n  for (; pbVar2 < local_18; local_18 = local_18 + -1) {\n    pcVar3 = strchr(\")]\\'\\\"\",(int)(char)*local_18);\n    if (pcVar3 == (char *)0x0) break;\n  }\n  pcVar3 = strchr(\".?!\",(int)(char)*local_18);\n  *(byte *)(param_1 + 2) = *(byte *)(param_1 + 2) & 0xfd | (pcVar3 != (char *)0x0) * '\\x02';\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_punctuation",
+                        "strchr",
+                        "__ctype_b_loc"
+                    ],
+                    "calling_functions": [
+                        "get_line",
+                        "check_punctuation"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "flush_paragraph",
+                "func_c_signature": "void flush_paragraph(void)",
+                "decompiled_code": "void flush_paragraph(void) {\n  int iVar1;\n  size_t __n;\n  size_t sVar2;\n  void **local_28;\n  void **local_20;\n  long local_18;\n  \n  if (word_limit == (void **)unused_word_type) {\n    __n = (long)_wptr - 0x101cc0;\n    sVar2 = fwrite_unlocked(parabuf,1,__n,_stdout);\n    if (__n != sVar2) {\n      write_error();\n    }\n    _wptr = parabuf;\n  }\n  else {\n    fmt_paragraph();\n    local_28 = word_limit;\n    local_18 = 0x7fffffffffffffff;\n    for (local_20 = (void **)unused_word_type._32_8_; local_20 != word_limit;\n        local_20 = (void **)local_20[4]) {\n      if ((long)local_20[3] - *(long *)((long)local_20[4] + 0x18) < local_18) {\n        local_28 = local_20;\n        local_18 = (long)local_20[3] - *(long *)((long)local_20[4] + 0x18);\n      }\n      if (local_18 < 0x7ffffffffffffff7) {\n        local_18 = local_18 + 9;\n      }\n    }\n    put_paragraph(local_28);\n    memmove(parabuf,*local_28,(long)_wptr - (long)*local_28);\n    iVar1 = (int)*local_28 + -0x101cc0;\n    _wptr = (undefined1 *)((long)_wptr - (long)iVar1);\n    for (local_20 = local_28; local_20 <= word_limit; local_20 = local_20 + 5) {\n      *local_20 = (void *)((long)*local_20 - (long)iVar1);\n    }\n    memmove(unused_word_type,local_28,(long)word_limit + (0x28 - (long)local_28));\n    word_limit = (void **)((long)word_limit - (long)(local_28 + -0x2060c));\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "flush_paragraph",
+                        "fwrite_unlocked",
+                        "write_error",
+                        "fmt_paragraph",
+                        "put_paragraph",
+                        "memmove"
+                    ],
+                    "calling_functions": [
+                        "get_line",
+                        "flush_paragraph"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fmt_paragraph",
+                "func_c_signature": "void fmt_paragraph(void)",
+                "decompiled_code": "void fmt_paragraph(void) {\n  undefined1 *puVar1;\n  undefined4 uVar2;\n  undefined1 *puVar3;\n  long lVar4;\n  int local_30;\n  undefined1 *local_28;\n  undefined1 *local_20;\n  long local_18;\n  long local_10;\n  \n  *(undefined8 *)(word_limit + 0x18) = 0;\n  uVar2 = *(undefined4 *)(word_limit + 8);\n  *(int *)(word_limit + 8) = max_width;\n  puVar3 = word_limit;\n  while (local_28 = puVar3 + -0x28, unused_word_type <= local_28) {\n    local_10 = 0x7fffffffffffffff;\n    local_30 = other_indent;\n    if (local_28 == unused_word_type) {\n      local_30 = first_indent;\n    }\n    local_20 = local_28;\n    local_30 = local_30 + *(int *)(puVar3 + -0x20);\n    do {\n      puVar1 = local_20 + 0x28;\n      local_18 = line_cost(puVar1,local_30);\n      local_18 = local_18 + *(long *)(local_20 + 0x40);\n      if ((local_28 == unused_word_type) && (0 < last_line_length)) {\n        local_18 = local_18 +\n                   ((long)((local_30 - last_line_length) * 10) *\n                   (long)((local_30 - last_line_length) * 10)) / 2;\n      }\n      if (local_18 < local_10) {\n        local_10 = local_18;\n        *(undefined1 **)(puVar3 + -8) = puVar1;\n        *(int *)(puVar3 + -0x14) = local_30;\n      }\n    } while ((puVar1 != word_limit) &&\n            (local_30 = local_30 + *(int *)(local_20 + 0x30) + *(int *)(local_20 + 0xc),\n            local_20 = puVar1, local_30 < max_width));\n    lVar4 = base_cost(local_28);\n    *(long *)(puVar3 + -0x10) = local_10 + lVar4;\n    puVar3 = local_28;\n  }\n  *(undefined4 *)(word_limit + 8) = uVar2;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fmt_paragraph",
+                        "line_cost",
+                        "base_cost"
+                    ],
+                    "calling_functions": [
+                        "fmt",
+                        "flush_paragraph",
+                        "fmt_paragraph"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "base_cost",
+                "func_c_signature": "long base_cost(undefined1 *param_1)",
+                "decompiled_code": "long base_cost(undefined1 *param_1) {\n  undefined auVar1 [16];\n  undefined auVar2 [16];\n  long local_10;\n  \n  local_10 = 0x1324;\n  if (unused_word_type < param_1) {\n    if ((param_1[-0x18] & 2) == 0) {\n      if ((param_1[-0x18] & 4) == 0) {\n        if (((undefined1 *)0x103088 < param_1) && ((param_1[-0x40] & 8) != 0)) {\n          auVar1._8_8_ = 0;\n          auVar1._0_8_ = SUB168(SEXT816(40000),8);\n          local_10 = SUB168((auVar1 << 0x40 | ZEXT816(40000)) /\n                            SEXT816((long)(*(int *)(param_1 + -0x20) + 2)),0) + 0x1324;\n        }\n      }\n      else {\n        local_10 = 0xce4;\n      }\n    }\n    else if ((param_1[-0x18] & 8) == 0) {\n      local_10 = 0x59164;\n    }\n    else {\n      local_10 = 0x960;\n    }\n  }\n  if ((param_1[0x10] & 1) == 0) {\n    if ((param_1[0x10] & 8) != 0) {\n      auVar2._8_8_ = 0;\n      auVar2._0_8_ = SUB168(SEXT816(0x57e4),8);\n      local_10 = local_10 +\n                 SUB168((auVar2 << 0x40 | ZEXT816(0x57e4)) /\n                        SEXT816((long)(*(int *)(param_1 + 8) + 2)),0);\n    }\n  }\n  else {\n    local_10 = local_10 + -0x640;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [
+                    "SUB168",
+                    "SEXT816",
+                    "ZEXT816"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "base_cost",
+                        "SUB168",
+                        "SEXT816",
+                        "ZEXT816"
+                    ],
+                    "calling_functions": [
+                        "fmt_paragraph",
+                        "base_cost"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "line_cost",
+                "func_c_signature": "long line_cost(long param_1,int param_2)",
+                "decompiled_code": "long line_cost(long param_1,int param_2) {\n  long lVar1;\n  \n  if (param_1 == word_limit) {\n    lVar1 = 0;\n  }\n  else {\n    lVar1 = (long)((goal_width - param_2) * 10) * (long)((goal_width - param_2) * 10);\n    if (*(long *)(param_1 + 0x20) != word_limit) {\n      param_2 = param_2 - *(int *)(param_1 + 0x14);\n      lVar1 = lVar1 + ((long)(param_2 * 10) * (long)(param_2 * 10)) / 2;\n    }\n  }\n  return lVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "line_cost"
+                    ],
+                    "calling_functions": [
+                        "fmt_paragraph",
+                        "line_cost"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "put_paragraph",
+                "func_c_signature": "void put_paragraph(long param_1)",
+                "decompiled_code": "void put_paragraph(long param_1) {\n  long local_10;\n  \n  put_line(unused_word_type,first_indent);\n  for (local_10 = unused_word_type._32_8_; local_10 != param_1;\n      local_10 = *(long *)(local_10 + 0x20)) {\n    put_line(local_10,other_indent);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "put_paragraph",
+                        "put_line"
+                    ],
+                    "calling_functions": [
+                        "fmt",
+                        "flush_paragraph",
+                        "put_paragraph"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "put_line",
+                "func_c_signature": "void put_line(long param_1,int param_2)",
+                "decompiled_code": "void put_line(long param_1,int param_2) {\n  long lVar1;\n  int iVar2;\n  long local_20;\n  \n  out_column = 0;\n  put_space(prefix_indent);\n  fputs_unlocked(prefix,_stdout);\n  out_column = prefix_length + out_column;\n  put_space(param_2 - out_column);\n  lVar1 = *(long *)(param_1 + 0x20);\n  for (local_20 = param_1; local_20 != lVar1 + -0x28; local_20 = local_20 + 0x28) {\n    put_word(local_20);\n    put_space(*(undefined4 *)(local_20 + 0xc));\n  }\n  put_word(local_20);\n  last_line_length = out_column;\n  putchar_unlocked(10);\n  iVar2 = ferror_unlocked(_stdout);\n  if (iVar2 != 0) {\n    write_error();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "put_line",
+                        "put_space",
+                        "fputs_unlocked",
+                        "put_word",
+                        "putchar_unlocked",
+                        "ferror_unlocked",
+                        "write_error"
+                    ],
+                    "calling_functions": [
+                        "put_paragraph",
+                        "put_line"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "put_word",
+                "func_c_signature": "void put_word(char **param_1)",
+                "decompiled_code": "void put_word(char **param_1) {\n  int local_14;\n  char *local_10;\n  \n  local_10 = *param_1;\n  for (local_14 = *(int *)(param_1 + 1); local_14 != 0; local_14 = local_14 + -1) {\n    putchar_unlocked((int)*local_10);\n    local_10 = local_10 + 1;\n  }\n  out_column = out_column + *(int *)(param_1 + 1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "put_word",
+                        "putchar_unlocked"
+                    ],
+                    "calling_functions": [
+                        "put_line",
+                        "put_word"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            },
+            {
+                "func_name": "put_space",
+                "func_c_signature": "void put_space(int param_1)",
+                "decompiled_code": "void put_space(int param_1) {\n  int iVar1;\n  \n  param_1 = param_1 + out_column;\n  if (tabs != '\\0') {\n    iVar1 = param_1;\n    if (param_1 < 0) {\n      iVar1 = param_1 + 7;\n    }\n    iVar1 = (iVar1 >> 3) << 3;\n    if (out_column + 1 < iVar1) {\n      for (; out_column < iVar1; out_column = ((out_column >> 3) + 1) * 8) {\n        putchar_unlocked(9);\n        if (out_column < 0) {\n          out_column = out_column + 7;\n        }\n      }\n    }\n  }\n  for (; out_column < param_1; out_column = out_column + 1) {\n    putchar_unlocked(0x20);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "put_space",
+                        "putchar_unlocked"
+                    ],
+                    "calling_functions": [
+                        "copy_rest",
+                        "put_line",
+                        "put_space"
+                    ],
+                    "defined_in_file": "fmt_decompiled.c"
+                }
+            }
+        ]
+    }
+}

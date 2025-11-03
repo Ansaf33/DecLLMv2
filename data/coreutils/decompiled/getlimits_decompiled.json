@@ -1,0 +1,83 @@
+{
+    "file": "getlimits",
+    "decompiled_code": {
+        "getlimits.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Output platform dependent limits in a format useful for shell scripts.\\n\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"getlimits\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage"
+                    ],
+                    "defined_in_file": "getlimits_decompiled.c"
+                }
+            },
+            {
+                "func_name": "decimal_absval_add_one",
+                "func_c_signature": "char * decimal_absval_add_one(long param_1)",
+                "decompiled_code": "char * decimal_absval_add_one(long param_1) {\n  size_t sVar1;\n  bool bVar2;\n  char *local_20;\n  char *local_18;\n  \n  bVar2 = *(char *)(param_1 + 1) == '-';\n  local_18 = (char *)(param_1 + (ulong)bVar2 + 1);\n  sVar1 = strlen(local_18);\n  local_20 = local_18 + sVar1;\n  local_18[-1] = '0';\n  while (local_20 = local_20 + -1, *local_20 == '9') {\n    *local_20 = '0';\n  }\n  *local_20 = *local_20 + '\\x01';\n  if (local_20 <= local_18) {\n    local_18 = local_20;\n  }\n  if (bVar2) {\n    local_18 = local_18 + -1;\n    *local_18 = '-';\n  }\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "decimal_absval_add_one",
+                        "strlen"
+                    ],
+                    "calling_functions": [
+                        "decimal_absval_add_one",
+                        "main"
+                    ],
+                    "defined_in_file": "getlimits_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined8 main(undefined4 param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined8 main(undefined4 param_1,undefined8 *param_2) {\n  undefined8 uVar1;\n  long in_FS_OFFSET;\n  undefined local_28;\n  char acStack_27 [23];\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  uVar1 = proper_name_lite(\"Padraig Brady\",&DAT_0010148b);\n  parse_gnu_standard_options_only\n            (param_1,param_2,\"getlimits\",\"GNU coreutils\",\"9.8.77-8db63\",1,usage,uVar1,0);\n  sprintf(acStack_27,\"%ju\",0x7f);\n  printf(\"CHAR_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"CHAR_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%jd\",0xffffffffffffff80);\n  printf(\"CHAR_MIN=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"CHAR_UFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0x7f);\n  printf(\"SCHAR_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"SCHAR_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%jd\",0xffffffffffffff80);\n  printf(\"SCHAR_MIN=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"SCHAR_UFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0xff);\n  printf(\"UCHAR_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"UCHAR_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0x7fff);\n  printf(\"SHRT_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"SHRT_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%jd\",0xffffffffffff8000);\n  printf(\"SHRT_MIN=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"SHRT_UFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0x7fffffff);\n  printf(\"INT_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"INT_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%jd\",0xffffffff80000000);\n  printf(\"INT_MIN=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"INT_UFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0xffffffff);\n  printf(\"UINT_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"UINT_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0x7fffffffffffffff);\n  printf(\"LONG_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"LONG_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%jd\",0x8000000000000000);\n  printf(\"LONG_MIN=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"LONG_UFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0xffffffffffffffff);\n  printf(\"ULONG_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"ULONG_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0xffffffffffffffff);\n  printf(\"SIZE_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"SIZE_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0x7fffffffffffffff);\n  printf(\"SSIZE_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"SSIZE_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%jd\",0x8000000000000000);\n  printf(\"SSIZE_MIN=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"SSIZE_UFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0x7fffffffffffffff);\n  printf(\"TIME_T_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"TIME_T_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%jd\",0x8000000000000000);\n  printf(\"TIME_T_MIN=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"TIME_T_UFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0xffffffff);\n  printf(\"UID_T_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"UID_T_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0xffffffff);\n  printf(\"GID_T_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"GID_T_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0x7fffffff);\n  printf(\"PID_T_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"PID_T_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%jd\",0xffffffff80000000);\n  printf(\"PID_T_MIN=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"PID_T_UFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0x7fffffffffffffff);\n  printf(\"OFF_T_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"OFF_T_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%jd\",0x8000000000000000);\n  printf(\"OFF_T_MIN=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"OFF_T_UFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0x7fffffffffffffff);\n  printf(\"INTMAX_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"INTMAX_OFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%jd\",0x8000000000000000);\n  printf(\"INTMAX_MIN=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"INTMAX_UFLOW=%s\\n\",uVar1);\n  sprintf(acStack_27,\"%ju\",0xffffffffffffffff);\n  printf(\"UINTMAX_MAX=%s\\n\",acStack_27);\n  uVar1 = decimal_absval_add_one(&local_28);\n  printf(\"UINTMAX_OFLOW=%s\\n\",uVar1);\n  printf(\"FLT_MIN=\");\n  print_FLT(DAT_00101834);\n  printf(\"FLT_MAX=\");\n  print_FLT(DAT_00101838);\n  printf(\"DBL_MIN=\");\n  print_DBL(DAT_00101840);\n  printf(\"DBL_MAX=\");\n  print_DBL(DAT_00101848);\n  printf(\"LDBL_MIN=\");\n  print_LDBL();\n  printf(\"LDBL_MAX=\");\n  print_LDBL();\n  printf(\"IO_BUFSIZE=%ju\\n\",0x40000);\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "proper_name_lite",
+                        "parse_gnu_standard_options_only",
+                        "sprintf",
+                        "printf",
+                        "decimal_absval_add_one",
+                        "print_FLT",
+                        "print_DBL",
+                        "print_LDBL",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "getlimits_decompiled.c"
+                }
+            }
+        ]
+    }
+}

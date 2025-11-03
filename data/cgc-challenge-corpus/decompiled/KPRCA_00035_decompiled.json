@@ -1,0 +1,436 @@
+{
+    "file": "KPRCA_00035",
+    "decompiled_code": {
+        "main.c": [
+            {
+                "func_name": "read_n_bytes",
+                "func_c_signature": "uint read_n_bytes(undefined4 param_1,uint param_2,int param_3)",
+                "decompiled_code": "uint read_n_bytes(undefined4 param_1,uint param_2,int param_3) {\n  int iVar1;\n  int local_14;\n  uint local_10;\n  \n  if ((param_2 == 0) || (param_3 == 0)) {\n    local_10 = 0xffffffff;\n  }\n  else {\n    local_14 = 0;\n    for (local_10 = 0; local_10 < param_2; local_10 = local_10 + local_14) {\n      iVar1 = receive(param_1,param_3 + local_10,param_2 - local_10,&local_14);\n      if (iVar1 != 0) {\n        return 0xffffffff;\n      }\n      if (local_14 == 0) {\n        return local_10;\n      }\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_n_bytes",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "read_n_bytes",
+                        "read_header",
+                        "read_flags",
+                        "init_state",
+                        "read_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_header",
+                "func_c_signature": "uint read_header(undefined4 param_1)",
+                "decompiled_code": "uint read_header(undefined4 param_1) {\n  int iVar1;\n  uint uVar2;\n  undefined4 local_14;\n  undefined4 local_10 [2];\n  \n  local_10[0] = 0x69564d00;\n  local_14 = 0;\n  iVar1 = read_n_bytes(param_1,4,&local_14,0x110aa);\n  if (iVar1 == 4) {\n    iVar1 = memcmp(local_10,&local_14,4);\n    uVar2 = (uint)(iVar1 == 0);\n  }\n  else {\n    uVar2 = 0xffffffff;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_header",
+                        "read_n_bytes",
+                        "memcmp"
+                    ],
+                    "calling_functions": [
+                        "read_header",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_flags",
+                "func_c_signature": "undefined4 read_flags(undefined4 param_1,undefined4 *param_2)",
+                "decompiled_code": "undefined4 read_flags(undefined4 param_1,undefined4 *param_2) {\n  int iVar1;\n  undefined4 local_10 [3];\n  \n  local_10[0] = 0;\n  iVar1 = read_n_bytes(param_1,4,local_10,0x1110b);\n  if (iVar1 != 4) {\n    *param_2 = 1;\n  }\n  return local_10[0];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_flags",
+                        "read_n_bytes"
+                    ],
+                    "calling_functions": [
+                        "read_flags",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_state",
+                "func_c_signature": "void * init_state(undefined4 param_1,uint param_2)",
+                "decompiled_code": "void * init_state(undefined4 param_1,uint param_2) {\n  uint uVar1;\n  void *__ptr;\n  int iVar2;\n  uint uVar3;\n  undefined4 uVar4;\n  \n  uVar4 = 0x1114a;\n  uVar1 = param_2 & 0xffff;\n  __ptr = calloc(1,0x10040);\n  if (((__ptr == (void *)0x0) ||\n      (((param_2 & 0x80000000) != 0 &&\n       (iVar2 = read_n_bytes(param_1,0x40,__ptr,uVar4), iVar2 != 0x40)))) ||\n     ((uVar1 != 0 && (uVar3 = read_n_bytes(param_1,uVar1,(int)__ptr + 0x40,uVar4), uVar3 != uVar1)))\n     ) {\n    free(__ptr);\n    __ptr = (void *)0x0;\n  }\n  return __ptr;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_state",
+                        "calloc",
+                        "read_n_bytes",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "init_state",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "dump_regs",
+                "func_c_signature": "bool dump_regs(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "bool dump_regs(undefined4 param_1,undefined4 param_2) {\n  int iVar1;\n  \n  iVar1 = transmit(param_1,param_2,0x40,0);\n  return iVar1 == 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "dump_regs",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "dump_regs",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_load",
+                "func_c_signature": "undefined4 process_load(int param_1,byte param_2,byte param_3,ushort param_4)",
+                "decompiled_code": "undefined4 process_load(int param_1,byte param_2,byte param_3,ushort param_4) {\n  ushort local_10;\n  \n  local_10 = param_4;\n  if (param_3 != 0) {\n    local_10 = param_4 + (short)*(undefined4 *)(param_1 + (uint)param_3 * 4);\n  }\n  *(uint *)(param_1 + (uint)param_2 * 4) = (uint)*(byte *)(param_1 + 0x40 + (uint)local_10);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_load"
+                    ],
+                    "calling_functions": [
+                        "process_load",
+                        "handle_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_str",
+                "func_c_signature": "undefined4 process_str(int param_1,byte param_2,byte param_3,ushort param_4)",
+                "decompiled_code": "undefined4 process_str(int param_1,byte param_2,byte param_3,ushort param_4) {\n  undefined uVar1;\n  ushort local_10;\n  \n  local_10 = param_4;\n  if (param_2 != 0) {\n    local_10 = param_4 + (short)*(undefined4 *)(param_1 + (uint)param_2 * 4);\n  }\n  if (param_3 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = (undefined)*(undefined4 *)(param_1 + (uint)param_3 * 4);\n  }\n  *(undefined *)(param_1 + 0x40 + (uint)local_10) = uVar1;\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_str"
+                    ],
+                    "calling_functions": [
+                        "process_str",
+                        "handle_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "frob",
+                "func_c_signature": "undefined4 frob(undefined4 param_1,int param_2,uint param_3)",
+                "decompiled_code": "undefined4 frob(undefined4 param_1,int param_2,uint param_3) {\n  uint local_8;\n  \n  for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {\n    *(byte *)(local_8 + param_2) = *(byte *)(local_8 + param_2) ^ 0x42;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "frob"
+                    ],
+                    "calling_functions": [
+                        "frob"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_sys",
+                "func_c_signature": "undefined4 process_sys(int param_1)",
+                "decompiled_code": "undefined4 process_sys(int param_1) {\n  undefined4 local_11c;\n  code *local_118;\n  uint local_14;\n  uint local_10;\n  \n  if (*(int *)(param_1 + 4) == 0) {\n    local_11c = 1;\n    local_118 = transmit;\n  }\n  else if (*(int *)(param_1 + 4) == 1) {\n    local_11c = 0;\n    local_118 = receive;\n  }\n  if (((local_118 == transmit) && (*(int *)(param_1 + 4) == 0)) ||\n     ((local_118 == receive && (*(int *)(param_1 + 4) == 1)))) {\n    local_10 = *(uint *)(param_1 + 8) & 0xffff;\n    local_14 = *(uint *)(param_1 + 0xc) & 0xffff;\n    if (0x10000 < local_14 + local_10) {\n      return 0;\n    }\n    if (local_14 == 0) {\n      return 0;\n    }\n  }\n  else {\n    if (local_118 != frob) {\n      return 0;\n    }\n    local_10 = 0;\n    local_14 = *(uint *)(param_1 + 0x20);\n  }\n  (*local_118)(local_11c,local_10 + 0x40 + param_1,local_14,0);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_sys"
+                    ],
+                    "calling_functions": [
+                        "process_sys",
+                        "handle_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_add",
+                "func_c_signature": "undefined4 process_add(int param_1,byte param_2,byte param_3,short param_4)",
+                "decompiled_code": "undefined4 process_add(int param_1,byte param_2,byte param_3,short param_4) {\n  if (param_3 == 0) {\n    *(int *)(param_1 + (uint)param_2 * 4) = *(int *)(param_1 + (uint)param_2 * 4) + (int)param_4;\n  }\n  else {\n    *(int *)(param_1 + (uint)param_2 * 4) =\n         *(int *)(param_1 + (uint)param_2 * 4) +\n         (int)param_4 + *(int *)(param_1 + (uint)param_3 * 4);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_add"
+                    ],
+                    "calling_functions": [
+                        "process_add",
+                        "handle_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_sub",
+                "func_c_signature": "undefined4 process_sub(int param_1,byte param_2,byte param_3,short param_4)",
+                "decompiled_code": "undefined4 process_sub(int param_1,byte param_2,byte param_3,short param_4) {\n  if (param_3 == 0) {\n    *(int *)(param_1 + (uint)param_2 * 4) = *(int *)(param_1 + (uint)param_2 * 4) - (int)param_4;\n  }\n  else {\n    *(int *)(param_1 + (uint)param_2 * 4) =\n         *(int *)(param_1 + (uint)param_2 * 4) -\n         ((int)param_4 + *(int *)(param_1 + (uint)param_3 * 4));\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_sub"
+                    ],
+                    "calling_functions": [
+                        "process_sub",
+                        "handle_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_mul",
+                "func_c_signature": "undefined4 process_mul(int param_1,byte param_2,byte param_3,short param_4)",
+                "decompiled_code": "undefined4 process_mul(int param_1,byte param_2,byte param_3,short param_4) {\n  if (param_3 == 0) {\n    *(int *)(param_1 + (uint)param_2 * 4) = *(int *)(param_1 + (uint)param_2 * 4) * (int)param_4;\n  }\n  else {\n    *(int *)(param_1 + (uint)param_2 * 4) =\n         (*(int *)(param_1 + (uint)param_3 * 4) + (int)param_4) *\n         *(int *)(param_1 + (uint)param_2 * 4);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_mul"
+                    ],
+                    "calling_functions": [
+                        "process_mul",
+                        "handle_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_div",
+                "func_c_signature": "undefined4 process_div(int param_1,byte param_2,byte param_3,short param_4)",
+                "decompiled_code": "undefined4 process_div(int param_1,byte param_2,byte param_3,short param_4) {\n  if (param_3 == 0) {\n    if (param_4 == 0) {\n      return 0xffffffff;\n    }\n    *(uint *)(param_1 + (uint)param_2 * 4) =\n         *(uint *)(param_1 + (uint)param_2 * 4) / (uint)(int)param_4;\n  }\n  else {\n    if ((int)param_4 + *(int *)(param_1 + (uint)param_3 * 4) == 0) {\n      return 0xffffffff;\n    }\n    *(uint *)(param_1 + (uint)param_2 * 4) =\n         *(uint *)(param_1 + (uint)param_2 * 4) /\n         (uint)((int)param_4 + *(int *)(param_1 + (uint)param_3 * 4));\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_div"
+                    ],
+                    "calling_functions": [
+                        "process_div",
+                        "handle_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_or",
+                "func_c_signature": "undefined4 process_or(int param_1,byte param_2,byte param_3,short param_4)",
+                "decompiled_code": "undefined4 process_or(int param_1,byte param_2,byte param_3,short param_4) {\n  if (param_3 == 0) {\n    *(uint *)(param_1 + (uint)param_2 * 4) = *(uint *)(param_1 + (uint)param_2 * 4) | (int)param_4;\n  }\n  else {\n    *(uint *)(param_1 + (uint)param_2 * 4) =\n         *(uint *)(param_1 + (uint)param_2 * 4) |\n         (int)param_4 | *(uint *)(param_1 + (uint)param_3 * 4);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_or"
+                    ],
+                    "calling_functions": [
+                        "process_or",
+                        "handle_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_and",
+                "func_c_signature": "undefined4 process_and(int param_1,byte param_2,byte param_3,short param_4)",
+                "decompiled_code": "undefined4 process_and(int param_1,byte param_2,byte param_3,short param_4) {\n  if (param_3 == 0) {\n    *(uint *)(param_1 + (uint)param_2 * 4) = *(uint *)(param_1 + (uint)param_2 * 4) & (int)param_4;\n  }\n  else {\n    *(uint *)(param_1 + (uint)param_2 * 4) =\n         *(uint *)(param_1 + (uint)param_2 * 4) &\n         ((int)param_4 | *(uint *)(param_1 + (uint)param_3 * 4));\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_and"
+                    ],
+                    "calling_functions": [
+                        "process_and",
+                        "handle_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_xor",
+                "func_c_signature": "undefined4 process_xor(int param_1,byte param_2,byte param_3,short param_4)",
+                "decompiled_code": "undefined4 process_xor(int param_1,byte param_2,byte param_3,short param_4) {\n  uint uVar1;\n  \n  if (param_3 == 0) {\n    uVar1 = (uint)param_4;\n  }\n  else {\n    uVar1 = (int)param_4 | *(uint *)(param_1 + (uint)param_3 * 4);\n  }\n  *(uint *)(param_1 + (uint)param_2 * 4) = uVar1 ^ *(uint *)(param_1 + (uint)param_2 * 4);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_xor"
+                    ],
+                    "calling_functions": [
+                        "process_xor",
+                        "handle_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_slt",
+                "func_c_signature": "undefined4 process_slt(int param_1,byte param_2,byte param_3,ushort param_4)",
+                "decompiled_code": "undefined4 process_slt(int param_1,byte param_2,byte param_3,ushort param_4) {\n  uint uVar1;\n  uint uVar2;\n  \n  if (param_4 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = *(uint *)(param_1 + (param_4 & 0xf) * 4);\n  }\n  if (param_3 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = *(uint *)(param_1 + (uint)param_3 * 4);\n  }\n  *(uint *)(param_1 + (uint)param_2 * 4) = (uint)(uVar2 < uVar1);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_slt"
+                    ],
+                    "calling_functions": [
+                        "process_slt",
+                        "handle_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_slte",
+                "func_c_signature": "undefined4 process_slte(int param_1,byte param_2,byte param_3,ushort param_4)",
+                "decompiled_code": "undefined4 process_slte(int param_1,byte param_2,byte param_3,ushort param_4) {\n  uint uVar1;\n  uint uVar2;\n  \n  if (param_4 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = *(uint *)(param_1 + (param_4 & 0xf) * 4);\n  }\n  if (param_3 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = *(uint *)(param_1 + (uint)param_3 * 4);\n  }\n  *(uint *)(param_1 + (uint)param_2 * 4) = (uint)(uVar1 <= uVar2);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_slte"
+                    ],
+                    "calling_functions": [
+                        "process_slte",
+                        "handle_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_inst",
+                "func_c_signature": "undefined4 handle_inst(undefined4 param_1,short *param_2)",
+                "decompiled_code": "undefined4 handle_inst(undefined4 param_1,short *param_2) {\n  undefined4 uVar1;\n  \n  switch(*(undefined *)((int)param_2 + 3)) {\n  default:\n    uVar1 = 0xffffffff;\n    break;\n  case 1:\n    uVar1 = process_load(param_1,*(byte *)(param_2 + 1) >> 4,*(byte *)(param_2 + 1) & 0xf,*param_2);\n    break;\n  case 2:\n    uVar1 = process_str(param_1,*(byte *)(param_2 + 1) >> 4,*(byte *)(param_2 + 1) & 0xf,*param_2);\n    break;\n  case 3:\n    uVar1 = process_sys(param_1);\n    break;\n  case 4:\n    uVar1 = process_add(param_1,*(byte *)(param_2 + 1) >> 4,*(byte *)(param_2 + 1) & 0xf,\n                        (int)*param_2);\n    break;\n  case 5:\n    uVar1 = process_sub(param_1,*(byte *)(param_2 + 1) >> 4,*(byte *)(param_2 + 1) & 0xf,\n                        (int)*param_2);\n    break;\n  case 6:\n    uVar1 = process_mul(param_1,*(byte *)(param_2 + 1) >> 4,*(byte *)(param_2 + 1) & 0xf,\n                        (int)*param_2);\n    break;\n  case 7:\n    uVar1 = process_div(param_1,*(byte *)(param_2 + 1) >> 4,*(byte *)(param_2 + 1) & 0xf,\n                        (int)*param_2);\n    break;\n  case 8:\n    uVar1 = process_or(param_1,*(byte *)(param_2 + 1) >> 4,*(byte *)(param_2 + 1) & 0xf,\n                       (int)*param_2);\n    break;\n  case 9:\n    uVar1 = process_and(param_1,*(byte *)(param_2 + 1) >> 4,*(byte *)(param_2 + 1) & 0xf,\n                        (int)*param_2);\n    break;\n  case 10:\n    uVar1 = process_xor(param_1,*(byte *)(param_2 + 1) >> 4,*(byte *)(param_2 + 1) & 0xf,\n                        (int)*param_2);\n    break;\n  case 0xb:\n    uVar1 = process_slt(param_1,*(byte *)(param_2 + 1) >> 4,*(byte *)(param_2 + 1) & 0xf,*param_2);\n    break;\n  case 0xc:\n    uVar1 = process_slte(param_1,*(byte *)(param_2 + 1) >> 4,*(byte *)(param_2 + 1) & 0xf,*param_2);\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_inst",
+                        "process_load",
+                        "process_str",
+                        "process_sys",
+                        "process_add",
+                        "process_sub",
+                        "process_mul",
+                        "process_div",
+                        "process_or",
+                        "process_and",
+                        "process_xor",
+                        "process_slt",
+                        "process_slte"
+                    ],
+                    "calling_functions": [
+                        "handle_inst",
+                        "read_inst"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_inst",
+                "func_c_signature": "undefined4 read_inst(undefined4 param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 read_inst(undefined4 param_1,undefined4 param_2,undefined4 param_3) {\n  undefined4 uVar1;\n  \n  read_n_bytes(param_1,4,param_3,0x11b41);\n  uVar1 = handle_inst(param_2,param_3);\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_inst",
+                        "read_n_bytes",
+                        "handle_inst"
+                    ],
+                    "calling_functions": [
+                        "read_inst",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined local_24 [4];\n  int local_20;\n  code *local_1c;\n  undefined4 local_18;\n  undefined4 local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_1c = frob;\n  transmit(1,&local_1c,4,0);\n  iVar1 = read_header(0);\n  if (iVar1 == 0) {\n    uVar2 = 0xffffffff;\n  }\n  else {\n    local_20 = 0;\n    local_14 = read_flags(0,&local_20);\n    if (local_20 == 0) {\n      local_18 = init_state(0,local_14);\n      do {\n        iVar1 = read_inst(0,local_18,local_24);\n        if (iVar1 < 0) break;\n        iVar1 = dump_regs(1,local_18);\n      } while (iVar1 != 0);\n      transmit(1,&DAT_00014034,5,0);\n      uVar2 = 0;\n    }\n    else {\n      uVar2 = 0xffffffff;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "transmit",
+                        "read_header",
+                        "read_flags",
+                        "init_state",
+                        "read_inst",
+                        "dump_regs"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "KPRCA_00035_decompiled.c"
+                }
+            }
+        ]
+    }
+}

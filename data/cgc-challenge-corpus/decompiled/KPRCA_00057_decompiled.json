@@ -1,0 +1,307 @@
+{
+    "file": "KPRCA_00057",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "send_flush",
+                "func_c_signature": "void send_flush(void)",
+                "decompiled_code": "void send_flush(void) {\n  int iVar1;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  while ((txcnt != local_10 &&\n         (iVar1 = transmit(1,txbuf + local_10,txcnt - local_10,&local_14), iVar1 == 0))) {\n    local_10 = local_10 + local_14;\n  }\n  txcnt = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "send_flush",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "send_flush",
+                        "poop_page_perfectly"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            },
+            {
+                "func_name": "poop_page_perfectly",
+                "func_c_signature": "void poop_page_perfectly(void)",
+                "decompiled_code": "void poop_page_perfectly(void) {\n  undefined *puVar1;\n  uint local_10;\n  \n  for (local_10 = 0; local_10 < 0x1000; local_10 = local_10 + 4) {\n    if (txcnt == 0x10) {\n      send_flush();\n    }\n    puVar1 = txbuf + txcnt;\n    txcnt = txcnt + 1;\n    *puVar1 = *(undefined *)(secret_page + local_10);\n  }\n  send_flush();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "poop_page_perfectly",
+                        "send_flush"
+                    ],
+                    "calling_functions": [
+                        "poop_page_perfectly",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            },
+            {
+                "func_name": "xcalloc",
+                "func_c_signature": "void * xcalloc(size_t param_1,size_t param_2)",
+                "decompiled_code": "void * xcalloc(size_t param_1,size_t param_2) {\n  void *pvVar1;\n  size_t sVar2;\n  \n  pvVar1 = calloc(param_1,param_2);\n  if (pvVar1 == (void *)0x0) {\n    sVar2 = strlen(\"calloc_failed\\n\");\n    transmit(2,\"calloc failed\\n\",sVar2,0);\n                    /* WARNING: Subroutine does not return */\n    exit(1);\n  }\n  return pvVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "xcalloc",
+                        "calloc",
+                        "strlen",
+                        "transmit",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "xcalloc",
+                        "reverse",
+                        "read_ascii_octal",
+                        "initialize"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_n",
+                "func_c_signature": "uint read_n(undefined4 param_1,int param_2,uint param_3,undefined4 *param_4)",
+                "decompiled_code": "uint read_n(undefined4 param_1,int param_2,uint param_3,undefined4 *param_4) {\n  int iVar1;\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  if (param_4 != (undefined4 *)0x0) {\n    *param_4 = 0;\n  }\n  while( true ) {\n    if (param_3 <= local_10) {\n      return local_10;\n    }\n    iVar1 = receive(param_1,param_2 + local_10,param_3 - local_10,&local_14);\n    if (iVar1 != 0) break;\n    if (local_14 == 0) {\n      return local_10;\n    }\n    local_10 = local_10 + local_14;\n  }\n  if (param_4 == (undefined4 *)0x0) {\n    return local_10;\n  }\n  *param_4 = 1;\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_n",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "read_n",
+                        "skip_data",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            },
+            {
+                "func_name": "reverse",
+                "func_c_signature": "void reverse(char *param_1)",
+                "decompiled_code": "void reverse(char *param_1) {\n  size_t sVar1;\n  char *__src;\n  int local_14;\n  size_t local_10;\n  \n  sVar1 = strlen(param_1);\n  __src = (char *)xcalloc(sVar1 + 1,1);\n  local_10 = strlen(param_1);\n  local_14 = 0;\n  while (local_10 = local_10 - 1, -1 < (int)local_10) {\n    __src[local_14] = param_1[local_10];\n    local_14 = local_14 + 1;\n  }\n  strcpy(param_1,__src);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "reverse",
+                        "strlen",
+                        "xcalloc",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "reverse",
+                        "read_ascii_octal"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_ascii_octal",
+                "func_c_signature": "int read_ascii_octal(int param_1,int param_2,undefined4 *param_3)",
+                "decompiled_code": "int read_ascii_octal(int param_1,int param_2,undefined4 *param_3) {\n  int iVar1;\n  uint local_20;\n  int local_1c;\n  uint local_18;\n  uint local_14;\n  int local_10;\n  \n  local_10 = 0;\n  iVar1 = xcalloc(param_2,1);\n  for (local_14 = 0; local_14 < param_2 - 1U; local_14 = local_14 + 1) {\n    *(undefined *)(local_14 + iVar1) = *(undefined *)(local_14 + param_1);\n  }\n  reverse(iVar1);\n  local_18 = 0;\n  while( true ) {\n    if (param_2 - 1U <= local_18) {\n      return local_10;\n    }\n    if (*(char *)(local_18 + iVar1) == '\\0') break;\n    if ((*(char *)(local_18 + iVar1) < '0') || ('7' < *(char *)(local_18 + iVar1))) {\n      if (param_3 != (undefined4 *)0x0) {\n        *param_3 = 1;\n      }\n      return local_10;\n    }\n    local_1c = 1;\n    for (local_20 = 0; local_20 < local_18; local_20 = local_20 + 1) {\n      local_1c = local_1c << 3;\n    }\n    local_10 = local_10 + (*(char *)(local_18 + iVar1) + -0x30) * local_1c;\n    local_18 = local_18 + 1;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_ascii_octal",
+                        "xcalloc",
+                        "reverse"
+                    ],
+                    "calling_functions": [
+                        "read_ascii_octal",
+                        "print_entry",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            },
+            {
+                "func_name": "map_type",
+                "func_c_signature": "char * map_type(undefined4 param_1)",
+                "decompiled_code": "char * map_type(undefined4 param_1) {\n  char *pcVar1;\n  \n  switch(param_1) {\n  case 0:\n  case 0x30:\n    pcVar1 = \"Normal\";\n    break;\n  default:\n    pcVar1 = \"Unknown\";\n    break;\n  case 0x31:\n    pcVar1 = \"Hard link\";\n    break;\n  case 0x32:\n    pcVar1 = \"Symbolic link\";\n    break;\n  case 0x33:\n    pcVar1 = \"Character device\";\n    break;\n  case 0x34:\n    pcVar1 = \"Block device\";\n    break;\n  case 0x35:\n    pcVar1 = \"Directory\";\n    break;\n  case 0x36:\n    pcVar1 = \"FIFO\";\n  }\n  return pcVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "map_type"
+                    ],
+                    "calling_functions": [
+                        "map_type",
+                        "print_entry"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_user_code",
+                "func_c_signature": "undefined1 * get_user_code(int param_1,int param_2)",
+                "decompiled_code": "undefined1 * get_user_code(int param_1,int param_2) {\n  fprintf((FILE *)stderr,\"xxx- %d - %d\\n\",param_1,param_2);\n  fprintf((FILE *)stderr,\"xxx- %x\\n\",user_codes + param_1 * param_2);\n  return user_codes + param_1 * param_2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_user_code",
+                        "fprintf"
+                    ],
+                    "calling_functions": [
+                        "get_user_code",
+                        "print_entry"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sent_n",
+                "func_c_signature": "uint sent_n(undefined4 param_1,int param_2,uint param_3,undefined4 *param_4)",
+                "decompiled_code": "uint sent_n(undefined4 param_1,int param_2,uint param_3,undefined4 *param_4) {\n  uint uVar1;\n  int iVar2;\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  if (param_4 != (undefined4 *)0x0) {\n    *param_4 = 1;\n  }\n  while( true ) {\n    if (param_3 <= local_10) {\n      return local_10;\n    }\n    uVar1 = param_3 - local_10;\n    if (0x40 < uVar1) {\n      uVar1 = 0x40;\n    }\n    iVar2 = transmit(param_1,param_2 + local_10,uVar1,&local_14);\n    if (iVar2 != 0) break;\n    if (local_14 == 0) {\n      return local_10;\n    }\n    local_10 = local_10 + local_14;\n  }\n  if (param_4 == (undefined4 *)0x0) {\n    return local_10;\n  }\n  *param_4 = 1;\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sent_n",
+                        "transmit"
+                    ],
+                    "calling_functions": [
+                        "sent_n",
+                        "print_entry"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_entry",
+                "func_c_signature": "void print_entry(int param_1)",
+                "decompiled_code": "void print_entry(int param_1) {\n  undefined4 uVar1;\n  undefined4 uVar2;\n  \n  printf(\"name:\\t\\t%s\\n\",param_1);\n  printf(\"    mode:\\t\\t%s\\n\",param_1 + 0x65);\n  uVar1 = read_ascii_octal(param_1 + 0x6d,8,0);\n  printf(\"    uid:\\t\\t%d\\n\",uVar1);\n  uVar1 = read_ascii_octal(param_1 + 0x75,8,0);\n  printf(\"    gid:\\t\\t%d\\n\",uVar1);\n  printf(\"    user_code:\\t\\t\");\n  uVar1 = read_ascii_octal(param_1 + 0x75,8,0);\n  uVar2 = read_ascii_octal(param_1 + 0x6d,8,0);\n  uVar1 = get_user_code(uVar2,uVar1);\n  sent_n(1,uVar1,4,0);\n  printf(\"\\n\");\n  uVar1 = read_ascii_octal(param_1 + 0x7d,0xc,0);\n  printf(\"    size:\\t\\t%d\\n\",uVar1);\n  uVar1 = read_ascii_octal(param_1 + 0x89,0xc,0);\n  printf(\"    mtime:\\t\\t%d\\n\",uVar1);\n  uVar1 = map_type((int)*(char *)(param_1 + 0x9d));\n  printf(\"    type:\\t\\t%s\\n\",uVar1);\n  printf(\"    link_name:\\t\\t%s\\n\",param_1 + 0x9e);\n  printf(\"    magic:\\t\\t%s\\n\",param_1 + 0x103);\n  uVar1 = read_ascii_octal(param_1 + 0x10a,2,0);\n  printf(\"    version:\\t\\t%d\\n\",uVar1);\n  printf(\"    owner_name:\\t\\t%s\\n\",param_1 + 0x10c);\n  printf(\"    group_name:\\t\\t%s\\n\",param_1 + 0x12d);\n  uVar1 = read_ascii_octal(param_1 + 0x14e,8,0);\n  printf(\"    dev_major:\\t\\t%d\\n\",uVar1);\n  uVar1 = read_ascii_octal(param_1 + 0x156,8,0);\n  printf(\"    dev_minor:\\t\\t%d\\n\",uVar1);\n  printf(\"    prefix:\\t\\t%s\\n\",param_1 + 0x15e);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_entry",
+                        "printf",
+                        "read_ascii_octal",
+                        "get_user_code",
+                        "sent_n",
+                        "map_type"
+                    ],
+                    "calling_functions": [
+                        "print_entry",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            },
+            {
+                "func_name": "initialize",
+                "func_c_signature": "void * initialize(void *param_1)",
+                "decompiled_code": "void * initialize(void *param_1) {\n  void *__dest;\n  \n  __dest = (void *)xcalloc(0x1c3,1);\n  memcpy(__dest,param_1,100);\n  memcpy((void *)((int)__dest + 0x65),(void *)((int)param_1 + 100),8);\n  memcpy((void *)((int)__dest + 0x6d),(void *)((int)param_1 + 0x6c),8);\n  memcpy((void *)((int)__dest + 0x75),(void *)((int)param_1 + 0x74),8);\n  memcpy((void *)((int)__dest + 0x7d),(void *)((int)param_1 + 0x7c),0xc);\n  memcpy((void *)((int)__dest + 0x89),(void *)((int)param_1 + 0x88),0xc);\n  memcpy((void *)((int)__dest + 0x95),(void *)((int)param_1 + 0x94),8);\n  memcpy((void *)((int)__dest + 0x9d),(void *)((int)param_1 + 0x9c),1);\n  memcpy((void *)((int)__dest + 0x9e),(void *)((int)param_1 + 0x9d),100);\n  memcpy((void *)((int)__dest + 0x103),(void *)((int)param_1 + 0x101),6);\n  memcpy((void *)((int)__dest + 0x10a),(void *)((int)param_1 + 0x107),2);\n  memcpy((void *)((int)__dest + 0x10c),(void *)((int)param_1 + 0x109),0x20);\n  memcpy((void *)((int)__dest + 0x12d),(void *)((int)param_1 + 0x129),0x20);\n  memcpy((void *)((int)__dest + 0x14e),(void *)((int)param_1 + 0x149),8);\n  memcpy((void *)((int)__dest + 0x156),(void *)((int)param_1 + 0x151),8);\n  memcpy((void *)((int)__dest + 0x15e),(void *)((int)param_1 + 0x159),100);\n  return __dest;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "initialize",
+                        "xcalloc",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "initialize",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            },
+            {
+                "func_name": "empty_block",
+                "func_c_signature": "undefined4 empty_block(int param_1)",
+                "decompiled_code": "undefined4 empty_block(int param_1) {\n  uint local_8;\n  \n  local_8 = 0;\n  while( true ) {\n    if (0x1ff < local_8) {\n      return 1;\n    }\n    if (*(char *)(local_8 + param_1) != '\\0') break;\n    local_8 = local_8 + 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "empty_block"
+                    ],
+                    "calling_functions": [
+                        "empty_block",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            },
+            {
+                "func_name": "skip_data",
+                "func_c_signature": "undefined ** skip_data(undefined4 param_1,int param_2,int *param_3)",
+                "decompiled_code": "undefined ** skip_data(undefined4 param_1,int param_2,int *param_3) {\n  undefined **ppuVar1;\n  undefined local_80c [2056];\n  \n  ppuVar1 = &_GLOBAL_OFFSET_TABLE_;\n  while ((0 < param_2 && (ppuVar1 = (undefined **)*param_3, ppuVar1 == (undefined **)0x0))) {\n    ppuVar1 = (undefined **)read_n(0,local_80c,0x200,param_3);\n    param_2 = param_2 + -0x200;\n  }\n  return ppuVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "skip_data",
+                        "read_n"
+                    ],
+                    "calling_functions": [
+                        "skip_data",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined local_220 [512];\n  int local_20;\n  undefined4 local_1c;\n  void *local_18;\n  int local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_14 = 0;\n  poop_page_perfectly();\n  while( true ) {\n    while( true ) {\n      iVar1 = read_n(0,local_220,0x200,&local_20);\n      if (iVar1 != 0x200) {\n        return 0;\n      }\n      if (local_20 != 0) {\n        return 0;\n      }\n      iVar1 = empty_block(local_220);\n      if (iVar1 == 0) break;\n      local_14 = local_14 + 1;\n      if (local_14 == 2) {\n        return 0;\n      }\n    }\n    local_14 = 0;\n    local_18 = (void *)initialize(local_220);\n    print_entry(local_18);\n    local_1c = read_ascii_octal((int)local_18 + 0x7d,0xc,&local_20);\n    if (local_20 != 0) {\n      return 0;\n    }\n    skip_data(0,local_1c,&local_20);\n    if (local_20 != 0) break;\n    free(local_18);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "poop_page_perfectly",
+                        "read_n",
+                        "empty_block",
+                        "initialize",
+                        "print_entry",
+                        "read_ascii_octal",
+                        "skip_data",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "KPRCA_00057_decompiled.c"
+                }
+            }
+        ]
+    }
+}

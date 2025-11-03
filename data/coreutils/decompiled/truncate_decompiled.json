@@ -1,0 +1,113 @@
+{
+    "file": "truncate",
+    "decompiled_code": {
+        "truncate.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s OPTION... FILE...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Shrink or extend the size of each FILE to the specified size\\n\\nA FILE argument that does not exist is created.\\n\\nIf a FILE is larger than the specified size, the extra data is lost.\\nIf a FILE is shorter, it is extended and the sparse extended part (hole)\\nreads as zero bytes.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"  -c, --no-create        do not create any files\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -o, --io-blocks        treat SIZE as number of IO blocks instead of bytes\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -r, --reference=RFILE  base size on RFILE\\n  -s, --size=SIZE        set or adjust the file size by SIZE bytes\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_size_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nSIZE may also be prefixed by one of the following modifying characters:\\n\\'+\\' extend by, \\'-\\' reduce by, \\'<\\' at most, \\'>\\' at least,\\n\\'/\\' round down to multiple of, \\'%\\' round up to multiple of.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"truncate\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "part"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "part",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "emit_size_note",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "truncate_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_ftruncate",
+                "func_c_signature": "undefined8 do_ftruncate(int param_1,undefined8 param_2,long param_3,long param_4,int param_5)",
+                "decompiled_code": "undefined8 do_ftruncate(int param_1,undefined8 param_2,long param_3,long param_4,int param_5) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  ulong uVar6;\n  long in_FS_OFFSET;\n  long local_170;\n  long local_120;\n  long local_118;\n  stat local_c8;\n  long local_30;\n  \n  local_30 = *(long *)(in_FS_OFFSET + 0x28);\n  if (((block_mode != '\\0') || ((param_5 != 0 && (param_4 < 0)))) &&\n     (iVar2 = fstat(param_1,&local_c8), iVar2 != 0)) {\n    uVar3 = quotearg_style(4,param_2);\n    uVar4 = gettext(\"cannot fstat %s\");\n    piVar5 = __errno_location();\n    error(0,*piVar5,uVar4,uVar3);\n    uVar3 = 0;\n    goto LAB_00100a31;\n  }\n  local_170 = param_3;\n  if (block_mode != '\\0') {\n    if ((local_c8.st_blksize < 1) ||\n       (uVar6 = local_c8.st_blksize, 0x2000000000000000 < (ulong)local_c8.st_blksize)) {\n      uVar6 = 0x200;\n    }\n    local_170 = param_3 * uVar6;\n    if (SEXT816(local_170) != SEXT816(param_3) * SEXT816((long)uVar6)) {\n      uVar3 = quotearg_style(4,param_2);\n      uVar4 = gettext(\"overflow in %jd * %td byte blocks for file %s\");\n      error(0,0,uVar4,param_3,uVar6,uVar3);\n      uVar3 = 0;\n      goto LAB_00100a31;\n    }\n  }\n  if (param_5 == 0) {\n    local_120 = local_170;\n  }\n  else {\n    local_118 = param_4;\n    if (param_4 < 0) {\n      cVar1 = usable_st_size(&local_c8);\n      if (cVar1 == '\\0') {\n        local_118 = lseek(param_1,0,2);\n        if (local_118 < 0) {\n          uVar3 = quotearg_style(4,param_2);\n          uVar4 = gettext(\"cannot get the size of %s\");\n          piVar5 = __errno_location();\n          error(0,*piVar5,uVar4,uVar3);\n          uVar3 = 0;\n          goto LAB_00100a31;\n        }\n      }\n      else {\n        local_118 = local_c8.st_size;\n        if (local_c8.st_size < 0) {\n          uVar3 = quotearg_style(4,param_2);\n          uVar4 = gettext(\"%s has unusable, apparently negative size\");\n          error(0,0,uVar4,uVar3);\n          uVar3 = 0;\n          goto LAB_00100a31;\n        }\n      }\n    }\n    local_120 = local_118;\n    if (param_5 == 2) {\n      if (local_118 <= local_170) {\n        local_120 = local_170;\n      }\n    }\n    else if (param_5 == 3) {\n      if (local_170 <= local_118) {\n        local_120 = local_170;\n      }\n    }\n    else if (param_5 == 4) {\n      local_120 = local_118 - local_118 % local_170;\n    }\n    else {\n      if (param_5 == 5) {\n        if (local_118 % local_170 == 0) {\n          local_170 = 0;\n        }\n        else {\n          local_170 = local_170 - local_118 % local_170;\n        }\n      }\n      local_120 = local_118 + local_170;\n      if (SCARRY8(local_118,local_170)) {\n        uVar3 = quotearg_style(4,param_2);\n        uVar4 = gettext(\"overflow extending size of file %s\");\n        error(0,0,uVar4,uVar3);\n        uVar3 = 0;\n        goto LAB_00100a31;\n      }\n    }\n  }\n  if (local_120 < 0) {\n    local_120 = 0;\n  }\n  iVar2 = ftruncate(param_1,local_120);\n  if (iVar2 == 0) {\n    uVar3 = 1;\n  }\n  else {\n    uVar3 = quotearg_style(4,param_2);\n    uVar4 = gettext(\"failed to truncate %s at %jd bytes\");\n    piVar5 = __errno_location();\n    error(0,*piVar5,uVar4,uVar3,local_120);\n    uVar3 = 0;\n  }\nLAB_00100a31:\n  if (local_30 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [
+                    "SEXT816",
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_ftruncate",
+                        "fstat",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "SEXT816",
+                        "usable_st_size",
+                        "lseek",
+                        "SCARRY8",
+                        "ftruncate",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "do_ftruncate",
+                        "main"
+                    ],
+                    "defined_in_file": "truncate_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "bool main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "bool main(int param_1,undefined8 *param_2) {\n  ushort *puVar1;\n  char *__file;\n  bool bVar2;\n  char cVar3;\n  byte bVar4;\n  int iVar5;\n  int iVar6;\n  ushort **ppuVar7;\n  undefined8 uVar8;\n  undefined8 uVar9;\n  undefined8 uVar10;\n  int *piVar11;\n  long lVar12;\n  long in_FS_OFFSET;\n  char **local_1b8;\n  bool local_199;\n  int local_198;\n  long local_130;\n  long local_128;\n  long local_120;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  bVar2 = false;\n  local_130 = 0;\n  local_128 = -1;\n  local_198 = 0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\nLAB_00100ea4:\n  while( true ) {\n    iVar5 = getopt_long(param_1,param_2,\"cor:s:\",longopts,0);\n    if (iVar5 == -1) {\n      local_1b8 = (char **)(param_2 + _optind);\n      param_1 = param_1 - _optind;\n      if ((ref_file == (char *)0x0) && (!bVar2)) {\n        uVar8 = quote_n(1,\"--reference\");\n        uVar9 = quote_n(0,\"--size\");\n        uVar10 = gettext(\"you must specify either %s or %s\");\n        error(0,0,uVar10,uVar9,uVar8);\n        usage(1);\n      }\n      if (((ref_file != (char *)0x0) && (bVar2)) && (local_198 == 0)) {\n        uVar8 = quote_n(1,\"--reference\");\n        uVar9 = quote_n(0,\"--size\");\n        uVar10 = gettext(\"you must specify a relative %s with %s\");\n        error(0,0,uVar10,uVar9,uVar8);\n        usage(1);\n      }\n      if ((block_mode != '\\0') && (!bVar2)) {\n        uVar8 = quote_n(1,\"--size\");\n        uVar9 = quote_n(0,\"--io-blocks\");\n        uVar10 = gettext(\"%s was specified but %s was not\");\n        error(0,0,uVar10,uVar9,uVar8);\n        usage(1);\n      }\n      if (param_1 < 1) {\n        uVar8 = gettext(\"missing file operand\");\n        error(0,0,uVar8);\n        usage(1);\n      }\n      if (ref_file != (char *)0x0) {\n        local_120 = -1;\n        iVar5 = stat(ref_file,&local_b8);\n        if (iVar5 != 0) {\n          uVar8 = quotearg_style(4,ref_file);\n          uVar9 = gettext(\"cannot stat %s\");\n          piVar11 = __errno_location();\n          error(1,*piVar11,uVar9,uVar8);\n        }\n        cVar3 = usable_st_size(&local_b8);\n        if (cVar3 == '\\0') {\n          iVar5 = open(ref_file,0);\n          lVar12 = local_120;\n          if (-1 < iVar5) {\n            lVar12 = lseek(iVar5,0,2);\n            piVar11 = __errno_location();\n            iVar6 = *piVar11;\n            close(iVar5);\n            if (lVar12 < 0) {\n              piVar11 = __errno_location();\n              *piVar11 = iVar6;\n              lVar12 = local_120;\n            }\n          }\n        }\n        else {\n          local_120 = local_b8.st_size;\n          lVar12 = local_120;\n        }\n        local_120 = lVar12;\n        if (local_120 < 0) {\n          uVar8 = quotearg_style(4,ref_file);\n          uVar9 = gettext(\"cannot get the size of %s\");\n          piVar11 = __errno_location();\n          error(1,*piVar11,uVar9,uVar8);\n        }\n        if (bVar2) {\n          local_128 = local_120;\n        }\n        else {\n          local_130 = local_120;\n        }\n      }\n      if (no_create == '\\0') {\n        iVar5 = 0x841;\n      }\n      else {\n        iVar5 = 0x801;\n      }\n      local_199 = false;\n      for (; __file = *local_1b8, __file != (char *)0x0; local_1b8 = local_1b8 + 1) {\n        iVar6 = open(__file,iVar5,0x1b6);\n        if (iVar6 < 0) {\n          if ((no_create != '\\x01') || (piVar11 = __errno_location(), *piVar11 != 2)) {\n            uVar8 = quotearg_style(4,__file);\n            uVar9 = gettext(\"cannot open %s for writing\");\n            piVar11 = __errno_location();\n            error(0,*piVar11,uVar9,uVar8);\n            local_199 = true;\n          }\n        }\n        else {\n          bVar4 = do_ftruncate(iVar6,__file,local_130,local_128,local_198);\n          local_199 = (byte)(local_199 | bVar4 ^ 1) != 0;\n          iVar6 = close(iVar6);\n          if (iVar6 != 0) {\n            uVar8 = quotearg_style(4,__file);\n            uVar9 = gettext(\"failed to close %s\");\n            piVar11 = __errno_location();\n            error(0,*piVar11,uVar9,uVar8);\n            local_199 = true;\n          }\n        }\n      }\n      if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n        return local_199;\n      }\n                    /* WARNING: Subroutine does not return */\n      __stack_chk_fail();\n    }\n    if (iVar5 != 0x73) break;\n    while( true ) {\n      ppuVar7 = __ctype_b_loc();\n      puVar1 = *ppuVar7;\n      bVar4 = to_uchar((int)*_optarg);\n      if ((puVar1[bVar4] & 0x2000) == 0) break;\n      _optarg = _optarg + 1;\n    }\n    cVar3 = *_optarg;\n    if (cVar3 == '>') {\n      local_198 = 2;\n      _optarg = _optarg + 1;\n    }\n    else if (cVar3 < '?') {\n      if (cVar3 == '<') {\n        local_198 = 3;\n        _optarg = _optarg + 1;\n      }\n      else if (cVar3 < '=') {\n        if (cVar3 == '%') {\n          local_198 = 5;\n          _optarg = _optarg + 1;\n        }\n        else if (cVar3 == '/') {\n          local_198 = 4;\n          _optarg = _optarg + 1;\n        }\n      }\n    }\n    while( true ) {\n      ppuVar7 = __ctype_b_loc();\n      puVar1 = *ppuVar7;\n      bVar4 = to_uchar((int)*_optarg);\n      if ((puVar1[bVar4] & 0x2000) == 0) break;\n      _optarg = _optarg + 1;\n    }\n    if ((*_optarg == '+') || (*_optarg == '-')) {\n      if (local_198 != 0) {\n        uVar8 = gettext(\"multiple relative modifiers specified\");\n        error(0,0,uVar8);\n        usage(1);\n      }\n      local_198 = 1;\n    }\n    uVar8 = gettext(\"Invalid number\");\n    local_130 = xdectoimax(_optarg,0x8000000000000000,0x7fffffffffffffff,\"EgGkKmMPQRtTYZ0\",uVar8,0);\n    if (((local_198 == 5) || (local_198 == 4)) && (local_130 == 0)) {\n      uVar8 = gettext(\"division by zero\");\n      error(1,0,uVar8);\n    }\n    bVar2 = true;\n  }\n  if (iVar5 < 0x74) {\n    if (iVar5 == 0x72) {\n      ref_file = _optarg;\n      goto LAB_00100ea4;\n    }\n    if (0x72 < iVar5) goto LAB_00100e9a;\n    if (iVar5 == 0x6f) {\n      block_mode = '\\x01';\n      goto LAB_00100ea4;\n    }\n    if (iVar5 < 0x70) {\n      if (iVar5 == 99) {\n        no_create = '\\x01';\n        goto LAB_00100ea4;\n      }\n      if (iVar5 < 100) {\n        if (iVar5 == -0x83) {\nLAB_00100e3f:\n          uVar8 = proper_name_lite(\"Padraig Brady\",&DAT_00101ce6);\n          version_etc(_stdout,\"truncate\",\"GNU coreutils\",_Version,uVar8,0);\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (iVar5 == -0x82) {\n          usage(0);\n          goto LAB_00100e3f;\n        }\n      }\n    }\n  }\nLAB_00100e9a:\n  usage(1);\n  goto LAB_00100ea4;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "quote_n",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "stat",
+                        "quotearg_style",
+                        "__errno_location",
+                        "usable_st_size",
+                        "open",
+                        "lseek",
+                        "close",
+                        "do_ftruncate",
+                        "__stack_chk_fail",
+                        "__ctype_b_loc",
+                        "to_uchar",
+                        "xdectoimax",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "truncate_decompiled.c"
+                }
+            }
+        ]
+    }
+}

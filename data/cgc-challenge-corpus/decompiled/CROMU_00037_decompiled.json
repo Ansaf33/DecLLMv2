@@ -1,0 +1,360 @@
+{
+    "file": "CROMU_00037",
+    "decompiled_code": {
+        "admin.c": [
+            {
+                "func_name": "PrintAdminMenu",
+                "func_c_signature": "void PrintAdminMenu(void)",
+                "decompiled_code": "void PrintAdminMenu(void) {\n  print(\"1) Send Broadcast Message\\n\");\n  print(\"2) Leave Admin Mode\\n\");\n  print(\"3) Exit\\n\");\n  print(&DAT_00013039);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintAdminMenu",
+                        "print"
+                    ],
+                    "calling_functions": [
+                        "PrintAdminMenu",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            },
+            {
+                "func_name": "AdminLogin",
+                "func_c_signature": "void AdminLogin(void)",
+                "decompiled_code": "void AdminLogin(void) {\n  int iVar1;\n  char **ppcVar2;\n  char *pcStack_8c;\n  undefined4 uStack_88;\n  undefined4 uStack_84;\n  undefined4 uStack_80;\n  undefined auStack_7c [12];\n  char local_70 [104];\n  \n  uStack_80 = 0x1106c;\n  uStack_88 = 100;\n  pcStack_8c = local_70;\n  zero();\n  pcStack_8c = \"Admin Password: \";\n  print();\n  uStack_84 = 100;\n  uStack_88 = 10;\n  pcStack_8c = local_70;\n  iVar1 = read_until();\n  ppcVar2 = (char **)auStack_7c;\n  if (iVar1 == -1) {\n    pcStack_8c = (char *)0xffffffff;\n    _terminate();\n    ppcVar2 = &pcStack_8c;\n  }\n  *(char **)((int)ppcVar2 + -0xc) = local_70;\n  *(char **)((int)ppcVar2 + -0x10) = ADMIN_PASSWD;\n  *(undefined4 *)((int)ppcVar2 + -0x14) = 0x110ca;\n  iVar1 = strmatch();\n  if (iVar1 == 0) {\n    *(char **)((int)ppcVar2 + -0x10) = \"[-] Admin access denied\\n\";\n    *(undefined4 *)((int)ppcVar2 + -0x14) = 0x11100;\n    print();\n    ADMIN_ACCESS = 0;\n  }\n  else {\n    ADMIN_ACCESS = 1;\n    *(char **)((int)ppcVar2 + -0x10) = \"[-] Admin access granted\\n\";\n    *(undefined4 *)((int)ppcVar2 + -0x14) = 0x110ec;\n    print();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "AdminLogin",
+                        "zero",
+                        "print",
+                        "read_until",
+                        "_terminate",
+                        "strmatch"
+                    ],
+                    "calling_functions": [
+                        "AdminLogin"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            },
+            {
+                "func_name": "SendBroadcastMessage",
+                "func_c_signature": "void SendBroadcastMessage(void)",
+                "decompiled_code": "void SendBroadcastMessage(void) {\n  int iVar1;\n  size_t sVar2;\n  char **ppcVar3;\n  char *pcStack_42c;\n  undefined4 uStack_428;\n  undefined4 uStack_424;\n  undefined4 uStack_420;\n  undefined auStack_41c [8];\n  char local_414 [1024];\n  int local_14;\n  int local_10;\n  \n  uStack_420 = 0x11124;\n  uStack_428 = 0x400;\n  pcStack_42c = local_414;\n  zero();\n  pcStack_42c = \"Message: \";\n  print();\n  uStack_424 = 0x400;\n  uStack_428 = 10;\n  pcStack_42c = local_414;\n  iVar1 = read_until();\n  ppcVar3 = (char **)auStack_41c;\n  if (iVar1 == -1) {\n    pcStack_42c = (char *)0xffffffff;\n    _terminate();\n    ppcVar3 = &pcStack_42c;\n  }\n  *(char **)((int)ppcVar3 + -0x10) = local_414;\n  *(undefined4 *)((int)ppcVar3 + -0x14) = 0x1118a;\n  sVar2 = strlen(*(char **)((int)ppcVar3 + -0x10));\n  if (sVar2 != 0) {\n    for (local_10 = 0; local_10 < NUM_USERS; local_10 = local_10 + 1) {\n      if (*(char *)(local_10 * 0x32e4 + USERS) != '\\0') {\n        if (*(int *)(local_10 * 0x32e4 + USERS + 0x32e0) == 0xff) {\n          *(char **)((int)ppcVar3 + -0x10) = \"[*] Unable to send message to \";\n          *(undefined4 *)((int)ppcVar3 + -0x14) = 0x111ee;\n          print();\n          *(int *)((int)ppcVar3 + -0x10) = local_10 * 0x32e4 + USERS;\n          *(undefined4 *)((int)ppcVar3 + -0x14) = 0x1120d;\n          print();\n          *(char **)((int)ppcVar3 + -0x10) = \". Their mailbox is full.\\n\";\n          *(undefined4 *)((int)ppcVar3 + -0x14) = 0x1121f;\n          print();\n        }\n        else {\n          local_14 = *(int *)(local_10 * 0x32e4 + USERS + 0x32e0) + 1;\n          *(char **)((int)ppcVar3 + -0xc) = local_414;\n          *(int *)((int)ppcVar3 + -0x10) = USERS + local_10 * 0x32e4 + local_14 * 0x32 + 0x10;\n          *(undefined4 *)((int)ppcVar3 + -0x14) = 0x11274;\n          strcopy();\n          *(undefined *)(local_14 + USERS + local_10 * 0x32e4 + 0x31de) = 0;\n          *(int *)(USERS + local_10 * 0x32e4 + 0x32e0) = local_14;\n        }\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SendBroadcastMessage",
+                        "zero",
+                        "print",
+                        "read_until",
+                        "_terminate",
+                        "strlen",
+                        "strcopy"
+                    ],
+                    "calling_functions": [
+                        "SendBroadcastMessage",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            }
+        ],
+        "loggedin.c": [
+            {
+                "func_name": "SendMessage",
+                "func_c_signature": "void SendMessage(void)",
+                "decompiled_code": "void SendMessage(void) {\n  int iVar1;\n  size_t sVar2;\n  undefined **ppuVar3;\n  undefined *puVar4;\n  char *apcStack_90 [2];\n  int aiStack_88 [7];\n  undefined *puStack_6c;\n  undefined4 uStack_68;\n  undefined4 uStack_64;\n  undefined4 uStack_60;\n  undefined auStack_5c [6];\n  undefined local_56 [50];\n  undefined local_24 [16];\n  int local_14;\n  int local_10;\n  \n  uStack_60 = 0x115fd;\n  uStack_68 = 0x10;\n  puStack_6c = local_24;\n  zero();\n  puStack_6c = &DAT_000130c8;\n  print();\n  uStack_64 = 0x10;\n  uStack_68 = 10;\n  puStack_6c = local_24;\n  iVar1 = read_until();\n  ppuVar3 = (undefined **)auStack_5c;\n  if (iVar1 == -1) {\n    puStack_6c = (undefined *)0xffffffff;\n    _terminate();\n    ppuVar3 = &puStack_6c;\n  }\n  *(undefined **)((int)ppuVar3 + -0x10) = local_24;\n  *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11654;\n  sVar2 = strlen(*(char **)((int)ppuVar3 + -0x10));\n  if (sVar2 != 0) {\n    *(undefined4 *)((int)ppuVar3 + -0xc) = 0x32;\n    *(undefined **)((int)ppuVar3 + -0x10) = local_56;\n    *(undefined4 *)((int)ppuVar3 + -0x14) = 0x1166d;\n    zero();\n    *(char **)((int)ppuVar3 + -0x10) = \"Message: \";\n    *(undefined4 *)((int)ppuVar3 + -0x14) = 0x1167f;\n    print();\n    *(undefined4 *)((int)ppuVar3 + -8) = 0x32;\n    *(undefined4 *)((int)ppuVar3 + -0xc) = 10;\n    *(undefined **)((int)ppuVar3 + -0x10) = local_56;\n    *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11692;\n    iVar1 = read_until();\n    puVar4 = (undefined *)ppuVar3;\n    if (iVar1 == -1) {\n      *(undefined4 *)((int)ppuVar3 + -0x10) = 0xffffffff;\n      *(undefined4 *)((int)ppuVar3 + -0x14) = 0x116a4;\n      _terminate();\n      puVar4 = (undefined *)((int)ppuVar3 + -0x10);\n    }\n    *(undefined **)(puVar4 + -0x10) = local_56;\n    *(undefined4 *)(puVar4 + -0x14) = 0x116b0;\n    sVar2 = strlen(*(char **)(puVar4 + -0x10));\n    if (sVar2 != 0) {\n      for (local_10 = 0; local_10 < NUM_USERS; local_10 = local_10 + 1) {\n        *(int *)(puVar4 + -0xc) = local_10 * 0x32e4 + USERS;\n        *(undefined **)(puVar4 + -0x10) = local_24;\n        *(undefined4 *)(puVar4 + -0x14) = 0x116e4;\n        iVar1 = strmatch();\n        if (iVar1 != 0) break;\n      }\n      if (local_10 != NUM_USERS) {\n        if (*(int *)(local_10 * 0x32e4 + USERS + 0x32e0) == 0xff) {\n          *(char **)(puVar4 + -0x10) = \"[-] Recipient\\'s mailbox is full\\n\";\n          *(undefined4 *)(puVar4 + -0x14) = 0x1173f;\n          print();\n        }\n        else {\n          local_14 = *(int *)(local_10 * 0x32e4 + USERS + 0x32e0) + 1;\n          *(undefined **)(puVar4 + -0xc) = local_56;\n          *(int *)(puVar4 + -0x10) = USERS + local_10 * 0x32e4 + local_14 * 0x32 + 0x10;\n          *(undefined4 *)(puVar4 + -0x14) = 0x11791;\n          strcopy();\n          *(undefined *)(local_14 + USERS + local_10 * 0x32e4 + 0x31de) = 0;\n          *(int *)(USERS + local_10 * 0x32e4 + 0x32e0) = local_14;\n        }\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "SendMessage",
+                        "zero",
+                        "print",
+                        "read_until",
+                        "_terminate",
+                        "strlen",
+                        "strmatch",
+                        "strcopy"
+                    ],
+                    "calling_functions": [
+                        "SendMessage"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReadMessage",
+                "func_c_signature": "void ReadMessage(void)",
+                "decompiled_code": "void ReadMessage(void) {\n  int iVar1;\n  size_t sVar2;\n  undefined **ppuVar3;\n  undefined *puStack_2c;\n  undefined4 uStack_28;\n  undefined4 uStack_24;\n  undefined4 uStack_20;\n  undefined auStack_1c [8];\n  undefined local_14 [4];\n  uint local_10;\n  \n  uStack_20 = 0x117ea;\n  uStack_28 = 4;\n  puStack_2c = local_14;\n  zero();\n  puStack_2c = &DAT_000130f9;\n  print();\n  uStack_24 = 4;\n  uStack_28 = 10;\n  puStack_2c = local_14;\n  iVar1 = read_until();\n  ppuVar3 = (undefined **)auStack_1c;\n  if (iVar1 == -1) {\n    puStack_2c = (undefined *)0xffffffff;\n    _terminate();\n    ppuVar3 = &puStack_2c;\n  }\n  *(undefined **)((int)ppuVar3 + -0x10) = local_14;\n  *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11841;\n  sVar2 = strlen(*(char **)((int)ppuVar3 + -0x10));\n  if (sVar2 != 0) {\n    *(undefined **)((int)ppuVar3 + -0x10) = local_14;\n    *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11858;\n    iVar1 = isdigits();\n    if (iVar1 != 0) {\n      *(undefined **)((int)ppuVar3 + -0x10) = local_14;\n      *(undefined4 *)((int)ppuVar3 + -0x14) = 0x1186f;\n      local_10 = atoi(*(char **)((int)ppuVar3 + -0x10));\n      if (*(uint *)(CURRENT_USER * 0x32e4 + USERS + 0x32e0) < local_10) {\n        *(char **)((int)ppuVar3 + -0x10) = \"[-] Message ID out of range\\n\";\n        *(undefined4 *)((int)ppuVar3 + -0x14) = 0x118a9;\n        print();\n      }\n      else if (*(char *)(local_10 * 0x32 + USERS + CURRENT_USER * 0x32e4 + 0x10) == '\\0') {\n        *(char **)((int)ppuVar3 + -0x10) = \"[-] Message ID not found\\n\";\n        *(undefined4 *)((int)ppuVar3 + -0x14) = 0x118ea;\n        print();\n      }\n      else {\n        *(char **)((int)ppuVar3 + -0x10) = \"***********************************\\n\";\n        *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11901;\n        print();\n        *(undefined **)((int)ppuVar3 + -0x10) = local_14;\n        *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11910;\n        print();\n        *(undefined **)((int)ppuVar3 + -0x10) = &DAT_0001315d;\n        *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11922;\n        print();\n        *(uint *)((int)ppuVar3 + -0x10) = local_10 * 0x32 + 0x10 + USERS + CURRENT_USER * 0x32e4;\n        *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11951;\n        print();\n        *(undefined **)((int)ppuVar3 + -0x10) = &DAT_00013161;\n        *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11963;\n        print();\n        *(char **)((int)ppuVar3 + -0x10) = \"***********************************\\n\";\n        *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11975;\n        print();\n        *(undefined *)(local_10 + USERS + CURRENT_USER * 0x32e4 + 0x31de) = 1;\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReadMessage",
+                        "zero",
+                        "print",
+                        "read_until",
+                        "_terminate",
+                        "strlen",
+                        "isdigits",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "ReadMessage"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ListMessages",
+                "func_c_signature": "void ListMessages(void)",
+                "decompiled_code": "void ListMessages(void) {\n  uint local_10;\n  \n  for (local_10 = 1; local_10 <= *(uint *)(CURRENT_USER * 0x32e4 + USERS + 0x32e0);\n      local_10 = local_10 + 1) {\n    if (*(char *)(local_10 * 0x32 + USERS + CURRENT_USER * 0x32e4 + 0x10) != '\\0') {\n      print(\"***********************************\\n\");\n      print_uint(local_10);\n      print(&DAT_0001315d);\n      print(local_10 * 0x32 + 0x10 + USERS + CURRENT_USER * 0x32e4);\n      print(&DAT_00013161);\n      print(\"***********************************\\n\");\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ListMessages",
+                        "print",
+                        "print_uint"
+                    ],
+                    "calling_functions": [
+                        "ListMessages"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DeleteMessage",
+                "func_c_signature": "void DeleteMessage(void)",
+                "decompiled_code": "void DeleteMessage(void) {\n  int iVar1;\n  size_t sVar2;\n  undefined **ppuVar3;\n  undefined *puStack_2c;\n  undefined4 uStack_28;\n  undefined4 uStack_24;\n  undefined4 uStack_20;\n  undefined auStack_1c [8];\n  undefined local_14 [4];\n  uint local_10;\n  \n  uStack_20 = 0x11ab9;\n  uStack_28 = 4;\n  puStack_2c = local_14;\n  zero();\n  puStack_2c = &DAT_000130f9;\n  print();\n  uStack_24 = 4;\n  uStack_28 = 10;\n  puStack_2c = local_14;\n  iVar1 = read_until();\n  ppuVar3 = (undefined **)auStack_1c;\n  if (iVar1 == -1) {\n    puStack_2c = (undefined *)0xffffffff;\n    _terminate();\n    ppuVar3 = &puStack_2c;\n  }\n  *(undefined **)((int)ppuVar3 + -0x10) = local_14;\n  *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11b10;\n  sVar2 = strlen(*(char **)((int)ppuVar3 + -0x10));\n  if (sVar2 != 0) {\n    *(undefined **)((int)ppuVar3 + -0x10) = local_14;\n    *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11b27;\n    iVar1 = isdigits();\n    if (iVar1 != 0) {\n      *(undefined **)((int)ppuVar3 + -0x10) = local_14;\n      *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11b3e;\n      local_10 = atoi(*(char **)((int)ppuVar3 + -0x10));\n      if (*(uint *)(CURRENT_USER * 0x32e4 + USERS + 0x32e0) < local_10) {\n        *(char **)((int)ppuVar3 + -0x10) = \"[-] Message ID out of range\\n\";\n        *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11b78;\n        print();\n      }\n      else {\n        *(undefined4 *)((int)ppuVar3 + -0xc) = 0x32;\n        *(uint *)((int)ppuVar3 + -0x10) = local_10 * 0x32 + 0x10 + USERS + CURRENT_USER * 0x32e4;\n        *(undefined4 *)((int)ppuVar3 + -0x14) = 0x11bab;\n        zero();\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DeleteMessage",
+                        "zero",
+                        "print",
+                        "read_until",
+                        "_terminate",
+                        "strlen",
+                        "isdigits",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "DeleteMessage"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintNewMessages",
+                "func_c_signature": "void PrintNewMessages(void)",
+                "decompiled_code": "void PrintNewMessages(void) {\n  bool bVar1;\n  uint local_10;\n  \n  bVar1 = true;\n  for (local_10 = 1; local_10 < 0xff; local_10 = local_10 + 1) {\n    if ((*(char *)(local_10 * 0x32 + USERS + CURRENT_USER * 0x32e4 + 0x10) != '\\0') &&\n       (*(char *)(local_10 + USERS + CURRENT_USER * 0x32e4 + 0x31de) != '\\x01')) {\n      if (bVar1) {\n        print(\"Unread messages:\\n\");\n        bVar1 = false;\n      }\n      print(\"***********************************\\n\");\n      print_uint(local_10);\n      print(&DAT_0001315d);\n      print(local_10 * 0x32 + 0x10 + USERS + CURRENT_USER * 0x32e4);\n      print(&DAT_00013161);\n      print(\"***********************************\\n\");\n      *(undefined *)(local_10 + USERS + CURRENT_USER * 0x32e4 + 0x31de) = 1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintNewMessages",
+                        "print",
+                        "print_uint"
+                    ],
+                    "calling_functions": [
+                        "PrintNewMessages",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            }
+        ],
+        "notloggedin.c": [
+            {
+                "func_name": "CreateUser",
+                "func_c_signature": "void CreateUser(void)",
+                "decompiled_code": "void CreateUser(void) {\n  int iVar1;\n  size_t sVar2;\n  char **ppcVar3;\n  char *pcStack_3c;\n  undefined4 uStack_38;\n  undefined4 uStack_34;\n  undefined4 uStack_30;\n  undefined auStack_2c [8];\n  char local_24 [16];\n  int local_14;\n  int local_10;\n  \n  uStack_30 = 0x11d2b;\n  local_14 = -1;\n  uStack_38 = 0x10;\n  pcStack_3c = local_24;\n  zero();\n  pcStack_3c = \"username: \";\n  print();\n  uStack_34 = 0x10;\n  uStack_38 = 10;\n  pcStack_3c = local_24;\n  iVar1 = read_until();\n  ppcVar3 = (char **)auStack_2c;\n  if (iVar1 == -1) {\n    pcStack_3c = (char *)0xffffffff;\n    _terminate();\n    ppcVar3 = &pcStack_3c;\n  }\n  *(char **)((int)ppcVar3 + -0x10) = local_24;\n  *(undefined4 *)((int)ppcVar3 + -0x14) = 0x11d89;\n  sVar2 = strlen(*(char **)((int)ppcVar3 + -0x10));\n  if (sVar2 != 0) {\n    for (local_10 = 0; local_10 < NUM_USERS; local_10 = local_10 + 1) {\n      if (*(char *)(local_10 * 0x32e4 + USERS) == '\\0') {\n        local_14 = local_10;\n      }\n      *(int *)((int)ppcVar3 + -0xc) = local_10 * 0x32e4 + USERS;\n      *(char **)((int)ppcVar3 + -0x10) = local_24;\n      *(undefined4 *)((int)ppcVar3 + -0x14) = 0x11ddd;\n      iVar1 = strmatch();\n      if (iVar1 != 0) {\n        *(char **)((int)ppcVar3 + -0x10) = \"[-] Error user exists\\n\";\n        *(undefined4 *)((int)ppcVar3 + -0x14) = 0x11df3;\n        print();\n        return;\n      }\n    }\n    if (local_14 == -1) {\n      if (NUM_USERS < 100) {\n        *(undefined4 *)((int)ppcVar3 + -0xc) = 0x32e4;\n        *(int *)((int)ppcVar3 + -0x10) = NUM_USERS * 0x32e4 + USERS;\n        *(undefined4 *)((int)ppcVar3 + -0x14) = 0x11e93;\n        zero();\n        *(char **)((int)ppcVar3 + -0xc) = local_24;\n        *(int *)((int)ppcVar3 + -0x10) = NUM_USERS * 0x32e4 + USERS;\n        *(undefined4 *)((int)ppcVar3 + -0x14) = 0x11ebd;\n        strcopy();\n        NUM_USERS = NUM_USERS + 1;\n      }\n      else {\n        *(char **)((int)ppcVar3 + -0x10) = \"[-] Max users already created\\n\";\n        *(undefined4 *)((int)ppcVar3 + -0x14) = 0x11ee4;\n        print();\n      }\n    }\n    else {\n      *(undefined4 *)((int)ppcVar3 + -0xc) = 0x32e4;\n      *(int *)((int)ppcVar3 + -0x10) = local_14 * 0x32e4 + USERS;\n      *(undefined4 *)((int)ppcVar3 + -0x14) = 0x11e33;\n      zero();\n      *(char **)((int)ppcVar3 + -0xc) = local_24;\n      *(int *)((int)ppcVar3 + -0x10) = local_14 * 0x32e4 + USERS;\n      *(undefined4 *)((int)ppcVar3 + -0x14) = 0x11e58;\n      strcopy();\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CreateUser",
+                        "zero",
+                        "print",
+                        "read_until",
+                        "_terminate",
+                        "strlen",
+                        "strmatch",
+                        "strcopy"
+                    ],
+                    "calling_functions": [
+                        "CreateUser",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            },
+            {
+                "func_name": "Login",
+                "func_c_signature": "void Login(void)",
+                "decompiled_code": "void Login(void) {\n  int iVar1;\n  size_t sVar2;\n  char **ppcVar3;\n  char *pcStack_3c;\n  undefined4 uStack_38;\n  undefined4 uStack_34;\n  undefined4 uStack_30;\n  undefined auStack_2c [12];\n  char local_20 [16];\n  int local_10;\n  \n  uStack_30 = 0x11efb;\n  uStack_38 = 0x10;\n  pcStack_3c = local_20;\n  zero();\n  pcStack_3c = \"username: \";\n  print();\n  uStack_34 = 0x10;\n  uStack_38 = 10;\n  pcStack_3c = local_20;\n  iVar1 = read_until();\n  ppcVar3 = (char **)auStack_2c;\n  if (iVar1 == -1) {\n    pcStack_3c = (char *)0xffffffff;\n    _terminate();\n    ppcVar3 = &pcStack_3c;\n  }\n  *(char **)((int)ppcVar3 + -0x10) = local_20;\n  *(undefined4 *)((int)ppcVar3 + -0x14) = 0x11f52;\n  sVar2 = strlen(*(char **)((int)ppcVar3 + -0x10));\n  if (sVar2 != 0) {\n    for (local_10 = 0; local_10 < NUM_USERS; local_10 = local_10 + 1) {\n      *(int *)((int)ppcVar3 + -0xc) = local_10 * 0x32e4 + USERS;\n      *(char **)((int)ppcVar3 + -0x10) = local_20;\n      *(undefined4 *)((int)ppcVar3 + -0x14) = 0x11f86;\n      iVar1 = strmatch();\n      if (iVar1 != 0) break;\n    }\n    if (local_10 == NUM_USERS) {\n      *(char **)((int)ppcVar3 + -0x10) = \"Login Failed\\n\";\n      *(undefined4 *)((int)ppcVar3 + -0x14) = 0x11fbd;\n      print();\n    }\n    else {\n      CURRENT_USER = local_10;\n      *(char **)((int)ppcVar3 + -0x10) = \"Login Success\\n\";\n      *(undefined4 *)((int)ppcVar3 + -0x14) = 0x11fdc;\n      print();\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "Login",
+                        "zero",
+                        "print",
+                        "read_until",
+                        "_terminate",
+                        "strlen",
+                        "strmatch"
+                    ],
+                    "calling_functions": [
+                        "Login",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "PrintLoggedOutMenu",
+                "func_c_signature": "void PrintLoggedOutMenu(void)",
+                "decompiled_code": "void PrintLoggedOutMenu(void) {\n  print(\"1) Create User\\n\");\n  print(\"2) Login\\n\");\n  print(\"3) Exit\\n\");\n  print(&DAT_000131fb);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintLoggedOutMenu",
+                        "print"
+                    ],
+                    "calling_functions": [
+                        "PrintLoggedOutMenu",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintLoggedInMenu",
+                "func_c_signature": "void PrintLoggedInMenu(void)",
+                "decompiled_code": "void PrintLoggedInMenu(void) {\n  print(\"1) Send Message\\n\");\n  print(\"2) Read Message\\n\");\n  print(\"3) List Messages\\n\");\n  print(\"4) Delete Message\\n\");\n  print(\"5) Logout\\n\");\n  print(\"6) Exit\\n\");\n  print(&DAT_000131fb);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintLoggedInMenu",
+                        "print"
+                    ],
+                    "calling_functions": [
+                        "PrintLoggedInMenu",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            },
+            {
+                "func_name": "BusyWork",
+                "func_c_signature": "void BusyWork(void)",
+                "decompiled_code": "void BusyWork(void) {\n  undefined local_1014 [4096];\n  code *local_14;\n  int local_10;\n  \n  local_14 = PrintAdminMenu;\n  local_10 = 0x14;\n  while (local_10 != 0) {\n    local_10 = local_10 + -1;\n    memcopy(local_1014,local_14,0x1000);\n    sort_n_sum(local_1014,0x1000);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "BusyWork",
+                        "memcopy",
+                        "sort_n_sum"
+                    ],
+                    "calling_functions": [
+                        "BusyWork"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  bool bVar1;\n  undefined **ppuVar2;\n  int iVar3;\n  size_t sVar4;\n  undefined4 uVar5;\n  int iVar6;\n  undefined *puVar7;\n  undefined *puVar8;\n  char in_stack_ffec1e78;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  ppuVar2 = &local_10;\n  do {\n    puVar7 = (undefined *)ppuVar2;\n    *(undefined4 *)(puVar7 + -0x1000) = *(undefined4 *)(puVar7 + -0x1000);\n    ppuVar2 = (undefined **)(puVar7 + -0x1000);\n  } while (puVar7 + -0x1000 != &stack0xffec1ff0);\n  puVar8 = puVar7 + -0x1180;\n  *(undefined4 *)(puVar7 + -0x1184) = 0x12185;\n  iVar6 = *(int *)(puVar7 + -0x1184);\n  bVar1 = false;\n  *(undefined **)(iVar6 + 0x2e8b) = &stack0xffec1edc;\n  *(undefined4 *)(iVar6 + 0x2e83) = 0;\n  *(undefined4 *)(iVar6 + 0x2e8f) = 0xffffffff;\n  *(undefined4 *)(iVar6 + 0x2e87) = 0;\n  uVar5 = *(undefined4 *)(iVar6 + 0x2e8b);\n  *(undefined4 *)(puVar7 + -0x118c) = 0x13e110;\n  *(undefined4 *)(puVar7 + -0x1190) = uVar5;\n  *(undefined4 *)(puVar7 + -0x1194) = 0x121da;\n  zero();\n  do {\n    while( true ) {\n      while( true ) {\n        while( true ) {\n          while( true ) {\n            if (bVar1) {\n              return 0;\n            }\n            if (*(int *)(iVar6 + 0x2e83) == 0) break;\n            *(undefined4 *)(puVar8 + -0xc) = 100;\n            *(undefined **)(puVar8 + -0x10) = &stack0xffec1e78;\n            *(undefined4 *)(puVar8 + -0x14) = 0x12203;\n            zero();\n            *(undefined4 *)(puVar8 + -4) = 0x1220b;\n            PrintAdminMenu();\n            *(undefined4 *)(puVar8 + -8) = 100;\n            *(undefined4 *)(puVar8 + -0xc) = 10;\n            *(undefined **)(puVar8 + -0x10) = &stack0xffec1e78;\n            *(undefined4 *)(puVar8 + -0x14) = 0x1221e;\n            iVar3 = read_until();\n            if (iVar3 == -1) {\n              *(undefined4 *)(puVar8 + -0x10) = 0xffffffff;\n              *(undefined4 *)(puVar8 + -0x14) = 0x12230;\n              _terminate();\n              puVar8 = puVar8 + -0x10;\n            }\n            *(undefined **)(puVar8 + -0x10) = &stack0xffec1e78;\n            *(undefined4 *)(puVar8 + -0x14) = 0x1223f;\n            sVar4 = strlen(*(char **)(puVar8 + -0x10));\n            if (sVar4 < 2) {\n              if (in_stack_ffec1e78 == '3') {\n                *(int *)(puVar8 + -0x10) = iVar6 + 0x10e8;\n                *(undefined4 *)(puVar8 + -0x14) = 0x122af;\n                print();\n                bVar1 = true;\n              }\n              else if (in_stack_ffec1e78 < '4') {\n                if (in_stack_ffec1e78 == '1') {\n                  *(undefined4 *)(puVar8 + -4) = 0x1228a;\n                  SendBroadcastMessage();\n                }\n                else if (in_stack_ffec1e78 == '2') {\n                  *(undefined4 *)(iVar6 + 0x2e83) = 0;\n                }\n              }\n            }\n            else {\n              *(int *)(puVar8 + -0x10) = iVar6 + 0x10d4;\n              *(undefined4 *)(puVar8 + -0x14) = 0x12256;\n              print();\n            }\n          }\n          if (*(int *)(iVar6 + 0x2e8f) == -1) break;\n          *(undefined4 *)(puVar8 + -0xc) = 100;\n          *(undefined **)(puVar8 + -0x10) = &stack0xffec1e78;\n          *(undefined4 *)(puVar8 + -0x14) = 0x123b3;\n          zero();\n          *(undefined4 *)(puVar8 + -4) = 0x123bb;\n          PrintNewMessages();\n          *(undefined4 *)(puVar8 + -4) = 0x123c0;\n          PrintLoggedInMenu();\n          *(undefined4 *)(puVar8 + -8) = 100;\n          *(undefined4 *)(puVar8 + -0xc) = 10;\n          *(undefined **)(puVar8 + -0x10) = &stack0xffec1e78;\n          *(undefined4 *)(puVar8 + -0x14) = 0x123d3;\n          iVar3 = read_until();\n          if (iVar3 == -1) {\n            *(undefined4 *)(puVar8 + -0x10) = 0xffffffff;\n            *(undefined4 *)(puVar8 + -0x14) = 0x123e5;\n            _terminate();\n            puVar8 = puVar8 + -0x10;\n          }\n          *(undefined **)(puVar8 + -0x10) = &stack0xffec1e78;\n          *(undefined4 *)(puVar8 + -0x14) = 0x123f4;\n          sVar4 = strlen(*(char **)(puVar8 + -0x10));\n          if (sVar4 < 2) {\n            if ((int)in_stack_ffec1e78 - 0x31U < 0x31) {\n                    /* WARNING: Could not recover jumptable at 0x00012431. Too many branches */\n                    /* WARNING: Treating indirect jump as call */\n              uVar5 = (*(code *)(*(int *)(((int)in_stack_ffec1e78 - 0x31U) * 4 + -0x1d68 +\n                                         iVar6 + 0x2e6f) + iVar6 + 0x2e6f))();\n              return uVar5;\n            }\n            *(int *)(puVar8 + -0x10) = iVar6 + 0x10d4;\n            *(undefined4 *)(puVar8 + -0x14) = 0x124a1;\n            print();\n          }\n          else {\n            *(int *)(puVar8 + -0x10) = iVar6 + 0x10d4;\n            *(undefined4 *)(puVar8 + -0x14) = 0x1240b;\n            print();\n          }\n        }\n        *(undefined4 *)(puVar8 + -0xc) = 100;\n        *(undefined **)(puVar8 + -0x10) = &stack0xffec1e78;\n        *(undefined4 *)(puVar8 + -0x14) = 0x122e0;\n        zero();\n        *(undefined4 *)(puVar8 + -4) = 0x122e8;\n        PrintLoggedOutMenu();\n        *(undefined4 *)(puVar8 + -8) = 100;\n        *(undefined4 *)(puVar8 + -0xc) = 10;\n        *(undefined **)(puVar8 + -0x10) = &stack0xffec1e78;\n        *(undefined4 *)(puVar8 + -0x14) = 0x122fb;\n        iVar3 = read_until();\n        if (iVar3 == -1) {\n          *(undefined4 *)(puVar8 + -0x10) = 0xffffffff;\n          *(undefined4 *)(puVar8 + -0x14) = 0x1230d;\n          _terminate();\n          puVar8 = puVar8 + -0x10;\n        }\n        *(undefined **)(puVar8 + -0x10) = &stack0xffec1e78;\n        *(undefined4 *)(puVar8 + -0x14) = 0x1231c;\n        sVar4 = strlen(*(char **)(puVar8 + -0x10));\n        if (sVar4 < 2) break;\n        *(int *)(puVar8 + -0x10) = iVar6 + 0x10d4;\n        *(undefined4 *)(puVar8 + -0x14) = 0x12333;\n        print();\n      }\n      if (in_stack_ffec1e78 != '3') break;\n      *(int *)(puVar8 + -0x10) = iVar6 + 0x10e8;\n      *(undefined4 *)(puVar8 + -0x14) = 0x1237e;\n      print();\n      *(undefined4 *)(puVar8 + -0x10) = 0;\n      *(undefined4 *)(puVar8 + -0x14) = 0x1238b;\n      _terminate();\n      puVar8 = puVar8 + -0x10;\nLAB_0001238b:\n      *(int *)(puVar8 + -0x10) = iVar6 + 0x10d4;\n      *(undefined4 *)(puVar8 + -0x14) = 0x1239a;\n      print();\n    }\n    if ('3' < in_stack_ffec1e78) goto LAB_0001238b;\n    if (in_stack_ffec1e78 == '1') {\n      *(undefined4 *)(puVar8 + -4) = 0x12360;\n      CreateUser();\n    }\n    else {\n      if (in_stack_ffec1e78 != '2') goto LAB_0001238b;\n      *(undefined4 *)(puVar8 + -4) = 0x1236a;\n      Login();\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "zero",
+                        "PrintAdminMenu",
+                        "read_until",
+                        "_terminate",
+                        "strlen",
+                        "print",
+                        "SendBroadcastMessage",
+                        "PrintNewMessages",
+                        "PrintLoggedInMenu",
+                        "PrintLoggedOutMenu",
+                        "CreateUser",
+                        "Login"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            }
+        ],
+        "sort.c": [
+            {
+                "func_name": "sort_n_sum",
+                "func_c_signature": "byte sort_n_sum(byte *param_1,uint param_2)",
+                "decompiled_code": "byte sort_n_sum(byte *param_1,uint param_2) {\n  byte bVar1;\n  bool bVar2;\n  byte local_d;\n  uint local_c;\n  \n  bVar2 = true;\n  while (bVar2) {\n    bVar2 = false;\n    local_d = *param_1;\n    for (local_c = 1; local_c < param_2; local_c = local_c + 1) {\n      if ((char)param_1[local_c] < (char)param_1[local_c - 1]) {\n        bVar1 = param_1[local_c - 1];\n        param_1[local_c - 1] = param_1[local_c];\n        param_1[local_c] = bVar1;\n        bVar2 = true;\n      }\n      local_d = local_d ^ param_1[local_c];\n    }\n  }\n  return local_d;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sort_n_sum"
+                    ],
+                    "calling_functions": [
+                        "BusyWork",
+                        "sort_n_sum"
+                    ],
+                    "defined_in_file": "CROMU_00037_decompiled.c"
+                }
+            }
+        ]
+    }
+}

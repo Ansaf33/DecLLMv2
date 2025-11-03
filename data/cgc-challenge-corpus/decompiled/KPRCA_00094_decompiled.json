@@ -1,0 +1,1074 @@
+{
+    "file": "KPRCA_00094",
+    "decompiled_code": {
+        "challenge.c": [
+            {
+                "func_name": "chal_cat_to_string",
+                "func_c_signature": "char * chal_cat_to_string(undefined4 param_1)",
+                "decompiled_code": "char * chal_cat_to_string(undefined4 param_1) {\n  char *pcVar1;\n  \n  switch(param_1) {\n  case 0:\n    pcVar1 = \"Crypto\";\n    break;\n  case 1:\n    pcVar1 = \"Pwnable\";\n    break;\n  case 2:\n    pcVar1 = \"Forensics\";\n    break;\n  case 3:\n    pcVar1 = \"Web\";\n    break;\n  case 4:\n    pcVar1 = \"Network\";\n    break;\n  case 5:\n    pcVar1 = \"Reversing\";\n    break;\n  case 6:\n    pcVar1 = \"Misc.\";\n    break;\n  default:\n    pcVar1 = \"Unknown\";\n  }\n  return pcVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "chal_cat_to_string"
+                    ],
+                    "calling_functions": [
+                        "chal_cat_to_string",
+                        "print_challenge"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "chal_status_to_string",
+                "func_c_signature": "char * chal_status_to_string(uint param_1)",
+                "decompiled_code": "char * chal_status_to_string(uint param_1) {\n  if (param_1 == 3) {\n    return \"Open\";\n  }\n  if (param_1 < 4) {\n    if (param_1 == 2) {\n      return \"Cleared\";\n    }\n    if (param_1 < 3) {\n      if (param_1 == 0) {\n        return \"Locked\";\n      }\n      if (param_1 == 1) {\n        return \"Solved\";\n      }\n    }\n  }\n  return \"Unknown\";\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "chal_status_to_string"
+                    ],
+                    "calling_functions": [
+                        "chal_status_to_string",
+                        "print_challenge"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            }
+        ],
+        "ctf.c": [
+            {
+                "func_name": "ctf_init",
+                "func_c_signature": "undefined4 ctf_init(undefined4 *param_1)",
+                "decompiled_code": "undefined4 ctf_init(undefined4 *param_1) {\n  void *pvVar1;\n  undefined4 uVar2;\n  \n  uVar2 = 0x113e9;\n  *param_1 = 0;\n  param_1[1] = 0;\n  param_1[2] = 0;\n  param_1[3] = 0;\n  pvVar1 = malloc(0x20);\n  param_1[7] = pvVar1;\n  param_1[4] = 8;\n  pvVar1 = malloc(0x40);\n  param_1[8] = pvVar1;\n  param_1[5] = 0x10;\n  pvVar1 = malloc(0x80);\n  param_1[9] = pvVar1;\n  param_1[6] = 0x20;\n  param_1[0x10] = 0;\n  flg_init(param_1 + 10,param_1[7],param_1 + 1,uVar2);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ctf_init",
+                        "malloc",
+                        "flg_init"
+                    ],
+                    "calling_functions": [
+                        "ctf_init",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ctf_submit_flag",
+                "func_c_signature": "int ctf_submit_flag(int param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "int ctf_submit_flag(int param_1,undefined4 param_2,undefined4 param_3) {\n  int iVar1;\n  \n  iVar1 = flg_add_submit(param_1 + 0x28,param_2,param_3,0x114b0);\n  if (iVar1 == 0) {\n    iVar1 = 0;\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ctf_submit_flag",
+                        "flg_add_submit"
+                    ],
+                    "calling_functions": [
+                        "ctf_submit_flag",
+                        "handle_submit_flag"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ctf_add_user",
+                "func_c_signature": "undefined4 ctf_add_user(int param_1,char *param_2)",
+                "decompiled_code": "undefined4 ctf_add_user(int param_1,char *param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  void *pvVar3;\n  uint local_10;\n  \n  if ((param_1 == 0) || (param_2 == (char *)0x0)) {\n    uVar1 = 1;\n  }\n  else {\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 0xc); local_10 = local_10 + 1) {\n      iVar2 = strcmp(*(char **)(*(int *)(param_1 + 0x24) + local_10 * 4),param_2);\n      if (iVar2 == 0) {\n        return 0xb;\n      }\n    }\n    if (*(int *)(param_1 + 0xc) == *(int *)(param_1 + 0x18)) {\n      pvVar3 = realloc(*(void **)(param_1 + 0x24),*(int *)(param_1 + 0x18) * 8);\n      *(void **)(param_1 + 0x24) = pvVar3;\n      *(int *)(param_1 + 0x18) = *(int *)(param_1 + 0x18) * 2;\n    }\n    iVar2 = *(int *)(param_1 + 0xc);\n    *(int *)(param_1 + 0xc) = iVar2 + 1;\n    *(char **)(*(int *)(param_1 + 0x24) + iVar2 * 4) = param_2;\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ctf_add_user",
+                        "strcmp",
+                        "realloc"
+                    ],
+                    "calling_functions": [
+                        "ctf_add_user",
+                        "handle_register_user"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ctf_auth_user",
+                "func_c_signature": "undefined4 ctf_auth_user(int param_1,char **param_2,char *param_3,char *param_4)",
+                "decompiled_code": "undefined4 ctf_auth_user(int param_1,char **param_2,char *param_3,char *param_4) {\n  char *__s1;\n  undefined4 uVar1;\n  int iVar2;\n  uint local_10;\n  \n  if ((((param_1 == 0) || (param_2 == (char **)0x0)) || (param_3 == (char *)0x0)) ||\n     (param_4 == (char *)0x0)) {\n    uVar1 = 1;\n  }\n  else {\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 0xc); local_10 = local_10 + 1) {\n      __s1 = *(char **)(*(int *)(param_1 + 0x24) + local_10 * 4);\n      iVar2 = strcmp(__s1,param_3);\n      if (iVar2 == 0) {\n        iVar2 = strcmp(__s1 + 0x10,param_4);\n        if (iVar2 == 0) {\n          *param_2 = __s1;\n          return 0;\n        }\n        return 0xe;\n      }\n    }\n    uVar1 = 5;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ctf_auth_user",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "ctf_auth_user",
+                        "handle_login_user"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ctf_add_team",
+                "func_c_signature": "undefined4 ctf_add_team(int param_1,int param_2)",
+                "decompiled_code": "undefined4 ctf_add_team(int param_1,int param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  void *pvVar3;\n  uint local_10;\n  \n  if ((param_1 == 0) || (param_2 == 0)) {\n    uVar1 = 1;\n  }\n  else {\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 8); local_10 = local_10 + 1) {\n      iVar2 = strcmp((char *)(*(int *)(*(int *)(param_1 + 0x20) + local_10 * 4) + 0x21),\n                     (char *)(param_2 + 0x21));\n      if (iVar2 == 0) {\n        return 0xc;\n      }\n    }\n    if (*(int *)(param_1 + 8) == *(int *)(param_1 + 0x14)) {\n      pvVar3 = realloc(*(void **)(param_1 + 0x20),*(int *)(param_1 + 0x14) * 8);\n      *(void **)(param_1 + 0x20) = pvVar3;\n      *(int *)(param_1 + 0x14) = *(int *)(param_1 + 0x14) * 2;\n    }\n    iVar2 = *(int *)(param_1 + 8);\n    *(int *)(param_1 + 8) = iVar2 + 1;\n    *(int *)(*(int *)(param_1 + 0x20) + iVar2 * 4) = param_2;\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ctf_add_team",
+                        "strcmp",
+                        "realloc"
+                    ],
+                    "calling_functions": [
+                        "ctf_add_team",
+                        "handle_register_user"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ctf_add_chal",
+                "func_c_signature": "undefined4 ctf_add_chal(int param_1,char *param_2)",
+                "decompiled_code": "undefined4 ctf_add_chal(int param_1,char *param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  void *pvVar3;\n  uint local_10;\n  \n  if ((param_1 == 0) || (param_2 == (char *)0x0)) {\n    uVar1 = 1;\n  }\n  else {\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 4); local_10 = local_10 + 1) {\n      iVar2 = strcmp(*(char **)(*(int *)(param_1 + 0x1c) + local_10 * 4),param_2);\n      if ((iVar2 == 0) ||\n         (iVar2 = strcmp(*(char **)(*(int *)(*(int *)(param_1 + 0x1c) + local_10 * 4) + 0x18c),\n                         *(char **)(param_2 + 0x18c)), iVar2 == 0)) {\n        return 0xd;\n      }\n    }\n    if (*(int *)(param_1 + 4) == *(int *)(param_1 + 0x10)) {\n      pvVar3 = realloc(*(void **)(param_1 + 0x1c),*(int *)(param_1 + 0x10) * 8);\n      *(void **)(param_1 + 0x1c) = pvVar3;\n      *(undefined4 *)(param_1 + 0x38) = *(undefined4 *)(param_1 + 0x1c);\n      *(int *)(param_1 + 0x10) = *(int *)(param_1 + 0x10) * 2;\n    }\n    iVar2 = *(int *)(param_1 + 4);\n    *(int *)(param_1 + 4) = iVar2 + 1;\n    *(char **)(*(int *)(param_1 + 0x1c) + iVar2 * 4) = param_2;\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ctf_add_chal",
+                        "strcmp",
+                        "realloc"
+                    ],
+                    "calling_functions": [
+                        "ctf_add_chal",
+                        "do_random_action"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ctf_open_chal",
+                "func_c_signature": "undefined4 ctf_open_chal(int param_1,uint param_2)",
+                "decompiled_code": "undefined4 ctf_open_chal(int param_1,uint param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  \n  if (param_1 == 0) {\n    uVar2 = 1;\n  }\n  else if (param_2 < *(uint *)(param_1 + 4)) {\n    iVar1 = *(int *)(*(int *)(param_1 + 0x1c) + param_2 * 4);\n    if (*(int *)(iVar1 + 0x184) == 0) {\n      *(undefined4 *)(iVar1 + 0x184) = 3;\n      uVar2 = 0;\n    }\n    else {\n      uVar2 = 8;\n    }\n  }\n  else {\n    uVar2 = 6;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ctf_open_chal"
+                    ],
+                    "calling_functions": [
+                        "ctf_open_chal",
+                        "do_random_action"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ctf_get_solves",
+                "func_c_signature": "int ctf_get_solves(int param_1,int param_2,int param_3)",
+                "decompiled_code": "int ctf_get_solves(int param_1,int param_2,int param_3) {\n  int iVar1;\n  \n  if (((param_1 == 0) || (param_2 == 0)) || (param_3 == 0)) {\n    iVar1 = 1;\n  }\n  else {\n    iVar1 = flg_get_solves(param_1 + 0x28,param_2,0,param_3);\n    if (iVar1 == 0) {\n      iVar1 = 0;\n    }\n  }\n  return iVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ctf_get_solves",
+                        "flg_get_solves"
+                    ],
+                    "calling_functions": [
+                        "ctf_get_solves",
+                        "print_ctf_ticker"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ctf_select_nth",
+                "func_c_signature": "undefined4 ctf_select_nth(int param_1,int param_2,int param_3)",
+                "decompiled_code": "undefined4 ctf_select_nth(int param_1,int param_2,int param_3) {\n  undefined4 uVar1;\n  int local_14;\n  uint local_10;\n  \n  local_14 = 0;\n  for (local_10 = 0; local_10 < param_2 - 1U; local_10 = local_10 + 1) {\n    if (*(uint *)(*(int *)(param_1 + (param_2 + 0x3fffffff) * 4) + 0x58) <=\n        *(uint *)(*(int *)(param_1 + local_10 * 4) + 0x58)) {\n      uVar1 = *(undefined4 *)(param_1 + local_10 * 4);\n      *(undefined4 *)(param_1 + local_10 * 4) = *(undefined4 *)(param_1 + local_14 * 4);\n      *(undefined4 *)(local_14 * 4 + param_1) = uVar1;\n      local_14 = local_14 + 1;\n    }\n  }\n  uVar1 = *(undefined4 *)(param_1 + (param_2 + 0x3fffffff) * 4);\n  *(undefined4 *)(param_1 + (param_2 + 0x3fffffff) * 4) = *(undefined4 *)(param_1 + local_14 * 4);\n  *(undefined4 *)(local_14 * 4 + param_1) = uVar1;\n  if (param_3 == local_14) {\n    uVar1 = *(undefined4 *)(param_1 + local_14 * 4);\n  }\n  else if (param_3 < local_14) {\n    uVar1 = ctf_select_nth(param_1,local_14,param_3,0x11943);\n  }\n  else {\n    uVar1 = ctf_select_nth(param_1 + local_14 * 4,param_2 - local_14,param_3 - local_14,0x11943);\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ctf_select_nth"
+                    ],
+                    "calling_functions": [
+                        "ctf_select_nth",
+                        "ctf_get_ranks"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ctf_get_ranks",
+                "func_c_signature": "undefined4 ctf_get_ranks(int param_1,void **param_2,uint *param_3)",
+                "decompiled_code": "undefined4 ctf_get_ranks(int param_1,void **param_2,uint *param_3) {\n  int iVar1;\n  int iVar2;\n  uint uVar3;\n  void *pvVar4;\n  int iVar5;\n  uint uVar6;\n  void *pvVar7;\n  undefined4 uVar8;\n  uint local_18;\n  uint local_14;\n  uint local_10;\n  \n  uVar8 = 0x11abd;\n  if (((param_1 == 0) || (param_2 == (void **)0x0)) || (param_3 == (uint *)0x0)) {\n    uVar8 = 1;\n  }\n  else {\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 8); local_10 = local_10 + 1) {\n      *(undefined4 *)(*(int *)(*(int *)(param_1 + 0x20) + local_10 * 4) + 0x58) = 0;\n    }\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 4); local_10 = local_10 + 1) {\n      iVar1 = *(int *)(*(int *)(param_1 + 0x1c) + local_10 * 4);\n      if (*(int *)(iVar1 + 0x184) != 0) {\n        for (local_14 = 0; local_14 < *(uint *)(param_1 + 8); local_14 = local_14 + 1) {\n          iVar2 = *(int *)(*(int *)(param_1 + 0x20) + local_14 * 4);\n          iVar5 = flg_team_did_solve(param_1 + 0x28,iVar2,iVar1,uVar8);\n          if (iVar5 != 0) {\n            *(int *)(iVar2 + 0x58) = *(int *)(iVar2 + 0x58) + *(int *)(iVar1 + 0x180);\n          }\n        }\n      }\n    }\n    uVar6 = *(uint *)(param_1 + 8);\n    if (5 < uVar6) {\n      uVar6 = 5;\n    }\n    uVar3 = *param_3;\n    *param_2 = (void *)0x0;\n    *param_3 = 0;\n    if (uVar6 == 0) {\n      uVar8 = 0;\n    }\n    else {\n      if (uVar3 * 5 - 5 < *(uint *)(param_1 + 8)) {\n        local_18 = uVar3 * 5 - 5;\n      }\n      else {\n        local_18 = 0;\n      }\n      *param_3 = local_18;\n      pvVar7 = malloc(uVar6 << 2);\n      *param_2 = pvVar7;\n      pvVar7 = malloc(*(int *)(param_1 + 8) << 2);\n      memcpy(pvVar7,*(void **)(param_1 + 0x20),*(int *)(param_1 + 8) * 4);\n      local_10 = local_18;\n      for (local_14 = 0; (local_10 < *(uint *)(param_1 + 8) && (local_14 < uVar6));\n          local_14 = local_14 + 1) {\n        pvVar4 = *param_2;\n        uVar8 = ctf_select_nth(pvVar7,*(undefined4 *)(param_1 + 8),local_10);\n        *(undefined4 *)((int)pvVar4 + local_14 * 4) = uVar8;\n        local_10 = local_10 + 1;\n      }\n      free(pvVar7);\n      uVar8 = 0;\n    }\n  }\n  return uVar8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ctf_get_ranks",
+                        "flg_team_did_solve",
+                        "malloc",
+                        "memcpy",
+                        "ctf_select_nth",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "ctf_get_ranks",
+                        "print_ctf_ticker",
+                        "view_ranking_page"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ctf_get_team",
+                "func_c_signature": "undefined4 ctf_get_team(int param_1,undefined4 *param_2,uint param_3)",
+                "decompiled_code": "undefined4 ctf_get_team(int param_1,undefined4 *param_2,uint param_3) {\n  undefined4 uVar1;\n  \n  if ((param_1 == 0) || (param_2 == (undefined4 *)0x0)) {\n    uVar1 = 1;\n  }\n  else if (param_3 < *(uint *)(param_1 + 8)) {\n    *param_2 = *(undefined4 *)(*(int *)(param_1 + 0x20) + param_3 * 4);\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 7;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ctf_get_team"
+                    ],
+                    "calling_functions": [
+                        "ctf_get_team"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ctf_get_chal",
+                "func_c_signature": "undefined4 ctf_get_chal(int param_1,undefined4 *param_2,uint param_3)",
+                "decompiled_code": "undefined4 ctf_get_chal(int param_1,undefined4 *param_2,uint param_3) {\n  undefined4 uVar1;\n  \n  if ((param_1 == 0) || (param_2 == (undefined4 *)0x0)) {\n    uVar1 = 1;\n  }\n  else if (param_3 < *(uint *)(param_1 + 4)) {\n    *param_2 = *(undefined4 *)(*(int *)(param_1 + 0x1c) + param_3 * 4);\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 6;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ctf_get_chal"
+                    ],
+                    "calling_functions": [
+                        "ctf_get_chal",
+                        "handle_view_challenge_detail"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            }
+        ],
+        "error.c": [
+            {
+                "func_name": "error_to_string",
+                "func_c_signature": "char * error_to_string(uint param_1)",
+                "decompiled_code": "char * error_to_string(uint param_1) {\n  char *pcVar1;\n  \n  if (param_1 < 0x10) {\n    pcVar1 = *(char **)(err_msgs + param_1 * 4);\n  }\n  else {\n    pcVar1 = \"Unknown error.\";\n  }\n  return pcVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "error_to_string"
+                    ],
+                    "calling_functions": [
+                        "error_to_string",
+                        "handle_register_user",
+                        "handle_login_user",
+                        "handle_view_challenge_detail",
+                        "handle_view_ranking",
+                        "handle_view_team_profile",
+                        "handle_submit_flag"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            }
+        ],
+        "flgmgr.c": [
+            {
+                "func_name": "flg_init",
+                "func_c_signature": "undefined4 flg_init(undefined4 *param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 flg_init(undefined4 *param_1,undefined4 param_2,undefined4 param_3) {\n  void *pvVar1;\n  \n  *param_1 = 0;\n  param_1[1] = 0;\n  param_1[2] = 0x10;\n  pvVar1 = malloc(0x40);\n  param_1[3] = pvVar1;\n  param_1[4] = param_2;\n  param_1[5] = param_3;\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "flg_init",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "ctf_init",
+                        "flg_init"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "flg_is_duplicate",
+                "func_c_signature": "undefined4 flg_is_duplicate(uint *param_1,int param_2,char *param_3)",
+                "decompiled_code": "undefined4 flg_is_duplicate(uint *param_1,int param_2,char *param_3) {\n  int *piVar1;\n  int iVar2;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    if (*param_1 <= local_10) {\n      return 0;\n    }\n    piVar1 = *(int **)(param_1[3] + local_10 * 4);\n    if ((param_2 == *piVar1) && (iVar2 = strcmp((char *)piVar1[2],param_3), iVar2 == 0)) break;\n    local_10 = local_10 + 1;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "flg_is_duplicate",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "flg_is_duplicate",
+                        "flg_add_submit"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "flg_add_submit",
+                "func_c_signature": "int flg_add_submit(int *param_1,int param_2,char *param_3)",
+                "decompiled_code": "int flg_add_submit(int *param_1,int param_2,char *param_3) {\n  int iVar1;\n  int *piVar2;\n  char *pcVar3;\n  void *pvVar4;\n  int local_10;\n  \n  if (((param_1 == (int *)0x0) || (param_2 == 0)) || (param_3 == (char *)0x0)) {\n    local_10 = 1;\n  }\n  else {\n    iVar1 = flg_is_duplicate(param_1,param_2,param_3,0x11e8a);\n    if (iVar1 == 0) {\n      piVar2 = (int *)malloc(0x18);\n      *piVar2 = param_2;\n      local_10 = flg_find_chal(param_1,piVar2 + 1,param_3);\n      if (local_10 != 0) {\n        local_10 = 10;\n      }\n      piVar2[3] = (uint)(piVar2[1] != 0);\n      piVar2[4] = *param_1;\n      pcVar3 = strdup(param_3);\n      piVar2[2] = (int)pcVar3;\n      if ((piVar2[1] != 0) && (*(int *)(piVar2[1] + 0x184) == 3)) {\n        *(undefined4 *)(piVar2[1] + 0x184) = 1;\n      }\n      if (param_1[2] == *param_1) {\n        pvVar4 = realloc((void *)param_1[3],param_1[2] * 8);\n        param_1[3] = (int)pvVar4;\n        param_1[2] = param_1[2] * 2;\n      }\n      iVar1 = *param_1;\n      *param_1 = iVar1 + 1;\n      *(int **)(param_1[3] + iVar1 * 4) = piVar2;\n    }\n    else {\n      local_10 = 9;\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "flg_add_submit",
+                        "flg_is_duplicate",
+                        "malloc",
+                        "flg_find_chal",
+                        "strdup",
+                        "realloc"
+                    ],
+                    "calling_functions": [
+                        "ctf_submit_flag",
+                        "flg_add_submit"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "flg_get_solves",
+                "func_c_signature": "undefined4 flg_get_solves(uint *param_1,void **param_2,int param_3,uint *param_4)",
+                "decompiled_code": "undefined4 flg_get_solves(uint *param_1,void **param_2,int param_3,uint *param_4) {\n  undefined4 uVar1;\n  void *pvVar2;\n  uint uVar3;\n  uint local_14;\n  uint local_10;\n  \n  local_14 = 0;\n  if (param_4 == (uint *)0x0 || (param_2 == (void **)0x0 || param_1 == (uint *)0x0)) {\n    uVar1 = 1;\n  }\n  else {\n    if (param_3 == 0) {\n      uVar3 = *param_1;\n      if (*param_4 < *param_1) {\n        uVar3 = *param_4;\n      }\n      *param_4 = uVar3;\n      if (*param_4 == 0) {\n        *param_2 = (void *)0x0;\n      }\n      else {\n        pvVar2 = malloc(*param_4 << 2);\n        *param_2 = pvVar2;\n      }\n      local_10 = 0;\n      while ((local_10 < *param_1 && (local_14 < *param_4))) {\n        if (*(int *)(*(int *)(((*param_1 - local_10) + 0x3fffffff) * 4 + param_1[3]) + 0xc) != 0) {\n          *(undefined4 *)((int)*param_2 + local_14 * 4) =\n               *(undefined4 *)(param_1[3] + ((*param_1 - local_10) + 0x3fffffff) * 4);\n          local_14 = local_14 + 1;\n        }\n        local_10 = local_10 + 1;\n      }\n      *param_4 = local_14;\n    }\n    else {\n      local_10 = 0;\n      while ((local_10 < *param_1 && (local_14 < *param_4))) {\n        if ((param_3 == *(int *)(*(int *)(param_1[3] + local_10 * 4) + 4)) &&\n           (*(int *)(*(int *)(param_1[3] + local_10 * 4) + 0xc) != 0)) {\n          local_14 = local_14 + 1;\n        }\n        local_10 = local_10 + 1;\n      }\n      *param_4 = local_14;\n      if (local_14 == 0) {\n        *param_2 = (void *)0x0;\n        return 0;\n      }\n      pvVar2 = malloc(local_14 << 2);\n      *param_2 = pvVar2;\n      local_14 = 0;\n      local_10 = 0;\n      while ((local_10 < *param_1 && (local_14 < *param_4))) {\n        if ((param_3 == *(int *)(*(int *)(param_1[3] + local_10 * 4) + 4)) &&\n           (*(int *)(*(int *)(param_1[3] + local_10 * 4) + 0xc) != 0)) {\n          *(undefined4 *)((int)*param_2 + local_14 * 4) = *(undefined4 *)(param_1[3] + local_10 * 4)\n          ;\n          local_14 = local_14 + 1;\n        }\n        local_10 = local_10 + 1;\n      }\n    }\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "flg_get_solves",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "ctf_get_solves",
+                        "flg_get_solves",
+                        "print_challenge"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "flg_find_chal",
+                "func_c_signature": "undefined4 flg_find_chal(int param_1,undefined4 *param_2,char *param_3)",
+                "decompiled_code": "undefined4 flg_find_chal(int param_1,undefined4 *param_2,char *param_3) {\n  undefined4 uVar1;\n  int iVar2;\n  uint local_10;\n  \n  if (((param_1 == 0) || (param_2 == (undefined4 *)0x0)) || (param_3 == (char *)0x0)) {\n    uVar1 = 1;\n  }\n  else {\n    for (local_10 = 0; local_10 < **(uint **)(param_1 + 0x14); local_10 = local_10 + 1) {\n      iVar2 = strcmp(*(char **)(*(int *)(*(int *)(param_1 + 0x10) + local_10 * 4) + 0x18c),param_3);\n      if (iVar2 == 0) {\n        *param_2 = *(undefined4 *)(*(int *)(param_1 + 0x10) + local_10 * 4);\n        return 0;\n      }\n    }\n    uVar1 = 6;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "flg_find_chal",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "flg_add_submit",
+                        "flg_find_chal",
+                        "handle_submit_flag"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "flg_team_did_solve",
+                "func_c_signature": "undefined4 flg_team_did_solve(uint *param_1,int param_2,int param_3)",
+                "decompiled_code": "undefined4 flg_team_did_solve(uint *param_1,int param_2,int param_3) {\n  int *piVar1;\n  undefined4 uVar2;\n  uint local_8;\n  \n  if (((param_1 == (uint *)0x0) || (param_2 == 0)) || (param_3 == 0)) {\n    uVar2 = 1;\n  }\n  else {\n    for (local_8 = 0; local_8 < *param_1; local_8 = local_8 + 1) {\n      piVar1 = *(int **)(param_1[3] + local_8 * 4);\n      if (((piVar1[3] != 0) && (param_2 == *piVar1)) && (param_3 == piVar1[1])) {\n        return 1;\n      }\n    }\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "flg_team_did_solve"
+                    ],
+                    "calling_functions": [
+                        "ctf_get_ranks",
+                        "flg_team_did_solve",
+                        "print_challenge"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "prng",
+                "func_c_signature": "uint prng(void)",
+                "decompiled_code": "uint prng(void) {\n  r = (r ^ r >> 0x1f ^ r >> 0x1e ^ r >> 10) << 0x1f | r >> 1;\n  return r;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "prng"
+                    ],
+                    "calling_functions": [
+                        "prng",
+                        "random_string",
+                        "do_random_action"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "random_string",
+                "func_c_signature": "void random_string(int param_1,uint param_2)",
+                "decompiled_code": "void random_string(int param_1,uint param_2) {\n  undefined4 local_4b;\n  undefined4 local_47;\n  undefined4 local_43;\n  undefined4 local_3f;\n  undefined4 local_3b;\n  undefined4 local_37;\n  undefined4 local_33;\n  undefined4 local_2f;\n  undefined4 local_2b;\n  undefined4 local_27;\n  undefined4 local_23;\n  undefined4 local_1f;\n  undefined4 local_1b;\n  undefined4 local_17;\n  undefined4 local_13;\n  undefined3 uStack_f;\n  uint local_c;\n  uint local_8;\n  \n  local_4b = 0x64636261;\n  local_47 = 0x68676665;\n  local_43 = 0x6c6b6a69;\n  local_3f = 0x706f6e6d;\n  local_3b = 0x74737271;\n  local_37 = 0x78777675;\n  local_33 = 0x42417a79;\n  local_2f = 0x46454443;\n  local_2b = 0x4a494847;\n  local_27 = 0x4e4d4c4b;\n  local_23 = 0x5251504f;\n  local_1f = 0x56555453;\n  local_1b = 0x5a595857;\n  local_17 = 0x33323130;\n  local_13 = 0x37363534;\n  uStack_f = 0x3938;\n  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {\n    local_c = prng();\n    *(undefined *)(param_1 + local_8) = *(undefined *)((int)&local_4b + local_c % 0x3e);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "random_string",
+                        "prng"
+                    ],
+                    "calling_functions": [
+                        "random_string",
+                        "handle_register_user",
+                        "do_random_action"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_main_menu",
+                "func_c_signature": "void print_main_menu(void)",
+                "decompiled_code": "void print_main_menu(void) {\n  printf(\"\\n=== Menu ===================\\n\");\n  printf(\"1. Register User\\n\");\n  printf(\"2. Login User\\n\");\n  printf(\"3. Quit\\n\");\n  printf(\"> \");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_main_menu",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_main_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_alphanum",
+                "func_c_signature": "undefined4 is_alphanum(char *param_1)",
+                "decompiled_code": "undefined4 is_alphanum(char *param_1) {\n  int iVar1;\n  size_t sVar2;\n  uint local_10;\n  \n  local_10 = 0;\n  while( true ) {\n    sVar2 = strlen(param_1);\n    if (sVar2 - 1 <= local_10) {\n      return 1;\n    }\n    iVar1 = isalnum((int)param_1[local_10]);\n    if (iVar1 == 0) break;\n    local_10 = local_10 + 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_alphanum",
+                        "strlen",
+                        "isalnum"
+                    ],
+                    "calling_functions": [
+                        "is_alphanum",
+                        "handle_register_user",
+                        "handle_login_user"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_register_user",
+                "func_c_signature": "void handle_register_user(int param_1)",
+                "decompiled_code": "void handle_register_user(int param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  void *local_1a0;\n  void *local_19c;\n  char local_198 [256];\n  undefined local_98 [128];\n  uint local_18;\n  int local_14;\n  int local_10;\n  \n  local_19c = (void *)0x0;\n  local_1a0 = (void *)0x0;\n  local_10 = 0;\n  local_14 = user_new(&local_19c);\n  if (local_14 == 0) {\n    printf(\"\\n=== User Creation ===================\\n\");\n    printf(\"Nickname: \");\n    local_14 = 0xf;\n    fflush((FILE *)stdout);\n    iVar1 = freaduntil(local_198,0x100,10,stdin);\n    if (((0 < iVar1) && (iVar1 = is_alphanum(local_198), iVar1 != 0)) &&\n       (local_14 = user_set_nick(local_19c,local_198), local_14 == 0)) {\n      printf(\"Password: \");\n      local_14 = 0xf;\n      fflush((FILE *)stdout);\n      iVar1 = freaduntil(local_198,0x100,10,stdin);\n      if (((0 < iVar1) && (iVar1 = is_alphanum(local_198), iVar1 != 0)) &&\n         (local_14 = user_set_pass(local_19c,local_198), local_14 == 0)) {\n        printf(\"Team token: \");\n        fflush((FILE *)stdout);\n        iVar1 = freaduntil(local_198,0x100,10,stdin);\n        if (-1 < iVar1) {\n          iVar1 = strcmp(local_198,\"\");\n          if (iVar1 == 0) {\n            local_14 = team_new(&local_1a0);\n            if (local_14 != 0) goto LAB_000129e6;\n            printf(\"\\n=== Team Creation ===================\\n\");\n            printf(\"Team name: \");\n            local_14 = 0xf;\n            fflush((FILE *)stdout);\n            iVar1 = freaduntil(local_198,0x100,10,stdin);\n            if ((iVar1 < 1) || (local_14 = team_change_name(local_1a0,local_198), local_14 != 0))\n            goto LAB_000129e6;\n            printf(\"Shoutout: \");\n            local_14 = 0xf;\n            fflush((FILE *)stdout);\n            iVar1 = freaduntil(local_98,0x100,10,stdin);\n            if ((iVar1 < 1) || (local_14 = team_set_shoutout(local_1a0,local_98), local_14 != 0))\n            goto LAB_000129e6;\n            random_string(local_1a0,0x20);\n            *(undefined *)((int)local_1a0 + 0x20) = 0;\n            local_10 = 1;\n          }\n          else {\n            for (local_18 = 0; local_18 < *(uint *)(param_1 + 8); local_18 = local_18 + 1) {\n              iVar1 = memcmp(*(void **)(*(int *)(param_1 + 0x20) + local_18 * 4),local_198,0x20);\n              if (iVar1 == 0) {\n                local_1a0 = *(void **)(*(int *)(param_1 + 0x20) + local_18 * 4);\n                break;\n              }\n            }\n            if (*(uint *)(param_1 + 8) == local_18) {\n              local_14 = 7;\n              goto LAB_000129e6;\n            }\n          }\n          local_14 = ctf_add_user(param_1,local_19c);\n          if ((local_14 == 0) &&\n             ((((iVar1 = 0, local_10 == 0 ||\n                (local_14 = ctf_add_team(param_1,local_1a0), iVar1 = local_14, local_14 == 0)) &&\n               (local_14 = iVar1, local_14 = team_add_member(local_1a0,local_19c), local_14 == 0))\n              && (local_14 = user_set_team(local_19c,local_1a0,0), local_14 == 0)))) {\n            printf(\"[INFO] Successfully registered.\\n\");\n            if (local_10 == 0) {\n              return;\n            }\n            printf(\"[INFO] Team code: ;s\\n\",local_1a0);\n            return;\n          }\n        }\n      }\n    }\n  }\nLAB_000129e6:\n  uVar2 = error_to_string(local_14);\n  printf(\"[ERROR] ;s\\n\",uVar2);\n  if (local_19c != (void *)0x0) {\n    free(local_19c);\n  }\n  if ((local_10 != 0) && (local_1a0 != (void *)0x0)) {\n    free(local_1a0);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_register_user",
+                        "user_new",
+                        "printf",
+                        "fflush",
+                        "freaduntil",
+                        "is_alphanum",
+                        "user_set_nick",
+                        "user_set_pass",
+                        "strcmp",
+                        "team_new",
+                        "team_change_name",
+                        "team_set_shoutout",
+                        "random_string",
+                        "memcmp",
+                        "ctf_add_user",
+                        "ctf_add_team",
+                        "team_add_member",
+                        "user_set_team",
+                        "error_to_string",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "handle_register_user",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_login_user",
+                "func_c_signature": "void handle_login_user(int param_1)",
+                "decompiled_code": "void handle_login_user(int param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined local_90 [64];\n  undefined local_50 [64];\n  int local_10;\n  \n  printf(\"\\n=== Login ===================\\n\");\n  printf(\"Nick: \");\n  local_10 = 0xf;\n  fflush((FILE *)stdout);\n  iVar1 = freaduntil(local_50,0x40,10,stdin);\n  if ((0 < iVar1) && (iVar1 = is_alphanum(local_50), iVar1 != 0)) {\n    printf(\"Password: \");\n    fflush((FILE *)stdout);\n    iVar1 = freaduntil(local_90,0x40,10,stdin);\n    if ((0 < iVar1) &&\n       ((iVar1 = is_alphanum(local_90), iVar1 != 0 &&\n        (local_10 = ctf_auth_user(param_1,param_1 + 0x40,local_50,local_90), local_10 == 0)))) {\n      printf(\"[INFO] Successfully logged in as ;s.\\n\",local_50);\n      return;\n    }\n  }\n  uVar2 = error_to_string(local_10);\n  printf(\"[ERROR] ;s\\n\",uVar2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_login_user",
+                        "printf",
+                        "fflush",
+                        "freaduntil",
+                        "is_alphanum",
+                        "ctf_auth_user",
+                        "error_to_string"
+                    ],
+                    "calling_functions": [
+                        "handle_login_user",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_ctf_ticker",
+                "func_c_signature": "void print_ctf_ticker(int param_1)",
+                "decompiled_code": "void print_ctf_ticker(int param_1) {\n  void **ppvVar1;\n  uint *puVar2;\n  undefined4 uVar3;\n  void *local_20;\n  void *local_1c;\n  uint local_18;\n  int local_14;\n  uint local_10;\n  \n  uVar3 = 0x12bb6;\n  local_14 = *(int *)(*(int *)(param_1 + 0x40) + 0x30);\n  local_18 = 1;\n  local_1c = (void *)0x0;\n  ctf_get_ranks(param_1,&local_1c,&local_18);\n  free(local_1c);\n  printf(\"\\n================================\\n\");\n  printf(\"| [;s] - ;d\\n\",local_14 + 0x21,*(undefined4 *)(local_14 + 0x58));\n  printf(\"================================\\n\");\n  local_20 = (void *)0x0;\n  local_18 = 5;\n  puVar2 = &local_18;\n  ppvVar1 = &local_20;\n  ctf_get_solves(param_1,ppvVar1,puVar2);\n  if (local_18 == 0) {\n    printf(\"No solves yet.\\n\");\n  }\n  for (local_10 = 0; local_10 < local_18; local_10 = local_10 + 1) {\n    uVar3 = *(undefined4 *)(*(int *)(*(int *)((int)local_20 + local_10 * 4) + 4) + 0x180);\n    puVar2 = *(uint **)(*(int *)((int)local_20 + local_10 * 4) + 4);\n    ppvVar1 = (void **)(**(int **)((int)local_20 + local_10 * 4) + 0x21);\n    printf(\"| ;s solved ;s (;d pts)\\n\",ppvVar1,puVar2,uVar3);\n  }\n  if (local_20 != (void *)0x0) {\n    free(local_20);\n  }\n  printf(\"================================\\n\",ppvVar1,puVar2,uVar3);\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "s"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_ctf_ticker",
+                        "ctf_get_ranks",
+                        "free",
+                        "printf",
+                        "ctf_get_solves",
+                        "s"
+                    ],
+                    "calling_functions": [
+                        "print_ctf_ticker",
+                        "print_ctf_menu"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_ctf_menu",
+                "func_c_signature": "void print_ctf_menu(undefined4 param_1)",
+                "decompiled_code": "void print_ctf_menu(undefined4 param_1) {\n  print_ctf_ticker(param_1);\n  printf(\"\\n=== CTF Menu ===================\\n\");\n  printf(\"1. View challenge list\\n\");\n  printf(\"2. View challenge detail\\n\");\n  printf(\"3. View ranking\\n\");\n  printf(\"4. View team profile\\n\");\n  printf(\"5. Submit flag\\n\");\n  printf(\"6. Logout\\n\");\n  printf(\"> \");\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_ctf_menu",
+                        "print_ctf_ticker",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_ctf_menu",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_challenge",
+                "func_c_signature": "void print_challenge(int param_1,int param_2,int param_3)",
+                "decompiled_code": "void print_challenge(int param_1,int param_2,int param_3) {\n  int iVar1;\n  uint local_24;\n  void *local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  uint local_14;\n  undefined4 local_10;\n  \n  local_18 = chal_cat_to_string(*(undefined4 *)(param_2 + 0x188));\n  local_10 = *(undefined4 *)(param_2 + 0x184);\n  iVar1 = flg_team_did_solve(param_1 + 0x28,*(undefined4 *)(*(int *)(param_1 + 0x40) + 0x30),param_2\n                            );\n  if (iVar1 != 0) {\n    local_10 = 2;\n  }\n  local_1c = chal_status_to_string(local_10);\n  if (param_3 == 0) {\n    printf(\"[;s] [;d pts] ;s - ;s\\n\",local_18,*(undefined4 *)(param_2 + 0x180),param_2,local_1c);\n  }\n  else {\n    printf(\"[;s] [;d pts] ;s - ;s\\n\",local_18,*(undefined4 *)(param_2 + 0x180),param_2,local_1c);\n    if (*(int *)(param_2 + 0x184) == 0) {\n      printf(\"Hidden.\\n\");\n    }\n    else {\n      printf(\";s\\n\",param_2 + 0x80);\n    }\n    local_20 = (void *)0x0;\n    local_24 = 3;\n    flg_get_solves(param_1 + 0x28,&local_20,param_2,&local_24);\n    if (local_24 != 0) {\n      printf(\"\\nTop Solvers\\n\");\n      printf(\"===========\\n\");\n      for (local_14 = 0; local_14 < local_24; local_14 = local_14 + 1) {\n        printf(\";d. ;s\\n\",local_14 + 1,**(int **)((int)local_20 + local_14 * 4) + 0x21);\n      }\n      free(local_20);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_challenge",
+                        "chal_cat_to_string",
+                        "flg_team_did_solve",
+                        "chal_status_to_string",
+                        "printf",
+                        "flg_get_solves",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "print_challenge",
+                        "handle_view_challenge_list",
+                        "handle_view_challenge_detail"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_view_challenge_list",
+                "func_c_signature": "void handle_view_challenge_list(int param_1)",
+                "decompiled_code": "void handle_view_challenge_list(int param_1) {\n  uint local_10;\n  \n  if (*(int *)(param_1 + 4) == 0) {\n    printf(\"[INFO] No challenges are available.\\n\");\n  }\n  else {\n    printf(\"\\n=== Challenge list ===================\\n\");\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 4); local_10 = local_10 + 1) {\n      printf(\";d. \",local_10);\n      print_challenge(param_1,*(undefined4 *)(*(int *)(param_1 + 0x1c) + local_10 * 4),0);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_view_challenge_list",
+                        "printf",
+                        "print_challenge"
+                    ],
+                    "calling_functions": [
+                        "handle_view_challenge_list",
+                        "handle_view_challenge_detail",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_view_challenge_detail",
+                "func_c_signature": "void handle_view_challenge_detail(int param_1)",
+                "decompiled_code": "void handle_view_challenge_detail(int param_1) {\n  int iVar1;\n  ulong uVar2;\n  undefined4 uVar3;\n  undefined4 local_34;\n  char local_30 [32];\n  int local_10;\n  \n  handle_view_challenge_list(param_1);\n  if (*(int *)(param_1 + 4) != 0) {\n    printf(\"\\nChoose idx: \");\n    fflush((FILE *)stdout);\n    iVar1 = freaduntil(local_30,0x20,10,stdin);\n    if (-1 < iVar1) {\n      local_34 = 0;\n      uVar2 = strtoul(local_30,(char **)0x0,10);\n      local_10 = ctf_get_chal(param_1,&local_34,uVar2);\n      if (local_10 == 0) {\n        printf(\"\\n=== Challenge detail ===================\\n\");\n        print_challenge(param_1,local_34,1);\n        return;\n      }\n    }\n    uVar3 = error_to_string(local_10);\n    printf(\"[ERROR] ;s\\n\",uVar3);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_view_challenge_detail",
+                        "handle_view_challenge_list",
+                        "printf",
+                        "fflush",
+                        "freaduntil",
+                        "strtoul",
+                        "ctf_get_chal",
+                        "print_challenge",
+                        "error_to_string"
+                    ],
+                    "calling_functions": [
+                        "handle_view_challenge_detail",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "view_ranking_page",
+                "func_c_signature": "void view_ranking_page(int param_1,int param_2)",
+                "decompiled_code": "void view_ranking_page(int param_1,int param_2) {\n  void *local_1c;\n  int local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_14 = param_2 * -5 + *(int *)(param_1 + 8) + 5;\n  if (5 < local_14) {\n    local_14 = 5;\n  }\n  local_1c = (void *)0x0;\n  ctf_get_ranks(param_1,&local_1c,&param_2);\n  for (local_10 = 0; local_10 < local_14; local_10 = local_10 + 1) {\n    local_18 = local_10 + param_2 * 5 + 1;\n    printf(\";d. ;s (;d pts)\\n\",local_18,*(int *)((int)local_1c + local_10 * 4) + 0x21,\n           *(undefined4 *)(*(int *)((int)local_1c + local_10 * 4) + 0x58));\n  }\n  free(local_1c);\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "s"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "view_ranking_page",
+                        "ctf_get_ranks",
+                        "printf",
+                        "s",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "view_ranking_page",
+                        "handle_view_ranking"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_view_ranking",
+                "func_c_signature": "void handle_view_ranking(int param_1)",
+                "decompiled_code": "void handle_view_ranking(int param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  ulong uVar3;\n  char local_38 [32];\n  ulong local_18;\n  ulong local_14;\n  undefined4 local_10;\n  \n  local_10 = 0xf;\n  printf(\"\\n=== Ranking ===================\\n\");\n  local_14 = 1;\n  local_18 = (uint)(*(uint *)(param_1 + 8) != (*(uint *)(param_1 + 8) / 5) * 5) +\n             *(uint *)(param_1 + 8) / 5;\n  view_ranking_page(param_1,1);\n  uVar3 = local_18;\n  printf(\"\\n=== 1 / ;d ===================\\n\",local_18);\n  while( true ) {\n    printf(\"\\nPage: \",uVar3);\n    fflush((FILE *)stdout);\n    iVar1 = freaduntil(local_38,0x20,10,stdin);\n    if (iVar1 < 0) break;\n    iVar1 = strcmp(local_38,\"q\");\n    if (iVar1 == 0) {\n      return;\n    }\n    local_14 = strtoul(local_38,(char **)0x0,10);\n    if ((local_14 == 0) || (local_18 < local_14)) break;\n    view_ranking_page(param_1,local_14);\n    uVar3 = local_14;\n    printf(\"\\n=== ;d / ;d ===================\\n\",local_14,local_18);\n  }\n  uVar2 = error_to_string(local_10);\n  printf(\"[ERROR] ;s\\n\",uVar2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_view_ranking",
+                        "printf",
+                        "view_ranking_page",
+                        "fflush",
+                        "freaduntil",
+                        "strcmp",
+                        "strtoul",
+                        "error_to_string"
+                    ],
+                    "calling_functions": [
+                        "handle_view_ranking",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_view_team_profile",
+                "func_c_signature": "void handle_view_team_profile(int param_1)",
+                "decompiled_code": "void handle_view_team_profile(int param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  char local_58 [64];\n  undefined4 local_18;\n  int local_14;\n  uint local_10;\n  \n  local_18 = 7;\n  printf(\"\\nTeam name: \");\n  fflush((FILE *)stdout);\n  iVar1 = freaduntil(local_58,0x40,10,stdin);\n  if (0 < iVar1) {\n    local_14 = 0;\n    for (local_10 = 0; local_10 < *(uint *)(param_1 + 8); local_10 = local_10 + 1) {\n      iVar1 = strcmp((char *)(*(int *)(*(int *)(param_1 + 0x20) + local_10 * 4) + 0x21),local_58);\n      if (iVar1 == 0) {\n        local_14 = *(int *)(*(int *)(param_1 + 0x20) + local_10 * 4);\n        break;\n      }\n    }\n    if (local_14 != 0) {\n      printf(\"\\n=== Team profile ===================\\n\");\n      printf(\";s\\n\",local_14 + 0x21);\n      printf(\"Leader: ;s\\n\",*(undefined4 *)(local_14 + 0x48));\n      printf(\"Members (;d)\\n - \",*(undefined4 *)(local_14 + 0x4c));\n      for (local_10 = 0; local_10 < *(uint *)(local_14 + 0x4c); local_10 = local_10 + 1) {\n        uVar2 = *(undefined4 *)(*(int *)(local_14 + 0x44) + local_10 * 4);\n        printf(\";s\",uVar2);\n        if (*(int *)(local_14 + 0x4c) - 1U != local_10) {\n          printf(\", \",uVar2);\n        }\n      }\n      printf(\"\\nShoutout: ;s\\n\",*(undefined4 *)(local_14 + 0x54));\n      return;\n    }\n  }\n  uVar2 = error_to_string(local_18);\n  printf(\"[ERROR] ;s\\n\",uVar2);\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "Members"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_view_team_profile",
+                        "printf",
+                        "fflush",
+                        "freaduntil",
+                        "strcmp",
+                        "Members",
+                        "error_to_string"
+                    ],
+                    "calling_functions": [
+                        "handle_view_team_profile",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_submit_flag",
+                "func_c_signature": "void handle_submit_flag(int param_1)",
+                "decompiled_code": "void handle_submit_flag(int param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  int local_214;\n  undefined local_210 [512];\n  int local_10;\n  \n  local_10 = 10;\n  printf(\"\\n=== Submit flag ===================\\n\");\n  printf(\"Flag: \");\n  fflush((FILE *)stdout);\n  iVar1 = freaduntil(local_210,0x200,10,stdin);\n  if ((iVar1 < 1) ||\n     (local_10 = ctf_submit_flag(param_1,*(undefined4 *)(*(int *)(param_1 + 0x40) + 0x30),local_210)\n     , local_10 != 0)) {\n    uVar2 = error_to_string(local_10);\n    printf(\"[ERROR] ;s\\n\",uVar2);\n  }\n  else {\n    local_214 = 0;\n    flg_find_chal(param_1 + 0x28,&local_214,local_210);\n    printf(\"[INFO] Congrats! You scored ;d points!\\n\",*(undefined4 *)(local_214 + 0x180));\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_submit_flag",
+                        "printf",
+                        "fflush",
+                        "freaduntil",
+                        "ctf_submit_flag",
+                        "error_to_string",
+                        "flg_find_chal"
+                    ],
+                    "calling_functions": [
+                        "handle_submit_flag",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_logout_user",
+                "func_c_signature": "void handle_logout_user(int param_1)",
+                "decompiled_code": "void handle_logout_user(int param_1) {\n  printf(\"[INFO] Successfully logged out.\\n\");\n  *(undefined4 *)(param_1 + 0x40) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_logout_user",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "handle_logout_user",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_quit",
+                "func_c_signature": "void handle_quit(void)",
+                "decompiled_code": "void handle_quit(void) {\n  printf(\"Bye.\\n\");\n  fflush((FILE *)stdout);\n                    /* WARNING: Subroutine does not return */\n  exit(0);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_quit",
+                        "printf",
+                        "fflush",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "handle_quit",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_random_action",
+                "func_c_signature": "void do_random_action(undefined4 *param_1)",
+                "decompiled_code": "void do_random_action(undefined4 *param_1) {\n  uint uVar1;\n  void *pvVar2;\n  void *pvVar3;\n  uint local_10;\n  \n  *param_1 = 1;\n  uVar1 = prng();\n  uVar1 = uVar1 % 10;\n  if ((uVar1 != 9) && (uVar1 < 10)) {\n    if (uVar1 == 8) {\n      *param_1 = 0;\n    }\n    else if (uVar1 < 9) {\n      if (uVar1 < 4) {\n        pvVar2 = malloc(400);\n        random_string(pvVar2,0x20);\n        *(undefined *)((int)pvVar2 + 0x20) = 0;\n        random_string((int)pvVar2 + 0x80,0x40);\n        *(undefined *)((int)pvVar2 + 0xc0) = 0;\n        uVar1 = prng();\n        *(uint *)((int)pvVar2 + 0x180) = uVar1 % 600;\n        if (*(int *)((int)pvVar2 + 0x180) == 0) {\n          *(undefined4 *)((int)pvVar2 + 0x180) = 1;\n        }\n        *(undefined4 *)((int)pvVar2 + 0x184) = 0;\n        uVar1 = prng();\n        *(uint *)((int)pvVar2 + 0x188) = uVar1 % 7;\n        pvVar3 = malloc(0x40);\n        *(void **)((int)pvVar2 + 0x18c) = pvVar3;\n        random_string(*(undefined4 *)((int)pvVar2 + 0x18c),0x20);\n        *(undefined *)(*(int *)((int)pvVar2 + 0x18c) + 0x20) = 0;\n        ctf_add_chal(param_1,pvVar2);\n      }\n      else if (uVar1 - 4 < 4) {\n        for (local_10 = 0; local_10 < (uint)param_1[1]; local_10 = local_10 + 1) {\n          if ((*(int *)(*(int *)(param_1[7] + local_10 * 4) + 0x184) == 0) &&\n             (uVar1 = prng(), uVar1 % 100 < 0x32)) {\n            ctf_open_chal(param_1,local_10);\n            return;\n          }\n        }\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_random_action",
+                        "prng",
+                        "malloc",
+                        "random_string",
+                        "ctf_add_chal",
+                        "ctf_open_chal"
+                    ],
+                    "calling_functions": [
+                        "do_random_action",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            }
+        ],
+        "user.c": [
+            {
+                "func_name": "user_new",
+                "func_c_signature": "bool user_new(void **param_1)",
+                "decompiled_code": "bool user_new(void **param_1) {\n  void *pvVar1;\n  \n  if (param_1 != (void **)0x0) {\n    pvVar1 = malloc(0x34);\n    *param_1 = pvVar1;\n    memset(*param_1,0,0x34);\n  }\n  return param_1 == (void **)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "user_new",
+                        "malloc",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "handle_register_user",
+                        "user_new"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "user_set_nick",
+                "func_c_signature": "undefined4 user_set_nick(char *param_1,char *param_2)",
+                "decompiled_code": "undefined4 user_set_nick(char *param_1,char *param_2) {\n  undefined4 uVar1;\n  size_t sVar2;\n  \n  if ((param_1 == (char *)0x0) || (param_2 == (char *)0x0)) {\n    uVar1 = 1;\n  }\n  else {\n    sVar2 = strlen(param_2);\n    if (sVar2 < 0x10) {\n      memset(param_1,0,0x10);\n      strcpy(param_1,param_2);\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = 2;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "user_set_nick",
+                        "strlen",
+                        "memset",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "handle_register_user",
+                        "user_set_nick"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "user_set_pass",
+                "func_c_signature": "undefined4 user_set_pass(int param_1,char *param_2)",
+                "decompiled_code": "undefined4 user_set_pass(int param_1,char *param_2) {\n  undefined4 uVar1;\n  size_t sVar2;\n  \n  if ((param_1 == 0) || (param_2 == (char *)0x0)) {\n    uVar1 = 1;\n  }\n  else {\n    sVar2 = strlen(param_2);\n    if (sVar2 < 0x20) {\n      memset((void *)(param_1 + 0x10),0,0x20);\n      strcpy((char *)(param_1 + 0x10),param_2);\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = 3;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "user_set_pass",
+                        "strlen",
+                        "memset",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "handle_register_user",
+                        "user_set_pass"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "user_set_team",
+                "func_c_signature": "undefined4 user_set_team(int param_1,int param_2,undefined4 *param_3)",
+                "decompiled_code": "undefined4 user_set_team(int param_1,int param_2,undefined4 *param_3) {\n  undefined4 uVar1;\n  \n  if ((param_1 == 0) || (param_2 == 0)) {\n    uVar1 = 1;\n  }\n  else {\n    if (param_3 != (undefined4 *)0x0) {\n      *param_3 = *(undefined4 *)(param_1 + 0x30);\n    }\n    *(int *)(param_1 + 0x30) = param_2;\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "user_set_team"
+                    ],
+                    "calling_functions": [
+                        "handle_register_user",
+                        "user_set_team"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "team_new",
+                "func_c_signature": "bool team_new(void **param_1)",
+                "decompiled_code": "bool team_new(void **param_1) {\n  void *pvVar1;\n  void *pvVar2;\n  \n  if (param_1 != (void **)0x0) {\n    pvVar1 = malloc(0x5c);\n    *param_1 = pvVar1;\n    memset(*param_1,0,0x5c);\n    pvVar1 = *param_1;\n    pvVar2 = malloc(0x20);\n    *(void **)((int)pvVar1 + 0x44) = pvVar2;\n    *(undefined4 *)((int)*param_1 + 0x50) = 8;\n    memset(*(void **)((int)*param_1 + 0x44),0,*(int *)((int)*param_1 + 0x50) * 4);\n  }\n  return param_1 == (void **)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "team_new",
+                        "malloc",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "handle_register_user",
+                        "team_new"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "team_add_member",
+                "func_c_signature": "undefined4 team_add_member(int param_1,int param_2)",
+                "decompiled_code": "undefined4 team_add_member(int param_1,int param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  void *pvVar3;\n  \n  if ((param_1 == 0) || (param_2 == 0)) {\n    uVar2 = 1;\n  }\n  else {\n    if (*(int *)(param_1 + 0x4c) == *(int *)(param_1 + 0x50)) {\n      pvVar3 = realloc(*(void **)(param_1 + 0x44),*(int *)(param_1 + 0x50) << 3);\n      *(void **)(param_1 + 0x44) = pvVar3;\n      *(int *)(param_1 + 0x50) = *(int *)(param_1 + 0x50) * 2;\n    }\n    if (*(int *)(param_1 + 0x4c) == 0) {\n      *(int *)(param_1 + 0x48) = param_2;\n    }\n    iVar1 = *(int *)(param_1 + 0x4c);\n    *(int *)(param_1 + 0x4c) = iVar1 + 1;\n    *(int *)(*(int *)(param_1 + 0x44) + iVar1 * 4) = param_2;\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "team_add_member",
+                        "realloc"
+                    ],
+                    "calling_functions": [
+                        "handle_register_user",
+                        "team_add_member"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "team_remove_member",
+                "func_c_signature": "undefined4 team_remove_member(int param_1,char *param_2)",
+                "decompiled_code": "undefined4 team_remove_member(int param_1,char *param_2) {\n  undefined4 uVar1;\n  int iVar2;\n  uint local_10;\n  \n  if ((param_1 == 0) || (param_2 == (char *)0x0)) {\n    uVar1 = 1;\n  }\n  else {\n    local_10 = 0;\n    while ((local_10 < *(uint *)(param_1 + 0x4c) &&\n           (iVar2 = strcmp(*(char **)(*(int *)(param_1 + 0x44) + local_10 * 4),param_2), iVar2 != 0)\n           )) {\n      local_10 = local_10 + 1;\n    }\n    if (*(uint *)(param_1 + 0x4c) == local_10) {\n      uVar1 = 5;\n    }\n    else {\n      memmove((void *)(*(int *)(param_1 + 0x44) + local_10 * 4),\n              (void *)((local_10 + 1) * 4 + *(int *)(param_1 + 0x44)),\n              ((*(int *)(param_1 + 0x4c) - local_10) + -1) * 4);\n      *(int *)(param_1 + 0x4c) = *(int *)(param_1 + 0x4c) + -1;\n      uVar1 = 0;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "team_remove_member",
+                        "strcmp",
+                        "memmove"
+                    ],
+                    "calling_functions": [
+                        "team_remove_member"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "team_change_name",
+                "func_c_signature": "undefined4 team_change_name(int param_1,char *param_2)",
+                "decompiled_code": "undefined4 team_change_name(int param_1,char *param_2) {\n  undefined4 uVar1;\n  size_t sVar2;\n  \n  if ((param_1 == 0) || (param_2 == (char *)0x0)) {\n    uVar1 = 1;\n  }\n  else {\n    sVar2 = strlen(param_2);\n    if (sVar2 < 0x20) {\n      memset((void *)(param_1 + 0x21),0,0x20);\n      strcpy((char *)(param_1 + 0x21),param_2);\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = 4;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "team_change_name",
+                        "strlen",
+                        "memset",
+                        "strcpy"
+                    ],
+                    "calling_functions": [
+                        "handle_register_user",
+                        "team_change_name"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            },
+            {
+                "func_name": "team_set_shoutout",
+                "func_c_signature": "undefined4 team_set_shoutout(int param_1,char *param_2)",
+                "decompiled_code": "undefined4 team_set_shoutout(int param_1,char *param_2) {\n  undefined4 uVar1;\n  char *pcVar2;\n  \n  if ((param_1 == 0) || (param_2 == (char *)0x0)) {\n    uVar1 = 1;\n  }\n  else {\n    if (*(int *)(param_1 + 0x54) != 0) {\n      free(*(void **)(param_1 + 0x54));\n    }\n    pcVar2 = strdup(param_2);\n    *(char **)(param_1 + 0x54) = pcVar2;\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "team_set_shoutout",
+                        "free",
+                        "strdup"
+                    ],
+                    "calling_functions": [
+                        "handle_register_user",
+                        "team_set_shoutout"
+                    ],
+                    "defined_in_file": "KPRCA_00094_decompiled.c"
+                }
+            }
+        ]
+    }
+}

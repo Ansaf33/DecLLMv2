@@ -1,0 +1,212 @@
+{
+    "file": "tac",
+    "decompiled_code": {
+        "tac.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [FILE]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"Write each FILE to standard output, last line first.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_stdin_note();\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -b, --before             attach the separator before instead of after\\n  -r, --regex              interpret the separator as a regular expression\\n  -s, --separator=STRING   use STRING as the separator instead of newline\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(&DAT_00103d19);\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_stdin_note",
+                        "emit_mandatory_arg_note",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "tac_decompiled.c"
+                }
+            },
+            {
+                "func_name": "output",
+                "func_c_signature": "void output(void *param_1,long param_2)",
+                "decompiled_code": "void output(void *param_1,long param_2) {\n  void *local_20;\n  ulong local_18;\n  ulong local_10;\n  \n  local_18 = param_2 - (long)param_1;\n  local_10 = 0x2000 - bytes_in_buffer_2;\n  local_20 = param_1;\n  if (param_1 == (void *)0x0) {\n    fwrite_unlocked(buffer_1,1,bytes_in_buffer_2,_stdout);\n    bytes_in_buffer_2 = 0;\n  }\n  else {\n    while (local_10 <= local_18) {\n      memcpy(buffer_1 + bytes_in_buffer_2,local_20,local_10);\n      local_18 = local_18 - local_10;\n      local_20 = (void *)((long)local_20 + local_10);\n      fwrite_unlocked(buffer_1,1,0x2000,_stdout);\n      bytes_in_buffer_2 = 0;\n      local_10 = 0x2000;\n    }\n    memcpy(buffer_1 + bytes_in_buffer_2,local_20,local_18);\n    bytes_in_buffer_2 = local_18 + bytes_in_buffer_2;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "output",
+                        "fwrite_unlocked",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "output",
+                        "tac_seekable",
+                        "main"
+                    ],
+                    "defined_in_file": "tac_decompiled.c"
+                }
+            },
+            {
+                "func_name": "tac_seekable",
+                "func_c_signature": "undefined8 tac_seekable(int param_1,undefined8 param_2,ulong param_3)",
+                "decompiled_code": "undefined8 tac_seekable(int param_1,undefined8 param_2,ulong param_3) {\n  char cVar1;\n  ulong uVar2;\n  bool bVar3;\n  int iVar4;\n  int __range;\n  char *__s2;\n  size_t __n;\n  __off_t _Var5;\n  undefined8 uVar6;\n  undefined8 uVar7;\n  int *piVar8;\n  long lVar9;\n  ulong uVar10;\n  long lVar11;\n  size_t sVar12;\n  char *pcVar13;\n  ulong __n_00;\n  bool bVar14;\n  ulong local_120;\n  char *local_b8;\n  char *local_b0;\n  size_t local_a8;\n  \n  bVar3 = true;\n  cVar1 = *separator;\n  __s2 = separator + 1;\n  __n = match_length - 1;\n  local_120 = param_3;\n  if (param_3 % read_size != 0) {\n    local_120 = param_3 - param_3 % read_size;\n    _Var5 = lseek(param_1,local_120,0);\n    if (_Var5 < 0) {\n      uVar6 = quotearg_n_style_colon(0,3,param_2);\n      uVar7 = gettext(\"%s: seek failed\");\n      piVar8 = __errno_location();\n      error(0,*piVar8,uVar7,uVar6);\n    }\n  }\n  for (; (local_a8 = read(param_1,G_buffer,read_size), local_a8 == 0 && (local_120 != 0));\n      local_120 = local_120 - read_size) {\n    _Var5 = lseek(param_1,-read_size,1);\n    if (_Var5 < 0) {\n      uVar6 = quotearg_n_style_colon(0,3,param_2);\n      uVar7 = gettext(\"%s: seek failed\");\n      piVar8 = __errno_location();\n      error(0,*piVar8,uVar7,uVar6);\n    }\n  }\n  while (((local_a8 == read_size && (sVar12 = read(param_1,G_buffer,read_size), sVar12 != 0)) &&\n         (local_a8 = sVar12, -1 < (long)sVar12))) {\n    local_120 = local_120 + sVar12;\n  }\n  if ((long)local_a8 < 0) {\n    uVar6 = quotearg_n_style_colon(0,3,param_2);\n    uVar7 = gettext(\"%s: read error\");\n    piVar8 = __errno_location();\n    error(0,*piVar8,uVar7,uVar6);\n  }\n  else {\n    local_b0 = G_buffer + local_a8;\n    local_b8 = local_b0;\n    if (sentinel_length != 0) {\n      local_b8 = local_b0 + -__n;\n    }\n    do {\n      while( true ) {\n        pcVar13 = local_b8;\n        if (sentinel_length == 0) {\n          iVar4 = (int)local_b8 - (int)G_buffer;\n          __range = 1 - iVar4;\n          if (1 < __range) {\n            uVar6 = gettext(\"record too large\");\n            error(1,0,uVar6);\n          }\n          if ((__range == 1) ||\n             (iVar4 = re_search((re_pattern_buffer *)compiled_separator,G_buffer,iVar4,iVar4 + -1,\n                                __range,(re_registers *)regs), iVar4 == -1)) {\n            pcVar13 = G_buffer + -1;\n          }\n          else {\n            if (iVar4 == -2) {\n              uVar6 = gettext(\"error in regular expression search\");\n              error(1,0,uVar6);\n            }\n            match_length = (long)(*(int *)regs._16_8_ - *(int *)regs._8_8_);\n            pcVar13 = G_buffer + *(int *)regs._8_8_;\n          }\n        }\n        else {\n          do {\n            do {\n              local_b8 = pcVar13;\n              pcVar13 = local_b8 + -1;\n            } while (cVar1 != *pcVar13);\n          } while ((__n != 0) && (iVar4 = strncmp(local_b8,__s2,__n), iVar4 != 0));\n        }\n        local_b8 = pcVar13;\n        if (local_b8 < G_buffer) break;\n        if (separator_ends_record == '\\0') {\n          output(local_b8,local_b0);\n          local_b0 = local_b8;\n        }\n        else {\n          pcVar13 = local_b8 + match_length;\n          if ((!bVar3) || (pcVar13 != local_b0)) {\n            output(pcVar13,local_b0);\n          }\n          bVar3 = false;\n          local_b0 = pcVar13;\n        }\n        if (sentinel_length != 0) {\n          local_b8 = local_b8 + (1 - match_length);\n        }\n      }\n      if (local_120 == 0) {\n        output(G_buffer,local_b0);\n        return 1;\n      }\n      __n_00 = (long)local_b0 - (long)G_buffer;\n      if (read_size < __n_00) {\n        lVar9 = sentinel_length;\n        if (sentinel_length == 0) {\n          lVar9 = 1;\n        }\n        uVar2 = read_size * 2;\n        uVar10 = sentinel_length + read_size * 4 + 2;\n        bVar14 = uVar10 < G_buffer_size;\n        read_size = uVar2;\n        G_buffer_size = uVar10;\n        if (bVar14) {\n          xalloc_die();\n        }\n        lVar11 = xrealloc((long)G_buffer - lVar9,G_buffer_size);\n        G_buffer = (char *)(lVar11 + lVar9);\n      }\n      if (local_120 < read_size) {\n        read_size = local_120;\n        local_120 = 0;\n      }\n      else {\n        local_120 = local_120 - read_size;\n      }\n      _Var5 = lseek(param_1,local_120,0);\n      if (_Var5 < 0) {\n        uVar6 = quotearg_n_style_colon(0,3,param_2);\n        uVar7 = gettext(\"%s: seek failed\");\n        piVar8 = __errno_location();\n        error(0,*piVar8,uVar7,uVar6);\n      }\n      memmove(G_buffer + read_size,G_buffer,__n_00);\n      local_b0 = G_buffer + __n_00 + read_size;\n      local_b8 = local_b0;\n      if (sentinel_length != 0) {\n        local_b8 = G_buffer + read_size;\n      }\n      sVar12 = full_read(param_1,G_buffer,read_size);\n    } while (sVar12 == read_size);\n    uVar6 = quotearg_n_style_colon(0,3,param_2);\n    uVar7 = gettext(\"%s: read error\");\n    piVar8 = __errno_location();\n    error(0,*piVar8,uVar7,uVar6);\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "tac_seekable",
+                        "lseek",
+                        "quotearg_n_style_colon",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "read",
+                        "re_search",
+                        "strncmp",
+                        "output",
+                        "xalloc_die",
+                        "xrealloc",
+                        "memmove",
+                        "full_read"
+                    ],
+                    "calling_functions": [
+                        "tac_seekable",
+                        "tac_nonseekable",
+                        "tac_file"
+                    ],
+                    "defined_in_file": "tac_decompiled.c"
+                }
+            },
+            {
+                "func_name": "copy_to_temp",
+                "func_c_signature": "long copy_to_temp(FILE **param_1,undefined8 *param_2,int param_3,undefined8 param_4)",
+                "decompiled_code": "long copy_to_temp(FILE **param_1,undefined8 *param_2,int param_3,undefined8 param_4) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  size_t sVar6;\n  long lVar7;\n  long in_FS_OFFSET;\n  FILE *local_58;\n  undefined8 local_50;\n  long local_48;\n  size_t local_40;\n  undefined8 local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_48 = 0;\n  cVar1 = temp_stream(&local_58,&local_50);\n  if (cVar1 == '\\x01') {\n    while( true ) {\n      local_40 = read(param_3,G_buffer,read_size);\n      if (local_40 == 0) break;\n      if ((long)local_40 < 0) {\n        uVar3 = quotearg_n_style_colon(0,3,param_4);\n        uVar4 = gettext(\"%s: read error\");\n        piVar5 = __errno_location();\n        local_38 = uVar4;\n        error(0,*piVar5,uVar4,uVar3);\n        lVar7 = -1;\n        goto LAB_00101015;\n      }\n      sVar6 = fwrite_unlocked(G_buffer,1,local_40,local_58);\n      if (sVar6 != local_40) {\n        uVar3 = quotearg_n_style_colon(0,3,local_50);\n        uVar4 = gettext(\"%s: write error\");\n        piVar5 = __errno_location();\n        local_30 = uVar4;\n        error(0,*piVar5,uVar4,uVar3);\n        lVar7 = -1;\n        goto LAB_00101015;\n      }\n      local_48 = local_48 + local_40;\n    }\n    iVar2 = fflush_unlocked(local_58);\n    if (iVar2 == 0) {\n      *param_1 = local_58;\n      *param_2 = local_50;\n      lVar7 = local_48;\n    }\n    else {\n      uVar3 = quotearg_n_style_colon(0,3,local_50);\n      uVar4 = gettext(\"%s: write error\");\n      piVar5 = __errno_location();\n      local_28 = uVar4;\n      error(0,*piVar5,uVar4,uVar3);\n      lVar7 = -1;\n    }\n  }\n  else {\n    lVar7 = -1;\n  }\nLAB_00101015:\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return lVar7;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copy_to_temp",
+                        "temp_stream",
+                        "read",
+                        "quotearg_n_style_colon",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "fwrite_unlocked",
+                        "fflush_unlocked",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "copy_to_temp",
+                        "tac_nonseekable"
+                    ],
+                    "defined_in_file": "tac_decompiled.c"
+                }
+            },
+            {
+                "func_name": "tac_nonseekable",
+                "func_c_signature": "undefined tac_nonseekable(undefined4 param_1,undefined8 param_2)",
+                "decompiled_code": "undefined tac_nonseekable(undefined4 param_1,undefined8 param_2) {\n  undefined uVar1;\n  int iVar2;\n  long in_FS_OFFSET;\n  FILE *local_38;\n  undefined8 local_30;\n  long local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_28 = copy_to_temp(&local_38,&local_30,param_1,param_2);\n  if (local_28 < 0) {\n    uVar1 = 0;\n  }\n  else {\n    iVar2 = fileno_unlocked(local_38);\n    uVar1 = tac_seekable(iVar2,local_30,local_28);\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "tac_nonseekable",
+                        "copy_to_temp",
+                        "fileno_unlocked",
+                        "tac_seekable",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "tac_nonseekable",
+                        "tac_file"
+                    ],
+                    "defined_in_file": "tac_decompiled.c"
+                }
+            },
+            {
+                "func_name": "tac_file",
+                "func_c_signature": "bool tac_file(char *param_1)",
+                "decompiled_code": "bool tac_file(char *param_1) {\n  char cVar1;\n  char cVar2;\n  int iVar3;\n  __off_t _Var4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  int *piVar7;\n  char *local_50;\n  bool local_46;\n  int local_44;\n  \n  cVar1 = streq(param_1,&DAT_00103d83);\n  if (cVar1 == '\\0') {\n    local_44 = open(param_1,0);\n    local_50 = param_1;\n    if (local_44 < 0) {\n      uVar5 = quotearg_style(4,param_1);\n      uVar6 = gettext(\"failed to open %s for reading\");\n      piVar7 = __errno_location();\n      error(0,*piVar7,uVar6,uVar5);\n      return false;\n    }\n  }\n  else {\n    have_read_stdin = 1;\n    local_44 = 0;\n    local_50 = (char *)gettext(\"standard input\");\n    xset_binary_mode(0,0);\n  }\n  _Var4 = lseek(local_44,0,2);\n  if ((_Var4 < 0) || (iVar3 = isatty(local_44), iVar3 != 0)) {\n    cVar2 = tac_nonseekable(local_44,local_50);\n  }\n  else {\n    cVar2 = tac_seekable(local_44,local_50,_Var4);\n  }\n  local_46 = cVar2 != '\\0';\n  if ((cVar1 != '\\x01') && (iVar3 = close(local_44), iVar3 != 0)) {\n    uVar5 = quotearg_n_style_colon(0,3,local_50);\n    uVar6 = gettext(\"%s: read error\");\n    piVar7 = __errno_location();\n    error(0,*piVar7,uVar6,uVar5);\n    local_46 = false;\n  }\n  return local_46;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "tac_file",
+                        "streq",
+                        "open",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "xset_binary_mode",
+                        "lseek",
+                        "isatty",
+                        "tac_nonseekable",
+                        "tac_seekable",
+                        "close",
+                        "quotearg_n_style_colon"
+                    ],
+                    "calling_functions": [
+                        "tac_file",
+                        "main"
+                    ],
+                    "defined_in_file": "tac_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "void main(int param_1,undefined8 *param_2) {\n  byte bVar1;\n  int iVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  size_t __length;\n  char *pcVar5;\n  ulong uVar6;\n  undefined1 *puVar7;\n  int *piVar8;\n  bool local_6d;\n  long local_50;\n  \n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  separator = \"\\n\";\n  sentinel_length = 1;\n  separator_ends_record = 1;\nLAB_0010142b:\n  iVar2 = getopt_long(param_1,param_2,&DAT_00103df6,longopts,0);\n  if (iVar2 == -1) goto code_r0x0010145d;\n  if (iVar2 == 0x73) {\n    separator = _optarg;\n    goto LAB_0010142b;\n  }\n  if (iVar2 < 0x74) {\n    if (iVar2 == 0x72) {\n      sentinel_length = 0;\n      goto LAB_0010142b;\n    }\n    if (0x72 < iVar2) goto LAB_00101421;\n    if (iVar2 == 0x62) {\n      separator_ends_record = 0;\n      goto LAB_0010142b;\n    }\n    if (iVar2 < 99) {\n      if (iVar2 == -0x83) {\nLAB_001013a3:\n        uVar4 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n        uVar3 = proper_name_lite(\"Jay Lepreau\",\"Jay Lepreau\");\n        version_etc(_stdout,&DAT_00103d19,\"GNU coreutils\",_Version,uVar3,uVar4,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar2 == -0x82) {\n        usage(0);\n        goto LAB_001013a3;\n      }\n    }\n  }\nLAB_00101421:\n  usage(1);\n  goto LAB_0010142b;\ncode_r0x0010145d:\n  if (sentinel_length == 0) {\n    if (*separator == '\\0') {\n      uVar4 = gettext(\"separator cannot be empty\");\n      error(1,0,uVar4);\n    }\n    compiled_separator._0_8_ = 0;\n    compiled_separator._8_8_ = 0;\n    compiled_separator._32_8_ = compiled_separator_fastmap;\n    compiled_separator._40_8_ = 0;\n    __length = strlen(separator);\n    pcVar5 = re_compile_pattern(separator,__length,(re_pattern_buffer *)compiled_separator);\n    if (pcVar5 == (char *)0x0) goto LAB_00101587;\n    error(1,0,&DAT_00103e15,pcVar5);\n  }\n  if (*separator == '\\0') {\n    sentinel_length = 1;\n    match_length = sentinel_length;\n  }\n  else {\n    sentinel_length = strlen(separator);\n    match_length = sentinel_length;\n  }\nLAB_00101587:\n  for (read_size = 0x2000; read_size >> 1 <= sentinel_length; read_size = read_size * 2) {\n    if ((long)read_size < 0) {\n      xalloc_die();\n    }\n  }\n  uVar6 = sentinel_length + read_size + 1;\n  G_buffer_size = uVar6 * 2;\n  if ((uVar6 <= read_size) || (G_buffer_size <= uVar6)) {\n    xalloc_die();\n  }\n  G_buffer = (void *)xmalloc(G_buffer_size);\n  if (sentinel_length == 0) {\n    G_buffer = (void *)((long)G_buffer + 1);\n  }\n  else {\n    memcpy(G_buffer,separator,(*separator != '\\0') + sentinel_length);\n    G_buffer = (void *)(sentinel_length + (long)G_buffer);\n  }\n  if (_optind < param_1) {\n    puVar7 = (undefined1 *)(param_2 + _optind);\n  }\n  else {\n    puVar7 = default_file_list_0;\n  }\n  xset_binary_mode(1,0);\n  local_6d = true;\n  for (local_50 = 0; *(long *)((long)puVar7 + local_50 * 8) != 0; local_50 = local_50 + 1) {\n    bVar1 = tac_file(*(undefined8 *)((long)puVar7 + local_50 * 8));\n    local_6d = (bVar1 & local_6d) != 0;\n  }\n  output(0,0);\n  if ((have_read_stdin != '\\0') && (iVar2 = close(0), iVar2 < 0)) {\n    piVar8 = __errno_location();\n    error(0,*piVar8,&DAT_00103d83);\n    local_6d = false;\n  }\n                    /* WARNING: Subroutine does not return */\n  exit((uint)(local_6d ^ 1));\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage",
+                        "gettext",
+                        "error",
+                        "strlen",
+                        "re_compile_pattern",
+                        "xalloc_die",
+                        "xmalloc",
+                        "memcpy",
+                        "xset_binary_mode",
+                        "tac_file",
+                        "output",
+                        "close",
+                        "__errno_location"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "tac_decompiled.c"
+                }
+            }
+        ]
+    }
+}

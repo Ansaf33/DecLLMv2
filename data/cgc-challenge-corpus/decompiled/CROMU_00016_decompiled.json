@@ -1,0 +1,603 @@
+{
+    "file": "CROMU_00016",
+    "decompiled_code": {
+        "generator.c": [
+            {
+                "func_name": "InitRandom",
+                "func_c_signature": "undefined4 InitRandom(void)",
+                "decompiled_code": "undefined4 InitRandom(void) {\n  char local_1e [10];\n  int local_14;\n  uint local_10;\n  \n  last_pkt_time = 0;\n  local_10 = 0;\n  while ((local_10 == 0 || (0x400000 < local_10))) {\n    printf(\"What average bit rate do you want the random generator to produce? (1 - @d bps): \",\n           0x400000);\n    local_14 = readUntil(local_1e,9,10);\n    if (local_14 == -1) {\n      return 0xffffffff;\n    }\n    local_10 = atoi(local_1e);\n  }\n  gen_rate = DAT_000151f8 / (double)(ulonglong)local_10 + DAT_000151f8 / (double)(ulonglong)local_10\n  ;\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitRandom",
+                        "printf",
+                        "readUntil",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "InitRandom",
+                        "InitReceive"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "RandomGenerator",
+                "func_c_signature": "undefined4 RandomGenerator(void)",
+                "decompiled_code": "undefined4 RandomGenerator(void) {\n  double dVar1;\n  uint uVar2;\n  uint uVar3;\n  \n  if (DAT_00018030 == 0) {\n    uVar2 = rand_mt();\n    dVar1 = ((double)(ulonglong)uVar2 / DAT_00015200) * gen_rate;\n    uVar2 = rand_mt();\n    uVar3 = rand_mt();\n    DAT_00018034 = uVar3 & 0x3f;\n    NextPkt = last_pkt_time + dVar1;\n    DAT_00018030 = uVar2 % 0x59c + 0x40;\n    last_pkt_time = NextPkt;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "RandomGenerator",
+                        "rand_mt"
+                    ],
+                    "calling_functions": [
+                        "RandomGenerator"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitPoisson",
+                "func_c_signature": "undefined4 InitPoisson(void)",
+                "decompiled_code": "undefined4 InitPoisson(void) {\n  char local_1e [10];\n  int local_14;\n  uint local_10;\n  \n  last_pkt_time = 0;\n  local_10 = 0;\n  while ((local_10 == 0 || (0x400000 < local_10))) {\n    printf(\"What average bit rate do you want the poisson generator to produce? (1 - @d bps): \",\n           0x400000);\n    local_14 = readUntil(local_1e,9,10);\n    if (local_14 == -1) {\n      return 0xffffffff;\n    }\n    local_10 = atoi(local_1e);\n  }\n  gen_rate = (double)(ulonglong)local_10 / DAT_000151f8;\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitPoisson",
+                        "printf",
+                        "readUntil",
+                        "atoi"
+                    ],
+                    "calling_functions": [
+                        "InitPoisson",
+                        "InitReceive"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "CalcDelta",
+                "func_c_signature": "longdouble CalcDelta(uint param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "longdouble CalcDelta(uint param_1,undefined4 param_2,undefined4 param_3) {\n  float fVar1;\n  \n  fVar1 = logf(1.0 - (float)(ulonglong)param_1 / (float)_DAT_00015208);\n  return -(longdouble)fVar1 / (longdouble)(double)CONCAT44(param_3,param_2);\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT44"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "CalcDelta",
+                        "logf",
+                        "CONCAT44"
+                    ],
+                    "calling_functions": [
+                        "CalcDelta",
+                        "PoissonGenerator"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PoissonGenerator",
+                "func_c_signature": "undefined4 PoissonGenerator(void)",
+                "decompiled_code": "undefined4 PoissonGenerator(void) {\n  undefined8 uVar1;\n  undefined4 uVar2;\n  uint uVar3;\n  uint uVar4;\n  longdouble lVar5;\n  undefined4 local_24;\n  undefined4 uStack_20;\n  \n  uVar1 = gen_rate;\n  if (DAT_00018030 == 0) {\n    uVar2 = rand_mt();\n    uStack_20 = (undefined4)((ulonglong)uVar1 >> 0x20);\n    local_24 = (undefined4)uVar1;\n    lVar5 = (longdouble)CalcDelta(uVar2,local_24,uStack_20);\n    uVar3 = rand_mt();\n    uVar4 = rand_mt();\n    DAT_00018034 = uVar4 & 0x3f;\n    NextPkt = last_pkt_time + (double)lVar5;\n    DAT_00018030 = uVar3 % 0x59c + 0x40;\n    last_pkt_time = NextPkt;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PoissonGenerator",
+                        "rand_mt",
+                        "CalcDelta"
+                    ],
+                    "calling_functions": [
+                        "PoissonGenerator"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitManual",
+                "func_c_signature": "undefined4 InitManual(void)",
+                "decompiled_code": "undefined4 InitManual(void) {\n  int iVar1;\n  size_t sVar2;\n  char *pcVar3;\n  char acStack_51 [21];\n  int local_3c;\n  int local_38;\n  double local_34;\n  char *local_28;\n  char *local_24;\n  char *local_20;\n  int local_1c;\n  double *local_18;\n  int local_14;\n  uint local_10;\n  \n  last_pkt_time = 0;\n  ManualCurrPkt = 0;\n  repeat = -1;\n  while (repeat == -1) {\n    printf(\"Should the packet generator repeat the manually entered packets? (y,n): \");\n    local_1c = readUntil(acStack_51 + 1,2,10);\n    if (local_1c == -1) {\n      return 0xffffffff;\n    }\n    if (acStack_51[1] == 'y') {\n      repeat = 1;\n    }\n    else if (acStack_51[1] == 'n') {\n      repeat = 0;\n    }\n  }\n  local_14 = -1;\n  while ((local_14 < 1 || (1000 < local_14))) {\n    printf(\"How many packets would you like to enter? (@d - @d): \",1,1000);\n    local_1c = readUntil(acStack_51 + 1,10,10);\n    if (local_1c == -1) {\n      return 0xffffffff;\n    }\n    local_14 = atoi(acStack_51 + 1);\n  }\n  iVar1 = InitRingBuffer(local_14,&ManualRingBuffer);\n  if (iVar1 != 0) {\n    return 0xffffffff;\n  }\n  local_18 = ManualRingBuffer;\n  printf(\"Enter the packets, one per line in this format:\\n\");\n  printf(\"time since last packet (s, ##.######),length (bytes 64-1500),priority (0-63)\\n\");\n  while( true ) {\n    if (local_14 == 0) {\n      return 0;\n    }\n    local_14 = local_14 + -1;\n    local_1c = readUntil(acStack_51 + 1,0x12,10);\n    if (local_1c == -1) {\n      return 0xffffffff;\n    }\n    if ((0 < local_1c) && (acStack_51[local_1c] == '\\n')) {\n      acStack_51[local_1c] = '\\0';\n    }\n    local_20 = acStack_51 + 1;\n    local_24 = strchr(acStack_51 + 1,0x2c);\n    if (local_24 == (char *)0x0) {\n      puts(\"Invalid bytes\");\n      return 0xffffffff;\n    }\n    *local_24 = '\\0';\n    local_24 = local_24 + 1;\n    local_28 = strchr(local_24,0x2c);\n    if (local_28 == (char *)0x0) {\n      puts(\"Invalid priority\");\n      return 0xffffffff;\n    }\n    *local_28 = '\\0';\n    local_28 = local_28 + 1;\n    local_10 = 0;\n    while (sVar2 = strlen(local_20), local_10 < sVar2) {\n      pcVar3 = strchr(\"0123456789.\",(int)local_20[local_10]);\n      if (pcVar3 == (char *)0x0) {\n        puts(\"Invalid timestamp\");\n        return 0xffffffff;\n      }\n      local_10 = local_10 + 1;\n    }\n    local_34 = atof(local_20);\n    if (local_34 < 0.0) {\n      puts(\"Invalid timestamp\");\n      return 0xffffffff;\n    }\n    local_10 = 0;\n    while (sVar2 = strlen(local_24), local_10 < sVar2) {\n      pcVar3 = strchr(\"0123456789\",(int)local_24[local_10]);\n      if (pcVar3 == (char *)0x0) {\n        puts(\"Invalid bytes\");\n        return 0xffffffff;\n      }\n      local_10 = local_10 + 1;\n    }\n    local_38 = atoi(local_24);\n    if ((local_38 < 0x40) || (0x5dc < local_38)) break;\n    local_10 = 0;\n    while (sVar2 = strlen(local_28), local_10 < sVar2) {\n      pcVar3 = strchr(\"0123456789\",(int)local_28[local_10]);\n      if (pcVar3 == (char *)0x0) {\n        puts(\"Invalid priority\");\n        return 0xffffffff;\n      }\n      local_10 = local_10 + 1;\n    }\n    local_3c = atoi(local_28);\n    if ((local_3c < 0) || (0x3f < local_3c)) {\n      puts(\"Invalid priority\");\n      return 0xffffffff;\n    }\n    *local_18 = local_34;\n    *(int *)(local_18 + 1) = local_38;\n    *(int *)((int)local_18 + 0xc) = local_3c;\n    local_18 = *(double **)(local_18 + 2);\n  }\n  puts(\"Invalid bytes\");\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [
+                    "packet",
+                    "length",
+                    "priority"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitManual",
+                        "printf",
+                        "readUntil",
+                        "atoi",
+                        "InitRingBuffer",
+                        "packet",
+                        "length",
+                        "priority",
+                        "strchr",
+                        "puts",
+                        "strlen",
+                        "atof"
+                    ],
+                    "calling_functions": [
+                        "InitManual",
+                        "InitReceive"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ManualGenerator",
+                "func_c_signature": "undefined4 ManualGenerator(void)",
+                "decompiled_code": "undefined4 ManualGenerator(void) {\n  if (DAT_00018030 == 0) {\n    if (ManualCurrPkt == (double *)0x0) {\n      ManualCurrPkt = ManualRingBuffer;\n    }\n    else if ((ManualCurrPkt == ManualRingBuffer) && (repeat == 0)) {\n      return 0;\n    }\n    NextPkt = last_pkt_time + *ManualCurrPkt;\n    DAT_00018030 = *(int *)(ManualCurrPkt + 1);\n    DAT_00018034 = *(undefined4 *)((int)ManualCurrPkt + 0xc);\n    ManualCurrPkt = *(double **)(ManualCurrPkt + 2);\n    last_pkt_time = NextPkt;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ManualGenerator"
+                    ],
+                    "calling_functions": [
+                        "ManualGenerator"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            }
+        ],
+        "input.c": [
+            {
+                "func_name": "readUntil",
+                "func_c_signature": "uint readUntil(byte *param_1,uint param_2,char param_3)",
+                "decompiled_code": "uint readUntil(byte *param_1,uint param_2,char param_3) {\n  int iVar1;\n  int local_18;\n  byte local_11;\n  uint local_10;\n  \n  for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {\n    iVar1 = receive(0,&local_11,1,&local_18);\n    if (iVar1 != 0) {\n      return 0xffffffff;\n    }\n    if (local_18 != 1) {\n      return 0xffffffff;\n    }\n    if ((uint)local_11 == (int)param_3) break;\n    *param_1 = local_11;\n    param_1 = param_1 + 1;\n  }\n  *param_1 = 0;\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "readUntil",
+                        "receive"
+                    ],
+                    "calling_functions": [
+                        "InitRandom",
+                        "InitPoisson",
+                        "InitManual",
+                        "readUntil",
+                        "InitQueues",
+                        "InitReceive",
+                        "main",
+                        "InitInterface"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            }
+        ],
+        "mt.c": [
+            {
+                "func_name": "init_mt",
+                "func_c_signature": "void init_mt(undefined4 param_1)",
+                "decompiled_code": "void init_mt(undefined4 param_1) {\n  int local_c;\n  \n  mt_state = param_1;\n  for (local_c = 1; local_c < 0x270; local_c = local_c + 1) {\n    (&mt_state)[local_c] =\n         ((uint)(&mt_state)[local_c + -1] >> 0x1e ^ (&mt_state)[local_c + -1]) * 0x6c078965 +\n         local_c;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_mt"
+                    ],
+                    "calling_functions": [
+                        "init_mt",
+                        "main",
+                        "InitInterface"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "gen_mt_state",
+                "func_c_signature": "void gen_mt_state(void)",
+                "decompiled_code": "void gen_mt_state(void) {\n  uint uVar1;\n  int local_10;\n  \n  for (local_10 = 0; local_10 < 0x270; local_10 = local_10 + 1) {\n    uVar1 = (&mt_state)[(local_10 + 1) % 0x270];\n    (&mt_state)[local_10] =\n         (&mt_state)[(local_10 + 0x18d) % 0x270] ^\n         (uVar1 & 0x7fffffff | (&mt_state)[local_10] & 0x80000000) >> 1;\n    if ((uVar1 & 1) != 0) {\n      (&mt_state)[local_10] = (&mt_state)[local_10] ^ 0x9908b0df;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "gen_mt_state"
+                    ],
+                    "calling_functions": [
+                        "gen_mt_state",
+                        "rand_mt"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rand_mt",
+                "func_c_signature": "uint rand_mt(void)",
+                "decompiled_code": "uint rand_mt(void) {\n  uint uVar1;\n  \n  if (idx == 0) {\n    gen_mt_state();\n  }\n  uVar1 = (&mt_state)[idx] ^ (uint)(&mt_state)[idx] >> 0xb;\n  uVar1 = uVar1 ^ (uVar1 & 0x13a58ad) << 7;\n  uVar1 = uVar1 ^ (uVar1 & 0x1df8c) << 0xf;\n  idx = (idx + 1) % 0x270;\n  return uVar1 ^ uVar1 >> 0x12;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rand_mt",
+                        "gen_mt_state"
+                    ],
+                    "calling_functions": [
+                        "RandomGenerator",
+                        "PoissonGenerator",
+                        "rand_mt"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            }
+        ],
+        "queue.c": [
+            {
+                "func_name": "InitQueues",
+                "func_c_signature": "undefined4 InitQueues(void)",
+                "decompiled_code": "undefined4 InitQueues(void) {\n  int iVar1;\n  uint uVar2;\n  undefined4 uVar3;\n  undefined4 uVar4;\n  undefined4 local_5c;\n  char local_3e [10];\n  int local_34;\n  uint *local_30;\n  undefined local_26;\n  char local_25;\n  int local_24;\n  byte local_1f;\n  byte local_1e;\n  byte local_1d;\n  uint local_1c;\n  int local_18;\n  int local_14;\n  byte local_e;\n  byte local_d;\n  \n  local_26 = 0;\n  local_1e = 0;\n  local_1f = 0xff;\n  local_d = 0;\n  while ((local_d == 0 || (8 < local_d))) {\n    printf(\"How many queues (1-8)?: \");\n    local_34 = readUntil(local_3e,9,10);\n    if (local_34 == -1) {\n      return 0xffffffff;\n    }\n    iVar1 = atoi(local_3e);\n    local_d = (byte)iVar1;\n  }\n  DAT_00018a2c = local_d;\n  DAT_00018a38 = '\\0';\n  iVar1 = allocate((uint)local_d * 4,0,&DAT_00018a3c);\n  if (iVar1 != 0) {\n    puts(\"Failed to allocate interface queue pointers\");\n    return 0xffffffff;\n  }\n  bzero(DAT_00018a3c,(uint)local_d * 4);\n  local_e = 0;\n  do {\n    if (local_d <= local_e) {\n      local_25 = '@';\n      for (local_24 = 0; local_24 < (int)(uint)local_d; local_24 = local_24 + 1) {\n        local_25 = local_25 +\n                   (*(char *)(*(int *)((int)DAT_00018a3c + local_24 * 4) + 0x24) -\n                   *(char *)(*(int *)((int)DAT_00018a3c + local_24 * 4) + 0x25)) + -1;\n      }\n      if (local_25 != '\\0') {\n        printf(\"Not all priority values from @d to @d are accounted for in the queue definitions.\\n\"\n               ,0,0x3f);\n        return 0xffffffff;\n      }\n      for (local_24 = 0; local_24 < (int)(uint)local_d; local_24 = local_24 + 1) {\n        if ((DAT_00018a38 == '\\0') || (local_24 != 0)) {\n          iVar1 = *(int *)((int)DAT_00018a3c + local_24 * 4);\n          local_5c = (undefined4)\n                     (longlong)\n                     ROUND(((double)(uint)*(byte *)(iVar1 + 0x26) / _DAT_00015528) *\n                           (double)(150000 / (ulonglong)(longlong)(int)(uint)local_1f));\n          *(undefined4 *)(iVar1 + 0xc) = local_5c;\n        }\n      }\n      return 0;\n    }\n    printf(\"Queue @d:\\n\",(uint)local_e);\n    if (local_e == 0) {\n      bzero(local_3e,10);\n      do {\n        if (local_3e[0] == 'n' || local_3e[0] == 'y') goto LAB_00011fa7;\n        printf(\"  Is queue #@d a priority queue(y,n): \",(uint)local_e);\n        local_34 = readUntil(local_3e,2,10);\n        if (local_34 == -1) {\n          return 0xffffffff;\n        }\n      } while (local_3e[0] != 'y');\n      DAT_00018a38 = '\\x01';\n    }\nLAB_00011fa7:\n    local_14 = -1;\nLAB_00012082:\n    if ((local_14 < 0) || (0x3f < local_14)) {\n      uVar4 = 0x3f;\n      printf(\"  What\\'s the minimum priority packet to place in queue #@d (@d-@d): \",(uint)local_e,0\n             ,0x3f);\n      uVar3 = 10;\n      local_34 = readUntil(local_3e,9,10);\n      if (local_34 == -1) {\n        return 0xffffffff;\n      }\n      if (local_34 != 0) {\n        local_14 = atoi(local_3e);\n        for (local_24 = 0; local_24 < (int)(uint)local_e; local_24 = local_24 + 1) {\n          if (((int)(uint)*(byte *)(*(int *)((int)DAT_00018a3c + local_24 * 4) + 0x24) <= local_14)\n             && (local_14 <= (int)(uint)*(byte *)(*(int *)((int)DAT_00018a3c + local_24 * 4) + 0x25)\n                )) {\n            printf(\"  That priority value is already assigned to queue @d\\n\",local_24,uVar3,uVar4);\n            local_14 = -1;\n            break;\n          }\n        }\n      }\n      goto LAB_00012082;\n    }\n    local_18 = -1;\nLAB_00012194:\n    if ((local_18 < 0) || (0x3f < local_18)) {\n      uVar4 = 0x3f;\n      printf(\"  What\\'s the maximum priority packet to place in queue #@d (@d-@d): \",(uint)local_e,0\n             ,0x3f);\n      uVar3 = 10;\n      local_34 = readUntil(local_3e,9,10);\n      if (local_34 == -1) {\n        return 0xffffffff;\n      }\n      if (local_34 != 0) {\n        local_18 = atoi(local_3e);\n        if (local_18 < local_14) {\n          puts(\"  Maximum priority must be greater or equal to minimum priority\");\n          local_18 = -1;\n        }\n        else {\n          for (local_24 = 0; local_24 < (int)(uint)local_e; local_24 = local_24 + 1) {\n            if (((int)(uint)*(byte *)(*(int *)((int)DAT_00018a3c + local_24 * 4) + 0x24) <= local_18\n                ) && (local_18 <=\n                      (int)(uint)*(byte *)(*(int *)((int)DAT_00018a3c + local_24 * 4) + 0x25))) {\n              printf(\"  That priority value is already assigned to queue @d\\n\",local_24,uVar3,uVar4)\n              ;\n              local_18 = -1;\n              break;\n            }\n          }\n        }\n      }\n      goto LAB_00012194;\n    }\n    local_1c = 0;\n    while ((local_1c == 0 || (0x400 < local_1c))) {\n      printf(\"  What is the depth of queue #@d (@d - @d packets): \",(uint)local_e,1,0x400);\n      local_34 = readUntil(local_3e,9,10);\n      if (local_34 == -1) {\n        return 0xffffffff;\n      }\n      local_1c = atoi(local_3e);\n    }\n    local_1d = 0;\n    if ((DAT_00018a38 == '\\0') || (local_e != 0)) {\n      while ((local_1d == 0 || (100 < local_1d))) {\n        printf(\"  What is the weight of queue #@d (@d - @d percent): \",(uint)local_e,1,100);\n        local_34 = readUntil(local_3e,9,10);\n        if (local_34 == -1) {\n          return 0xffffffff;\n        }\n        uVar2 = atoi(local_3e);\n        local_1d = (byte)uVar2;\n        if ((uVar2 & 0xff) + (uint)local_1e < 0x65) {\n          if (((uint)local_e == local_d - 1) && ((uVar2 & 0xff) + (uint)local_1e != 100)) {\n            puts(\"  Total weight of all queues must total up to 100%\");\n            local_1d = 0;\n          }\n        }\n        else {\n          puts(\"  Total weight of all queues can not exceed 100%\");\n          local_1d = 0;\n        }\n      }\n      if (local_1d < local_1f) {\n        local_1f = local_1d;\n      }\n      local_1e = local_1e + local_1d;\n    }\n    iVar1 = allocate(0x34,0,(void *)((int)DAT_00018a3c + (uint)local_e * 4));\n    if (iVar1 != 0) {\n      printf(\"  Failed to allocate queue #@d\\n\",(uint)local_e);\n      return 0xffffffff;\n    }\n    bzero(*(void **)((int)DAT_00018a3c + (uint)local_e * 4),0x34);\n    local_30 = *(uint **)((int)DAT_00018a3c + (uint)local_e * 4);\n    *local_30 = local_1c;\n    *(char *)(local_30 + 9) = (char)local_14;\n    *(char *)((int)local_30 + 0x25) = (char)local_18;\n    *(byte *)((int)local_30 + 0x26) = local_1d;\n    local_30[2] = local_30[3];\n    iVar1 = InitRingBuffer(local_1c,local_30 + 0xc);\n    if (iVar1 != 0) {\n      puts(\"  Failed to allocate pkt ring buffer\");\n      return 0xffffffff;\n    }\n    local_30[10] = local_30[0xc];\n    local_30[0xb] = local_30[0xc];\n    local_e = local_e + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [
+                    "queues",
+                    "ROUND",
+                    "queue",
+                    "d"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitQueues",
+                        "printf",
+                        "queues",
+                        "readUntil",
+                        "atoi",
+                        "allocate",
+                        "puts",
+                        "bzero",
+                        "ROUND",
+                        "queue",
+                        "d",
+                        "InitRingBuffer"
+                    ],
+                    "calling_functions": [
+                        "InitQueues",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "InitRingBuffer",
+                "func_c_signature": "undefined4 InitRingBuffer(uint param_1,void **param_2)",
+                "decompiled_code": "undefined4 InitRingBuffer(uint param_1,void **param_2) {\n  int iVar1;\n  void *local_38;\n  uint local_34;\n  int local_30;\n  uint local_2c;\n  uint local_28;\n  void *local_24;\n  uint local_20;\n  \n  local_30 = 0xcc;\n  local_34 = param_1 / 0xcc + 1;\n  local_20 = 0;\n  local_24 = (void *)0x0;\n  local_2c = 0;\n  while( true ) {\n    if (local_34 <= local_20) {\n      *(void **)((int)local_24 + 0x10) = *param_2;\n      return 0;\n    }\n    iVar1 = allocate(0x1000,0,&local_38);\n    if (iVar1 != 0) break;\n    bzero(local_38,0x1000);\n    if (local_20 == 0) {\n      *param_2 = local_38;\n    }\n    if (local_24 != (void *)0x0) {\n      *(void **)((int)local_24 + 0x10) = local_38;\n    }\n    local_28 = 0;\n    for (; (local_28 < local_30 - 1U && (local_2c < param_1 - 1)); local_2c = local_2c + 1) {\n      *(void **)((int)local_38 + local_28 * 0x14 + 0x10) =\n           (void *)((int)local_38 + (local_28 + 1) * 0x14);\n      local_28 = local_28 + 1;\n    }\n    local_24 = (void *)(local_28 * 0x14 + (int)local_38);\n    local_20 = local_20 + 1;\n  }\n  puts(\"Failed to allocate pkt page\");\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitRingBuffer",
+                        "allocate",
+                        "bzero",
+                        "puts"
+                    ],
+                    "calling_functions": [
+                        "InitManual",
+                        "InitQueues",
+                        "InitRingBuffer"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DestroyRingBuffer",
+                "func_c_signature": "undefined4 DestroyRingBuffer(byte param_1)",
+                "decompiled_code": "undefined4 DestroyRingBuffer(byte param_1) {\n  uint uVar1;\n  uint uVar2;\n  undefined4 uVar3;\n  uint local_14;\n  uint local_10;\n  \n  if (param_1 < DAT_00018a2c) {\n    uVar1 = **(uint **)(DAT_00018a3c + (uint)param_1 * 4);\n    local_10 = 0;\n    local_14 = *(uint *)(*(int *)(DAT_00018a3c + (uint)param_1 * 4) + 0x30);\n    for (; uVar2 = local_14, local_10 < uVar1 / 0xcc + 1; local_10 = local_10 + 1) {\n      do {\n        local_14 = *(uint *)(local_14 + 0x10);\n        if ((local_14 == *(uint *)(*(int *)(DAT_00018a3c + (uint)param_1 * 4) + 0x30)) ||\n           (0xfff < (local_14 ^ *(uint *)(local_14 + 0x10)))) break;\n      } while (local_14 != uVar2);\n      if (local_14 != *(uint *)(*(int *)(DAT_00018a3c + (uint)param_1 * 4) + 0x30)) {\n        local_14 = *(uint *)(local_14 + 0x10);\n      }\n      deallocate(uVar2,0x1000);\n    }\n    uVar3 = 0;\n  }\n  else {\n    uVar3 = 0xffffffff;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DestroyRingBuffer",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "DestroyRingBuffer",
+                        "DestroyQueues"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "DestroyQueues",
+                "func_c_signature": "undefined4 DestroyQueues(void)",
+                "decompiled_code": "undefined4 DestroyQueues(void) {\n  int iVar1;\n  byte local_d;\n  \n  local_d = 0;\n  while( true ) {\n    if (DAT_00018a2c <= local_d) {\n      deallocate(DAT_00018a3c,(uint)DAT_00018a2c * 4);\n      return 0;\n    }\n    iVar1 = DestroyRingBuffer(local_d);\n    if (iVar1 != 0) break;\n    deallocate(*(undefined4 *)(DAT_00018a3c + (uint)local_d * 4),0x34);\n    local_d = local_d + 1;\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "DestroyQueues",
+                        "deallocate",
+                        "DestroyRingBuffer"
+                    ],
+                    "calling_functions": [
+                        "DestroyQueues",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            }
+        ],
+        "receive.c": [
+            {
+                "func_name": "InitReceive",
+                "func_c_signature": "undefined4 InitReceive(void)",
+                "decompiled_code": "undefined4 InitReceive(void) {\n  int iVar1;\n  char local_1e [10];\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  puts(\"The following packet generators are available:\");\n  puts(\"  1 - Random\");\n  puts(\"  2 - Poisson\");\n  puts(\"  3 - Manual\");\n  for (; (local_10 == 0 || (3 < local_10)); local_10 = local_10 & 0xff) {\n    printf(\"Which generator would you like to use? (1-3): \");\n    local_14 = readUntil(local_1e,0x1d,10);\n    if (local_14 == -1) {\n      return 0xffffffff;\n    }\n    local_10 = atoi(local_1e);\n  }\n  if (local_10 == 1) {\n    iVar1 = InitRandom();\n    if (iVar1 != 0) {\n      return 0xffffffff;\n    }\n    generator = RandomGenerator;\n  }\n  else if (local_10 == 2) {\n    iVar1 = InitPoisson();\n    if (iVar1 != 0) {\n      return 0xffffffff;\n    }\n    generator = PoissonGenerator;\n  }\n  else {\n    if (local_10 != 3) {\n      puts(\"Invalid Generator\");\n      return 0xffffffff;\n    }\n    iVar1 = InitManual();\n    if (iVar1 != 0) {\n      return 0xffffffff;\n    }\n    generator = ManualGenerator;\n  }\n  max_wall_clock = -1.0;\n  while( true ) {\n    if (0.0 <= max_wall_clock) {\n      bzero(&NextPkt,0x14);\n      return 0;\n    }\n    printf(\"For how long would you like the simulation to run? (1 - 10s): \");\n    local_14 = readUntil(local_1e,9,10);\n    if (local_14 == -1) break;\n    max_wall_clock = atof(local_1e);\n  }\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitReceive",
+                        "puts",
+                        "printf",
+                        "readUntil",
+                        "atoi",
+                        "InitRandom",
+                        "InitPoisson",
+                        "InitManual",
+                        "bzero",
+                        "atof"
+                    ],
+                    "calling_functions": [
+                        "InitReceive",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "RX",
+                "func_c_signature": "undefined4 RX(void)",
+                "decompiled_code": "undefined4 RX(void) {\n  int iVar1;\n  uint *local_14;\n  uint local_10;\n  \n  while( true ) {\n    iVar1 = (*generator)();\n    if (((iVar1 == 0) || (DAT_00018030 == 0)) || (wall_clock < NextPkt)) {\n      return 0;\n    }\n    local_10 = 0;\n    while (((int)local_10 < (int)(uint)DAT_00018a2c &&\n           ((local_14 = *(uint **)(DAT_00018a3c + local_10 * 4),\n            DAT_00018034 < *(byte *)(local_14 + 9) ||\n            (*(byte *)((int)local_14 + 0x25) < DAT_00018034))))) {\n      local_10 = local_10 + 1;\n    }\n    if (local_10 == DAT_00018a2c) break;\n    if (local_14[1] == 0) {\n      *(double *)local_14[10] = NextPkt;\n      *(int *)(local_14[10] + 8) = DAT_00018030;\n      *(uint *)(local_14[10] + 0xc) = DAT_00018034;\n      local_14[0xb] = *(uint *)(local_14[10] + 0x10);\n      local_14[1] = local_14[1] + 1;\n    }\n    else if (local_14[1] < *local_14) {\n      *(double *)local_14[0xb] = NextPkt;\n      *(int *)(local_14[0xb] + 8) = DAT_00018030;\n      *(uint *)(local_14[0xb] + 0xc) = DAT_00018034;\n      local_14[0xb] = *(uint *)(local_14[0xb] + 0x10);\n      local_14[1] = local_14[1] + 1;\n    }\n    else {\n      local_14[6] = local_14[6] + 1;\n    }\n    DAT_00018030 = 0;\n  }\n  printf(\"Unable to find target queue for packet with priority @d\\n\",DAT_00018034);\n  return 0xffffffff;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "RX",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "RX",
+                        "main",
+                        "TX"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined4 uVar2;\n  int iVar3;\n  undefined *puVar4;\n  undefined *puVar5;\n  undefined *puVar6;\n  char *apcStack_a0 [4];\n  int aiStack_90 [3];\n  undefined8 uStack_84;\n  int aiStack_64 [4];\n  code *apcStack_54 [5];\n  char *apcStack_40 [8];\n  undefined4 uStack_14;\n  undefined *puStack_10;\n  \n  puStack_10 = &stack0x00000004;\n  puVar4 = (undefined *)&puStack_10;\n  uStack_14 = 0x12c23;\n  puts(\"Welcome to the network queuing simulator\");\n  uStack_14 = 0x12c40;\n  iVar1 = InitInterface();\n  if (iVar1 != 0) {\n    puVar4 = &stack0xffffffe0;\n    puts(\"Unable to init interface\\n\");\n    _terminate();\n  }\n  *(undefined4 *)(puVar4 + -4) = 0x12c65;\n  iVar1 = InitReceive();\n  puVar5 = puVar4;\n  if (iVar1 != 0) {\n    puVar5 = puVar4 + -0x10;\n    *(char **)(puVar4 + -0x10) = \"Unable to init packet generator\\n\";\n    *(undefined4 *)(puVar4 + -0x14) = 0x12c78;\n    puts(*(char **)(puVar4 + -0x10));\n    *(undefined4 *)(puVar4 + -0x10) = 0xffffffff;\n    *(undefined4 *)(puVar4 + -0x14) = 0x12c85;\n    _terminate();\n  }\n  *(undefined4 *)(puVar5 + -4) = 0x12c8a;\n  iVar1 = InitQueues();\n  puVar6 = puVar5;\n  if (iVar1 != 0) {\n    puVar6 = puVar5 + -0x10;\n    *(char **)(puVar5 + -0x10) = \"Failed to initialize queues\\n\";\n    *(undefined4 *)(puVar5 + -0x14) = 0x12c9d;\n    puts(*(char **)(puVar5 + -0x10));\n    *(undefined4 *)(puVar5 + -0x10) = 0xffffffff;\n    *(undefined4 *)(puVar5 + -0x14) = 0x12caa;\n    _terminate();\n  }\n  do {\n    *(undefined4 *)(puVar6 + -4) = 0x12caf;\n    RX();\n    *(undefined4 *)(puVar6 + -4) = 0x12cb4;\n    TX();\n    wall_clock = _DAT_000156d0 + wall_clock;\n  } while (wall_clock <= max_wall_clock);\n  *(undefined4 *)(puVar6 + -4) = 0x12cec;\n  PrintStats();\n  *(undefined4 *)(puVar6 + -4) = 0x12cf1;\n  DestroyQueues();\n  *(undefined4 *)(puVar6 + -0x10) = 0;\n  *(code **)(puVar6 + -0x14) = InitInterface;\n  _terminate();\n  *(undefined **)(puVar6 + -0x14) = &stack0xfffffff8;\n  *(undefined ***)(puVar6 + -0x18) = &_GLOBAL_OFFSET_TABLE_;\n  *(undefined4 *)(puVar6 + -0x50) = 0x12d07;\n  iVar1 = *(int *)(puVar6 + -0x50);\n  *(undefined4 *)(puVar6 + -0x20) = 0;\n  while ((*(int *)(puVar6 + -0x20) == 0 || (0x400000 < *(uint *)(puVar6 + -0x20)))) {\n    *(undefined4 *)(puVar6 + -0x58) = 0x400000;\n    *(int *)(puVar6 + -0x5c) = iVar1 + 0x29d1;\n    *(undefined4 *)(puVar6 + -0x60) = 0x12d2a;\n    printf(*(char **)(puVar6 + -0x5c));\n    *(undefined4 *)(puVar6 + -0x54) = 10;\n    *(undefined4 *)(puVar6 + -0x58) = 0xb;\n    *(undefined **)(puVar6 + -0x5c) = puVar6 + -0x30;\n    *(undefined4 *)(puVar6 + -0x60) = 0x12d3d;\n    uVar2 = readUntil();\n    *(undefined4 *)(puVar6 + -0x24) = uVar2;\n    if (*(int *)(puVar6 + -0x24) == -1) {\n      return 0xffffffff;\n    }\n    *(undefined **)(puVar6 + -0x5c) = puVar6 + -0x30;\n    *(undefined4 *)(puVar6 + -0x60) = 0x12d5f;\n    iVar3 = atoi(*(char **)(puVar6 + -0x5c));\n    *(int *)(puVar6 + -0x20) = iVar3;\n  }\n  *(undefined4 *)(iVar1 + 0x5d19) = *(undefined4 *)(puVar6 + -0x20);\n  *(undefined4 *)(puVar6 + -0x5c) = *(undefined4 *)(puVar6 + -0x20);\n  *(undefined4 *)(puVar6 + -0x60) = 0x12d8a;\n  init_mt();\n  *(undefined4 *)(puVar6 + -0x44) = *(undefined4 *)(puVar6 + -0x20);\n  *(undefined4 *)(puVar6 + -0x40) = 0;\n  *(double *)(iVar1 + 0x5d29) = *(double *)(iVar1 + 0x2b19) / (double)*(longlong *)(puVar6 + -0x44);\n  *(undefined8 *)(iVar1 + 0x5d49) = 0;\n  *(undefined4 *)(iVar1 + 0x5d1d) = 0;\n  *(undefined4 *)(iVar1 + 0x5d21) = 0;\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "puts",
+                        "InitInterface",
+                        "_terminate",
+                        "InitReceive",
+                        "InitQueues",
+                        "RX",
+                        "TX",
+                        "PrintStats",
+                        "DestroyQueues",
+                        "printf",
+                        "readUntil",
+                        "atoi",
+                        "init_mt"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            }
+        ],
+        "transmit.c": [
+            {
+                "func_name": "InitInterface",
+                "func_c_signature": "undefined4 InitInterface(void)",
+                "decompiled_code": "undefined4 InitInterface(void) {\n  char local_20 [12];\n  int local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  while ((local_10 == 0 || (0x400000 < local_10))) {\n    printf(\"What\\'s the interface speed (in bps up to @d bps): \",0x400000);\n    local_14 = readUntil(local_20,0xb,10);\n    if (local_14 == -1) {\n      return 0xffffffff;\n    }\n    local_10 = atoi(local_20);\n  }\n  iface = local_10;\n  init_mt(local_10);\n  DAT_00018a24 = 0;\n  DAT_00018a28 = 0;\n  DAT_00018a30 = DAT_00015820 / (double)(ulonglong)local_10;\n  wall_clock = 0;\n  return 0;\n}",
+                "globals": [],
+                "externs": [
+                    "speed"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "InitInterface",
+                        "printf",
+                        "speed",
+                        "readUntil",
+                        "atoi",
+                        "init_mt"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "InitInterface"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "TransmitPktFromQueue",
+                "func_c_signature": "undefined4 TransmitPktFromQueue(byte param_1)",
+                "decompiled_code": "undefined4 TransmitPktFromQueue(byte param_1) {\n  double *pdVar1;\n  int iVar2;\n  undefined4 uVar3;\n  \n  if (param_1 < DAT_00018a2c) {\n    pdVar1 = *(double **)(*(int *)(DAT_00018a3c + (uint)param_1 * 4) + 0x28);\n    *(double *)(*(int *)(DAT_00018a3c + (uint)param_1 * 4) + 0x1c) =\n         (wall_clock - *pdVar1) + *(double *)(*(int *)(DAT_00018a3c + (uint)param_1 * 4) + 0x1c);\n    wall_clock = wall_clock +\n                 DAT_00018a30 +\n                 (DAT_00015828 * (double)(ulonglong)*(uint *)(pdVar1 + 1)) /\n                 (double)(ulonglong)iface;\n    iVar2 = *(int *)(DAT_00018a3c + (uint)param_1 * 4);\n    *(int *)(iVar2 + 4) = *(int *)(iVar2 + 4) + -1;\n    if ((DAT_00018a38 == '\\0') || (param_1 != 0)) {\n      *(int *)(*(int *)(DAT_00018a3c + (uint)param_1 * 4) + 8) =\n           *(int *)(*(int *)(DAT_00018a3c + (uint)param_1 * 4) + 8) - *(int *)(pdVar1 + 1);\n    }\n    iVar2 = *(int *)(DAT_00018a3c + (uint)param_1 * 4);\n    *(int *)(iVar2 + 0x10) = *(int *)(iVar2 + 0x10) + 1;\n    *(int *)(*(int *)(DAT_00018a3c + (uint)param_1 * 4) + 0x14) =\n         *(int *)(pdVar1 + 1) + *(int *)(*(int *)(DAT_00018a3c + (uint)param_1 * 4) + 0x14);\n    DAT_00018a24 = DAT_00018a24 + 1;\n    DAT_00018a28 = DAT_00018a28 + *(int *)(pdVar1 + 1);\n    *(undefined4 *)(pdVar1 + 1) = 0;\n    *(undefined4 *)((int)pdVar1 + 0xc) = 0;\n    *pdVar1 = 0.0;\n    *(undefined4 *)(*(int *)(DAT_00018a3c + (uint)param_1 * 4) + 0x28) = *(undefined4 *)(pdVar1 + 2)\n    ;\n    uVar3 = 0;\n  }\n  else {\n    puts(\"Invalid queue number\");\n    uVar3 = 0xffffffff;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "TransmitPktFromQueue",
+                        "puts"
+                    ],
+                    "calling_functions": [
+                        "TransmitPktFromQueue",
+                        "TX"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ReplinishTokens",
+                "func_c_signature": "void ReplinishTokens(void)",
+                "decompiled_code": "void ReplinishTokens(void) {\n  int iVar1;\n  int local_8;\n  \n  for (local_8 = 0; local_8 < (int)(uint)DAT_00018a2c; local_8 = local_8 + 1) {\n    iVar1 = *(int *)(DAT_00018a3c + local_8 * 4);\n    *(undefined4 *)(iVar1 + 8) = *(undefined4 *)(iVar1 + 0xc);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ReplinishTokens"
+                    ],
+                    "calling_functions": [
+                        "ReplinishTokens",
+                        "TX"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "uint_to_str",
+                "func_c_signature": "void uint_to_str(uint param_1,char *param_2)",
+                "decompiled_code": "void uint_to_str(uint param_1,char *param_2) {\n  char local_2c [32];\n  int local_c;\n  char *local_8;\n  \n  local_8 = local_2c;\n  local_c = 0;\n  if (param_2 != (char *)0x0) {\n    do {\n      *local_8 = (char)param_1 + ((char)(param_1 / 10 << 2) + (char)(param_1 / 10)) * -2 + '0';\n      param_1 = param_1 / 10;\n      local_8 = local_8 + 1;\n      local_c = local_c + 1;\n    } while (param_1 != 0);\n    while (0 < local_c) {\n      local_8 = local_8 + -1;\n      *param_2 = *local_8;\n      param_2 = param_2 + 1;\n      local_c = local_c + -1;\n    }\n    *param_2 = '\\0';\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "uint_to_str"
+                    ],
+                    "calling_functions": [
+                        "uint_to_str",
+                        "print_uint"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_uint",
+                "func_c_signature": "void print_uint(char *param_1,undefined4 param_2)",
+                "decompiled_code": "void print_uint(char *param_1,undefined4 param_2) {\n  size_t sVar1;\n  char local_30 [32];\n  char *local_10;\n  \n  local_10 = local_30;\n  strncpy(local_30,param_1,0x1f);\n  sVar1 = strlen(local_30);\n  uint_to_str(param_2,local_30 + sVar1);\n  printf(\"@s\\n\",local_10);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_uint",
+                        "strncpy",
+                        "strlen",
+                        "uint_to_str",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_uint",
+                        "PrintStats"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "PrintStats",
+                "func_c_signature": "void PrintStats(void)",
+                "decompiled_code": "void PrintStats(void) {\n  double dVar1;\n  undefined4 uVar3;\n  undefined8 uVar2;\n  int local_1c;\n  int local_18;\n  uint local_14;\n  int local_10;\n  \n  uVar2 = wall_clock;\n  printf(\"wall_clock: @f (s)\\n\",wall_clock);\n  for (local_10 = 0; local_10 < (int)(uint)DAT_00018a2c; local_10 = local_10 + 1) {\n    printf(\"Queue @d\\n\",local_10);\n    printf(\"  Pkts Transmitted:       @d\\n\",\n           *(undefined4 *)(*(int *)(DAT_00018a3c + local_10 * 4) + 0x10));\n    printf(\"  Pkts Dropped:           @d\\n\",\n           *(undefined4 *)(*(int *)(DAT_00018a3c + local_10 * 4) + 0x18));\n    if (*(int *)(*(int *)(DAT_00018a3c + local_10 * 4) + 0x10) == 0) {\n      uVar3 = 0;\n      printf(\"  Average Latency (s):    @f\\n\",0);\n    }\n    else {\n      dVar1 = *(double *)(*(int *)(DAT_00018a3c + local_10 * 4) + 0x1c) /\n              (double)(ulonglong)*(uint *)(*(int *)(DAT_00018a3c + local_10 * 4) + 0x10);\n      printf(\"  Average Latency (s):    @f\\n\",dVar1);\n      uVar3 = (undefined4)((ulonglong)dVar1 >> 0x20);\n    }\n    printf(\"  Enqueued Pkts:          @d\\n\",\n           *(undefined4 *)(*(int *)(DAT_00018a3c + local_10 * 4) + 4));\n    local_18 = 0;\n    local_1c = *(int *)(*(int *)(DAT_00018a3c + local_10 * 4) + 0x28);\n    for (local_14 = 0; local_14 < *(uint *)(*(int *)(DAT_00018a3c + local_10 * 4) + 4);\n        local_14 = local_14 + 1) {\n      local_18 = local_18 + *(int *)(local_1c + 8);\n      local_1c = *(int *)(local_1c + 0x10);\n    }\n    uVar2 = CONCAT44(uVar3,local_18);\n    printf(\"  Queue Depth (bytes):    @d\\n\",local_18);\n  }\n  printf(\"Interface Stats\\n\",uVar2);\n  print_uint(\"  Pkts Transmitted:       \",DAT_00018a24);\n  return;\n}",
+                "globals": [],
+                "externs": [
+                    "f",
+                    "Latency",
+                    "CONCAT44",
+                    "Depth"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "PrintStats",
+                        "printf",
+                        "f",
+                        "Latency",
+                        "CONCAT44",
+                        "Depth",
+                        "print_uint"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "PrintStats"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            },
+            {
+                "func_name": "TX",
+                "func_c_signature": "undefined4 TX(void)",
+                "decompiled_code": "undefined4 TX(void) {\n  int iVar1;\n  int iVar2;\n  uint local_10;\n  \n  ReplinishTokens();\n  if (DAT_00018a38 != '\\0') {\n    while (*(int *)(*DAT_00018a3c + 4) != 0) {\n      iVar1 = TransmitPktFromQueue(0);\n      if (iVar1 != 0) {\n        puts(\"Packet transmission failed\");\n        return 0xffffffff;\n      }\n      if (max_wall_clock < wall_clock) {\n        return 0;\n      }\n      RX();\n    }\n  }\n  local_10 = 0;\n  do {\n    if ((int)(uint)DAT_00018a2c <= (int)local_10) {\n      return 0;\n    }\n    if ((DAT_00018a38 == '\\0') || (local_10 != 0)) {\n      iVar1 = DAT_00018a3c[local_10];\n      while ((*(int *)(iVar1 + 4) != 0 &&\n             (*(uint *)(*(int *)(iVar1 + 0x28) + 8) <= *(uint *)(iVar1 + 8)))) {\n        iVar2 = TransmitPktFromQueue(local_10 & 0xff);\n        if (iVar2 != 0) {\n          puts(\"Packet transmission failed\");\n          return 0xffffffff;\n        }\n        if (max_wall_clock < wall_clock) {\n          return 0;\n        }\n        RX();\n      }\n    }\n    local_10 = local_10 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "TX",
+                        "ReplinishTokens",
+                        "TransmitPktFromQueue",
+                        "puts",
+                        "RX"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "TX"
+                    ],
+                    "defined_in_file": "CROMU_00016_decompiled.c"
+                }
+            }
+        ]
+    }
+}

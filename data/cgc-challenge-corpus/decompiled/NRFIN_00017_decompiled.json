@@ -1,0 +1,1906 @@
+{
+    "file": "NRFIN_00017",
+    "decompiled_code": {
+        "assemble.c": [
+            {
+                "func_name": "convert_watts_to_amps",
+                "func_c_signature": "longdouble convert_watts_to_amps(float param_1)",
+                "decompiled_code": "longdouble convert_watts_to_amps(float param_1) {\n  return (longdouble)param_1 / (longdouble)DAT_00014000;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "convert_watts_to_amps"
+                    ],
+                    "calling_functions": [
+                        "convert_watts_to_amps",
+                        "get_total_amp_load_on_light_string_by_light_string_va"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "load_center_is_created",
+                "func_c_signature": "bool load_center_is_created(void)",
+                "decompiled_code": "bool load_center_is_created(void) {\n  return e_model != 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "load_center_is_created"
+                    ],
+                    "calling_functions": [
+                        "load_center_is_created",
+                        "load_center_breaker_spaces_are_full",
+                        "get_receptacle_by_id",
+                        "get_breaker_by_id",
+                        "get_number_of_breakers_installed_in_load_center",
+                        "get_total_breaker_space_count",
+                        "get_amp_rating_of_load_center",
+                        "get_total_amp_load_on_load_center",
+                        "init_electric_model",
+                        "add_breaker_to_load_center",
+                        "add_outlet_to_breaker",
+                        "add_n_way_splitter_to_receptacle",
+                        "add_light_string_to_receptacle"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "load_center_breaker_spaces_are_full",
+                "func_c_signature": "undefined4 load_center_breaker_spaces_are_full(void)",
+                "decompiled_code": "undefined4 load_center_breaker_spaces_are_full(void) {\n  char cVar1;\n  undefined4 uVar2;\n  \n  cVar1 = load_center_is_created();\n  if ((cVar1 == '\\x01') && (*e_model == e_model[1])) {\n    uVar2 = 1;\n  }\n  else {\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "load_center_breaker_spaces_are_full",
+                        "load_center_is_created"
+                    ],
+                    "calling_functions": [
+                        "load_center_breaker_spaces_are_full",
+                        "add_breaker_to_load_center"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_receptacle_load_type",
+                "func_c_signature": "undefined4 get_receptacle_load_type(int param_1)",
+                "decompiled_code": "undefined4 get_receptacle_load_type(int param_1) {\n  return *(undefined4 *)(param_1 + 4);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_receptacle_load_type"
+                    ],
+                    "calling_functions": [
+                        "get_receptacle_load_type",
+                        "receptacle_is_loaded",
+                        "search_receptacle_for_receptacle_id",
+                        "search_receptacle_for_splitter_id",
+                        "search_receptacle_for_light_string_id",
+                        "get_total_amp_load_on_receptacle_by_receptacle_va"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "receptacle_is_loaded",
+                "func_c_signature": "bool receptacle_is_loaded(undefined4 param_1)",
+                "decompiled_code": "bool receptacle_is_loaded(undefined4 param_1) {\n  uint uVar1;\n  \n  uVar1 = get_receptacle_load_type(param_1);\n  return uVar1 < 2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "receptacle_is_loaded",
+                        "get_receptacle_load_type"
+                    ],
+                    "calling_functions": [
+                        "receptacle_is_loaded",
+                        "add_n_way_splitter_to_receptacle",
+                        "add_light_string_to_receptacle"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "search_receptacle_for_receptacle_id",
+                "func_c_signature": "int * search_receptacle_for_receptacle_id(int *param_1,int param_2)",
+                "decompiled_code": "int * search_receptacle_for_receptacle_id(int *param_1,int param_2) {\n  int iVar1;\n  int *local_10;\n  \n  local_10 = (int *)0x0;\n  if (param_2 == *param_1) {\n    local_10 = param_1;\n  }\n  else {\n    iVar1 = get_receptacle_load_type(param_1);\n    if (iVar1 == 0) {\n      local_10 = (int *)search_splitter_for_receptacle_id(param_1[2],param_2);\n    }\n    else {\n      iVar1 = get_receptacle_load_type(param_1);\n      if (iVar1 == 1) {\n        local_10 = (int *)search_light_string_for_receptacle_id(param_1[2],param_2);\n      }\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "search_receptacle_for_receptacle_id",
+                        "get_receptacle_load_type",
+                        "search_splitter_for_receptacle_id",
+                        "search_light_string_for_receptacle_id"
+                    ],
+                    "calling_functions": [
+                        "search_receptacle_for_receptacle_id",
+                        "search_outlet_for_receptacle_id",
+                        "search_splitter_for_receptacle_id",
+                        "search_light_string_for_receptacle_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "search_outlet_for_receptacle_id",
+                "func_c_signature": "int search_outlet_for_receptacle_id(int param_1,undefined4 param_2)",
+                "decompiled_code": "int search_outlet_for_receptacle_id(int param_1,undefined4 param_2) {\n  int local_10;\n  \n  local_10 = search_receptacle_for_receptacle_id(param_1 + 4,param_2);\n  if (local_10 == 0) {\n    local_10 = search_receptacle_for_receptacle_id(param_1 + 0x14,param_2);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "search_outlet_for_receptacle_id",
+                        "search_receptacle_for_receptacle_id"
+                    ],
+                    "calling_functions": [
+                        "search_outlet_for_receptacle_id",
+                        "get_receptacle_by_id_from_breaker_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "search_splitter_for_receptacle_id",
+                "func_c_signature": "int search_splitter_for_receptacle_id(int param_1,undefined4 param_2)",
+                "decompiled_code": "int search_splitter_for_receptacle_id(int param_1,undefined4 param_2) {\n  uint local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  while ((local_14 <= *(byte *)(param_1 + 6) &&\n         (local_10 = search_receptacle_for_receptacle_id(param_1 + local_14 * 0x10 + 8,param_2),\n         local_10 == 0))) {\n    local_14 = local_14 + 1;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "search_splitter_for_receptacle_id",
+                        "search_receptacle_for_receptacle_id"
+                    ],
+                    "calling_functions": [
+                        "search_receptacle_for_receptacle_id",
+                        "search_splitter_for_receptacle_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "search_light_string_for_receptacle_id",
+                "func_c_signature": "void search_light_string_for_receptacle_id(int param_1,undefined4 param_2)",
+                "decompiled_code": "void search_light_string_for_receptacle_id(int param_1,undefined4 param_2) {\n  search_receptacle_for_receptacle_id(param_1 + 0xc,param_2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "search_light_string_for_receptacle_id",
+                        "search_receptacle_for_receptacle_id"
+                    ],
+                    "calling_functions": [
+                        "search_receptacle_for_receptacle_id",
+                        "search_light_string_for_receptacle_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "search_receptacle_for_splitter_id",
+                "func_c_signature": "undefined4 search_receptacle_for_splitter_id(int param_1,undefined4 param_2)",
+                "decompiled_code": "undefined4 search_receptacle_for_splitter_id(int param_1,undefined4 param_2) {\n  int iVar1;\n  undefined4 local_10;\n  \n  local_10 = 0;\n  iVar1 = get_receptacle_load_type(param_1);\n  if (iVar1 == 0) {\n    local_10 = search_splitter_for_splitter_id(*(undefined4 *)(param_1 + 8),param_2);\n  }\n  else {\n    iVar1 = get_receptacle_load_type(param_1);\n    if (iVar1 == 1) {\n      local_10 = search_light_string_for_splitter_id(*(undefined4 *)(param_1 + 8),param_2);\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "search_receptacle_for_splitter_id",
+                        "get_receptacle_load_type",
+                        "search_splitter_for_splitter_id",
+                        "search_light_string_for_splitter_id"
+                    ],
+                    "calling_functions": [
+                        "search_receptacle_for_splitter_id",
+                        "search_light_string_for_splitter_id",
+                        "search_outlet_for_splitter_id",
+                        "search_splitter_for_splitter_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "search_light_string_for_splitter_id",
+                "func_c_signature": "void search_light_string_for_splitter_id(int param_1,undefined4 param_2)",
+                "decompiled_code": "void search_light_string_for_splitter_id(int param_1,undefined4 param_2) {\n  search_receptacle_for_splitter_id(param_1 + 0xc,param_2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "search_light_string_for_splitter_id",
+                        "search_receptacle_for_splitter_id"
+                    ],
+                    "calling_functions": [
+                        "search_receptacle_for_splitter_id",
+                        "search_light_string_for_splitter_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "search_outlet_for_splitter_id",
+                "func_c_signature": "int search_outlet_for_splitter_id(int param_1,undefined4 param_2)",
+                "decompiled_code": "int search_outlet_for_splitter_id(int param_1,undefined4 param_2) {\n  int local_10;\n  \n  local_10 = search_receptacle_for_splitter_id(param_1 + 4,param_2);\n  if (local_10 == 0) {\n    local_10 = search_receptacle_for_splitter_id(param_1 + 0x14,param_2);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "search_outlet_for_splitter_id",
+                        "search_receptacle_for_splitter_id"
+                    ],
+                    "calling_functions": [
+                        "search_outlet_for_splitter_id",
+                        "get_splitter_by_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "search_splitter_for_splitter_id",
+                "func_c_signature": "int * search_splitter_for_splitter_id(int *param_1,int param_2)",
+                "decompiled_code": "int * search_splitter_for_splitter_id(int *param_1,int param_2) {\n  byte local_11;\n  int *local_10;\n  \n  local_10 = (int *)0x0;\n  if (param_2 == *param_1) {\n    local_10 = param_1;\n  }\n  else {\n    local_11 = 0;\n    while ((local_11 < *(byte *)((int)param_1 + 6) &&\n           (local_10 = (int *)search_receptacle_for_splitter_id\n                                        (param_1 + (uint)local_11 * 4 + 2,param_2),\n           local_10 == (int *)0x0))) {\n      local_11 = local_11 + 1;\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "search_splitter_for_splitter_id",
+                        "search_receptacle_for_splitter_id"
+                    ],
+                    "calling_functions": [
+                        "search_receptacle_for_splitter_id",
+                        "search_splitter_for_splitter_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "search_receptacle_for_light_string_id",
+                "func_c_signature": "undefined4 search_receptacle_for_light_string_id(int param_1,undefined4 param_2)",
+                "decompiled_code": "undefined4 search_receptacle_for_light_string_id(int param_1,undefined4 param_2) {\n  int iVar1;\n  undefined4 local_10;\n  \n  local_10 = 0;\n  iVar1 = get_receptacle_load_type(param_1);\n  if (iVar1 == 0) {\n    local_10 = search_splitter_for_light_string_id(*(undefined4 *)(param_1 + 8),param_2);\n  }\n  else {\n    iVar1 = get_receptacle_load_type(param_1);\n    if (iVar1 == 1) {\n      local_10 = search_light_string_for_light_string_id(*(undefined4 *)(param_1 + 8),param_2);\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "search_receptacle_for_light_string_id",
+                        "get_receptacle_load_type",
+                        "search_splitter_for_light_string_id",
+                        "search_light_string_for_light_string_id"
+                    ],
+                    "calling_functions": [
+                        "search_receptacle_for_light_string_id",
+                        "search_light_string_for_light_string_id",
+                        "search_outlet_for_light_string_id",
+                        "search_splitter_for_light_string_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "search_light_string_for_light_string_id",
+                "func_c_signature": "int * search_light_string_for_light_string_id(int *param_1,int param_2)",
+                "decompiled_code": "int * search_light_string_for_light_string_id(int *param_1,int param_2) {\n  int *local_10;\n  \n  if (param_2 == *param_1) {\n    local_10 = param_1;\n  }\n  else {\n    local_10 = (int *)search_receptacle_for_light_string_id(param_1 + 3,param_2);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "search_light_string_for_light_string_id",
+                        "search_receptacle_for_light_string_id"
+                    ],
+                    "calling_functions": [
+                        "search_receptacle_for_light_string_id",
+                        "search_light_string_for_light_string_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "search_outlet_for_light_string_id",
+                "func_c_signature": "int search_outlet_for_light_string_id(int param_1,undefined4 param_2)",
+                "decompiled_code": "int search_outlet_for_light_string_id(int param_1,undefined4 param_2) {\n  int local_10;\n  \n  local_10 = search_receptacle_for_light_string_id(param_1 + 4,param_2);\n  if (local_10 == 0) {\n    local_10 = search_receptacle_for_light_string_id(param_1 + 0x14,param_2);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "search_outlet_for_light_string_id",
+                        "search_receptacle_for_light_string_id"
+                    ],
+                    "calling_functions": [
+                        "search_outlet_for_light_string_id",
+                        "get_light_string_by_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "search_splitter_for_light_string_id",
+                "func_c_signature": "int search_splitter_for_light_string_id(int param_1,undefined4 param_2)",
+                "decompiled_code": "int search_splitter_for_light_string_id(int param_1,undefined4 param_2) {\n  byte local_11;\n  int local_10;\n  \n  local_10 = 0;\n  local_11 = 0;\n  while ((local_11 < *(byte *)(param_1 + 6) &&\n         (local_10 = search_receptacle_for_light_string_id\n                               (param_1 + (uint)local_11 * 0x10 + 8,param_2), local_10 == 0))) {\n    local_11 = local_11 + 1;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "search_splitter_for_light_string_id",
+                        "search_receptacle_for_light_string_id"
+                    ],
+                    "calling_functions": [
+                        "search_receptacle_for_light_string_id",
+                        "search_splitter_for_light_string_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_receptacle_by_id_from_breaker_id",
+                "func_c_signature": "int get_receptacle_by_id_from_breaker_id(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "int get_receptacle_by_id_from_breaker_id(undefined4 param_1,undefined4 param_2) {\n  undefined4 uVar1;\n  undefined4 *puVar2;\n  undefined4 *local_14;\n  int local_10;\n  \n  local_10 = 0;\n  uVar1 = get_outlet_list_on_breaker(param_1);\n  local_14 = (undefined4 *)get_first_node(uVar1);\n  while ((puVar2 = (undefined4 *)get_list_tail(uVar1), local_14 != puVar2 &&\n         (local_10 = search_outlet_for_receptacle_id(*local_14,param_2), local_10 == 0))) {\n    local_14 = (undefined4 *)local_14[1];\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_receptacle_by_id_from_breaker_id",
+                        "get_outlet_list_on_breaker",
+                        "get_first_node",
+                        "get_list_tail",
+                        "search_outlet_for_receptacle_id"
+                    ],
+                    "calling_functions": [
+                        "get_receptacle_by_id_from_breaker_id",
+                        "get_receptacle_by_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_receptacle_by_id",
+                "func_c_signature": "int get_receptacle_by_id(undefined4 param_1)",
+                "decompiled_code": "int get_receptacle_by_id(undefined4 param_1) {\n  char cVar1;\n  uint local_14;\n  int local_10;\n  \n  local_10 = 0;\n  cVar1 = load_center_is_created();\n  if (cVar1 == '\\x01') {\n    local_14 = 0;\n    while ((local_14 < *(byte *)(e_model + 1) &&\n           (local_10 = get_receptacle_by_id_from_breaker_id(local_14,param_1), local_10 == 0))) {\n      local_14 = local_14 + 1;\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_receptacle_by_id",
+                        "load_center_is_created",
+                        "get_receptacle_by_id_from_breaker_id"
+                    ],
+                    "calling_functions": [
+                        "get_receptacle_by_id",
+                        "get_amp_rating_of_receptacle",
+                        "get_total_amp_load_on_receptacle_by_receptacle_id",
+                        "add_n_way_splitter_to_receptacle",
+                        "add_light_string_to_receptacle"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_breaker_by_id",
+                "func_c_signature": "int get_breaker_by_id(int param_1)",
+                "decompiled_code": "int get_breaker_by_id(int param_1) {\n  char cVar1;\n  int iVar2;\n  \n  cVar1 = load_center_is_created();\n  if ((cVar1 == '\\0') || (*(char *)(e_model + 1) == '\\0')) {\n    iVar2 = 0;\n  }\n  else {\n    iVar2 = param_1 * 0xc + e_model + 8;\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_breaker_by_id",
+                        "load_center_is_created"
+                    ],
+                    "calling_functions": [
+                        "get_breaker_by_id",
+                        "breaker_id_is_installed",
+                        "get_outlet_list_on_breaker",
+                        "get_count_outlets_on_breaker",
+                        "get_amp_rating_of_breaker",
+                        "add_outlet_to_breaker"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_outlet_by_id",
+                "func_c_signature": "int * get_outlet_by_id(int param_1)",
+                "decompiled_code": "int * get_outlet_by_id(int param_1) {\n  char cVar1;\n  undefined4 uVar2;\n  int **ppiVar3;\n  int **local_18;\n  uint local_14;\n  int *local_10;\n  \n  local_10 = (int *)0x0;\n  cVar1 = get_number_of_breakers_installed_in_load_center();\n  if (cVar1 < '\\0') {\n    local_10 = (int *)0x0;\n  }\n  else {\n    for (local_14 = 0; local_14 < (uint)(int)cVar1; local_14 = local_14 + 1) {\n      uVar2 = get_outlet_list_on_breaker(local_14);\n      for (local_18 = (int **)get_first_node(uVar2);\n          (ppiVar3 = (int **)get_list_tail(uVar2), local_18 != ppiVar3 &&\n          (local_10 = *local_18, param_1 != *local_10)); local_18 = (int **)local_18[1]) {\n        local_10 = (int *)0x0;\n      }\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_outlet_by_id",
+                        "get_number_of_breakers_installed_in_load_center",
+                        "get_outlet_list_on_breaker",
+                        "get_first_node",
+                        "get_list_tail"
+                    ],
+                    "calling_functions": [
+                        "get_outlet_by_id",
+                        "get_amp_rating_of_outlet",
+                        "get_total_amp_load_on_outlet_by_outlet_id",
+                        "get_max_receptacle_amp_load_on_outlet_by_outlet_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_splitter_by_id",
+                "func_c_signature": "int get_splitter_by_id(undefined4 param_1)",
+                "decompiled_code": "int get_splitter_by_id(undefined4 param_1) {\n  char cVar1;\n  undefined4 uVar2;\n  undefined4 *puVar3;\n  undefined4 *local_18;\n  uint local_14;\n  int local_10;\n  \n  local_10 = 0;\n  cVar1 = get_number_of_breakers_installed_in_load_center();\n  if (cVar1 < '\\0') {\n    local_10 = 0;\n  }\n  else {\n    for (local_14 = 0; local_14 < (uint)(int)cVar1; local_14 = local_14 + 1) {\n      uVar2 = get_outlet_list_on_breaker(local_14);\n      local_18 = (undefined4 *)get_first_node(uVar2);\n      while ((puVar3 = (undefined4 *)get_list_tail(uVar2), local_18 != puVar3 &&\n             (local_10 = search_outlet_for_splitter_id(*local_18,param_1), local_10 == 0))) {\n        local_18 = (undefined4 *)local_18[1];\n      }\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_splitter_by_id",
+                        "get_number_of_breakers_installed_in_load_center",
+                        "get_outlet_list_on_breaker",
+                        "get_first_node",
+                        "get_list_tail",
+                        "search_outlet_for_splitter_id"
+                    ],
+                    "calling_functions": [
+                        "get_splitter_by_id",
+                        "get_amp_rating_of_splitter",
+                        "get_total_amp_load_on_splitter_by_splitter_id",
+                        "get_max_receptacle_amp_load_on_splitter_by_splitter_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_light_string_by_id",
+                "func_c_signature": "int get_light_string_by_id(undefined4 param_1)",
+                "decompiled_code": "int get_light_string_by_id(undefined4 param_1) {\n  char cVar1;\n  undefined4 uVar2;\n  undefined4 *puVar3;\n  undefined4 *local_18;\n  uint local_14;\n  int local_10;\n  \n  local_10 = 0;\n  cVar1 = get_number_of_breakers_installed_in_load_center();\n  if (cVar1 < '\\0') {\n    local_10 = 0;\n  }\n  else {\n    for (local_14 = 0; local_14 < (uint)(int)cVar1; local_14 = local_14 + 1) {\n      uVar2 = get_outlet_list_on_breaker(local_14);\n      local_18 = (undefined4 *)get_first_node(uVar2);\n      while ((puVar3 = (undefined4 *)get_list_tail(uVar2), local_18 != puVar3 &&\n             (local_10 = search_outlet_for_light_string_id(*local_18,param_1), local_10 == 0))) {\n        local_18 = (undefined4 *)local_18[1];\n      }\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_light_string_by_id",
+                        "get_number_of_breakers_installed_in_load_center",
+                        "get_outlet_list_on_breaker",
+                        "get_first_node",
+                        "get_list_tail",
+                        "search_outlet_for_light_string_id"
+                    ],
+                    "calling_functions": [
+                        "get_light_string_by_id",
+                        "get_amp_rating_of_light_string",
+                        "get_total_amp_load_on_light_string_by_light_string_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "breaker_id_is_installed",
+                "func_c_signature": "bool breaker_id_is_installed(undefined4 param_1)",
+                "decompiled_code": "bool breaker_id_is_installed(undefined4 param_1) {\n  int iVar1;\n  \n  iVar1 = get_breaker_by_id(param_1);\n  return iVar1 != 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "breaker_id_is_installed",
+                        "get_breaker_by_id"
+                    ],
+                    "calling_functions": [
+                        "breaker_id_is_installed",
+                        "get_outlet_list_on_breaker",
+                        "get_count_outlets_on_breaker",
+                        "get_amp_rating_of_breaker",
+                        "get_total_amp_load_on_breaker_by_breaker_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_outlet_list_on_breaker",
+                "func_c_signature": "undefined4 get_outlet_list_on_breaker(undefined4 param_1)",
+                "decompiled_code": "undefined4 get_outlet_list_on_breaker(undefined4 param_1) {\n  char cVar1;\n  undefined4 uVar2;\n  int iVar3;\n  \n  cVar1 = breaker_id_is_installed(param_1);\n  if (cVar1 == '\\0') {\n    uVar2 = 0;\n  }\n  else {\n    iVar3 = get_breaker_by_id(param_1);\n    uVar2 = *(undefined4 *)(iVar3 + 8);\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_outlet_list_on_breaker",
+                        "breaker_id_is_installed",
+                        "get_breaker_by_id"
+                    ],
+                    "calling_functions": [
+                        "get_receptacle_by_id_from_breaker_id",
+                        "get_outlet_by_id",
+                        "get_splitter_by_id",
+                        "get_light_string_by_id",
+                        "get_outlet_list_on_breaker",
+                        "get_total_amp_load_on_breaker_by_breaker_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_count_outlets_on_breaker",
+                "func_c_signature": "undefined4 get_count_outlets_on_breaker(undefined4 param_1)",
+                "decompiled_code": "undefined4 get_count_outlets_on_breaker(undefined4 param_1) {\n  char cVar1;\n  undefined4 uVar2;\n  int iVar3;\n  \n  cVar1 = breaker_id_is_installed(param_1);\n  if (cVar1 == '\\0') {\n    uVar2 = 0xffffffd3;\n  }\n  else {\n    iVar3 = get_breaker_by_id(param_1);\n    uVar2 = *(undefined4 *)(*(int *)(iVar3 + 8) + 8);\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_count_outlets_on_breaker",
+                        "breaker_id_is_installed",
+                        "get_breaker_by_id"
+                    ],
+                    "calling_functions": [
+                        "get_count_outlets_on_breaker",
+                        "is_too_many_outlets_on_breaker"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_amp_rating_of_breaker",
+                "func_c_signature": "uint get_amp_rating_of_breaker(undefined4 param_1)",
+                "decompiled_code": "uint get_amp_rating_of_breaker(undefined4 param_1) {\n  char cVar1;\n  uint uVar2;\n  int iVar3;\n  \n  cVar1 = breaker_id_is_installed(param_1);\n  if (cVar1 == '\\0') {\n    uVar2 = 0xffffffd3;\n  }\n  else {\n    iVar3 = get_breaker_by_id(param_1);\n    uVar2 = (uint)*(byte *)(iVar3 + 4);\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_amp_rating_of_breaker",
+                        "breaker_id_is_installed",
+                        "get_breaker_by_id"
+                    ],
+                    "calling_functions": [
+                        "get_amp_rating_of_breaker",
+                        "is_too_much_amp_load_on_breaker",
+                        "is_too_many_outlets_on_breaker"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_amp_rating_of_outlet",
+                "func_c_signature": "uint get_amp_rating_of_outlet(undefined4 param_1)",
+                "decompiled_code": "uint get_amp_rating_of_outlet(undefined4 param_1) {\n  int iVar1;\n  uint uVar2;\n  \n  iVar1 = get_outlet_by_id(param_1);\n  if (iVar1 == 0) {\n    uVar2 = 0xffffffd1;\n  }\n  else {\n    uVar2 = (uint)*(byte *)(iVar1 + 0x24);\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_amp_rating_of_outlet",
+                        "get_outlet_by_id"
+                    ],
+                    "calling_functions": [
+                        "get_amp_rating_of_outlet",
+                        "is_too_much_amp_load_on_outlet",
+                        "is_too_much_amp_load_on_one_outlet_receptacle"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_amp_rating_of_splitter",
+                "func_c_signature": "uint get_amp_rating_of_splitter(undefined4 param_1)",
+                "decompiled_code": "uint get_amp_rating_of_splitter(undefined4 param_1) {\n  int iVar1;\n  uint uVar2;\n  \n  iVar1 = get_splitter_by_id(param_1);\n  if (iVar1 == 0) {\n    uVar2 = 0xffffffd0;\n  }\n  else {\n    uVar2 = (uint)*(byte *)(iVar1 + 4);\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_amp_rating_of_splitter",
+                        "get_splitter_by_id"
+                    ],
+                    "calling_functions": [
+                        "get_amp_rating_of_splitter",
+                        "is_too_much_amp_load_on_splitter",
+                        "is_too_much_amp_load_on_one_splitter_receptacle"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_amp_rating_of_light_string",
+                "func_c_signature": "longdouble get_amp_rating_of_light_string(undefined4 param_1)",
+                "decompiled_code": "longdouble get_amp_rating_of_light_string(undefined4 param_1) {\n  int iVar1;\n  float fVar2;\n  longdouble lVar3;\n  \n  iVar1 = get_light_string_by_id(param_1);\n  fVar2 = DAT_00014004;\n  if (iVar1 != 0) {\n    lVar3 = (longdouble)get_max_amps_of_light_string();\n    fVar2 = (float)lVar3;\n  }\n  return (longdouble)fVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_amp_rating_of_light_string",
+                        "get_light_string_by_id",
+                        "get_max_amps_of_light_string"
+                    ],
+                    "calling_functions": [
+                        "get_amp_rating_of_light_string",
+                        "is_too_much_amp_load_on_light_string"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_amp_rating_of_receptacle",
+                "func_c_signature": "uint get_amp_rating_of_receptacle(undefined4 param_1)",
+                "decompiled_code": "uint get_amp_rating_of_receptacle(undefined4 param_1) {\n  int iVar1;\n  uint uVar2;\n  \n  iVar1 = get_receptacle_by_id(param_1);\n  if (iVar1 == 0) {\n    uVar2 = 0xffffffd2;\n  }\n  else {\n    uVar2 = (uint)*(byte *)(iVar1 + 0xc);\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_amp_rating_of_receptacle",
+                        "get_receptacle_by_id"
+                    ],
+                    "calling_functions": [
+                        "get_amp_rating_of_receptacle",
+                        "is_too_much_amp_load_on_receptacle"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_number_of_breakers_installed_in_load_center",
+                "func_c_signature": "uint get_number_of_breakers_installed_in_load_center(void)",
+                "decompiled_code": "uint get_number_of_breakers_installed_in_load_center(void) {\n  char cVar1;\n  uint uVar2;\n  \n  cVar1 = load_center_is_created();\n  if (cVar1 == '\\0') {\n    uVar2 = 0xffffffd6;\n  }\n  else {\n    uVar2 = (uint)*(byte *)(e_model + 1);\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_number_of_breakers_installed_in_load_center",
+                        "load_center_is_created"
+                    ],
+                    "calling_functions": [
+                        "get_outlet_by_id",
+                        "get_splitter_by_id",
+                        "get_light_string_by_id",
+                        "get_number_of_breakers_installed_in_load_center",
+                        "get_total_amp_load_on_load_center"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_total_breaker_space_count",
+                "func_c_signature": "uint get_total_breaker_space_count(void)",
+                "decompiled_code": "uint get_total_breaker_space_count(void) {\n  char cVar1;\n  uint uVar2;\n  \n  cVar1 = load_center_is_created();\n  if (cVar1 == '\\0') {\n    uVar2 = 0xffffffd6;\n  }\n  else {\n    uVar2 = (uint)*e_model;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_total_breaker_space_count",
+                        "load_center_is_created"
+                    ],
+                    "calling_functions": [
+                        "get_total_breaker_space_count"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_amp_rating_of_load_center",
+                "func_c_signature": "undefined4 get_amp_rating_of_load_center(void)",
+                "decompiled_code": "undefined4 get_amp_rating_of_load_center(void) {\n  char cVar1;\n  undefined4 uVar2;\n  \n  cVar1 = load_center_is_created();\n  if (cVar1 == '\\0') {\n    uVar2 = 0xffffffd6;\n  }\n  else {\n    uVar2 = *(undefined4 *)(e_model + 4);\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_amp_rating_of_load_center",
+                        "load_center_is_created"
+                    ],
+                    "calling_functions": [
+                        "get_amp_rating_of_load_center",
+                        "is_too_much_amp_load_on_load_center"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_total_amp_load_on_load_center",
+                "func_c_signature": "longdouble get_total_amp_load_on_load_center(void)",
+                "decompiled_code": "longdouble get_total_amp_load_on_load_center(void) {\n  char cVar1;\n  int iVar2;\n  longdouble lVar3;\n  byte local_11;\n  float local_10;\n  \n  cVar1 = load_center_is_created();\n  if (cVar1 == '\\0') {\n    lVar3 = (longdouble)DAT_00014008;\n  }\n  else {\n    local_10 = 0.0;\n    cVar1 = get_number_of_breakers_installed_in_load_center();\n    iVar2 = (int)cVar1;\n    if (iVar2 < 0) {\n      lVar3 = (longdouble)iVar2;\n    }\n    else {\n      for (local_11 = 0; (int)(uint)local_11 < iVar2; local_11 = local_11 + 1) {\n        lVar3 = (longdouble)get_total_amp_load_on_breaker_by_breaker_id(local_11);\n        local_10 = (float)((longdouble)local_10 + lVar3);\n      }\n      lVar3 = (longdouble)local_10;\n    }\n  }\n  return lVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_total_amp_load_on_load_center",
+                        "load_center_is_created",
+                        "get_number_of_breakers_installed_in_load_center",
+                        "get_total_amp_load_on_breaker_by_breaker_id"
+                    ],
+                    "calling_functions": [
+                        "get_total_amp_load_on_load_center",
+                        "is_too_much_amp_load_on_load_center"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_total_amp_load_on_breaker_by_breaker_id",
+                "func_c_signature": "longdouble get_total_amp_load_on_breaker_by_breaker_id(undefined4 param_1)",
+                "decompiled_code": "longdouble get_total_amp_load_on_breaker_by_breaker_id(undefined4 param_1) {\n  char cVar1;\n  undefined4 uVar2;\n  undefined4 *puVar3;\n  longdouble lVar4;\n  undefined4 *local_14;\n  float local_10;\n  \n  cVar1 = breaker_id_is_installed(param_1);\n  local_10 = DAT_0001400c;\n  if (cVar1 != '\\0') {\n    local_10 = 0.0;\n    uVar2 = get_outlet_list_on_breaker(param_1);\n    for (local_14 = (undefined4 *)get_first_node(uVar2); puVar3 = (undefined4 *)get_list_tail(uVar2)\n        , local_14 != puVar3; local_14 = (undefined4 *)local_14[1]) {\n      lVar4 = (longdouble)get_total_amp_load_on_outlet_by_outlet_va(*local_14);\n      local_10 = (float)((longdouble)local_10 + lVar4);\n    }\n  }\n  return (longdouble)local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_total_amp_load_on_breaker_by_breaker_id",
+                        "breaker_id_is_installed",
+                        "get_outlet_list_on_breaker",
+                        "get_first_node",
+                        "get_list_tail",
+                        "get_total_amp_load_on_outlet_by_outlet_va"
+                    ],
+                    "calling_functions": [
+                        "get_total_amp_load_on_load_center",
+                        "get_total_amp_load_on_breaker_by_breaker_id",
+                        "is_too_much_amp_load_on_breaker"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_total_amp_load_on_outlet_by_outlet_va",
+                "func_c_signature": "longdouble get_total_amp_load_on_outlet_by_outlet_va(int param_1)",
+                "decompiled_code": "longdouble get_total_amp_load_on_outlet_by_outlet_va(int param_1) {\n  longdouble lVar1;\n  longdouble lVar2;\n  \n  lVar1 = (longdouble)get_total_amp_load_on_receptacle_by_receptacle_va(param_1 + 4);\n  lVar2 = (longdouble)get_total_amp_load_on_receptacle_by_receptacle_va(param_1 + 0x14);\n  return (longdouble)(float)((longdouble)(float)((longdouble)0.0 + lVar1) + lVar2);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_total_amp_load_on_outlet_by_outlet_va",
+                        "get_total_amp_load_on_receptacle_by_receptacle_va"
+                    ],
+                    "calling_functions": [
+                        "get_total_amp_load_on_breaker_by_breaker_id",
+                        "get_total_amp_load_on_outlet_by_outlet_va",
+                        "get_total_amp_load_on_outlet_by_outlet_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_total_amp_load_on_outlet_by_outlet_id",
+                "func_c_signature": "longdouble get_total_amp_load_on_outlet_by_outlet_id(undefined4 param_1)",
+                "decompiled_code": "longdouble get_total_amp_load_on_outlet_by_outlet_id(undefined4 param_1) {\n  int iVar1;\n  float fVar2;\n  longdouble lVar3;\n  \n  iVar1 = get_outlet_by_id(param_1);\n  fVar2 = DAT_00014010;\n  if (iVar1 != 0) {\n    lVar3 = (longdouble)get_total_amp_load_on_outlet_by_outlet_va(iVar1);\n    fVar2 = (float)lVar3;\n  }\n  return (longdouble)fVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_total_amp_load_on_outlet_by_outlet_id",
+                        "get_outlet_by_id",
+                        "get_total_amp_load_on_outlet_by_outlet_va"
+                    ],
+                    "calling_functions": [
+                        "get_total_amp_load_on_outlet_by_outlet_id",
+                        "is_too_much_amp_load_on_outlet"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_total_amp_load_on_receptacle_by_receptacle_va",
+                "func_c_signature": "longdouble get_total_amp_load_on_receptacle_by_receptacle_va(int param_1)",
+                "decompiled_code": "longdouble get_total_amp_load_on_receptacle_by_receptacle_va(int param_1) {\n  int iVar1;\n  longdouble lVar2;\n  float local_10;\n  \n  local_10 = 0.0;\n  iVar1 = get_receptacle_load_type(param_1);\n  if (iVar1 == 0) {\n    lVar2 = (longdouble)get_total_amp_load_on_splitter_by_splitter_va(*(undefined4 *)(param_1 + 8));\n    local_10 = (float)lVar2;\n  }\n  else {\n    iVar1 = get_receptacle_load_type(param_1);\n    if (iVar1 == 1) {\n      lVar2 = (longdouble)\n              get_total_amp_load_on_light_string_by_light_string_va(*(undefined4 *)(param_1 + 8));\n      local_10 = (float)lVar2;\n    }\n  }\n  return (longdouble)local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_total_amp_load_on_receptacle_by_receptacle_va",
+                        "get_receptacle_load_type",
+                        "get_total_amp_load_on_splitter_by_splitter_va",
+                        "get_total_amp_load_on_light_string_by_light_string_va"
+                    ],
+                    "calling_functions": [
+                        "get_total_amp_load_on_outlet_by_outlet_va",
+                        "get_total_amp_load_on_receptacle_by_receptacle_va",
+                        "get_total_amp_load_on_receptacle_by_receptacle_id",
+                        "get_total_amp_load_on_splitter_by_splitter_va",
+                        "get_total_amp_load_on_light_string_by_light_string_va",
+                        "get_max_receptacle_amp_load_on_outlet_by_outlet_va",
+                        "get_max_receptacle_amp_load_on_splitter_by_splitter_va"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_total_amp_load_on_receptacle_by_receptacle_id",
+                "func_c_signature": "longdouble get_total_amp_load_on_receptacle_by_receptacle_id(undefined4 param_1)",
+                "decompiled_code": "longdouble get_total_amp_load_on_receptacle_by_receptacle_id(undefined4 param_1) {\n  int iVar1;\n  float fVar2;\n  longdouble lVar3;\n  \n  iVar1 = get_receptacle_by_id(param_1);\n  fVar2 = DAT_00014014;\n  if (iVar1 != 0) {\n    lVar3 = (longdouble)get_total_amp_load_on_receptacle_by_receptacle_va(iVar1);\n    fVar2 = (float)lVar3;\n  }\n  return (longdouble)fVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_total_amp_load_on_receptacle_by_receptacle_id",
+                        "get_receptacle_by_id",
+                        "get_total_amp_load_on_receptacle_by_receptacle_va"
+                    ],
+                    "calling_functions": [
+                        "get_total_amp_load_on_receptacle_by_receptacle_id",
+                        "is_too_much_amp_load_on_receptacle"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_total_amp_load_on_splitter_by_splitter_va",
+                "func_c_signature": "longdouble get_total_amp_load_on_splitter_by_splitter_va(int param_1)",
+                "decompiled_code": "longdouble get_total_amp_load_on_splitter_by_splitter_va(int param_1) {\n  longdouble lVar1;\n  int local_14;\n  float local_10;\n  \n  local_10 = 0.0;\n  for (local_14 = 0; local_14 < (int)(uint)*(byte *)(param_1 + 6); local_14 = local_14 + 1) {\n    lVar1 = (longdouble)\n            get_total_amp_load_on_receptacle_by_receptacle_va(param_1 + local_14 * 0x10 + 8);\n    local_10 = (float)((longdouble)local_10 + lVar1);\n  }\n  return (longdouble)local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_total_amp_load_on_splitter_by_splitter_va",
+                        "get_total_amp_load_on_receptacle_by_receptacle_va"
+                    ],
+                    "calling_functions": [
+                        "get_total_amp_load_on_receptacle_by_receptacle_va",
+                        "get_total_amp_load_on_splitter_by_splitter_va",
+                        "get_total_amp_load_on_splitter_by_splitter_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_total_amp_load_on_splitter_by_splitter_id",
+                "func_c_signature": "longdouble get_total_amp_load_on_splitter_by_splitter_id(undefined4 param_1)",
+                "decompiled_code": "longdouble get_total_amp_load_on_splitter_by_splitter_id(undefined4 param_1) {\n  int iVar1;\n  float fVar2;\n  longdouble lVar3;\n  \n  iVar1 = get_splitter_by_id(param_1);\n  fVar2 = DAT_00014018;\n  if (iVar1 != 0) {\n    lVar3 = (longdouble)get_total_amp_load_on_splitter_by_splitter_va(iVar1);\n    fVar2 = (float)lVar3;\n  }\n  return (longdouble)fVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_total_amp_load_on_splitter_by_splitter_id",
+                        "get_splitter_by_id",
+                        "get_total_amp_load_on_splitter_by_splitter_va"
+                    ],
+                    "calling_functions": [
+                        "get_total_amp_load_on_splitter_by_splitter_id",
+                        "is_too_much_amp_load_on_splitter"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_total_amp_load_on_light_string_by_light_string_va",
+                "func_c_signature": "longdouble get_total_amp_load_on_light_string_by_light_string_va(int param_1)",
+                "decompiled_code": "longdouble get_total_amp_load_on_light_string_by_light_string_va(int param_1) {\n  longdouble lVar1;\n  longdouble lVar2;\n  \n  lVar1 = (longdouble)convert_watts_to_amps(*(undefined4 *)(param_1 + 8));\n  lVar2 = (longdouble)get_total_amp_load_on_receptacle_by_receptacle_va(param_1 + 0xc);\n  return (longdouble)(float)((longdouble)(float)((longdouble)0.0 + lVar1) + lVar2);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_total_amp_load_on_light_string_by_light_string_va",
+                        "convert_watts_to_amps",
+                        "get_total_amp_load_on_receptacle_by_receptacle_va"
+                    ],
+                    "calling_functions": [
+                        "get_total_amp_load_on_receptacle_by_receptacle_va",
+                        "get_total_amp_load_on_light_string_by_light_string_va",
+                        "get_total_amp_load_on_light_string_by_light_string_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_total_amp_load_on_light_string_by_light_string_id",
+                "func_c_signature": "longdouble get_total_amp_load_on_light_string_by_light_string_id(undefined4 param_1)",
+                "decompiled_code": "longdouble get_total_amp_load_on_light_string_by_light_string_id(undefined4 param_1) {\n  int iVar1;\n  float fVar2;\n  longdouble lVar3;\n  \n  iVar1 = get_light_string_by_id(param_1);\n  fVar2 = DAT_00014004;\n  if (iVar1 != 0) {\n    lVar3 = (longdouble)get_total_amp_load_on_light_string_by_light_string_va(iVar1);\n    fVar2 = (float)lVar3;\n  }\n  return (longdouble)fVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_total_amp_load_on_light_string_by_light_string_id",
+                        "get_light_string_by_id",
+                        "get_total_amp_load_on_light_string_by_light_string_va"
+                    ],
+                    "calling_functions": [
+                        "get_total_amp_load_on_light_string_by_light_string_id",
+                        "is_too_much_amp_load_on_light_string"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_max_receptacle_amp_load_on_outlet_by_outlet_va",
+                "func_c_signature": "longdouble get_max_receptacle_amp_load_on_outlet_by_outlet_va(int param_1)",
+                "decompiled_code": "longdouble get_max_receptacle_amp_load_on_outlet_by_outlet_va(int param_1) {\n  float fVar1;\n  longdouble lVar2;\n  longdouble lVar3;\n  \n  lVar2 = (longdouble)get_total_amp_load_on_receptacle_by_receptacle_va(param_1 + 4);\n  lVar3 = (longdouble)get_total_amp_load_on_receptacle_by_receptacle_va(param_1 + 0x14);\n  fVar1 = (float)lVar3;\n  if (fVar1 < (float)lVar2) {\n    fVar1 = (float)lVar2;\n  }\n  return (longdouble)fVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_max_receptacle_amp_load_on_outlet_by_outlet_va",
+                        "get_total_amp_load_on_receptacle_by_receptacle_va"
+                    ],
+                    "calling_functions": [
+                        "get_max_receptacle_amp_load_on_outlet_by_outlet_va",
+                        "get_max_receptacle_amp_load_on_outlet_by_outlet_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_max_receptacle_amp_load_on_outlet_by_outlet_id",
+                "func_c_signature": "longdouble get_max_receptacle_amp_load_on_outlet_by_outlet_id(undefined4 param_1)",
+                "decompiled_code": "longdouble get_max_receptacle_amp_load_on_outlet_by_outlet_id(undefined4 param_1) {\n  int iVar1;\n  float fVar2;\n  longdouble lVar3;\n  \n  iVar1 = get_outlet_by_id(param_1);\n  fVar2 = DAT_00014010;\n  if (iVar1 != 0) {\n    lVar3 = (longdouble)get_max_receptacle_amp_load_on_outlet_by_outlet_va(iVar1);\n    fVar2 = (float)lVar3;\n  }\n  return (longdouble)fVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_max_receptacle_amp_load_on_outlet_by_outlet_id",
+                        "get_outlet_by_id",
+                        "get_max_receptacle_amp_load_on_outlet_by_outlet_va"
+                    ],
+                    "calling_functions": [
+                        "get_max_receptacle_amp_load_on_outlet_by_outlet_id",
+                        "is_too_much_amp_load_on_one_outlet_receptacle"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_max_receptacle_amp_load_on_splitter_by_splitter_va",
+                "func_c_signature": "longdouble get_max_receptacle_amp_load_on_splitter_by_splitter_va(int param_1)",
+                "decompiled_code": "longdouble get_max_receptacle_amp_load_on_splitter_by_splitter_va(int param_1) {\n  longdouble lVar1;\n  int local_14;\n  float local_10;\n  \n  local_10 = 0.0;\n  for (local_14 = 0; local_14 < (int)(uint)*(byte *)(param_1 + 6); local_14 = local_14 + 1) {\n    lVar1 = (longdouble)\n            get_total_amp_load_on_receptacle_by_receptacle_va(param_1 + local_14 * 0x10 + 8);\n    if (local_10 < (float)lVar1) {\n      local_10 = (float)lVar1;\n    }\n  }\n  return (longdouble)local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_max_receptacle_amp_load_on_splitter_by_splitter_va",
+                        "get_total_amp_load_on_receptacle_by_receptacle_va"
+                    ],
+                    "calling_functions": [
+                        "get_max_receptacle_amp_load_on_splitter_by_splitter_va",
+                        "get_max_receptacle_amp_load_on_splitter_by_splitter_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_max_receptacle_amp_load_on_splitter_by_splitter_id",
+                "func_c_signature": "longdouble get_max_receptacle_amp_load_on_splitter_by_splitter_id(undefined4 param_1)",
+                "decompiled_code": "longdouble get_max_receptacle_amp_load_on_splitter_by_splitter_id(undefined4 param_1) {\n  int iVar1;\n  float fVar2;\n  longdouble lVar3;\n  \n  iVar1 = get_splitter_by_id(param_1);\n  fVar2 = DAT_00014018;\n  if (iVar1 != 0) {\n    lVar3 = (longdouble)get_max_receptacle_amp_load_on_splitter_by_splitter_va(iVar1);\n    fVar2 = (float)lVar3;\n  }\n  return (longdouble)fVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_max_receptacle_amp_load_on_splitter_by_splitter_id",
+                        "get_splitter_by_id",
+                        "get_max_receptacle_amp_load_on_splitter_by_splitter_va"
+                    ],
+                    "calling_functions": [
+                        "get_max_receptacle_amp_load_on_splitter_by_splitter_id",
+                        "is_too_much_amp_load_on_one_splitter_receptacle"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "init_electric_model",
+                "func_c_signature": "undefined4 init_electric_model(undefined4 param_1)",
+                "decompiled_code": "undefined4 init_electric_model(undefined4 param_1) {\n  char cVar1;\n  undefined4 uVar2;\n  \n  cVar1 = load_center_is_created();\n  if (cVar1 == '\\x01') {\n    uVar2 = 0xffffffd7;\n  }\n  else {\n    e_model = get_new_load_center_by_model_id(param_1);\n    if (e_model == 0) {\n      uVar2 = 0xffffffd4;\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "init_electric_model",
+                        "load_center_is_created",
+                        "get_new_load_center_by_model_id"
+                    ],
+                    "calling_functions": [
+                        "init_electric_model",
+                        "do_build"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_breaker_to_load_center",
+                "func_c_signature": "undefined4 add_breaker_to_load_center(undefined4 param_1,uint *param_2)",
+                "decompiled_code": "undefined4 add_breaker_to_load_center(undefined4 param_1,uint *param_2) {\n  byte bVar1;\n  char cVar2;\n  undefined4 uVar3;\n  \n  cVar2 = load_center_is_created();\n  if (cVar2 == '\\0') {\n    uVar3 = 0xffffffd6;\n  }\n  else {\n    cVar2 = load_center_breaker_spaces_are_full();\n    if (cVar2 == '\\x01') {\n      uVar3 = 0xffffffd5;\n    }\n    else {\n      cVar2 = get_new_breaker_by_model_id\n                        (param_1,(uint)*(byte *)(e_model + 1) * 0xc + e_model + 8,\n                         *(undefined *)(e_model + 1));\n      if (cVar2 == -1) {\n        uVar3 = 0xffffffd4;\n      }\n      else {\n        bVar1 = *(byte *)(e_model + 1);\n        *(byte *)(e_model + 1) = bVar1 + 1;\n        *param_2 = (uint)bVar1;\n        uVar3 = 0;\n      }\n    }\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_breaker_to_load_center",
+                        "load_center_is_created",
+                        "load_center_breaker_spaces_are_full",
+                        "get_new_breaker_by_model_id"
+                    ],
+                    "calling_functions": [
+                        "add_breaker_to_load_center",
+                        "do_build"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_outlet_to_breaker",
+                "func_c_signature": "undefined4 add_outlet_to_breaker(undefined4 param_1,undefined4 param_2,undefined4 *param_3)",
+                "decompiled_code": "undefined4 add_outlet_to_breaker(undefined4 param_1,undefined4 param_2,undefined4 *param_3) {\n  char cVar1;\n  undefined4 uVar2;\n  int iVar3;\n  undefined4 *puVar4;\n  \n  cVar1 = load_center_is_created();\n  if (cVar1 == '\\0') {\n    uVar2 = 0xffffffd6;\n  }\n  else {\n    iVar3 = get_breaker_by_id(param_2);\n    if (iVar3 == 0) {\n      uVar2 = 0xffffffd3;\n    }\n    else {\n      puVar4 = (undefined4 *)get_new_outlet_by_model_id(param_1);\n      if (puVar4 == (undefined4 *)0x0) {\n        uVar2 = 0xffffffd4;\n      }\n      else if (*(byte *)(iVar3 + 4) < *(byte *)(puVar4 + 9)) {\n        deallocate(puVar4,0x28);\n        uVar2 = 0xffffffcd;\n      }\n      else {\n        *param_3 = *puVar4;\n        param_3[1] = puVar4[1];\n        param_3[2] = puVar4[5];\n        *(undefined *)(param_3 + 9) = 2;\n        uVar2 = node_create(puVar4);\n        uVar2 = list_append(*(undefined4 *)(iVar3 + 8),uVar2);\n      }\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_outlet_to_breaker",
+                        "load_center_is_created",
+                        "get_breaker_by_id",
+                        "get_new_outlet_by_model_id",
+                        "deallocate",
+                        "node_create",
+                        "list_append"
+                    ],
+                    "calling_functions": [
+                        "add_outlet_to_breaker",
+                        "do_build"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_n_way_splitter_to_receptacle",
+                "func_c_signature": "undefined4\nadd_n_way_splitter_to_receptacle(undefined4 param_1,undefined4 param_2,undefined4 *param_3)",
+                "decompiled_code": "undefined4\nadd_n_way_splitter_to_receptacle(undefined4 param_1,undefined4 param_2,undefined4 *param_3) {\n  char cVar1;\n  undefined4 uVar2;\n  int iVar3;\n  undefined4 *puVar4;\n  int local_10;\n  \n  cVar1 = load_center_is_created();\n  if (cVar1 == '\\0') {\n    uVar2 = 0xffffffd6;\n  }\n  else {\n    iVar3 = get_receptacle_by_id(param_2);\n    if (iVar3 == 0) {\n      uVar2 = 0xffffffd2;\n    }\n    else {\n      cVar1 = receptacle_is_loaded(iVar3);\n      if (cVar1 == '\\x01') {\n        uVar2 = 0xffffffce;\n      }\n      else {\n        puVar4 = (undefined4 *)get_new_n_way_splitter_by_model_id(param_1);\n        if (puVar4 == (undefined4 *)0x0) {\n          uVar2 = 0xffffffd4;\n        }\n        else {\n          *(undefined4 *)(iVar3 + 4) = 0;\n          *(undefined4 **)(iVar3 + 8) = puVar4;\n          *(undefined *)(iVar3 + 0xc) = *(undefined *)(puVar4 + 1);\n          *param_3 = *puVar4;\n          *(undefined *)(param_3 + 9) = *(undefined *)((int)puVar4 + 6);\n          for (local_10 = 0; local_10 < (int)(uint)*(byte *)((int)puVar4 + 6);\n              local_10 = local_10 + 1) {\n            param_3[local_10 + 1] = puVar4[local_10 * 4 + 2];\n          }\n          uVar2 = 0;\n        }\n      }\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_n_way_splitter_to_receptacle",
+                        "load_center_is_created",
+                        "get_receptacle_by_id",
+                        "receptacle_is_loaded",
+                        "get_new_n_way_splitter_by_model_id"
+                    ],
+                    "calling_functions": [
+                        "add_n_way_splitter_to_receptacle",
+                        "do_build"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_light_string_to_receptacle",
+                "func_c_signature": "undefined4 add_light_string_to_receptacle(undefined4 param_1,undefined4 param_2,undefined4 *param_3)",
+                "decompiled_code": "undefined4 add_light_string_to_receptacle(undefined4 param_1,undefined4 param_2,undefined4 *param_3) {\n  char cVar1;\n  undefined4 uVar2;\n  int iVar3;\n  undefined4 *puVar4;\n  \n  cVar1 = load_center_is_created();\n  if (cVar1 == '\\0') {\n    uVar2 = 0xffffffd6;\n  }\n  else {\n    iVar3 = get_receptacle_by_id(param_2);\n    if (iVar3 == 0) {\n      uVar2 = 0xffffffd2;\n    }\n    else {\n      cVar1 = receptacle_is_loaded(iVar3);\n      if (cVar1 == '\\x01') {\n        uVar2 = 0xffffffce;\n      }\n      else {\n        puVar4 = (undefined4 *)get_new_light_string_by_model_id(param_1);\n        if (puVar4 == (undefined4 *)0x0) {\n          uVar2 = 0xffffffd4;\n        }\n        else {\n          *(undefined4 *)(iVar3 + 4) = 1;\n          *(undefined4 **)(iVar3 + 8) = puVar4;\n          *param_3 = *puVar4;\n          *(undefined *)(param_3 + 9) = 1;\n          param_3[1] = puVar4[3];\n          uVar2 = 0;\n        }\n      }\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_light_string_to_receptacle",
+                        "load_center_is_created",
+                        "get_receptacle_by_id",
+                        "receptacle_is_loaded",
+                        "get_new_light_string_by_model_id"
+                    ],
+                    "calling_functions": [
+                        "add_light_string_to_receptacle",
+                        "do_build"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            }
+        ],
+        "components.c": [
+            {
+                "func_name": "create_load_center",
+                "func_c_signature": "byte * create_load_center(undefined4 param_1,byte param_2)",
+                "decompiled_code": "byte * create_load_center(undefined4 param_1,byte param_2) {\n  int iVar1;\n  byte *local_10 [2];\n  \n  local_10[0] = (byte *)0x0;\n  iVar1 = allocate((uint)param_2 * 0xc + 8,0,local_10,0x1261d);\n  if (iVar1 != 0) {\n    _terminate(5);\n  }\n  *local_10[0] = param_2;\n  local_10[0][1] = 0;\n  *(undefined4 *)(local_10[0] + 4) = param_1;\n  return local_10[0];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_load_center",
+                        "allocate",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "create_load_center",
+                        "get_new_load_center_by_model_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_breaker",
+                "func_c_signature": "void create_breaker(undefined param_1,uint *param_2,uint param_3)",
+                "decompiled_code": "void create_breaker(undefined param_1,uint *param_2,uint param_3) {\n  uint uVar1;\n  \n  *param_2 = param_3 & 0xff;\n  *(undefined *)(param_2 + 1) = param_1;\n  uVar1 = list_create_dup();\n  param_2[2] = uVar1;\n  if (param_2[2] == 0) {\n    _terminate(5);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_breaker",
+                        "list_create_dup",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "create_breaker",
+                        "get_new_breaker_by_model_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_receptacle",
+                "func_c_signature": "void create_receptacle(undefined param_1,int *param_2)",
+                "decompiled_code": "void create_receptacle(undefined param_1,int *param_2) {\n  int iVar1;\n  \n  iVar1 = next_receptacle_id + 1;\n  *param_2 = next_receptacle_id;\n  next_receptacle_id = iVar1;\n  param_2[1] = 2;\n  param_2[2] = 0;\n  *(undefined *)(param_2 + 3) = param_1;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_receptacle"
+                    ],
+                    "calling_functions": [
+                        "create_receptacle",
+                        "create_outlet",
+                        "create_n_way_splitter",
+                        "create_light_string"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_outlet",
+                "func_c_signature": "int * create_outlet(byte param_1)",
+                "decompiled_code": "int * create_outlet(byte param_1) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 uStack_3c;\n  undefined4 uStack_38;\n  int **ppiStack_34;\n  undefined4 uStack_30;\n  undefined auStack_2c [12];\n  byte local_20;\n  int *local_10 [2];\n  \n  puVar2 = (undefined4 *)auStack_2c;\n  uStack_30 = 0x1272f;\n  local_20 = param_1;\n  local_10[0] = (int *)0x0;\n  ppiStack_34 = local_10;\n  uStack_38 = 0;\n  uStack_3c = 0x28;\n  iVar1 = allocate();\n  if (iVar1 != 0) {\n    puVar2 = &uStack_3c;\n    uStack_3c = 5;\n    _terminate();\n  }\n  iVar1 = next_outlet_id + 1;\n  *local_10[0] = next_outlet_id;\n  next_outlet_id = iVar1;\n  *(int **)((int)puVar2 + -0xc) = local_10[0] + 1;\n  *(uint *)((int)puVar2 + -0x10) = (uint)local_20;\n  *(undefined4 *)((int)puVar2 + -0x14) = 0x1278b;\n  create_receptacle();\n  *(int **)((int)puVar2 + -0xc) = local_10[0] + 5;\n  *(uint *)((int)puVar2 + -0x10) = (uint)local_20;\n  *(undefined4 *)((int)puVar2 + -0x14) = 0x127a2;\n  create_receptacle();\n  *(byte *)(local_10[0] + 9) = local_20;\n  return local_10[0];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_outlet",
+                        "allocate",
+                        "_terminate",
+                        "create_receptacle"
+                    ],
+                    "calling_functions": [
+                        "create_outlet",
+                        "get_new_outlet_by_model_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_n_way_splitter",
+                "func_c_signature": "int * create_n_way_splitter(byte param_1)",
+                "decompiled_code": "int * create_n_way_splitter(byte param_1) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 uStack_3c;\n  undefined4 uStack_38;\n  int **ppiStack_34;\n  undefined4 uStack_30;\n  undefined auStack_2c [12];\n  byte local_20;\n  int *local_14;\n  int local_10;\n  \n  puVar2 = (undefined4 *)auStack_2c;\n  uStack_30 = 0x127c3;\n  local_20 = param_1;\n  local_14 = (int *)0x0;\n  ppiStack_34 = &local_14;\n  uStack_38 = 0;\n  uStack_3c = 0x88;\n  iVar1 = allocate();\n  if (iVar1 != 0) {\n    puVar2 = &uStack_3c;\n    uStack_3c = 5;\n    _terminate();\n  }\n  iVar1 = next_n_way_splitter_id + 1;\n  *local_14 = next_n_way_splitter_id;\n  next_n_way_splitter_id = iVar1;\n  *(undefined *)(local_14 + 1) = 0xf;\n  *(undefined *)((int)local_14 + 5) = 0xf;\n  *(byte *)((int)local_14 + 6) = local_20;\n  for (local_10 = 0; local_10 < (int)(uint)local_20; local_10 = local_10 + 1) {\n    *(int **)((int)puVar2 + -0xc) = local_14 + local_10 * 4 + 2;\n    *(undefined4 *)((int)puVar2 + -0x10) = 0xf;\n    *(undefined4 *)((int)puVar2 + -0x14) = 0x12848;\n    create_receptacle();\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_n_way_splitter",
+                        "allocate",
+                        "_terminate",
+                        "create_receptacle"
+                    ],
+                    "calling_functions": [
+                        "create_n_way_splitter",
+                        "get_new_n_way_splitter_by_model_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_light_string",
+                "func_c_signature": "int * create_light_string(int param_1,int param_2)",
+                "decompiled_code": "int * create_light_string(int param_1,int param_2) {\n  int iVar1;\n  undefined4 *puVar2;\n  undefined4 uStack_2c;\n  undefined4 uStack_28;\n  int **ppiStack_24;\n  undefined4 uStack_20;\n  undefined auStack_1c [12];\n  int *local_10 [2];\n  \n  puVar2 = (undefined4 *)auStack_1c;\n  uStack_20 = 0x1286c;\n  local_10[0] = (int *)0x0;\n  ppiStack_24 = local_10;\n  uStack_28 = 0;\n  uStack_2c = 0x1c;\n  iVar1 = allocate();\n  if (iVar1 != 0) {\n    puVar2 = &uStack_2c;\n    uStack_2c = 5;\n    _terminate();\n  }\n  iVar1 = next_light_string_id + 1;\n  *local_10[0] = next_light_string_id;\n  next_light_string_id = iVar1;\n  local_10[0][1] = param_1;\n  local_10[0][2] = param_2;\n  *(int **)((int)puVar2 + -0xc) = local_10[0] + 3;\n  *(undefined4 *)((int)puVar2 + -0x10) = 0xf;\n  *(undefined4 *)((int)puVar2 + -0x14) = 0x128d1;\n  create_receptacle();\n  return local_10[0];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_light_string",
+                        "allocate",
+                        "_terminate",
+                        "create_receptacle"
+                    ],
+                    "calling_functions": [
+                        "create_light_string",
+                        "get_new_light_string_by_model_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_max_amps_of_light_string",
+                "func_c_signature": "longdouble get_max_amps_of_light_string(void)",
+                "decompiled_code": "longdouble get_max_amps_of_light_string(void) {\n  return (longdouble)DAT_0001401c;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_max_amps_of_light_string"
+                    ],
+                    "calling_functions": [
+                        "get_amp_rating_of_light_string",
+                        "get_max_amps_of_light_string"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_new_load_center_by_model_id",
+                "func_c_signature": "undefined4 get_new_load_center_by_model_id(uint param_1)",
+                "decompiled_code": "undefined4 get_new_load_center_by_model_id(uint param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == 0x9c6a) {\n    uVar1 = create_load_center(400,0x2a);\n    return uVar1;\n  }\n  if (param_1 < 0x9c6b) {\n    if (param_1 == 0x9c68) {\n      uVar1 = create_load_center(400,0x28);\n      return uVar1;\n    }\n    if (param_1 < 0x9c69) {\n      if (param_1 == 0x9c5e) {\n        uVar1 = create_load_center(400,0x1e);\n        return uVar1;\n      }\n      if (param_1 < 0x9c5f) {\n        if (param_1 == 0x9c54) {\n          uVar1 = create_load_center(400,0x14);\n          return uVar1;\n        }\n        if (param_1 < 0x9c55) {\n          if (param_1 == 0x4e4a) {\n            uVar1 = create_load_center(200,0x2a);\n            return uVar1;\n          }\n          if (param_1 < 0x4e4b) {\n            if (param_1 == 0x4e48) {\n              uVar1 = create_load_center(200,0x28);\n              return uVar1;\n            }\n            if (param_1 < 0x4e49) {\n              if (param_1 == 0x4e3e) {\n                uVar1 = create_load_center(200,0x1e);\n                return uVar1;\n              }\n              if (param_1 < 0x4e3f) {\n                if (param_1 == 0x4e34) {\n                  uVar1 = create_load_center(200,0x14);\n                  return uVar1;\n                }\n                if (param_1 < 0x4e35) {\n                  if (param_1 == 0x3ab6) {\n                    uVar1 = create_load_center(0x96,0x1e);\n                    return uVar1;\n                  }\n                  if (param_1 < 0x3ab7) {\n                    if (param_1 == 0x3ab0) {\n                      uVar1 = create_load_center(0x96,0x18);\n                      return uVar1;\n                    }\n                    if (param_1 < 0x3ab1) {\n                      if (param_1 == 0x3aac) {\n                        uVar1 = create_load_center(0x96,0x14);\n                        return uVar1;\n                      }\n                      if (param_1 < 0x3aad) {\n                        if (param_1 == 0x2724) {\n                          uVar1 = create_load_center(100,0x14);\n                          return uVar1;\n                        }\n                        if (param_1 < 0x2725) {\n                          if (param_1 == 0x2718) {\n                            uVar1 = create_load_center(100,8);\n                            return uVar1;\n                          }\n                          if (param_1 == 0x2720) {\n                            uVar1 = create_load_center(100,0x10);\n                            return uVar1;\n                          }\n                        }\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_new_load_center_by_model_id",
+                        "create_load_center"
+                    ],
+                    "calling_functions": [
+                        "init_electric_model",
+                        "get_new_load_center_by_model_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_new_breaker_by_model_id",
+                "func_c_signature": "undefined get_new_breaker_by_model_id(int param_1,undefined4 param_2,undefined param_3)",
+                "decompiled_code": "undefined get_new_breaker_by_model_id(int param_1,undefined4 param_2,undefined param_3) {\n  undefined local_d;\n  \n  local_d = 0;\n  if (param_1 == 0xf) {\n    create_breaker(0xf,param_2,param_3,0x12bb7);\n  }\n  else if (param_1 == 0x14) {\n    create_breaker(0x14,param_2,param_3,0x12bb7);\n  }\n  else {\n    local_d = 0xff;\n  }\n  return local_d;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_new_breaker_by_model_id",
+                        "create_breaker"
+                    ],
+                    "calling_functions": [
+                        "add_breaker_to_load_center",
+                        "get_new_breaker_by_model_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_new_outlet_by_model_id",
+                "func_c_signature": "undefined4 get_new_outlet_by_model_id(int param_1)",
+                "decompiled_code": "undefined4 get_new_outlet_by_model_id(int param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == 0xf) {\n    uVar1 = create_outlet(0xf);\n  }\n  else if (param_1 == 0x14) {\n    uVar1 = create_outlet(0x14);\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_new_outlet_by_model_id",
+                        "create_outlet"
+                    ],
+                    "calling_functions": [
+                        "add_outlet_to_breaker",
+                        "get_new_outlet_by_model_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_new_n_way_splitter_by_model_id",
+                "func_c_signature": "undefined4 get_new_n_way_splitter_by_model_id(uint param_1)",
+                "decompiled_code": "undefined4 get_new_n_way_splitter_by_model_id(uint param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == 8) {\n    uVar1 = create_n_way_splitter(8);\n    return uVar1;\n  }\n  if (param_1 < 9) {\n    if (param_1 == 3) {\n      uVar1 = create_n_way_splitter(3);\n      return uVar1;\n    }\n    if (param_1 == 6) {\n      uVar1 = create_n_way_splitter(6);\n      return uVar1;\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_new_n_way_splitter_by_model_id",
+                        "create_n_way_splitter"
+                    ],
+                    "calling_functions": [
+                        "add_n_way_splitter_to_receptacle",
+                        "get_new_n_way_splitter_by_model_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_new_light_string_by_model_id",
+                "func_c_signature": "undefined4 get_new_light_string_by_model_id(uint param_1)",
+                "decompiled_code": "undefined4 get_new_light_string_by_model_id(uint param_1) {\n  undefined4 uVar1;\n  \n  if (param_1 == 9) {\n    uVar1 = create_light_string(9,DAT_0001402c);\n    return uVar1;\n  }\n  if (param_1 < 10) {\n    if (param_1 == 7) {\n      uVar1 = create_light_string(7,DAT_00014028);\n      return uVar1;\n    }\n    if (param_1 < 8) {\n      if (param_1 == 5) {\n        uVar1 = create_light_string(5,DAT_00014020);\n        return uVar1;\n      }\n      if (param_1 == 6) {\n        uVar1 = create_light_string(6,DAT_00014024);\n        return uVar1;\n      }\n    }\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_new_light_string_by_model_id",
+                        "create_light_string"
+                    ],
+                    "calling_functions": [
+                        "add_light_string_to_receptacle",
+                        "get_new_light_string_by_model_id"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            }
+        ],
+        "examine.c": [
+            {
+                "func_name": "is_too_much_amp_load_on_load_center",
+                "func_c_signature": "bool is_too_much_amp_load_on_load_center(void)",
+                "decompiled_code": "bool is_too_much_amp_load_on_load_center(void) {\n  int iVar1;\n  longdouble lVar2;\n  \n  lVar2 = (longdouble)get_total_amp_load_on_load_center();\n  iVar1 = get_amp_rating_of_load_center();\n  return (float)iVar1 < (float)lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_too_much_amp_load_on_load_center",
+                        "get_total_amp_load_on_load_center",
+                        "get_amp_rating_of_load_center"
+                    ],
+                    "calling_functions": [
+                        "is_too_much_amp_load_on_load_center",
+                        "is_electrical_panel_overloaded"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_too_much_amp_load_on_breaker",
+                "func_c_signature": "bool is_too_much_amp_load_on_breaker(undefined4 param_1)",
+                "decompiled_code": "bool is_too_much_amp_load_on_breaker(undefined4 param_1) {\n  char cVar1;\n  longdouble lVar2;\n  \n  lVar2 = (longdouble)get_total_amp_load_on_breaker_by_breaker_id(param_1);\n  cVar1 = get_amp_rating_of_breaker(param_1);\n  return DAT_00014030 * (double)(short)cVar1 < (double)lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_too_much_amp_load_on_breaker",
+                        "get_total_amp_load_on_breaker_by_breaker_id",
+                        "get_amp_rating_of_breaker"
+                    ],
+                    "calling_functions": [
+                        "is_too_much_amp_load_on_breaker",
+                        "is_breaker_overloaded"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_too_many_outlets_on_breaker",
+                "func_c_signature": "bool is_too_many_outlets_on_breaker(undefined4 param_1)",
+                "decompiled_code": "bool is_too_many_outlets_on_breaker(undefined4 param_1) {\n  char cVar1;\n  uint uVar2;\n  bool local_d;\n  \n  uVar2 = get_count_outlets_on_breaker(param_1);\n  local_d = false;\n  cVar1 = get_amp_rating_of_breaker(param_1);\n  if (cVar1 == '\\x0f') {\n    local_d = 8 < uVar2;\n  }\n  else if (cVar1 == '\\x14') {\n    if (10 < uVar2) {\n      local_d = true;\n    }\n  }\n  else {\n    local_d = false;\n  }\n  return local_d;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_too_many_outlets_on_breaker",
+                        "get_count_outlets_on_breaker",
+                        "get_amp_rating_of_breaker"
+                    ],
+                    "calling_functions": [
+                        "is_too_many_outlets_on_breaker",
+                        "is_breaker_overloaded"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_too_much_amp_load_on_outlet",
+                "func_c_signature": "bool is_too_much_amp_load_on_outlet(undefined4 param_1)",
+                "decompiled_code": "bool is_too_much_amp_load_on_outlet(undefined4 param_1) {\n  char cVar1;\n  longdouble lVar2;\n  \n  lVar2 = (longdouble)get_total_amp_load_on_outlet_by_outlet_id(param_1);\n  cVar1 = get_amp_rating_of_outlet(param_1);\n  return DAT_00014030 * (double)(short)cVar1 < (double)lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_too_much_amp_load_on_outlet",
+                        "get_total_amp_load_on_outlet_by_outlet_id",
+                        "get_amp_rating_of_outlet"
+                    ],
+                    "calling_functions": [
+                        "is_too_much_amp_load_on_outlet",
+                        "is_outlet_overloaded"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_too_much_amp_load_on_one_outlet_receptacle",
+                "func_c_signature": "bool is_too_much_amp_load_on_one_outlet_receptacle(undefined4 param_1)",
+                "decompiled_code": "bool is_too_much_amp_load_on_one_outlet_receptacle(undefined4 param_1) {\n  char cVar1;\n  longdouble lVar2;\n  \n  lVar2 = (longdouble)get_max_receptacle_amp_load_on_outlet_by_outlet_id(param_1);\n  cVar1 = get_amp_rating_of_outlet(param_1);\n  return DAT_00014030 * (double)(short)cVar1 < (double)lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_too_much_amp_load_on_one_outlet_receptacle",
+                        "get_max_receptacle_amp_load_on_outlet_by_outlet_id",
+                        "get_amp_rating_of_outlet"
+                    ],
+                    "calling_functions": [
+                        "is_too_much_amp_load_on_one_outlet_receptacle",
+                        "is_outlet_overloaded"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_too_much_amp_load_on_splitter",
+                "func_c_signature": "bool is_too_much_amp_load_on_splitter(undefined4 param_1)",
+                "decompiled_code": "bool is_too_much_amp_load_on_splitter(undefined4 param_1) {\n  char cVar1;\n  longdouble lVar2;\n  \n  lVar2 = (longdouble)get_total_amp_load_on_splitter_by_splitter_id(param_1);\n  cVar1 = get_amp_rating_of_splitter(param_1);\n  return DAT_00014030 * (double)(short)cVar1 < (double)lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_too_much_amp_load_on_splitter",
+                        "get_total_amp_load_on_splitter_by_splitter_id",
+                        "get_amp_rating_of_splitter"
+                    ],
+                    "calling_functions": [
+                        "is_too_much_amp_load_on_splitter",
+                        "is_splitter_overloaded"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_too_much_amp_load_on_one_splitter_receptacle",
+                "func_c_signature": "bool is_too_much_amp_load_on_one_splitter_receptacle(undefined4 param_1)",
+                "decompiled_code": "bool is_too_much_amp_load_on_one_splitter_receptacle(undefined4 param_1) {\n  char cVar1;\n  longdouble lVar2;\n  \n  lVar2 = (longdouble)get_max_receptacle_amp_load_on_splitter_by_splitter_id(param_1);\n  cVar1 = get_amp_rating_of_splitter(param_1);\n  return DAT_00014030 * (double)(short)cVar1 < (double)lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_too_much_amp_load_on_one_splitter_receptacle",
+                        "get_max_receptacle_amp_load_on_splitter_by_splitter_id",
+                        "get_amp_rating_of_splitter"
+                    ],
+                    "calling_functions": [
+                        "is_too_much_amp_load_on_one_splitter_receptacle",
+                        "is_splitter_overloaded"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_too_much_amp_load_on_light_string",
+                "func_c_signature": "bool is_too_much_amp_load_on_light_string(undefined4 param_1)",
+                "decompiled_code": "bool is_too_much_amp_load_on_light_string(undefined4 param_1) {\n  longdouble lVar1;\n  longdouble lVar2;\n  \n  lVar1 = (longdouble)get_total_amp_load_on_light_string_by_light_string_id(param_1);\n  lVar2 = (longdouble)get_amp_rating_of_light_string(param_1);\n  return lVar2 < (longdouble)(float)lVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_too_much_amp_load_on_light_string",
+                        "get_total_amp_load_on_light_string_by_light_string_id",
+                        "get_amp_rating_of_light_string"
+                    ],
+                    "calling_functions": [
+                        "is_too_much_amp_load_on_light_string",
+                        "is_light_string_overloaded"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_too_much_amp_load_on_receptacle",
+                "func_c_signature": "bool is_too_much_amp_load_on_receptacle(undefined4 param_1)",
+                "decompiled_code": "bool is_too_much_amp_load_on_receptacle(undefined4 param_1) {\n  char cVar1;\n  longdouble lVar2;\n  \n  lVar2 = (longdouble)get_total_amp_load_on_receptacle_by_receptacle_id(param_1);\n  cVar1 = get_amp_rating_of_receptacle(param_1);\n  return (float)(short)cVar1 < (float)lVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_too_much_amp_load_on_receptacle",
+                        "get_total_amp_load_on_receptacle_by_receptacle_id",
+                        "get_amp_rating_of_receptacle"
+                    ],
+                    "calling_functions": [
+                        "is_too_much_amp_load_on_receptacle",
+                        "is_receptacle_overloaded"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_electrical_panel_overloaded",
+                "func_c_signature": "void is_electrical_panel_overloaded(void)",
+                "decompiled_code": "void is_electrical_panel_overloaded(void) {\n  is_too_much_amp_load_on_load_center();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_electrical_panel_overloaded",
+                        "is_too_much_amp_load_on_load_center"
+                    ],
+                    "calling_functions": [
+                        "is_electrical_panel_overloaded",
+                        "do_examine"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_breaker_overloaded",
+                "func_c_signature": "undefined4 is_breaker_overloaded(undefined4 param_1)",
+                "decompiled_code": "undefined4 is_breaker_overloaded(undefined4 param_1) {\n  char cVar1;\n  \n  cVar1 = is_too_many_outlets_on_breaker(param_1);\n  if ((cVar1 != '\\x01') && (cVar1 = is_too_much_amp_load_on_breaker(param_1), cVar1 != '\\x01')) {\n    return 0;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_breaker_overloaded",
+                        "is_too_many_outlets_on_breaker",
+                        "is_too_much_amp_load_on_breaker"
+                    ],
+                    "calling_functions": [
+                        "is_breaker_overloaded",
+                        "do_examine"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_outlet_overloaded",
+                "func_c_signature": "undefined4 is_outlet_overloaded(undefined4 param_1)",
+                "decompiled_code": "undefined4 is_outlet_overloaded(undefined4 param_1) {\n  char cVar1;\n  \n  cVar1 = is_too_much_amp_load_on_outlet(param_1);\n  if ((cVar1 != '\\x01') &&\n     (cVar1 = is_too_much_amp_load_on_one_outlet_receptacle(param_1), cVar1 != '\\x01')) {\n    return 0;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_outlet_overloaded",
+                        "is_too_much_amp_load_on_outlet",
+                        "is_too_much_amp_load_on_one_outlet_receptacle"
+                    ],
+                    "calling_functions": [
+                        "is_outlet_overloaded",
+                        "do_examine"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_splitter_overloaded",
+                "func_c_signature": "undefined4 is_splitter_overloaded(undefined4 param_1)",
+                "decompiled_code": "undefined4 is_splitter_overloaded(undefined4 param_1) {\n  char cVar1;\n  \n  cVar1 = is_too_much_amp_load_on_splitter(param_1);\n  if ((cVar1 != '\\x01') &&\n     (cVar1 = is_too_much_amp_load_on_one_splitter_receptacle(param_1), cVar1 != '\\x01')) {\n    return 0;\n  }\n  return 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_splitter_overloaded",
+                        "is_too_much_amp_load_on_splitter",
+                        "is_too_much_amp_load_on_one_splitter_receptacle"
+                    ],
+                    "calling_functions": [
+                        "is_splitter_overloaded",
+                        "do_examine"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_light_string_overloaded",
+                "func_c_signature": "bool is_light_string_overloaded(undefined4 param_1)",
+                "decompiled_code": "bool is_light_string_overloaded(undefined4 param_1) {\n  char cVar1;\n  \n  cVar1 = is_too_much_amp_load_on_light_string(param_1);\n  return cVar1 == '\\x01';\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_light_string_overloaded",
+                        "is_too_much_amp_load_on_light_string"
+                    ],
+                    "calling_functions": [
+                        "is_light_string_overloaded",
+                        "do_examine"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "is_receptacle_overloaded",
+                "func_c_signature": "bool is_receptacle_overloaded(undefined4 param_1)",
+                "decompiled_code": "bool is_receptacle_overloaded(undefined4 param_1) {\n  char cVar1;\n  \n  cVar1 = is_too_much_amp_load_on_receptacle(param_1);\n  return cVar1 == '\\x01';\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "is_receptacle_overloaded",
+                        "is_too_much_amp_load_on_receptacle"
+                    ],
+                    "calling_functions": [
+                        "is_receptacle_overloaded",
+                        "do_examine"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            }
+        ],
+        "operation.c": [
+            {
+                "func_name": "do_send_results",
+                "func_c_signature": "void do_send_results(int param_1)",
+                "decompiled_code": "void do_send_results(int param_1) {\n  size_t in_stack_ffffffec;\n  \n  send(param_1,(void *)0x25,in_stack_ffffffec,0x1321e);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_send_results",
+                        "send"
+                    ],
+                    "calling_functions": [
+                        "do_send_results",
+                        "do_build",
+                        "do_examine"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "recv_uint32",
+                "func_c_signature": "undefined4 recv_uint32(void)",
+                "decompiled_code": "undefined4 recv_uint32(void) {\n  int iVar1;\n  undefined4 local_10 [2];\n  \n  local_10[0] = 0;\n  iVar1 = recv_all(local_10,4);\n  if (iVar1 != 4) {\n    _terminate(0xffffffac);\n  }\n  return local_10[0];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recv_uint32",
+                        "recv_all",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "recv_uint32",
+                        "do_build",
+                        "do_examine"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "recv_uint8",
+                "func_c_signature": "undefined recv_uint8(void)",
+                "decompiled_code": "undefined recv_uint8(void) {\n  int iVar1;\n  undefined local_d [5];\n  \n  local_d[0] = 0;\n  iVar1 = recv_all(local_d,1);\n  if (iVar1 != 1) {\n    _terminate(0xffffffac);\n  }\n  return local_d[0];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "recv_uint8",
+                        "recv_all",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "recv_uint8"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_build",
+                "func_c_signature": "int do_build(void)",
+                "decompiled_code": "int do_build(void) {\n  char cVar1;\n  undefined local_44 [40];\n  undefined4 local_1c;\n  int local_18;\n  undefined4 local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  local_18 = recv_uint32();\n  local_1c = 0;\n  memset(local_44,0,0x28);\n  switch(local_18) {\n  case 0x418:\n    local_1c = recv_uint32();\n    cVar1 = init_electric_model(local_1c);\n    local_10 = (int)cVar1;\n    break;\n  case 0x419:\n    local_1c = recv_uint32();\n    cVar1 = add_breaker_to_load_center(local_1c,local_44);\n    local_10 = (int)cVar1;\n    break;\n  case 0x41a:\n    local_1c = recv_uint32();\n    local_14 = recv_uint32();\n    cVar1 = add_outlet_to_breaker(local_1c,local_14,local_44);\n    local_10 = (int)cVar1;\n    break;\n  case 0x41b:\n    local_1c = recv_uint32();\n    local_14 = recv_uint32();\n    cVar1 = add_n_way_splitter_to_receptacle(local_1c,local_14,local_44);\n    local_10 = (int)cVar1;\n    break;\n  case 0x41c:\n    local_1c = recv_uint32();\n    local_14 = recv_uint32();\n    cVar1 = add_light_string_to_receptacle(local_1c,local_14,local_44);\n    local_10 = (int)cVar1;\n    break;\n  default:\n    local_10 = -0x51;\n  }\n  if ((-1 < local_10) && (local_18 != 0x418)) {\n    do_send_results(local_44);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_build",
+                        "recv_uint32",
+                        "memset",
+                        "init_electric_model",
+                        "add_breaker_to_load_center",
+                        "add_outlet_to_breaker",
+                        "add_n_way_splitter_to_receptacle",
+                        "add_light_string_to_receptacle",
+                        "do_send_results"
+                    ],
+                    "calling_functions": [
+                        "do_build",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_examine",
+                "func_c_signature": "uint do_examine(void)",
+                "decompiled_code": "uint do_examine(void) {\n  int iVar1;\n  uint *puVar2;\n  byte bVar3;\n  uint local_40 [10];\n  undefined4 local_18;\n  undefined4 local_14;\n  uint local_10;\n  \n  bVar3 = 0;\n  local_10 = 0;\n  local_14 = 0;\n  local_18 = recv_uint32();\n  switch(local_18) {\n  case 0x801:\n    local_10 = is_electrical_panel_overloaded();\n    local_10 = local_10 & 0xff;\n    break;\n  case 0x802:\n    local_14 = recv_uint32();\n    local_10 = is_breaker_overloaded(local_14);\n    local_10 = local_10 & 0xff;\n    break;\n  case 0x803:\n    local_14 = recv_uint32();\n    local_10 = is_outlet_overloaded(local_14);\n    local_10 = local_10 & 0xff;\n    break;\n  case 0x804:\n    local_14 = recv_uint32();\n    local_10 = is_splitter_overloaded(local_14);\n    local_10 = local_10 & 0xff;\n    break;\n  case 0x805:\n    local_14 = recv_uint32();\n    local_10 = is_light_string_overloaded(local_14);\n    local_10 = local_10 & 0xff;\n    break;\n  case 0x806:\n    local_14 = recv_uint32();\n    local_10 = is_receptacle_overloaded(local_14);\n    local_10 = local_10 & 0xff;\n    break;\n  default:\n    local_10 = 0xffffffaf;\n  }\n  if (-1 < (int)local_10) {\n    puVar2 = local_40;\n    for (iVar1 = 10; iVar1 != 0; iVar1 = iVar1 + -1) {\n      *puVar2 = 0;\n      puVar2 = puVar2 + (uint)bVar3 * -2 + 1;\n    }\n    local_40[0] = local_10;\n    do_send_results(local_40);\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_examine",
+                        "recv_uint32",
+                        "is_electrical_panel_overloaded",
+                        "is_breaker_overloaded",
+                        "is_outlet_overloaded",
+                        "is_splitter_overloaded",
+                        "is_light_string_overloaded",
+                        "is_receptacle_overloaded",
+                        "do_send_results"
+                    ],
+                    "calling_functions": [
+                        "do_examine",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_nonce",
+                "func_c_signature": "undefined4 do_nonce(void)",
+                "decompiled_code": "undefined4 do_nonce(void) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined4 **ppuVar3;\n  undefined4 *puStack_3c;\n  undefined4 uStack_38;\n  undefined4 uStack_30;\n  undefined auStack_2c [12];\n  undefined4 local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  undefined4 local_14;\n  int local_10;\n  \n  ppuVar3 = (undefined4 **)auStack_2c;\n  uStack_30 = 0x1354d;\n  local_10 = 0;\n  local_18 = 0x34333231;\n  local_14 = 0x373635;\n  uStack_38 = 8;\n  puStack_3c = &local_18;\n  local_10 = rand();\n  if (local_10 < 0) {\n    ppuVar3 = &puStack_3c;\n    puStack_3c = (undefined4 *)0xffffffad;\n    _terminate();\n  }\n  *(undefined4 *)((int)ppuVar3 + -0xc) = 8;\n  *(undefined4 **)((int)ppuVar3 + -0x10) = &local_18;\n  *(undefined4 *)((int)ppuVar3 + -0x14) = 0x1359a;\n  send(*(int *)((int)ppuVar3 + -0x10),*(void **)((int)ppuVar3 + -0xc),*(size_t *)((int)ppuVar3 + -8)\n       ,*(int *)((int)ppuVar3 + -4));\n  local_20 = 0x34333231;\n  local_1c = 0x373635;\n  *(undefined4 *)((int)ppuVar3 + -0xc) = 8;\n  *(undefined4 **)((int)ppuVar3 + -0x10) = &local_20;\n  *(undefined4 *)((int)ppuVar3 + -0x14) = 0x135b9;\n  iVar1 = recv_all();\n  if (iVar1 != 8) {\n    *(undefined4 *)((int)ppuVar3 + -0x10) = 0xffffffac;\n    *(undefined4 *)((int)ppuVar3 + -0x14) = 0x135cb;\n    _terminate();\n  }\n  if ((char)local_18 == (char)local_20) {\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = 0xffffffae;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_nonce",
+                        "rand",
+                        "_terminate",
+                        "send",
+                        "recv_all"
+                    ],
+                    "calling_functions": [
+                        "do_nonce",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            }
+        ],
+        "service.c": [
+            {
+                "func_name": "main",
+                "func_c_signature": "int main(void)",
+                "decompiled_code": "int main(void) {\n  int iVar1;\n  undefined *puVar2;\n  int *apiStack_34 [5];\n  undefined auStack_20 [8];\n  int local_18;\n  int local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  puVar2 = auStack_20;\n  local_14 = 0;\n  local_18 = 0;\n  do {\n    *(undefined4 *)(puVar2 + -4) = 0x13618;\n    local_18 = do_nonce();\n    if (local_18 == 0) {\n      *(undefined4 *)(puVar2 + -0xc) = 4;\n      *(int **)(puVar2 + -0x10) = &local_14;\n      *(undefined4 *)(puVar2 + -0x14) = 0x13630;\n      iVar1 = recv_all();\n      if (iVar1 != 4) {\n        *(undefined4 *)(puVar2 + -0x10) = 0xffffffac;\n        *(undefined4 *)(puVar2 + -0x14) = 0x13642;\n        _terminate();\n        puVar2 = puVar2 + -0x10;\n      }\n      if (local_14 == 0x369c) {\n        *(undefined4 *)(puVar2 + -4) = 0x1365a;\n        local_18 = do_build();\n      }\n      else if (local_14 == 0xc5896) {\n        *(undefined4 *)(puVar2 + -4) = 0x13664;\n        local_18 = do_examine();\n      }\n      else {\n        local_18 = -0x50;\n      }\n    }\n  } while (-1 < local_18);\n  *(undefined4 *)(puVar2 + -0xc) = 4;\n  *(int **)(puVar2 + -0x10) = &local_18;\n  *(undefined4 *)(puVar2 + -0x14) = 0x13685;\n  send(*(int *)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),*(size_t *)(puVar2 + -8),\n       *(int *)(puVar2 + -4));\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "do_nonce",
+                        "recv_all",
+                        "_terminate",
+                        "do_build",
+                        "do_examine",
+                        "send"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00017_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -112,4 +112,5 @@ def get_coreutils_whitelist_functions(compiled_file: str) -> Dict[str, List[str]
   Returns:
     A dictionary mapping base filenames to lists of function names.
   """
-  return get_single_file_whitelist(compiled_file)
+  file_path = os.path.join(config["paths"]["coreutils_corpus_root"], "src", compiled_file + ".c")
+  return get_single_file_whitelist(file_path)

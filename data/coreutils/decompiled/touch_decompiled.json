@@ -1,0 +1,140 @@
+{
+    "file": "touch",
+    "decompiled_code": {
+        "touch.c": [
+            {
+                "func_name": "date_relative",
+                "func_c_signature": "undefined8 date_relative(undefined8 param_1,undefined8 param_2,undefined8 param_3)",
+                "decompiled_code": "undefined8 date_relative(undefined8 param_1,undefined8 param_2,undefined8 param_3) {\n  char cVar1;\n  undefined8 uVar2;\n  long in_FS_OFFSET;\n  undefined8 local_68;\n  undefined8 local_60;\n  undefined8 local_50;\n  undefined4 local_48;\n  undefined4 local_44;\n  undefined8 local_40;\n  undefined8 local_38 [3];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_68 = param_2;\n  local_60 = param_3;\n  local_50 = param_1;\n  cVar1 = parse_datetime(local_38,param_1,&local_68);\n  if (cVar1 != '\\x01') {\n    uVar2 = quote(local_50);\n    local_40 = gettext(\"invalid date format %s\");\n    local_48 = 1;\n    local_44 = 0;\n    error(1,0,local_40,uVar2);\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return local_38[0];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "date_relative",
+                        "parse_datetime",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "date_relative",
+                        "main"
+                    ],
+                    "defined_in_file": "touch_decompiled.c"
+                }
+            },
+            {
+                "func_name": "touch",
+                "func_c_signature": "undefined8 touch(char *param_1)",
+                "decompiled_code": "undefined8 touch(char *param_1) {\n  char cVar1;\n  undefined4 uVar2;\n  int iVar3;\n  int iVar4;\n  char *pcVar5;\n  int *piVar6;\n  undefined8 uVar7;\n  undefined8 uVar8;\n  long in_FS_OFFSET;\n  int local_108;\n  int local_104;\n  undefined8 *local_e0;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_108 = -1;\n  local_104 = 0;\n  local_e0 = &newtime;\n  cVar1 = streq(param_1,&DAT_0010156b);\n  if (cVar1 == '\\0') {\n    if (((no_create != '\\x01') && (no_dereference != '\\x01')) &&\n       (local_108 = fd_reopen(0,param_1,0x941,0x1b6), local_108 < 0)) {\n      piVar6 = __errno_location();\n      local_104 = *piVar6;\n    }\n  }\n  else {\n    local_108 = 1;\n  }\n  if (change_times != 3) {\n    if (change_times == 2) {\n      DAT_00101328 = 0x3ffffffe;\n    }\n    else {\n      if (change_times != 1) {\n                    /* WARNING: Subroutine does not return */\n        __assert_fail(\"change_times == 1\",\n                      \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/touch.c\"\n                      ,0x91,\"touch\");\n      }\n      DAT_00101338 = 0x3ffffffe;\n    }\n  }\n  if (amtime_now != '\\0') {\n    local_e0 = (undefined8 *)0x0;\n  }\n  pcVar5 = param_1;\n  if (local_108 == 1) {\n    pcVar5 = (char *)0x0;\n  }\n  if (no_dereference == '\\0') {\n    uVar2 = 0;\n  }\n  else {\n    uVar2 = 0x100;\n  }\n  iVar3 = fdutimensat(local_108,0xffffff9c,pcVar5,local_e0,uVar2);\n  if (iVar3 == 0) {\n    iVar3 = 0;\n  }\n  else {\n    piVar6 = __errno_location();\n    iVar3 = *piVar6;\n  }\n  if (local_108 == 0) {\n    iVar4 = close(0);\n    if (iVar4 != 0) {\n      uVar7 = quotearg_style(4,param_1);\n      uVar8 = gettext(\"failed to close %s\");\n      piVar6 = __errno_location();\n      error(0,*piVar6,uVar8,uVar7);\n      uVar7 = 0;\n      goto LAB_00100731;\n    }\n  }\n  else if (((local_108 == 1) && (iVar3 == 9)) && (no_create != '\\0')) {\n    uVar7 = 1;\n    goto LAB_00100731;\n  }\n  if (iVar3 == 0) {\n    uVar7 = 1;\n  }\n  else {\n    if (((local_104 == 0) || (local_104 == 0x15)) ||\n       (((local_104 == 0x16 || (local_104 == 0x11)) &&\n        ((iVar4 = stat(param_1,&local_b8), iVar4 == 0 && ((local_b8.st_mode & 0xf000) == 0x4000)))))\n       ) {\n      if ((no_create != '\\0') && (iVar3 == 2)) {\n        uVar7 = 1;\n        goto LAB_00100731;\n      }\n      uVar7 = quotearg_style(4,param_1);\n      uVar8 = gettext(\"setting times of %s\");\n      error(0,iVar3,uVar8,uVar7);\n    }\n    else {\n      uVar7 = quotearg_style(4,param_1);\n      uVar8 = gettext(\"cannot touch %s\");\n      error(0,local_104,uVar8,uVar7);\n    }\n    uVar7 = 0;\n  }\nLAB_00100731:\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return uVar7;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "touch",
+                        "streq",
+                        "fd_reopen",
+                        "__errno_location",
+                        "__assert_fail",
+                        "fdutimensat",
+                        "close",
+                        "quotearg_style",
+                        "gettext",
+                        "error",
+                        "stat",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "touch",
+                        "main"
+                    ],
+                    "defined_in_file": "touch_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... FILE...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"Update the access and modification times of each FILE to the current time.\\n\\nA FILE argument that does not exist is created empty, unless -c or -h\\nis supplied.\\n\\nA FILE argument string of - is handled specially and causes touch to\\nchange the times of the file associated with standard output.\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -a                     change only the access time\\n  -c, --no-create        do not create any files\\n  -d, --date=STRING      parse STRING and use it instead of current time\\n  -f                     (ignored)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -h, --no-dereference   affect each symbolic link instead of any referenced\\n                         file (useful only on systems that can change the\\n                         timestamps of a symlink)\\n  -m                     change only the modification time\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -r, --reference=FILE   use this file\\'s times instead of current time\\n  -t [[CC]YY]MMDDhhmm[.ss]  use specified time instead of current time,\\n                         with a date-time format that differs from -d\\'s\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --time=WORD        specify which time to change:\\n                           access time (-a): \\'access\\', \\'atime\\', \\'use\\';\\n                           modification time (-m): \\'modify\\', \\'mtime\\'\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"touch\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "f",
+                    "file",
+                    "time"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "f",
+                        "file",
+                        "time",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "touch_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "byte main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "byte main(int param_1,undefined8 *param_2) {\n  int iVar1;\n  int iVar2;\n  int iVar3;\n  int iVar4;\n  int iVar5;\n  bool bVar6;\n  undefined auVar7 [16];\n  undefined auVar8 [16];\n  char cVar9;\n  byte bVar10;\n  int iVar11;\n  long lVar12;\n  undefined8 uVar13;\n  undefined8 uVar14;\n  undefined8 uVar15;\n  undefined8 uVar16;\n  undefined8 uVar17;\n  int *piVar18;\n  ulong uVar19;\n  char *pcVar20;\n  tm *ptVar21;\n  long in_FS_OFFSET;\n  undefined auVar22 [16];\n  undefined auVar23 [16];\n  undefined auVar24 [16];\n  undefined auVar25 [16];\n  bool local_16d;\n  char *local_140;\n  stat local_d8;\n  long local_40;\n  \n  local_40 = *(long *)(in_FS_OFFSET + 0x28);\n  bVar6 = false;\n  local_16d = true;\n  local_140 = (char *)0x0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\n  change_times = 0;\n  use_ref = '\\0';\n  no_create = 0;\nLAB_00100c7f:\n  iVar11 = getopt_long(param_1,param_2,\"acd:fhmr:t:\",longopts,0);\n  if (iVar11 == -1) {\n    if (change_times == 0) {\n      change_times = 3;\n    }\n    if ((bVar6) && ((use_ref != '\\0' || (local_140 != (char *)0x0)))) {\n      uVar16 = gettext(\"cannot specify times from more than one source\");\n      error(0,0,uVar16);\n      usage(1);\n    }\n    auVar22._8_8_ = DAT_00101338;\n    auVar22._0_8_ = DAT_00101330;\n    auVar23._8_8_ = DAT_00101328;\n    auVar23._0_8_ = newtime;\n    if (use_ref == '\\0') {\n      if (local_140 != (char *)0x0) {\n        auVar24 = current_timespec();\n        uVar16 = auVar24._8_8_;\n        auVar23 = date_relative(local_140,auVar24._0_8_,uVar16);\n        DAT_00101328 = auVar23._8_8_;\n        newtime = auVar23._0_8_;\n        bVar6 = true;\n        auVar22 = auVar23;\n        if ((change_times == 3) && (auVar24 == auVar23)) {\n          uVar19 = auVar24._0_8_ ^ 1;\n          auVar8._8_8_ = uVar16;\n          auVar8._0_8_ = uVar19;\n          DAT_00101330 = newtime;\n          DAT_00101338 = DAT_00101328;\n          auVar25 = date_relative(local_140,uVar19,uVar16);\n          auVar7._8_8_ = DAT_00101338;\n          auVar7._0_8_ = DAT_00101330;\n          auVar22._8_8_ = DAT_00101338;\n          auVar22._0_8_ = DAT_00101330;\n          auVar24._8_8_ = DAT_00101328;\n          auVar24._0_8_ = newtime;\n          auVar23._8_8_ = DAT_00101328;\n          auVar23._0_8_ = newtime;\n          if (auVar25 == auVar8) {\n            bVar6 = false;\n            auVar23 = auVar24;\n            auVar22 = auVar7;\n          }\n        }\n      }\n    }\n    else {\n      if (no_dereference == '\\0') {\n        iVar11 = stat(ref_file,&local_d8);\n      }\n      else {\n        iVar11 = lstat(ref_file,&local_d8);\n      }\n      if (iVar11 != 0) {\n        uVar16 = quotearg_style(4,ref_file);\n        uVar17 = gettext(\"failed to get attributes of %s\");\n        piVar18 = __errno_location();\n        error(1,*piVar18,uVar17,uVar16);\n      }\n      auVar22 = get_stat_atime(&local_d8);\n      DAT_00101328 = auVar22._8_8_;\n      newtime = auVar22._0_8_;\n      auVar22 = get_stat_mtime(&local_d8);\n      auVar23._8_8_ = DAT_00101328;\n      auVar23._0_8_ = newtime;\n      DAT_00101338 = auVar22._8_8_;\n      DAT_00101330 = auVar22._0_8_;\n      bVar6 = true;\n      if (local_140 != (char *)0x0) {\n        if ((change_times & 1) != 0) {\n          auVar23 = date_relative(local_140,newtime,DAT_00101328);\n          auVar22._8_8_ = DAT_00101338;\n          auVar22._0_8_ = DAT_00101330;\n        }\n        DAT_00101328 = auVar23._8_8_;\n        newtime = auVar23._0_8_;\n        DAT_00101338 = auVar22._8_8_;\n        DAT_00101330 = auVar22._0_8_;\n        if ((change_times & 2) != 0) {\n          auVar22 = date_relative(local_140,DAT_00101330,DAT_00101338);\n          auVar23._8_8_ = DAT_00101328;\n          auVar23._0_8_ = newtime;\n        }\n      }\n    }\n    DAT_00101338 = auVar22._8_8_;\n    DAT_00101330 = auVar22._0_8_;\n    DAT_00101328 = auVar23._8_8_;\n    newtime = auVar23._0_8_;\n    if ((!bVar6) && (1 < param_1 - _optind)) {\n      iVar11 = posix2_version();\n      auVar22._8_8_ = DAT_00101338;\n      auVar22._0_8_ = DAT_00101330;\n      auVar23._8_8_ = DAT_00101328;\n      auVar23._0_8_ = newtime;\n      if (iVar11 < 0x30db0) {\n        cVar9 = posixtime(&newtime,param_2[_optind],9);\n        auVar22._8_8_ = DAT_00101338;\n        auVar22._0_8_ = DAT_00101330;\n        auVar23._8_8_ = DAT_00101328;\n        auVar23._0_8_ = newtime;\n        if (cVar9 != '\\0') {\n          DAT_00101328 = 0;\n          DAT_00101330 = newtime;\n          DAT_00101338 = 0;\n          bVar6 = true;\n          pcVar20 = getenv(\"POSIXLY_CORRECT\");\n          if ((pcVar20 == (char *)0x0) && (ptVar21 = localtime(&newtime), ptVar21 != (tm *)0x0)) {\n            iVar11 = ptVar21->tm_sec;\n            iVar1 = ptVar21->tm_min;\n            iVar2 = ptVar21->tm_hour;\n            iVar3 = ptVar21->tm_mday;\n            iVar4 = ptVar21->tm_mon;\n            iVar5 = ptVar21->tm_year;\n            uVar16 = param_2[_optind];\n            uVar17 = gettext(\n                            \"warning: \\'touch %s\\' is obsolete; use \\'touch -t %04ld%02d%02d%02d%02d.%02d\\'\"\n                            );\n            error(0,0,uVar17,uVar16,(long)iVar5 + 0x76c,iVar4 + 1,iVar3,iVar2,iVar1,iVar11);\n          }\n          auVar22._8_8_ = DAT_00101338;\n          auVar22._0_8_ = DAT_00101330;\n          auVar23._8_8_ = DAT_00101328;\n          auVar23._0_8_ = newtime;\n          _optind = _optind + 1;\n        }\n      }\n    }\n    DAT_00101338 = auVar22._8_8_;\n    DAT_00101330 = auVar22._0_8_;\n    DAT_00101328 = auVar23._8_8_;\n    newtime = auVar23._0_8_;\n    if (!bVar6) {\n      if (change_times == 3) {\n        amtime_now = 1;\n      }\n      else {\n        DAT_00101328 = 0x3fffffff;\n        DAT_00101338 = 0x3fffffff;\n      }\n    }\n    if (param_1 != _optind) goto LAB_001012b7;\n    uVar16 = gettext(\"missing file operand\");\n    error(0,0,uVar16);\n    usage(1);\n    do {\n      bVar10 = touch(param_2[_optind]);\n      local_16d = (bVar10 & local_16d) != 0;\n      _optind = _optind + 1;\nLAB_001012b7:\n    } while (_optind < param_1);\n    if (local_40 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n      __stack_chk_fail();\n    }\n    return local_16d ^ 1;\n  }\n  if (iVar11 < 0x81) {\n    if (iVar11 < 0x61) {\n      if (iVar11 == -0x83) {\nLAB_00100ba1:\n        uVar16 = proper_name_lite(\"Randy Smith\",\"Randy Smith\");\n        uVar17 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n        uVar13 = proper_name_lite(\"Jim Kingdon\",\"Jim Kingdon\");\n        uVar14 = proper_name_lite(\"Arnold Robbins\",\"Arnold Robbins\");\n        uVar15 = proper_name_lite(\"Paul Rubin\",\"Paul Rubin\");\n        version_etc(_stdout,\"touch\",\"GNU coreutils\",_Version,uVar15,uVar14,uVar13,uVar17,uVar16,0);\n                    /* WARNING: Subroutine does not return */\n        exit(0);\n      }\n      if (iVar11 == -0x82) {\n        usage(0);\n        goto LAB_00100ba1;\n      }\n      goto switchD_00100a07_caseD_62;\n    }\n    goto code_r0x001009e7;\n  }\n  goto switchD_00100a07_caseD_62;\ncode_r0x001009e7:\n  switch(iVar11) {\n  case 0x61:\n    change_times = change_times | 1;\n    break;\n  default:\nswitchD_00100a07_caseD_62:\n    usage(1);\n    break;\n  case 99:\n    no_create = 1;\n    break;\n  case 100:\n    local_140 = _optarg;\n    break;\n  case 0x66:\n    break;\n  case 0x68:\n    no_dereference = '\\x01';\n    break;\n  case 0x6d:\n    change_times = change_times | 2;\n    break;\n  case 0x72:\n    use_ref = '\\x01';\n    ref_file = _optarg;\n    break;\n  case 0x74:\n    cVar9 = posixtime(&newtime,_optarg,6);\n    if (cVar9 != '\\x01') {\n      uVar16 = quote(_optarg);\n      uVar17 = gettext(\"invalid date format %s\");\n      error(1,0,uVar17,uVar16);\n    }\n    DAT_00101328 = 0;\n    DAT_00101330 = newtime;\n    DAT_00101338 = 0;\n    bVar6 = true;\n    break;\n  case 0x80:\n    lVar12 = __xargmatch_internal(\"--time\",_optarg,time_args,time_masks,4,_argmatch_die,1);\n    change_times = change_times | *(uint *)(time_masks + lVar12 * 4);\n  }\n  goto LAB_00100c7f;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "gettext",
+                        "error",
+                        "usage",
+                        "current_timespec",
+                        "date_relative",
+                        "stat",
+                        "lstat",
+                        "quotearg_style",
+                        "__errno_location",
+                        "get_stat_atime",
+                        "get_stat_mtime",
+                        "posix2_version",
+                        "posixtime",
+                        "getenv",
+                        "localtime",
+                        "touch",
+                        "__stack_chk_fail",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "quote",
+                        "__xargmatch_internal"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "touch_decompiled.c"
+                }
+            }
+        ]
+    }
+}

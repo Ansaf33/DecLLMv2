@@ -1,0 +1,301 @@
+{
+    "file": "KPRCA_00074",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "check_seed",
+                "func_c_signature": "void check_seed(void)",
+                "decompiled_code": "void check_seed(void) {\n  FILE *__s;\n  int local_10 [2];\n  \n  __s = (FILE *)0x1105d;\n  local_10[0] = 0;\n  fread(local_10,4,(size_t)stdin,(FILE *)0x1105d);\n  if (_DAT_4347c000 == local_10[0]) {\n    fwrite(&DAT_4347c000,0x1000,(size_t)stdout,__s);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "check_seed",
+                        "fread",
+                        "fwrite"
+                    ],
+                    "calling_functions": [
+                        "check_seed",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            }
+        ],
+        "validator.c": [
+            {
+                "func_name": "validate_jmp",
+                "func_c_signature": "undefined4 validate_jmp(int *param_1)",
+                "decompiled_code": "undefined4 validate_jmp(int *param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  int *piVar3;\n  int local_70 [18];\n  byte *local_28;\n  int local_24;\n  uint local_20;\n  \n  iVar1 = param_1[1] * 8 + *param_1;\n  local_28 = (byte *)(iVar1 + 4);\n  if (((((*local_28 & 0xf0) == 0) || ((*local_28 & 0xf0) == 0x10)) || ((*local_28 & 0xf0) == 0x20))\n     || ((*local_28 & 0xf0) == 0x30)) {\n    if ((*local_28 & 8) == 0) {\n      local_24 = param_1[(*(byte *)(iVar1 + 5) >> 4) + 2];\n    }\n    else {\n      local_24 = 2;\n    }\n    if ((local_24 == 2) && (param_1[(*(byte *)(iVar1 + 5) & 0xf) + 2] == 2)) {\n      piVar3 = local_70;\n      for (iVar1 = 0x12; iVar1 != 0; iVar1 = iVar1 + -1) {\n        *piVar3 = *param_1;\n        param_1 = param_1 + 1;\n        piVar3 = piVar3 + 1;\n      }\n      local_70[1] = (uint)*(ushort *)(local_28 + 2) + local_70[1] + 1;\n      uVar2 = validate_state(local_70);\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  else if ((*local_28 & 0xf0) == 0x40) {\n    for (local_20 = 0;\n        (*(int *)(syscalls + local_20 * 0x24) != 0 && (local_20 != *(ushort *)(iVar1 + 6)));\n        local_20 = local_20 + 1) {\n    }\n    if (*(int *)(syscalls + local_20 * 0x24) == 0) {\n      uVar2 = 0;\n    }\n    else {\n      local_20 = 0;\n      while (*(int *)(syscalls + ((uint)*(ushort *)(iVar1 + 6) * 9 + local_20) * 4 + 4) != 0) {\n        if ((param_1[local_20 + 2] &\n            *(uint *)(syscalls + ((uint)*(ushort *)(iVar1 + 6) * 9 + local_20) * 4 + 4)) == 0) {\n          return 0;\n        }\n        local_20 = local_20 + 1;\n      }\n      param_1[2] = *(int *)(syscalls + (uint)*(ushort *)(iVar1 + 6) * 0x24);\n      uVar2 = 1;\n    }\n  }\n  else if ((*local_28 & 0xf0) == 0x50) {\n    if (param_1[2] == 2) {\n      uVar2 = 1;\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  else {\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_jmp",
+                        "validate_state"
+                    ],
+                    "calling_functions": [
+                        "validate_jmp",
+                        "validate_state"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_alu",
+                "func_c_signature": "undefined4 validate_alu(int *param_1)",
+                "decompiled_code": "undefined4 validate_alu(int *param_1) {\n  int iVar1;\n  byte *pbVar2;\n  undefined4 uVar3;\n  uint local_8;\n  \n  iVar1 = param_1[1] * 8 + *param_1;\n  pbVar2 = (byte *)(iVar1 + 4);\n  if (*pbVar2 >> 4 < 0xd) {\n    if ((*(byte *)(iVar1 + 5) & 0xf) == 0xf) {\n      uVar3 = 0;\n    }\n    else {\n      if ((*pbVar2 & 8) == 0) {\n        local_8 = param_1[(*(byte *)(iVar1 + 5) >> 4) + 2];\n      }\n      else {\n        local_8 = 2;\n      }\n      if (((*pbVar2 & 0xf0) == 0xa0) || ((*pbVar2 & 0xf0) == 0xc0)) {\n        if (param_1[(*(byte *)(iVar1 + 5) & 0xf) + 2] != 2) {\n          param_1[(*(byte *)(iVar1 + 5) & 0xf) + 2] = 1;\n        }\n      }\n      else if ((*pbVar2 & 0xf0) == 0xb0) {\n        param_1[(*(byte *)(iVar1 + 5) & 0xf) + 2] = local_8;\n      }\n      else {\n        local_8 = param_1[(*(byte *)(iVar1 + 5) & 0xf) + 2] | local_8;\n        if ((local_8 & 1) == 0) {\n          if (((local_8 == 4) || (local_8 == 8)) || (local_8 == 0xc)) {\n            param_1[(*(byte *)(iVar1 + 5) & 0xf) + 2] = 1;\n          }\n          else if ((local_8 & 4) == 0) {\n            if ((local_8 & 8) == 0) {\n              param_1[(*(byte *)(iVar1 + 5) & 0xf) + 2] = 2;\n            }\n            else {\n              param_1[(*(byte *)(iVar1 + 5) & 0xf) + 2] = 8;\n            }\n          }\n          else {\n            param_1[(*(byte *)(iVar1 + 5) & 0xf) + 2] = 4;\n          }\n        }\n        else {\n          param_1[(*(byte *)(iVar1 + 5) & 0xf) + 2] = 1;\n        }\n        if ((((*pbVar2 & 0xf0) != 0x10) && ((*pbVar2 & 0xf0) != 0)) && ((local_8 & 0xc) != 0)) {\n          param_1[(*(byte *)(iVar1 + 5) & 0xf) + 2] = 1;\n        }\n      }\n      uVar3 = 1;\n    }\n  }\n  else {\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_alu"
+                    ],
+                    "calling_functions": [
+                        "validate_alu",
+                        "validate_state"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_ld",
+                "func_c_signature": "undefined4 validate_ld(int *param_1)",
+                "decompiled_code": "undefined4 validate_ld(int *param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  \n  iVar1 = param_1[1] * 8 + *param_1;\n  if ((*(byte *)(iVar1 + 4) >> 5 < 2) && ((*(byte *)(iVar1 + 4) & 0x18) != 0x18)) {\n    if ((param_1[(*(byte *)(iVar1 + 5) >> 4) + 2] & 0xcU) == 0) {\n      uVar2 = 0;\n    }\n    else if ((*(byte *)(iVar1 + 5) & 0xf) == 0xf) {\n      uVar2 = 0;\n    }\n    else {\n      param_1[(*(byte *)(iVar1 + 5) & 0xf) + 2] = 2;\n      uVar2 = 1;\n    }\n  }\n  else {\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_ld"
+                    ],
+                    "calling_functions": [
+                        "validate_ld",
+                        "validate_state"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_st",
+                "func_c_signature": "undefined4 validate_st(int *param_1)",
+                "decompiled_code": "undefined4 validate_st(int *param_1) {\n  int iVar1;\n  byte *pbVar2;\n  undefined4 uVar3;\n  \n  iVar1 = param_1[1] * 8 + *param_1;\n  pbVar2 = (byte *)(iVar1 + 4);\n  if ((*pbVar2 >> 5 < 2) && ((*pbVar2 & 0x18) != 0x18)) {\n    if ((param_1[(*(byte *)(iVar1 + 5) & 0xf) + 2] & 8U) == 0) {\n      uVar3 = 0;\n    }\n    else if (((*pbVar2 & 7) == 2) && (param_1[(*(byte *)(iVar1 + 5) >> 4) + 2] != 2)) {\n      uVar3 = 0;\n    }\n    else {\n      uVar3 = 1;\n    }\n  }\n  else {\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_st"
+                    ],
+                    "calling_functions": [
+                        "validate_st",
+                        "validate_state"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_state",
+                "func_c_signature": "undefined4 validate_state(uint **param_1)",
+                "decompiled_code": "undefined4 validate_state(uint **param_1) {\n  uint *puVar1;\n  int iVar2;\n  \n  do {\n    if ((uint *)**param_1 <= param_1[1]) {\n      return 0;\n    }\n    puVar1 = *param_1 + (int)param_1[1] * 2 + 1;\n    if ((*(byte *)puVar1 & 7) == 4) {\n      iVar2 = validate_jmp(param_1);\n      if (iVar2 == 0) {\n        return 0;\n      }\n      if ((*(byte *)puVar1 & 0xf0) == 0x50) {\n        return 1;\n      }\n    }\n    else if ((*(byte *)puVar1 & 7) == 3) {\n      iVar2 = validate_alu(param_1);\n      if (iVar2 == 0) {\n        return 0;\n      }\n    }\n    else if ((*(byte *)puVar1 & 7) == 0) {\n      iVar2 = validate_ld(param_1);\n      if (iVar2 == 0) {\n        return 0;\n      }\n    }\n    else {\n      if (((*(byte *)puVar1 & 7) != 1) && ((*(byte *)puVar1 & 7) != 2)) {\n        return 0;\n      }\n      iVar2 = validate_st(param_1);\n      if (iVar2 == 0) {\n        return 0;\n      }\n    }\n    param_1[1] = (uint *)((int)param_1[1] + 1);\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_state",
+                        "validate_jmp",
+                        "validate_alu",
+                        "validate_ld",
+                        "validate_st"
+                    ],
+                    "calling_functions": [
+                        "validate_jmp",
+                        "validate_state",
+                        "filter_validate"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            },
+            {
+                "func_name": "filter_validate",
+                "func_c_signature": "void filter_validate(undefined4 param_1)",
+                "decompiled_code": "void filter_validate(undefined4 param_1) {\n  undefined4 local_58;\n  undefined4 local_54;\n  undefined4 local_50 [16];\n  uint local_10;\n  \n  local_58 = param_1;\n  local_54 = 0;\n  for (local_10 = 0; local_10 < 0x10; local_10 = local_10 + 1) {\n    local_50[local_10] = 1;\n  }\n  local_50[0] = 4;\n  local_50[15] = 8;\n  validate_state(&local_58);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "filter_validate",
+                        "validate_state"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "filter_validate"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            }
+        ],
+        "vm.c": [
+            {
+                "func_name": "swap32",
+                "func_c_signature": "uint swap32(uint param_1)",
+                "decompiled_code": "uint swap32(uint param_1) {\n  return param_1 << 0x18 |\n         param_1 >> 0x18 | (param_1 >> 0x10 & 0xff) << 8 | (param_1 >> 8 & 0xff) << 0x10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "swap32"
+                    ],
+                    "calling_functions": [
+                        "swap32"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            },
+            {
+                "func_name": "valid_mem",
+                "func_c_signature": "undefined4 valid_mem(int *param_1,int param_2,int param_3)",
+                "decompiled_code": "undefined4 valid_mem(int *param_1,int param_2,int param_3) {\n  undefined4 uVar1;\n  \n  if (param_3 < 0) {\n    uVar1 = 0;\n  }\n  else if (((uint)(*param_1 + param_2) < *(uint *)param_1[1]) ||\n          ((uint)(*(int *)(param_1[1] + 4) + *(int *)param_1[1]) <\n           (uint)(param_3 + param_2 + *param_1))) {\n    uVar1 = 0;\n  }\n  else {\n    uVar1 = 1;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "valid_mem"
+                    ],
+                    "calling_functions": [
+                        "valid_mem",
+                        "filter_execute",
+                        "syscall_receive",
+                        "syscall_transmit",
+                        "syscall_random"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            },
+            {
+                "func_name": "new_mem",
+                "func_c_signature": "undefined4 * new_mem(undefined4 *param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 * new_mem(undefined4 *param_1,undefined4 param_2,undefined4 param_3) {\n  if (param_1 == (undefined4 *)0x0) {\n    param_1 = (undefined4 *)malloc(8);\n  }\n  *param_1 = param_2;\n  param_1[1] = param_3;\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "new_mem",
+                        "malloc"
+                    ],
+                    "calling_functions": [
+                        "new_mem",
+                        "filter_execute"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            },
+            {
+                "func_name": "filter_execute",
+                "func_c_signature": "undefined4 filter_execute(int param_1,int param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 filter_execute(int param_1,int param_2,undefined4 param_3) {\n  void *__s;\n  int *__ptr;\n  int iVar1;\n  byte *pbVar2;\n  undefined *puVar3;\n  int iVar4;\n  uint local_10;\n  \n  __s = malloc(0x400);\n  __ptr = (int *)malloc(0x98);\n  *__ptr = param_1;\n  __ptr[5] = 0;\n  memset(__ptr + 6,0,0x80);\n  __ptr[6] = param_2;\n  iVar1 = new_mem(__ptr + 1,param_2,param_3);\n  __ptr[7] = iVar1;\n  __ptr[0x24] = (int)__s;\n  iVar1 = new_mem(__ptr + 3,__s,0x400);\n  __ptr[0x25] = iVar1;\n  memset(__s,0,0x400);\nLAB_00011f7a:\n  iVar1 = param_1 + __ptr[5] * 8;\n  pbVar2 = (byte *)(iVar1 + 4);\n  __ptr[5] = __ptr[5] + 1;\n  puVar3 = (&type_table_2)[*pbVar2 & 7];\n  do {\n                    /* WARNING (jumptable): Sanity check requires truncation of jumptable */\n    switch(puVar3) {\n    case (undefined *)0x11fb6:\n      goto switchD_00012013_caseD_11fb6;\n    case (undefined *)0x1212a:\n      iVar4 = valid_mem(__ptr + ((*(byte *)(iVar1 + 5) & 0xf) + 2) * 2 + 2,\n                        *(undefined2 *)(iVar1 + 6),1 << (*pbVar2 >> 3 & 3));\n      if (iVar4 == 0) goto LAB_000125fe;\n      if ((*pbVar2 & 7) == 1) {\n        local_10 = *(uint *)(iVar1 + 8);\n      }\n      else {\n        local_10 = __ptr[((*(byte *)(iVar1 + 5) >> 4) + 2) * 2 + 2];\n      }\n      if ((*pbVar2 & 0x18) == 0) {\n        *(char *)((uint)*(ushort *)(iVar1 + 6) + __ptr[((*(byte *)(iVar1 + 5) & 0xf) + 2) * 2 + 2])\n             = (char)local_10;\n      }\n      else if ((*pbVar2 & 0x18) == 8) {\n        *(short *)((uint)*(ushort *)(iVar1 + 6) + __ptr[((*(byte *)(iVar1 + 5) & 0xf) + 2) * 2 + 2])\n             = (short)local_10;\n      }\n      else if ((*pbVar2 & 0x18) == 0x10) {\n        *(uint *)(__ptr[((*(byte *)(iVar1 + 5) & 0xf) + 2) * 2 + 2] + (uint)*(ushort *)(iVar1 + 6))\n             = local_10;\n      }\n      if ((*pbVar2 & 0xe0) == 0x20) {\n        __ptr[((*(byte *)(iVar1 + 5) & 0xf) + 2) * 2 + 2] =\n             (uint)*(ushort *)(iVar1 + 6) + __ptr[((*(byte *)(iVar1 + 5) & 0xf) + 2) * 2 + 2];\n      }\n      goto LAB_00011f7a;\n    case (undefined *)0x122ab:\n      if ((*pbVar2 & 8) == 0) {\n        local_10 = __ptr[((*(byte *)(iVar1 + 5) >> 4) + 2) * 2 + 2];\n      }\n      else {\n        local_10 = *(uint *)(iVar1 + 8);\n      }\n      puVar3 = *(undefined **)(alu_table_1 + (uint)(*pbVar2 >> 4) * 4);\n      break;\n    case (undefined *)0x1248f:\n      if ((*pbVar2 & 8) == 0) {\n        local_10 = __ptr[((*(byte *)(iVar1 + 5) >> 4) + 2) * 2 + 2];\n      }\n      else {\n        local_10 = *(uint *)(iVar1 + 8);\n      }\n      puVar3 = *(undefined **)(jmp_table_0 + (uint)(*pbVar2 >> 4) * 4);\n    }\n  } while( true );\nswitchD_00012013_caseD_11fb6:\n  iVar4 = valid_mem(__ptr + ((*(byte *)(iVar1 + 5) >> 4) + 2) * 2 + 2,*(undefined2 *)(iVar1 + 6),\n                    1 << (*pbVar2 >> 3 & 3));\n  if (iVar4 == 0) {\nLAB_000125fe:\n    free(__s);\n    free(__ptr);\n    return 0xffffffff;\n  }\n  if ((*pbVar2 & 0x18) == 0) {\n    local_10 = (uint)*(byte *)((uint)*(ushort *)(iVar1 + 6) +\n                              __ptr[((*(byte *)(iVar1 + 5) >> 4) + 2) * 2 + 2]);\n  }\n  else if ((*pbVar2 & 0x18) == 8) {\n    local_10 = (uint)*(ushort *)\n                      ((uint)*(ushort *)(iVar1 + 6) +\n                      __ptr[((*(byte *)(iVar1 + 5) >> 4) + 2) * 2 + 2]);\n  }\n  else if ((*pbVar2 & 0x18) == 0x10) {\n    local_10 = *(uint *)((uint)*(ushort *)(iVar1 + 6) +\n                        __ptr[((*(byte *)(iVar1 + 5) >> 4) + 2) * 2 + 2]);\n  }\n  __ptr[((*(byte *)(iVar1 + 5) & 0xf) + 2) * 2 + 2] = local_10;\n  if ((*pbVar2 & 0xe0) == 0x20) {\n    __ptr[((*(byte *)(iVar1 + 5) >> 4) + 2) * 2 + 2] =\n         (uint)*(ushort *)(iVar1 + 6) + __ptr[((*(byte *)(iVar1 + 5) >> 4) + 2) * 2 + 2];\n  }\n  goto LAB_00011f7a;\n}",
+                "globals": [],
+                "externs": [
+                    "WARNING"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "filter_execute",
+                        "malloc",
+                        "memset",
+                        "new_mem",
+                        "WARNING",
+                        "valid_mem",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "filter_execute"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            },
+            {
+                "func_name": "syscall_receive",
+                "func_c_signature": "uint syscall_receive(int param_1)",
+                "decompiled_code": "uint syscall_receive(int param_1) {\n  FILE *__size;\n  int iVar1;\n  uint uVar2;\n  size_t sVar3;\n  FILE *__stream;\n  \n  __size = *(FILE **)(param_1 + 0x20);\n  __stream = __size;\n  iVar1 = valid_mem(param_1 + 0x18,0);\n  if (iVar1 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    fflush((FILE *)stdout);\n    sVar3 = fread(*(void **)(param_1 + 0x18),(size_t)__size,(size_t)stdin,__stream);\n    *(size_t *)(param_1 + 0x18) = sVar3;\n    uVar2 = ~sVar3 >> 0x1f;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "syscall_receive",
+                        "valid_mem",
+                        "fflush",
+                        "fread"
+                    ],
+                    "calling_functions": [
+                        "syscall_receive"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            },
+            {
+                "func_name": "syscall_transmit",
+                "func_c_signature": "uint syscall_transmit(int param_1)",
+                "decompiled_code": "uint syscall_transmit(int param_1) {\n  FILE *__size;\n  int iVar1;\n  uint uVar2;\n  size_t sVar3;\n  FILE *__s;\n  \n  __size = *(FILE **)(param_1 + 0x20);\n  __s = __size;\n  iVar1 = valid_mem(param_1 + 0x18,0);\n  if (iVar1 == 0) {\n    uVar2 = 0;\n  }\n  else {\n    sVar3 = fwrite(*(void **)(param_1 + 0x18),(size_t)__size,(size_t)stdout,__s);\n    *(size_t *)(param_1 + 0x18) = sVar3;\n    uVar2 = ~sVar3 >> 0x1f;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "syscall_transmit",
+                        "valid_mem",
+                        "fwrite"
+                    ],
+                    "calling_functions": [
+                        "syscall_transmit"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            },
+            {
+                "func_name": "syscall_random",
+                "func_c_signature": "bool syscall_random(int param_1)",
+                "decompiled_code": "bool syscall_random(int param_1) {\n  int iVar1;\n  \n  iVar1 = valid_mem(param_1 + 0x18,0,*(undefined4 *)(param_1 + 0x20));\n  if (iVar1 != 0) {\n    random();\n  }\n  return iVar1 != 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "syscall_random",
+                        "valid_mem",
+                        "random"
+                    ],
+                    "calling_functions": [
+                        "syscall_random"
+                    ],
+                    "defined_in_file": "KPRCA_00074_decompiled.c"
+                }
+            }
+        ]
+    }
+}

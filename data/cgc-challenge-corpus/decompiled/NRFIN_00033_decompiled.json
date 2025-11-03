@@ -1,0 +1,307 @@
+{
+    "file": "NRFIN_00033",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "reportMessage",
+                "func_c_signature": "void reportMessage(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "void reportMessage(undefined4 param_1,undefined4 param_2) {\n  int iVar1;\n  \n  iVar1 = transmit_all(1,param_1,param_2,0x1100c);\n  if (iVar1 != 0) {\n    _terminate(1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "reportMessage",
+                        "transmit_all",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "reportMessage",
+                        "auth_failure",
+                        "auth_success",
+                        "revokeResource",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getAuthVal",
+                "func_c_signature": "undefined4 getAuthVal(void)",
+                "decompiled_code": "undefined4 getAuthVal(void) {\n  undefined *puVar1;\n  char *apcStack_40 [3];\n  int aiStack_34 [2];\n  undefined auStack_2c [15];\n  char local_1d;\n  undefined local_1c [4];\n  undefined4 local_18;\n  long local_14;\n  int local_10;\n  \n  puVar1 = auStack_2c;\n  for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {\n    local_1d = '\\0';\n    while ((local_1d == '\\0' || (local_1d == '\\n'))) {\n      *(undefined **)(puVar1 + -8) = local_1c;\n      *(undefined4 *)(puVar1 + -0xc) = 1;\n      *(char **)(puVar1 + -0x10) = &local_1d;\n      *(undefined4 *)(puVar1 + -0x14) = 0x11071;\n      local_14 = random();\n      if (local_14 != 0) {\n        *(undefined4 *)(puVar1 + -0x10) = 5;\n        *(undefined4 *)(puVar1 + -0x14) = 0x11087;\n        _terminate();\n        puVar1 = puVar1 + -0x10;\n      }\n    }\n    *(char *)((int)&local_18 + local_10) = local_1d;\n  }\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getAuthVal",
+                        "random",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "getAuthVal",
+                        "receiveCommand",
+                        "auth_success",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "receiveCommand",
+                "func_c_signature": "void receiveCommand(void *param_1)",
+                "decompiled_code": "void receiveCommand(void *param_1) {\n  undefined *puVar1;\n  undefined auStack_1c [8];\n  int local_14;\n  int local_10;\n  \n  puVar1 = auStack_1c;\n  local_14 = 0;\n  local_14 = recv(0,param_1,0xc,0x110c5);\n  if (local_14 < 0) {\n    puVar1 = &stack0xffffffd4;\n    _terminate();\n  }\n  for (local_10 = 0; local_10 < 100; local_10 = local_10 + 1) {\n    *(undefined4 *)(puVar1 + -4) = 0x11105;\n    getAuthVal();\n  }\n  *(undefined4 *)(puVar1 + -8) = 0x11f8;\n  *(int *)(puVar1 + -0xc) = (int)param_1 + 0xc;\n  *(undefined4 *)(puVar1 + -0x10) = 0;\n  *(undefined4 *)(puVar1 + -0x14) = 0x11125;\n  local_14 = recvline();\n  if (local_14 < 0) {\n    *(undefined4 *)(puVar1 + -0x10) = 2;\n    *(undefined4 *)(puVar1 + -0x14) = 0x1113b;\n    _terminate();\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "receiveCommand",
+                        "recv",
+                        "_terminate",
+                        "getAuthVal",
+                        "recvline"
+                    ],
+                    "calling_functions": [
+                        "receiveCommand",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "auth_failure",
+                "func_c_signature": "void auth_failure(char *param_1)",
+                "decompiled_code": "void auth_failure(char *param_1) {\n  size_t sVar1;\n  undefined *puVar2;\n  undefined auStack_ec [216];\n  size_t local_14;\n  void *local_10;\n  \n  puVar2 = auStack_ec;\n  local_10 = (void *)0x0;\n  local_14 = strlen(param_1);\n  local_14 = local_14 + 0x26;\n  if (local_10 == (void *)0x0) {\n    local_10 = malloc(local_14);\n    puVar2 = auStack_ec;\n    if (local_10 == (void *)0x0) {\n      puVar2 = &stack0xffffff04;\n      _terminate();\n    }\n    *(size_t *)(puVar2 + -8) = local_14;\n    *(undefined4 *)(puVar2 + -0xc) = 0;\n    *(void **)(puVar2 + -0x10) = local_10;\n    *(undefined4 *)(puVar2 + -0x14) = 0x111a8;\n    memset(*(void **)(puVar2 + -0x10),*(int *)(puVar2 + -0xc),*(size_t *)(puVar2 + -8));\n  }\n  *(char **)(puVar2 + -0xc) = \"Authentication failed for resource \";\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x111bd;\n  strcat(*(char **)(puVar2 + -0x10),*(char **)(puVar2 + -0xc));\n  *(char **)(puVar2 + -0xc) = param_1;\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x111ce;\n  strcat(*(char **)(puVar2 + -0x10),*(char **)(puVar2 + -0xc));\n  *(undefined **)(puVar2 + -0xc) = &DAT_00013024;\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x111e3;\n  strcat(*(char **)(puVar2 + -0x10),*(char **)(puVar2 + -0xc));\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x111f1;\n  sVar1 = strlen(*(char **)(puVar2 + -0x10));\n  *(size_t *)(puVar2 + -0xc) = sVar1;\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x11200;\n  reportMessage();\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "auth_failure",
+                        "strlen",
+                        "malloc",
+                        "_terminate",
+                        "memset",
+                        "strcat",
+                        "reportMessage"
+                    ],
+                    "calling_functions": [
+                        "auth_failure",
+                        "do_auth"
+                    ],
+                    "defined_in_file": "NRFIN_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "auth_success",
+                "func_c_signature": "undefined4 auth_success(char *param_1)",
+                "decompiled_code": "undefined4 auth_success(char *param_1) {\n  size_t sVar1;\n  undefined *puVar2;\n  undefined auStack_ec [4];\n  undefined4 local_e8;\n  undefined4 local_e4;\n  size_t local_18;\n  undefined4 local_14;\n  void *local_10;\n  \n  local_14 = 0;\n  local_e8 = 0;\n  local_e4 = 0;\n  local_18 = strlen(param_1);\n  local_18 = local_18 + 0x22;\n  puVar2 = auStack_ec;\n  if (local_10 == (void *)0x0) {\n    local_10 = malloc(local_18);\n    puVar2 = auStack_ec;\n    if (local_10 == (void *)0x0) {\n      puVar2 = &stack0xffffff04;\n      _terminate();\n    }\n  }\n  *(undefined4 *)(puVar2 + -4) = 0x1127a;\n  local_e8 = getAuthVal();\n  *(size_t *)(puVar2 + -8) = local_18;\n  *(undefined4 *)(puVar2 + -0xc) = 0;\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x11291;\n  memset(*(void **)(puVar2 + -0x10),*(int *)(puVar2 + -0xc),*(size_t *)(puVar2 + -8));\n  *(char **)(puVar2 + -0xc) = \"Access to \";\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x112a6;\n  strcat(*(char **)(puVar2 + -0x10),*(char **)(puVar2 + -0xc));\n  *(char **)(puVar2 + -0xc) = param_1;\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x112b7;\n  strcat(*(char **)(puVar2 + -0x10),*(char **)(puVar2 + -0xc));\n  *(char **)(puVar2 + -0xc) = \" is granted!\";\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x112cc;\n  strcat(*(char **)(puVar2 + -0x10),*(char **)(puVar2 + -0xc));\n  *(undefined4 **)(puVar2 + -0xc) = &local_e8;\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x112e1;\n  strcat(*(char **)(puVar2 + -0x10),*(char **)(puVar2 + -0xc));\n  *(undefined **)(puVar2 + -0xc) = &DAT_00013024;\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x112f6;\n  strcat(*(char **)(puVar2 + -0x10),*(char **)(puVar2 + -0xc));\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x11304;\n  sVar1 = strlen(*(char **)(puVar2 + -0x10));\n  *(size_t *)(puVar2 + -0xc) = sVar1;\n  *(void **)(puVar2 + -0x10) = local_10;\n  *(undefined4 *)(puVar2 + -0x14) = 0x11313;\n  reportMessage();\n  return local_e8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "auth_success",
+                        "strlen",
+                        "malloc",
+                        "_terminate",
+                        "getAuthVal",
+                        "memset",
+                        "strcat",
+                        "reportMessage"
+                    ],
+                    "calling_functions": [
+                        "auth_success",
+                        "do_auth"
+                    ],
+                    "defined_in_file": "NRFIN_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "do_auth",
+                "func_c_signature": "undefined4 do_auth(int param_1,int param_2,char *param_3)",
+                "decompiled_code": "undefined4 do_auth(int param_1,int param_2,char *param_3) {\n  size_t __n;\n  undefined4 uVar1;\n  undefined local_1e [10];\n  int local_14;\n  undefined4 local_10;\n  \n  uVar1 = 0x1132d;\n  local_10 = 0;\n  local_14 = param_1;\n  if (param_1 == param_2) {\n    uVar1 = auth_success(param_3);\n  }\n  else {\n    memset(local_1e,0,10);\n    __n = strnlen(param_3,10);\n    memcpy(local_1e,param_3,__n);\n    auth_failure(local_1e,param_3,__n,uVar1);\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "do_auth",
+                        "auth_success",
+                        "memset",
+                        "strnlen",
+                        "memcpy",
+                        "auth_failure"
+                    ],
+                    "calling_functions": [
+                        "do_auth",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getResourceToken",
+                "func_c_signature": "undefined4 getResourceToken(undefined4 *param_1,char *param_2)",
+                "decompiled_code": "undefined4 getResourceToken(undefined4 *param_1,char *param_2) {\n  int iVar1;\n  undefined4 *local_10;\n  \n  local_10 = param_1;\n  while( true ) {\n    if (local_10 == (undefined4 *)0x0) {\n      return 0;\n    }\n    if ((local_10 != (undefined4 *)0xfffffffc) &&\n       (iVar1 = strncmp((char *)(local_10 + 1),param_2,10), iVar1 == 0)) break;\n    local_10 = (undefined4 *)*local_10;\n  }\n  return local_10[4];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getResourceToken",
+                        "strncmp"
+                    ],
+                    "calling_functions": [
+                        "getResourceToken",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "addResource",
+                "func_c_signature": "void addResource(int *param_1,undefined4 param_2,char *param_3)",
+                "decompiled_code": "void addResource(int *param_1,undefined4 param_2,char *param_3) {\n  int iVar1;\n  undefined *puVar2;\n  undefined auStack_1c [8];\n  undefined4 *local_14;\n  undefined4 *local_10;\n  \n  puVar2 = auStack_1c;\n  local_10 = *(undefined4 **)(*param_1 + 0xc);\n  while( true ) {\n    if (local_10 == (undefined4 *)0x0) {\n      local_14 = (undefined4 *)malloc(0x14);\n      if (local_14 == (undefined4 *)0x0) {\n        puVar2 = &stack0xffffffd4;\n        _terminate();\n      }\n      *(undefined4 *)(puVar2 + -8) = 10;\n      *(char **)(puVar2 + -0xc) = param_3;\n      *(undefined4 **)(puVar2 + -0x10) = local_14 + 1;\n      *(undefined4 *)(puVar2 + -0x14) = 0x11497;\n      memcpy(*(void **)(puVar2 + -0x10),*(void **)(puVar2 + -0xc),*(size_t *)(puVar2 + -8));\n      local_14[4] = param_2;\n      *local_14 = *(undefined4 *)(*param_1 + 0xc);\n      *(undefined4 **)(*param_1 + 0xc) = local_14;\n      return;\n    }\n    if ((local_10 != (undefined4 *)0xfffffffc) &&\n       (iVar1 = strncmp((char *)(local_10 + 1),param_3,10), iVar1 == 0)) break;\n    local_10 = (undefined4 *)*local_10;\n  }\n  local_10[4] = param_2;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "addResource",
+                        "malloc",
+                        "_terminate",
+                        "memcpy",
+                        "strncmp"
+                    ],
+                    "calling_functions": [
+                        "addResource",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "createNewUser",
+                "func_c_signature": "undefined4 * createNewUser(undefined4 *param_1,undefined4 param_2,undefined4 param_3)",
+                "decompiled_code": "undefined4 * createNewUser(undefined4 *param_1,undefined4 param_2,undefined4 param_3) {\n  undefined4 *puVar1;\n  \n  puVar1 = (undefined4 *)malloc(0x10);\n  if (puVar1 == (undefined4 *)0x0) {\n    _terminate(3);\n  }\n  puVar1[1] = param_3;\n  puVar1[2] = param_2;\n  puVar1[3] = 0;\n  *puVar1 = *param_1;\n  *param_1 = puVar1;\n  return puVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "createNewUser",
+                        "malloc",
+                        "_terminate"
+                    ],
+                    "calling_functions": [
+                        "createNewUser",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "getUser",
+                "func_c_signature": "undefined4 * getUser(undefined4 *param_1,int param_2)",
+                "decompiled_code": "undefined4 * getUser(undefined4 *param_1,int param_2) {\n  undefined4 *local_8;\n  \n  local_8 = param_1;\n  while( true ) {\n    if (local_8 == (undefined4 *)0x0) {\n      return (undefined4 *)0x0;\n    }\n    if (param_2 == local_8[1]) break;\n    local_8 = (undefined4 *)*local_8;\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "getUser"
+                    ],
+                    "calling_functions": [
+                        "getUser",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "revokeResource",
+                "func_c_signature": "void revokeResource(int *param_1,int param_2,char *param_3)",
+                "decompiled_code": "void revokeResource(int *param_1,int param_2,char *param_3) {\n  int iVar1;\n  undefined4 *local_10;\n  \n  local_10 = *(undefined4 **)(*param_1 + 0xc);\n  while( true ) {\n    if (local_10 == (undefined4 *)0x0) {\n      reportMessage(\"Revocation denied.\\n\",0x13);\n      return;\n    }\n    if ((local_10 != (undefined4 *)0xfffffffc) &&\n       (iVar1 = strncmp((char *)(local_10 + 1),param_3,10), iVar1 == 0)) break;\n    local_10 = (undefined4 *)*local_10;\n  }\n  if (param_2 == local_10[4]) {\n    local_10[4] = 1;\n    reportMessage(\"Resource revoked.\\n\",0x12);\n    return;\n  }\n  reportMessage(\"Revocation denied.\\n\",0x13);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "revokeResource",
+                        "reportMessage",
+                        "strncmp"
+                    ],
+                    "calling_functions": [
+                        "revokeResource",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "logoutUser",
+                "func_c_signature": "undefined4 logoutUser(int **param_1,int *param_2)",
+                "decompiled_code": "undefined4 logoutUser(int **param_1,int *param_2) {\n  int *piVar1;\n  int **local_18;\n  int **local_14;\n  int **local_10;\n  \n  local_10 = (int **)*param_1;\n  local_14 = (int **)*param_1;\n  while( true ) {\n    if (local_14 == (int **)0x0) {\n      return 1;\n    }\n    if (param_2 == local_14[1]) break;\n    local_10 = local_14;\n    local_14 = (int **)*local_14;\n  }\n  local_18 = (int **)local_14[3];\n  while (local_18 != (int **)0x0) {\n    piVar1 = *local_18;\n    free(local_18);\n    local_18 = (int **)piVar1;\n  }\n  if (local_14 == (int **)*param_1) {\n    *param_1 = *local_14;\n  }\n  else {\n    *local_10 = *local_14;\n  }\n  free(local_14);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "logoutUser",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "logoutUser",
+                        "main"
+                    ],
+                    "defined_in_file": "NRFIN_00033_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  int local_1230;\n  int local_122c;\n  char local_1228 [4];\n  undefined4 local_1224;\n  uint local_1220;\n  undefined auStack_121c [4600];\n  int local_24;\n  uint local_20;\n  undefined4 local_1c;\n  undefined4 local_18;\n  uint local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  local_18 = 0;\n  local_122c = 0;\n  local_1c = 0;\n  do {\n    while( true ) {\n      while( true ) {\n        while( true ) {\n          local_1230 = 0;\n          memset(auStack_121c,0,0x11f8);\n          receiveCommand(local_1228);\n          local_1230 = getUser(local_122c,local_1224);\n          iVar1 = strcmp(\"AUTH\",local_1228);\n          if (iVar1 != 0) break;\n          if (local_1230 == 0) {\n            local_18 = getAuthVal();\n            local_1230 = createNewUser(&local_122c,local_18,local_1224);\n          }\n          local_18 = *(undefined4 *)(local_1230 + 8);\n          local_24 = do_auth(*(undefined4 *)(local_1230 + 8),local_1220,auStack_121c);\n          if (local_24 != 0) {\n            local_1c = 0;\n            addResource(&local_1230,local_24,auStack_121c);\n            local_18 = 0;\n          }\n        }\n        if (local_1230 != 0) break;\n        reportMessage(\"Command failed.\\n\",0x10);\n      }\n      iVar1 = strcmp(\"LOUT\",local_1228);\n      if (iVar1 == 0) break;\n      iVar1 = strcmp(\"REQR\",local_1228);\n      if (iVar1 == 0) {\n        local_14 = 0;\n        local_20 = 0;\n        local_20 = getResourceToken(*(undefined4 *)(local_1230 + 0xc),auStack_121c);\n        if (local_20 == 1) {\n          local_14 = 0;\n        }\n        else if ((1 < local_20) && (1 < local_1220)) {\n          local_14 = do_auth(local_20,local_1220,auStack_121c);\n        }\n        if (local_14 < 2) {\n          if (local_14 == 0) {\n            reportMessage(\"Please re-authenticate.\\n\",0x18);\n          }\n          else {\n            reportMessage(\"Please log in.\\n\",0xf);\n          }\n        }\n      }\n      else {\n        iVar1 = strcmp(\"REVR\",local_1228);\n        if (iVar1 == 0) {\n          revokeResource(&local_1230,local_1220,auStack_121c);\n        }\n      }\n    }\n    logoutUser(&local_122c,local_1224);\n    reportMessage(\"Logged out successfully.\\n\",0x19);\n  } while (local_122c != 0);\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "memset",
+                        "receiveCommand",
+                        "getUser",
+                        "strcmp",
+                        "getAuthVal",
+                        "createNewUser",
+                        "do_auth",
+                        "addResource",
+                        "reportMessage",
+                        "getResourceToken",
+                        "revokeResource",
+                        "logoutUser"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "NRFIN_00033_decompiled.c"
+                }
+            }
+        ]
+    }
+}

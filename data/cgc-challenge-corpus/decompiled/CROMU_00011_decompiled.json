@@ -1,0 +1,641 @@
+{
+    "file": "CROMU_00011",
+    "decompiled_code": {
+        "service.c": [
+            {
+                "func_name": "parse_command_line",
+                "func_c_signature": "int * parse_command_line(int param_1)",
+                "decompiled_code": "int * parse_command_line(int param_1) {\n  int iVar1;\n  int *local_14;\n  int local_10;\n  \n  local_14 = (int *)0x0;\n  local_10 = 0;\n  if (param_1 != 0) {\n    iVar1 = allocate(0xc,0,&local_14);\n    if (iVar1 == 0) {\n      bzero(local_14,0xc);\n      for (; (*(char *)(param_1 + local_10) != '\\0' && (local_10 < 0x100)); local_10 = local_10 + 1)\n      {\n        if ((*(char *)(param_1 + local_10) == '=') || (*(char *)(param_1 + local_10) == '@')) {\n          if (*local_14 == 0) goto LAB_0001121c;\n          *(undefined *)(local_14 + 1) = *(undefined *)(local_10 + param_1);\n          *(undefined *)(param_1 + local_10) = 0;\n        }\n        else if (*(char *)(param_1 + local_10) == ' ') {\n          if (local_14[2] == 0) {\n            *(undefined *)(param_1 + local_10) = 0;\n          }\n        }\n        else {\n          iVar1 = isalnum((int)*(char *)(param_1 + local_10));\n          if (iVar1 == 0) {\n            if (((((((*(char *)(param_1 + local_10) != '|') &&\n                    (*(char *)(param_1 + local_10) != '-')) &&\n                   (*(char *)(param_1 + local_10) != '\\\"')) &&\n                  ((*(char *)(param_1 + local_10) != ',' && (*(char *)(param_1 + local_10) != '*')))\n                  ) && ((*(char *)(param_1 + local_10) != '^' &&\n                        ((*(char *)(param_1 + local_10) != '+' &&\n                         (*(char *)(param_1 + local_10) != '~')))))) || (*local_14 == 0)) ||\n               (*(char *)(local_14 + 1) == '\\0')) goto LAB_0001121c;\n            if (local_14[2] == 0) {\n              local_14[2] = param_1 + local_10;\n            }\n          }\n          else if (*local_14 == 0) {\n            *local_14 = param_1 + local_10;\n          }\n          else if ((local_14[2] == 0) && (*(char *)(local_14 + 1) != '\\0')) {\n            local_14[2] = param_1 + local_10;\n          }\n        }\n      }\n      if (*local_14 == 0) {\nLAB_0001121c:\n        printf(\"!!Error parsing commandline\\n\");\n        deallocate(local_14,0xc);\n        local_14 = (int *)0x0;\n      }\n    }\n    else {\n      local_14 = (int *)0x0;\n    }\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_command_line",
+                        "allocate",
+                        "bzero",
+                        "isalnum",
+                        "printf",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "parse_command_line",
+                        "command_loop"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_sets",
+                "func_c_signature": "void print_sets(void)",
+                "decompiled_code": "void print_sets(void) {\n  int *local_10;\n  \n  local_10 = root;\n  do {\n    if (local_10 == (int *)0x0) {\n      return;\n    }\n    print_set(local_10);\n    local_10 = (int *)*local_10;\n  } while (local_10 != root);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_sets",
+                        "print_set"
+                    ],
+                    "calling_functions": [
+                        "print_sets",
+                        "exec_command"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "copymem",
+                "func_c_signature": "int copymem(int param_1,int param_2,int param_3,int param_4)",
+                "decompiled_code": "int copymem(int param_1,int param_2,int param_3,int param_4) {\n  int local_8;\n  \n  for (local_8 = 0; local_8 < param_4; local_8 = local_8 + 1) {\n    *(undefined *)(param_1 + param_3) = *(undefined *)(param_2 + local_8);\n    param_3 = param_3 + 1;\n  }\n  return param_3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copymem"
+                    ],
+                    "calling_functions": [
+                        "copymem",
+                        "print_subsets"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "print_subsets",
+                "func_c_signature": "void * print_subsets(int param_1,int param_2)",
+                "decompiled_code": "void * print_subsets(int param_1,int param_2) {\n  size_t sVar1;\n  int iVar2;\n  char acStack_ca1 [3201];\n  void *local_20;\n  undefined4 local_1c;\n  char *local_18;\n  int local_14;\n  int local_10;\n  \n  local_20 = (void *)0x0;\n  local_18 = (char *)0x0;\n  local_10 = 0;\n  local_14 = 0;\n  if (param_1 == 0) {\n    local_20 = (void *)0x0;\n  }\n  else {\n    bzero(acStack_ca1 + 1,0xc80);\n    if (param_2 != 0) {\n      sVar1 = strlen((char *)(param_1 + 8));\n      local_10 = copymem(acStack_ca1 + 1,param_1 + 8,local_10,sVar1);\n      local_10 = copymem(acStack_ca1 + 1,&DAT_0001501d,local_10,3);\n    }\n    iVar2 = local_10 + 1;\n    local_10 = local_10 + 1;\n    acStack_ca1[iVar2] = '|';\n    for (local_14 = 0; local_14 < *(int *)(param_1 + 0x18); local_14 = local_14 + 1) {\n      if (*(int *)(*(int *)(param_1 + 0xc + (local_14 + 4) * 4) + 4) == 1) {\n        iVar2 = local_10 + 1;\n        local_10 = local_10 + 1;\n        acStack_ca1[iVar2] = '\\\"';\n        local_18 = **(char ***)(param_1 + 0xc + (local_14 + 4) * 4);\n        sVar1 = strlen(local_18);\n        iVar2 = copymem(acStack_ca1 + 1,local_18,local_10,sVar1);\n        local_10 = iVar2 + 1;\n        acStack_ca1[iVar2 + 1] = '\\\"';\n      }\n      else {\n        local_1c = retrieve_set(**(undefined4 **)(param_1 + 0xc + (local_14 + 4) * 4));\n        local_18 = (char *)print_subsets(local_1c,0);\n        if (local_18 == (char *)0x0) {\n          return (void *)0x0;\n        }\n        sVar1 = strlen(local_18);\n        local_10 = copymem(acStack_ca1 + 1,local_18,local_10,sVar1);\n        sVar1 = strlen(local_18);\n        deallocate(local_18,sVar1 + 1);\n      }\n      iVar2 = local_10 + 1;\n      local_10 = local_10 + 1;\n      acStack_ca1[iVar2] = ',';\n    }\n    if (acStack_ca1[local_10] == ',') {\n      acStack_ca1[local_10] = '|';\n      acStack_ca1[local_10 + 1] = '\\0';\n    }\n    else {\n      acStack_ca1[local_10 + 1] = '|';\n      acStack_ca1[local_10 + 2] = '\\0';\n    }\n    sVar1 = strlen(acStack_ca1 + 1);\n    iVar2 = allocate(sVar1 + 1,0,&local_20);\n    if (iVar2 == 0) {\n      sVar1 = strlen(acStack_ca1 + 1);\n      bzero(local_20,sVar1 + 1);\n      sVar1 = strlen(acStack_ca1 + 1);\n      copymem(local_20,acStack_ca1 + 1,0,sVar1);\n    }\n    else {\n      local_20 = (void *)0x0;\n    }\n  }\n  return local_20;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_subsets",
+                        "bzero",
+                        "strlen",
+                        "copymem",
+                        "retrieve_set",
+                        "deallocate",
+                        "allocate"
+                    ],
+                    "calling_functions": [
+                        "print_subsets",
+                        "exec_command"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "memcmp",
+                "func_c_signature": "int memcmp(void *__s1,void *__s2,size_t __n)",
+                "decompiled_code": "int memcmp(void *__s1,void *__s2,size_t __n) {\n  int local_8;\n  \n  local_8 = 0;\n  while( true ) {\n    if ((int)__n <= local_8) {\n      return 0;\n    }\n    if (*(char *)((int)__s1 + local_8) != *(char *)((int)__s2 + local_8)) break;\n    local_8 = local_8 + 1;\n  }\n  return (int)*(char *)((int)__s1 + local_8) - (int)*(char *)((int)__s2 + local_8);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "memcmp"
+                    ],
+                    "calling_functions": [
+                        "memcmp",
+                        "exec_command"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "exec_command",
+                "func_c_signature": "void exec_command(char *param_1)",
+                "decompiled_code": "void exec_command(char *param_1) {\n  int iVar1;\n  size_t sVar2;\n  undefined *puVar3;\n  undefined auStack_1c [4];\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  puVar3 = auStack_1c;\n  local_14 = 0;\n  local_10 = 0;\n  local_18 = 0;\n  if (param_1 != (char *)0x0) {\n    iVar1 = strcmp(param_1,\".l\");\n    if (iVar1 == 0) {\n      puVar3 = &stack0xffffffd4;\n      _terminate();\n    }\n    *(undefined **)(puVar3 + -0xc) = &DAT_00015024;\n    *(char **)(puVar3 + -0x10) = param_1;\n    *(undefined4 *)(puVar3 + -0x14) = 0x1167d;\n    iVar1 = strcmp(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc));\n    if (iVar1 == 0) {\n      *(char **)(puVar3 + -0x10) = \"setx = |\\\"data\\\", sety|\\tInitialize a set\\n\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11697;\n      printf(*(char **)(puVar3 + -0x10));\n      *(char **)(puVar3 + -0x10) = \"setx = seta+setb\\tunion\\n\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x116a9;\n      printf(*(char **)(puVar3 + -0x10));\n      *(char **)(puVar3 + -0x10) = \"setx = seta^setb\\tintersect\\n\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x116bb;\n      printf(*(char **)(puVar3 + -0x10));\n      *(char **)(puVar3 + -0x10) = \"setx = seta-setb\\tset difference\\n\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x116cd;\n      printf(*(char **)(puVar3 + -0x10));\n      *(char **)(puVar3 + -0x10) = \"setx = seta~setb\\tsymmetric difference\\n\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x116df;\n      printf(*(char **)(puVar3 + -0x10));\n      *(char **)(puVar3 + -0x10) = \"seta @@ setb\\t\\tsubset. Returns TRUE or FALSE\\n\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x116f1;\n      printf(*(char **)(puVar3 + -0x10));\n      *(char **)(puVar3 + -0x10) = \".h\\t\\tPrint this menu\\n\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11703;\n      printf(*(char **)(puVar3 + -0x10));\n      *(char **)(puVar3 + -0x10) = \".l\\t\\tExit the program\\n\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11715;\n      printf(*(char **)(puVar3 + -0x10));\n      *(char **)(puVar3 + -0x10) = \".p\\t\\tPrint sets and their elements\\n\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11727;\n      printf(*(char **)(puVar3 + -0x10));\n      *(char **)(puVar3 + -0x10) = \".ps <setvar>\\tPrint an expanded set\\n\";\n      *(undefined4 *)(puVar3 + -0x14) = 0x11739;\n      printf(*(char **)(puVar3 + -0x10));\n    }\n    else {\n      *(undefined4 *)(puVar3 + -8) = 3;\n      *(undefined **)(puVar3 + -0xc) = &DAT_00015170;\n      *(char **)(puVar3 + -0x10) = param_1;\n      *(undefined4 *)(puVar3 + -0x14) = 0x11755;\n      iVar1 = memcmp(*(void **)(puVar3 + -0x10),*(void **)(puVar3 + -0xc),*(size_t *)(puVar3 + -8));\n      if (iVar1 == 0) {\n        for (param_1 = param_1 + 3; *param_1 == ' '; param_1 = param_1 + 1) {\n        }\n        while( true ) {\n          *(int *)(puVar3 + -0x10) = (int)param_1[local_10];\n          *(undefined4 *)(puVar3 + -0x14) = 0x11791;\n          iVar1 = isalnum(*(int *)(puVar3 + -0x10));\n          if (iVar1 == 0) break;\n          local_10 = local_10 + 1;\n        }\n        param_1[local_10] = '\\0';\n        *(char **)(puVar3 + -0x10) = param_1;\n        *(undefined4 *)(puVar3 + -0x14) = 0x117ae;\n        local_18 = retrieve_set();\n        if (local_18 == 0) {\n          *(char **)(puVar3 + -0xc) = param_1;\n          *(char **)(puVar3 + -0x10) = \"!!Failed to find set: @s\\n\";\n          *(undefined4 *)(puVar3 + -0x14) = 0x117cc;\n          printf(*(char **)(puVar3 + -0x10));\n        }\n        else {\n          *(undefined4 *)(puVar3 + -0xc) = 1;\n          *(int *)(puVar3 + -0x10) = local_18;\n          *(undefined4 *)(puVar3 + -0x14) = 0x117e1;\n          local_14 = print_subsets();\n          if (local_14 != 0) {\n            *(int *)(puVar3 + -0xc) = local_14;\n            *(undefined **)(puVar3 + -0x10) = &DAT_0001518e;\n            *(undefined4 *)(puVar3 + -0x14) = 0x117ff;\n            printf(*(char **)(puVar3 + -0x10));\n            *(int *)(puVar3 + -0x10) = local_14;\n            *(undefined4 *)(puVar3 + -0x14) = 0x1180d;\n            sVar2 = strlen(*(char **)(puVar3 + -0x10));\n            *(size_t *)(puVar3 + -0xc) = sVar2 + 1;\n            *(int *)(puVar3 + -0x10) = local_14;\n            *(undefined4 *)(puVar3 + -0x14) = 0x1181f;\n            deallocate();\n          }\n        }\n      }\n      else {\n        *(undefined **)(puVar3 + -0xc) = &DAT_00015192;\n        *(char **)(puVar3 + -0x10) = param_1;\n        *(undefined4 *)(puVar3 + -0x14) = 0x11836;\n        iVar1 = strcmp(*(char **)(puVar3 + -0x10),*(char **)(puVar3 + -0xc));\n        if (iVar1 == 0) {\n          *(undefined4 *)(puVar3 + -4) = 0x11842;\n          print_sets();\n        }\n        else {\n          *(char **)(puVar3 + -0xc) = param_1;\n          *(char **)(puVar3 + -0x10) = \"!!Unrecognized command: @s\\n\";\n          *(undefined4 *)(puVar3 + -0x14) = 0x11856;\n          printf(*(char **)(puVar3 + -0x10));\n        }\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "exec_command",
+                        "strcmp",
+                        "_terminate",
+                        "printf",
+                        "memcmp",
+                        "isalnum",
+                        "retrieve_set",
+                        "print_subsets",
+                        "strlen",
+                        "deallocate",
+                        "print_sets"
+                    ],
+                    "calling_functions": [
+                        "exec_command",
+                        "command_loop"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "retrieve_set",
+                "func_c_signature": "int * retrieve_set(char *param_1)",
+                "decompiled_code": "int * retrieve_set(char *param_1) {\n  int iVar1;\n  int *local_10;\n  \n  if (param_1 != (char *)0x0) {\n    local_10 = root;\n    do {\n      if (local_10 == (int *)0x0) {\n        return (int *)0x0;\n      }\n      iVar1 = strcmp(param_1,(char *)(local_10 + 2));\n      if (iVar1 == 0) {\n        return local_10;\n      }\n      local_10 = (int *)*local_10;\n    } while (local_10 != root);\n  }\n  return (int *)0x0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "retrieve_set",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "print_subsets",
+                        "exec_command",
+                        "retrieve_set",
+                        "parse_set",
+                        "parse_operations",
+                        "handle_set_var",
+                        "issubset"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_set",
+                "func_c_signature": "void add_set(int **param_1)",
+                "decompiled_code": "void add_set(int **param_1) {\n  if (param_1 != (int **)0x0) {\n    if (root == (int **)0x0) {\n      root = param_1;\n      *param_1 = (int *)param_1;\n      param_1[1] = (int *)param_1;\n    }\n    *param_1 = (int *)root;\n    param_1[1] = root[1];\n    *root[1] = (int)param_1;\n    root[1] = (int *)param_1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_set"
+                    ],
+                    "calling_functions": [
+                        "add_set",
+                        "handle_set_var"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_set",
+                "func_c_signature": "void * parse_set(char *param_1)",
+                "decompiled_code": "void * parse_set(char *param_1) {\n  int iVar1;\n  undefined local_128 [256];\n  void *local_28;\n  int local_24;\n  int local_20;\n  char *local_1c;\n  uint local_18;\n  char *local_14;\n  char *local_10;\n  \n  local_28 = (void *)0x0;\n  local_10 = (char *)0x0;\n  local_14 = (char *)0x0;\n  local_1c = (char *)0x0;\n  local_18 = 0;\n  local_20 = 0;\n  local_24 = 0;\n  if (param_1 != (char *)0x0) {\n    iVar1 = allocate(0x58,0,&local_28);\n    if (iVar1 == 0) {\n      bzero(local_28,0x58);\n      local_10 = param_1;\n      do {\n        if (((*local_10 == '\\0') || (local_18 == 8)) || (local_18 == 2)) goto LAB_000120bf;\n        if (*local_10 == '|') {\n          if (local_18 == 6) {\n            bzero(local_128,0x100);\n            if (10 < (int)local_10 - (int)local_14) {\n              printf(\"!!Invalid set data length\\n\");\n              local_18 = 8;\n              goto LAB_000120bf;\n            }\n            memcpy(local_128,local_14,(int)local_10 - (int)local_14);\n            local_24 = retrieve_set(local_128);\n            if (local_24 == 0) {\n              printf(\"!!Cannot have a non-existant set as an element\\n\");\n              local_18 = 8;\n            }\n            else {\n              local_20 = create_element(local_128,0);\n              if (local_20 != 0) {\n                iVar1 = element_in_set(local_28,local_20);\n                if (iVar1 == 0) {\n                  iVar1 = add_element_to_set(local_28,local_20);\n                  if (iVar1 == 0) goto LAB_00011ba6;\n                  printf(\"Failed to ad el\\n\");\n                  local_18 = 8;\n                }\n                else {\n                  printf(\"!!Elements must be unique\\n\");\n                  free_element(local_20);\n                  free_set_array(local_28);\n                  local_20 = 0;\n                  local_28 = (void *)0x0;\n                  local_18 = 8;\n                }\n                goto LAB_000120bf;\n              }\n              printf(\"!!Failed to create element\\n\");\n              local_18 = 8;\n            }\n          }\n          else if (local_18 < 7) {\n            if (local_18 == 5) {\n              local_18 = 8;\n              printf(\"!!Additional variable expected\\n\");\n            }\n            else {\n              if (5 < local_18) goto LAB_00011ba6;\n              if (local_18 == 0) {\n                local_18 = 1;\n              }\n              else if (local_18 != 3) goto LAB_00011ba6;\n            }\n          }\n          else {\nLAB_00011ba6:\n            local_18 = 2;\n          }\n        }\n        else if (*local_10 == '\\\"') {\n          if (local_18 < 8) {\n            if (local_18 < 6) {\n              if (local_18 == 3) {\n                local_18 = 4;\n                bzero(local_128,0x100);\n                if ((int)local_10 - (int)local_14 < 0xb) {\n                  memcpy(local_128,local_14,(int)local_10 - (int)local_14);\n                  local_20 = create_element(local_128,1);\n                  if (local_20 == 0) {\n                    printf(\"Failed to cel\\n\");\n                    local_18 = 8;\n                  }\n                  else {\n                    iVar1 = element_in_set(local_28,local_20);\n                    if (iVar1 == 0) {\n                      iVar1 = add_element_to_set(local_28,local_20);\n                      if (iVar1 == 0) goto LAB_0001209b;\n                      printf(\"Failed to ad el\\n\");\n                      local_18 = 8;\n                    }\n                    else {\n                      printf(\"!!Elements must be unique\\n\");\n                      free_element(local_20);\n                      free_set_array(local_28);\n                      local_20 = 0;\n                      local_28 = (void *)0x0;\n                      local_18 = 8;\n                    }\n                  }\n                }\n                else {\n                  printf(\"!!Invalid set data length\\n\");\n                  local_18 = 8;\n                }\n                goto LAB_000120bf;\n              }\n              if (local_18 != 4) goto LAB_00011d3c;\n            }\n            local_18 = 8;\n            printf(\"!!Malformed set\\n\");\n          }\n          else {\nLAB_00011d3c:\n            local_18 = 3;\n            local_14 = local_10 + 1;\n          }\n        }\n        else if (*local_10 == ' ') {\n          if (local_18 == 6) {\n            local_1c = local_10;\n            bzero(local_128,0x100);\n            if (0xf < (int)local_10 - (int)local_14) {\n              printf(\"!!Invalid set name length\\n\");\n              local_18 = 8;\n              goto LAB_000120bf;\n            }\n            memcpy(local_128,local_14,(int)local_10 - (int)local_14);\n            local_20 = create_element(local_128,0);\n            if (local_20 == 0) {\n              printf(\"!!Create element failed\\n\");\n              local_18 = 8;\n              goto LAB_000120bf;\n            }\n            iVar1 = element_in_set(local_28,local_20);\n            if (iVar1 != 0) {\n              printf(\"!!Elements must be unique\\n\");\n              free_element(local_20);\n              free_set_array(local_28);\n              local_20 = 0;\n              local_28 = (void *)0x0;\n              local_18 = 8;\n              goto LAB_000120bf;\n            }\n            iVar1 = add_element_to_set(local_28,local_20);\n            if (iVar1 != 0) {\n              printf(\"!!Failed to add element\\n\");\n              local_18 = 8;\n              goto LAB_000120bf;\n            }\n            local_18 = 7;\n          }\n        }\n        else if (*local_10 == ',') {\n          if (local_18 == 6) {\n            bzero(local_128,0x100);\n            if (0xf < (int)local_10 - (int)local_14) {\n              printf(\"!!Invalid set name length\\n\");\n              local_18 = 8;\n              goto LAB_000120bf;\n            }\n            memcpy(local_128,local_14,(int)local_10 - (int)local_14);\n            local_20 = create_element(local_128,0);\n            if (local_20 == 0) {\n              printf(\"!!Failed to create element\\n\");\n              local_18 = 8;\n              goto LAB_000120bf;\n            }\n            iVar1 = element_in_set(local_28,local_20);\n            if (iVar1 != 0) {\n              printf(\"!!Elements must be unique\\n\");\n              free_element(local_20);\n              free_set_array(local_28);\n              local_20 = 0;\n              local_28 = (void *)0x0;\n              local_18 = 8;\n              goto LAB_000120bf;\n            }\n            iVar1 = add_element_to_set(local_28,local_20);\n            if (iVar1 != 0) {\n              printf(\"!!Failed to add element\\n\");\n              local_18 = 8;\n              goto LAB_000120bf;\n            }\n            local_18 = 5;\n          }\n          else {\n            if (local_18 < 7) {\n              if (local_18 == 1) {\n                local_18 = 8;\n                printf(\"!!Malformed set\\n\");\n                goto LAB_0001209b;\n              }\n              if (local_18 == 3) {\n                printf(\"!!Improperly formated set\\n\");\n                local_18 = 8;\n                goto LAB_000120bf;\n              }\n            }\n            local_18 = 5;\n          }\n        }\n        else if (local_18 == 5) {\nLAB_00012067:\n          local_18 = 6;\n          local_14 = local_10;\n        }\n        else if (local_18 < 6) {\n          if (local_18 == 1) goto LAB_00012067;\n          if (local_18 == 4) {\n            local_18 = 8;\n            printf(\"!!Invalid character\\n\");\n            goto LAB_000120bf;\n          }\n        }\nLAB_0001209b:\n        local_10 = local_10 + 1;\n      } while( true );\n    }\n    local_28 = (void *)0x0;\n  }\nLAB_000120bf:\n  if (local_18 != 2) {\n    free_set_array(local_28);\n    local_28 = (void *)0x0;\n  }\n  return local_28;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_set",
+                        "allocate",
+                        "bzero",
+                        "printf",
+                        "memcpy",
+                        "retrieve_set",
+                        "create_element",
+                        "element_in_set",
+                        "add_element_to_set",
+                        "free_element",
+                        "free_set_array"
+                    ],
+                    "calling_functions": [
+                        "parse_set",
+                        "parse_operations",
+                        "issubset"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "symmetric_difference",
+                "func_c_signature": "undefined4 symmetric_difference(int param_1,int param_2)",
+                "decompiled_code": "undefined4 symmetric_difference(int param_1,int param_2) {\n  int iVar1;\n  int iVar2;\n  undefined4 local_10;\n  \n  local_10 = 0;\n  if (((param_1 != 0) && (param_2 != 0)) && (iVar1 = set_difference(param_1,param_2), iVar1 != 0)) {\n    iVar2 = set_difference(param_2,param_1);\n    if (iVar2 == 0) {\n      free_set_array(iVar1);\n    }\n    else {\n      local_10 = unionset(iVar1,iVar2);\n      free_set_array(iVar1);\n      free_set_array(iVar2);\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "symmetric_difference",
+                        "set_difference",
+                        "free_set_array",
+                        "unionset"
+                    ],
+                    "calling_functions": [
+                        "symmetric_difference",
+                        "parse_operations"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_difference",
+                "func_c_signature": "void * set_difference(int param_1,int param_2)",
+                "decompiled_code": "void * set_difference(int param_1,int param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  void *local_18;\n  int local_14;\n  int local_10;\n  \n  local_18 = (void *)0x0;\n  local_10 = 0;\n  local_14 = 0;\n  if ((param_1 != 0) && (param_2 != 0)) {\n    iVar1 = allocate(0x58,0,&local_18,0x121b6);\n    if (iVar1 == 0) {\n      bzero(local_18,0x58);\n      for (; local_10 < *(int *)(param_1 + 0x18); local_10 = local_10 + 1) {\n        local_14 = element_in_set(param_2,*(undefined4 *)(param_1 + 0xc + (local_10 + 4) * 4));\n        if (local_14 == -1) {\n          free_set_array(local_18);\n          return (void *)0x0;\n        }\n        if (local_14 == 0) {\n          uVar2 = copy_element(*(undefined4 *)(param_1 + 0xc + (local_10 + 4) * 4));\n          iVar1 = add_element_to_set(local_18,uVar2);\n          if (iVar1 != 0) {\n            free_set_array(local_18);\n            return (void *)0x0;\n          }\n        }\n      }\n    }\n    else {\n      local_18 = (void *)0x0;\n    }\n  }\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_difference",
+                        "allocate",
+                        "bzero",
+                        "element_in_set",
+                        "free_set_array",
+                        "copy_element",
+                        "add_element_to_set"
+                    ],
+                    "calling_functions": [
+                        "symmetric_difference",
+                        "set_difference",
+                        "parse_operations"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "intersect",
+                "func_c_signature": "void * intersect(int param_1,int param_2)",
+                "decompiled_code": "void * intersect(int param_1,int param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  void *local_18;\n  int local_14;\n  int local_10;\n  \n  local_18 = (void *)0x0;\n  local_10 = 0;\n  local_14 = 0;\n  if ((param_1 != 0) && (param_2 != 0)) {\n    iVar1 = allocate(0x58,0,&local_18);\n    if (iVar1 == 0) {\n      bzero(local_18,0x58);\n      for (; local_10 < *(int *)(param_1 + 0x18); local_10 = local_10 + 1) {\n        local_14 = element_in_set(param_2,*(undefined4 *)(param_1 + 0xc + (local_10 + 4) * 4));\n        if (local_14 == -1) {\n          printf(\"!!Unknown error\\n\");\n          free_set_array(local_18);\n          return (void *)0x0;\n        }\n        if (local_14 == 1) {\n          uVar2 = copy_element(*(undefined4 *)(param_1 + 0xc + (local_10 + 4) * 4));\n          iVar1 = add_element_to_set(local_18,uVar2);\n          if (iVar1 != 0) {\n            printf(\"!!Error adding element in intersect\\n\");\n            free_set_array(local_18);\n            return (void *)0x0;\n          }\n        }\n      }\n    }\n    else {\n      printf(\"!!Failed to allocate newset\\n\");\n      local_18 = (void *)0x0;\n    }\n  }\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "intersect",
+                        "allocate",
+                        "bzero",
+                        "element_in_set",
+                        "printf",
+                        "free_set_array",
+                        "copy_element",
+                        "add_element_to_set"
+                    ],
+                    "calling_functions": [
+                        "intersect",
+                        "parse_operations"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "unionset",
+                "func_c_signature": "void * unionset(int param_1,int param_2)",
+                "decompiled_code": "void * unionset(int param_1,int param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  void *local_18;\n  int local_14;\n  int local_10;\n  \n  local_18 = (void *)0x0;\n  local_10 = 0;\n  local_14 = 0;\n  if ((param_1 != 0) && (param_2 != 0)) {\n    iVar1 = allocate(0x58,0,&local_18);\n    if (iVar1 == 0) {\n      bzero(local_18,0x58);\n      for (; local_10 < *(int *)(param_1 + 0x18); local_10 = local_10 + 1) {\n        uVar2 = copy_element(*(undefined4 *)(param_1 + 0xc + (local_10 + 4) * 4));\n        iVar1 = add_element_to_set(local_18,uVar2);\n        if (iVar1 != 0) {\n          printf(\"!!Failed to add element in union\\n\");\n          free_set_array(local_18);\n          return (void *)0x0;\n        }\n      }\n      for (local_10 = 0; local_10 < *(int *)(param_2 + 0x18); local_10 = local_10 + 1) {\n        local_14 = element_in_set(local_18,*(undefined4 *)(param_2 + 0xc + (local_10 + 4) * 4));\n        if (local_14 == -1) {\n          printf(\"!!!Error in intersect\\n\");\n          free_set_array(local_18);\n          return (void *)0x0;\n        }\n        if (local_14 == 0) {\n          uVar2 = copy_element(*(undefined4 *)(param_2 + 0xc + (local_10 + 4) * 4));\n          iVar1 = add_element_to_set(local_18,uVar2);\n          if (iVar1 != 0) {\n            printf(\"!!!Failed to add element in intersect\\n\");\n            free_set_array(local_18);\n            return (void *)0x0;\n          }\n        }\n      }\n    }\n    else {\n      printf(\"!!Failed to allocate new nset\\n\");\n      local_18 = (void *)0x0;\n    }\n  }\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "unionset",
+                        "allocate",
+                        "bzero",
+                        "copy_element",
+                        "add_element_to_set",
+                        "printf",
+                        "free_set_array",
+                        "element_in_set"
+                    ],
+                    "calling_functions": [
+                        "symmetric_difference",
+                        "unionset",
+                        "parse_operations"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_operations",
+                "func_c_signature": "int parse_operations(char *param_1,char *param_2)",
+                "decompiled_code": "int parse_operations(char *param_1,char *param_2) {\n  int iVar1;\n  undefined local_40 [16];\n  char *local_30;\n  size_t local_2c;\n  int local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_14 = 0;\n  local_18 = 0;\n  local_1c = 0;\n  local_20 = 0;\n  local_2c = 0;\n  local_24 = 0;\n  if ((param_1 != (char *)0x0) && (param_2 != (char *)0x0)) {\nLAB_000128a1:\n    if (*param_2 == '\\0') goto code_r0x000128af;\n    if (*param_2 == '|') {\n      if (local_10 == 0) {\n        local_10 = parse_set(param_2);\n        if (local_10 == 0) {\n          printf(\"!!Set parsing failed\\n\");\n          goto LAB_000129f9;\n        }\n        do {\n          param_2 = param_2 + 1;\n        } while (*param_2 != '|');\n        local_14 = 1;\n      }\n      else {\n        if (local_18 != 0) {\n          printf(\"!!Too many sets\\n\");\n          goto LAB_000129f9;\n        }\n        local_18 = parse_set(param_2);\n        if (local_18 == 0) {\n          printf(\"!!Set parsing failed\\n\");\n          goto LAB_000129f9;\n        }\n        do {\n          param_2 = param_2 + 1;\n        } while (*param_2 != '|');\n        local_1c = 1;\n      }\n    }\n    else {\n      if ((((*param_2 == '^') || (*param_2 == '+')) || (*param_2 == '-')) || (*param_2 == '~')) {\n        if (local_20 == 0) {\n          local_20 = (int)*param_2;\n          goto LAB_0001289d;\n        }\n        printf(\"!!Only one operation allowed.\\n\");\n        goto LAB_000129f9;\n      }\n      iVar1 = isalnum((int)*param_2);\n      if (iVar1 == 0) {\n        if (*param_2 != ' ') {\n          printf(\"!!Invalid sets\\n\");\n          goto LAB_000129f9;\n        }\n        param_2 = param_2 + 1;\n        goto LAB_000128a1;\n      }\n      local_30 = param_2;\n      while (iVar1 = isalnum((int)*param_2), iVar1 != 0) {\n        param_2 = param_2 + 1;\n      }\n      bzero(local_40,0x10);\n      local_2c = (int)param_2 - (int)local_30;\n      param_2 = param_2 + -1;\n      if (0xf < (int)local_2c) {\n        printf(\"!!Invalid set name length\\n\");\n        goto LAB_000129f9;\n      }\n      memcpy(local_40,local_30,local_2c);\n      if (local_10 != 0) {\n        if (local_18 == 0) {\n          local_18 = retrieve_set(local_40);\n          if (local_18 != 0) goto LAB_0001289d;\n          printf(\"!!Nonexistant set: @s\\n\",local_40);\n        }\n        else {\n          printf(\"!!Too many sets\\n\");\n        }\n        goto LAB_000129f9;\n      }\n      local_10 = retrieve_set(local_40);\n      if (local_10 == 0) {\n        printf(\"!!Nonexistant set: @s\\n\",local_40);\n        goto LAB_000129f9;\n      }\n    }\nLAB_0001289d:\n    param_2 = param_2 + 1;\n    goto LAB_000128a1;\n  }\nLAB_000129f9:\n  if ((local_18 != 0) && (local_1c != 0)) {\n    free_set_array(local_18);\n    local_18 = 0;\n  }\n  if ((local_10 != 0) && (local_14 != 0)) {\n    free_set_array(local_10);\n  }\n  return local_24;\ncode_r0x000128af:\n  if (local_20 == 0x2b) {\n    local_24 = unionset(local_10,local_18);\n  }\n  else if (local_20 == 0x5e) {\n    local_24 = intersect(local_10,local_18);\n  }\n  else if (local_20 == 0x2d) {\n    local_24 = set_difference(local_10,local_18);\n  }\n  else if (local_20 == 0x7e) {\n    local_24 = symmetric_difference(local_10,local_18);\n  }\n  else {\n    local_24 = copy_set(local_10);\n    if (local_24 == 0) {\n      printf(\"!!Copy failed\\n\");\n      goto LAB_000129f9;\n    }\n  }\n  if (local_24 != 0) {\n    strncpy((char *)(local_24 + 8),param_1,0xf);\n    for (local_28 = 0; local_28 < *(int *)(local_24 + 0x18); local_28 = local_28 + 1) {\n      if ((*(int *)(*(int *)(local_24 + 0xc + (local_28 + 4) * 4) + 4) == 0) &&\n         (iVar1 = strcmp(**(char ***)(local_24 + 0xc + (local_28 + 4) * 4),(char *)(local_24 + 8)),\n         iVar1 == 0)) {\n        printf(\"!!A set cannot contain itself\\n\");\n        free_set_array(local_24);\n        local_24 = 0;\n        break;\n      }\n    }\n  }\n  goto LAB_000129f9;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_operations",
+                        "parse_set",
+                        "printf",
+                        "isalnum",
+                        "bzero",
+                        "memcpy",
+                        "retrieve_set",
+                        "free_set_array",
+                        "unionset",
+                        "intersect",
+                        "set_difference",
+                        "symmetric_difference",
+                        "copy_set",
+                        "strncpy",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "parse_operations",
+                        "handle_set_var"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "handle_set_var",
+                "func_c_signature": "undefined4 handle_set_var(int *param_1)",
+                "decompiled_code": "undefined4 handle_set_var(int *param_1) {\n  int iVar1;\n  int iVar2;\n  int local_10;\n  \n  local_10 = 0xffffffff;\n  if (((param_1 != (int *)0x0) && (*param_1 != 0)) && (param_1[2] != 0)) {\n    iVar1 = parse_operations(*param_1,param_1[2]);\n    if (iVar1 == 0) {\n      printf(\"!!Error parsing sets\\n\");\n    }\n    else {\n      iVar2 = retrieve_set(iVar1 + 8);\n      if (iVar2 == 0) {\n        add_set(iVar1);\n      }\n      else {\n        for (local_10 = 0; local_10 < *(int *)(iVar2 + 0x18); local_10 = local_10 + 1) {\n          free_element(*(undefined4 *)(iVar2 + 0xc + (local_10 + 4) * 4));\n          *(undefined4 *)(iVar2 + 0xc + (local_10 + 4) * 4) = 0;\n        }\n        for (local_10 = 0; local_10 < *(int *)(iVar1 + 0x18); local_10 = local_10 + 1) {\n          *(undefined4 *)(iVar2 + 0xc + (local_10 + 4) * 4) =\n               *(undefined4 *)(iVar1 + 0xc + (local_10 + 4) * 4);\n        }\n        *(undefined4 *)(iVar2 + 0x18) = *(undefined4 *)(iVar1 + 0x18);\n        deallocate(iVar1,0x58);\n      }\n      local_10 = 0;\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "handle_set_var",
+                        "parse_operations",
+                        "printf",
+                        "retrieve_set",
+                        "add_set",
+                        "free_element",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "handle_set_var",
+                        "command_loop"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "issubset",
+                "func_c_signature": "void issubset(char *param_1,char *param_2)",
+                "decompiled_code": "void issubset(char *param_1,char *param_2) {\n  int iVar1;\n  int *local_18;\n  int local_14;\n  int local_10;\n  \n  local_10 = 0;\n  local_18 = (int *)0x0;\n  if ((param_1 != (char *)0x0) && (param_2 != (char *)0x0)) {\n    for (; (*param_1 != '\\0' && (*param_1 == ' ')); param_1 = param_1 + 1) {\n    }\n    if (*param_1 == '|') {\n      local_14 = parse_set(param_1);\n    }\n    else {\n      for (; (param_1[local_10] != ' ' && (param_1[local_10] != '\\0')); local_10 = local_10 + 1) {\n      }\n      param_1[local_10] = '\\0';\n      local_14 = retrieve_set(param_1);\n    }\n    if (local_14 == 0) {\n      printf(\"!!Failed to parse left set\\n\");\n    }\n    else {\n      for (; (*param_2 != '\\0' && (*param_2 == ' ')); param_2 = param_2 + 1) {\n      }\n      if (*param_2 == '|') {\n        local_18 = (int *)parse_set(param_2);\n      }\n      else {\n        for (local_10 = 0; (param_2[local_10] != ' ' && (param_2[local_10] != '\\0'));\n            local_10 = local_10 + 1) {\n        }\n        param_2[local_10] = '\\0';\n        local_18 = (int *)retrieve_set(param_2);\n      }\n      if (local_18 == (int *)0x0) {\n        printf(\"!!Failed to parse right set\\n\");\n      }\n      else {\n        for (local_10 = 0; local_10 < *(int *)(local_14 + 0x18); local_10 = local_10 + 1) {\n          iVar1 = element_in_set(local_18,*(undefined4 *)(local_14 + 0xc + (local_10 + 4) * 4));\n          if (iVar1 == 0) {\n            printf(\"FALSE\\n\");\n            goto LAB_00012d6f;\n          }\n        }\n        printf(\"TRUE\\n\");\n      }\n    }\n  }\nLAB_00012d6f:\n  if ((local_18 != (int *)0x0) && (*local_18 == 0)) {\n    free_set_array(local_18);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "issubset",
+                        "parse_set",
+                        "retrieve_set",
+                        "printf",
+                        "element_in_set",
+                        "free_set_array"
+                    ],
+                    "calling_functions": [
+                        "issubset",
+                        "command_loop"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "command_loop",
+                "func_c_signature": "void command_loop(void)",
+                "decompiled_code": "void command_loop(void) {\n  undefined4 uVar1;\n  undefined *puVar2;\n  char *apcStack_130 [2];\n  size_t asStack_128 [3];\n  undefined auStack_11c [8];\n  char local_114 [256];\n  undefined4 *local_14;\n  undefined4 local_10;\n  \n  puVar2 = auStack_11c;\n  local_10 = 0;\n  local_14 = (undefined4 *)0x0;\n  do {\n    while( true ) {\n      *(undefined4 *)(puVar2 + -0xc) = 0x100;\n      *(char **)(puVar2 + -0x10) = local_114;\n      *(undefined4 *)(puVar2 + -0x14) = 0x12dd1;\n      bzero(*(void **)(puVar2 + -0x10),*(size_t *)(puVar2 + -0xc));\n      *(undefined **)(puVar2 + -0x10) = &DAT_000154db;\n      *(undefined4 *)(puVar2 + -0x14) = 0x12de3;\n      printf(*(char **)(puVar2 + -0x10));\n      *(undefined4 *)(puVar2 + -8) = 0xff;\n      *(undefined4 *)(puVar2 + -0xc) = 10;\n      *(char **)(puVar2 + -0x10) = local_114;\n      *(undefined4 *)(puVar2 + -0x14) = 0x12dfc;\n      local_10 = receive_until();\n      if (local_114[0] != '.') break;\n      *(char **)(puVar2 + -0x10) = local_114;\n      *(undefined4 *)(puVar2 + -0x14) = 0x12e1c;\n      exec_command();\n    }\n    *(char **)(puVar2 + -0x10) = local_114;\n    *(undefined4 *)(puVar2 + -0x14) = 0x12e30;\n    local_14 = (undefined4 *)parse_command_line();\n    if (local_14 == (undefined4 *)0x0) {\n      *(undefined4 *)(puVar2 + -0x10) = 0;\n      *(undefined4 *)(puVar2 + -0x14) = 0x12e46;\n      _terminate();\n      puVar2 = puVar2 + -0x10;\n    }\n    if (*(char *)(local_14 + 1) == '=') {\n      *(undefined4 **)(puVar2 + -0x10) = local_14;\n      *(undefined4 *)(puVar2 + -0x14) = 0x12e5c;\n      handle_set_var();\n    }\n    else if (*(char *)(local_14 + 1) == '@') {\n      uVar1 = *local_14;\n      *(undefined4 *)(puVar2 + -0xc) = local_14[2];\n      *(undefined4 *)(puVar2 + -0x10) = uVar1;\n      *(undefined4 *)(puVar2 + -0x14) = 0x12e81;\n      issubset();\n    }\n    *(undefined4 *)(puVar2 + -0xc) = 0xc;\n    *(undefined4 **)(puVar2 + -0x10) = local_14;\n    *(undefined4 *)(puVar2 + -0x14) = 0x12e91;\n    deallocate();\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "command_loop",
+                        "bzero",
+                        "printf",
+                        "receive_until",
+                        "exec_command",
+                        "parse_command_line",
+                        "_terminate",
+                        "handle_set_var",
+                        "issubset",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "command_loop",
+                        "main"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  command_loop();\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "command_loop"
+                    ],
+                    "calling_functions": [
+                        "main",
+                        "_start"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            }
+        ],
+        "struct_inits.c": [
+            {
+                "func_name": "print_set",
+                "func_c_signature": "void print_set(int param_1)",
+                "decompiled_code": "void print_set(int param_1) {\n  int iVar1;\n  int local_10;\n  \n  local_10 = 0;\n  if (param_1 != 0) {\n    iVar1 = param_1 + 8;\n    printf(\"@s = |\",iVar1);\n    while (local_10 < *(int *)(param_1 + 0x18)) {\n      if (*(int *)(*(int *)(param_1 + 0xc + (local_10 + 4) * 4) + 4) == 0) {\n        iVar1 = **(int **)(param_1 + 0xc + (local_10 + 4) * 4);\n        printf(\"@s\",iVar1);\n      }\n      else {\n        iVar1 = **(int **)(param_1 + 0xc + (local_10 + 4) * 4);\n        printf(\"\\\"@s\\\"\",iVar1);\n      }\n      local_10 = local_10 + 1;\n      if (local_10 != *(int *)(param_1 + 0x18)) {\n        printf(\",\",iVar1);\n      }\n    }\n    printf(\"|\\n\",iVar1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "print_set",
+                        "printf"
+                    ],
+                    "calling_functions": [
+                        "print_sets",
+                        "print_set"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free_element",
+                "func_c_signature": "void free_element(char **param_1)",
+                "decompiled_code": "void free_element(char **param_1) {\n  size_t sVar1;\n  \n  if (param_1 != (char **)0x0) {\n    sVar1 = strlen(*param_1);\n    deallocate(*param_1,sVar1 + 1);\n    deallocate(param_1,8);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_element",
+                        "strlen",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "parse_set",
+                        "handle_set_var",
+                        "free_element"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "copy_set",
+                "func_c_signature": "void * copy_set(int param_1)",
+                "decompiled_code": "void * copy_set(int param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  void *local_14;\n  int local_10;\n  \n  local_14 = (void *)0x0;\n  local_10 = 0;\n  if (param_1 != 0) {\n    iVar1 = allocate(0x58,0,&local_14,0x1331d);\n    if (iVar1 == 0) {\n      bzero(local_14,0x58);\n      for (; local_10 < *(int *)(param_1 + 0x18); local_10 = local_10 + 1) {\n        uVar2 = copy_element(*(undefined4 *)(param_1 + 0xc + (local_10 + 4) * 4));\n        iVar1 = add_element_to_set(local_14,uVar2);\n        if (iVar1 != 0) {\n          free_set_array(local_14);\n          return (void *)0x0;\n        }\n      }\n    }\n    else {\n      local_14 = (void *)0x0;\n    }\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copy_set",
+                        "allocate",
+                        "bzero",
+                        "copy_element",
+                        "add_element_to_set",
+                        "free_set_array"
+                    ],
+                    "calling_functions": [
+                        "parse_operations",
+                        "copy_set"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "free_set_array",
+                "func_c_signature": "void free_set_array(int param_1)",
+                "decompiled_code": "void free_set_array(int param_1) {\n  size_t sVar1;\n  int local_10;\n  \n  if (param_1 != 0) {\n    for (local_10 = 0; local_10 < *(int *)(param_1 + 0x18); local_10 = local_10 + 1) {\n      sVar1 = strlen(**(char ***)(param_1 + 0xc + (local_10 + 4) * 4));\n      deallocate(**(undefined4 **)(param_1 + 0xc + (local_10 + 4) * 4),sVar1 + 1);\n      deallocate(*(undefined4 *)(param_1 + 0xc + (local_10 + 4) * 4),8);\n      *(undefined4 *)(param_1 + 0xc + (local_10 + 4) * 4) = 0;\n    }\n    deallocate(param_1,0x58);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "free_set_array",
+                        "strlen",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "parse_set",
+                        "symmetric_difference",
+                        "set_difference",
+                        "intersect",
+                        "unionset",
+                        "parse_operations",
+                        "issubset",
+                        "copy_set",
+                        "free_set_array"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "copy_element",
+                "func_c_signature": "void ** copy_element(char **param_1)",
+                "decompiled_code": "void ** copy_element(char **param_1) {\n  int iVar1;\n  undefined4 uVar2;\n  void **local_14;\n  size_t local_10;\n  \n  uVar2 = 0x1349a;\n  local_14 = (void **)0x0;\n  local_10 = 0;\n  if (param_1 != (char **)0x0) {\n    iVar1 = allocate(4,0,&local_14,0x1349a);\n    if (iVar1 == 0) {\n      local_10 = strlen(*param_1);\n      local_10 = local_10 + 1;\n      iVar1 = allocate(local_10,0,local_14,uVar2);\n      if (iVar1 == 0) {\n        bzero(*local_14,local_10);\n        memcpy(*local_14,*param_1,local_10 - 1);\n        local_14[1] = param_1[1];\n      }\n      else {\n        deallocate(local_14,4);\n        local_14 = (void **)0x0;\n      }\n    }\n    else {\n      local_14 = (void **)0x0;\n    }\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copy_element",
+                        "allocate",
+                        "strlen",
+                        "bzero",
+                        "memcpy",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "set_difference",
+                        "intersect",
+                        "unionset",
+                        "copy_set",
+                        "copy_element"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "element_in_set",
+                "func_c_signature": "undefined4 element_in_set(int param_1,char **param_2)",
+                "decompiled_code": "undefined4 element_in_set(int param_1,char **param_2) {\n  int iVar1;\n  int local_14;\n  undefined4 local_10;\n  \n  local_10 = 0xffffffff;\n  local_14 = 0;\n  if ((param_1 != 0) && (param_2 != (char **)0x0)) {\n    for (; local_14 < *(int *)(param_1 + 0x18); local_14 = local_14 + 1) {\n      iVar1 = strcmp(*param_2,**(char ***)(param_1 + 0xc + (local_14 + 4) * 4));\n      if ((iVar1 == 0) &&\n         (param_2[1] == *(char **)(*(int *)(param_1 + 0xc + (local_14 + 4) * 4) + 4))) {\n        return 1;\n      }\n    }\n    local_10 = 0;\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "element_in_set",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "parse_set",
+                        "set_difference",
+                        "intersect",
+                        "unionset",
+                        "issubset",
+                        "element_in_set"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_element_to_set",
+                "func_c_signature": "undefined4 add_element_to_set(int param_1,int param_2)",
+                "decompiled_code": "undefined4 add_element_to_set(int param_1,int param_2) {\n  undefined4 local_8;\n  \n  local_8 = 1;\n  if (((param_1 != 0) && (param_2 != 0)) && (*(int *)(param_1 + 0x18) < 0xf)) {\n    *(int *)(param_1 + 0xc + (*(int *)(param_1 + 0x18) + 4) * 4) = param_2;\n    *(int *)(param_1 + 0x18) = *(int *)(param_1 + 0x18) + 1;\n    local_8 = 0;\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_element_to_set"
+                    ],
+                    "calling_functions": [
+                        "parse_set",
+                        "set_difference",
+                        "intersect",
+                        "unionset",
+                        "copy_set",
+                        "add_element_to_set"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            },
+            {
+                "func_name": "create_element",
+                "func_c_signature": "void ** create_element(char *param_1,void *param_2)",
+                "decompiled_code": "void ** create_element(char *param_1,void *param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  void **local_14;\n  size_t local_10;\n  \n  uVar2 = 0x13689;\n  local_14 = (void **)0x0;\n  local_10 = 0;\n  if ((param_1 != (char *)0x0) && ((param_2 == (void *)0x0 || (param_2 == (void *)0x1)))) {\n    iVar1 = allocate(8,0,&local_14,0x13689);\n    if (iVar1 == 0) {\n      local_10 = strlen(param_1);\n      iVar1 = allocate(local_10 + 1,0,local_14,uVar2);\n      if (iVar1 == 0) {\n        memcpy(*local_14,param_1,local_10);\n        *(undefined *)(local_10 + (int)*local_14) = 0;\n        local_14[1] = param_2;\n      }\n      else {\n        deallocate(local_14,8);\n        local_14 = (void **)0x0;\n      }\n    }\n    else {\n      local_14 = (void **)0x0;\n    }\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "create_element",
+                        "allocate",
+                        "strlen",
+                        "memcpy",
+                        "deallocate"
+                    ],
+                    "calling_functions": [
+                        "parse_set",
+                        "create_element"
+                    ],
+                    "defined_in_file": "CROMU_00011_decompiled.c"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,282 @@
+{
+    "file": "expand-common",
+    "decompiled_code": {
+        "expand-common.c": [
+            {
+                "func_name": "set_max_column_width",
+                "func_c_signature": "void set_max_column_width(long param_1)",
+                "decompiled_code": "void set_max_column_width(long param_1) {\n  if (max_column_width < param_1) {\n    max_column_width = param_1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_max_column_width"
+                    ],
+                    "calling_functions": [
+                        "set_max_column_width",
+                        "add_tab_stop",
+                        "set_extend_size",
+                        "set_increment_size"
+                    ],
+                    "defined_in_file": "expand-common_decompiled.c"
+                }
+            },
+            {
+                "func_name": "add_tab_stop",
+                "func_c_signature": "void add_tab_stop(long param_1)",
+                "decompiled_code": "void add_tab_stop(long param_1) {\n  long lVar1;\n  long lVar2;\n  \n  if (first_free_tab == 0) {\n    lVar1 = 0;\n  }\n  else {\n    lVar1 = *(long *)(tab_list + first_free_tab * 8 + -8);\n  }\n  if (param_1 < lVar1) {\n    lVar1 = 0;\n  }\n  else {\n    lVar1 = param_1 - lVar1;\n  }\n  if (first_free_tab == n_tabs_allocated) {\n    tab_list = xpalloc(tab_list,&n_tabs_allocated,1,0xffffffffffffffff,8);\n  }\n  lVar2 = first_free_tab * 8;\n  first_free_tab = first_free_tab + 1;\n  *(long *)(tab_list + lVar2) = param_1;\n  set_max_column_width(lVar1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "add_tab_stop",
+                        "xpalloc",
+                        "set_max_column_width"
+                    ],
+                    "calling_functions": [
+                        "add_tab_stop",
+                        "parse_tab_stops"
+                    ],
+                    "defined_in_file": "expand-common_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_extend_size",
+                "func_c_signature": "bool set_extend_size(undefined8 param_1)",
+                "decompiled_code": "bool set_extend_size(undefined8 param_1) {\n  undefined8 uVar1;\n  bool local_19;\n  \n  local_19 = extend_size != 0;\n  if (local_19) {\n    uVar1 = gettext(\"\\'/\\' specifier only allowed with the last value\");\n    error(0,0,uVar1);\n  }\n  local_19 = !local_19;\n  extend_size = param_1;\n  set_max_column_width(param_1);\n  return local_19;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_extend_size",
+                        "gettext",
+                        "error",
+                        "set_max_column_width"
+                    ],
+                    "calling_functions": [
+                        "set_extend_size",
+                        "parse_tab_stops"
+                    ],
+                    "defined_in_file": "expand-common_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_increment_size",
+                "func_c_signature": "bool set_increment_size(undefined8 param_1)",
+                "decompiled_code": "bool set_increment_size(undefined8 param_1) {\n  undefined8 uVar1;\n  bool local_19;\n  \n  local_19 = increment_size != 0;\n  if (local_19) {\n    uVar1 = gettext(\"\\'+\\' specifier only allowed with the last value\");\n    error(0,0,uVar1);\n  }\n  local_19 = !local_19;\n  increment_size = param_1;\n  set_max_column_width(param_1);\n  return local_19;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_increment_size",
+                        "gettext",
+                        "error",
+                        "set_max_column_width"
+                    ],
+                    "calling_functions": [
+                        "set_increment_size",
+                        "parse_tab_stops"
+                    ],
+                    "defined_in_file": "expand-common_decompiled.c"
+                }
+            },
+            {
+                "func_name": "parse_tab_stops",
+                "func_c_signature": "void parse_tab_stops(char *param_1)",
+                "decompiled_code": "void parse_tab_stops(char *param_1) {\n  long lVar1;\n  ushort *puVar2;\n  undefined auVar3 [16];\n  bool bVar4;\n  bool bVar5;\n  bool bVar6;\n  char cVar7;\n  byte bVar8;\n  ushort **ppuVar9;\n  undefined8 uVar10;\n  undefined8 uVar11;\n  size_t sVar12;\n  void *__ptr;\n  long in_FS_OFFSET;\n  bool bVar13;\n  char *local_90;\n  bool local_81;\n  long local_60;\n  char *local_58;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  bVar4 = false;\n  local_60 = 0;\n  bVar5 = false;\n  bVar6 = false;\n  local_58 = (char *)0x0;\n  local_81 = true;\n  local_90 = param_1;\n  do {\n    if (*local_90 == '\\0') {\nLAB_001005ca:\n      if ((local_81 != false) && (bVar4)) {\n        if (bVar5) {\n          bVar8 = set_extend_size(local_60);\n          local_81 = (bVar8 & local_81) != 0;\n        }\n        else if (bVar6) {\n          bVar8 = set_increment_size(local_60);\n          local_81 = (bVar8 & local_81) != 0;\n        }\n        else {\n          add_tab_stop(local_60);\n        }\n      }\n      if (local_81 != true) {\n                    /* WARNING: Subroutine does not return */\n        exit(1);\n      }\n      if (lVar1 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n        __stack_chk_fail();\n      }\n      return;\n    }\n    if (*local_90 == ',') {\nLAB_001002e0:\n      if (bVar4) {\n        if (bVar5) {\n          cVar7 = set_extend_size(local_60);\n          if (cVar7 != '\\x01') {\n            local_81 = false;\n            goto LAB_001005ca;\n          }\n        }\n        else if (bVar6) {\n          cVar7 = set_increment_size(local_60);\n          if (cVar7 != '\\x01') {\n            local_81 = false;\n            goto LAB_001005ca;\n          }\n        }\n        else {\n          add_tab_stop(local_60);\n        }\n      }\n      bVar4 = false;\n    }\n    else {\n      ppuVar9 = __ctype_b_loc();\n      puVar2 = *ppuVar9;\n      bVar8 = to_uchar((int)*local_90);\n      if ((puVar2[bVar8] & 1) != 0) goto LAB_001002e0;\n      if (*local_90 == '/') {\n        if (bVar4) {\n          uVar10 = quote(local_90);\n          uVar11 = gettext(\"\\'/\\' specifier not at start of number: %s\");\n          error(0,0,uVar11,uVar10);\n          local_81 = false;\n        }\n        bVar5 = true;\n        bVar6 = false;\n      }\n      else if (*local_90 == '+') {\n        if (bVar4) {\n          uVar10 = quote(local_90);\n          uVar11 = gettext(\"\\'+\\' specifier not at start of number: %s\");\n          error(0,0,uVar11,uVar10);\n          local_81 = false;\n        }\n        bVar6 = true;\n        bVar5 = false;\n      }\n      else {\n        cVar7 = c_isdigit((int)*local_90);\n        if (cVar7 == '\\0') {\n          uVar10 = quote(local_90);\n          uVar11 = gettext(\"tab size contains invalid character(s): %s\");\n          error(0,0,uVar11,uVar10);\n          local_81 = false;\n          goto LAB_001005ca;\n        }\n        if (!bVar4) {\n          local_60 = 0;\n          bVar4 = true;\n          local_58 = local_90;\n        }\n        auVar3 = SEXT816(local_60);\n        local_60 = local_60 * 10;\n        if ((SEXT816(local_60) != auVar3 * SEXT816(10)) ||\n           (bVar13 = SCARRY8((long)(*local_90 + -0x30),local_60),\n           local_60 = (*local_90 + -0x30) + local_60, bVar13)) {\n          sVar12 = strspn(local_58,\"0123456789\");\n          __ptr = (void *)ximemdup0(local_58,sVar12);\n          uVar10 = quote(__ptr);\n          uVar11 = gettext(\"tab stop is too large %s\");\n          error(0,0,uVar11,uVar10);\n          free(__ptr);\n          local_81 = false;\n          local_90 = local_58 + (sVar12 - 1);\n        }\n      }\n    }\n    local_90 = local_90 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [
+                    "character",
+                    "SEXT816",
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "parse_tab_stops",
+                        "set_extend_size",
+                        "set_increment_size",
+                        "add_tab_stop",
+                        "exit",
+                        "__stack_chk_fail",
+                        "__ctype_b_loc",
+                        "to_uchar",
+                        "quote",
+                        "gettext",
+                        "error",
+                        "c_isdigit",
+                        "character",
+                        "SEXT816",
+                        "SCARRY8",
+                        "strspn",
+                        "ximemdup0",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "parse_tab_stops"
+                    ],
+                    "defined_in_file": "expand-common_decompiled.c"
+                }
+            },
+            {
+                "func_name": "validate_tab_stops",
+                "func_c_signature": "void validate_tab_stops(long param_1,long param_2)",
+                "decompiled_code": "void validate_tab_stops(long param_1,long param_2) {\n  undefined8 uVar1;\n  long local_30;\n  long local_28;\n  \n  local_30 = 0;\n  for (local_28 = 0; local_28 < param_2; local_28 = local_28 + 1) {\n    if (*(long *)(param_1 + local_28 * 8) == 0) {\n      uVar1 = gettext(\"tab size cannot be 0\");\n      error(1,0,uVar1);\n    }\n    if (*(long *)(param_1 + local_28 * 8) <= local_30) {\n      uVar1 = gettext(\"tab sizes must be ascending\");\n      error(1,0,uVar1);\n    }\n    local_30 = *(long *)(param_1 + local_28 * 8);\n  }\n  if ((increment_size != 0) && (extend_size != 0)) {\n    uVar1 = gettext(\"\\'/\\' specifier is mutually exclusive with \\'+\\'\");\n    error(1,0,uVar1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "validate_tab_stops",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "validate_tab_stops",
+                        "finalize_tab_stops"
+                    ],
+                    "defined_in_file": "expand-common_decompiled.c"
+                }
+            },
+            {
+                "func_name": "finalize_tab_stops",
+                "func_c_signature": "void finalize_tab_stops(void)",
+                "decompiled_code": "void finalize_tab_stops(void) {\n  validate_tab_stops(tab_list,first_free_tab);\n  if (first_free_tab == 0) {\n    max_column_width = extend_size;\n    tab_size = extend_size;\n    if ((extend_size == 0) &&\n       (max_column_width = increment_size, tab_size = increment_size, increment_size == 0)) {\n      max_column_width = 8;\n      tab_size = max_column_width;\n    }\n  }\n  else if (((first_free_tab == 1) && (extend_size == 0)) && (increment_size == 0)) {\n    tab_size = *tab_list;\n  }\n  else {\n    tab_size = 0;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "finalize_tab_stops",
+                        "validate_tab_stops"
+                    ],
+                    "calling_functions": [
+                        "finalize_tab_stops"
+                    ],
+                    "defined_in_file": "expand-common_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_next_tab_column",
+                "func_c_signature": "long get_next_tab_column(long param_1,long *param_2,undefined *param_3)",
+                "decompiled_code": "long get_next_tab_column(long param_1,long *param_2,undefined *param_3) {\n  long lVar1;\n  long lVar2;\n  undefined8 uVar3;\n  long in_FS_OFFSET;\n  long local_30;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  *param_3 = 0;\n  if (tab_size == 0) {\n    while (*param_2 < first_free_tab) {\n      lVar2 = *(long *)(*param_2 * 8 + tab_list);\n      if (param_1 < lVar2) goto LAB_00100a25;\n      *param_2 = *param_2 + 1;\n    }\n    if (extend_size == 0) {\n      if (increment_size == 0) {\n        *param_3 = 1;\n        local_30 = 1;\n      }\n      else {\n        local_30 = increment_size -\n                   (param_1 - *(long *)(tab_list + first_free_tab * 8 + -8)) % increment_size;\n      }\n    }\n    else {\n      local_30 = extend_size - param_1 % extend_size;\n    }\n  }\n  else {\n    local_30 = tab_size - param_1 % tab_size;\n  }\n  lVar2 = local_30 + param_1;\n  if (SCARRY8(local_30,param_1)) {\n    uVar3 = gettext(\"input line is too long\");\n    error(1,0,uVar3);\n  }\nLAB_00100a25:\n  if (lVar1 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return lVar2;\n}",
+                "globals": [],
+                "externs": [
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_next_tab_column",
+                        "SCARRY8",
+                        "gettext",
+                        "error",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "get_next_tab_column"
+                    ],
+                    "defined_in_file": "expand-common_decompiled.c"
+                }
+            },
+            {
+                "func_name": "set_file_list",
+                "func_c_signature": "void set_file_list(undefined1 *param_1)",
+                "decompiled_code": "void set_file_list(undefined1 *param_1) {\n  have_read_stdin = 0;\n  file_list = param_1;\n  if (param_1 == (undefined1 *)0x0) {\n    file_list = stdin_argv;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "set_file_list"
+                    ],
+                    "calling_functions": [
+                        "set_file_list"
+                    ],
+                    "defined_in_file": "expand-common_decompiled.c"
+                }
+            },
+            {
+                "func_name": "next_file",
+                "func_c_signature": "long next_file(FILE *param_1)",
+                "decompiled_code": "long next_file(FILE *param_1) {\n  long lVar1;\n  char cVar2;\n  int iVar3;\n  int *piVar4;\n  undefined8 uVar5;\n  long local_50;\n  int local_44;\n  \n  if (param_1 != (FILE *)0x0) {\n    piVar4 = __errno_location();\n    local_44 = *piVar4;\n    iVar3 = ferror_unlocked(param_1);\n    if (iVar3 == 0) {\n      local_44 = 0;\n    }\n    cVar2 = streq(prev_file_0,&DAT_00100d70);\n    if (cVar2 == '\\0') {\n      iVar3 = rpl_fclose(param_1);\n      if (iVar3 != 0) {\n        piVar4 = __errno_location();\n        local_44 = *piVar4;\n      }\n    }\n    else {\n      clearerr_unlocked(param_1);\n    }\n    if (local_44 != 0) {\n      uVar5 = quotearg_n_style_colon(0,3,prev_file_0);\n      error(0,local_44,&DAT_00100f14,uVar5);\n      exit_status = 1;\n    }\n  }\n  while( true ) {\n    lVar1 = *file_list;\n    if (lVar1 == 0) {\n      file_list = file_list + 1;\n      return 0;\n    }\n    file_list = file_list + 1;\n    cVar2 = streq(lVar1,&DAT_00100d70);\n    if (cVar2 == '\\0') {\n      local_50 = rpl_fopen(lVar1,&DAT_00100f17);\n    }\n    else {\n      have_read_stdin = 1;\n      local_50 = _stdin;\n    }\n    if (local_50 != 0) break;\n    uVar5 = quotearg_n_style_colon(0,3,lVar1);\n    piVar4 = __errno_location();\n    error(0,*piVar4,&DAT_00100f14,uVar5);\n    exit_status = 1;\n  }\n  prev_file_0 = lVar1;\n  fadvise(local_50,2);\n  return local_50;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "next_file",
+                        "__errno_location",
+                        "ferror_unlocked",
+                        "streq",
+                        "rpl_fclose",
+                        "clearerr_unlocked",
+                        "quotearg_n_style_colon",
+                        "error",
+                        "rpl_fopen",
+                        "fadvise"
+                    ],
+                    "calling_functions": [
+                        "next_file"
+                    ],
+                    "defined_in_file": "expand-common_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cleanup_file_list_stdin",
+                "func_c_signature": "void cleanup_file_list_stdin(void)",
+                "decompiled_code": "void cleanup_file_list_stdin(void) {\n  int iVar1;\n  int *piVar2;\n  \n  if (have_read_stdin != '\\0') {\n    iVar1 = rpl_fclose(_stdin);\n    if (iVar1 != 0) {\n      piVar2 = __errno_location();\n      error(1,*piVar2,&DAT_00100d70);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cleanup_file_list_stdin",
+                        "rpl_fclose",
+                        "__errno_location",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "cleanup_file_list_stdin"
+                    ],
+                    "defined_in_file": "expand-common_decompiled.c"
+                }
+            },
+            {
+                "func_name": "emit_tab_list_info",
+                "func_c_signature": "void emit_tab_list_info(void)",
+                "decompiled_code": "void emit_tab_list_info(void) {\n  FILE *pFVar1;\n  char *pcVar2;\n  \n  pFVar1 = _stdout;\n  pcVar2 = (char *)gettext(\"  -t, --tabs=LIST  use comma separated list of tab positions.\\n\");\n  fputs_unlocked(pcVar2,pFVar1);\n  pFVar1 = _stdout;\n  pcVar2 = (char *)gettext(\n                          \"                     The last specified position can be prefixed with \\'/\\'\\n                     to specify a tab size to use after the last\\n                     explicitly specified tab stop.  Also a prefix of \\'+\\'\\n                     can be used to align remaining tab stops relative to\\n                     the last specified tab stop instead of the first column\\n\"\n                          );\n  fputs_unlocked(pcVar2,pFVar1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "emit_tab_list_info",
+                        "gettext",
+                        "fputs_unlocked"
+                    ],
+                    "calling_functions": [
+                        "emit_tab_list_info"
+                    ],
+                    "defined_in_file": "expand-common_decompiled.c"
+                }
+            }
+        ]
+    }
+}

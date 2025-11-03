@@ -1,0 +1,676 @@
+{
+    "file": "KPRCA_00032",
+    "decompiled_code": {
+        "alphabet.c": [
+            {
+                "func_name": "ftab_init1",
+                "func_c_signature": "void ftab_init1(void *param_1)",
+                "decompiled_code": "void ftab_init1(void *param_1) {\n  memset(param_1,0,0x68);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ftab_init1",
+                        "memset"
+                    ],
+                    "calling_functions": [
+                        "ftab_init1",
+                        "ftab_init",
+                        "read_initial_words"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ftab_init",
+                "func_c_signature": "void ftab_init(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "void ftab_init(undefined4 param_1,undefined4 param_2) {\n  ftab_init1(param_1);\n  ftab_add(param_1,param_2);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ftab_init",
+                        "ftab_init1",
+                        "ftab_add"
+                    ],
+                    "calling_functions": [
+                        "ftab_init",
+                        "atree_add",
+                        "atree_remove",
+                        "atree_query",
+                        "atree_query_subset"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ftab_add",
+                "func_c_signature": "void ftab_add(int param_1,int param_2)",
+                "decompiled_code": "void ftab_add(int param_1,int param_2) {\n  int iVar1;\n  int local_10;\n  \n  for (local_10 = 0; *(char *)(local_10 + param_2) != '\\0'; local_10 = local_10 + 1) {\n    iVar1 = isalpha((int)*(char *)(local_10 + param_2));\n    if (iVar1 != 0) {\n      iVar1 = toupper((int)*(char *)(local_10 + param_2));\n      *(int *)(param_1 + (iVar1 + -0x41) * 4) = *(int *)(param_1 + (iVar1 + -0x41) * 4) + 1;\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ftab_add",
+                        "isalpha",
+                        "toupper"
+                    ],
+                    "calling_functions": [
+                        "ftab_init",
+                        "ftab_add",
+                        "read_initial_words"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            }
+        ],
+        "atree.c": [
+            {
+                "func_name": "atree_init",
+                "func_c_signature": "void * atree_init(int param_1)",
+                "decompiled_code": "void * atree_init(int param_1) {\n  char cVar1;\n  uint uVar2;\n  void *pvVar3;\n  int local_14;\n  int local_10;\n  \n  pvVar3 = calloc(0x28,1);\n  if (pvVar3 == (void *)0x0) {\n    pvVar3 = (void *)0x0;\n  }\n  else {\n    for (local_10 = 0; local_10 < 0x1a; local_10 = local_10 + 1) {\n      *(char *)((int)pvVar3 + local_10 + 0xc) = (char)local_10 + 'A';\n    }\n    for (local_10 = 1; local_10 < 0x1a; local_10 = local_10 + 1) {\n      cVar1 = *(char *)((int)pvVar3 + local_10 + 0xc);\n      uVar2 = *(uint *)(param_1 + (cVar1 + -0x41) * 4);\n      local_14 = local_10;\n      while ((0 < local_14 &&\n             (*(uint *)(param_1 + (*(char *)((int)pvVar3 + local_14 + 0xb) + -0x41) * 4) < uVar2)))\n      {\n        *(undefined *)((int)pvVar3 + local_14 + 0xc) = *(undefined *)((int)pvVar3 + local_14 + 0xb);\n        local_14 = local_14 + -1;\n      }\n      *(char *)((int)pvVar3 + local_14 + 0xc) = cVar1;\n    }\n  }\n  return pvVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "atree_init",
+                        "calloc"
+                    ],
+                    "calling_functions": [
+                        "atree_init",
+                        "read_initial_words"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_atree_find_freq",
+                "func_c_signature": "uint _atree_find_freq(int param_1,uint param_2)",
+                "decompiled_code": "uint _atree_find_freq(int param_1,uint param_2) {\n  uint uVar1;\n  uint local_c;\n  uint local_8;\n  \n  local_8 = 0;\n  local_c = *(ushort *)(param_1 + 4) - 1;\n  uVar1 = local_8;\n  if (*(short *)(param_1 + 4) == 0) {\n    local_8 = 0xffffffff;\n  }\n  else {\n    while (local_8 = uVar1, local_8 + 1 < local_c) {\n      uVar1 = local_8 + (local_c - local_8 >> 1);\n      if (param_2 == *(uint *)(param_1 + (uVar1 + 2) * 8)) {\n        return uVar1;\n      }\n      if (param_2 < *(uint *)(param_1 + (uVar1 + 2) * 8)) {\n        local_c = uVar1;\n        uVar1 = local_8;\n      }\n    }\n    if (*(uint *)(param_1 + (local_c + 2) * 8) <= param_2) {\n      local_8 = local_c;\n    }\n  }\n  return local_8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_atree_find_freq"
+                    ],
+                    "calling_functions": [
+                        "_atree_find_freq",
+                        "_atree_walk",
+                        "_atree_gather_subset"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_atree_find_word",
+                "func_c_signature": "uint _atree_find_word(int param_1,char *param_2)",
+                "decompiled_code": "uint _atree_find_word(int param_1,char *param_2) {\n  uint uVar1;\n  int iVar2;\n  uint local_14;\n  uint local_10;\n  \n  local_10 = 0;\n  local_14 = *(ushort *)(param_1 + 4) - 1;\n  uVar1 = local_10;\n  if (*(short *)(param_1 + 4) == 0) {\n    local_10 = 0xffffffff;\n  }\n  else {\n    while (local_10 = uVar1, local_10 + 1 < local_14) {\n      uVar1 = local_10 + (local_14 - local_10 >> 1);\n      iVar2 = strcmp(*(char **)(param_1 + (uVar1 + 4) * 4),param_2);\n      if (iVar2 == 0) {\n        return uVar1;\n      }\n      if (0 < iVar2) {\n        local_14 = uVar1;\n        uVar1 = local_10;\n      }\n    }\n    iVar2 = strcmp(*(char **)(param_1 + (local_14 + 4) * 4),param_2);\n    if (iVar2 < 1) {\n      local_10 = local_14;\n    }\n  }\n  return local_10;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_atree_find_word",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "_atree_find_word",
+                        "atree_add"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_atree_walk",
+                "func_c_signature": "uint ** _atree_walk(int param_1,int param_2,int param_3)",
+                "decompiled_code": "uint ** _atree_walk(int param_1,int param_2,int param_3) {\n  ushort uVar1;\n  uint uVar2;\n  uint *puVar3;\n  uint **local_1c;\n  uint *local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_1c = (uint **)(param_1 + 4);\n  local_10 = 0;\n  do {\n    if (0x19 < local_10) {\n      if (*local_1c == (uint *)0x0) {\n        if (param_3 == 0) {\n          local_1c = (uint **)0x0;\n        }\n        else {\n          puVar3 = (uint *)calloc(0x20,1);\n          *local_1c = puVar3;\n          if (puVar3 == (uint *)0x0) {\n            local_1c = (uint **)0x0;\n          }\n          else {\n            *puVar3 = local_10;\n            *(undefined2 *)((int)puVar3 + 6) = 2;\n            puVar3[2] = *(uint *)(param_1 + 8);\n            if (puVar3[2] != 0) {\n              *(uint **)(puVar3[2] + 0xc) = puVar3;\n            }\n            puVar3[3] = 0;\n            *(uint **)(param_1 + 8) = puVar3;\n          }\n        }\n      }\n      return local_1c;\n    }\n    uVar2 = *(uint *)(param_2 + (*(char *)(local_10 + param_1 + 0xc) + -0x41) * 4);\n    local_18 = *local_1c;\n    if ((local_18 == (uint *)0x0) || (local_10 < *local_18)) {\n      if (uVar2 != 0) {\n        if (param_3 == 0) {\n          return (uint **)0x0;\n        }\n        puVar3 = (uint *)calloc(0x20,1);\n        if (puVar3 == (uint *)0x0) {\n          return (uint **)0x0;\n        }\n        *puVar3 = local_10;\n        *(undefined2 *)((int)puVar3 + 6) = 2;\n        if (local_18 != (uint *)0x0) {\n          puVar3[(*(ushort *)(puVar3 + 1) + 2) * 2 + 1] = (uint)local_18;\n          puVar3[(*(ushort *)(puVar3 + 1) + 2) * 2] = 0;\n          *(short *)(puVar3 + 1) = *(short *)(puVar3 + 1) + 1;\n        }\n        *local_1c = puVar3;\n        local_18 = *local_1c;\n        goto LAB_00011790;\n      }\n    }\n    else {\nLAB_00011790:\n      local_14 = _atree_find_freq(local_18,uVar2);\n      if ((local_14 == 0xffffffff) || (uVar2 != local_18[(local_14 + 2) * 2])) {\n        if (param_3 == 0) {\n          return (uint **)0x0;\n        }\n        *(short *)(local_18 + 1) = *(short *)(local_18 + 1) + 1;\n        if (*(ushort *)((int)local_18 + 6) < *(ushort *)(local_18 + 1)) {\n          uVar1 = *(ushort *)(local_18 + 1);\n          puVar3 = (uint *)realloc(local_18,(uVar1 + 4) * 8);\n          if (puVar3 == (uint *)0x0) {\n            *(short *)(local_18 + 1) = *(short *)(local_18 + 1) + -1;\n            return (uint **)0x0;\n          }\n          *(ushort *)((int)puVar3 + 6) = uVar1 + 2;\n          *local_1c = puVar3;\n          local_18 = *local_1c;\n        }\n        if (local_14 == 0xffffffff) {\n          local_14 = 0;\n        }\n        else if (local_18[(local_14 + 2) * 2] < uVar2) {\n          local_14 = local_14 + 1;\n        }\n        if (local_14 < *(ushort *)(local_18 + 1) - 1) {\n          memmove(local_18 + (local_14 + 3) * 2,local_18 + (local_14 + 2) * 2,\n                  ((*(ushort *)(local_18 + 1) - local_14) + -1) * 8);\n        }\n        local_18[(local_14 + 2) * 2 + 1] = 0;\n        local_18[(local_14 + 2) * 2] = uVar2;\n      }\n      local_1c = (uint **)(local_18 + (local_14 + 2) * 2 + 1);\n    }\n    local_10 = local_10 + 1;\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_atree_walk",
+                        "calloc",
+                        "_atree_find_freq",
+                        "realloc",
+                        "memmove"
+                    ],
+                    "calling_functions": [
+                        "_atree_walk",
+                        "atree_add",
+                        "atree_remove",
+                        "atree_query"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "atree_add",
+                "func_c_signature": "undefined4 atree_add(int *param_1,char *param_2)",
+                "decompiled_code": "undefined4 atree_add(int *param_1,char *param_2) {\n  undefined4 uVar1;\n  undefined local_88 [104];\n  int local_20;\n  int local_1c;\n  void **local_18;\n  void *local_14;\n  uint local_10;\n  \n  uVar1 = 0x119c5;\n  ftab_init(local_88,param_2);\n  local_18 = (void **)_atree_walk(param_1,local_88,1,uVar1);\n  if (local_18 == (void **)0x0) {\n    uVar1 = 0;\n  }\n  else {\n    local_14 = *local_18;\n    local_10 = _atree_find_word(local_14,param_2);\n    if (local_10 == 0xffffffff) {\n      local_10 = 0;\n    }\n    else {\n      local_1c = strcmp(*(char **)((int)local_14 + (local_10 + 4) * 4),param_2);\n      if (local_1c == 0) {\n        return 0;\n      }\n      if (local_1c < 0) {\n        local_10 = local_10 + 1;\n      }\n    }\n    if (*(short *)((int)local_14 + 4) == -1) {\n      uVar1 = 0;\n    }\n    else {\n      *(short *)((int)local_14 + 4) = *(short *)((int)local_14 + 4) + 1;\n      if (*(ushort *)((int)local_14 + 6) < *(ushort *)((int)local_14 + 4)) {\n        local_20 = *(ushort *)((int)local_14 + 4) + 8;\n        local_14 = realloc(local_14,(*(ushort *)((int)local_14 + 4) + 0xc) * 4);\n        if (local_14 == (void *)0x0) {\n          return 0;\n        }\n        if (*(int *)((int)local_14 + 8) != 0) {\n          *(void **)(*(int *)((int)local_14 + 8) + 0xc) = local_14;\n        }\n        if (*(int *)((int)local_14 + 0xc) == 0) {\n          param_1[2] = (int)local_14;\n        }\n        else {\n          *(void **)(*(int *)((int)local_14 + 0xc) + 8) = local_14;\n        }\n        *local_18 = local_14;\n        *(short *)((int)local_14 + 6) = (short)local_20;\n      }\n      if (local_10 < *(ushort *)((int)local_14 + 4) - 1) {\n        memmove((void *)((int)local_14 + (local_10 + 5) * 4),\n                (void *)((local_10 + 4) * 4 + (int)local_14),\n                ((*(ushort *)((int)local_14 + 4) - local_10) + -1) * 4);\n      }\n      *(char **)((int)local_14 + (local_10 + 4) * 4) = param_2;\n      *param_1 = *param_1 + 1;\n      uVar1 = 1;\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "atree_add",
+                        "ftab_init",
+                        "_atree_walk",
+                        "_atree_find_word",
+                        "strcmp",
+                        "realloc",
+                        "memmove"
+                    ],
+                    "calling_functions": [
+                        "atree_add",
+                        "read_initial_words",
+                        "cmd_add_word"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "atree_remove",
+                "func_c_signature": "undefined4 atree_remove(int *param_1,char *param_2)",
+                "decompiled_code": "undefined4 atree_remove(int *param_1,char *param_2) {\n  int iVar1;\n  undefined4 uVar2;\n  undefined local_80 [104];\n  int local_18;\n  int *local_14;\n  uint local_10;\n  \n  uVar2 = 0x11bc5;\n  ftab_init(local_80,param_2);\n  local_14 = (int *)_atree_walk(param_1,local_80,0,uVar2);\n  if (local_14 == (int *)0x0) {\n    uVar2 = 0;\n  }\n  else {\n    local_18 = *local_14;\n    local_10 = 0;\n    while ((local_10 < *(ushort *)(local_18 + 4) &&\n           (iVar1 = strcmp(param_2,*(char **)(local_18 + (local_10 + 4) * 4)), iVar1 != 0))) {\n      local_10 = local_10 + 1;\n    }\n    if (local_10 < *(ushort *)(local_18 + 4)) {\n      if (local_10 < *(ushort *)(local_18 + 4) - 1) {\n        memmove((void *)(local_18 + (local_10 + 4) * 4),(void *)((local_10 + 5) * 4 + local_18),\n                ((*(ushort *)(local_18 + 4) - local_10) + -1) * 4);\n      }\n      *(short *)(local_18 + 4) = *(short *)(local_18 + 4) + -1;\n      *param_1 = *param_1 + -1;\n      uVar2 = 1;\n    }\n    else {\n      uVar2 = 0;\n    }\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "atree_remove",
+                        "ftab_init",
+                        "_atree_walk",
+                        "strcmp",
+                        "memmove"
+                    ],
+                    "calling_functions": [
+                        "atree_remove",
+                        "cmd_remove_word"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "atree_query",
+                "func_c_signature": "void * atree_query(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "void * atree_query(undefined4 param_1,undefined4 param_2) {\n  undefined4 uVar1;\n  undefined local_80 [104];\n  void *local_18;\n  int local_14;\n  int *local_10;\n  \n  uVar1 = 0x11cfb;\n  ftab_init(local_80,param_2);\n  local_10 = (int *)_atree_walk(param_1,local_80,0,uVar1);\n  if (local_10 == (int *)0x0) {\n    local_18 = calloc(4,1);\n    if (local_18 == (void *)0x0) {\n      local_18 = (void *)0x0;\n    }\n  }\n  else {\n    local_14 = *local_10;\n    local_18 = calloc(4,*(ushort *)(local_14 + 4) + 1);\n    if (local_18 == (void *)0x0) {\n      local_18 = (void *)0x0;\n    }\n    else {\n      memcpy(local_18,(void *)(local_14 + 0x10),(uint)*(ushort *)(local_14 + 4) * 4);\n      *(undefined4 *)((int)local_18 + (uint)*(ushort *)(local_14 + 4) * 4) = 0;\n    }\n  }\n  return local_18;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "atree_query",
+                        "ftab_init",
+                        "_atree_walk",
+                        "calloc",
+                        "memcpy"
+                    ],
+                    "calling_functions": [
+                        "atree_query",
+                        "cmd_query",
+                        "cmd_play_game"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "_atree_gather_subset",
+                "func_c_signature": "void _atree_gather_subset(int param_1,int param_2,int *param_3,void **param_4,int *param_5)",
+                "decompiled_code": "void _atree_gather_subset(int param_1,int param_2,int *param_3,void **param_4,int *param_5) {\n  uint uVar1;\n  void *pvVar2;\n  uint local_14;\n  uint local_10;\n  \n  if (param_3 != (int *)0x0) {\n    if (*param_3 == 0x1a) {\n      pvVar2 = realloc(*param_4,((uint)*(ushort *)(param_3 + 1) + *param_5 + 1) * 4);\n      if (pvVar2 != (void *)0x0) {\n        memcpy((void *)((int)pvVar2 + *param_5 * 4),param_3 + 4,(uint)*(ushort *)(param_3 + 1) * 4);\n        *param_4 = pvVar2;\n        *param_5 = *param_5 + (uint)*(ushort *)(param_3 + 1);\n      }\n    }\n    else {\n      uVar1 = *(uint *)(param_2 + (*(char *)(param_1 + 0xc + *param_3) + -0x41) * 4);\n      local_14 = _atree_find_freq(param_3,uVar1);\n      if (local_14 != 0xffffffff) {\n        if (uVar1 < (uint)param_3[(local_14 + 2) * 2]) {\n          if (local_14 == 0) {\n            return;\n          }\n          local_14 = local_14 - 1;\n        }\n        for (local_10 = 0; local_10 <= local_14; local_10 = local_10 + 1) {\n          _atree_gather_subset(param_1,param_2,param_3[(local_10 + 2) * 2 + 1],param_4,param_5);\n        }\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "_atree_gather_subset",
+                        "realloc",
+                        "memcpy",
+                        "_atree_find_freq"
+                    ],
+                    "calling_functions": [
+                        "_atree_gather_subset",
+                        "atree_query_subset"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "atree_query_subset",
+                "func_c_signature": "void * atree_query_subset(int param_1,undefined4 param_2)",
+                "decompiled_code": "void * atree_query_subset(int param_1,undefined4 param_2) {\n  undefined local_7c [104];\n  int local_14;\n  void *local_10 [2];\n  \n  local_10[0] = malloc(4);\n  local_14 = 0;\n  ftab_init(local_7c,param_2);\n  _atree_gather_subset(param_1,local_7c,*(undefined4 *)(param_1 + 4),local_10,&local_14);\n  *(undefined4 *)((int)local_10[0] + local_14 * 4) = 0;\n  return local_10[0];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "atree_query_subset",
+                        "malloc",
+                        "ftab_init",
+                        "_atree_gather_subset"
+                    ],
+                    "calling_functions": [
+                        "atree_query_subset",
+                        "cmd_query"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "atree_random",
+                "func_c_signature": "undefined4 atree_random(int *param_1)",
+                "decompiled_code": "undefined4 atree_random(int *param_1) {\n  undefined4 uVar1;\n  int local_14;\n  uint local_10;\n  \n  if (*param_1 == 0) {\n    uVar1 = 0;\n  }\n  else {\n    local_10 = randint(0,*param_1);\n    for (local_14 = param_1[2]; (local_14 != 0 && (*(ushort *)(local_14 + 4) <= local_10));\n        local_14 = *(int *)(local_14 + 8)) {\n      local_10 = local_10 - *(ushort *)(local_14 + 4);\n    }\n    if (local_14 == 0) {\n      uVar1 = 0;\n    }\n    else {\n      uVar1 = *(undefined4 *)(local_14 + (local_10 + 4) * 4);\n    }\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "atree_random",
+                        "randint"
+                    ],
+                    "calling_functions": [
+                        "atree_random",
+                        "cmd_play_game"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            }
+        ],
+        "io.c": [
+            {
+                "func_name": "write_bytes",
+                "func_c_signature": "void write_bytes(undefined4 param_1,int param_2)",
+                "decompiled_code": "void write_bytes(undefined4 param_1,int param_2) {\n  int iVar1;\n  int local_10 [2];\n  \n  iVar1 = transmit(1,param_1,param_2,local_10);\n  if ((iVar1 == 0) && (param_2 == local_10[0])) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_bytes",
+                        "transmit",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "write_bytes",
+                        "write_byte",
+                        "write_string"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_bytes",
+                "func_c_signature": "void read_bytes(undefined4 param_1,int param_2)",
+                "decompiled_code": "void read_bytes(undefined4 param_1,int param_2) {\n  int iVar1;\n  int local_10 [2];\n  \n  iVar1 = receive(0,param_1,param_2,local_10);\n  if ((iVar1 == 0) && (param_2 == local_10[0])) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_bytes",
+                        "receive",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "read_bytes",
+                        "read_byte",
+                        "read_string"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write_byte",
+                "func_c_signature": "void write_byte(undefined param_1)",
+                "decompiled_code": "void write_byte(undefined param_1) {\n  undefined local_10 [12];\n  \n  local_10[0] = param_1;\n  write_bytes(local_10,1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_byte",
+                        "write_bytes"
+                    ],
+                    "calling_functions": [
+                        "write_byte",
+                        "write_int"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_byte",
+                "func_c_signature": "undefined read_byte(void)",
+                "decompiled_code": "undefined read_byte(void) {\n  undefined local_d [9];\n  \n  read_bytes(local_d,1);\n  return local_d[0];\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_byte",
+                        "read_bytes"
+                    ],
+                    "calling_functions": [
+                        "read_byte",
+                        "read_int"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write_int",
+                "func_c_signature": "void write_int(uint param_1)",
+                "decompiled_code": "void write_int(uint param_1) {\n  bool bVar1;\n  uint uVar2;\n  byte bVar3;\n  uint local_14;\n  int local_10;\n  \n  uVar2 = param_1;\n  if ((int)param_1 < 0) {\n    uVar2 = -param_1;\n  }\n  local_10 = 0;\n  for (local_14 = uVar2; 0x3f < local_14; local_14 = local_14 >> 7) {\n    local_10 = local_10 + 1;\n  }\n  if ((int)param_1 < 0) {\n    local_14 = local_14 | 0x40;\n  }\n  do {\n    if (local_10 < 1) {\n      bVar3 = 0;\n    }\n    else {\n      bVar3 = 0x80;\n    }\n    write_byte((byte)local_14 | bVar3);\n    local_14 = uVar2 >> (((char)local_10 + -1) * '\\a' & 0x1fU) & 0x7f;\n    bVar1 = 0 < local_10;\n    local_10 = local_10 + -1;\n  } while (bVar1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_int",
+                        "write_byte"
+                    ],
+                    "calling_functions": [
+                        "write_int",
+                        "write_string",
+                        "cmd_add_word",
+                        "cmd_remove_word",
+                        "cmd_query",
+                        "cmd_play_game",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_int",
+                "func_c_signature": "uint read_int(void)",
+                "decompiled_code": "uint read_int(void) {\n  byte bVar1;\n  uint local_14;\n  byte local_d;\n  \n  local_d = read_byte();\n  bVar1 = local_d & 0x40;\n  local_14 = local_d & 0x3f;\n  while ((char)local_d < '\\0') {\n    local_d = read_byte();\n    local_14 = local_d & 0x7f | local_14 << 7;\n  }\n  if (bVar1 != 0) {\n    local_14 = -local_14;\n  }\n  return local_14;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_int",
+                        "read_byte"
+                    ],
+                    "calling_functions": [
+                        "read_int",
+                        "read_string",
+                        "read_initial_words",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write_string",
+                "func_c_signature": "void write_string(char *param_1)",
+                "decompiled_code": "void write_string(char *param_1) {\n  size_t sVar1;\n  \n  sVar1 = strlen(param_1);\n  write_int(sVar1);\n  write_bytes(param_1,sVar1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_string",
+                        "strlen",
+                        "write_int",
+                        "write_bytes"
+                    ],
+                    "calling_functions": [
+                        "write_string",
+                        "cmd_query",
+                        "cmd_play_game"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "read_string",
+                "func_c_signature": "void * read_string(void)",
+                "decompiled_code": "void * read_string(void) {\n  int iVar1;\n  void *pvVar2;\n  \n  iVar1 = read_int();\n  if (iVar1 == -1) {\n    pvVar2 = (void *)0x0;\n  }\n  else {\n    pvVar2 = malloc(iVar1 + 1);\n    if (pvVar2 == (void *)0x0) {\n      pvVar2 = (void *)0x0;\n    }\n    else {\n      read_bytes(pvVar2,iVar1);\n      *(undefined *)(iVar1 + (int)pvVar2) = 0;\n    }\n  }\n  return pvVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_string",
+                        "read_int",
+                        "malloc",
+                        "read_bytes"
+                    ],
+                    "calling_functions": [
+                        "read_string",
+                        "read_initial_words",
+                        "cmd_add_word",
+                        "cmd_remove_word",
+                        "cmd_query",
+                        "cmd_play_game"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            }
+        ],
+        "main.c": [
+            {
+                "func_name": "read_initial_words",
+                "func_c_signature": "undefined4 read_initial_words(int *param_1)",
+                "decompiled_code": "undefined4 read_initial_words(int *param_1) {\n  undefined4 *puVar1;\n  undefined4 uVar2;\n  size_t sVar3;\n  int iVar4;\n  undefined local_80 [104];\n  void *local_18;\n  uint local_14;\n  uint local_10;\n  \n  local_14 = read_int();\n  if (local_14 < 0x3fffffff) {\n    local_18 = malloc(local_14 << 2);\n    if (local_18 == (void *)0x0) {\n      uVar2 = 0;\n    }\n    else {\n      for (local_10 = 0; local_10 < local_14; local_10 = local_10 + 1) {\n        puVar1 = (undefined4 *)(local_10 * 4 + (int)local_18);\n        uVar2 = read_string();\n        *puVar1 = uVar2;\n        if ((*(int *)((int)local_18 + local_10 * 4) == 0) ||\n           (sVar3 = strlen(*(char **)((int)local_18 + local_10 * 4)), sVar3 == 0))\n        goto LAB_000124a0;\n      }\n      ftab_init1(local_80);\n      for (local_10 = 0; local_10 < local_14; local_10 = local_10 + 1) {\n        ftab_add(local_80,*(undefined4 *)((int)local_18 + local_10 * 4));\n      }\n      iVar4 = atree_init(local_80);\n      *param_1 = iVar4;\n      if (*param_1 == 0) {\nLAB_000124a0:\n        uVar2 = 0;\n      }\n      else {\n        for (local_10 = 0; local_10 < local_14; local_10 = local_10 + 1) {\n          atree_add(*param_1,*(undefined4 *)((int)local_18 + local_10 * 4));\n        }\n        uVar2 = 1;\n      }\n    }\n  }\n  else {\n    uVar2 = 0;\n  }\n  return uVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "read_initial_words",
+                        "read_int",
+                        "malloc",
+                        "read_string",
+                        "strlen",
+                        "ftab_init1",
+                        "ftab_add",
+                        "atree_init",
+                        "atree_add"
+                    ],
+                    "calling_functions": [
+                        "read_initial_words",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cmd_add_word",
+                "func_c_signature": "void cmd_add_word(undefined4 *param_1)",
+                "decompiled_code": "void cmd_add_word(undefined4 *param_1) {\n  void *__ptr;\n  int iVar1;\n  \n  __ptr = (void *)read_string();\n  if (__ptr == (void *)0x0) {\n    write_int(1);\n  }\n  else {\n    iVar1 = atree_add(*param_1,__ptr);\n    if (iVar1 == 0) {\n      write_int(1);\n      free(__ptr);\n    }\n    else {\n      write_int(0);\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cmd_add_word",
+                        "read_string",
+                        "write_int",
+                        "atree_add",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "cmd_add_word",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cmd_remove_word",
+                "func_c_signature": "void cmd_remove_word(undefined4 *param_1)",
+                "decompiled_code": "void cmd_remove_word(undefined4 *param_1) {\n  void *__ptr;\n  int iVar1;\n  \n  __ptr = (void *)read_string();\n  if (__ptr == (void *)0x0) {\n    write_int(1);\n  }\n  else {\n    iVar1 = atree_remove(*param_1,__ptr);\n    if (iVar1 == 0) {\n      write_int(1);\n    }\n    else {\n      write_int(0);\n    }\n    free(__ptr);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cmd_remove_word",
+                        "read_string",
+                        "write_int",
+                        "atree_remove",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "cmd_remove_word",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "sort_results",
+                "func_c_signature": "void sort_results(int param_1,int param_2)",
+                "decompiled_code": "void sort_results(int param_1,int param_2) {\n  char *__s2;\n  int iVar1;\n  int local_14;\n  int local_10;\n  \n  for (local_10 = 1; local_10 < param_2; local_10 = local_10 + 1) {\n    __s2 = *(char **)(param_1 + local_10 * 4);\n    local_14 = local_10;\n    while ((0 < local_14 &&\n           (iVar1 = strcmp(*(char **)(param_1 + (local_14 + 0x3fffffff) * 4),__s2), 0 < iVar1))) {\n      *(undefined4 *)(param_1 + local_14 * 4) =\n           *(undefined4 *)(param_1 + (local_14 + 0x3fffffff) * 4);\n      local_14 = local_14 + -1;\n    }\n    *(char **)(local_14 * 4 + param_1) = __s2;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "sort_results",
+                        "strcmp"
+                    ],
+                    "calling_functions": [
+                        "sort_results",
+                        "cmd_query"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cmd_query",
+                "func_c_signature": "void cmd_query(undefined4 *param_1,int param_2)",
+                "decompiled_code": "void cmd_query(undefined4 *param_1,int param_2) {\n  void *__ptr;\n  int local_18;\n  int *local_14;\n  int *local_10;\n  \n  __ptr = (void *)read_string();\n  if (__ptr == (void *)0x0) {\n    write_int(1);\n  }\n  else {\n    if (param_2 == 0) {\n      local_10 = (int *)atree_query(*param_1,__ptr);\n    }\n    else {\n      local_10 = (int *)atree_query_subset(*param_1,__ptr);\n    }\n    free(__ptr);\n    if (local_10 == (int *)0x0) {\n      write_int(1);\n    }\n    else {\n      local_18 = 0;\n      for (local_14 = local_10; *local_14 != 0; local_14 = local_14 + 1) {\n        local_18 = local_18 + 1;\n      }\n      write_int(0);\n      write_int(local_18);\n      sort_results(local_10,local_18);\n      for (local_14 = local_10; *local_14 != 0; local_14 = local_14 + 1) {\n        write_string(*local_14);\n      }\n    }\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cmd_query",
+                        "read_string",
+                        "write_int",
+                        "atree_query",
+                        "atree_query_subset",
+                        "free",
+                        "sort_results",
+                        "write_string"
+                    ],
+                    "calling_functions": [
+                        "cmd_query",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cmd_play_game",
+                "func_c_signature": "void cmd_play_game(undefined4 *param_1)",
+                "decompiled_code": "void cmd_play_game(undefined4 *param_1) {\n  uint uVar1;\n  int iVar2;\n  int aiStack_54 [10];\n  char *local_2c;\n  char **local_28;\n  int local_24;\n  int local_20;\n  int local_1c;\n  int local_18;\n  char **local_14;\n  int local_10;\n  \n  uVar1 = atree_count(*param_1);\n  if (uVar1 < 10) {\n    write_int(1);\n  }\n  else {\n    for (local_10 = 0; local_10 < 10; local_10 = local_10 + 1) {\n      do {\n        iVar2 = atree_random(*param_1);\n        aiStack_54[local_10] = iVar2;\n        for (local_24 = 0; local_24 < local_10; local_24 = local_24 + 1) {\n          if (aiStack_54[local_24] == aiStack_54[local_10]) {\n            aiStack_54[local_10] = 0;\n            break;\n          }\n        }\n      } while (aiStack_54[local_10] == 0);\n      local_28 = (char **)atree_query(*param_1,aiStack_54[local_10]);\n      if (local_28 == (char **)0x0) {\n        write_int(1);\n        break;\n      }\n      local_18 = 0;\n      local_1c = 0;\n      for (local_14 = local_28; *local_14 != (char *)0x0; local_14 = local_14 + 1) {\n        local_18 = local_18 + 1;\n      }\n      local_20 = local_18 / 2;\n      if (local_18 / 2 == 0) {\n        local_20 = 1;\n      }\n      write_string(aiStack_54[local_10]);\n      write_int(local_20);\n      while (local_1c < local_20) {\n        local_2c = (char *)read_string();\n        if (local_2c == (char *)0x0) {\n          return;\n        }\n        for (local_14 = local_28; local_14 < local_28 + local_18; local_14 = local_14 + 1) {\n          if ((*local_14 != (char *)0x0) && (iVar2 = strcasecmp(local_2c,*local_14), iVar2 == 0)) {\n            local_1c = local_1c + 1;\n            *local_14 = (char *)0x0;\n            write_int(local_1c);\n            break;\n          }\n        }\n        free(local_2c);\n      }\n      free(local_28);\n    }\n    write_int(0);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cmd_play_game",
+                        "atree_count",
+                        "write_int",
+                        "atree_random",
+                        "atree_query",
+                        "write_string",
+                        "read_string",
+                        "strcasecmp",
+                        "free"
+                    ],
+                    "calling_functions": [
+                        "cmd_play_game",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(void)",
+                "decompiled_code": "undefined4 main(void) {\n  int iVar1;\n  undefined local_18 [4];\n  undefined4 local_14;\n  undefined *local_10;\n  \n  local_10 = &stack0x00000004;\n  memset(local_18,0,4);\n  while (iVar1 = read_initial_words(local_18), iVar1 == 0) {\n    write_int(1);\n  }\n  write_int(0);\n  do {\n    local_14 = read_int();\n    switch(local_14) {\n    case 1:\n      cmd_add_word(local_18);\n      break;\n    case 2:\n      cmd_remove_word(local_18);\n      break;\n    case 3:\n      cmd_query(local_18,0);\n      break;\n    case 4:\n      cmd_query(local_18,1);\n      break;\n    case 5:\n      cmd_play_game(local_18);\n      break;\n    case 0xbad1abe1:\n      write_int(1);\n      break;\n    default:\n      write_int(0);\n      return 0;\n    }\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "memset",
+                        "read_initial_words",
+                        "write_int",
+                        "read_int",
+                        "cmd_add_word",
+                        "cmd_remove_word",
+                        "cmd_query",
+                        "cmd_play_game"
+                    ],
+                    "calling_functions": [
+                        "_start",
+                        "main"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            }
+        ],
+        "random.c": [
+            {
+                "func_name": "randint",
+                "func_c_signature": "int randint(int param_1,int param_2)",
+                "decompiled_code": "int randint(int param_1,int param_2) {\n  ulonglong uVar1;\n  int iVar2;\n  \n  iVar2 = seed_0 * 0x2d17c92c;\n  uVar1 = (ulonglong)seed_0;\n  seed_0 = (uint)(uVar1 * 0x972ad4c5);\n  DAT_00018004 = iVar2 + DAT_00018004 * -0x68d52b3b + (int)(uVar1 * 0x972ad4c5 >> 0x20);\n  return param_1 + seed_0 % (uint)(param_2 - param_1);\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "randint"
+                    ],
+                    "calling_functions": [
+                        "atree_random",
+                        "randint"
+                    ],
+                    "defined_in_file": "KPRCA_00032_decompiled.c"
+                }
+            }
+        ]
+    }
+}

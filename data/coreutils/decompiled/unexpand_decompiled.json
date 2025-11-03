@@ -1,0 +1,111 @@
+{
+    "file": "unexpand",
+    "decompiled_code": {
+        "unexpand.c": [
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\"Usage: %s [OPTION]... [FILE]...\\n\");\n    printf(pcVar3,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"Convert blanks in each FILE to tabs, writing to standard output.\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_stdin_note();\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -a, --all        convert all blanks, instead of just initial blanks\\n      --first-only  convert only leading sequences of blanks (overrides -a)\\n  -t, --tabs=N     have tabs N characters apart instead of 8 (enables -a)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_tab_list_info();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_ancillary_info(\"unexpand\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "blanks"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "fputs_unlocked",
+                        "emit_stdin_note",
+                        "emit_mandatory_arg_note",
+                        "blanks",
+                        "emit_tab_list_info",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "unexpand_decompiled.c"
+                }
+            },
+            {
+                "func_name": "unexpand",
+                "func_c_signature": "void unexpand(void)",
+                "decompiled_code": "void unexpand(void) {\n  byte bVar1;\n  int iVar2;\n  ushort **ppuVar3;\n  size_t sVar4;\n  long in_FS_OFFSET;\n  char local_59;\n  byte local_58;\n  byte local_57;\n  char local_56;\n  char local_55;\n  int local_54;\n  undefined4 local_50;\n  undefined4 local_4c;\n  long local_48;\n  FILE *local_40;\n  long local_38;\n  size_t local_30;\n  undefined *local_28;\n  long local_20;\n  undefined8 local_18;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  local_40 = (FILE *)next_file(0);\n  if (local_40 == (FILE *)0x0) {\nLAB_0010072e:\n    if (local_10 == *(long *)(in_FS_OFFSET + 0x28)) {\n      return;\n    }\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  local_28 = (undefined *)ximalloc(_max_column_width);\n  do {\n    local_58 = 1;\n    local_38 = 0;\n    local_20 = 0;\n    local_48 = 0;\n    local_57 = 0;\n    local_56 = '\\x01';\n    local_30 = 0;\nLAB_001004dc:\n    do {\n      local_54 = getc_unlocked(local_40);\n      if (local_54 < 0) {\n        local_40 = (FILE *)next_file(local_40);\n        if (local_40 != (FILE *)0x0) goto LAB_001004dc;\n      }\n      if (local_58 == 0) {\nLAB_001006f7:\n        if (local_54 < 0) {\n          free(local_28);\n          goto LAB_0010072e;\n        }\n        iVar2 = putchar_unlocked(local_54);\n        if (iVar2 < 0) {\n          write_error();\n        }\n      }\n      else {\n        ppuVar3 = __ctype_b_loc();\n        local_55 = ((*ppuVar3)[local_54] & 1) != 0;\n        if (!(bool)local_55) {\n          if (local_54 == 8) {\n            local_38 = local_38 - (ulong)(local_38 != 0);\n            local_48 = local_48 - (ulong)(local_48 != 0);\n            local_20 = local_38;\n          }\n          else {\n            local_38 = local_38 + 1;\n            if (local_38 == 0) {\n              local_18 = gettext(\"input line is too long\");\n              local_50 = 1;\n              local_4c = 0;\n              error(1,0,local_18);\n            }\n          }\nLAB_00100671:\n          if (local_30 != 0) {\n            if ((1 < (long)local_30) && (local_57 != 0)) {\n              *local_28 = 9;\n            }\n            sVar4 = fwrite_unlocked(local_28,1,local_30,_stdout);\n            if (sVar4 != local_30) {\n              write_error();\n            }\n            local_30 = 0;\n            local_57 = 0;\n          }\n          local_56 = local_55;\n          if ((convert_entire_line == '\\0') && (local_55 == '\\0')) {\n            bVar1 = 0;\n          }\n          else {\n            bVar1 = 1;\n          }\n          local_58 = (bVar1 & local_58) != 0;\n          goto LAB_001006f7;\n        }\n        local_20 = get_next_tab_column(local_38,&local_48,&local_59);\n        if (local_59 != '\\0') {\n          local_58 = 0;\n        }\n        if (local_58 == 0) goto LAB_00100671;\n        if (local_54 == 9) {\n          local_38 = local_20;\n          if (local_30 != 0) {\n            *local_28 = 9;\n          }\nLAB_001005ea:\n          local_30 = (size_t)local_57;\n          goto LAB_00100671;\n        }\n        local_38 = local_38 + 1;\n        if ((local_56 == '\\x01') && (local_38 == local_20)) {\n          local_54 = 9;\n          *local_28 = 9;\n          goto LAB_001005ea;\n        }\n        if (local_38 == local_20) {\n          local_57 = 1;\n        }\n        local_28[local_30] = (char)local_54;\n        local_56 = '\\x01';\n        local_30 = local_30 + 1;\n      }\n    } while (local_54 != 10);\n  } while( true );\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "unexpand",
+                        "next_file",
+                        "__stack_chk_fail",
+                        "ximalloc",
+                        "getc_unlocked",
+                        "free",
+                        "putchar_unlocked",
+                        "write_error",
+                        "__ctype_b_loc",
+                        "gettext",
+                        "error",
+                        "fwrite_unlocked",
+                        "get_next_tab_column"
+                    ],
+                    "calling_functions": [
+                        "unexpand",
+                        "main"
+                    ],
+                    "defined_in_file": "unexpand_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "undefined4 main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "undefined4 main(int param_1,undefined8 *param_2) {\n  long lVar1;\n  undefined auVar2 [16];\n  bool bVar3;\n  bool bVar4;\n  int iVar5;\n  undefined8 uVar6;\n  long in_FS_OFFSET;\n  bool bVar7;\n  long local_20;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  bVar3 = false;\n  local_20 = 0;\n  bVar4 = false;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdout);\nLAB_0010099d:\n  while( true ) {\n    iVar5 = getopt_long(param_1,param_2,\",0123456789at:\",longopts,0);\n    if (iVar5 == -1) {\n      if (bVar4) {\n        convert_entire_line = 0;\n      }\n      if (bVar3) {\n        add_tab_stop(local_20);\n      }\n      finalize_tab_stops();\n      if (_optind < param_1) {\n        param_2 = param_2 + _optind;\n      }\n      else {\n        param_2 = (undefined8 *)0x0;\n      }\n      set_file_list(param_2);\n      unexpand();\n      cleanup_file_list_stdin();\n      if (lVar1 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n        __stack_chk_fail();\n      }\n      return _exit_status;\n    }\n    if (iVar5 != 0x80) break;\n    bVar4 = true;\n  }\n  if (iVar5 < 0x81) {\n    if (iVar5 == 0x74) {\n      convert_entire_line = 1;\n      parse_tab_stops(_optarg);\n      goto LAB_0010099d;\n    }\n    if (iVar5 < 0x75) {\n      if (iVar5 == 0x61) {\nLAB_00100850:\n        convert_entire_line = 1;\n        goto LAB_0010099d;\n      }\n      if (0x61 < iVar5) goto LAB_00100900;\n      if (iVar5 == 0x3f) {\n        usage(1);\n        goto LAB_00100850;\n      }\n      if (iVar5 < 0x40) {\n        if (iVar5 == 0x2c) {\n          if (bVar3) {\n            add_tab_stop(local_20);\n          }\n          bVar3 = false;\n          goto LAB_0010099d;\n        }\n        if (iVar5 < 0x2d) {\n          if (iVar5 == -0x83) {\nLAB_001008a5:\n            uVar6 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n            version_etc(_stdout,\"unexpand\",\"GNU coreutils\",_Version,uVar6,0);\n                    /* WARNING: Subroutine does not return */\n            exit(0);\n          }\n          if (iVar5 == -0x82) {\n            usage(0);\n            goto LAB_001008a5;\n          }\n        }\n      }\n    }\n  }\nLAB_00100900:\n  if (!bVar3) {\n    local_20 = 0;\n    bVar3 = true;\n  }\n  auVar2 = SEXT816(local_20);\n  local_20 = local_20 * 10;\n  if ((SEXT816(local_20) != auVar2 * SEXT816(10)) ||\n     (bVar7 = SCARRY8((long)(iVar5 + -0x30),local_20), local_20 = (iVar5 + -0x30) + local_20, bVar7)\n     ) {\n    uVar6 = gettext(\"tab stop value is too large\");\n    error(1,0,uVar6);\n  }\n  goto LAB_0010099d;\n}",
+                "globals": [],
+                "externs": [
+                    "SEXT816",
+                    "SCARRY8"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "getopt_long",
+                        "add_tab_stop",
+                        "finalize_tab_stops",
+                        "set_file_list",
+                        "unexpand",
+                        "cleanup_file_list_stdin",
+                        "__stack_chk_fail",
+                        "parse_tab_stops",
+                        "usage",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "SEXT816",
+                        "SCARRY8",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "unexpand_decompiled.c"
+                }
+            }
+        ]
+    }
+}

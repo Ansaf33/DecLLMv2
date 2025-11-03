@@ -1,0 +1,584 @@
+{
+    "file": "install",
+    "decompiled_code": {
+        "install.c": [
+            {
+                "func_name": "have_same_content",
+                "func_c_signature": "bool have_same_content(undefined4 param_1,undefined4 param_2)",
+                "decompiled_code": "bool have_same_content(undefined4 param_1,undefined4 param_2) {\n  char cVar1;\n  long lVar2;\n  long lVar3;\n  \n  while( true ) {\n    lVar3 = full_read(param_1,a_buff_2,0x1000);\n    if (lVar3 < 1) {\n      return lVar3 == 0;\n    }\n    lVar2 = full_read(param_2,b_buff_3,0x1000);\n    if (lVar3 != lVar2) break;\n    cVar1 = memeq(a_buff_2,b_buff_3,lVar3);\n    if (cVar1 != '\\x01') {\n      return false;\n    }\n  }\n  return false;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "have_same_content",
+                        "full_read",
+                        "memeq"
+                    ],
+                    "calling_functions": [
+                        "have_same_content",
+                        "need_copy"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "extra_mode",
+                "func_c_signature": "undefined4 extra_mode(uint param_1)",
+                "decompiled_code": "undefined4 extra_mode(uint param_1) {\n  return CONCAT31((int3)((param_1 & 0xffff0e00) >> 8),(param_1 & 0xffff0e00) != 0);\n}",
+                "globals": [],
+                "externs": [
+                    "CONCAT31"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "extra_mode",
+                        "CONCAT31"
+                    ],
+                    "calling_functions": [
+                        "extra_mode",
+                        "need_copy",
+                        "main"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "need_copy",
+                "func_c_signature": "bool need_copy(char *param_1,undefined8 param_2,int param_3,char *param_4,long param_5)",
+                "decompiled_code": "bool need_copy(char *param_1,undefined8 param_2,int param_3,char *param_4,long param_5) {\n  char cVar1;\n  int iVar2;\n  __uid_t _Var3;\n  __gid_t _Var4;\n  int __fd;\n  int *piVar5;\n  long in_FS_OFFSET;\n  bool bVar6;\n  undefined8 local_148;\n  undefined8 local_140;\n  stat local_138;\n  stat local_a8;\n  long local_10;\n  \n  local_10 = *(long *)(in_FS_OFFSET + 0x28);\n  cVar1 = extra_mode(mode);\n  if (cVar1 != '\\0') {\n    bVar6 = true;\n    goto LAB_001007ba;\n  }\n  iVar2 = stat(param_1,&local_138);\n  if (iVar2 != 0) {\n    bVar6 = true;\n    goto LAB_001007ba;\n  }\n  iVar2 = fstatat(param_3,param_4,&local_a8,0x100);\n  if (iVar2 != 0) {\n    bVar6 = true;\n    goto LAB_001007ba;\n  }\n  if (((local_138.st_mode & 0xf000) == 0x8000) && ((local_a8.st_mode & 0xf000) == 0x8000)) {\n    cVar1 = extra_mode(local_138.st_mode);\n    if (cVar1 == '\\0') {\n      cVar1 = extra_mode(local_a8.st_mode);\n      if (cVar1 == '\\0') {\n        if ((local_138.st_size != local_a8.st_size) || ((local_a8.st_mode & 0xfff) != mode)) {\n          bVar6 = true;\n          goto LAB_001007ba;\n        }\n        if (owner_id == 0xffffffff) {\n          piVar5 = __errno_location();\n          *piVar5 = 0;\n          _Var3 = getuid();\n          if (_Var3 == 0xffffffff) {\n            piVar5 = __errno_location();\n            if (*piVar5 == 0) goto LAB_0010057c;\n          }\n          else {\nLAB_0010057c:\n            if (_Var3 == local_a8.st_uid) goto LAB_001005ae;\n          }\n          bVar6 = true;\n          goto LAB_001007ba;\n        }\n        if (local_a8.st_uid != owner_id) {\n          bVar6 = true;\n          goto LAB_001007ba;\n        }\nLAB_001005ae:\n        if (group_id == 0xffffffff) {\n          piVar5 = __errno_location();\n          *piVar5 = 0;\n          _Var4 = getgid();\n          if (_Var4 == 0xffffffff) {\n            piVar5 = __errno_location();\n            if (*piVar5 == 0) goto LAB_001005e3;\n          }\n          else {\nLAB_001005e3:\n            if (_Var4 == local_a8.st_gid) goto LAB_0010060f;\n          }\n          bVar6 = true;\n          goto LAB_001007ba;\n        }\n        if (local_a8.st_gid != group_id) {\n          bVar6 = true;\n          goto LAB_001007ba;\n        }\nLAB_0010060f:\n        if ((selinux_enabled != 0) && (*(char *)(param_5 + 0x33) != '\\0')) {\n          local_148 = 0;\n          local_140 = 0;\n          iVar2 = getfilecon_raw(param_1,&local_148);\n          if (iVar2 == -1) {\n            bVar6 = true;\n            goto LAB_001007ba;\n          }\n          iVar2 = getfilecon_raw(param_2,&local_140);\n          if (iVar2 == -1) {\n            freecon(local_148);\n            bVar6 = true;\n            goto LAB_001007ba;\n          }\n          cVar1 = streq(local_148,local_140);\n          freecon(local_148);\n          freecon(local_140);\n          if (cVar1 != '\\x01') {\n            bVar6 = true;\n            goto LAB_001007ba;\n          }\n        }\n        iVar2 = open(param_1,0);\n        if (iVar2 < 0) {\n          bVar6 = true;\n        }\n        else {\n          __fd = openat(param_3,param_4,0);\n          if (__fd < 0) {\n            close(iVar2);\n            bVar6 = true;\n          }\n          else {\n            cVar1 = have_same_content(iVar2,__fd);\n            close(iVar2);\n            close(__fd);\n            bVar6 = cVar1 == '\\0';\n          }\n        }\n        goto LAB_001007ba;\n      }\n    }\n  }\n  bVar6 = true;\nLAB_001007ba:\n  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return bVar6;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "need_copy",
+                        "extra_mode",
+                        "stat",
+                        "fstatat",
+                        "__errno_location",
+                        "getuid",
+                        "getgid",
+                        "getfilecon_raw",
+                        "freecon",
+                        "streq",
+                        "open",
+                        "openat",
+                        "close",
+                        "have_same_content",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "need_copy",
+                        "copy_file"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cp_option_init",
+                "func_c_signature": "void cp_option_init(undefined4 *param_1)",
+                "decompiled_code": "void cp_option_init(undefined4 *param_1) {\n  cp_options_default(param_1);\n  *(undefined *)(param_1 + 5) = 1;\n  param_1[0x13] = 1;\n  param_1[1] = 4;\n  *(undefined *)((long)param_1 + 0x15) = 1;\n  *(undefined *)((long)param_1 + 0x16) = 0;\n  *(undefined *)((long)param_1 + 0x17) = 0;\n  param_1[2] = 0;\n  *(undefined *)(param_1 + 6) = 0;\n  *(undefined *)((long)param_1 + 0x1b) = 1;\n  *(undefined *)((long)param_1 + 0x1e) = 0;\n  *(undefined *)((long)param_1 + 0x1f) = 0;\n  *(undefined *)(param_1 + 0xc) = 0;\n  *(undefined *)(param_1 + 8) = 0;\n  *(undefined *)((long)param_1 + 0x21) = 0;\n  *(undefined *)((long)param_1 + 0x22) = 0;\n  *(undefined *)((long)param_1 + 0x37) = 0;\n  *(undefined *)((long)param_1 + 0x31) = 1;\n  *(undefined *)((long)param_1 + 0x32) = 0;\n  *(undefined *)((long)param_1 + 0x36) = 0;\n  *(undefined *)(param_1 + 0xe) = 0;\n  param_1[3] = 2;\n  *(undefined *)((long)param_1 + 0x3a) = 0;\n  *param_1 = 0;\n  *(undefined *)((long)param_1 + 0x39) = 1;\n  param_1[4] = 0x180;\n  *(undefined *)((long)param_1 + 0x43) = 0;\n  *(undefined *)(param_1 + 0x11) = 0;\n  param_1[0xf] = 0;\n  *(undefined *)(param_1 + 0xd) = 0;\n  *(undefined *)((long)param_1 + 0x33) = 0;\n  *(undefined8 *)(param_1 + 10) = 0;\n  *(undefined *)((long)param_1 + 0x35) = 0;\n  *(undefined *)(param_1 + 0x10) = 0;\n  *(undefined8 *)(param_1 + 0x14) = 0;\n  *(undefined8 *)(param_1 + 0x16) = 0;\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cp_option_init",
+                        "cp_options_default"
+                    ],
+                    "calling_functions": [
+                        "cp_option_init",
+                        "main"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_labeling_handle",
+                "func_c_signature": "long get_labeling_handle(void)",
+                "decompiled_code": "long get_labeling_handle(void) {\n  undefined8 uVar1;\n  int *piVar2;\n  \n  if (initialized_1 != '\\x01') {\n    initialized_1 = '\\x01';\n    hnd_0 = selabel_open(0,0,0);\n    if (hnd_0 == 0) {\n      uVar1 = gettext(\"warning: security labeling handle failed\");\n      piVar2 = __errno_location();\n      error(0,*piVar2,uVar1);\n    }\n  }\n  return hnd_0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_labeling_handle",
+                        "selabel_open",
+                        "gettext",
+                        "__errno_location",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "get_labeling_handle",
+                        "setdefaultfilecon",
+                        "main"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "setdefaultfilecon",
+                "func_c_signature": "void setdefaultfilecon(char *param_1)",
+                "decompiled_code": "void setdefaultfilecon(char *param_1) {\n  char cVar1;\n  int iVar2;\n  int *piVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  long in_FS_OFFSET;\n  undefined8 local_e8;\n  long local_e0;\n  undefined8 local_d8;\n  undefined8 local_d0;\n  stat local_c8;\n  long local_30;\n  \n  local_30 = *(long *)(in_FS_OFFSET + 0x28);\n  local_e8 = 0;\n  if (((selinux_enabled == 1) && (iVar2 = lstat(param_1,&local_c8), iVar2 == 0)) &&\n     (local_e0 = get_labeling_handle(), local_e0 != 0)) {\n    iVar2 = selabel_lookup_raw(local_e0,&local_e8,param_1,local_c8.st_mode);\n    if (iVar2 == 0) {\n      iVar2 = lsetfilecon_raw(param_1,local_e8);\n      if ((iVar2 < 0) && (piVar3 = __errno_location(), *piVar3 != 0x5f)) {\n        uVar4 = quote_n(1,local_e8);\n        uVar5 = quotearg_n_style_colon(0,3,param_1);\n        uVar6 = gettext(\"warning: %s: failed to change context to %s\");\n        piVar3 = __errno_location();\n        local_d0 = uVar6;\n        error(0,*piVar3,uVar6,uVar5,uVar4);\n      }\n      freecon(local_e8);\n    }\n    else {\n      piVar3 = __errno_location();\n      if (*piVar3 != 2) {\n        piVar3 = __errno_location();\n        cVar1 = ignorable_ctx_err(*piVar3);\n        if (cVar1 != '\\x01') {\n          uVar4 = quotearg_n_style_colon(0,3,param_1);\n          uVar5 = gettext(\"warning: %s: context lookup failed\");\n          piVar3 = __errno_location();\n          local_d8 = uVar5;\n          error(0,*piVar3,uVar5,uVar4);\n        }\n      }\n    }\n  }\n  if (local_30 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "setdefaultfilecon",
+                        "lstat",
+                        "get_labeling_handle",
+                        "selabel_lookup_raw",
+                        "lsetfilecon_raw",
+                        "__errno_location",
+                        "quote_n",
+                        "quotearg_n_style_colon",
+                        "gettext",
+                        "error",
+                        "freecon",
+                        "ignorable_ctx_err",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "setdefaultfilecon",
+                        "change_attributes"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "announce_mkdir",
+                "func_c_signature": "void announce_mkdir(undefined8 param_1,long param_2)",
+                "decompiled_code": "void announce_mkdir(undefined8 param_1,long param_2) {\n  undefined8 uVar1;\n  undefined8 uVar2;\n  \n  if (*(char *)(param_2 + 0x40) != '\\0') {\n    uVar1 = quotearg_style(4,param_1);\n    uVar2 = gettext(\"creating directory %s\");\n    prog_fprintf(_stdout,uVar2,uVar1);\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "announce_mkdir",
+                        "quotearg_style",
+                        "gettext",
+                        "prog_fprintf"
+                    ],
+                    "calling_functions": [
+                        "announce_mkdir",
+                        "make_ancestor"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "make_ancestor",
+                "func_c_signature": "int make_ancestor(undefined8 param_1,char *param_2,long param_3)",
+                "decompiled_code": "int make_ancestor(undefined8 param_1,char *param_2,long param_3) {\n  char cVar1;\n  int iVar2;\n  int *piVar3;\n  undefined8 uVar4;\n  undefined8 uVar5;\n  \n  if (*(long *)(param_3 + 0x28) != 0) {\n    iVar2 = defaultcon(*(undefined8 *)(param_3 + 0x28),param_2,0x4000);\n    if (iVar2 < 0) {\n      piVar3 = __errno_location();\n      cVar1 = ignorable_ctx_err(*piVar3);\n      if (cVar1 != '\\x01') {\n        uVar4 = quotearg_style(4,param_1);\n        uVar5 = gettext(\"failed to set default creation context for %s\");\n        piVar3 = __errno_location();\n        error(0,*piVar3,uVar5,uVar4);\n      }\n    }\n  }\n  iVar2 = mkdir(param_2,0x1ed);\n  if (iVar2 == 0) {\n    announce_mkdir(param_1,param_3);\n  }\n  return iVar2;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "make_ancestor",
+                        "defaultcon",
+                        "__errno_location",
+                        "ignorable_ctx_err",
+                        "quotearg_style",
+                        "gettext",
+                        "error",
+                        "mkdir",
+                        "announce_mkdir"
+                    ],
+                    "calling_functions": [
+                        "make_ancestor"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "process_dir",
+                "func_c_signature": "byte process_dir(undefined8 param_1,undefined8 param_2,long param_3)",
+                "decompiled_code": "byte process_dir(undefined8 param_1,undefined8 param_2,long param_3) {\n  byte bVar1;\n  char cVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  undefined8 uVar5;\n  \n  bVar1 = make_dir_parents(param_1,param_2,make_ancestor,param_3,dir_mode,announce_mkdir,\n                           dir_mode_bits,owner_id,group_id,0);\n  if (((bVar1 ^ 1) == 0) && (*(long *)(param_3 + 0x28) != 0)) {\n    uVar3 = last_component(param_1);\n    cVar2 = restorecon(*(undefined8 *)(param_3 + 0x28),uVar3,0);\n    if (cVar2 != '\\x01') {\n      piVar4 = __errno_location();\n      cVar2 = ignorable_ctx_err(*piVar4);\n      if (cVar2 != '\\x01') {\n        uVar3 = quotearg_style(4,param_1);\n        uVar5 = gettext(\"failed to restore context for %s\");\n        piVar4 = __errno_location();\n        error(0,*piVar4,uVar5,uVar3);\n      }\n    }\n  }\n  return bVar1 ^ 1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "process_dir",
+                        "make_dir_parents",
+                        "last_component",
+                        "restorecon",
+                        "__errno_location",
+                        "ignorable_ctx_err",
+                        "quotearg_style",
+                        "gettext",
+                        "error"
+                    ],
+                    "calling_functions": [
+                        "process_dir"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "copy_file",
+                "func_c_signature": "int copy_file(EVP_PKEY_CTX *param_1,EVP_PKEY_CTX *param_2,undefined4 param_3,undefined8 param_4,\n             undefined8 param_5)",
+                "decompiled_code": "int copy_file(EVP_PKEY_CTX *param_1,EVP_PKEY_CTX *param_2,undefined4 param_3,undefined8 param_4,\n             undefined8 param_5) {\n  long lVar1;\n  char cVar2;\n  int iVar3;\n  long in_FS_OFFSET;\n  \n  lVar1 = *(long *)(in_FS_OFFSET + 0x28);\n  if (copy_only_if_needed != '\\0') {\n    cVar2 = need_copy(param_1,param_2,param_3,param_4,param_5);\n    if (cVar2 != '\\x01') {\n      iVar3 = 1;\n      goto LAB_00100f2f;\n    }\n  }\n  iVar3 = copy(param_1,param_2);\nLAB_00100f2f:\n  if (lVar1 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return iVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "copy_file",
+                        "need_copy",
+                        "copy",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "copy_file",
+                        "install_file_in_file"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "change_attributes",
+                "func_c_signature": "undefined change_attributes(undefined8 param_1,undefined4 param_2,undefined8 param_3)",
+                "decompiled_code": "undefined change_attributes(undefined8 param_1,undefined4 param_2,undefined8 param_3) {\n  int iVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  undefined local_39;\n  \n  local_39 = 0;\n  if ((owner_id != -1) || (group_id != -1)) {\n    iVar1 = lchownat(param_2,param_3,owner_id,group_id);\n    if (iVar1 != 0) {\n      uVar2 = quotearg_style(4,param_1);\n      uVar3 = gettext(\"cannot change ownership of %s\");\n      piVar4 = __errno_location();\n      error(0,*piVar4,uVar3,uVar2);\n      goto LAB_00101063;\n    }\n  }\n  iVar1 = chmodat(param_2,param_3,mode);\n  if (iVar1 == 0) {\n    local_39 = 1;\n  }\n  else {\n    uVar2 = quotearg_style(4,param_1);\n    uVar3 = gettext(\"cannot change permissions of %s\");\n    piVar4 = __errno_location();\n    error(0,*piVar4,uVar3,uVar2);\n  }\nLAB_00101063:\n  if (use_default_selinux_context != '\\0') {\n    setdefaultfilecon(param_1);\n  }\n  return local_39;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "change_attributes",
+                        "lchownat",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "chmodat",
+                        "setdefaultfilecon"
+                    ],
+                    "calling_functions": [
+                        "change_attributes",
+                        "install_file_in_file"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "change_timestamps",
+                "func_c_signature": "bool change_timestamps(undefined8 param_1,undefined8 param_2,int param_3,char *param_4)",
+                "decompiled_code": "bool change_timestamps(undefined8 param_1,undefined8 param_2,int param_3,char *param_4) {\n  int iVar1;\n  undefined8 uVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  long in_FS_OFFSET;\n  timespec local_48;\n  undefined local_38 [24];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_48 = (timespec)get_stat_atime(param_1);\n  local_38._0_16_ = get_stat_mtime(param_1);\n  iVar1 = utimensat(param_3,param_4,&local_48,0);\n  if (iVar1 != 0) {\n    uVar2 = quotearg_style(4,param_2);\n    uVar3 = gettext(\"cannot set timestamps for %s\");\n    piVar4 = __errno_location();\n    error(0,*piVar4,uVar3,uVar2);\n  }\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return iVar1 == 0;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "change_timestamps",
+                        "get_stat_atime",
+                        "get_stat_mtime",
+                        "utimensat",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "change_timestamps",
+                        "install_file_in_file"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "strip",
+                "func_c_signature": "undefined strip(char *param_1)",
+                "decompiled_code": "undefined strip(char *param_1) {\n  char cVar1;\n  int iVar2;\n  __pid_t _Var3;\n  undefined8 uVar4;\n  int *piVar5;\n  long in_FS_OFFSET;\n  undefined local_1ed;\n  __pid_t local_1ec;\n  uint local_1e8;\n  int local_1e4;\n  undefined4 local_1e0;\n  int local_1dc;\n  undefined4 local_1d8;\n  int local_1d4;\n  undefined4 local_1d0;\n  undefined4 local_1cc;\n  posix_spawnattr_t *local_1c8;\n  char *local_1c0;\n  char *local_1b8;\n  undefined8 local_1b0;\n  undefined8 local_1a8;\n  undefined8 local_1a0;\n  char *local_198;\n  char *local_190;\n  undefined8 local_188;\n  posix_spawnattr_t local_178;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_1c8 = (posix_spawnattr_t *)0x0;\n  iVar2 = posix_spawnattr_init(&local_178);\n  if (iVar2 == 0) {\n    iVar2 = posix_spawnattr_setflags(&local_178,0x40);\n    if (iVar2 == 0) {\n      local_1c8 = &local_178;\n    }\n    else {\n      posix_spawnattr_destroy(&local_178);\n    }\n  }\n  local_1c0 = (char *)0x0;\n  local_1b8 = param_1;\n  if ((param_1 != (char *)0x0) && (*param_1 == '-')) {\n    local_1c0 = (char *)file_name_concat(&DAT_001053e5,param_1,0);\n    local_1b8 = local_1c0;\n  }\n  local_198 = strip_program;\n  local_190 = local_1b8;\n  local_188 = 0;\n  local_1e4 = posix_spawnp(&local_1ec,strip_program,(posix_spawn_file_actions_t *)0x0,local_1c8,\n                           &local_198,_environ);\n  local_1ed = 0;\n  if (local_1e4 == 0) {\n    _Var3 = waitpid(local_1ec,(int *)&local_1e8,0);\n    if (_Var3 < 0) {\n      uVar4 = gettext(\"waiting for strip\");\n      piVar5 = __errno_location();\n      local_1d4 = *piVar5;\n      local_1d8 = 0;\n      local_1a8 = uVar4;\n      error(0,local_1d4,uVar4);\n    }\n    else if (((local_1e8 & 0x7f) == 0) && ((local_1e8 & 0xff00) == 0)) {\n      local_1ed = 1;\n    }\n    else {\n      local_1a0 = gettext(\"strip process terminated abnormally\");\n      local_1d0 = 0;\n      local_1cc = 0;\n      error(0,0,local_1a0);\n    }\n  }\n  else {\n    uVar4 = quotearg_style(4,strip_program);\n    cVar1 = streq(strip_program,\"strip\");\n    if (cVar1 == '\\0') {\n      local_1b0 = gettext(\"cannot run strip program %s\");\n    }\n    else {\n      local_1b0 = gettext(\"cannot run %s\");\n    }\n    local_1e0 = 0;\n    local_1dc = local_1e4;\n    error(0,local_1e4,local_1b0,uVar4);\n  }\n  free(local_1c0);\n  if (local_1c8 != (posix_spawnattr_t *)0x0) {\n    posix_spawnattr_destroy(local_1c8);\n  }\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return local_1ed;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "strip",
+                        "posix_spawnattr_init",
+                        "posix_spawnattr_setflags",
+                        "posix_spawnattr_destroy",
+                        "file_name_concat",
+                        "posix_spawnp",
+                        "waitpid",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "quotearg_style",
+                        "streq",
+                        "free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "strip",
+                        "install_file_in_file"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_ids",
+                "func_c_signature": "void get_ids(void)",
+                "decompiled_code": "void get_ids(void) {\n  int iVar1;\n  undefined8 uVar2;\n  long in_FS_OFFSET;\n  ulong local_48;\n  passwd *local_40;\n  group *local_38;\n  undefined8 local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (owner_name == (char *)0x0) {\n    owner_id = 0xffffffff;\n  }\n  else {\n    local_40 = getpwnam(owner_name);\n    if (local_40 == (passwd *)0x0) {\n      iVar1 = xstrtoumax(owner_name,0,0,&local_48,&DAT_001051ac);\n      if ((iVar1 != 0) || (owner_id = (__uid_t)local_48, local_48 != (local_48 & 0xffffffff))) {\n        uVar2 = quotearg_style(4,owner_name);\n        local_30 = gettext(\"invalid user %s\");\n        error(1,0,local_30,uVar2);\n        goto LAB_00101589;\n      }\n    }\n    else {\nLAB_00101589:\n      owner_id = local_40->pw_uid;\n    }\n    endpwent();\n  }\n  if (group_name == (char *)0x0) {\n    group_id = 0xffffffff;\n    goto code_r0x001016a0;\n  }\n  local_38 = getgrnam(group_name);\n  if (local_38 == (group *)0x0) {\n    iVar1 = xstrtoumax(group_name,0,0,&local_48,&DAT_001051ac);\n    if ((iVar1 != 0) || (group_id = (__gid_t)local_48, local_48 != (local_48 & 0xffffffff))) {\n      uVar2 = quotearg_style(4,group_name);\n      local_28 = gettext(\"invalid group %s\");\n      error(1,0,local_28,uVar2);\n      goto LAB_00101681;\n    }\n  }\n  else {\nLAB_00101681:\n    group_id = local_38->gr_gid;\n  }\n  endgrent();\ncode_r0x001016a0:\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_ids",
+                        "getpwnam",
+                        "xstrtoumax",
+                        "quotearg_style",
+                        "gettext",
+                        "error",
+                        "endpwent",
+                        "getgrnam",
+                        "endgrent",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "get_ids",
+                        "main"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "usage",
+                "func_c_signature": "void usage(int param_1)",
+                "decompiled_code": "void usage(int param_1) {\n  FILE *pFVar1;\n  undefined8 uVar2;\n  char *pcVar3;\n  \n  uVar2 = _program_name;\n  if (param_1 == 0) {\n    pcVar3 = (char *)gettext(\n                            \"Usage: %s [OPTION]... [-T] SOURCE DEST\\n  or:  %s [OPTION]... SOURCE... DIRECTORY\\n  or:  %s [OPTION]... -t DIRECTORY SOURCE...\\n  or:  %s [OPTION]... -d DIRECTORY...\\n\"\n                            );\n    printf(pcVar3,uVar2,uVar2,uVar2,uVar2);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"\\nThis install program copies files (often just compiled) into destination\\nlocations you choose.  If you want to download and install a ready-to-use\\npackage on a GNU/Linux system, you should instead be using a package manager\\nlike yum(1) or apt-get(1).\\n\\nIn the first three forms, copy SOURCE to DEST or multiple SOURCE(s) to\\nthe existing DIRECTORY, while setting permission modes and owner/group.\\nIn the 4th form, create all components of the given DIRECTORY(ies).\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_mandatory_arg_note();\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --backup[=CONTROL]  make a backup of each existing destination file\\n  -b                  like --backup but does not accept an argument\\n  -c                  (ignored)\\n  -C, --compare       compare content of source and destination files, and\\n                        if no change to content, ownership, and permissions,\\n                        do not modify the destination at all\\n  -d, --directory     treat all arguments as directory names; create all\\n                        components of the specified directories\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -D                  create all leading components of DEST except the last,\\n                        or all components of --target-directory,\\n                        then copy SOURCE to DEST\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --debug         explain how a file is copied.  Implies -v\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -g, --group=GROUP   set group ownership, instead of process\\' current group\\n  -m, --mode=MODE     set permission mode (as in chmod), instead of rwxr-xr-x\\n  -o, --owner=OWNER   set ownership (super-user only)\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -p, --preserve-timestamps   apply access/modification times of SOURCE files\\n                        to corresponding destination files\\n  -s, --strip         strip symbol tables\\n      --strip-program=PROGRAM  program used to strip binaries\\n  -S, --suffix=SUFFIX  override the usual backup suffix\\n  -t, --target-directory=DIRECTORY  copy all SOURCE arguments into DIRECTORY\\n  -T, --no-target-directory  treat DEST as a normal file\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"  -v, --verbose       print the name of each created file or directory\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\n                            \"      --preserve-context  preserve SELinux security context\\n  -Z                      set SELinux security context of destination\\n                            file and each created directory to default type\\n      --context[=CTX]     like -Z, or if CTX is specified then set the\\n                            SELinux or SMACK security context to CTX\\n\"\n                            );\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --help        display this help and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    pFVar1 = _stdout;\n    pcVar3 = (char *)gettext(\"      --version     output version information and exit\\n\");\n    fputs_unlocked(pcVar3,pFVar1);\n    emit_backup_suffix_note();\n    emit_ancillary_info(\"install\");\n  }\n  else {\n    pcVar3 = (char *)gettext(\"Try \\'%s --help\\' for more information.\\n\");\n    fprintf(_stderr,pcVar3,uVar2);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(param_1);\n}",
+                "globals": [],
+                "externs": [
+                    "files",
+                    "yum",
+                    "get",
+                    "SOURCE",
+                    "DIRECTORY",
+                    "c",
+                    "mode",
+                    "ownership"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "usage",
+                        "gettext",
+                        "printf",
+                        "files",
+                        "yum",
+                        "get",
+                        "SOURCE",
+                        "DIRECTORY",
+                        "fputs_unlocked",
+                        "emit_mandatory_arg_note",
+                        "c",
+                        "mode",
+                        "ownership",
+                        "emit_backup_suffix_note",
+                        "emit_ancillary_info",
+                        "fprintf",
+                        "exit"
+                    ],
+                    "calling_functions": [
+                        "usage",
+                        "main"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "install_file_in_file",
+                "func_c_signature": "undefined8\ninstall_file_in_file(char *param_1,undefined8 param_2,int param_3,char *param_4,long param_5)",
+                "decompiled_code": "undefined8\ninstall_file_in_file(char *param_1,undefined8 param_2,int param_3,char *param_4,long param_5) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  long in_FS_OFFSET;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (*(char *)(param_5 + 0x21) != '\\0') {\n    iVar2 = stat(param_1,&local_b8);\n    if (iVar2 != 0) {\n      uVar3 = quotearg_style(4,param_1);\n      uVar4 = gettext(\"cannot stat %s\");\n      piVar5 = __errno_location();\n      error(0,*piVar5,uVar4,uVar3);\n      uVar3 = 0;\n      goto LAB_00101b19;\n    }\n  }\n  cVar1 = copy_file(param_1,param_2,param_3,param_4,param_5);\n  if (cVar1 == '\\x01') {\n    if (strip_files != '\\0') {\n      cVar1 = strip(param_2);\n      if (cVar1 != '\\x01') {\n        iVar2 = unlinkat(param_3,param_4,0);\n        if (iVar2 != 0) {\n          uVar3 = quotearg_style(4,param_2);\n          uVar4 = gettext(\"cannot unlink %s\");\n          piVar5 = __errno_location();\n          error(1,*piVar5,uVar4,uVar3);\n        }\n        uVar3 = 0;\n        goto LAB_00101b19;\n      }\n    }\n    if ((*(char *)(param_5 + 0x21) != '\\0') &&\n       ((strip_files != '\\0' || ((local_b8.st_mode & 0xf000) != 0x8000)))) {\n      cVar1 = change_timestamps(&local_b8,param_2,param_3,param_4);\n      if (cVar1 != '\\x01') {\n        uVar3 = 0;\n        goto LAB_00101b19;\n      }\n    }\n    uVar3 = change_attributes(param_2,param_3,param_4);\n  }\n  else {\n    uVar3 = 0;\n  }\nLAB_00101b19:\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "install_file_in_file",
+                        "stat",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "copy_file",
+                        "strip",
+                        "unlinkat",
+                        "change_timestamps",
+                        "change_attributes",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "install_file_in_file",
+                        "install_file_in_file_parents",
+                        "install_file_in_dir",
+                        "main"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "mkancesdirs_safe_wd",
+                "func_c_signature": "bool mkancesdirs_safe_wd(char *param_1,char *param_2,undefined8 param_3,char param_4)",
+                "decompiled_code": "bool mkancesdirs_safe_wd(char *param_1,char *param_2,undefined8 param_3,char param_4) {\n  int iVar1;\n  bool bVar2;\n  int iVar3;\n  long lVar4;\n  undefined8 uVar5;\n  undefined8 uVar6;\n  int *piVar7;\n  long in_FS_OFFSET;\n  bool bVar8;\n  undefined local_28 [8];\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (((param_4 == '\\0') && (*param_1 == '/')) && (*param_2 == '/')) {\n    bVar2 = false;\n  }\n  else {\n    bVar2 = true;\n  }\n  savewd_init(local_28);\n  if (!bVar2) {\n    savewd_finish(local_28);\n  }\n  lVar4 = mkancesdirs(param_2,local_28,make_ancestor,param_3);\n  bVar8 = lVar4 == -1;\n  if (bVar8) {\n    uVar5 = quotearg_style(4,param_2);\n    uVar6 = gettext(\"cannot create directory %s\");\n    piVar7 = __errno_location();\n    error(0,*piVar7,uVar6,uVar5);\n  }\n  if (bVar2) {\n    iVar3 = savewd_restore(local_28,bVar8);\n    piVar7 = __errno_location();\n    iVar1 = *piVar7;\n    savewd_finish(local_28);\n    if (0 < iVar3) {\n      bVar8 = false;\n      goto LAB_00101cea;\n    }\n    if ((iVar3 < 0) && (!bVar8)) {\n      uVar5 = quotearg_style(4,param_2);\n      uVar6 = gettext(\"cannot create directory %s\");\n      error(0,iVar1,uVar6,uVar5);\n      bVar8 = false;\n      goto LAB_00101cea;\n    }\n  }\n  bVar8 = !bVar8;\nLAB_00101cea:\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return bVar8;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "mkancesdirs_safe_wd",
+                        "savewd_init",
+                        "savewd_finish",
+                        "mkancesdirs",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "savewd_restore",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "mkancesdirs_safe_wd",
+                        "install_file_in_file_parents",
+                        "install_file_in_dir"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "install_file_in_file_parents",
+                "func_c_signature": "undefined4 install_file_in_file_parents(undefined8 param_1,undefined8 param_2,undefined8 param_3)",
+                "decompiled_code": "undefined4 install_file_in_file_parents(undefined8 param_1,undefined8 param_2,undefined8 param_3) {\n  char cVar1;\n  \n  cVar1 = mkancesdirs_safe_wd(param_1,param_2,param_3,0);\n  if ((cVar1 != '\\0') &&\n     (cVar1 = install_file_in_file(param_1,param_2,0xffffff9c,param_2,param_3), cVar1 != '\\0')) {\n    return 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "install_file_in_file_parents",
+                        "mkancesdirs_safe_wd",
+                        "install_file_in_file"
+                    ],
+                    "calling_functions": [
+                        "install_file_in_file_parents",
+                        "main"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "install_file_in_dir",
+                "func_c_signature": "char install_file_in_dir(undefined8 param_1,char *param_2,undefined8 param_3,char param_4,\n                        int *param_5)",
+                "decompiled_code": "char install_file_in_dir(undefined8 param_1,char *param_2,undefined8 param_3,char param_4,\n                        int *param_5) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  long in_FS_OFFSET;\n  char local_51;\n  int local_50;\n  void *local_40;\n  undefined8 local_38;\n  void *local_30;\n  undefined8 local_28;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  local_38 = last_component(param_1);\n  local_30 = (void *)file_name_concat(param_2,local_38,&local_40);\n  local_51 = '\\x01';\n  cVar1 = target_dirfd_valid(*param_5);\n  if ((cVar1 != '\\x01') && (local_51 = param_4, param_4 != '\\0')) {\n    local_51 = mkancesdirs_safe_wd(param_1,local_30,param_3,1);\n    if (local_51 != '\\0') {\n      iVar2 = open(param_2,0x210000);\n      if (iVar2 < 0) {\n        uVar3 = quotearg_style(4,local_30);\n        uVar4 = gettext(\"cannot open %s\");\n        piVar5 = __errno_location();\n        local_28 = uVar4;\n        error(0,*piVar5,uVar4,uVar3);\n        local_51 = '\\0';\n      }\n      else {\n        *param_5 = iVar2;\n      }\n    }\n  }\n  if (local_51 != '\\0') {\n    local_50 = *param_5;\n    cVar1 = target_dirfd_valid(local_50);\n    if (cVar1 != '\\x01') {\n      local_50 = -100;\n      local_40 = local_30;\n    }\n    local_51 = install_file_in_file(param_1,local_30,local_50,local_40,param_3);\n  }\n  free(local_30);\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return local_51;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "install_file_in_dir",
+                        "last_component",
+                        "file_name_concat",
+                        "target_dirfd_valid",
+                        "mkancesdirs_safe_wd",
+                        "open",
+                        "quotearg_style",
+                        "gettext",
+                        "__errno_location",
+                        "error",
+                        "install_file_in_file",
+                        "free",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "install_file_in_dir",
+                        "main"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            },
+            {
+                "func_name": "main",
+                "func_c_signature": "void main(int param_1,undefined8 *param_2)",
+                "decompiled_code": "void main(int param_1,undefined8 *param_2) {\n  bool bVar1;\n  bool bVar2;\n  bool bVar3;\n  bool bVar4;\n  char cVar5;\n  undefined uVar6;\n  int iVar7;\n  undefined8 uVar8;\n  undefined8 uVar9;\n  int *piVar10;\n  long in_FS_OFFSET;\n  undefined4 local_290;\n  int local_28c;\n  int local_288;\n  int local_284;\n  int local_280;\n  undefined4 local_27c;\n  undefined4 local_278;\n  undefined4 local_274;\n  undefined4 local_270;\n  undefined4 local_26c;\n  undefined4 local_268;\n  undefined4 local_264;\n  undefined4 local_260;\n  undefined4 local_25c;\n  undefined4 local_258;\n  undefined4 local_254;\n  undefined4 local_250;\n  undefined4 local_24c;\n  undefined4 local_248;\n  int local_244;\n  undefined4 local_240;\n  undefined4 local_23c;\n  undefined4 local_238;\n  undefined4 local_234;\n  undefined4 local_230;\n  undefined4 local_22c;\n  undefined4 local_228;\n  undefined4 local_224;\n  undefined4 local_220;\n  int local_21c;\n  undefined4 local_218;\n  int local_214;\n  undefined4 local_210;\n  undefined4 local_20c;\n  undefined4 local_208;\n  undefined4 local_204;\n  undefined4 local_200;\n  undefined4 local_1fc;\n  undefined4 local_1f8;\n  undefined4 local_1f4;\n  undefined4 local_1f0;\n  undefined4 local_1ec;\n  long local_1e8;\n  long local_1e0;\n  long local_1d8;\n  long local_1d0;\n  long local_1c8;\n  undefined8 *local_1c0;\n  long local_1b8;\n  void *local_1b0;\n  undefined8 local_1a8;\n  undefined8 local_1a0;\n  undefined8 local_198;\n  undefined8 local_190;\n  undefined8 local_188;\n  undefined8 local_180;\n  undefined8 local_178;\n  undefined8 local_170;\n  undefined8 local_168;\n  undefined8 local_160;\n  undefined8 local_158;\n  undefined8 local_150;\n  undefined8 local_148;\n  undefined8 local_140;\n  undefined8 local_138;\n  undefined8 local_130;\n  undefined8 local_128;\n  undefined8 local_120;\n  undefined4 local_118 [8];\n  char local_f7;\n  long local_f0;\n  char local_e5;\n  undefined local_d8;\n  undefined local_d6;\n  undefined local_b8 [152];\n  undefined8 local_20;\n  \n  local_20 = *(undefined8 *)(in_FS_OFFSET + 0x28);\n  local_28c = 0;\n  local_1e8 = 0;\n  bVar1 = false;\n  local_1e0 = 0;\n  local_1d8 = 0;\n  bVar3 = false;\n  local_1d0 = 0;\n  bVar2 = false;\n  bVar4 = false;\n  local_1c8 = 0;\n  selinux_enabled = 0;\n  set_program_name(*param_2);\n  setlocale(6,\"\");\n  bindtextdomain(\"coreutils\",\"/usr/local/share/locale\");\n  textdomain(\"coreutils\");\n  atexit((__func *)&close_stdin);\n  cp_option_init(local_118);\n  owner_name = 0;\n  group_name = 0;\n  strip_files = '\\0';\n  dir_arg = '\\0';\n  umask(0);\nLAB_001023d3:\n  local_280 = getopt_long(param_1,param_2,\"bcCsDdg:m:o:pt:TvS:Z\",long_options,0);\n  if (local_280 != -1) {\n    if (local_280 < 0x83) {\n      if (local_280 < 0x43) {\n        if (local_280 == -0x83) {\nLAB_00102367:\n          uVar8 = proper_name_lite(\"David MacKenzie\",\"David MacKenzie\");\n          version_etc(_stdout,\"install\",\"GNU coreutils\",_Version,uVar8,0);\n                    /* WARNING: Subroutine does not return */\n          exit(0);\n        }\n        if (local_280 == -0x82) {\n          usage(0);\n          goto LAB_00102367;\n        }\n        goto switchD_001020c9_caseD_45;\n      }\n      goto code_r0x001020a9;\n    }\n    goto switchD_001020c9_caseD_45;\n  }\n  if ((dir_arg != '\\0') && (strip_files != '\\0')) {\n    local_190 = gettext(\"the strip option may not be used when installing a directory\");\n    local_260 = 1;\n    local_25c = 0;\n    error(1,0,local_190);\n  }\n  if ((dir_arg != '\\0') && (local_1d0 != 0)) {\n    local_188 = gettext(\"target directory not allowed when installing a directory\");\n    local_258 = 1;\n    local_254 = 0;\n    error(1,0,local_188);\n  }\n  if (bVar1) {\n    uVar8 = gettext(\"backup type\");\n    local_118[0] = xget_version(uVar8,local_1d8);\n  }\n  else {\n    local_118[0] = 0;\n  }\n  set_simple_backup_suffix(local_1e0);\n  if ((local_e5 != '\\0') && ((local_f0 != 0 || (local_1c8 != 0)))) {\n    local_180 = gettext(\"cannot set target context and preserve it\");\n    local_250 = 1;\n    local_24c = 0;\n    error(1,0,local_180);\n  }\n  if ((local_1c8 != 0) && (iVar7 = setfscreatecon(local_1c8), iVar7 < 0)) {\n    uVar8 = quote(local_1c8);\n    uVar9 = gettext(\"failed to set default file creation context to %s\");\n    piVar10 = __errno_location();\n    local_244 = *piVar10;\n    local_248 = 1;\n    local_178 = uVar9;\n    error(1,local_244,uVar9,uVar8);\n  }\n  local_288 = param_1 - _optind;\n  local_1c0 = param_2 + _optind;\n  if ((dir_arg == '\\x01') || (local_1d0 != 0)) {\n    iVar7 = 0;\n  }\n  else {\n    iVar7 = 1;\n  }\n  if (local_288 <= iVar7) {\n    if (local_288 < 1) {\n      local_170 = gettext(\"missing file operand\");\n      local_240 = 0;\n      local_23c = 0;\n      error(0,0,local_170);\n    }\n    else {\n      uVar8 = quotearg_style(4,*local_1c0);\n      local_168 = gettext(\"missing destination file operand after %s\");\n      local_238 = 0;\n      local_234 = 0;\n      error(0,0,local_168,uVar8);\n    }\n    usage(1);\n  }\n  local_290 = 0xffffff9c;\n  if (bVar2) {\n    if (local_1d0 != 0) {\n      local_160 = gettext(\"cannot combine --target-directory (-t) and --no-target-directory (-T)\");\n      local_230 = 1;\n      local_22c = 0;\n      error(1,0,local_160);\n    }\n    if (local_288 < 3) goto LAB_001029f0;\n    uVar8 = quotearg_style(4,local_1c0[2]);\n    local_158 = gettext(\"extra operand %s\");\n    local_228 = 0;\n    local_224 = 0;\n    error(0,0,local_158,uVar8);\n    usage(1);\n  }\n  if (local_1d0 != 0) {\n    local_290 = target_directory_operand(local_1d0,local_b8);\n    cVar5 = target_dirfd_valid(local_290);\n    if ((cVar5 == '\\x01') || ((bVar3 && (piVar10 = __errno_location(), *piVar10 == 2))))\n    goto LAB_001029f0;\n    uVar8 = quotearg_style(4,local_1d0);\n    uVar9 = gettext(\"failed to access %s\");\n    piVar10 = __errno_location();\n    local_21c = *piVar10;\n    local_220 = 1;\n    local_150 = uVar9;\n    error(1,local_21c,uVar9,uVar8);\n  }\n  if (dir_arg != '\\x01') {\n    local_1b8 = local_1c0[(long)local_288 + -1];\n    local_27c = target_directory_operand(local_1b8,local_b8);\n    cVar5 = target_dirfd_valid(local_27c);\n    if (cVar5 == '\\0') {\n      if (2 < local_288) {\n        uVar8 = quotearg_style(4,local_1b8);\n        uVar9 = gettext(\"target %s\");\n        piVar10 = __errno_location();\n        local_214 = *piVar10;\n        local_218 = 1;\n        local_148 = uVar9;\n        error(1,local_214,uVar9,uVar8);\n      }\n    }\n    else {\n      local_290 = local_27c;\n      local_1d0 = local_1b8;\n      local_288 = local_288 + -1;\n    }\n  }\nLAB_001029f0:\n  if (local_1e8 != 0) {\n    local_1b0 = (void *)mode_compile(local_1e8);\n    if (local_1b0 == (void *)0x0) {\n      uVar8 = quote(local_1e8);\n      local_140 = gettext(\"invalid mode %s\");\n      local_210 = 1;\n      local_20c = 0;\n      error(1,0,local_140,uVar8);\n    }\n    mode = mode_adjust(0,0,0,local_1b0,0);\n    dir_mode = mode_adjust(0,1,0,local_1b0,&dir_mode_bits);\n    free(local_1b0);\n  }\n  if ((bVar4) && (strip_files != '\\x01')) {\n    local_138 = gettext(\"WARNING: ignoring --strip-program option as -s option was not specified\");\n    local_208 = 0;\n    local_204 = 0;\n    error(0,0,local_138);\n  }\n  if ((copy_only_if_needed != '\\0') && (local_f7 != '\\0')) {\n    local_130 = gettext(\"options --compare (-C) and --preserve-timestamps are mutually exclusive\");\n    local_200 = 0;\n    local_1fc = 0;\n    error(0,0,local_130);\n    usage(1);\n  }\n  if ((copy_only_if_needed != '\\0') && (strip_files != '\\0')) {\n    local_128 = gettext(\"options --compare (-C) and --strip are mutually exclusive\");\n    local_1f8 = 0;\n    local_1f4 = 0;\n    error(0,0,local_128);\n    usage(1);\n  }\n  if ((copy_only_if_needed != '\\0') && (cVar5 = extra_mode(mode), cVar5 != '\\0')) {\n    local_120 = gettext(\n                       \"the --compare (-C) option is ignored when you specify a mode with non-permission bits\"\n                       );\n    local_1f0 = 0;\n    local_1ec = 0;\n    error(0,0,local_120);\n  }\n  get_ids();\n  if (dir_arg == '\\0') {\n    hash_init();\n    if (local_1d0 == 0) {\n      if (bVar3) {\n        cVar5 = install_file_in_file_parents(*local_1c0,local_1c0[1],local_118);\n      }\n      else {\n        cVar5 = install_file_in_file(*local_1c0,local_1c0[1],0xffffff9c,local_1c0[1],local_118);\n      }\n      if (cVar5 != '\\x01') {\n        local_28c = 1;\n      }\n    }\n    else {\n      dest_info_init(local_118);\n      for (local_284 = 0; local_284 < local_288; local_284 = local_284 + 1) {\n        if ((local_284 == 0) && (bVar3)) {\n          uVar6 = 1;\n        }\n        else {\n          uVar6 = 0;\n        }\n        cVar5 = install_file_in_dir(local_1c0[local_284],local_1d0,local_118,uVar6,&local_290);\n        if (cVar5 != '\\x01') {\n          local_28c = 1;\n        }\n      }\n    }\n  }\n  else {\n    local_28c = savewd_process_files(local_288,local_1c0,process_dir,local_118);\n  }\n                    /* WARNING: Subroutine does not return */\n  exit(local_28c);\ncode_r0x001020a9:\n  switch(local_280) {\n  case 0x43:\n    copy_only_if_needed = '\\x01';\n    break;\n  case 0x44:\n    bVar3 = true;\n    break;\n  default:\nswitchD_001020c9_caseD_45:\n    usage(1);\n    break;\n  case 0x53:\n    bVar1 = true;\n    local_1e0 = _optarg;\n    break;\n  case 0x54:\n    bVar2 = true;\n    break;\n  case 0x5a:\n    if (selinux_enabled == 0) {\n      if (_optarg != 0) {\n        local_198 = gettext(\"warning: ignoring --context; it requires an SELinux-enabled kernel\");\n        local_268 = 0;\n        local_264 = 0;\n        error(0,0,local_198);\n      }\n    }\n    else {\n      use_default_selinux_context = 0;\n      if (_optarg == 0) {\n        local_f0 = get_labeling_handle();\n      }\n      else {\n        local_1c8 = _optarg;\n      }\n    }\n    break;\n  case 0x62:\n    bVar1 = true;\n    if (_optarg != 0) {\n      local_1d8 = _optarg;\n    }\n    break;\n  case 99:\n    break;\n  case 100:\n    dir_arg = '\\x01';\n    break;\n  case 0x67:\n    group_name = _optarg;\n    break;\n  case 0x6d:\n    local_1e8 = _optarg;\n    break;\n  case 0x6f:\n    owner_name = _optarg;\n    break;\n  case 0x70:\n    local_f7 = '\\x01';\n    break;\n  case 0x73:\n    strip_files = '\\x01';\n    signal(0x11,(__sighandler_t)0x0);\n    break;\n  case 0x74:\n    if (local_1d0 != 0) {\n      local_1a8 = gettext(\"multiple target directories specified\");\n      local_278 = 1;\n      local_274 = 0;\n      error(1,0,local_1a8);\n    }\n    local_1d0 = _optarg;\n    break;\n  case 0x76:\n    local_d8 = 1;\n    break;\n  case 0x80:\n    local_d8 = 1;\n    local_d6 = 1;\n    break;\n  case 0x81:\n    if (selinux_enabled == 0) {\n      local_1a0 = gettext(\"WARNING: ignoring --preserve-context; this kernel is not SELinux-enabled\"\n                         );\n      local_270 = 0;\n      local_26c = 0;\n      error(0,0,local_1a0);\n    }\n    else {\n      local_e5 = '\\x01';\n      use_default_selinux_context = 0;\n    }\n    break;\n  case 0x82:\n    strip_program = (undefined *)xstrdup(_optarg);\n    bVar4 = true;\n  }\n  goto LAB_001023d3;\n}",
+                "globals": [],
+                "externs": [
+                    "directory",
+                    "compare"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "main",
+                        "set_program_name",
+                        "setlocale",
+                        "bindtextdomain",
+                        "textdomain",
+                        "atexit",
+                        "cp_option_init",
+                        "umask",
+                        "getopt_long",
+                        "proper_name_lite",
+                        "version_etc",
+                        "exit",
+                        "usage",
+                        "gettext",
+                        "error",
+                        "xget_version",
+                        "set_simple_backup_suffix",
+                        "setfscreatecon",
+                        "quote",
+                        "__errno_location",
+                        "quotearg_style",
+                        "directory",
+                        "target_directory_operand",
+                        "target_dirfd_valid",
+                        "mode_compile",
+                        "mode_adjust",
+                        "free",
+                        "compare",
+                        "extra_mode",
+                        "get_ids",
+                        "hash_init",
+                        "install_file_in_file_parents",
+                        "install_file_in_file",
+                        "dest_info_init",
+                        "install_file_in_dir",
+                        "savewd_process_files",
+                        "get_labeling_handle",
+                        "signal",
+                        "xstrdup"
+                    ],
+                    "calling_functions": [
+                        "main"
+                    ],
+                    "defined_in_file": "install_decompiled.c"
+                }
+            }
+        ]
+    }
+}

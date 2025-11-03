@@ -1,0 +1,298 @@
+{
+    "file": "remove",
+    "decompiled_code": {
+        "remove.c": [
+            {
+                "func_name": "cache_fstatat",
+                "func_c_signature": "undefined8 cache_fstatat(int param_1,char *param_2,stat *param_3,int param_4)",
+                "decompiled_code": "undefined8 cache_fstatat(int param_1,char *param_2,stat *param_3,int param_4) {\n  __ino_t _Var1;\n  int iVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  \n  if ((param_3->st_atim).tv_nsec < 0) {\n    if ((param_3->st_atim).tv_nsec == -1) {\n      iVar2 = fstatat(param_1,param_2,param_3,param_4);\n      if (iVar2 == 0) {\n        return 0;\n      }\n      (param_3->st_atim).tv_nsec = -2;\n      piVar4 = __errno_location();\n      param_3->st_ino = (long)*piVar4;\n    }\n    _Var1 = param_3->st_ino;\n    piVar4 = __errno_location();\n    *piVar4 = (int)_Var1;\n    uVar3 = 0xffffffff;\n  }\n  else {\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cache_fstatat",
+                        "fstatat",
+                        "__errno_location"
+                    ],
+                    "calling_functions": [
+                        "cache_fstatat",
+                        "write_protected_non_symlink",
+                        "prompt"
+                    ],
+                    "defined_in_file": "remove_decompiled.c"
+                }
+            },
+            {
+                "func_name": "cache_stat_init",
+                "func_c_signature": "long cache_stat_init(long param_1)",
+                "decompiled_code": "long cache_stat_init(long param_1) {\n  *(undefined8 *)(param_1 + 0x50) = 0xffffffffffffffff;\n  return param_1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "cache_stat_init"
+                    ],
+                    "calling_functions": [
+                        "cache_stat_init",
+                        "prompt"
+                    ],
+                    "defined_in_file": "remove_decompiled.c"
+                }
+            },
+            {
+                "func_name": "write_protected_non_symlink",
+                "func_c_signature": "undefined8 write_protected_non_symlink(int param_1,char *param_2,long param_3)",
+                "decompiled_code": "undefined8 write_protected_non_symlink(int param_1,char *param_2,long param_3) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  int *piVar4;\n  \n  cVar1 = can_write_any_file();\n  if (cVar1 == '\\0') {\n    iVar2 = cache_fstatat(param_1,param_2,param_3,0x100);\n    if (iVar2 == 0) {\n      if ((*(uint *)(param_3 + 0x18) & 0xf000) == 0xa000) {\n        uVar3 = 0;\n      }\n      else {\n        iVar2 = faccessat(param_1,param_2,2,0x200);\n        if (iVar2 == 0) {\n          uVar3 = 0;\n        }\n        else {\n          piVar4 = __errno_location();\n          if (*piVar4 == 0xd) {\n            uVar3 = 1;\n          }\n          else {\n            uVar3 = 0xffffffff;\n          }\n        }\n      }\n    }\n    else {\n      uVar3 = 0xffffffff;\n    }\n  }\n  else {\n    uVar3 = 0;\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "write_protected_non_symlink",
+                        "can_write_any_file",
+                        "cache_fstatat",
+                        "faccessat",
+                        "__errno_location"
+                    ],
+                    "calling_functions": [
+                        "write_protected_non_symlink",
+                        "prompt"
+                    ],
+                    "defined_in_file": "remove_decompiled.c"
+                }
+            },
+            {
+                "func_name": "get_dir_status",
+                "func_c_signature": "int get_dir_status(long param_1,long param_2,int *param_3)",
+                "decompiled_code": "int get_dir_status(long param_1,long param_2,int *param_3) {\n  int iVar1;\n  \n  if (*param_3 == -2) {\n    iVar1 = directory_status(*(undefined4 *)(param_1 + 0x2c),*(undefined8 *)(param_2 + 0x30));\n    *param_3 = iVar1;\n  }\n  return *param_3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "get_dir_status",
+                        "directory_status"
+                    ],
+                    "calling_functions": [
+                        "get_dir_status",
+                        "prompt"
+                    ],
+                    "defined_in_file": "remove_decompiled.c"
+                }
+            },
+            {
+                "func_name": "prompt",
+                "func_c_signature": "undefined8 prompt(long param_1,long param_2,char param_3,char *param_4,int param_5,int *param_6)",
+                "decompiled_code": "undefined8 prompt(long param_1,long param_2,char param_3,char *param_4,int param_5,int *param_6) {\n  undefined4 uVar1;\n  char cVar2;\n  int iVar3;\n  undefined8 uVar4;\n  int *piVar5;\n  undefined8 uVar6;\n  char *pcVar7;\n  undefined8 uVar8;\n  long in_FS_OFFSET;\n  int local_118;\n  int local_114;\n  int local_110;\n  undefined local_b8 [24];\n  uint local_a0;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  uVar1 = *(undefined4 *)(param_1 + 0x2c);\n  uVar4 = *(undefined8 *)(param_2 + 0x38);\n  uVar6 = *(undefined8 *)(param_2 + 0x30);\n  cache_stat_init(local_b8);\n  if (param_3 == '\\0') {\n    local_118 = 0;\n  }\n  else {\n    local_118 = 4;\n  }\n  local_114 = 0;\n  if (*(long *)(param_2 + 0x20) == 0) {\n    if (*(int *)(param_4 + 4) == 5) {\n      uVar4 = 2;\n    }\n    else {\n      local_110 = 0;\n      if ((*param_4 != '\\x01') &&\n         (((*(int *)(param_4 + 4) == 3 || (param_4[0x19] != '\\0')) && (local_118 != 10)))) {\n        local_114 = write_protected_non_symlink(uVar1,uVar6,local_b8);\n        piVar5 = __errno_location();\n        local_110 = *piVar5;\n      }\n      if ((local_114 == 0) && (*(int *)(param_4 + 4) != 3)) {\n        uVar4 = 2;\n      }\n      else {\n        if ((-1 < local_114) && (local_118 == 0)) {\n          iVar3 = cache_fstatat(uVar1,uVar6,local_b8,0x100);\n          if (iVar3 == 0) {\n            if ((local_a0 & 0xf000) == 0xa000) {\n              local_118 = 10;\n            }\n            else if ((local_a0 & 0xf000) == 0x4000) {\n              local_118 = 4;\n            }\n          }\n          else {\n            local_114 = -1;\n            piVar5 = __errno_location();\n            local_110 = *piVar5;\n          }\n        }\n        if (-1 < local_114) {\n          if (local_118 == 4) {\n            if ((param_4[9] != '\\x01') &&\n               ((param_4[10] != '\\x01' ||\n                (iVar3 = get_dir_status(param_1,param_2,param_6), iVar3 == 0)))) {\n              local_114 = -1;\n              if (*param_6 < 1) {\n                local_110 = 0x15;\n              }\n              else {\n                local_110 = *param_6;\n              }\n            }\n          }\n          else if ((local_118 == 10) && (*(int *)(param_4 + 4) != 3)) {\n            uVar4 = 2;\n            goto LAB_001008c1;\n          }\n        }\n        uVar4 = quotearg_style(4,uVar4);\n        if (local_114 < 0) {\n          uVar6 = gettext(\"cannot remove %s\");\n          error(0,local_110,uVar6,uVar4);\n          uVar4 = 5;\n        }\n        else {\n          if (((local_118 == 4) && (param_5 == 2)) &&\n             (iVar3 = get_dir_status(param_1,param_2,param_6), uVar8 = _program_name, iVar3 == 0)) {\n            if (local_114 == 0) {\n              pcVar7 = (char *)gettext(\"%s: descend into directory %s? \");\n            }\n            else {\n              pcVar7 = (char *)gettext(\"%s: descend into write-protected directory %s? \");\n            }\n            fprintf(_stderr,pcVar7,uVar8,uVar4);\n          }\n          else {\n            uVar8 = _program_name;\n            if (*param_6 < 1) {\n              iVar3 = cache_fstatat(uVar1,uVar6,local_b8,0x100);\n              if (iVar3 != 0) {\n                uVar6 = gettext(\"cannot remove %s\");\n                piVar5 = __errno_location();\n                error(0,*piVar5,uVar6,uVar4);\n                uVar4 = 5;\n                goto LAB_001008c1;\n              }\n              uVar8 = file_type(local_b8);\n              uVar6 = _program_name;\n              if (local_114 == 0) {\n                pcVar7 = (char *)gettext(\"%s: remove %s %s? \");\n              }\n              else {\n                pcVar7 = (char *)gettext(\"%s: remove write-protected %s %s? \");\n              }\n              fprintf(_stderr,pcVar7,uVar6,uVar8,uVar4);\n            }\n            else {\n              if ((param_4[10] != '\\x01') || (*param_6 != 0xd)) {\n                uVar6 = gettext(\"cannot remove %s\");\n                error(0,*param_6,uVar6,uVar4);\n                uVar4 = 5;\n                goto LAB_001008c1;\n              }\n              if (param_5 == 2) {\n                uVar4 = 2;\n                goto LAB_001008c1;\n              }\n              pcVar7 = (char *)gettext(\"%s: attempt removal of inaccessible directory %s? \");\n              fprintf(_stderr,pcVar7,uVar8,uVar4);\n            }\n          }\n          cVar2 = yesno();\n          if (cVar2 == '\\0') {\n            uVar4 = 4;\n          }\n          else {\n            uVar4 = 3;\n          }\n        }\n      }\n    }\n  }\n  else {\n    uVar4 = 4;\n  }\nLAB_001008c1:\n  if (local_20 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return uVar4;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "prompt",
+                        "cache_stat_init",
+                        "write_protected_non_symlink",
+                        "__errno_location",
+                        "cache_fstatat",
+                        "get_dir_status",
+                        "quotearg_style",
+                        "gettext",
+                        "error",
+                        "fprintf",
+                        "file_type",
+                        "yesno",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "prompt",
+                        "rm_fts"
+                    ],
+                    "defined_in_file": "remove_decompiled.c"
+                }
+            },
+            {
+                "func_name": "nonexistent_file_errno",
+                "func_c_signature": "undefined8 nonexistent_file_errno(int param_1)",
+                "decompiled_code": "undefined8 nonexistent_file_errno(int param_1) {\n  undefined8 uVar1;\n  \n  if ((param_1 == 0x54) ||\n     ((param_1 < 0x55 &&\n      ((param_1 == 0x16 || ((param_1 < 0x17 && ((param_1 == 2 || (param_1 == 0x14)))))))))) {\n    uVar1 = 1;\n  }\n  else {\n    uVar1 = 0;\n  }\n  return uVar1;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "nonexistent_file_errno"
+                    ],
+                    "calling_functions": [
+                        "nonexistent_file_errno",
+                        "ignorable_missing"
+                    ],
+                    "defined_in_file": "remove_decompiled.c"
+                }
+            },
+            {
+                "func_name": "ignorable_missing",
+                "func_c_signature": "undefined4 ignorable_missing(char *param_1,undefined4 param_2)",
+                "decompiled_code": "undefined4 ignorable_missing(char *param_1,undefined4 param_2) {\n  char cVar1;\n  \n  if ((*param_1 != '\\0') && (cVar1 = nonexistent_file_errno(param_2), cVar1 != '\\0')) {\n    return 1;\n  }\n  return 0;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "ignorable_missing",
+                        "nonexistent_file_errno"
+                    ],
+                    "calling_functions": [
+                        "ignorable_missing",
+                        "excise"
+                    ],
+                    "defined_in_file": "remove_decompiled.c"
+                }
+            },
+            {
+                "func_name": "fts_skip_tree",
+                "func_c_signature": "void fts_skip_tree(undefined8 param_1,undefined8 param_2)",
+                "decompiled_code": "void fts_skip_tree(undefined8 param_1,undefined8 param_2) {\n  rpl_fts_set(param_1,param_2,4);\n  rpl_fts_read(param_1);\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "fts_skip_tree",
+                        "rpl_fts_set",
+                        "rpl_fts_read"
+                    ],
+                    "calling_functions": [
+                        "fts_skip_tree",
+                        "rm_fts"
+                    ],
+                    "defined_in_file": "remove_decompiled.c"
+                }
+            },
+            {
+                "func_name": "mark_ancestor_dirs",
+                "func_c_signature": "void mark_ancestor_dirs(long param_1)",
+                "decompiled_code": "void mark_ancestor_dirs(long param_1) {\n  long local_10;\n  \n  for (local_10 = *(long *)(param_1 + 8);\n      (-1 < *(long *)(local_10 + 0x58) && (*(long *)(local_10 + 0x20) == 0));\n      local_10 = *(long *)(local_10 + 8)) {\n    *(undefined8 *)(local_10 + 0x20) = 1;\n  }\n  return;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "mark_ancestor_dirs"
+                    ],
+                    "calling_functions": [
+                        "mark_ancestor_dirs",
+                        "excise",
+                        "rm_fts"
+                    ],
+                    "defined_in_file": "remove_decompiled.c"
+                }
+            },
+            {
+                "func_name": "excise",
+                "func_c_signature": "undefined8 excise(long param_1,long param_2,long param_3,char param_4)",
+                "decompiled_code": "undefined8 excise(long param_1,long param_2,long param_3,char param_4) {\n  char cVar1;\n  int iVar2;\n  undefined8 uVar3;\n  char *__format;\n  int *piVar4;\n  undefined8 uVar5;\n  long in_FS_OFFSET;\n  stat local_b8;\n  long local_20;\n  \n  local_20 = *(long *)(in_FS_OFFSET + 0x28);\n  if (param_4 == '\\0') {\n    iVar2 = 0;\n  }\n  else {\n    iVar2 = 0x200;\n  }\n  iVar2 = unlinkat(*(int *)(param_1 + 0x2c),*(char **)(param_2 + 0x30),iVar2);\n  if (iVar2 == 0) {\n    if (*(char *)(param_3 + 0x1a) != '\\0') {\n      uVar3 = quotearg_style(4,*(undefined8 *)(param_2 + 0x38));\n      if (param_4 == '\\0') {\n        __format = (char *)gettext(\"removed %s\\n\");\n      }\n      else {\n        __format = (char *)gettext(\"removed directory %s\\n\");\n      }\n      printf(__format,uVar3);\n    }\n    uVar3 = 2;\n    goto LAB_00100c2a;\n  }\n  piVar4 = __errno_location();\n  if (*piVar4 == 0x1e) {\n    iVar2 = fstatat(*(int *)(param_1 + 0x2c),*(char **)(param_2 + 0x30),&local_b8,0x100);\n    if (iVar2 != 0) {\n      piVar4 = __errno_location();\n      if (*piVar4 == 2) goto LAB_00100b22;\n    }\n    piVar4 = __errno_location();\n    *piVar4 = 0x1e;\n  }\nLAB_00100b22:\n  piVar4 = __errno_location();\n  cVar1 = ignorable_missing(param_3,*piVar4);\n  if (cVar1 != '\\0') {\n    uVar3 = 2;\n    goto LAB_00100c2a;\n  }\n  if (*(short *)(param_2 + 0x68) == 4) {\n    piVar4 = __errno_location();\n    if (*piVar4 != 0x27) {\n      piVar4 = __errno_location();\n      if (*piVar4 != 0x15) {\n        piVar4 = __errno_location();\n        if (*piVar4 != 0x14) {\n          piVar4 = __errno_location();\n          if (*piVar4 != 0x11) goto LAB_00100ba8;\n        }\n      }\n    }\n    if (*(int *)(param_2 + 0x40) != 0) {\n      piVar4 = __errno_location();\n      *piVar4 = *(int *)(param_2 + 0x40);\n    }\n  }\nLAB_00100ba8:\n  uVar3 = quotearg_style(4,*(undefined8 *)(param_2 + 0x38));\n  uVar5 = gettext(\"cannot remove %s\");\n  piVar4 = __errno_location();\n  error(0,*piVar4,uVar5,uVar3);\n  mark_ancestor_dirs(param_2);\n  uVar3 = 5;\nLAB_00100c2a:\n  if (local_20 != *(long *)(in_FS_OFFSET + 0x28)) {\n                    /* WARNING: Subroutine does not return */\n    __stack_chk_fail();\n  }\n  return uVar3;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "excise",
+                        "unlinkat",
+                        "quotearg_style",
+                        "gettext",
+                        "printf",
+                        "__errno_location",
+                        "fstatat",
+                        "ignorable_missing",
+                        "error",
+                        "mark_ancestor_dirs",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "excise",
+                        "rm_fts"
+                    ],
+                    "defined_in_file": "remove_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rm_fts",
+                "func_c_signature": "ulong rm_fts(long param_1,long param_2,long param_3)",
+                "decompiled_code": "ulong rm_fts(long param_1,long param_2,long param_3) {\n  ushort uVar1;\n  undefined2 uVar2;\n  bool bVar3;\n  char cVar4;\n  undefined uVar5;\n  int iVar6;\n  undefined8 uVar7;\n  undefined8 uVar8;\n  undefined8 uVar9;\n  ulong uVar10;\n  long in_FS_OFFSET;\n  int local_1a4;\n  uint local_1a0;\n  uint local_19c;\n  undefined4 local_198;\n  undefined4 local_194;\n  undefined4 local_190;\n  undefined4 local_18c;\n  undefined4 local_188;\n  undefined4 local_184;\n  undefined4 local_180;\n  undefined4 local_17c;\n  undefined4 local_178;\n  undefined4 local_174;\n  undefined4 local_170;\n  undefined4 local_16c;\n  undefined4 local_168;\n  undefined4 local_164;\n  undefined4 local_160;\n  undefined4 local_15c;\n  undefined4 local_158;\n  undefined4 local_154;\n  undefined4 local_150;\n  undefined4 local_14c;\n  undefined4 local_148;\n  undefined4 local_144;\n  undefined4 local_140;\n  undefined4 local_13c;\n  char *local_138;\n  undefined8 local_130;\n  undefined8 local_128;\n  undefined8 local_120;\n  undefined8 local_118;\n  undefined8 local_110;\n  undefined8 local_108;\n  undefined8 local_100;\n  undefined8 local_f8;\n  undefined8 local_f0;\n  undefined8 local_e8;\n  undefined8 local_e0;\n  undefined8 local_d8;\n  undefined8 local_d0;\n  stat local_c8;\n  long local_30;\n  \n  local_30 = *(long *)(in_FS_OFFSET + 0x28);\n  local_1a4 = -2;\n  uVar1 = *(ushort *)(param_2 + 0x68);\n  if (uVar1 == 1) {\n    if (*(char *)(param_3 + 9) == '\\x01') {\n      if (*(long *)(param_2 + 0x58) == 0) {\n        uVar9 = last_component(*(undefined8 *)(param_2 + 0x30));\n        cVar4 = dot_or_dotdot(uVar9);\n        if (cVar4 != '\\0') {\n          uVar9 = quotearg_n_style(2,4,*(undefined8 *)(param_2 + 0x38));\n          uVar7 = quotearg_n_style(1,4,&DAT_001019d0);\n          uVar8 = quotearg_n_style(0,4,&DAT_001019d3);\n          local_120 = gettext(\"refusing to remove %s or %s directory: skipping %s\");\n          local_190 = 0;\n          local_18c = 0;\n          error(0,0,local_120,uVar8,uVar7,uVar9);\n          fts_skip_tree(param_1,param_2);\n          uVar10 = 5;\n          goto LAB_00101709;\n        }\n        if ((*(long *)(param_3 + 0x10) != 0) &&\n           ((**(ulong **)(param_3 + 0x10) ^ *(ulong *)(param_2 + 0x78) |\n            *(ulong *)(param_2 + 0x70) ^ *(ulong *)(*(long *)(param_3 + 0x10) + 8)) == 0)) {\n          cVar4 = streq(*(undefined8 *)(param_2 + 0x38),&DAT_00101a0b);\n          if (cVar4 == '\\0') {\n            uVar9 = quotearg_n_style(1,4,&DAT_00101a0b);\n            uVar7 = quotearg_n_style(0,4,*(undefined8 *)(param_2 + 0x38));\n            local_110 = gettext(\"it is dangerous to operate recursively on %s (same as %s)\");\n            local_180 = 0;\n            local_17c = 0;\n            error(0,0,local_110,uVar7,uVar9);\n          }\n          else {\n            uVar9 = quotearg_style(4,*(undefined8 *)(param_2 + 0x38));\n            local_118 = gettext(\"it is dangerous to operate recursively on %s\");\n            local_188 = 0;\n            local_184 = 0;\n            error(0,0,local_118,uVar9);\n          }\n          local_108 = gettext(\"use --no-preserve-root to override this failsafe\");\n          local_178 = 0;\n          local_174 = 0;\n          error(0,0,local_108);\n          fts_skip_tree(param_1,param_2);\n          uVar10 = 5;\n          goto LAB_00101709;\n        }\n        if (*(char *)(param_3 + 0x18) != '\\0') {\n          bVar3 = false;\n          local_138 = (char *)file_name_concat(*(undefined8 *)(param_2 + 0x30),&DAT_001019d0,0);\n          if ((local_138 == (char *)0x0) || (iVar6 = lstat(local_138,&local_c8), iVar6 != 0)) {\n            uVar9 = quotearg_n_style(1,4,*(undefined8 *)(param_2 + 0x30));\n            uVar7 = quotearg_n_style(0,4,local_138);\n            local_100 = gettext(\"failed to stat %s: skipping %s\");\n            local_170 = 0;\n            local_16c = 0;\n            error(0,0,local_100,uVar7,uVar9);\n            bVar3 = true;\n          }\n          free(local_138);\n          if ((bVar3) || (*(__dev_t *)(param_1 + 0x18) != local_c8.st_dev)) {\n            if (!bVar3) {\n              uVar9 = quotearg_style(4,*(undefined8 *)(param_2 + 0x38));\n              local_f0 = gettext(\"skipping %s, since it\\'s on a different device\");\n              local_160 = 0;\n              local_15c = 0;\n              error(0,0,local_f0,uVar9);\n              local_f8 = gettext(\"and --preserve-root=all is in effect\");\n              local_168 = 0;\n              local_164 = 0;\n              error(0,0,local_f8);\n            }\n            fts_skip_tree(param_1,param_2);\n            uVar10 = 5;\n            goto LAB_00101709;\n          }\n        }\n      }\n      local_1a0 = prompt(param_1,param_2,1,param_3,2,&local_1a4);\n      if (((local_1a0 == 3) && (local_1a4 == -1)) &&\n         (local_1a0 = excise(param_1,param_2,param_3,1), local_1a0 == 2)) {\n        fts_skip_tree(param_1,param_2);\n      }\n      if ((local_1a0 != 2) && (local_1a0 != 3)) {\n        mark_ancestor_dirs(param_2);\n        fts_skip_tree(param_1,param_2);\n      }\n      uVar10 = (ulong)local_1a0;\n    }\n    else {\n      rpl_fts_set(param_1,param_2,4);\n      if (*(char *)(param_3 + 10) == '\\0') {\n        uVar9 = quotearg_style(4,*(undefined8 *)(param_2 + 0x38));\n        local_128 = gettext(\"cannot remove %s\");\n        local_198 = 0;\n        local_194 = 0x15;\n        error(0,0x15,local_128,uVar9);\n        local_130 = rpl_fts_read(param_1);\n        uVar10 = 5;\n      }\n      else {\n        uVar10 = 2;\n      }\n    }\n  }\n  else {\n    if (((uVar1 == 0) || (0xd < uVar1)) || (uVar1 < 2)) {\nLAB_00101680:\n      uVar9 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_2 + 0x38));\n      uVar2 = *(undefined2 *)(param_2 + 0x68);\n      local_d0 = gettext(\"unexpected failure: fts_info=%d: %s\\nplease report to %s\");\n      local_140 = 0;\n      local_13c = 0;\n      error(0,0,local_d0,uVar2,uVar9,\"bug-coreutils@gnu.org\");\n                    /* WARNING: Subroutine does not return */\n      abort();\n    }\n    uVar10 = 1L << ((byte)uVar1 & 0x3f);\n    if ((uVar10 & 0x3d58) == 0) {\n      if ((uVar10 & 0x80) == 0) {\n        if ((uVar10 & 4) == 0) goto LAB_00101680;\n        uVar9 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_2 + 0x38));\n        local_e0 = gettext(\n                          \"WARNING: Circular directory structure.\\nThis almost certainly means that you have a corrupted file system.\\nNOTIFY YOUR SYSTEM MANAGER.\\nThe following directory is part of the cycle:\\n  %s\\n\"\n                          );\n        local_150 = 0;\n        local_14c = 0;\n        error(0,0,local_e0,uVar9);\n        fts_skip_tree(param_1,param_2);\n        uVar10 = 5;\n      }\n      else {\n        uVar9 = quotearg_n_style_colon(0,3,*(undefined8 *)(param_2 + 0x38));\n        local_d8 = gettext(\"traversal failed: %s\");\n        local_144 = *(undefined4 *)(param_2 + 0x40);\n        local_148 = 0;\n        error(0,local_144,local_d8,uVar9);\n        fts_skip_tree(param_1,param_2);\n        uVar10 = 5;\n      }\n    }\n    else if (((*(short *)(param_2 + 0x68) == 6) && (*(char *)(param_3 + 8) != '\\0')) &&\n            ((0 < *(long *)(param_2 + 0x58) &&\n             (*(long *)(param_2 + 0x70) != *(long *)(param_1 + 0x18))))) {\n      mark_ancestor_dirs(param_2);\n      uVar9 = quotearg_style(4,*(undefined8 *)(param_2 + 0x38));\n      local_e8 = gettext(\"skipping %s, since it\\'s on a different device\");\n      local_158 = 0;\n      local_154 = 0;\n      error(0,0,local_e8,uVar9);\n      uVar10 = 5;\n    }\n    else {\n      if ((*(short *)(param_2 + 0x68) == 6) || (*(short *)(param_2 + 0x68) == 4)) {\n        uVar5 = 1;\n      }\n      else {\n        uVar5 = 0;\n      }\n      local_19c = prompt(param_1,param_2,uVar5,param_3,3,&local_1a4);\n      if ((local_19c == 2) || (local_19c == 3)) {\n        uVar10 = excise(param_1,param_2,param_3,uVar5);\n      }\n      else {\n        uVar10 = (ulong)local_19c;\n      }\n    }\n  }\nLAB_00101709:\n  if (local_30 == *(long *)(in_FS_OFFSET + 0x28)) {\n    return uVar10;\n  }\n                    /* WARNING: Subroutine does not return */\n  __stack_chk_fail();\n}",
+                "globals": [],
+                "externs": [
+                    "s"
+                ],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rm_fts",
+                        "last_component",
+                        "dot_or_dotdot",
+                        "quotearg_n_style",
+                        "gettext",
+                        "error",
+                        "fts_skip_tree",
+                        "streq",
+                        "s",
+                        "quotearg_style",
+                        "file_name_concat",
+                        "lstat",
+                        "free",
+                        "prompt",
+                        "excise",
+                        "mark_ancestor_dirs",
+                        "rpl_fts_set",
+                        "rpl_fts_read",
+                        "quotearg_n_style_colon",
+                        "abort",
+                        "__stack_chk_fail"
+                    ],
+                    "calling_functions": [
+                        "rm_fts",
+                        "rm"
+                    ],
+                    "defined_in_file": "remove_decompiled.c"
+                }
+            },
+            {
+                "func_name": "rm",
+                "func_c_signature": "int rm(long *param_1,long param_2)",
+                "decompiled_code": "int rm(long *param_1,long param_2) {\n  int iVar1;\n  undefined8 uVar2;\n  long lVar3;\n  int *piVar4;\n  undefined8 uVar5;\n  int local_54;\n  undefined4 local_50;\n  \n  local_54 = 2;\n  if (*param_1 != 0) {\n    local_50 = 0x218;\n    if (*(char *)(param_2 + 8) != '\\0') {\n      local_50 = 600;\n    }\n    uVar2 = xfts_open(param_1,local_50,0);\n    while( true ) {\n      lVar3 = rpl_fts_read(uVar2);\n      if (lVar3 == 0) break;\n      iVar1 = rm_fts(uVar2,lVar3,param_2);\n      if ((((iVar1 != 2) && (iVar1 != 3)) && (iVar1 != 4)) && (iVar1 != 5)) {\n                    /* WARNING: Subroutine does not return */\n        __assert_fail(\"((s) == RM_OK || (s) == RM_USER_ACCEPTED || (s) == RM_USER_DECLINED || (s) == RM_ERROR)\"\n                      ,\n                      \"/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/coreutils/src/remove.c\"\n                      ,0x279,(char *)&__PRETTY_FUNCTION___0);\n      }\n      if ((iVar1 == 5) || ((iVar1 == 4 && (local_54 == 2)))) {\n        local_54 = iVar1;\n      }\n    }\n    piVar4 = __errno_location();\n    if (*piVar4 != 0) {\n      uVar5 = gettext(\"fts_read failed\");\n      piVar4 = __errno_location();\n      error(0,*piVar4,uVar5);\n      local_54 = 5;\n    }\n    iVar1 = rpl_fts_close(uVar2);\n    if (iVar1 != 0) {\n      uVar2 = gettext(\"fts_close failed\");\n      piVar4 = __errno_location();\n      error(0,*piVar4,uVar2);\n      local_54 = 5;\n    }\n  }\n  return local_54;\n}",
+                "globals": [],
+                "externs": [],
+                "types": [],
+                "includes": [],
+                "dependencies": {
+                    "called_functions": [
+                        "rm",
+                        "xfts_open",
+                        "rpl_fts_read",
+                        "rm_fts",
+                        "__assert_fail",
+                        "__errno_location",
+                        "gettext",
+                        "error",
+                        "rpl_fts_close"
+                    ],
+                    "calling_functions": [
+                        "rm"
+                    ],
+                    "defined_in_file": "remove_decompiled.c"
+                }
+            }
+        ]
+    }
+}
