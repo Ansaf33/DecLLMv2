@@ -301,29 +301,4 @@ def normalize_error(error_message: str) -> str:
     return normalizer.normalize_error(error_message)
 
 
-def main():
-    # Example Usage
-    r = Reassembler()
-    input_path = "/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/DecLLMv2/data/coreutils/decompiled/cat_decompiled.json"
-    c = Compiler()
-    temp_dir, file_mapping = r.reassemble_project(input_path)
-    for filename, filepath in file_mapping.items():
-        print(f"Compiling {filename}...")
-        output_path = Path(temp_dir) / (Path(filename).stem + ".out")
-        success, compile_output = c.compile_source(
-            source_file_path=Path(filepath),
-            output_file_path=output_path,
-            opt=OptimizationLevel.O0
-        )
-        if not success:
-            normalizer = ErrorNormalizer()
-            normalized_error = normalizer.normalize_error(compile_output)
-            print(f"Normalized Error for {filename}:\n{normalized_error}")
-        else:
-            print(f"Compiled {filename} successfully to {output_path}")
-    
-    
-if __name__ == "__main__":
-    main()
-
   

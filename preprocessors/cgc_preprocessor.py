@@ -134,7 +134,7 @@ def compile_cgc_corpus(
 
         # Choose a main file; use the first source file as entry point
         main_file = str(src_files[0])
-        # Add remaining src files and lib files to extra flags so they are compiled/linked
+        # Add remaining src files and lib files
         for s in src_files[1:]:
             extra_flags.append(str(s))
         for l in lib_files:
