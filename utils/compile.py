@@ -95,6 +95,7 @@ class Compiler:
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     command = [compiler,
+               "-c",
                str(source_path),
                "-o", str(output_path), 
                opt.value, 
@@ -281,5 +282,4 @@ class Compiler:
     self.logger.info(f"Successfully compiled {compiled_count} out of {len(results)} files.")
       
     return results
-  
   
