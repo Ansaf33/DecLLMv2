@@ -128,21 +128,21 @@ class Compiler:
       
       if result.returncode == 0:
         success_message = f"Compilation succeeded: {output_file_path}"
-        self.logger.info(success_message)
+        #self.logger.info(success_message)
         return True, success_message
       else:
         error_message = f"Compilation failed: {result.stderr}"
-        self.logger.error(error_message)
+        #self.logger.error(error_message)
         return False, error_message
       
     except subprocess.TimeoutExpired:
       error_message = "Compilation timed out."
-      self.logger.error(error_message)
+      #self.logger.error(error_message)
       return False, error_message
     
     except Exception as e:
       error_message = f"Compilation error: {str(e)}"
-      self.logger.error(error_message)
+      #self.logger.error(error_message)
       return False, error_message
     
   def compile_source_with_multiple_optimizations(

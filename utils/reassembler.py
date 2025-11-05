@@ -49,7 +49,7 @@ class Reassembler:
     decompiled_code = json_object.get("decompiled_code", {})
     
     # Create temporary directory
-    temp_dir = tempfile.mkdtemp(prefix=f"{project_name}_")
+    temp_dir = tempfile.mkdtemp(prefix=f"{project_name}__")
     temp_dir_path = Path(temp_dir)
     
     output = {}
