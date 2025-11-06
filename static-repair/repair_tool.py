@@ -184,7 +184,7 @@ def main():
   # status
   total_repaired = 0
   total_files = 0
-  json_dir = config["paths"]["cgc_decompiled_dir"]
+  json_dir = config["paths"]["coreutils_decompiled_dir"]
   
   # iterate through every object and repair
   for json_file in Path(json_dir).glob("*.json"):

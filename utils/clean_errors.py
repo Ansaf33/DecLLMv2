@@ -299,6 +299,3 @@ def normalize_error(error_message: str) -> str:
     """
     normalizer = ErrorNormalizer()
     return normalizer.normalize_error(error_message)
-
-
-  

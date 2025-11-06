@@ -138,8 +138,22 @@ class GeminiInterface(LLMInterface):
         """
         Generate response using Google Gemini API.
         """
-        response = self.model.generate_content(prompt)
-        return clean_llm_output(response.text)
+        try:
+            response = self.model.generate_content(prompt)
+            
+            if not getattr(response, 'text', None):
+                print("No text content in Gemini response. Retrying once..")
+                response = self.model.generate_content(prompt)
+                
+            # No candidates once again
+            if not getattr(response, 'text', None):
+                print("No text content in Gemini response after retry.")
+                return ""
+
+            return clean_llm_output(response.text)
+        except Exception as e:
+            raise e
+
 
 
 def create_llm_interface(
