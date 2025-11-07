@@ -137,22 +137,43 @@ class GeminiInterface(LLMInterface):
     def generate(self, prompt: str) -> str:
         """
         Generate response using Google Gemini API.
+        Handles empty or filtered responses safely.
         """
         try:
+            
             response = self.model.generate_content(prompt)
             
-            if not getattr(response, 'text', None):
-                print("No text content in Gemini response. Retrying once..")
+            # Some responses might not have .text even if generation succeeded.
+            if not hasattr(response, "candidates") or not response.candidates:
+                print("No candidates returned from Gemini. Retrying once...")
                 response = self.model.generate_content(prompt)
-                
-            # No candidates once again
-            if not getattr(response, 'text', None):
-                print("No text content in Gemini response after retry.")
+            
+            # Still no valid candidate → return empty safely.
+            if not hasattr(response, "candidates") or not response.candidates:
+                print("No valid candidates after retry.")
+                return ""
+            
+            # Extract text safely from first candidate.
+            candidate = response.candidates[0]
+            if not candidate or not candidate.content.parts:
+                print("Candidate has no text parts.")
+                return ""
+            
+            # Join all text parts safely.
+            text_parts = []
+            for part in candidate.content.parts:
+                if hasattr(part, "text") and part.text:
+                    text_parts.append(part.text)
+            
+            if not text_parts:
+                print("No text content found in response parts.")
                 return ""
 
-            return clean_llm_output(response.text)
+            return clean_llm_output("\n".join(text_parts))
+        
         except Exception as e:
-            raise e
+            print(f"[GeminiInterface] Error: {e}")
+            return ""
 
 
 

@@ -1,323 +1,321 @@
+#include <stdint.h> // For uint32_t, uintptr_t
 #include <stdlib.h> // For malloc, free, exit
-#include <stdint.h> // For uintptr_t (used in transmit_all for casting pointer to int)
-#include <stdio.h>  // For fprintf (in allocate_mem) and dummy receive/transmit output
+#include <stdio.h>  // For fprintf (for mock error output)
+#include <string.h> // For memcpy, strlen (used in mocks for clarity)
 
-// Type definition for 'uint'
+// --- Type Definitions ---
 typedef unsigned int uint;
+typedef char undefined;      // Represents a byte
+typedef uint32_t undefined4; // Represents a 4-byte unsigned integer or pointer
 
-// --- Dummy External Functions and Global Variables ---
+// --- Global Variables ---
+// gHelpMsg content, as implied by the snippet's usage
+char gHelpMsg[] = "Usage: This program simulates a simple stack-based virtual machine.\n"
+                  "It reads 4-byte instructions, executes them, and outputs the final stack top.\n"
+                  "Instructions are: PUSH_IMM (val), POP, PUSH_PC, JZ (target), SWAP (idx), DUP (idx), ADD, SUB.\n"
+                  "Program terminates on instruction 0xFFFFFFFF.\n";
 
-// transmit: Simulates sending data over a communication channel.
-// It takes a buffer, the count of bytes to send, and a pointer to an int
-// where the actual number of bytes sent will be stored.
-// Returns 0 on success, non-zero on error.
-int transmit(void* buffer, unsigned int count, int* bytes_sent) {
-    if (bytes_sent) {
-        *bytes_sent = count; // Simulate transmitting all requested bytes
+// --- Mock External Functions ---
+
+// Mock for memory allocation
+void allocate(unsigned int size, int flags, uint32_t* ptr_output) {
+    void* allocated_mem = malloc(size);
+    if (!allocated_mem) {
+        fprintf(stderr, "Mock allocate: Failed to allocate %u bytes. Terminating.\n", size);
+        exit(1);
     }
-    // For debugging, print what's transmitted.
-    if (buffer && count > 0) {
-        char* char_buffer = (char*)buffer;
-        int printable = 1;
-        // Check if the buffer content looks like a printable string
-        for (unsigned int i = 0; i < count; ++i) {
-            if (char_buffer[i] == '\0' || (char_buffer[i] < 32 && char_buffer[i] != '\n' && char_buffer[i] != '\r')) {
-                printable = 0;
-                break;
-            }
-        }
-        if (printable) {
-            printf("Transmit (string): %.*s\n", count, char_buffer);
-        } else {
-            // If not a string, or partial string, print as a raw value (e.g., final result)
-            if (count == 4) { // Assuming 4-byte values are typical results
-                printf("Transmit (value): %u (0x%X)\n", *(unsigned int*)buffer, *(unsigned int*)buffer);
-            } else {
-                printf("Transmit (raw %u bytes) from %p\n", count, buffer);
-            }
-        }
+    *ptr_output = (uint32_t)(uintptr_t)allocated_mem;
+}
+
+// Mock for memory deallocation
+void deallocate(uint32_t ptr, unsigned int size) {
+    if (ptr != 0) {
+        free((void*)(uintptr_t)ptr);
+    }
+}
+
+// Mock for transmitting data/messages
+// param_1: Interpreted as a pointer to the data source (cast from int).
+// param_2: Number of bytes to send.
+// param_3: Pointer to an int where the actual number of bytes sent will be stored.
+int transmit(int param_1, unsigned int param_2, int *param_3) {
+    const void* data_source = (const void*)(uintptr_t)param_1; // Cast int to pointer
+    unsigned int bytes_to_send = param_2;
+    
+    if (bytes_to_send == 0) {
+        if (param_3) *param_3 = 0;
+        return 0; // Success, no bytes sent
+    }
+    
+    // Simulate transmitting data.
+    // For simplicity, always "send" up to 4 bytes or the requested amount.
+    unsigned int actual_sent = (bytes_to_send < 4) ? bytes_to_send : 4;
+    if (actual_sent == 0 && bytes_to_send > 0) actual_sent = 1; // Ensure at least 1 byte if requested
+    
+    if (param_3) *param_3 = actual_sent;
+
+    // For demonstration, print the transmitted data
+    fprintf(stdout, "Transmit: ");
+    for (unsigned int i = 0; i < actual_sent; ++i) {
+        fprintf(stdout, "%02X ", ((const unsigned char*)data_source)[i]);
+    }
+    fprintf(stdout, "\n");
+    
+    return 0; // Success
+}
+
+// Mock for receiving data
+// This mock simulates reading 4-byte instructions from a predefined array.
+static unsigned int mock_input_data[] = {
+    0x00000028, // PUSH_IMM 5 (0x28 >> 3 = 5)
+    0x00000018, // PUSH_IMM 3 (0x18 >> 3 = 3)
+    0x00000006, // ADD (5 + 3 = 8)
+    0xFFFFFFFF  // Terminate instruction
+};
+static int mock_input_word_idx = 0;
+static int mock_input_byte_offset = 0; // Offset into the current word being read
+
+int receive(void* buffer, unsigned int bytes_to_read, int* bytes_read_output) {
+    if (mock_input_word_idx >= (int)(sizeof(mock_input_data) / sizeof(unsigned int))) {
+        if (bytes_read_output) *bytes_read_output = 0;
+        return 0; // No more data
+    }
+
+    unsigned int current_word = mock_input_data[mock_input_word_idx];
+    char* word_bytes = (char*)&current_word;
+
+    unsigned int bytes_to_copy = 0;
+    if (bytes_to_read > 0) {
+        bytes_to_copy = (bytes_to_read < (sizeof(unsigned int) - mock_input_byte_offset)) 
+                        ? bytes_to_read 
+                        : (sizeof(unsigned int) - mock_input_byte_offset);
+        memcpy(buffer, word_bytes + mock_input_byte_offset, bytes_to_copy);
+    }
+    
+    if (bytes_read_output) *bytes_read_output = bytes_to_copy;
+
+    mock_input_byte_offset += bytes_to_copy;
+    if (mock_input_byte_offset == sizeof(unsigned int)) {
+        mock_input_word_idx++;
+        mock_input_byte_offset = 0;
     }
     return 0; // Success
 }
 
-// _terminate: Halts program execution, typically due to an unrecoverable error.
+// _terminate: no args, exits program
 void _terminate(void) {
-    fprintf(stderr, "Program terminated due to an error.\n");
+    fprintf(stderr, "Program terminated due to unhandled exception.\n");
     exit(1);
 }
 
-// gHelpMsg: A global string containing a help message.
-char gHelpMsg[] = "Help Message\n";
+// --- Function: transmit_all ---
+// param_1: Interpreted as a pointer to the data source (cast from int).
+// param_2: Total number of bytes to transmit from the data source.
+uint transmit_all(int param_1, uint param_2) {
+  int bytes_sent_this_call = 0;
+  uint total_bytes_accumulated = 0;
+  
+  if (param_1 == 0 || param_2 == 0) {
+    return 0; // Nothing to transmit or invalid source, return 0 bytes sent.
+  }
 
-// allocate_mem: Allocates a block of memory of the specified size.
-// Returns a pointer to the allocated memory, or terminates on failure.
-void* allocate_mem(unsigned int size) {
-    void* ptr = malloc(size);
-    if (!ptr) {
-        fprintf(stderr, "Memory allocation failed for size %u\n", size);
-        _terminate();
-    }
-    return ptr;
-}
-
-// deallocate_mem: Frees a previously allocated block of memory.
-void deallocate_mem(void* ptr) {
-    free(ptr);
-}
-
-// Global variables to control receive behavior for testing/termination
-static unsigned int receive_program_counter = 0;
-// Example input program for the VM: PUSH 10, PUSH 20, ADD, TERMINATE
-// Opcodes: 0=PUSH, 1=POP, 2=CALL, 3=JUMP/RET, 4=SWAP, 5=PEEK, 6=ADD, 7=SUB
-// Instruction format: (operand << 3) | opcode
-// PUSH 10: (10 << 3) | 0 = 80 (0x50)
-// PUSH 20: (20 << 3) | 0 = 160 (0xA0)
-// ADD: (0 << 3) | 6 = 6 (0x06)
-// TERMINATE: 0xFFFFFFFF
-unsigned int program_input[] = {
-    0x50,       // PUSH 10
-    0xA0,       // PUSH 20
-    0x06,       // ADD
-    0xFFFFFFFF  // Terminate instruction
-};
-const unsigned int program_input_size = sizeof(program_input) / sizeof(program_input[0]);
-
-// receive: Simulates receiving data into a buffer.
-// For this dummy, it provides instructions from `program_input` array.
-// Returns 0 on success, non-zero on error.
-int receive(void* buffer, unsigned int count, int* bytes_received) {
-    if (bytes_received) {
-        *bytes_received = 0; // Default to 0 bytes received
-    }
-
-    // Basic argument validation
-    if (buffer == NULL || count < sizeof(unsigned int) || bytes_received == NULL) {
-        return -1; // Error for invalid arguments
-    }
-
-    // Provide instructions from the predefined array
-    if (receive_program_counter < program_input_size) {
-        *(unsigned int*)buffer = program_input[receive_program_counter];
-        *bytes_received = sizeof(unsigned int); // Assume 4 bytes received at once
-        receive_program_counter++;
-    } else {
-        // Once all predefined instructions are "received", signal termination
-        *(unsigned int*)buffer = 0xFFFFFFFF; // Termination instruction
-        *bytes_received = sizeof(unsigned int);
-        // Do not increment receive_program_counter further to avoid out-of-bounds access
-    }
-    return 0; // Success
-}
-
-// --- Main Functions ---
-
-// transmit_all: Transmits a specified total size of data from a buffer.
-// It repeatedly calls the `transmit` function until all data is sent or an error occurs.
-// param_1_total_size: The total number of bytes to transmit.
-// param_2_buf: A pointer to the buffer containing the data to transmit.
-// Returns the total number of bytes successfully transmitted (which should be param_1_total_size on success).
-unsigned int transmit_all(unsigned int param_1_total_size, void* param_2_buf) {
-    // If the buffer is NULL, or total size is 0, nothing to transmit.
-    // The original code returns 0 if the buffer pointer (param_1 in original) was 0.
-    if (param_2_buf == NULL) {
-        return 0;
-    }
-
-    unsigned int bytes_transmitted_total = 0;
-    int bytes_transmitted_chunk = 0;
-    int transmit_result;
-
-    while (bytes_transmitted_total < param_1_total_size) {
-        // Calculate remaining bytes and advance buffer pointer
-        transmit_result = transmit((char*)param_2_buf + bytes_transmitted_total,
-                                   param_1_total_size - bytes_transmitted_total,
-                                   &bytes_transmitted_chunk);
-        
-        // Check for transmission errors or if no bytes were transmitted in a call
-        if (transmit_result != 0 || bytes_transmitted_chunk == 0) {
-            _terminate(); // Unrecoverable error, terminate program
-        }
-        bytes_transmitted_total += bytes_transmitted_chunk;
-    }
-    return param_1_total_size; // Return the total size requested, as per original logic
-}
-
-// main: The entry point of the program.
-// It loads VM instructions, then executes them on a simple stack-based VM.
-int main(void) {
-  void* vm_stack_ptr = NULL;     // Base address of the VM's operational stack
-  void* program_mem_ptr = NULL;  // Base address of the program's instruction memory
-
-  // Variables for the instruction loading phase
-  unsigned int current_instruction_word = 0; // Stores the 4-byte instruction word read from 'receive'
-  int bytes_received_chunk = 0;              // Stores bytes received in a single 'receive' call
-  unsigned int total_bytes_received_for_word = 0; // Accumulates bytes for the current instruction word
-  int receive_result;
-
-  // Variables for the VM state and execution phase
-  int vm_stack_idx = -1; // VM stack pointer, an index into vm_stack_ptr (0-indexed). -1 indicates empty.
-  int program_counter = 0; // Current instruction index into program_mem_ptr during loading
-
-  // --- Memory Allocation for VM Components ---
-  // Allocate 0x1000 bytes for the VM stack (1024 unsigned int entries)
-  vm_stack_ptr = allocate_mem(0x1000); 
-  // Allocate 0x2000 bytes for program instruction memory (2048 unsigned int entries)
-  program_mem_ptr = allocate_mem(0x2000); 
-
-  // --- Instruction Loading Loop ---
-  // Reads 4-byte instruction words from the 'receive' function into 'program_mem_ptr'
-  // until a 0xFFFFFFFF termination instruction is encountered.
   do {
-    total_bytes_received_for_word = 0; // Reset accumulator for each new instruction word
-    do {
-      // Attempt to receive 4 bytes for one instruction word
-      receive_result = receive((char*)&current_instruction_word + total_bytes_received_for_word,
-                               sizeof(unsigned int) - total_bytes_received_for_word,
-                               &bytes_received_chunk);
-      
-      // Check for errors during reception or if no bytes were received
-      if (receive_result != 0 || bytes_received_chunk == 0) {
-        // If an error occurs before any instructions are loaded, transmit help message
-        if (program_counter == 0) {
-          transmit_all(sizeof(gHelpMsg), gHelpMsg);
-        }
-        _terminate(); // Unrecoverable error, terminate program
-      }
-      total_bytes_received_for_word += bytes_received_chunk;
-    } while (total_bytes_received_for_word < sizeof(unsigned int)); // Loop until a full 4-byte word is received
+    int transmit_result = transmit(
+        (int)((uintptr_t)param_1 + total_bytes_accumulated), // Offset into data_source
+        param_2 - total_bytes_accumulated,                   // Bytes remaining
+        &bytes_sent_this_call
+    );
 
-    // Store the received instruction word into the program memory
-    if (program_counter >= (0x2000 / sizeof(unsigned int))) { // Check for program memory overflow
-      transmit_all(sizeof("INSNS OVERFLOW EXCEPTION\n"), "INSNS OVERFLOW EXCEPTION\n");
+    if (transmit_result != 0 || bytes_sent_this_call == 0) {
+        _terminate(); // Terminate if transmit fails or sends 0 bytes
+    }
+    total_bytes_accumulated += bytes_sent_this_call;
+  } while (total_bytes_accumulated < param_2);
+
+  return param_2; // If all bytes were sent successfully, return the total requested count.
+}
+
+// --- Function: main ---
+undefined4 main(void) {
+  // Removed unused and decompiler-artifact variables (e.g., puVarX, auStack_XX, local_14, local_54, local_58, etc.)
+  
+  // Renamed variables for improved clarity, reducing intermediate variables where possible.
+  uint32_t stack_base_addr = 0; // Base address for the stack memory region
+  uint32_t code_base_addr = 0;  // Base address for the program code memory region
+
+  int bytes_received_this_call = 0; // Number of bytes received in a single 'receive' call
+  uint current_instruction = 0;     // The 4-byte instruction word currently being processed
+  uint total_bytes_received_for_instruction = 0; // Accumulator for bytes read for current_instruction
+
+  int stack_pointer = -1; // Stack pointer, initialized to -1 (indicating an empty stack)
+  int instruction_count = 0; // Counter for loaded instructions (also used as program size limit)
+
+  int receive_result = 0; // Return value of the 'receive' function
+
+  // Temporary variables for initial memory allocations/deallocations
+  uint32_t temp_alloc_1 = 0;
+  uint32_t temp_alloc_2 = 0;
+
+  // Memory allocations as per the snippet
+  allocate(0x1000, 0, &temp_alloc_1);    // Allocate 4KB (likely a temporary buffer)
+  allocate(0x1000, 0, &stack_base_addr); // Allocate 4KB for the stack
+  allocate(0x1000, 0, &temp_alloc_2);    // Allocate 4KB (another temporary buffer)
+  allocate(0x2000, 0, &code_base_addr);  // Allocate 8KB for the program code
+
+  // Deallocations of temporary buffers
+  deallocate(temp_alloc_1, 0x1000);
+  deallocate(temp_alloc_2, 0x1000);
+
+  // --- Program Loading Loop ---
+  // Reads 4-byte instructions until 0xFFFFFFFF is encountered.
+  do {
+    total_bytes_received_for_instruction = 0; // Reset byte counter for the current instruction
+    do {
+      receive_result = receive(
+          (char*)&current_instruction + total_bytes_received_for_instruction, // Buffer to fill (byte by byte into current_instruction)
+          4 - total_bytes_received_for_instruction,                           // Bytes remaining to read for this instruction
+          &bytes_received_this_call                                           // Output: actual bytes received by mock 'receive'
+      );
+
+      if (receive_result != 0 || bytes_received_this_call == 0) {
+        if (instruction_count == 0) { // If no instructions were loaded before an error
+          // Original snippet used stack manipulation to pass arguments, then called transmit_all().
+          // Interpreted as: transmit_all((int)(uintptr_t)gHelpMsg, 0x7a4);
+          // Note: 0x7a4 is the hardcoded length from the original snippet, even if it's larger than strlen(gHelpMsg).
+          transmit_all((int)(uintptr_t)gHelpMsg, 0x7a4);
+        }
+        _terminate(); // Terminate on receive error or zero bytes received
+      }
+      total_bytes_received_for_instruction += bytes_received_this_call; // Accumulate bytes
+    } while (total_bytes_received_for_instruction < 4); // Loop until a full 4-byte instruction is received
+
+    // Store the received instruction into the code memory region
+    *(uint32_t*)(code_base_addr + instruction_count * sizeof(uint32_t)) = current_instruction;
+    instruction_count++; // Increment total instruction count
+
+    // Check for instruction memory overflow (max 2048 instructions)
+    if (0x7ff < instruction_count) {
+      // Original snippet error handling
+      transmit_all((int)(uintptr_t)"INSNS OVERFLOW EXCEPTION\n", 0x1a); // 0x1a is hardcoded length
       _terminate();
     }
-    ((unsigned int*)program_mem_ptr)[program_counter] = current_instruction_word;
-    program_counter++;
-
-  } while (current_instruction_word != 0xffffffff); // Continue until the termination instruction is received
+  } while (current_instruction != 0xffffffff); // Continue until the program termination instruction (0xFFFFFFFF) is read
 
   // --- Instruction Execution Loop ---
-  // Iterates through the loaded instructions and executes VM operations based on their opcodes.
-  // 'i' serves as the program counter for execution.
-  // The loop runs as long as 'i' is within the loaded program bounds and the instruction is not 0xFFFFFFFF.
-  for (int i = 0; i < program_counter && ((unsigned int*)program_mem_ptr)[i] != 0xffffffff; i++) {
-    unsigned int instruction = ((unsigned int*)program_mem_ptr)[i];
-    unsigned int opcode = instruction & 7;     // Extract opcode (last 3 bits)
-    unsigned int operand = instruction >> 3;   // Extract operand (remaining bits)
-
-    switch(opcode) {
-    case 0: { // PUSH: Push operand onto the stack
-      vm_stack_idx++;
-      if (vm_stack_idx >= (0x1000 / sizeof(unsigned int))) { // Stack overflow check
-        transmit_all(sizeof("STACK OVERFLOW EXCEPTION\n"), "STACK OVERFLOW EXCEPTION\n");
-        _terminate();
-      }
-      ((unsigned int*)vm_stack_ptr)[vm_stack_idx] = operand;
+  // Iterates through loaded instructions, executing them based on the opcode.
+  for (int program_counter = 0; // Program Counter (PC)
+      (program_counter < instruction_count && 
+       *(int*)(code_base_addr + program_counter * sizeof(uint32_t)) != -1 && // Ensure instruction is not -1
+       (current_instruction = *(uint32_t*)(code_base_addr + program_counter * sizeof(uint32_t)), current_instruction != 0xffffffff)); // Load instruction and check for termination
+      program_counter++) { // Increment PC after each instruction
+    
+    // Decode instruction opcode (last 3 bits of the instruction word)
+    switch(current_instruction & 7) { 
+    case 0: { // PUSH_IMM: Push immediate value onto stack
+      stack_pointer++; // Increment stack pointer
+      *(uint32_t*)(stack_base_addr + stack_pointer * sizeof(uint32_t)) = current_instruction >> 3; // Push value (instruction shifted right by 3 bits)
       break;
     }
-    case 1: { // POP: Pop value from the stack
-      if (vm_stack_idx < 0) { // Stack underflow check
-        transmit_all(sizeof("STACK UNDERFLOW EXCEPTION\n"), "STACK UNDERFLOW EXCEPTION\n");
+    case 1: { // POP: Remove top element from stack
+      if (stack_pointer < 0) { // Stack underflow check
+        transmit_all((int)(uintptr_t)"STACK UNDERFLOW EXCEPTION\n", 0x1b);
         _terminate();
       }
-      vm_stack_idx--;
+      stack_pointer--; // Decrement stack pointer
       break;
     }
-    case 2: { // CALL: Push current PC onto stack for return
-      vm_stack_idx++;
-      if (vm_stack_idx >= (0x1000 / sizeof(unsigned int))) { // Stack overflow check
-        transmit_all(sizeof("STACK OVERFLOW EXCEPTION\n"), "STACK OVERFLOW EXCEPTION\n");
+    case 2: { // PUSH_PC: Push current program counter onto stack
+      stack_pointer++; // Increment stack pointer
+      if (0x3ff < stack_pointer) { // Stack overflow check (max 1024 elements)
+        transmit_all((int)(uintptr_t)"STACK OVERFLOW EXCEPTION\n", 0x1a);
         _terminate();
       }
-      ((int*)vm_stack_ptr)[vm_stack_idx] = i; // Push current instruction index (PC)
+      *(int*)(stack_base_addr + stack_pointer * sizeof(uint32_t)) = program_counter; // Push current PC
       break;
     }
-    case 3: { // JUMP/RET: Conditional jump based on top of stack
-      if (vm_stack_idx < 1) { // Requires at least two elements: condition and target PC
-        transmit_all(sizeof("STACK UNDERFLOW EXCEPTION\n"), "STACK UNDERFLOW EXCEPTION\n");
+    case 3: { // JZ (Jump if Zero): Pop two elements; if the first is zero, jump to the second.
+      if (stack_pointer < 1) { // Stack underflow check (needs at least 2 elements)
+        transmit_all((int)(uintptr_t)"STACK UNDERFLOW EXCEPTION\n", 0x1b);
         _terminate();
       }
-      // If the top of the stack (condition) is 0, perform the jump
-      if (((int*)vm_stack_ptr)[vm_stack_idx] == 0) { 
-        int target_pc = ((int*)vm_stack_ptr)[vm_stack_idx - 1]; // Get target PC from the second stack item
-        if (target_pc < 0 || program_counter <= target_pc) { // Validate target PC
-          transmit_all(sizeof("INVALID PROGRAM COUNTER EXCEPTION\n"), "INVALID PROGRAM COUNTER EXCEPTION\n");
+      // Top of stack is value to check, second is the jump target address
+      if (*(int*)(stack_base_addr + stack_pointer * sizeof(uint32_t)) == 0) { // If top element is 0
+        int jump_target_pc = *(int*)(stack_base_addr + (stack_pointer - 1) * sizeof(uint32_t)); // Get jump target
+        if (jump_target_pc < 0 || instruction_count <= jump_target_pc) { // Validate jump target
+          transmit_all((int)(uintptr_t)"INVALID PROGRAM COUNTER EXCEPTION\n", 0x23);
           _terminate();
         }
-        i = target_pc - 1; // Adjust loop counter 'i' to jump. '-1' because 'i' will be incremented by the for loop.
+        program_counter = jump_target_pc - 1; // Set PC to target - 1, as loop increments PC
       }
-      vm_stack_idx -= 2; // Pop both the condition and the target PC from the stack
+      stack_pointer -= 2; // Pop both elements (value and target)
       break;
     }
-    case 4: { // SWAP: Swap top of stack with element at an offset
-      if (vm_stack_idx < 0) { // Requires at least one element on the stack
-        transmit_all(sizeof("STACK UNDERFLOW EXCEPTION\n"), "STACK UNDERFLOW EXCEPTION\n");
+    case 4: { // SWAP: Swap top element with an element at a given offset from top.
+      if (stack_pointer < 0) { // Stack underflow check
+        transmit_all((int)(uintptr_t)"STACK UNDERFLOW EXCEPTION\n", 0x1b);
         _terminate();
       }
-      unsigned int top_value = ((unsigned int*)vm_stack_ptr)[vm_stack_idx]; // Store the value at the top of the stack
-      int target_idx = vm_stack_idx - operand; // Calculate the target index using operand as an offset
-      if (target_idx < 0 || vm_stack_idx < target_idx) { // Validate the calculated target index
-        transmit_all(sizeof("STACK UNDERFLOW EXCEPTION\n"), "STACK UNDERFLOW EXCEPTION\n");
+      uint32_t temp_val_for_swap = *(uint32_t*)(stack_base_addr + stack_pointer * sizeof(uint32_t)); // Store top value
+      int swap_offset = current_instruction >> 3; // Offset from top (encoded in instruction)
+      int swap_target_idx = stack_pointer - swap_offset; // Calculate index of element to swap with
+
+      if (swap_target_idx < 0 || stack_pointer < swap_target_idx) { // Validate target index
+        transmit_all((int)(uintptr_t)"STACK UNDERFLOW EXCEPTION\n", 0x1b);
         _terminate();
       }
-      // Perform the swap operation
-      ((unsigned int*)vm_stack_ptr)[vm_stack_idx] = ((unsigned int*)vm_stack_ptr)[target_idx];
-      ((unsigned int*)vm_stack_ptr)[target_idx] = top_value;
+      // Perform the swap
+      *(uint32_t*)(stack_base_addr + stack_pointer * sizeof(uint32_t)) = *(uint32_t*)(stack_base_addr + swap_target_idx * sizeof(uint32_t));
+      *(uint32_t*)(stack_base_addr + swap_target_idx * sizeof(uint32_t)) = temp_val_for_swap;
       break;
     }
-    case 5: { // PEEK: Push value from an offset on stack to top
-      vm_stack_idx++;
-      if (vm_stack_idx >= (0x1000 / sizeof(unsigned int))) { // Stack overflow check
-        transmit_all(sizeof("STACK OVERFLOW EXCEPTION\n"), "STACK OVERFLOW EXCEPTION\n");
+    case 5: { // DUP: Duplicate an element at a given offset from top to the new top.
+      stack_pointer++; // Increment stack pointer for the new duplicated element
+      int dup_offset = current_instruction >> 3; // Offset from top (encoded in instruction)
+      int source_idx = stack_pointer - 1 - dup_offset; // Calculate index of element to duplicate
+
+      if (source_idx < 0 || source_idx >= stack_pointer) { // Stack underflow check for source index
+        transmit_all((int)(uintptr_t)"STACK UNDERFLOW EXCEPTION\n", 0x1b);
         _terminate();
       }
-      int source_idx = (vm_stack_idx - operand) - 1; // Calculate the source index relative to the new stack top
-      if (source_idx < 0 || vm_stack_idx < source_idx) { // Validate the source index
-        transmit_all(sizeof("STACK UNDERFLOW EXCEPTION\n"), "STACK UNDERFLOW EXCEPTION\n");
-        _terminate();
-      }
-      ((unsigned int*)vm_stack_ptr)[vm_stack_idx] = ((unsigned int*)vm_stack_ptr)[source_idx]; // Push the peeked value onto the stack
+      // Duplicate the value
+      *(uint32_t*)(stack_base_addr + stack_pointer * sizeof(uint32_t)) = *(uint32_t*)(stack_base_addr + source_idx * sizeof(uint32_t));
       break;
     }
-    case 6: { // ADD: Pop two, add, push result
-      if (vm_stack_idx < 1) { // Requires at least two elements for addition
-        transmit_all(sizeof("STACK UNDERFLOW EXCEPTION\n"), "STACK UNDERFLOW EXCEPTION\n");
+    case 6: { // ADD: Pop two, push sum.
+      if (stack_pointer < 1) { // Stack underflow check (needs at least 2 elements)
+        transmit_all((int)(uintptr_t)"STACK UNDERFLOW EXCEPTION\n", 0x1b);
         _terminate();
       }
-      // Perform addition: second_item = second_item + top_item
-      ((int*)vm_stack_ptr)[vm_stack_idx - 1] = ((int*)vm_stack_ptr)[vm_stack_idx - 1] + ((int*)vm_stack_ptr)[vm_stack_idx];
-      vm_stack_idx--; // Pop the top item (result is now at vm_stack_idx-1)
+      // Add top two elements, store result in the second-from-top position
+      *(int*)(stack_base_addr + (stack_pointer - 1) * sizeof(uint32_t)) += *(int*)(stack_base_addr + stack_pointer * sizeof(uint32_t));
+      stack_pointer--; // Pop the top element
       break;
     }
-    case 7: { // SUB: Pop two, subtract, push result
-      if (vm_stack_idx < 1) { // Requires at least two elements for subtraction
-        transmit_all(sizeof("STACK UNDERFLOW EXCEPTION\n"), "STACK UNDERFLOW EXCEPTION\n");
+    case 7: { // SUB: Pop two, push difference (second - top).
+      if (stack_pointer < 1) { // Stack underflow check (needs at least 2 elements)
+        transmit_all((int)(uintptr_t)"STACK UNDERFLOW EXCEPTION\n", 0x1b);
         _terminate();
       }
-      // Perform subtraction: second_item = second_item - top_item
-      ((int*)vm_stack_ptr)[vm_stack_idx - 1] = ((int*)vm_stack_ptr)[vm_stack_idx - 1] - ((int*)vm_stack_ptr)[vm_stack_idx];
-      vm_stack_idx--; // Pop the top item
+      // Subtract top element from the second-from-top, store result in second-from-top
+      *(int*)(stack_base_addr + (stack_pointer - 1) * sizeof(uint32_t)) -= *(int*)(stack_base_addr + stack_pointer * sizeof(uint32_t));
+      stack_pointer--; // Pop the top element
       break;
-    }
-    default: { // Handle unknown opcodes
-        transmit_all(sizeof("UNKNOWN OPCODE EXCEPTION\n"), "UNKNOWN OPCODE EXCEPTION\n");
-        _terminate();
     }
     }
   }
 
-  // --- Post-Execution Finalization ---
-  // After the instruction loop, transmit the final value remaining on the stack.
-  if (vm_stack_idx < 0) { // Check for stack underflow before attempting to access the result
-    transmit_all(sizeof("STACK UNDERFLOW EXCEPTION\n"), "STACK UNDERFLOW EXCEPTION\n");
+  // --- Final Output ---
+  if (stack_pointer < 0) { // Final stack underflow check
+    transmit_all((int)(uintptr_t)"STACK UNDERFLOW EXCEPTION\n", 0x1b);
     _terminate();
   }
-  // Transmit the top 4 bytes (one unsigned int) from the stack as the program's final result.
-  transmit_all(sizeof(int), &((int*)vm_stack_ptr)[vm_stack_idx]);
+  uint32_t final_result_addr = stack_base_addr + stack_pointer * sizeof(uint32_t);
+  // Transmit the value at the top of the stack (the program's final result)
+  transmit_all((int)(uintptr_t)final_result_addr, sizeof(uint32_t)); 
+  
+  // Clean up allocated memory
+  deallocate(code_base_addr, 0x2000);
+  deallocate(stack_base_addr, 0x1000);
 
-  // Deallocate dynamically allocated memory to prevent memory leaks
-  deallocate_mem(vm_stack_ptr);
-  deallocate_mem(program_mem_ptr);
-
-  return 0; // Program completed successfully
+  return 0; // Program finished successfully
 }

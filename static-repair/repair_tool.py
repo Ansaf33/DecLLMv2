@@ -54,8 +54,9 @@ def repair_loop(json_path: str, max_iterations: int = 3) -> str:
       
     # dir name is prefix whose end is __
     real_output_dir = Path(project_path) / Path(output_dir).name.split("__")[0]
+    # if dir exists, return
     if real_output_dir.exists():
-      shutil.rmtree(real_output_dir)
+      return 0,0
     real_output_dir.mkdir(parents=True, exist_ok=True)
     
     #stats

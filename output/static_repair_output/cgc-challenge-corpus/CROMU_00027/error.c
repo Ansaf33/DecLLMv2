@@ -1,27 +1,29 @@
-#include <stdio.h>  // For fprintf
+#include <stdio.h>  // For printf
 #include <stdlib.h> // For exit
 
 // Function: PrintErrorAndTerminate
-// Fixes: Removed unreachable code, replaced undefined4 with a generic message,
-//        changed _terminate to exit, fixed printf format specifier,
-//        uses stderr for error output.
-void PrintErrorAndTerminate(int param_1) {
-  if (param_1 == 0) {
-    fprintf(stderr, "ERROR: Allocation failed: Unknown reason.\n");
+void PrintErrorAndTerminate(int error_code) {
+  // The original code had an unconditional _terminate(1) before an if-block,
+  // making the if-block unreachable. It also used an uninitialized variable
+  // uStack_14 and an incorrect format specifier '@s'.
+  // This revised version assumes the intent was to print an error based on the code
+  // and then terminate.
+  if (error_code == 0) {
+    printf("ERROR: Allocation failed.\n");
   } else {
-    // This branch handles a generic error when param_1 is not 0.
-    fprintf(stderr, "ERROR: An unspecified error occurred (code %d).\n", param_1);
+    printf("ERROR: An unexpected error occurred (code: %d).\n", error_code);
   }
-  exit(1);
+  exit(1); // Terminate the program with an error status
 }
 
 // Function: VerifyPointerOrTerminate
-// Fixes: Corrected parameter types for pointer and error message string,
-//        changed _terminate to exit, fixed printf format specifier,
-//        uses stderr for error output.
-void VerifyPointerOrTerminate(void* ptr, const char* errorMessage) {
-  if (ptr == NULL) {
-    fprintf(stderr, "ERROR: Allocation failed: %s\n", errorMessage);
-    exit(1);
+void VerifyPointerOrTerminate(int pointer_status, const char* error_message) {
+  // Replaced 'undefined4' with 'const char*' as it's used with '%s'.
+  // Replaced '@s' with standard C format specifier '%s'.
+  // Replaced '_terminate(1)' with standard C 'exit(1)'.
+  if (pointer_status == 0) {
+    printf("ERROR: Allocation failed: %s\n", error_message);
+    exit(1); // Terminate the program with an error status
   }
+  return;
 }

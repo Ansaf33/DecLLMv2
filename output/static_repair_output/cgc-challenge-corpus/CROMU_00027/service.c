@@ -1,103 +1,78 @@
-#include <stdio.h>  // For fprintf, puts, printf
-#include <stdlib.h> // For exit, EXIT_FAILURE
-#include <string.h> // For snprintf
+#include <stdio.h> // For fprintf
+#include <stdlib.h> // For exit
 
-// Function declarations (stubs for the required functions)
-// These functions are assumed to exist based on the main function's logic.
-// Their actual implementation would depend on the server's specific requirements.
+// Function prototypes (or full definitions if they are simple stubs)
+int InitializeTree(void);
+void PrintErrorAndTerminate(const char *message);
+int ReceiveCommand(char *buffer, int *continue_flag);
+void HandleCommand(char *buffer);
+void DestroyCommand(char *buffer);
 
-/**
- * @brief Initializes the server tree structure or resources.
- * @return 0 on success, non-zero on failure.
- */
+// Placeholder implementations for the functions mentioned in main
+// In a real application, these would contain actual logic.
+
 int InitializeTree(void) {
-    puts("Initializing server tree...");
-    // Simulate initialization success
+    // Placeholder: Simulate successful initialization
     return 0;
 }
 
-/**
- * @brief Prints an error message to stderr and terminates the program.
- * @param message The error message to print.
- */
 void PrintErrorAndTerminate(const char *message) {
     fprintf(stderr, "Error: %s\n", message);
     exit(EXIT_FAILURE);
 }
 
-// Static counter to simulate receiving multiple commands over time
-static int s_command_counter = 0;
-
-/**
- * @brief Receives a command into the provided buffer and updates a flag
- *        indicating if more commands are expected.
- * @param buffer Pointer to a character array where the command will be stored.
- * @param continue_flag Pointer to an integer flag. Set to 1 if more commands
- *        are expected, 0 otherwise.
- * @return 0 on successful receipt of a command, non-zero on failure.
- */
+// Placeholder: Simulate receiving commands.
+// For demonstration, it might simulate receiving a few commands
+// and then setting continue_flag to 0 to stop the loop.
 int ReceiveCommand(char *buffer, int *continue_flag) {
-    // Simulate receiving a few commands and then signaling no more
-    s_command_counter++;
-    if (s_command_counter <= 3) { // Simulate receiving 3 commands
-        printf("Receiving command %d...\n", s_command_counter);
-        // Populate the buffer with a dummy command
-        snprintf(buffer, 76, "TEST_COMMAND_%d", s_command_counter);
-        *continue_flag = 1; // Indicate that the loop should continue
+    static int command_counter = 0;
+    if (command_counter < 3) { // Simulate receiving 3 commands
+        sprintf(buffer, "Command_%d", command_counter + 1); // Example: fill buffer
+        *continue_flag = 1; // Signal to continue the loop
+        command_counter++;
+        return 0; // Success
     } else {
-        printf("No more commands to receive.\n");
-        *continue_flag = 0; // Indicate that the loop should terminate
+        *continue_flag = 0; // Signal to stop the loop
+        return 0; // Success (no more commands is not an error)
     }
-    // Simulate successful command reception
-    return 0;
 }
 
-/**
- * @brief Handles the received command.
- * @param buffer Pointer to the character array containing the command.
- */
 void HandleCommand(char *buffer) {
-    printf("Handling command: \"%s\"\n", buffer);
-    // Placeholder for actual command handling logic
+    // Placeholder: Logic to process the command in 'buffer'
+    // printf("Handling command: %s\n", buffer);
 }
 
-/**
- * @brief Destroys or cleans up resources associated with the received command.
- * @param buffer Pointer to the character array containing the command.
- */
 void DestroyCommand(char *buffer) {
-    printf("Destroying command: \"%s\"\n", buffer);
-    // Placeholder for actual command cleanup logic (e.g., freeing memory)
+    // Placeholder: Logic to release resources associated with the command
+    // printf("Destroying command resources for: %s\n", buffer);
 }
 
-/**
- * @brief Main function of the server application.
- *        Initializes the server, then enters a loop to receive, handle,
- *        and destroy commands until no more commands are indicated.
- * @return 0 on successful execution, non-zero on error (after PrintErrorAndTerminate).
- */
+// Function: main
 int main(void) {
-    char command_buffer[76]; // Buffer to store received commands
-    int continue_loop;       // Flag to control the command receiving loop
+  int operation_status; // Renamed from iVar1
+  int continue_processing; // Renamed from local_60
+  char command_buffer[76]; // Renamed from local_5c, specified type as char
 
-    // Initialize the server tree
-    if (InitializeTree() != 0) {
-        PrintErrorAndTerminate("Initialize server failed");
+  // The line 'local_10 = &stack0x00000004;' is a decompilation artifact
+  // related to stack frame setup or stack canaries and is not
+  // standard C code. It is implicitly handled by the compiler.
+  // Therefore, 'local_10' and its assignment are removed.
+  
+  operation_status = InitializeTree();
+  if (operation_status != 0) {
+    PrintErrorAndTerminate("Initialize server failed");
+  }
+  
+  // Initialize continue_processing for the do-while loop
+  continue_processing = 0; 
+  do {
+    operation_status = ReceiveCommand(command_buffer, &continue_processing);
+    if (operation_status != 0) {
+      PrintErrorAndTerminate("Receive command failed");
     }
-
-    // Set initial loop condition. The do-while loop will execute at least once.
-    // The actual continuation is determined by ReceiveCommand.
-    continue_loop = 0;
-    do {
-        // Receive a command; if it fails, print error and terminate
-        if (ReceiveCommand(command_buffer, &continue_loop) != 0) {
-            PrintErrorAndTerminate("Receive command failed");
-        }
-        // Handle the received command
-        HandleCommand(command_buffer);
-        // Destroy/clean up resources for the command
-        DestroyCommand(command_buffer);
-    } while (continue_loop == 1); // Continue as long as ReceiveCommand indicates more commands
-
-    return 0; // Successful exit
+    HandleCommand(command_buffer);
+    DestroyCommand(command_buffer);
+  } while (continue_processing == 1); // Loop continues as long as ReceiveCommand signals to do so
+  
+  return 0;
 }

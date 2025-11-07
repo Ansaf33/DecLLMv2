@@ -1,320 +1,277 @@
-#include <stdio.h>   // For printf, puts, fgets
-#include <stdlib.h>  // For atoi, calloc, free
-#include <string.h>  // For strncpy, strlen, strcspn
-#include <stdbool.h> // For bool type if needed, though not strictly required here
+#include <stdio.h>
+#include <stdlib.h> // For atoi
+#include <string.h> // For strncpy, strlen
+#include <stdint.h> // For explicit integer types if needed, but standard pointers are usually fine
 
-// Define types from decompiler output to standard C types
-// Assuming a 32-bit environment where pointers are 4 bytes, matching `undefined4` usage.
-typedef unsigned char byte;
+// Type definitions based on typical decompiler output and context
+typedef int undefined4;
 typedef unsigned int uint;
-typedef int undefined4; // 32-bit integer, used for function return types
+typedef unsigned char byte;
+// undefined8 is not used in the final reduced code, but if it were, long long would be appropriate.
 
-// --- Structure Definitions ---
-
-// Packet structure (nodes in a queue's linked list)
-// Offsets inferred from decompiler output:
-// - arrival_time at 0x0
-// - size at 0x8
-// - reserved at 0xc (a 4-byte field, set to 0 in TransmitPktFromQueue)
-// - next pointer at 0x10 (a 4-byte pointer for 32-bit architecture)
-typedef struct Packet {
-    double arrival_time; // Offset 0x0 (8 bytes)
-    unsigned int size;   // Offset 0x8 (4 bytes)
-    unsigned int reserved; // Offset 0xc (4 bytes, e.g., status flags or padding)
-    struct Packet *next; // Offset 0x10 (4 bytes, assuming 32-bit pointers)
-} Packet;
-
-// Queue structure
-// `DAT_00018a3c` is an array of `QueueInfo *`
-// Offsets inferred from decompiler output for fields within this structure:
-typedef struct QueueInfo {
-    // There might be fields before 0x4, but the code only shows access from 0x4 onwards.
-    // For simplicity, we assume relevant fields start here.
-    int pkts_in_queue;     // Offset 0x4
-    int tokens;            // Offset 0x8
-    int max_tokens;        // Offset 0xc
-    int pkts_transmitted;  // Offset 0x10
-    int bytes_transmitted; // Offset 0x14
-    int pkts_dropped;      // Offset 0x18
-    double total_latency;  // Offset 0x1c (8 bytes)
-    Packet *head_packet;   // Offset 0x28 (pointer to the first Packet in the queue)
-} QueueInfo;
-
-// --- Global Variables (with dummy initializations for compilation) ---
-unsigned int iface = 0; // Interface speed in bps
-double wall_clock = 0.0; // Current simulation time
-double DAT_00015820 = 1000.0; // A constant, possibly base time for a unit of data
-double DAT_00018a30 = 0.0;    // Calculated based on DAT_00015820 / iface
-int DAT_00018a24 = 0;         // Global packets transmitted counter
-int DAT_00018a28 = 0;         // Global total bytes transmitted
-int DAT_00018a2c = 2;         // Number of queues (dummy: 2 queues)
-double DAT_00015828 = 1.0;    // A constant, possibly per-byte transmission time factor
-char DAT_00018a38 = 1;        // A flag (e.g., 1 for enabled, 0 for disabled)
-double max_wall_clock = 1000.0; // Simulation end time
-
-// Global array of queue pointers. DAT_00018a2c determines its effective size.
-QueueInfo *DAT_00018a3c[2] = {NULL, NULL}; // Initialized to NULL, will be allocated in InitInterface
-
-// --- Forward Declarations for Functions ---
+// Forward declarations for functions not provided in the snippet
+// Assuming common signatures based on usage. These would typically be in other source files or libraries.
+// For compilation, simple declarations are sufficient, and mock implementations are provided below.
+int readUntil(char* buffer, size_t max_len, int base);
 void init_mt(unsigned int seed);
-int readUntil(char *buffer, int max_len, int base);
 void RX(void);
 
-// --- Dummy Function Implementations (to make the code compilable) ---
+// Structure definitions inferred from pointer arithmetic and field access
+// These are designed to match the offsets and types implied by the original code
+// assuming a 64-bit system where pointers are 8 bytes.
+typedef struct Packet {
+    double arrival_time; // offset 0x0
+    unsigned int size;   // offset 0x8 (assuming 8-byte double, then 4-byte uint)
+    int field_0xc;       // offset 0xc (4 bytes, possibly padding or another field)
+    struct Packet* next; // offset 0x10 (8 bytes for 64-bit pointer)
+} Packet;
 
-// Dummy init_mt function
-void init_mt(unsigned int seed) {
-    // In a real scenario, this would initialize a Mersenne Twister or similar PRNG.
-    // printf("init_mt called with seed: %u\n", seed);
-}
+typedef struct Queue {
+    // Placeholder for unknown fields if any, before 0x4
+    int field_0x0_0x3;      // 4 bytes, placeholder
+    int pkts_in_queue;      // offset 0x4
+    int tokens;             // offset 0x8
+    int max_tokens;         // offset 0xc
+    int pkts_transmitted;   // offset 0x10
+    int bytes_transmitted;  // offset 0x14
+    int pkts_dropped;       // offset 0x18
+    double total_latency;   // offset 0x1c (8 bytes)
+    // Placeholder for unknown fields if any, before 0x28
+    int field_0x24_0x27;    // 4 bytes, placeholder
+    Packet* head_packet;    // offset 0x28 (8 bytes for 64-bit pointer)
+} Queue;
 
-// Dummy readUntil implementation using fgets, replacing decompiler's unknown function.
-// It reads a line from stdin, up to max_len characters, and removes the newline.
-int readUntil(char *buffer, int max_len, int base) {
-    if (fgets(buffer, max_len + 1, stdin) == NULL) { // +1 for null terminator
-        return -1; // Error reading input
+// Global variables inferred from usage
+// Initialized to prevent linker errors if not defined elsewhere.
+unsigned int iface = 0;
+int DAT_00018a24 = 0; // Pkts Transmitted (total)
+int DAT_00018a28 = 0; // Bytes Transmitted (total)
+double DAT_00018a30 = 0.0;
+double wall_clock = 0.0;
+double DAT_00015820 = 1.0; // Placeholder, assumed to be some constant (e.g., simulation constant)
+double DAT_00015828 = 1.0; // Placeholder, assumed to be some constant (e.g., bytes_to_time_factor)
+unsigned int DAT_00018a2c = 1; // Number of queues, initialized to 1 for example
+Queue** DAT_00018a3c = NULL; // Array of pointers to Queue structures, needs allocation
+char DAT_00018a38 = 0; // Boolean flag, e.g., '0' for false
+double max_wall_clock = 1000.0; // Placeholder, maximum simulation time
+
+// Mock implementations for compilation purposes
+// In a real application, these would be defined elsewhere.
+int readUntil(char* buffer, size_t max_len, int base) {
+    if (fgets(buffer, max_len, stdin) != NULL) {
+        buffer[strcspn(buffer, "\n")] = 0; // Remove newline character
+        return 0; // Success
     }
-    // Remove newline character if present
-    buffer[strcspn(buffer, "\n")] = '\0';
-    return 0; // Success
+    return -1; // Failure
 }
 
-// Dummy RX function
+void init_mt(unsigned int seed) {
+    // Placeholder for initialization of a random number generator or similar.
+    // printf("init_mt called with seed %u\n", seed);
+}
+
 void RX(void) {
-    // In a real system, this would handle receiving packets.
-    // For compilation, it does nothing.
+    // Placeholder for receive logic.
+    // printf("RX called\n");
 }
-
-// --- Original Functions (Refactored) ---
 
 // Function: InitInterface
-int InitInterface(void) { // Changed return type to int
-    char input_buffer[12]; // Buffer for user input
-    int read_status;       // Status from readUntil
-    uint speed_bps;        // Interface speed
-
-    speed_bps = 0;
-    // Loop until speed_bps is valid (non-zero and <= 0x400000)
-    while (speed_bps == 0 || speed_bps > 0x400000) {
-        printf("What's the interface speed (in bps up to %u bps): ", 0x400000);
-        read_status = readUntil(input_buffer, sizeof(input_buffer) - 1, 10); // -1 for null terminator
-        if (read_status == -1) {
-            return -1; // Indicate error
-        }
-        speed_bps = atoi(input_buffer);
+undefined4 InitInterface(void) {
+  char local_20 [12];
+  int local_14;
+  uint local_10;
+  
+  local_10 = 0;
+  while (local_10 == 0 || local_10 > 0x400000) {
+    printf("What's the interface speed (in bps up to %u bps): ", 0x400000);
+    local_14 = readUntil(local_20, sizeof(local_20) - 1, 10);
+    if (local_14 == -1) {
+      return 0xffffffff;
     }
-    iface = speed_bps;
-    init_mt(speed_bps);
-
-    // Allocate and initialize queues based on DAT_00018a2c
-    for (int i = 0; i < DAT_00018a2c; ++i) {
-        DAT_00018a3c[i] = (QueueInfo *)calloc(1, sizeof(QueueInfo));
-        if (DAT_00018a3c[i] == NULL) {
-            fprintf(stderr, "Failed to allocate memory for queue %d\n", i);
-            // Clean up previously allocated queues to prevent memory leaks
-            for (int j = 0; j < i; ++j) {
-                free(DAT_00018a3c[j]);
-                DAT_00018a3c[j] = NULL;
-            }
-            return -1; // Indicate error
-        }
-        // Initialize default values for the queue
-        DAT_00018a3c[i]->max_tokens = 1000; // Dummy value for max tokens
-    }
-
-    DAT_00018a24 = 0; // Global packet counter
-    DAT_00018a28 = 0; // Global byte counter
-    DAT_00018a30 = DAT_00015820 / (double)iface; // Calculate based on interface speed
-    wall_clock = 0;
-    return 0;
+    local_10 = atoi(local_20);
+  }
+  iface = local_10;
+  init_mt(local_10);
+  DAT_00018a24 = 0;
+  DAT_00018a28 = 0;
+  DAT_00018a30 = DAT_00015820 / (double)local_10;
+  wall_clock = 0;
+  return 0;
 }
 
 // Function: TransmitPktFromQueue
-int TransmitPktFromQueue(byte param_1) { // Changed return type to int
-    if (param_1 < DAT_00018a2c) {
-        QueueInfo *current_queue = DAT_00018a3c[param_1];
-        
-        // Basic checks for queue and packet existence
-        if (current_queue == NULL || current_queue->head_packet == NULL) {
-            // This case might be reached if pkts_in_queue > 0 but head_packet is NULL,
-            // or if the queue itself was not initialized.
-            return -1; // Indicate an error or nothing to transmit
-        }
-
-        Packet *pkt_to_transmit = current_queue->head_packet;
-
-        // Update total latency for the queue
-        current_queue->total_latency += (wall_clock - pkt_to_transmit->arrival_time);
-
-        // Update wall_clock based on transmission time
-        wall_clock += DAT_00018a30 + (DAT_00015828 * (double)pkt_to_transmit->size) / (double)iface;
-
-        // Decrement packet count in queue
-        current_queue->pkts_in_queue--;
-
-        // Decrement tokens for the queue if specific conditions are met
-        if (DAT_00018a38 != '\0' || param_1 != 0) {
-            current_queue->tokens -= pkt_to_transmit->size;
-        }
-
-        // Increment queue-specific stats
-        current_queue->pkts_transmitted++;
-        current_queue->bytes_transmitted += pkt_to_transmit->size;
-
-        // Increment global stats
-        DAT_00018a24++;
-        DAT_00018a28 += pkt_to_transmit->size;
-
-        // Remove packet from queue: advance head_packet and free the transmitted packet
-        current_queue->head_packet = pkt_to_transmit->next;
-        
-        // Clear the packet's contents (as per original decompiler output)
-        // This is done before freeing, so it's writing to valid memory.
-        pkt_to_transmit->size = 0;
-        pkt_to_transmit->reserved = 0;
-        pkt_to_transmit->arrival_time = 0.0;
-
-        free(pkt_to_transmit); // Free the transmitted packet
-
-        return 0; // Success
-    } else {
-        puts("Invalid queue number");
-        return -1; // Indicate error
+undefined4 TransmitPktFromQueue(byte param_1) {
+  if (param_1 < DAT_00018a2c) {
+    Queue* q = DAT_00018a3c[param_1];
+    if (q == NULL || q->head_packet == NULL) { // Safety check for null queue or empty queue
+        puts("Attempted to transmit from an empty or uninitialized queue slot.");
+        return 0xffffffff;
     }
+    Packet* pkt = q->head_packet;
+
+    q->total_latency += (wall_clock - pkt->arrival_time);
+    wall_clock += DAT_00018a30 + (DAT_00015828 * (double)pkt->size) / (double)iface;
+    
+    q->pkts_in_queue--;
+    
+    if (!DAT_00018a38 || param_1 != 0) {
+      q->tokens -= pkt->size;
+    }
+    q->pkts_transmitted++;
+    q->bytes_transmitted += pkt->size;
+    
+    DAT_00018a24++;
+    DAT_00018a28 += pkt->size;
+    
+    // Reset packet fields (or free the packet if it's dynamically allocated)
+    pkt->size = 0;
+    pkt->field_0xc = 0;
+    pkt->arrival_time = 0.0;
+    
+    q->head_packet = pkt->next;
+    // In a real system, 'pkt' would likely be freed or moved to a free list here.
+    return 0;
+  }
+  else {
+    puts("Invalid queue number");
+    return 0xffffffff;
+  }
 }
 
 // Function: ReplinishTokens
 void ReplinishTokens(void) {
-    for (int i = 0; i < DAT_00018a2c; ++i) {
-        if (DAT_00018a3c[i]) { // Check if queue pointer is valid
-            DAT_00018a3c[i]->tokens = DAT_00018a3c[i]->max_tokens;
-        }
+  for (unsigned int i = 0; i < DAT_00018a2c; ++i) {
+    Queue* q = DAT_00018a3c[i];
+    if (q != NULL) { // Safety check
+        q->tokens = q->max_tokens;
     }
+  }
 }
 
 // Function: uint_to_str
 void uint_to_str(uint param_1, char *param_2) {
-    char buffer[32]; // Temporary buffer for string conversion
-    int i = 0;       // Index for buffer
-    
-    if (param_2 != NULL) {
-        // Handle zero explicitly, as the loop won't run for 0
-        if (param_1 == 0) {
-            buffer[i++] = '0';
-        } else {
-            // Convert digits in reverse order
-            while (param_1 != 0) {
-                buffer[i] = (char)(param_1 % 10) + '0'; // (char)param_1 + ((char)(param_1 / 10 << 2) + (char)(param_1 / 10)) * -2 + '0' is equivalent to param_1 % 10 + '0'
-                param_1 /= 10;
-                i++;
-            }
-        }
-        // Copy digits in correct order to destination
-        while (i > 0) {
-            i--;
-            *param_2 = buffer[i];
-            param_2++;
-        }
-        *param_2 = '\0'; // Null-terminate the string
+  char local_2c [32];
+  int local_c = 0;
+  char *local_8 = local_2c;
+  
+  if (param_2 != NULL) {
+    if (param_1 == 0) { // Handle case for 0 explicitly
+        *local_8 = '0';
+        local_8++;
+        local_c++;
+    } else {
+        do {
+            *local_8 = (param_1 % 10) + '0';
+            param_1 /= 10;
+            local_8++;
+            local_c++;
+        } while (param_1 != 0);
     }
+
+    // Reverse the string of digits
+    while (local_c > 0) {
+      local_8--;
+      *param_2 = *local_8;
+      param_2++;
+      local_c--;
+    }
+    *param_2 = '\0';
+  }
 }
 
 // Function: print_uint
-void print_uint(char *param_1, uint param_2) {
-    char combined_buffer[64]; // Buffer large enough for prefix and number
-
-    // Copy param_1 into combined_buffer, ensuring null termination
-    strncpy(combined_buffer, param_1, sizeof(combined_buffer) - 1);
-    combined_buffer[sizeof(combined_buffer) - 1] = '\0';
-
-    // Append the uint to the string
-    uint_to_str(param_2, combined_buffer + strlen(combined_buffer));
-    printf("%s\n", combined_buffer); // Use %s for string
+void print_uint(char *param_1, unsigned int param_2) {
+  size_t sVar1;
+  char local_30 [32];
+  
+  strncpy(local_30, param_1, sizeof(local_30) - 1);
+  local_30[sizeof(local_30) - 1] = '\0'; // Ensure null termination
+  sVar1 = strlen(local_30);
+  uint_to_str(param_2, local_30 + sVar1);
+  printf("%s\n", local_30);
+  return;
 }
 
 // Function: PrintStats
 void PrintStats(void) {
-    printf("wall_clock: %.6f (s)\n", wall_clock); // Use %.6f for double precision
-
-    for (int i = 0; i < DAT_00018a2c; ++i) {
-        QueueInfo *current_queue = DAT_00018a3c[i];
-        if (current_queue == NULL) {
-            printf("Queue %d (not initialized)\n", i);
-            continue;
-        }
-
-        printf("Queue %d\n", i);
-        printf("  Pkts Transmitted:       %d\n", current_queue->pkts_transmitted);
-        printf("  Pkts Dropped:           %d\n", current_queue->pkts_dropped);
-
-        if (current_queue->pkts_transmitted == 0) {
-            printf("  Average Latency (s):    %.6f\n", 0.0);
-        } else {
-            double avg_latency = current_queue->total_latency / (double)current_queue->pkts_transmitted;
-            printf("  Average Latency (s):    %.6f\n", avg_latency);
-        }
-
-        printf("  Enqueued Pkts:          %d\n", current_queue->pkts_in_queue);
-
-        int queue_depth_bytes = 0;
-        Packet *current_packet = current_queue->head_packet;
-        while (current_packet != NULL) {
-            queue_depth_bytes += current_packet->size;
-            current_packet = current_packet->next;
-        }
-        printf("  Queue Depth (bytes):    %d\n", queue_depth_bytes);
+  double dVar1;
+  int local_18; // Total bytes in queue for current queue
+  
+  printf("wall_clock: %f (s)\n", wall_clock);
+  for (unsigned int i = 0; i < DAT_00018a2c; ++i) {
+    Queue* q = DAT_00018a3c[i];
+    if (q == NULL) { // Safety check
+        printf("Queue %u: (NULL)\n", i);
+        continue;
     }
-    printf("Interface Stats\n");
-    print_uint("  Pkts Transmitted:       ", DAT_00018a24);
+
+    printf("Queue %u\n", i);
+    printf("  Pkts Transmitted:       %d\n", q->pkts_transmitted);
+    printf("  Pkts Dropped:           %d\n", q->pkts_dropped);
+    
+    if (q->pkts_transmitted == 0) {
+      printf("  Average Latency (s):    %f\n", 0.0);
+    } else {
+      dVar1 = q->total_latency / (double)q->pkts_transmitted;
+      printf("  Average Latency (s):    %f\n", dVar1);
+    }
+    printf("  Enqueued Pkts:          %d\n", q->pkts_in_queue);
+    
+    local_18 = 0;
+    Packet* current_pkt = q->head_packet;
+    for (unsigned int j = 0; j < q->pkts_in_queue; ++j) {
+      if (current_pkt == NULL) { // Safety check for corrupted linked list
+          printf("  Warning: Queue %u has less packets than expected, list ended prematurely.\n", i);
+          break;
+      }
+      local_18 += current_pkt->size;
+      current_pkt = current_pkt->next;
+    }
+    printf("  Queue Depth (bytes):    %d\n", local_18);
+  }
+  printf("Interface Stats\n");
+  print_uint("  Pkts Transmitted:       ", DAT_00018a24);
+  return;
 }
 
 // Function: TX
-int TX(void) { // Changed return type to int
-    ReplinishTokens();
-
-    // Special handling for queue 0 if DAT_00018a38 is not null ('\0')
-    if (DAT_00018a38 != '\0') {
-        QueueInfo *queue0 = DAT_00018a3c[0];
-        if (queue0) { // Ensure queue0 is initialized
-            while (queue0->pkts_in_queue != 0) {
-                if (TransmitPktFromQueue(0) != 0) {
-                    puts("Packet transmission failed");
-                    return -1;
-                }
-                if (wall_clock > max_wall_clock) { // Check for simulation end
-                    return 0;
-                }
-                RX(); // Simulate receiving packets
+undefined4 TX(void) {
+  ReplinishTokens();
+  if (DAT_00018a38) { // If DAT_00018a38 is true (non-zero)
+    Queue* q0 = DAT_00018a3c[0];
+    if (q0 != NULL) { // Safety check for queue 0
+        while (q0->pkts_in_queue != 0 && q0->head_packet != NULL) {
+            if (TransmitPktFromQueue(0) != 0) {
+                puts("Packet transmission failed");
+                return 0xffffffff;
             }
+            if (wall_clock > max_wall_clock) {
+                return 0;
+            }
+            RX();
         }
     }
-
-    // General handling for all queues
-    // This loop replaces the original `do...while(true)` structure with an explicit for loop.
-    for (uint current_queue_idx = 0; current_queue_idx < DAT_00018a2c; ++current_queue_idx) {
-        // If DAT_00018a38 is null ('\0'), or it's not queue 0 (queue 0 was handled above if DAT_00018a38 is not null)
-        if (DAT_00018a38 == '\0' || current_queue_idx != 0) {
-            QueueInfo *current_queue = DAT_00018a3c[current_queue_idx];
-            if (current_queue == NULL) {
-                continue; // Skip uninitialized queues
-            }
-
-            // Transmit packets from the current queue as long as there are packets
-            // and tokens are sufficient for the head packet's size.
-            while (current_queue->pkts_in_queue != 0 &&
-                   current_queue->head_packet != NULL &&
-                   current_queue->head_packet->size <= current_queue->tokens) {
-
-                if (TransmitPktFromQueue((byte)current_queue_idx) != 0) {
-                    puts("Packet transmission failed");
-                    return -1;
-                }
-                if (wall_clock > max_wall_clock) { // Check for simulation end
-                    return 0;
-                }
-                RX(); // Simulate receiving packets
-            }
-        }
+  }
+  unsigned int i = 0;
+  do {
+    if (i >= DAT_00018a2c) { // Exit condition for the do-while loop
+      return 0;
     }
-    return 0; // All transmissions handled or simulation ended
+    if (!DAT_00018a38 || i != 0) { // If DAT_00018a38 is false OR it's not queue 0
+      Queue* q_i = DAT_00018a3c[i];
+      if (q_i != NULL) { // Safety check for current queue
+          while (q_i->pkts_in_queue != 0 && q_i->head_packet != NULL && q_i->head_packet->size <= q_i->tokens) {
+            if (TransmitPktFromQueue(i) != 0) {
+              puts("Packet transmission failed");
+              return 0xffffffff;
+            }
+            if (wall_clock > max_wall_clock) {
+              return 0;
+            }
+            RX();
+          }
+      }
+    }
+    i++;
+  } while(1); // Loop indefinitely until an explicit return statement is hit
 }

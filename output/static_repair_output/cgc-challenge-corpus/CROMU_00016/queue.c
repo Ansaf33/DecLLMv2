@@ -1,479 +1,379 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>   // For round()
+#include <stdio.h>   // For printf, puts, fgets, stdin
+#include <stdlib.h>  // For atoi, malloc, free
+#include <string.h>  // For memset, strlen
 #include <stdbool.h> // For bool type
-#include <stdint.h> // For uintptr_t
+#include <math.h>    // For round
+#include <limits.h>  // For UCHAR_MAX
 
-// Custom types mapping from decompiled code
-typedef unsigned int uint;
-typedef unsigned char byte;
-typedef unsigned int undefined4; // Assuming 4-byte unsigned int
+// --- Custom/External Function Definitions ---
 
-// --- Global Variables ---
-// DAT_00018a2c: Number of queues
-unsigned char g_num_queues = 0;
-// DAT_00018a38: Flag for priority queue system (0 or 1)
-char g_is_priority_queue_system = 0;
-// DAT_00018a3c: Array of pointers to Queue structures
-// This will be allocated dynamically based on g_num_queues
-struct Queue **g_queue_pointers = NULL;
-// _DAT_00015528: A double value used in calculations
-double g_some_double_value = 1.0; // Default to 1.0 to prevent division by zero, actual value unknown.
-
-// --- Structure Definitions ---
-
-// RingBufferEntry: 20 bytes (0x14)
-typedef struct RingBufferEntry {
-    char data[16]; // Placeholder for actual packet data or metadata
-    struct RingBufferEntry *next; // Pointer to the next entry in the ring (0x10 offset)
-} RingBufferEntry;
-
-// Queue structure: 52 bytes (0x34)
-typedef struct Queue {
-    uint depth;             // 0x00
-    uint field_4;           // 0x04 (unknown purpose)
-    uint field_8;           // 0x08 (gets value from calculated_value)
-    uint calculated_value;  // 0x0c (stores the result of ROUND calculation)
-    // ... 0x10 - 0x23 (padding or other fields)
-    char min_priority;      // 0x24
-    char max_priority;      // 0x25
-    byte weight;            // 0x26
-    // ... 0x27 (padding)
-    RingBufferEntry *current_read_ptr;  // 0x28
-    RingBufferEntry *current_write_ptr; // 0x2c
-    RingBufferEntry *ring_buffer_head;  // 0x30 (points to the first entry of the first page)
-} Queue;
-
-// --- Custom Memory Allocation/Deallocation Wrappers ---
-// Replaces 'allocate'
-int custom_allocate(size_t size, int flags, void **out_ptr) {
-    *out_ptr = malloc(size);
-    if (*out_ptr == NULL) {
-        return 1; // Failure
+// Placeholder for `readUntil`. Original takes buffer, max_len (excluding null terminator), and terminator char.
+// Returns number of characters read (excluding terminator), or -1 on error.
+static int readUntil(char *buffer, int max_len, char terminator) {
+    if (fgets(buffer, max_len + 1, stdin) == NULL) {
+        return -1; // Error or EOF
     }
-    memset(*out_ptr, 0, size); // bzero equivalent
-    return 0; // Success
+    size_t len = strlen(buffer);
+    if (len > 0 && buffer[len - 1] == terminator) {
+        buffer[len - 1] = '\0'; // Remove trailing newline
+        len--;
+    }
+    return (int)len;
 }
 
-// Replaces 'deallocate'
-void custom_deallocate(void *ptr, size_t size) {
+// Placeholder for `allocate`. Original returns 0 on success, non-zero on failure.
+static int allocate(unsigned int size, int flags, void **out_ptr) {
+    (void)flags; // flags parameter is unused in this simplified version
+    *out_ptr = malloc(size);
+    return (*out_ptr == NULL) ? 1 : 0; // 0 for success, 1 for failure
+}
+
+// Placeholder for `deallocate`. Original takes ptr and size (size often ignored by free).
+static void deallocate(void *ptr, unsigned int size) {
+    (void)size; // size parameter is unused in standard free
     free(ptr);
 }
 
-// --- Helper for reading input ---
-// Replaces 'readUntil'
-int read_input(char *buffer, int max_len) {
-    if (fgets(buffer, max_len, stdin) == NULL) {
-        return -1; // Error or EOF
-    }
-    // Remove trailing newline if present
-    buffer[strcspn(buffer, "\n")] = 0;
-    return 0; // Success
-}
+// `bzero` is deprecated; `memset` is the standard equivalent.
+#define bzero(ptr, size) memset(ptr, 0, size)
 
-// --- Function Prototypes ---
-undefined4 InitRingBuffer(uint param_1, RingBufferEntry **param_2);
-undefined4 DestroyRingBuffer(byte param_1);
-undefined4 InitQueues(void);
-undefined4 DestroyQueues(void);
+// `ROUND` looks like a simple rounding function.
+#define ROUND(x) round(x)
+
+// --- Global Variables (Original names preserved as per request) ---
+static unsigned char DAT_00018a2c; // Number of queues
+static char DAT_00018a38;         // Is priority queue flag (0 or 1)
+static void** DAT_00018a3c;       // Array of pointers to queue structures
+static double _DAT_00015528 = 1.0; // Placeholder value; actual value unknown from snippet.
+                                   // Assuming it's a divisor, 1.0 is a safe default to avoid division by zero.
+
+// --- Structure Definitions (Inferred from memory access patterns) ---
+
+// RingBufferSlot structure, 0x14 bytes (20 bytes)
+typedef struct RingBufferSlot {
+    char data[16];   // Placeholder for packet data or other fields
+    void* next_slot; // Pointer to the next slot in the ring buffer (+0x10 offset)
+} RingBufferSlot;
+
+// Queue structure, 0x34 bytes (52 bytes)
+typedef struct Queue {
+    unsigned int depth;                 // +0x00 (local_30[0])
+    unsigned int field_04;              // +0x04 (local_30[1], unused in snippet)
+    void* current_pkt_ptr;              // +0x08 (local_30[2]) - set to head_ring_buffer_ptr
+    unsigned int calculated_val;        // +0x0C (local_30[3])
+    char field_10[0x24 - 0x10];         // +0x10 to +0x23 - padding/other fields
+    char min_priority;                  // +0x24 (char at local_30 + 9*sizeof(uint))
+    char max_priority;                  // +0x25
+    unsigned char weight;               // +0x26
+    char field_27[0x28 - 0x27];         // +0x27 - padding
+    void* tail_ring_buffer_ptr;         // +0x28 (local_30[10])
+    void* current_ring_buffer_ptr;      // +0x2C (local_30[0xb])
+    void* head_ring_buffer_ptr;         // +0x30 (local_30[0xc]) - Passed to InitRingBuffer
+} Queue;
+
 
 // Function: InitRingBuffer
-undefined4 InitRingBuffer(uint depth, RingBufferEntry **ring_buffer_head_ptr) {
-    const uint ENTRIES_PER_PAGE = 0xcc; // 204 entries per 0x1000 (4096) page
-    const size_t PAGE_SIZE = 0x1000; // 4096 bytes
-    const size_t ENTRY_SIZE = sizeof(RingBufferEntry); // 20 bytes
+int InitRingBuffer(unsigned int param_1, void **param_2) {
+    const unsigned int SLOTS_PER_PAGE_CONST = 204; // 0xCC from original code
+    unsigned int num_pages = param_1 / SLOTS_PER_PAGE_CONST + 1;
+    void* last_slot_in_prev_page = NULL;
+    unsigned int total_slots_linked = 0;
 
-    uint num_pages = depth / ENTRIES_PER_PAGE;
-    if (depth % ENTRIES_PER_PAGE != 0 || depth == 0) { // If depth is not a multiple, or depth is 0, add one page (unless depth is 0)
-        if (depth > 0) num_pages++;
-    }
-
-    RingBufferEntry *first_entry_of_ring = NULL;
-    RingBufferEntry *prev_page_last_entry = NULL; // Tracks the last entry of the previous page
-    
-    // List to keep track of allocated page pointers for cleanup
-    RingBufferEntry **allocated_pages = NULL;
-    if (num_pages > 0) {
-        allocated_pages = (RingBufferEntry**)malloc(num_pages * sizeof(RingBufferEntry*));
-        if (allocated_pages == NULL) {
-            puts("Failed to allocate page tracking array");
-            return 0xffffffff;
-        }
-    }
-
-    for (uint current_page_idx = 0; current_page_idx < num_pages; ++current_page_idx) {
-        void *page_ptr_void;
-        if (custom_allocate(PAGE_SIZE, 0, &page_ptr_void) != 0) {
+    for (unsigned int page_idx = 0; page_idx < num_pages; ++page_idx) {
+        void* current_page_mem;
+        if (allocate(0x1000, 0, &current_page_mem) != 0) {
             puts("Failed to allocate pkt page");
-            // Cleanup: free all pages allocated so far
-            for (uint i = 0; i < current_page_idx; ++i) {
-                custom_deallocate(allocated_pages[i], PAGE_SIZE);
-            }
-            free(allocated_pages);
-            return 0xffffffff;
+            return -1; // Return -1 for error
         }
-        RingBufferEntry *current_page_first_entry = (RingBufferEntry *)page_ptr_void;
-        allocated_pages[current_page_idx] = current_page_first_entry; // Store page pointer
+        bzero(current_page_mem, 0x1000);
 
-        if (current_page_idx == 0) {
-            first_entry_of_ring = current_page_first_entry; // This is the overall head
+        if (page_idx == 0) {
+            *param_2 = current_page_mem; // Set the head of the entire ring buffer
+        }
+        if (last_slot_in_prev_page != NULL) {
+            // Link the last slot of the previous page to the first slot of the current page
+            *(void**)((char*)last_slot_in_prev_page + 0x10) = current_page_mem;
         }
 
-        if (prev_page_last_entry != NULL) {
-            prev_page_last_entry->next = current_page_first_entry; // Link previous page's last entry to current page's first
+        void* current_slot_ptr = current_page_mem;
+        // Link slots sequentially within the current page
+        for (unsigned int slot_idx_in_page = 0;
+             slot_idx_in_page < SLOTS_PER_PAGE_CONST - 1 && total_slots_linked < param_1 - 1;
+             ++slot_idx_in_page) {
+            *(void**)((char*)current_slot_ptr + 0x10) = (char*)current_slot_ptr + 0x14;
+            current_slot_ptr = (char*)current_slot_ptr + 0x14;
+            total_slots_linked++;
         }
-
-        uint entries_on_current_page = ENTRIES_PER_PAGE;
-        if (current_page_idx == num_pages - 1) { // Last page
-            entries_on_current_page = depth - (current_page_idx * ENTRIES_PER_PAGE);
-            if (entries_on_current_page == 0 && depth > 0) entries_on_current_page = ENTRIES_PER_PAGE; // Ensure at least 1 entry if depth > 0 and it's the only page
-        }
-        if (depth == 0) entries_on_current_page = 0;
-
-        RingBufferEntry *current_entry_on_page = current_page_first_entry;
-        for (uint i = 0; i < entries_on_current_page; ++i) {
-            if (i < entries_on_current_page - 1) {
-                current_entry_on_page->next = (RingBufferEntry *)((char *)current_entry_on_page + ENTRY_SIZE);
-            } else {
-                prev_page_last_entry = current_entry_on_page; // This is the last entry on the current page
-            }
-            current_entry_on_page = (RingBufferEntry *)((char *)current_entry_on_page + ENTRY_SIZE); // Advance pointer to next physical location
-        }
+        last_slot_in_prev_page = current_slot_ptr; // Store the last linked slot in this page
     }
-
-    if (num_pages > 0 && prev_page_last_entry != NULL) {
-        prev_page_last_entry->next = first_entry_of_ring; // Complete the ring
-    } else if (num_pages == 0) {
-        first_entry_of_ring = NULL; // If depth is 0, no ring buffer is created. head should be NULL.
-    } else if (depth == 1 && num_pages == 1 && first_entry_of_ring != NULL) { // Special case for single entry
-        first_entry_of_ring->next = first_entry_of_ring;
+    // Link the very last slot of the entire ring buffer back to its head
+    if (last_slot_in_prev_page != NULL) {
+        *(void**)((char*)last_slot_in_prev_page + 0x10) = *param_2;
     }
-
-    *ring_buffer_head_ptr = first_entry_of_ring;
-    free(allocated_pages); // Free the temporary tracking array
-    return 0;
+    return 0; // Return 0 for success
 }
 
 // Function: DestroyRingBuffer
-undefined4 DestroyRingBuffer(byte queue_idx) {
-    if (queue_idx >= g_num_queues) {
-        return 0xffffffff;
+int DestroyRingBuffer(unsigned char queue_index) {
+    if (queue_index >= DAT_00018a2c) {
+        return -1;
     }
 
-    Queue *q = g_queue_pointers[queue_idx];
-    if (q == NULL || q->ring_buffer_head == NULL) {
-        return 0; // Nothing to destroy or already destroyed
-    }
+    Queue* q_ptr = (Queue*)DAT_00018a3c[queue_index];
+    unsigned int total_depth = q_ptr->depth;
+    void* head_ring_buffer_ptr = q_ptr->head_ring_buffer_ptr;
 
-    uint depth = q->depth;
-    RingBufferEntry *first_page_head_entry = q->ring_buffer_head;
-    RingBufferEntry *current_page_head_entry = first_page_head_entry;
+    const unsigned int SLOTS_PER_PAGE_CONST = 204;
+    unsigned int num_pages = total_depth / SLOTS_PER_PAGE_CONST + 1;
 
-    const uint ENTRIES_PER_PAGE = 0xcc; // 204
-    const size_t PAGE_SIZE = 0x1000;
-    uint num_pages = depth / ENTRIES_PER_PAGE;
-    if (depth % ENTRIES_PER_PAGE != 0 || depth == 0) {
-        if (depth > 0) num_pages++;
-    }
+    void* current_page_base = head_ring_buffer_ptr;
     
-    // If depth is 0, num_pages is 0, loop won't run.
-    if (num_pages == 0) {
-        q->ring_buffer_head = NULL;
-        return 0;
+    for (unsigned int page_idx = 0; page_idx < num_pages; ++page_idx) {
+        void* page_to_deallocate = current_page_base;
+        void* current_slot_in_chain = current_page_base;
+        void* next_page_start = NULL;
+
+        // Traverse the current page to find the start of the next page or the ring head
+        while (true) {
+            void* next_slot_addr = *(void**)((char*)current_slot_in_chain + 0x10);
+
+            if (next_slot_addr == head_ring_buffer_ptr) { // Looped back to the head of the entire ring
+                next_page_start = head_ring_buffer_ptr;
+                break;
+            }
+            // Check if next_slot_addr is in a different memory page than current_slot_in_chain
+            // A page boundary is crossed if the XOR difference is greater than 0xFFF (4095)
+            // This indicates a jump from the end of one 0x1000 page to the start of another.
+            if (((unsigned long)current_slot_in_chain ^ (unsigned long)next_slot_addr) > 0xFFF) {
+                next_page_start = next_slot_addr; // This is the start of the next page
+                break;
+            }
+            current_slot_in_chain = next_slot_addr; // Move to the next slot within the current page
+        }
+        current_page_base = next_page_start; // Set for the next iteration of the outer loop
+
+        deallocate(page_to_deallocate, 0x1000);
     }
-
-    for (uint i = 0; i < num_pages; ++i) {
-        RingBufferEntry *next_page_head_entry = NULL;
-        RingBufferEntry *temp_entry = current_page_head_entry;
-        
-        // Find the last entry on the current page.
-        // The condition `0xfff < (addr1 ^ addr2)` checks if addresses span a 4KB boundary.
-        // This is a heuristic to detect if `temp_entry` and `temp_entry->next` are on different pages.
-        while (temp_entry != NULL && temp_entry->next != NULL &&
-               !(((uintptr_t)temp_entry ^ (uintptr_t)temp_entry->next) > 0xfff)) {
-            temp_entry = temp_entry->next;
-            if (temp_entry == first_page_head_entry) break; // Avoid infinite loop if only one page and we wrapped
-        }
-        
-        if (temp_entry != NULL) {
-            next_page_head_entry = temp_entry->next; // This should be the first entry of the next page
-        }
-
-        custom_deallocate(current_page_head_entry, PAGE_SIZE); // Free the page
-        
-        current_page_head_entry = next_page_head_entry;
-        if (current_page_head_entry == first_page_head_entry) {
-            break; // We've wrapped around
-        }
-    }
-
-    q->ring_buffer_head = NULL; // Clear the head pointer
     return 0;
 }
 
 // Function: InitQueues
-undefined4 InitQueues(void) {
+int InitQueues(void) {
     char input_buffer[10];
-    int int_input_value;
-    unsigned char current_queue_idx = 0;
+    unsigned char num_queues;
     
-    unsigned char total_weight_sum = 0;
-    unsigned char min_weight_found = 0xff; // Initialized to max byte value
-
-    // Get number of queues (1-8)
-    while (true) {
+    // Prompt for number of queues (1-8)
+    do {
         printf("How many queues (1-8)?: ");
-        if (read_input(input_buffer, sizeof(input_buffer)) == -1) {
-            return 0xffffffff;
+        if (readUntil(input_buffer, sizeof(input_buffer) - 1, '\n') == -1) {
+            return -1;
         }
-        int_input_value = atoi(input_buffer);
-        if (int_input_value >= 1 && int_input_value <= 8) {
-            g_num_queues = (unsigned char)int_input_value;
-            break;
-        }
-        printf("Invalid input. Please enter a number between 1 and 8.\n");
-    }
+        num_queues = (unsigned char)atoi(input_buffer);
+    } while (num_queues == 0 || num_queues > 8);
+    DAT_00018a2c = num_queues;
 
-    g_is_priority_queue_system = 0; // DAT_00018a38 = '\0';
+    DAT_00018a38 = 0; // Initialize priority queue flag to false
 
     // Allocate array for queue pointers
-    if (custom_allocate(g_num_queues * sizeof(Queue *), 0, (void **)&g_queue_pointers) != 0) {
+    if (allocate((unsigned int)num_queues * sizeof(Queue*), 0, &DAT_00018a3c) != 0) {
         puts("Failed to allocate interface queue pointers");
-        return 0xffffffff;
+        return -1;
     }
-    // bzero is handled by custom_allocate memset
+    bzero(DAT_00018a3c, (unsigned int)num_queues * sizeof(Queue*));
 
-    // Loop for each queue
-    while (current_queue_idx < g_num_queues) {
-        printf("Queue %u:\n", (uint)current_queue_idx);
+    unsigned char total_weight_sum = 0;   // Accumulates total weight, was local_1e
+    unsigned char min_weight_so_far = UCHAR_MAX; // Tracks minimum weight, was local_1f (initialized to 0xff)
 
-        // Check if it's a priority queue (only for queue 0)
-        if (current_queue_idx == 0) {
-            bool valid_input = false;
-            while (!valid_input) {
-                printf("  Is queue #%u a priority queue(y,n): ", (uint)current_queue_idx);
-                if (read_input(input_buffer, sizeof(input_buffer)) == -1) {
-                    return 0xffffffff;
+    // Loop for each queue to initialize its properties
+    for (unsigned char q_idx = 0; q_idx < num_queues; ++q_idx) {
+        printf("Queue %u:\n", q_idx);
+
+        // Ask if queue #0 is a priority queue
+        if (q_idx == 0) {
+            bzero(input_buffer, sizeof(input_buffer));
+            do {
+                printf("  Is queue #%u a priority queue(y,n): ", q_idx);
+                if (readUntil(input_buffer, 1, '\n') == -1) { // Read only 1 char for 'y'/'n'
+                    return -1;
                 }
-                if (input_buffer[0] == 'y' || input_buffer[0] == 'n') {
-                    valid_input = true;
-                } else {
-                    printf("  Invalid input. Please enter 'y' or 'n'.\n");
-                }
-            }
+            } while (input_buffer[0] != 'y' && input_buffer[0] != 'n');
             if (input_buffer[0] == 'y') {
-                g_is_priority_queue_system = 1; // DAT_00018a38 = '\x01';
+                DAT_00018a38 = 1;
             }
         }
 
-        int min_priority = -1;
-        // Get minimum priority (0-63)
-        while (min_priority < 0 || min_priority > 0x3f) {
-            printf("  What's the minimum priority packet to place in queue #%u (0-63): ", (uint)current_queue_idx);
-            if (read_input(input_buffer, sizeof(input_buffer)) == -1) {
-                return 0xffffffff;
+        // Prompt for minimum priority
+        int min_priority; // was local_14
+        bool min_priority_ok;
+        do {
+            min_priority_ok = true;
+            printf("  What's the minimum priority packet to place in queue #%u (0-63): ", q_idx);
+            if (readUntil(input_buffer, sizeof(input_buffer) - 1, '\n') == -1) {
+                return -1;
             }
             if (input_buffer[0] != '\0') {
-                int_input_value = atoi(input_buffer);
-                if (int_input_value >= 0 && int_input_value <= 0x3f) {
-                    // Check for overlapping priority ranges with previous queues
-                    bool overlap = false;
-                    for (unsigned char prev_q_idx = 0; prev_q_idx < current_queue_idx; ++prev_q_idx) {
-                        Queue *prev_q = g_queue_pointers[prev_q_idx];
-                        if (int_input_value >= prev_q->min_priority && int_input_value <= prev_q->max_priority) {
-                            printf("  That priority value is already assigned to queue %u\n", (uint)prev_q_idx);
-                            overlap = true;
+                min_priority = atoi(input_buffer);
+                if (min_priority < 0 || min_priority > 63) {
+                    min_priority_ok = false;
+                } else {
+                    // Check for overlap with previously defined queues
+                    for (unsigned char prev_q_idx = 0; prev_q_idx < q_idx; ++prev_q_idx) {
+                        Queue* prev_q = (Queue*)DAT_00018a3c[prev_q_idx];
+                        if ((prev_q->min_priority <= min_priority) && (min_priority <= prev_q->max_priority)) {
+                            printf("  That priority value is already assigned to queue %u\n", prev_q_idx);
+                            min_priority_ok = false;
                             break;
                         }
                     }
-                    if (!overlap) {
-                        min_priority = int_input_value;
-                    }
-                } else {
-                    printf("  Invalid priority. Must be between 0 and 63.\n");
                 }
+            } else { // No input provided
+                min_priority_ok = false;
             }
-        }
+        } while (!min_priority_ok);
 
-        int max_priority = -1;
-        // Get maximum priority (0-63)
-        while (max_priority < 0 || max_priority > 0x3f) {
-            printf("  What's the maximum priority packet to place in queue #%u (0-63): ", (uint)current_queue_idx);
-            if (read_input(input_buffer, sizeof(input_buffer)) == -1) {
-                return 0xffffffff;
+        // Prompt for maximum priority
+        int max_priority; // was local_18
+        bool max_priority_ok;
+        do {
+            max_priority_ok = true;
+            printf("  What's the maximum priority packet to place in queue #%u (0-63): ", q_idx);
+            if (readUntil(input_buffer, sizeof(input_buffer) - 1, '\n') == -1) {
+                return -1;
             }
             if (input_buffer[0] != '\0') {
-                int_input_value = atoi(input_buffer);
-                if (int_input_value < min_priority) {
+                max_priority = atoi(input_buffer);
+                if (max_priority < 0 || max_priority > 63) {
+                    max_priority_ok = false;
+                } else if (max_priority < min_priority) {
                     puts("  Maximum priority must be greater or equal to minimum priority");
-                } else if (int_input_value >= 0 && int_input_value <= 0x3f) {
-                    // Check for overlapping priority ranges with previous queues
-                    bool overlap = false;
-                    for (unsigned char prev_q_idx = 0; prev_q_idx < current_queue_idx; ++prev_q_idx) {
-                        Queue *prev_q = g_queue_pointers[prev_q_idx];
-                        if (int_input_value >= prev_q->min_priority && int_input_value <= prev_q->max_priority) {
-                            printf("  That priority value is already assigned to queue %u\n", (uint)prev_q_idx);
-                            overlap = true;
+                    max_priority_ok = false;
+                } else {
+                    // Check for overlap with previously defined queues
+                    for (unsigned char prev_q_idx = 0; prev_q_idx < q_idx; ++prev_q_idx) {
+                        Queue* prev_q = (Queue*)DAT_00018a3c[prev_q_idx];
+                        if ((prev_q->min_priority <= max_priority) && (max_priority <= prev_q->max_priority)) {
+                            printf("  That priority value is already assigned to queue %u\n", prev_q_idx);
+                            max_priority_ok = false;
                             break;
                         }
                     }
-                    if (!overlap) {
-                        max_priority = int_input_value;
-                    }
-                } else {
-                    printf("  Invalid priority. Must be between 0 and 63.\n");
                 }
+            } else { // No input provided
+                max_priority_ok = false;
             }
-        }
+        } while (!max_priority_ok);
 
-        uint queue_depth = 0;
-        // Get queue depth (1-1024)
-        while (queue_depth == 0 || queue_depth > 0x400) {
-            printf("  What is the depth of queue #%u (1 - 1024 packets): ", (uint)current_queue_idx);
-            if (read_input(input_buffer, sizeof(input_buffer)) == -1) {
-                return 0xffffffff;
+        // Prompt for queue depth
+        unsigned int queue_depth; // was local_1c
+        do {
+            printf("  What is the depth of queue #%u (1 - 1024 packets): ", q_idx);
+            if (readUntil(input_buffer, sizeof(input_buffer) - 1, '\n') == -1) {
+                return -1;
             }
-            int_input_value = atoi(input_buffer);
-            if (int_input_value >= 1 && int_input_value <= 0x400) {
-                queue_depth = (uint)int_input_value;
-            } else {
-                printf("  Invalid depth. Must be between 1 and 1024.\n");
-            }
-        }
+            queue_depth = (unsigned int)atoi(input_buffer);
+        } while (queue_depth == 0 || queue_depth > 0x400); // 0x400 = 1024
 
-        unsigned char queue_weight = 0;
-        // Get queue weight (1-100)
-        // Only if not a priority queue system OR not the first queue.
-        if (g_is_priority_queue_system == 0 || current_queue_idx != 0) {
-            while (queue_weight == 0 || queue_weight > 100) {
-                printf("  What is the weight of queue #%u (1 - 100 percent): ", (uint)current_queue_idx);
-                if (read_input(input_buffer, sizeof(input_buffer)) == -1) {
-                    return 0xffffffff;
+        // Prompt for queue weight (if not a priority queue or if not the first queue)
+        unsigned char queue_weight = 0; // was local_1d, initialized to 0
+        if (!DAT_00018a38 || q_idx != 0) { // Condition: if NOT priority queue OR NOT the first queue
+            do {
+                printf("  What is the weight of queue #%u (1 - 100 percent): ", q_idx);
+                if (readUntil(input_buffer, sizeof(input_buffer) - 1, '\n') == -1) {
+                    return -1;
                 }
-                int_input_value = atoi(input_buffer);
-                if (int_input_value >= 1 && int_input_value <= 100) {
-                    if ((unsigned char)int_input_value + total_weight_sum > 100) {
-                        puts("  Total weight of all queues can not exceed 100%");
-                    } else {
-                        queue_weight = (unsigned char)int_input_value;
-                        // Check if it's the last queue and total weight is not 100%
-                        if (current_queue_idx == g_num_queues - 1 && (queue_weight + total_weight_sum) != 100) {
-                            puts("  Total weight of all queues must total up to 100%");
-                            queue_weight = 0; // Reset
-                        }
-                    }
-                } else {
-                    printf("  Invalid weight. Must be between 1 and 100.\n");
+                queue_weight = (unsigned char)atoi(input_buffer);
+
+                if (queue_weight == 0 || queue_weight > 100) {
+                    // Invalid range, loop again
+                } else if ((unsigned int)queue_weight + total_weight_sum > 100) {
+                    puts("  Total weight of all queues can not exceed 100%");
+                    queue_weight = 0; // Force re-prompt
+                } else if (q_idx == num_queues - 1 && (unsigned int)queue_weight + total_weight_sum != 100) {
+                    // If this is the last queue, total weight must be 100%
+                    puts("  Total weight of all queues must total up to 100%");
+                    queue_weight = 0; // Force re-prompt
                 }
-            }
-            if (queue_weight < min_weight_found) {
-                min_weight_found = queue_weight;
+            } while (queue_weight == 0 || queue_weight > 100);
+
+            if (queue_weight < min_weight_so_far) {
+                min_weight_so_far = queue_weight;
             }
             total_weight_sum += queue_weight;
         }
 
-        // Allocate Queue structure
-        Queue *new_queue;
-        if (custom_allocate(sizeof(Queue), 0, (void **)&new_queue) != 0) {
-            printf("  Failed to allocate queue #%u\n", (uint)current_queue_idx);
-            return 0xffffffff;
+        // Allocate memory for the queue structure
+        Queue* current_queue_ptr;
+        if (allocate(sizeof(Queue), 0, (void**)&DAT_00018a3c[q_idx]) != 0) {
+            printf("  Failed to allocate queue #%u\n", q_idx);
+            return -1;
         }
-        g_queue_pointers[current_queue_idx] = new_queue;
+        current_queue_ptr = (Queue*)DAT_00018a3c[q_idx];
+        bzero(current_queue_ptr, sizeof(Queue));
 
-        // Initialize Queue fields
-        new_queue->depth = queue_depth;
-        new_queue->min_priority = (char)min_priority;
-        new_queue->max_priority = (char)max_priority;
-        new_queue->weight = queue_weight;
+        // Populate queue structure fields
+        current_queue_ptr->depth = queue_depth;
+        current_queue_ptr->min_priority = (char)min_priority;
+        current_queue_ptr->max_priority = (char)max_priority;
+        current_queue_ptr->weight = queue_weight;
 
-        // Call InitRingBuffer
-        if (InitRingBuffer(queue_depth, &new_queue->ring_buffer_head) != 0) {
+        // Initialize ring buffer for packets
+        if (InitRingBuffer(queue_depth, &current_queue_ptr->head_ring_buffer_ptr) != 0) {
             puts("  Failed to allocate pkt ring buffer");
-            return 0xffffffff;
+            return -1;
         }
-        new_queue->current_read_ptr = new_queue->ring_buffer_head;
-        new_queue->current_write_ptr = new_queue->ring_buffer_head;
-        new_queue->field_8 = new_queue->calculated_value; // This is a direct translation of local_30[2] = local_30[3];
+        current_queue_ptr->current_pkt_ptr = current_queue_ptr->head_ring_buffer_ptr; // local_30[2] = local_30[3]
+        current_queue_ptr->tail_ring_buffer_ptr = current_queue_ptr->head_ring_buffer_ptr;
+        current_queue_ptr->current_ring_buffer_ptr = current_queue_ptr->head_ring_buffer_ptr;
 
-        current_queue_idx++;
-    }
-
-    // After all queues are initialized, perform final checks and calculations
-    int priority_range_sum = 0;
-    for (unsigned char i = 0; i < g_num_queues; ++i) {
-        Queue *q = g_queue_pointers[i];
-        priority_range_sum += (q->max_priority - q->min_priority + 1);
-    }
-    // Assuming priority range 0-63, total 64 unique priority values.
-    if (priority_range_sum != 64) {
-        printf("Not all priority values from 0 to 63 are accounted for in the queue definitions.\n");
-        return 0xffffffff;
-    }
-
-    // Calculate final queue values (if not priority queue system or not the first queue)
-    for (unsigned char i = 0; i < g_num_queues; ++i) {
-        if (g_is_priority_queue_system == 0 || i != 0) {
-            Queue *q = g_queue_pointers[i];
-            // ROUND(((double)(uint)*(byte *)(iVar1 + 0x26) / _DAT_00015528) * (double)(150000 / (ulonglong)(longlong)(int)(uint)local_1f));
-            q->calculated_value = (uint)round(((double)q->weight / g_some_double_value) *
-                                                (150000.0 / (double)min_weight_found));
+        // Calculate and set 'calculated_val' (local_5c)
+        // This calculation is skipped for the first priority queue, similar to weight.
+        if (!DAT_00018a38 || q_idx != 0) {
+            // Ensure min_weight_so_far is not zero to prevent division by zero.
+            // Since weights are prompted for 1-100, min_weight_so_far will be >= 1 if any weights were set.
+            // If all queues are priority queues and weights are skipped, min_weight_so_far remains UCHAR_MAX (255).
+            // In that case, the division will result in a small number.
+            // If current_queue_ptr->weight is 0 (for priority queues where weight is skipped), calculated_val will be 0.
+            current_queue_ptr->calculated_val = (unsigned int)ROUND(
+                ((double)current_queue_ptr->weight / _DAT_00015528) *
+                (double)(150000.0 / (double)min_weight_so_far)
+            );
+        } else {
+            current_queue_ptr->calculated_val = 0; // Explicitly set to 0 if calculation is skipped
         }
+    } // End of for loop for each queue
+
+    // Post-loop validation: Check if all priority values (0-63) are accounted for
+    char checksum_val = '@'; // ASCII 64, was local_25
+    for (unsigned char i = 0; i < num_queues; ++i) {
+        Queue* q = (Queue*)DAT_00018a3c[i];
+        checksum_val += (q->min_priority - q->max_priority) - 1;
+    }
+    if (checksum_val != '\0') {
+        printf("Not all priority values from %d to %d are accounted for in the queue definitions.\n", 0, 63);
+        return -1;
     }
 
-    return 0;
+    return 0; // Success
 }
 
 // Function: DestroyQueues
-undefined4 DestroyQueues(void) {
-    for (unsigned char i = 0; i < g_num_queues; ++i) {
-        if (g_queue_pointers[i] != NULL) {
-            if (DestroyRingBuffer(i) != 0) {
-                // Log error but continue to free other resources
-                fprintf(stderr, "Error destroying ring buffer for queue %u. Continuing cleanup.\n", (uint)i);
-                // The original code would return immediately on error here.
-                // For robustness, we continue to free other resources.
+int DestroyQueues(void) {
+    for (unsigned char q_idx = 0; q_idx < DAT_00018a2c; ++q_idx) {
+        if (DAT_00018a3c[q_idx] != NULL) { // Check if queue pointer is valid
+            // Destroy the ring buffer associated with the queue
+            if (DestroyRingBuffer(q_idx) != 0) {
+                // Handle error if DestroyRingBuffer fails (e.g., log, but continue to free queue struct)
+                fprintf(stderr, "Warning: Failed to destroy ring buffer for queue %u\n", q_idx);
             }
-            custom_deallocate(g_queue_pointers[i], sizeof(Queue));
-            g_queue_pointers[i] = NULL;
+            // Deallocate the queue structure itself
+            deallocate(DAT_00018a3c[q_idx], sizeof(Queue));
+            DAT_00018a3c[q_idx] = NULL; // Clear pointer after freeing
         }
     }
-    if (g_queue_pointers != NULL) {
-        custom_deallocate(g_queue_pointers, g_num_queues * sizeof(Queue *));
-        g_queue_pointers = NULL;
+    // Deallocate the array of queue pointers
+    if (DAT_00018a3c != NULL) {
+        deallocate(DAT_00018a3c, (unsigned int)DAT_00018a2c * sizeof(Queue*));
+        DAT_00018a3c = NULL; // Clear pointer after freeing
     }
-    g_num_queues = 0;
-    g_is_priority_queue_system = 0;
-    return 0;
-}
-
-// --- Main function for testing ---
-int main() {
-    // Initialize global double value (if it has a specific meaning/default)
-    // For now, setting it to a non-zero value.
-    g_some_double_value = 1.0; 
-
-    printf("Initializing Queues...\n");
-    if (InitQueues() == 0) {
-        printf("Queues initialized successfully.\n");
-        // Example: print some queue details
-        for (unsigned char i = 0; i < g_num_queues; ++i) {
-            Queue *q = g_queue_pointers[i];
-            if (q) {
-                printf("  Queue %u: Depth=%u, MinPrio=%d, MaxPrio=%d, Weight=%u, CalcVal=%u\n",
-                       (uint)i, q->depth, q->min_priority, q->max_priority, q->weight, q->calculated_value);
-            }
-        }
-    } else {
-        printf("Failed to initialize queues.\n");
-    }
-
-    printf("Destroying Queues...\n");
-    if (DestroyQueues() == 0) {
-        printf("Queues destroyed successfully.\n");
-    } else {
-        printf("Failed to destroy queues.\n");
-    }
-
     return 0;
 }

@@ -1,152 +1,141 @@
-#include <stdio.h>   // For puts, printf, fgets
-#include <stdlib.h>  // For exit, atoi
-#include <string.h>  // For strlen
-#include <stddef.h>  // For size_t
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h> // For read
+#include <string.h> // For atoi
 
-// --- Global Variables (inferred from decompiled code) ---
-// These variables are accessed by direct names or offsets in the original snippet.
-// We declare them as explicit global variables, assuming InitInterface (and other parts)
-// manage their values.
-int wall_clock = 0;
-int max_wall_clock = 1000; // Example maximum value for the simulation loop
-int _DAT_000156d0 = 1;     // Example increment value for wall_clock
+// Define undefined types if not already defined by the compiler
+typedef unsigned int undefined4;
+typedef unsigned long long undefined8;
+typedef unsigned char undefined;
 
-// Variables whose addresses were hardcoded or relative to an 'iVar1' in the original.
-// We translate them to named global variables for standard C compilation.
-int global_var_5d19;
-int global_var_5d1d;
-int global_var_5d21;
-double global_var_5d29;
-long long global_var_5d49;
-double global_var_2b19;
-char global_prompt_str_29d1[128]; // Buffer for the prompt string used in printf
+// External function declarations (placeholders based on usage)
+// These functions are not provided in the snippet, so we declare them as stubs.
+// Their actual implementation would be in other files or libraries.
+int InitInterface();
+int InitReceive(); // Renamed from InitPacketGenerator based on error message
+int InitQueues();
+void RX();
+void TX();
+void PrintStats();
+void DestroyQueues();
+void _terminate(); // Assuming this is a program termination function, e.g., exit()
+void init_mt(); // Placeholder for a function related to Mersenne Twister or similar
+undefined4 readUntil(); // Placeholder for a function to read input until a certain condition
 
-// --- Forward Declarations for Custom Functions ---
-// These functions are assumed to be defined elsewhere or are provided as dummy
-// implementations to make the code compilable.
-int InitInterface(void); // Returns 0 on success, non-zero on failure
-int InitReceive(void);   // Returns 0 on success, non-zero on failure
-int InitQueues(void);    // Returns 0 on success, non-zero on failure
-void RX(void);
-void TX(void);
-void PrintStats(void);
-void DestroyQueues(void);
-void init_mt(void); // Assumed to initialize a random number generator or similar
-int readUntil(char *buffer, int max_len); // Reads a line from stdin into buffer
+// Global variables (placeholders based on usage)
+// Their actual definition would be in other files.
+long long wall_clock = 0;
+long long max_wall_clock = 0; // Assuming max_wall_clock is a global variable
+int _DAT_000156d0 = 1; // Assuming this is a constant or a global variable affecting wall_clock increment
 
-// --- Dummy Implementations for Custom Functions (to make the code compilable) ---
-// In a real application, these would be implemented in separate source files.
-int InitInterface(void) {
-    // Initialize global variables that this function would typically set up.
-    global_var_2b19 = 100.0; // Example initial value for a calculation
-    strcpy(global_prompt_str_29d1, "Enter a value (0 < val <= 0x400000): ");
-    return 0; // Simulate success
-}
-
-int InitReceive(void) {
-    return 0; // Simulate success
-}
-
-int InitQueues(void) {
-    return 0; // Simulate success
-}
-
-void RX(void) {
-    // Placeholder for receive logic
-}
-
-void TX(void) {
-    // Placeholder for transmit logic
-}
-
-void PrintStats(void) {
-    // Placeholder for printing simulation statistics
-}
-
-void DestroyQueues(void) {
-    // Placeholder for queue destruction/cleanup
-}
-
-void init_mt(void) {
-    // Placeholder for random number generator initialization
-}
-
-int readUntil(char *buffer, int max_len) {
-    if (fgets(buffer, max_len, stdin) == NULL) {
-        return -1; // Error or EOF
+// Function to read until a newline, similar to fgets but returns undefined4
+// This is a placeholder implementation based on the original snippet's call.
+// The original `readUntil` seems to return a status and use a buffer.
+// For simplicity and to match the return type, we'll create a basic version.
+undefined4 readUntil() {
+    char buffer[256]; // Sufficient buffer for input
+    if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
+        // Return a success indicator, or some value based on actual readUntil logic
+        return 0;
     }
-    // Remove trailing newline character if present
-    size_t len = strlen(buffer);
-    if (len > 0 && buffer[len - 1] == '\n') {
-        buffer[len - 1] = '\0';
-    }
-    return 0; // Success
+    return (undefined4)-1; // Indicate error
 }
 
-// --- Main Function ---
-int main(void) {
-  int user_input_val = 0;
-  char input_buffer[64]; // Buffer to store user input
-  int read_result;
+// Function: main
+undefined4 main(void) {
+    int iVar1;
+    undefined4 uVar2;
+    int input_val; // Renamed from iVar3 for clarity, represents user input
+    char input_buffer[256]; // Buffer for user input, replacing stack variables
 
-  puts("Welcome to the network queuing simulator");
+    puts("Welcome to the network queuing simulator");
 
-  // Initialize interface
-  if (InitInterface() != 0) {
-    puts("Unable to init interface\n");
-    exit(1); // Terminate on failure
-  }
-
-  // Initialize packet reception component
-  if (InitReceive() != 0) {
-    puts("Unable to init packet generator\n");
-    exit(1); // Terminate on failure
-  }
-
-  // Initialize queues
-  if (InitQueues() != 0) {
-    puts("Failed to initialize queues\n");
-    exit(1); // Terminate on failure
-  }
-
-  // Main simulation loop
-  do {
-    RX(); // Perform receive operations
-    TX(); // Perform transmit operations
-    wall_clock += _DAT_000156d0; // Increment wall clock
-  } while (wall_clock <= max_wall_clock); // Continue until max_wall_clock is reached
-
-  // Post-simulation actions
-  PrintStats();
-  DestroyQueues();
-
-  // Configuration block: Prompts user for a specific value.
-  // This section follows the simulation completion, as inferred from the original snippet.
-  // The loop continues until a valid integer (0 < value <= 0x400000) is entered.
-  while (user_input_val == 0 || (unsigned int)user_input_val > 0x400000) {
-    printf("%s", global_prompt_str_29d1); // Print the prompt string
-
-    read_result = readUntil(input_buffer, sizeof(input_buffer));
-    if (read_result == -1) {
-      puts("Error reading input. Exiting.");
-      return -1; // Original returned 0xffffffff on error
+    if (InitInterface() != 0) {
+        puts("Unable to init interface\n");
+        _terminate();
     }
-    user_input_val = atoi(input_buffer); // Convert input string to integer
-  }
 
-  // Store the validated user input value into a global configuration variable
-  global_var_5d19 = user_input_val;
+    if (InitReceive() != 0) {
+        puts("Unable to init packet generator\n"); // Original error message
+        _terminate();
+    }
 
-  // Initialize a Mersenne Twister or similar random number generator
-  init_mt();
+    if (InitQueues() != 0) {
+        puts("Failed to initialize queues\n");
+        _terminate();
+    }
 
-  // Perform a calculation involving the user input and another global variable
-  global_var_5d29 = global_var_2b19 / (double)(long long)user_input_val;
+    // Main simulation loop
+    do {
+        RX();
+        TX();
+        wall_clock = _DAT_000156d0 + wall_clock;
+    } while (wall_clock <= max_wall_clock);
 
-  // Initialize other global configuration variables to zero
-  global_var_5d49 = 0;
-  global_var_5d1d = 0;
-  global_var_5d21 = 0;
+    PrintStats();
+    DestroyQueues();
 
-  return 0; // Indicate successful program execution
+    // The original code had a complex block after DestroyQueues and before the while loop,
+    // which appears to be related to setting up `max_wall_clock` based on user input.
+    // This block was unreachable due to `_terminate()` before it.
+    // Assuming the intent was to set `max_wall_clock` interactively before the main loop,
+    // we'll move the relevant logic and simplify it.
+    // This part of the original code was highly unusual, with stack variables
+    // being used in a manner that suggests decompiler artifacts or very specific
+    // assembly-level optimization not directly translatable to idiomatic C.
+    // We'll interpret the intent as getting a positive integer for max_wall_clock.
+
+    // Reset wall_clock to 0 for the input loop if it was intended to be separate
+    // or if max_wall_clock is set for a subsequent run.
+    // Based on the original structure, it seems max_wall_clock might be set after the first simulation run,
+    // which is odd. Let's assume it should be set *before* the main loop,
+    // or this is a secondary configuration step.
+    // Given the `_terminate()` call *before* the input loop, the input loop
+    // was effectively dead code in the original snippet.
+    // If the input was intended for `max_wall_clock`, it should be before the `do-while` loop.
+    // For now, we'll put it here, interpreting it as a post-simulation configuration
+    // or a bug in the original snippet's flow.
+
+    input_val = 0; // Initialize for the loop condition
+    while (input_val == 0 || input_val > 0x400000) { // 0x400000 is 4194304
+        printf("Enter a positive integer (max 4194304): ");
+        if (fgets(input_buffer, sizeof(input_buffer), stdin) == NULL) {
+            return (undefined4)-1; // Error reading input
+        }
+        input_val = atoi(input_buffer);
+        if (input_val == 0 || input_val > 0x400000) {
+            printf("Invalid input. Please enter a positive integer less than or equal to 4194304.\n");
+        }
+    }
+
+    max_wall_clock = input_val; // Assign the validated input to max_wall_clock
+
+    // The remaining lines in the original snippet after setting input_val
+    // seem to be related to initializing other simulation parameters.
+    // These are highly speculative without context for `iVar1 + 0x5d19`, etc.
+    // Assuming `iVar1` was some base address or structure pointer, and these
+    // are offsets into it. We'll simplify these as direct assignments to global
+    // or relevant variables if their intent is clear.
+    // Since `iVar1` was the return of InitInterface, it might be a handle.
+    // For now, we'll leave these as comments or simplify if their purpose is obvious.
+
+    // Original lines:
+    // *(undefined4 *)(iVar1 + 0x5d19) = *(undefined4 *)(puVar6 + -0x20); // max_wall_clock
+    // *(undefined4 *)(puVar6 + -0x5c) = *(undefined4 *)(puVar6 + -0x20); // max_wall_clock
+    // *(undefined4 *)(puVar6 + -0x60) = 0x12d8a;
+    init_mt(); // Initialize Mersenne Twister or similar PRNG
+
+    // *(undefined4 *)(puVar6 + -0x44) = *(undefined4 *)(puVar6 + -0x20); // max_wall_clock
+    // *(undefined4 *)(puVar6 + -0x40) = 0;
+    // *(double *)(iVar1 + 0x5d29) = *(double *)(iVar1 + 0x2b19) / (double)*(longlong *)(puVar6 + -0x44);
+    // *(undefined8 *)(iVar1 + 0x5d49) = 0;
+    // *(undefined4 *)(iVar1 + 0x5d1d) = 0;
+    // *(undefined4 *)(iVar1 + 0x5d21) = 0;
+
+    // Simplified interpretation of the final part, assuming max_wall_clock is set globally
+    // and other initializations are separate.
+    // If InitInterface returns a pointer to a struct, then this might be struct member assignments.
+    // Without the struct definitions, these are hard to translate accurately.
+
+    return 0;
 }

@@ -1,288 +1,306 @@
-#include <stdio.h>   // For printf
-#include <stdlib.h>  // For free, calloc, atoi, exit
-#include <string.h>  // For memset, strncmp, strlen, strncpy, memcpy
-#include <stdint.h>  // For uintptr_t
+#include <stdio.h>    // For printf
+#include <stdlib.h>   // For free, calloc, atoi
+#include <string.h>   // For memset, strncpy, strncmp, strlen, memcpy
+#include <stdint.h>   // For uint8_t, uint32_t, uintptr_t
 
-// Type definitions for common decompiler output types
-typedef unsigned char byte;
-typedef unsigned int uint;
-// `undefined4` is often used for 4-byte values. In this context, it seems to imply `unsigned int`.
-// For pointer storage, on 64-bit systems, `unsigned int` is too small.
-// The original code uses `undefined4 *param_1` which means `param_1[0x12]` is an `undefined4`.
-// When `param_1[0x12]` stores a `void*` from `calloc`, it implies `sizeof(undefined4) == sizeof(void*)`.
-// This is true on 32-bit systems. To handle 64-bit gracefully while maintaining the original type logic,
-// we'll use `uintptr_t` for casts to/from pointers when dealing with `unsigned int` fields that hold addresses.
-// This indicates a potential architecture dependency from the original decompiled code.
+// Type aliases for clarity and compatibility
+typedef uint32_t undefined4;
+typedef uint8_t byte;
 
-// External function declarations - assuming their signatures based on usage
-// These functions are not provided in the snippet, so we must declare them.
-// Their exact return types and argument types are inferred.
-extern unsigned int receive_fixed(void *buffer, unsigned int size);
-extern unsigned int receive_until(void *buffer, char delimiter, unsigned int max_size);
-extern void VerifyPointerOrTerminate(void *ptr, const char *msg); // Assumed to exit on failure
-extern void *LookupNode(const char *name); // Assumed to return a pointer to a Node or NULL
-extern void ServePage(void *data, unsigned int length);
-extern void PrintTree(const char *name);
-extern int InsertNodeInTree(void *node); // Assumed to return int (0 for success, non-zero for error)
-extern int DeleteNode(const char *name); // Assumed to return int (0 for success, non-zero for error)
-extern void InteractWithPage(void *data, unsigned int length, void *additional_data);
+// Forward declarations for external functions
+// These function signatures are inferred and might need adjustment based on actual implementation.
+// For simplicity, assuming common types like void*, size_t, char*, uint32_t.
+// receive_fixed and receive_until return count of bytes read.
+uint32_t receive_fixed(void *buf, size_t len);
+// receive_until reads until delimiter or max_len bytes, returns bytes read (excluding delimiter).
+uint32_t receive_until(void *buf, char delimiter, size_t max_len);
+void VerifyPointerOrTerminate(void *ptr, const char *msg);
+int LookupNode(char *name);
+void PrintTree(char *root_name);
+int InsertNodeInTree(void *node);
+int DeleteNode(char *name);
+void ServePage(void *data, uint32_t len);
+void InteractWithPage(void *data, uint32_t len, void *input);
+
 
 // Function: DecodeData
-// dest: pointer to output buffer
-// dest_len: total number of decoded bytes to produce (excluding the first byte handled before the loop)
-// src: pointer to input buffer
-// src_len: total number of encoded bytes (unused in the provided snippet's logic, but present in the call signature)
-int DecodeData(byte *dest, int dest_len, byte *src, uint src_len) {
-  int i;
-  
-  // First decoded byte: takes the upper 7 bits of the first source byte
-  *dest = *src >> 1;
-  dest++;
-
-  // Loop for subsequent decoded bytes
-  // `dest_len` here refers to the number of bytes to be written *in the loop*.
-  // The call site passes `local_14` (total decoded bytes) as `dest_len`.
-  // If `local_14` is the total, and one byte is handled above, then `local_14 - 1` bytes are left for the loop.
-  // The original loop condition `local_10 <= param_2` implies `param_2` iterations.
-  // If `param_2` is `local_14`, then `local_14` iterations. Total `local_14 + 1` bytes written.
-  // This matches `calloc(local_14 + 1, 1)` in ReceiveCommand.
-  for (i = 1; i <= dest_len; i++) {
-    int k = i % 8;
-    
-    // Decode 7-bit value from current and next source bytes
-    *dest = ((src[1] >> (k + 1)) | (*src << (7 - k))) & 0x7f;
-    
-    // Advance source pointer based on specific logic
-    if (k != 7) {
-      src++;
+// Fixed signature to match the call site in ReceiveCommand and added bounds checks.
+// The internal logic preserves the original (potentially unusual) bit-shifting and pointer advancement.
+uint32_t DecodeData(byte *decoded_buf, int total_decoded_len, byte *encoded_buf, int encoded_len) {
+    if (total_decoded_len <= 0) {
+        return 0; // Nothing to decode
     }
-    dest++;
-  }
-  return 0;
+    if (encoded_len <= 0) {
+        return -1; // No encoded data to read from
+    }
+
+    // Decode the first byte
+    decoded_buf[0] = encoded_buf[0] >> 1;
+
+    byte *current_encoded_ptr = encoded_buf; // Pointer to current byte in encoded_buf
+                                              // It will be advanced based on the original logic.
+
+    // Loop for the remaining total_decoded_len - 1 bytes
+    // 'i' represents the 0-indexed position in decoded_buf being written (from 1 to total_decoded_len - 1)
+    for (int i = 1; i < total_decoded_len; ++i) {
+        // bit_offset_in_byte is derived from 'i', simulating the original 'local_10 % 8' behavior
+        // where local_10 started from 1 for the second decoded byte.
+        int bit_offset_in_byte = i % 8;
+
+        // Check if accessing current_encoded_ptr[1] would go out of bounds of encoded_buf
+        // (current_encoded_ptr - encoded_buf) gives the current byte offset from the start of encoded_buf.
+        if ((current_encoded_ptr - encoded_buf) + 1 >= encoded_len) {
+            // Not enough encoded data to read current_encoded_ptr[1]
+            return -1; // Indicate error due to insufficient encoded data
+        }
+
+        // Apply the original bit-shifting logic
+        // The casts to (uint32_t) ensure proper promotion before shifting, replicating original disassembly intent
+        decoded_buf[i] = (byte)(((uint32_t)current_encoded_ptr[1] >> (bit_offset_in_byte + 1)) |
+                               ((uint32_t)current_encoded_ptr[0] << (7 - bit_offset_in_byte))) & 0x7f;
+
+        // Advance current_encoded_ptr based on original logic
+        if (bit_offset_in_byte != 7) {
+            current_encoded_ptr++;
+        }
+    }
+    return 0; // Success
 }
 
 // Function: DestroyCommand
-// cmd_ptr: pointer to the command structure
-void DestroyCommand(unsigned int *cmd_ptr) {
-  // cmd_ptr[0x12] is assumed to store a data pointer
-  if (cmd_ptr[0x12] != 0) {
-    free((void *)(uintptr_t)cmd_ptr[0x12]); // Convert stored unsigned int to pointer
-    cmd_ptr[0x12] = 0;
+void DestroyCommand(undefined4 *param_1) {
+  if (param_1[0x12] != 0) {
+    free((void *)(uintptr_t)param_1[0x12]); // Safely cast uint32_t to void*
+    param_1[0x12] = 0;
   }
-  cmd_ptr[0] = 0; // Clear command type
-  // Clear the filename/name buffer (0x40 bytes starting from cmd_ptr + 1)
-  memset(cmd_ptr + 1, 0, 0x40);
-  cmd_ptr[0x11] = 0; // Clear data length
+  *param_1 = 0;
+  memset(param_1 + 1,0,0x40); // Clears 0x40 bytes (64 bytes) starting from param_1[1]
+  param_1[0x11] = 0;
 }
 
 // Function: ReceiveCommand
-// command: pointer to the command structure to populate
-// direction_flag: pointer to an unsigned int to store the direction (1 for ACS+0.1, 0 for ACS-0.1)
-int ReceiveCommand(unsigned int *command, unsigned int *direction_flag) {
-  char temp_buf[64]; // Consolidated buffer for various receive operations
-  unsigned int received_len;
+undefined4 ReceiveCommand(undefined4 *param_1,undefined4 *param_2) {
+  uint32_t bytes_received;
+  char buffer[65]; // Increased size to 65 for 0x40 (64) max_len + null terminator
+  uint32_t decoded_data_len;
+  void *decoded_data_ptr;
+  void *encoded_data_ptr;
+  uint32_t encoded_data_len;
   
-  // If command already contains data, destroy it first
-  if (command[0x12] != 0) {
-    DestroyCommand(command);
+  if (param_1[0x12] != 0) {
+    DestroyCommand(param_1);
   }
 
-  // Receive initial command prefix (e.g., "ACS+0.1")
-  received_len = receive_fixed(temp_buf, 7);
-  if (received_len != 7) {
-    return -1; // Indicate error with 0xffffffff
+  // Receive initial command header (e.g., "ACS+0.1" or "ACS-0.1")
+  bytes_received = receive_fixed(buffer, 7);
+  if (bytes_received != 7) {
+    return 0xffffffff; // Error: did not receive expected 7 bytes
   }
+  buffer[7] = '\0'; // Null-terminate for strncmp safety
 
-  // Check command direction
-  if (strncmp(temp_buf, "ACS+0.1", 7) == 0) {
-    *direction_flag = 1;
-  } else if (strncmp(temp_buf, "ACS-0.1", 7) == 0) {
-    *direction_flag = 0;
+  if (strncmp(buffer, "ACS+0.1", 7) == 0) {
+    *param_2 = 1; // Set flag for "+"
+  } else if (strncmp(buffer, "ACS-0.1", 7) == 0) {
+    *param_2 = 0; // Set flag for "-"
   } else {
-    return -2; // Indicate error with 0xfffffffe
+    return 0xfffffffe; // Error: unknown header
   }
 
-  // Receive command type string (e.g., "[REQUEST")
-  received_len = receive_until(temp_buf, ':', 0x40);
-  if (received_len == 0) {
-    return -1; // Indicate error
-  } else if (temp_buf[0] == '[') { // Command type must start with '['
-    // Determine command type from the string
-    // Using strlen for string literal length for clarity, compiler optimizes this to a constant.
-    if (strncmp(temp_buf, "[REQUEST", strlen("[REQUEST")) == 0) {
-      command[0] = 1;
-    } else if (strncmp(temp_buf, "[QUERY", strlen("[QUERY")) == 0) {
-      command[0] = 2;
-    } else if (strncmp(temp_buf, "[SEND", strlen("[SEND")) == 0) {
-      command[0] = 3;
-    } else if (strncmp(temp_buf, "[REMOVE", strlen("[REMOVE")) == 0) {
-      command[0] = 4;
-    } else if (strncmp(temp_buf, "[VISUALIZE", strlen("[VISUALIZE")) == 0) {
-      command[0] = 5;
-    } else if (strncmp(temp_buf, "[INTERACT", strlen("[INTERACT")) == 0) {
-      command[0] = 6;
-    } else {
-      return -2; // Unknown command type
-    }
+  // Receive command type (e.g., "[REQUEST")
+  // Fix: The original code used a single char `local_5c` here, losing most of the data.
+  // Assuming it should read into `buffer` for subsequent comparisons.
+  bytes_received = receive_until(buffer, ':', 64); // Max 64 bytes + null terminator
+  if (bytes_received == 0 || bytes_received == 64) { // 64 means delimiter not found within max_len
+    return 0xffffffff; // Error: no command type received, delimiter immediately present, or buffer full
+  }
+  buffer[bytes_received] = '\0'; // Null-terminate the received string
 
-    // Receive file name
-    received_len = receive_until(temp_buf, ':', 0x40);
-    if (received_len >= 0x41) { // If received length exceeds buffer size (0x40) + 1 for null terminator
-      return -1; // Error: filename too long
-    }
-    if (received_len != 0) {
-      strncpy((char *)(command + 1), temp_buf, received_len);
-      ((char *)(command + 1))[received_len] = '\0'; // Ensure null termination
-    } else {
-      ((char *)(command + 1))[0] = '\0'; // Empty filename
-    }
+  if (buffer[0] != '[') { // Check the first character of the received string
+    return 0xfffffffe; // Error: command type does not start with '['
+  }
 
-    // Receive data length (as a string, then converted to int)
-    received_len = receive_until(temp_buf, ':', 0x40);
-    if (received_len < 7) { // This condition is unusual for a number, but follows original logic
-      if (received_len != 0) {
-        command[0x11] = atoi(temp_buf); // Convert string to integer
-      } else {
-        command[0x11] = 0; // Default length if string is empty
-      }
+  // Determine command type from string (after '[').
+  // The original strncmp uses `acStack_5b` which was not populated correctly.
+  // Adjust comparison to start after '['.
+  char *cmd_str = buffer + 1; // Point past '['
+  size_t cmd_len = bytes_received - 1; // Length of string after '['
 
-      // Handle data based on the parsed length
-      if ((int)command[0x11] < 1) { // If length is 0 or negative
-        if (command[0x11] == (unsigned int)-1) { // Special value -1 indicates encoded data
-          unsigned int encoded_data_len;
-          received_len = receive_fixed(&encoded_data_len, 4); // Receive actual encoded data length
-          if (received_len != 4) {
-            return -1; // Error receiving encoded data length
-          }
-
-          int decoded_data_len = (int)(encoded_data_len * 8) / 7; // Calculate decoded length
-          
-          void *decoded_data_ptr = calloc(decoded_data_len + 1, 1); // Allocate buffer for decoded data
-          VerifyPointerOrTerminate(decoded_data_ptr, "command->data during parsing");
-          command[0x12] = (unsigned int)(uintptr_t)decoded_data_ptr; // Store pointer in command struct
-
-          void *encoded_data_buffer = calloc(encoded_data_len + 1, 1); // Allocate buffer for encoded data
-          VerifyPointerOrTerminate(encoded_data_buffer, "encoded_data during parsing");
-          
-          received_len = receive_fixed(encoded_data_buffer, encoded_data_len); // Receive encoded data
-          if (received_len != encoded_data_len) {
-            free(encoded_data_buffer);
-            return -1; // Error receiving encoded data
-          }
-          
-          // Decode the data
-          if (DecodeData((byte*)decoded_data_ptr, decoded_data_len, (byte*)encoded_data_buffer, encoded_data_len) != 0) {
-            free(encoded_data_buffer);
-            return -1; // Error during decoding
-          }
-
-          // Adjust stored length if the decoded data is null-terminated
-          if (((char *)decoded_data_ptr)[decoded_data_len - 1] == '\0') {
-            command[0x11] = decoded_data_len - 1;
-          } else {
-            command[0x11] = decoded_data_len;
-          }
-          free(encoded_data_buffer); // Free temporary encoded data buffer
-
-        } // If command[0x11] is 0, no data is expected, command[0x12] remains NULL (0).
-      } else { // Positive data length: receive raw data
-        void *data_ptr = calloc(command[0x11] + 1, 1); // Allocate buffer for raw data
-        VerifyPointerOrTerminate(data_ptr, "command->data during parsing");
-        command[0x12] = (unsigned int)(uintptr_t)data_ptr; // Store pointer
-        
-        received_len = receive_fixed(data_ptr, command[0x11]); // Receive raw data
-        if (command[0x11] != received_len) {
-          return -1; // Error receiving raw data
-        }
-      }
-
-      // Receive final ']'
-      char end_char;
-      if (receive_fixed(&end_char, 1) != 1) {
-        return -1; // Error receiving closing bracket
-      }
-      if (end_char == ']') {
-        return 0; // Success
-      } else {
-        return -2; // Invalid closing bracket
-      }
-    } else {
-      return -1; // Error: data length string too long
-    }
+  if (cmd_len == strlen("REQUEST") && strncmp(cmd_str, "REQUEST", cmd_len) == 0) {
+    *param_1 = 1;
+  } else if (cmd_len == strlen("QUERY") && strncmp(cmd_str, "QUERY", cmd_len) == 0) {
+    *param_1 = 2;
+  } else if (cmd_len == strlen("SEND") && strncmp(cmd_str, "SEND", cmd_len) == 0) {
+    *param_1 = 3;
+  } else if (cmd_len == strlen("REMOVE") && strncmp(cmd_str, "REMOVE", cmd_len) == 0) {
+    *param_1 = 4;
+  } else if (cmd_len == strlen("VISUALIZE") && strncmp(cmd_str, "VISUALIZE", cmd_len) == 0) {
+    *param_1 = 5;
+  } else if (cmd_len == strlen("INTERACT") && strncmp(cmd_str, "INTERACT", cmd_len) == 0) {
+    *param_1 = 6;
   } else {
-    return -2; // Error: command type not starting with '['
+    return 0xfffffffe; // Error: unknown command type
+  }
+
+  // Receive filename/identifier
+  bytes_received = receive_until(buffer, ':', 64);
+  if (bytes_received == 64) { // 64 means delimiter not found within max_len
+    return 0xffffffff; // Error: filename too long or no delimiter
+  }
+  
+  if (bytes_received != 0) {
+    strncpy((char *)(param_1 + 1), buffer, bytes_received);
+    ((char *)(param_1 + 1))[bytes_received] = '\0'; // Null-terminate filename
+  } else {
+    ((char *)(param_1 + 1))[0] = '\0'; // Ensure filename is empty string if nothing received
+  }
+
+  // Receive data length (as string, then convert to int)
+  bytes_received = receive_until(buffer, ':', 64);
+  // Length string too long for typical int (e.g. "1234567" is 7 chars) or buffer full (64 chars)
+  if (bytes_received >= 7 || bytes_received == 64) { 
+    return 0xffffffff; // Error: length string too long or no delimiter
+  }
+  buffer[bytes_received] = '\0';
+  param_1[0x11] = (uint32_t)atoi(buffer); // Convert string to integer
+
+  decoded_data_len = param_1[0x11]; // Use a clearer variable name
+
+  if ((int32_t)decoded_data_len < 1) { // Check if data length is less than 1 (could be 0 or -1)
+    if (decoded_data_len == (uint32_t)-1) { // Special case for -1 indicating encoded data
+      // Receive actual encoded data length
+      bytes_received = receive_fixed(&encoded_data_len, 4); 
+      if (bytes_received != 4) {
+        return 0xffffffff; // Error: did not receive encoded data length
+      }
+
+      // Calculate the maximum possible decoded length based on encoded_data_len
+      decoded_data_len = (encoded_data_len * 8) / 7;
+      // Allocate one extra byte for potential null termination or safety, as per original `calloc`
+      decoded_data_ptr = calloc(decoded_data_len + 1, 1);
+      param_1[0x12] = (undefined4)(uintptr_t)decoded_data_ptr; // Store pointer in command structure
+      VerifyPointerOrTerminate(decoded_data_ptr, "command->data during parsing");
+
+      // Allocate buffer for raw encoded data
+      encoded_data_ptr = calloc(encoded_data_len + 1, 1);
+      VerifyPointerOrTerminate(encoded_data_ptr, "encoded_data during parsing");
+
+      // Receive the encoded data
+      bytes_received = receive_fixed(encoded_data_ptr, encoded_data_len);
+      if (bytes_received != encoded_data_len) {
+        free(encoded_data_ptr);
+        return 0xffffffff; // Error: did not receive all encoded data
+      }
+
+      // Decode the data
+      if (DecodeData((byte *)decoded_data_ptr, decoded_data_len, (byte *)encoded_data_ptr, encoded_data_len) != 0) {
+        free(encoded_data_ptr);
+        return 0xffffffff; // Error during decoding
+      }
+
+      // Check if the last byte of decoded data is null, adjust length if so
+      if (*((char *)decoded_data_ptr + decoded_data_len - 1) == '\0') {
+        param_1[0x11] = decoded_data_len - 1;
+      } else {
+        param_1[0x11] = decoded_data_len;
+      }
+      free(encoded_data_ptr); // Free the temporary encoded data buffer
+    }
+  } else { // decoded_data_len >= 1
+    // Allocate buffer for direct data
+    decoded_data_ptr = calloc(decoded_data_len + 1, 1);
+    param_1[0x12] = (undefined4)(uintptr_t)decoded_data_ptr;
+    VerifyPointerOrTerminate(decoded_data_ptr, "command->data during parsing");
+    
+    // Receive the direct data
+    bytes_received = receive_fixed(decoded_data_ptr, decoded_data_len);
+    if (bytes_received != decoded_data_len) {
+      return 0xffffffff; // Error: did not receive all expected data
+    }
+  }
+
+  // Receive final closing bracket ']'
+  bytes_received = receive_fixed(buffer, 1);
+  if (bytes_received != 1) {
+    return 0xffffffff; // Error: did not receive closing bracket
+  }
+
+  if (buffer[0] == ']') {
+    return 0; // Success
+  } else {
+    return 0xfffffffe; // Error: unexpected character instead of ']'
   }
 }
 
 // Function: HandleCommand
-// command: pointer to the command structure
-void HandleCommand(unsigned int *command) {
-  void *new_node;    // For case 3 (SEND), represents a new node for the tree
-  void *node_result; // For LookupNode result
+void HandleCommand(undefined4 *param_1) {
+  void *new_node_ptr; 
+  int lookup_result; 
   
-  switch(command[0]) { // Switch on command type
+  switch(*param_1) {
   default:
     printf("Unsupported Command\n");
-    printf("Command type: %x\n", command[0]); // Fixed format specifier
-    printf("File name: %s\n", (char *)(command + 1)); // Fixed format specifier and added cast
-    printf("Data length: %d\n", command[0x11]); // Fixed format specifier
-    if (command[0x12] != 0) {
-      printf("Data: %s\n", (char *)(uintptr_t)command[0x12]); // Fixed format specifier and added cast
+    printf("Command type: %x\n",*param_1); 
+    printf("File name: %s\n",(char *)(param_1 + 1)); 
+    printf("Data length: %u\n",param_1[0x11]); // Use %u for uint32_t
+    if (param_1[0x12] != 0) {
+      printf("Data: %s\n",(char *)(uintptr_t)param_1[0x12]); 
     }
     break;
-  case 1: // REQUEST command
-    node_result = LookupNode((char *)(command + 1)); // Lookup node by filename
-    if (node_result == NULL) { // Assuming 0 is NULL
-      printf("Page not found: %s\n", (char *)(command + 1));
+  case 1: // REQUEST
+    lookup_result = LookupNode((char *)(param_1 + 1));
+    if (lookup_result == 0) {
+      printf("Page not found: %s\n",(char *)(param_1 + 1));
     } else {
-      // Serve the page using data pointer and length from the looked-up node
-      // Assuming node_result + 0x4c is data pointer, node_result + 0x48 is data length
-      ServePage(*(void **)((char *)node_result + 0x4c), *(unsigned int *)((char *)node_result + 0x48));
+      // Assuming LookupNode returns a pointer (or an integer that can be cast to a pointer)
+      // and that the offsets 0x4c and 0x48 are for data_ptr and data_len within that node struct.
+      ServePage((void *)(uintptr_t)(*(undefined4 *)((char *)(uintptr_t)lookup_result + 0x4c)), // data_ptr
+                *(undefined4 *)((char *)(uintptr_t)lookup_result + 0x48)); // data_len
     }
     break;
-  case 2: // QUERY command
-    PrintTree((char *)(command + 1)); // Print tree rooted at filename
+  case 2: // QUERY
+    PrintTree((char *)(param_1 + 1));
     break;
-  case 3: // SEND command
-    new_node = calloc(0x50, 1); // Allocate memory for a new node (0x50 bytes)
-    VerifyPointerOrTerminate(new_node, "new_node during SEND");
-    
-    // Copy filename/name part from command to new_node
-    memcpy(new_node, (char *)(command + 1), 0x40);
-    
-    // Set data pointer and length fields in the new node
-    *(void **)((char *)new_node + 0x4c) = (void *)(uintptr_t)command[0x12];
-    *(unsigned int *)((char *)new_node + 0x48) = command[0x11];
-    
-    if (InsertNodeInTree(new_node) == 0) { // Attempt to insert the new node into the tree
-      command[0x12] = 0; // On success, ownership of data transferred to the tree node
-      command[0x11] = 0;
+  case 3: // SEND
+    new_node_ptr = calloc(0x50,1); // Allocate 80 bytes for the new node
+    VerifyPointerOrTerminate(new_node_ptr,"new_node during SEND"); // Corrected variable
+
+    memcpy(new_node_ptr, (char *)(param_1 + 1), 0x40); // Copy 64 bytes for filename
+
+    // Set data_ptr and data_len within the new node structure
+    *(undefined4 *)((char *)new_node_ptr + 0x4c) = param_1[0x12]; // Set data_ptr
+    *(undefined4 *)((char *)new_node_ptr + 0x48) = param_1[0x11]; // Set data_len
+
+    lookup_result = InsertNodeInTree(new_node_ptr);
+    if (lookup_result == 0) {
+      // On success, ownership of data is transferred to the new node,
+      // so clear command's data fields to prevent double freeing in DestroyCommand.
+      param_1[0x12] = 0;
+      param_1[0x11] = 0;
       printf("SUCCESS: Page uploaded to server\n");
     } else {
-      // On failure, new_node is freed. The data it pointed to (command[0x12]) is still owned by command.
-      free(new_node);
+      free(new_node_ptr); // On error, free the newly allocated node
       printf("ERROR: Unable to upload page\n");
     }
     break;
-  case 4: // REMOVE command
-    if (DeleteNode((char *)(command + 1)) == 0) { // Attempt to delete node by filename
+  case 4: // REMOVE
+    lookup_result = DeleteNode((char *)(param_1 + 1));
+    if (lookup_result == 0) {
       printf("SUCCESS: Page deleted\n");
     } else {
       printf("ERROR: Unable to delete page\n");
     }
     break;
-  case 5: // VISUALIZE command
-    ServePage((void *)(uintptr_t)command[0x12], command[0x11]); // Serve page using command's data
+  case 5: // VISUALIZE
+    ServePage((void *)(uintptr_t)param_1[0x12], param_1[0x11]);
     break;
-  case 6: // INTERACT command
-    node_result = LookupNode((char *)(command + 1)); // Lookup node by filename
-    if (node_result == NULL) {
-      printf("Page not found: %s\n", (char *)(command + 1));
+  case 6: // INTERACT
+    lookup_result = LookupNode((char *)(param_1 + 1));
+    if (lookup_result == 0) {
+      printf("Page not found: %s\n",(char *)(param_1 + 1));
     } else {
-      // Interact with page using node's data and command's additional data
-      InteractWithPage(*(void **)((char *)node_result + 0x4c), *(unsigned int *)((char *)node_result + 0x48), (void *)(uintptr_t)command[0x12]);
+      InteractWithPage((void *)(uintptr_t)(*(undefined4 *)((char *)(uintptr_t)lookup_result + 0x4c)), // data_ptr
+                       *(undefined4 *)((char *)(uintptr_t)lookup_result + 0x48), // data_len
+                       (void *)(uintptr_t)param_1[0x12]); // command's data as input
     }
-    break;
   }
-  return;
 }
