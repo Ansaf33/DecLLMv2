@@ -1,29 +1,27 @@
-#include <stdio.h>  // For printf
+#include <stdio.h> // For printf
 #include <stdlib.h> // For exit
 
 // Function: PrintErrorAndTerminate
-void PrintErrorAndTerminate(int error_code) {
-  // The original code had an unconditional _terminate(1) before an if-block,
-  // making the if-block unreachable. It also used an uninitialized variable
-  // uStack_14 and an incorrect format specifier '@s'.
-  // This revised version assumes the intent was to print an error based on the code
-  // and then terminate.
-  if (error_code == 0) {
+void PrintErrorAndTerminate(int param_1) {
+  // The original code had an uninitialized variable 'uStack_14' and
+  // immediate termination before checking 'param_1'.
+  // This version fixes the logic to make 'param_1' meaningful,
+  // removes the intermediate variable, and ensures proper termination.
+  if (param_1 == 0) {
     printf("ERROR: Allocation failed.\n");
   } else {
-    printf("ERROR: An unexpected error occurred (code: %d).\n", error_code);
+    printf("ERROR: An unspecified error occurred (code %d).\n", param_1);
   }
-  exit(1); // Terminate the program with an error status
+  exit(1); // Use exit(1) for standard program termination
 }
 
 // Function: VerifyPointerOrTerminate
-void VerifyPointerOrTerminate(int pointer_status, const char* error_message) {
-  // Replaced 'undefined4' with 'const char*' as it's used with '%s'.
-  // Replaced '@s' with standard C format specifier '%s'.
-  // Replaced '_terminate(1)' with standard C 'exit(1)'.
-  if (pointer_status == 0) {
-    printf("ERROR: Allocation failed: %s\n", error_message);
-    exit(1); // Terminate the program with an error status
+void VerifyPointerOrTerminate(int param_1, const char* param_2) {
+  // 'param_2' was 'undefined4' but used with '@s' (which should be '%s'),
+  // implying it was meant to be a string. Changed to 'const char*'.
+  if (param_1 == 0) {
+    printf("ERROR: Allocation failed: %s\n", param_2); // Fixed format specifier
+    exit(1); // Use exit(1) for standard program termination
   }
   return;
 }

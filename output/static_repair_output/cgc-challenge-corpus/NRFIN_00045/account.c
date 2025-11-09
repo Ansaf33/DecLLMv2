@@ -1,254 +1,255 @@
 #include <string.h> // For strlen and memcpy
-#include <stdint.h> // For uint32_t or similar for undefined4
+#include <stdint.h> // For uint32_t or similar fixed-width types
+#include <stdio.h>  // For potential printf in main or debug, not strictly needed by provided snippet
 
-// Assuming ACCOUNTS is a global array of bytes or a structure.
-// The size of each account entry is 0x1a4.
-// The offset for the 'undefined4' field is 0.
-// The offset for the 0x20-byte string is 4.
-// The offset for the holding 'char' field is 0x28.
-// The offset for the holding 'undefined4' field is 0x24.
-// The 'next_holding' function suggests holdings are 0xc bytes each.
-// Max 0x20 (32) holdings per account.
-// 0x2c044 offset in next_holding suggests a base address for holdings.
+// Define 'undefined4' and 'undefined' types based on common reverse engineering tools output
+// Assuming 'undefined4' is a 4-byte unsigned integer and 'undefined' is a 1-byte unsigned integer.
+typedef uint32_t undefined4;
+typedef uint8_t undefined;
 
-// Let's define a structure for an account to make it more readable
-#define MAX_ACCOUNT_ID 99
-#define MAX_HOLDINGS_PER_ACCOUNT 32
-#define HASH_LEN 32 // 0x20 bytes
-#define SYMBOL_LEN 8 // A guess based on "SK3WL", "NRFIN", etc.
-#define ACCOUNT_SIZE 0x1a4 // 420 bytes
-#define HOLDING_SIZE 0xc // 12 bytes
+// Define ACCOUNTS as a global array.
+// The snippet uses `ACCOUNTS + param_1 * 0x1a4` and `ACCOUNTS[local_10 * 0xc + param_1 * 0x1a4 + 0x28]`.
+// This implies ACCOUNTS is a char array (or similar byte-addressable memory region)
+// and is accessed with byte offsets.
+// The size calculations (0x1a4 per account, 0xc per holding, max 0x1f holdings) suggest a large array.
+// For 100 accounts (0 to 99), 0x1a4 bytes per account: 100 * 420 = 42000 bytes.
+// The maximum index accessed in `next_holding` is `local_10 * 0xc + param_1 * 0x1a4 + 0x28`.
+// Max param_1 is 99 (0x63). Max local_10 is 0x1f (31).
+// So, 31 * 12 + 99 * 420 + 40 = 372 + 41580 + 40 = 41992.
+// The `0x2c044` offset in `next_holding` return value is problematic if ACCOUNTS is a single array.
+// It implies `ACCOUNTS` might be an offset into a larger memory region, or the return value is not a direct pointer into `ACCOUNTS`.
+// Given the context of a "snippet", and the request to make it compilable, we'll assume `ACCOUNTS` is a global array
+// and the `0x2c044` is an address or offset relative to some base, not directly `ACCOUNTS` itself.
+// For now, let's define ACCOUNTS as a large enough byte array.
+// A common structure for accounts and holdings might be:
+// struct Account {
+//     undefined4 field_0; // 0x0
+//     char field_4[0x20]; // 0x4 to 0x23 (32 bytes)
+//     // ... other fields up to 0x24 (holding data starts)
+//     struct Holding holdings[32]; // 32 * 0xc = 0x180 = 384 bytes
+// };
+// Total size for an account = 0x4 + 0x20 + (32 * 0xC) = 4 + 32 + 384 = 420 bytes (0x1A4).
+//
+// Let's define the structure based on observed accesses.
+// Account structure:
+// Offset 0x0: undefined4 (e.g., balance or ID)
+// Offset 0x4: char[0x20] (e.g., some string/hash)
+// Offset 0x24: undefined4 (start of first holding's value)
+// Offset 0x28: char[?] (start of first holding's name/ID)
+//
+// A holding seems to be 0xC bytes long, with 0x24 and 0x28 being offsets relative to the start of an account block.
+// A more accurate interpretation:
+// An Account block is 0x1a4 bytes long.
+// Inside an account block, there's an initial `undefined4` at offset 0, and a 0x20-byte array at offset 4.
+// Then, there are 32 holdings. Each holding is 0xc bytes.
+// Holding structure relative to its own start:
+// Offset 0x0: undefined4 (e.g., quantity/value)
+// Offset 0x4: char[8] (e.g., holding identifier, max 8 chars including null terminator for 0xc size total)
+//
+// So, the first holding starts at offset 0x24 within the account block.
+// account_base + 0x24 + (holding_index * 0xc) + 0x0 (for value)
+// account_base + 0x24 + (holding_index * 0xc) + 0x4 (for name)
+//
+// Let's adjust based on the snippet's `init_holding` and `next_holding`:
+// `init_holding(param_1,param_2,char *param_3,undefined4 param_4)`
+// `iVar1 = param_2 * 0xc + param_1 * 0x1a4;`
+// `*(undefined4 *)(ACCOUNTS + iVar1 + 0x24) = param_4;`  -> This means 0x24 is relative to the start of the account block.
+// `memcpy(param_3,ACCOUNTS + iVar1 + 0x28,__n);`        -> This means 0x28 is relative to the start of the account block.
+// This implies each holding starts at `param_1 * 0x1a4 + 0x24 + param_2 * 0xc`.
+// Value at `account_base + 0x24 + holding_idx * 0xc` (4 bytes)
+// Name at `account_base + 0x24 + holding_idx * 0xc + 4` (8 bytes)
+// Total for one holding = 4 + 8 = 12 bytes (0xc).
+// So, the holdings data starts at offset 0x24 from the account base.
+// The `0x20` byte array in `init_account` at `param_1 * 0x1a4 + 4` is separate from holdings.
+//
+// Max accounts: 0x63 (99) + 1 = 100 accounts.
+// Max holdings per account: 0x1f (31) + 1 = 32 holdings.
+// Max total size needed for ACCOUNTS: (0x1a4 * 100) = 420 * 100 = 42000 bytes.
+// The magic number `0x2c044` in `next_holding`'s return `local_10 * 0xc + param_1 * 0x1a4 + 0x2c044`
+// is likely an absolute address or an offset to a different base.
+// Since we cannot deduce the base, we will assume it's an offset to some conceptual "next available holding slot"
+// which is outside the current ACCOUNTS array, or implies a different memory layout.
+// For the purpose of providing compilable C code, we will make `ACCOUNTS` a `char` array and keep direct byte arithmetic.
 
-typedef uint32_t undefined4; // Assuming undefined4 is a 32-bit unsigned integer
+#define MAX_ACCOUNTS 100 // Based on init_accounts calls (0 to 99)
+#define ACCOUNT_SIZE 0x1a4 // 420 bytes per account
+#define HOLDINGS_PER_ACCOUNT 32 // 0x20
+#define HOLDING_SIZE 0xc // 12 bytes per holding
 
-typedef struct {
-    undefined4 balance;
-    char hash[HASH_LEN]; // 0x20 bytes for the hash (32 bytes)
-    char padding1[ACCOUNT_SIZE - (4 + HASH_LEN)]; // Fill up to 0x24 (offset of first holding's value)
-} Account;
+char ACCOUNTS[MAX_ACCOUNTS * ACCOUNT_SIZE];
 
-typedef struct {
-    undefined4 value;
-    char symbol[SYMBOL_LEN]; // 0x28 is the start of the symbol, 0xc is holding size
-    // Padding to make holding 0xc bytes if symbol is smaller than 8.
-    // Given the 0xc size, and 4 bytes for value, we have 8 bytes for the symbol.
-} Holding;
+// Global undefined4 variables from the original snippet
+// These appear to be initial values for account balances/IDs.
+// Assuming these are global constants, declare them as such.
+// The values are hexadecimal, suggesting they are literal integer values.
+undefined4 DAT_0001ae4c = 0xf97adfe8;
+undefined4 DAT_0001ae50 = 0x11160ee4;
+undefined4 DAT_0001ae54 = 0x0c5701ce;
+undefined4 DAT_0001ae58 = 0x747bcc0e;
+undefined4 DAT_0001ae5c = 0xe2cb9633;
+undefined4 DAT_0001ae60 = 0xccefe6f3;
+undefined4 DAT_0001ae64 = 0x1a0843b9;
+undefined4 DAT_0001ae68 = 0x43bf8cc9;
+undefined4 DAT_0001ae6c = 0x2d97f928;
+undefined4 DAT_0001ae70 = 0x18cdc243;
+undefined4 DAT_0001ae74 = 0x824b37f2;
+undefined4 DAT_0001ae78 = 0x1a5bec5a;
+undefined4 DAT_0001ae7c = 0xded4773c;
+undefined4 DAT_0001ae80 = 0x57c02d79;
+undefined4 DAT_0001ae84 = 0x4943cc5a;
+undefined4 DAT_0001ae88 = 0x113ac076;
+undefined4 DAT_0001ae8c = 0x2306dd49;
+undefined4 DAT_0001ae90 = 0xc122c416;
+undefined4 DAT_0001ae94 = 0xf163ff88;
+undefined4 DAT_0001ae98 = 0x7fb252b7;
+undefined4 DAT_0001ae9c = 0x0376ec02;
+undefined4 DAT_0001aea0 = 0xc35b360d;
+undefined4 DAT_0001aea4 = 0xec3603d1;
+undefined4 DAT_0001aea8 = 0x1500be58;
+undefined4 DAT_0001aeac = 0xea512ff3;
+undefined4 DAT_0001aeb0 = 0x019fc054;
+undefined4 DAT_0001aeb4 = 0x5f8e90f5;
+undefined4 DAT_0001aeb8 = 0xd722a3dd;
+undefined4 DAT_0001aebc = 0x707bd2a4;
+undefined4 DAT_0001aec0 = 0xeeacf644;
+undefined4 DAT_0001aec4 = 0x290b2771;
+undefined4 DAT_0001aec8 = 0x51174b4b;
+undefined4 DAT_0001aecc = 0x241fe5c8;
+undefined4 DAT_0001aed0 = 0xe68614df;
+undefined4 DAT_0001aed4 = 0x819deb8c;
+undefined4 DAT_0001aed8 = 0xfdf12524;
+undefined4 DAT_0001aedc = 0xa8c9e2d0;
+undefined4 DAT_0001aee0 = 0xaa5e7341;
+undefined4 DAT_0001aee4 = 0xde153b1b;
+undefined4 DAT_0001aee8 = 0x6cad7fb4;
+undefined4 DAT_0001aeec = 0xb8809d33;
+undefined4 DAT_0001aef0 = 0xdb5adad2;
+undefined4 DAT_0001aef4 = 0x424df7c2;
+undefined4 DAT_0001aef8 = 0x336cfe59;
+undefined4 DAT_0001aefc = 0x66e360b7;
+undefined4 DAT_0001af00 = 0x56ce86e5;
+undefined4 DAT_0001af04 = 0x828606bf;
+undefined4 DAT_0001af08 = 0x7179eff9;
+undefined4 DAT_0001af0c = 0x6549b8e9;
+undefined4 DAT_0001af10 = 0xacece501;
+undefined4 DAT_0001af14 = 0x4d170b9c;
+undefined4 DAT_0001af18 = 0x9efb58f2;
+undefined4 DAT_0001af1c = 0x9ef33ee3;
+undefined4 DAT_0001af20 = 0x34d94e3a;
+undefined4 DAT_0001af24 = 0x79b7fa5d;
+undefined4 DAT_0001af28 = 0x9079765c;
+undefined4 DAT_0001af2c = 0xff1d7b03;
+undefined4 DAT_0001af30 = 0xedb3c285;
+undefined4 DAT_0001af34 = 0x4ab3d2ac;
+undefined4 DAT_0001af38 = 0x72558d6c;
+undefined4 DAT_0001af3c = 0xa0faff8d;
+undefined4 DAT_0001af40 = 0x2232fd53;
+undefined4 DAT_0001af44 = 0x6a6d931e;
+undefined4 DAT_0001af48 = 0xec577dba;
+undefined4 DAT_0001af4c = 0x2e63fb8b;
+undefined4 DAT_0001af50 = 0x005b04f8;
+undefined4 DAT_0001af54 = 0x569caded;
+undefined4 DAT_0001af58 = 0x257a1c63;
+undefined4 DAT_0001af5c = 0x03b5c421;
+undefined4 DAT_0001af60 = 0x7018e4ac;
+undefined4 DAT_0001af64 = 0xcf643ea7;
+undefined4 DAT_0001af68 = 0xac6bf456;
+undefined4 DAT_0001af6c = 0x6500045f;
+undefined4 DAT_0001af70 = 0xc3385a46;
+undefined4 DAT_0001af74 = 0xbb240439;
+undefined4 DAT_0001af78 = 0x5ab2beae;
+undefined4 DAT_0001af7c = 0x1142c827;
+undefined4 DAT_0001af80 = 0x4c37e154;
+undefined4 DAT_0001af84 = 0xd5a1152a;
+undefined4 DAT_0001af88 = 0x512457dc;
+undefined4 DAT_0001af8c = 0x26127ebc;
+undefined4 DAT_0001af90 = 0xf186934f;
+undefined4 DAT_0001af94 = 0x76910c57;
+undefined4 DAT_0001af98 = 0x0ef281a2;
+undefined4 DAT_0001af9c = 0xc168709a;
+undefined4 DAT_0001afa0 = 0xd2663cd7;
+undefined4 DAT_0001afa4 = 0x7118b3ce;
+undefined4 DAT_0001afa8 = 0xcc190a7b;
+undefined4 DAT_0001afac = 0x799da893;
+undefined4 DAT_0001afb0 = 0x2932fb4a;
+undefined4 DAT_0001afb4 = 0x83796f2b;
+undefined4 DAT_0001afb8 = 0x0ab61be1;
+undefined4 DAT_0001afbc = 0x5df66a4a;
+undefined4 DAT_0001afc0 = 0xfbc29f50;
+undefined4 DAT_0001afc4 = 0xfcaf3892;
+undefined4 DAT_0001afc8 = 0xcc5bac4d;
+undefined4 DAT_0001afcc = 0x35f40bd5;
+undefined4 DAT_0001afd0 = 0x3a37a6af;
+undefined4 DAT_0001afd4 = 0x45629735;
+undefined4 DAT_0001afd8 = 0xd97236f0;
 
-// Global array for accounts.
-// The original code implies ACCOUNTS is a byte array where specific offsets are used.
-// Let's model it as a byte array and cast pointers for more direct translation.
-// A more C-idiomatic way would be to use structs directly, but the snippet uses raw offsets.
-// We need to ensure enough space for all accounts and their holdings.
-// The maximum account ID is 99 (0x63). So 100 accounts (0-99).
-// Each account has 0x1a4 bytes.
-// Total size: 100 * 0x1a4 = 0x6690 bytes.
-uint8_t ACCOUNTS_RAW[100 * ACCOUNT_SIZE];
-#define ACCOUNTS ACCOUNTS_RAW
-
-// Global dummy data for DAT_0001aeXX
-// These are likely addresses or values. Assuming they are 32-bit values.
-// The values like 0xc1bf4a, 0xcfaa9b, etc., suggest they are integers.
-// The strings like "f97adfe8fa275092adf100d06900aed0" are hashes.
-// The strings like "SK3WL", "NRFIN" are symbols.
-// Let's define them as static const to avoid linker errors.
-
-static const undefined4 DAT_0001ae4c = 0xf97adfe8;
-static const undefined4 DAT_0001ae50 = 0x11160ee4;
-static const undefined4 DAT_0001ae54 = 0x0c5701ce;
-static const undefined4 DAT_0001ae58 = 0x747bcc0e;
-static const undefined4 DAT_0001ae5c = 0xe2cb9633;
-static const undefined4 DAT_0001ae60 = 0xccefe6f3;
-static const undefined4 DAT_0001ae64 = 0x1a0843b9;
-static const undefined4 DAT_0001ae68 = 0x43bf8cc9;
-static const undefined4 DAT_0001ae6c = 0x2d97f928;
-static const undefined4 DAT_0001ae70 = 0x18cdc243;
-static const undefined4 DAT_0001ae74 = 0x824b37f2;
-static const undefined4 DAT_0001ae78 = 0x1a5bec5a;
-static const undefined4 DAT_0001ae7c = 0xded4773c;
-static const undefined4 DAT_0001ae80 = 0x57c02d79;
-static const undefined4 DAT_0001ae84 = 0x4943cc5a;
-static const undefined4 DAT_0001ae88 = 0x113ac076;
-static const undefined4 DAT_0001ae8c = 0x2306dd49;
-static const undefined4 DAT_0001ae90 = 0xc122c416;
-static const undefined4 DAT_0001ae94 = 0xf163ff88;
-static const undefined4 DAT_0001ae98 = 0x7fb252b7;
-static const undefined4 DAT_0001ae9c = 0x0376ec02;
-static const undefined4 DAT_0001aea0 = 0xc35b360d;
-static const undefined4 DAT_0001aea4 = 0xec3603d1;
-static const undefined4 DAT_0001aea8 = 0x1500be58;
-static const undefined4 DAT_0001aeac = 0xea512ff3;
-static const undefined4 DAT_0001aeb0 = 0x019fc054;
-static const undefined4 DAT_0001aeb4 = 0x5f8e90f5;
-static const undefined4 DAT_0001aeb8 = 0xd722a3dd;
-static const undefined4 DAT_0001aebc = 0x707bd2a4;
-static const undefined4 DAT_0001aec0 = 0xeeacf644;
-static const undefined4 DAT_0001aec4 = 0x290b2771;
-static const undefined4 DAT_0001aec8 = 0x51174b4b;
-static const undefined4 DAT_0001aecc = 0x241fe5c8;
-static const undefined4 DAT_0001aed0 = 0xe68614df;
-static const undefined4 DAT_0001aed4 = 0x819deb8c;
-static const undefined4 DAT_0001aed8 = 0xfdf12524;
-static const undefined4 DAT_0001aedc = 0xa8c9e2d0;
-static const undefined4 DAT_0001aee0 = 0xaa5e7341;
-static const undefined4 DAT_0001aee4 = 0xde153b1b;
-static const undefined4 DAT_0001aee8 = 0x6cad7fb4;
-static const undefined4 DAT_0001aeec = 0xb8809d33;
-static const undefined4 DAT_0001aef0 = 0xdb5adad2;
-static const undefined4 DAT_0001aef4 = 0x424df7c2;
-static const undefined4 DAT_0001aef8 = 0x336cfe59;
-static const undefined4 DAT_0001aefc = 0x66e360b7;
-static const undefined4 DAT_0001af00 = 0x56ce86e5;
-static const undefined4 DAT_0001af04 = 0x828606bf;
-static const undefined4 DAT_0001af08 = 0x7179eff9;
-static const undefined4 DAT_0001af0c = 0x6549b8e9;
-static const undefined4 DAT_0001af10 = 0xacece501;
-static const undefined4 DAT_0001af14 = 0x4d170b9c;
-static const undefined4 DAT_0001af18 = 0x9efb58f2;
-static const undefined4 DAT_0001af1c = 0x9ef33ee3;
-static const undefined4 DAT_0001af20 = 0x34d94e3a;
-static const undefined4 DAT_0001af24 = 0x79b7fa5d;
-static const undefined4 DAT_0001af28 = 0x9079765c;
-static const undefined4 DAT_0001af2c = 0xff1d7b03;
-static const undefined4 DAT_0001af30 = 0xedb3c285;
-static const undefined4 DAT_0001af34 = 0x4ab3d2ac;
-static const undefined4 DAT_0001af38 = 0x72558d6c;
-static const undefined4 DAT_0001af3c = 0xa0faff8d;
-static const undefined4 DAT_0001af40 = 0x2232fd53;
-static const undefined4 DAT_0001af44 = 0x6a6d931e;
-static const undefined4 DAT_0001af48 = 0xec577dba;
-static const undefined4 DAT_0001af4c = 0x2e63fb8b;
-static const undefined4 DAT_0001af50 = 0x005b04f8;
-static const undefined4 DAT_0001af54 = 0x569caded;
-static const undefined4 DAT_0001af58 = 0x257a1c63;
-static const undefined4 DAT_0001af5c = 0x03b5c421;
-static const undefined4 DAT_0001af60 = 0x7018e4ac;
-static const undefined4 DAT_0001af64 = 0xcf643ea7;
-static const undefined4 DAT_0001af68 = 0xac6bf456;
-static const undefined4 DAT_0001af6c = 0x6500045f;
-static const undefined4 DAT_0001af70 = 0xc3385a46;
-static const undefined4 DAT_0001af74 = 0xbb240439;
-static const undefined4 DAT_0001af78 = 0x5ab2beae;
-static const undefined4 DAT_0001af7c = 0x1142c827;
-static const undefined4 DAT_0001af80 = 0x4c37e154;
-static const undefined4 DAT_0001af84 = 0xd5a1152a;
-static const undefined4 DAT_0001af88 = 0x512457dc;
-static const undefined4 DAT_0001af8c = 0x26127ebc;
-static const undefined4 DAT_0001af90 = 0xf186934f;
-static const undefined4 DAT_0001af94 = 0x76910c57;
-static const undefined4 DAT_0001af98 = 0x0ef281a2;
-static const undefined4 DAT_0001af9c = 0xc168709a;
-static const undefined4 DAT_0001afa0 = 0xd2663cd7;
-static const undefined4 DAT_0001afa4 = 0x7118b3ce;
-static const undefined4 DAT_0001afa8 = 0xcc190a7b;
-static const undefined4 DAT_0001afac = 0x799da893;
-static const undefined4 DAT_0001afb0 = 0x2932fb4a;
-static const undefined4 DAT_0001afb4 = 0x83796f2b;
-static const undefined4 DAT_0001afb8 = 0x0ab61be1;
-static const undefined4 DAT_0001afbc = 0x5df66a4a;
-static const undefined4 DAT_0001afc0 = 0xfbc29f50;
-static const undefined4 DAT_0001afc4 = 0xfcaf3892;
-static const undefined4 DAT_0001afc8 = 0xcc5bac4d;
-static const undefined4 DAT_0001afcc = 0x35f40bd5;
-static const undefined4 DAT_0001afd0 = 0x3a37a6af;
-static const undefined4 DAT_0001afd4 = 0x45629735;
-static const undefined4 DAT_0001afd8 = 0xd97236f0;
-
-// Dummy strings referred to by DAT_0001aeXX
-// The length of these strings is important for memcpy.
-// Assuming these are pointers to string literals.
-static const char DAT_0001ae0d[] = "CRAB"; // Length 4
-static const char DAT_0001ae24[] = "LUCKY"; // Length 5
-static const char DAT_0001ae29[] = "DDOGG"; // Length 5
-static const char DAT_0001ae33[] = "FLUFFY"; // Length 6
+// DAT_0001ae0d, DAT_0001ae24, DAT_0001ae29, DAT_0001ae33 are strings
+char DAT_0001ae0d[] = "C00LIO";
+char DAT_0001ae24[] = "ALPEN";
+char DAT_0001ae29[] = "GOOG";
+char DAT_0001ae33[] = "MSFT";
 
 
 // Function: init_account
 void init_account(int param_1, undefined4 param_2, const char *param_3) {
-  // *(undefined4 *)(ACCOUNTS + param_1 * 0x1a4) = param_2;
-  // This writes param_2 to the beginning of the account structure.
-  *((undefined4 *)(ACCOUNTS + (size_t)param_1 * ACCOUNT_SIZE)) = param_2;
-
-  // for (local_c = 0; local_c < 0x20; local_c = local_c + 1) {
-  //   ACCOUNTS[local_c + param_1 * 0x1a4 + 4] = *(undefined *)(param_3 + local_c);
-  // }
-  // This copies 0x20 (32) bytes from param_3 to ACCOUNTS + offset 4.
-  // This is a strcpy-like operation for the hash.
-  memcpy(ACCOUNTS + (size_t)param_1 * ACCOUNT_SIZE + 4, param_3, HASH_LEN);
-  return;
+  // Reduce intermediate variables: `local_c` is already minimal.
+  // The first assignment directly uses the calculated address.
+  *(undefined4 *)(ACCOUNTS + (size_t)param_1 * ACCOUNT_SIZE) = param_2;
+  for (int local_c = 0; local_c < 0x20; local_c++) {
+    ACCOUNTS[local_c + (size_t)param_1 * ACCOUNT_SIZE + 4] = *(const undefined *)(param_3 + local_c);
+  }
 }
 
 // Function: next_holding
 int next_holding(int param_1) {
-  for (int local_10 = 0; local_10 < MAX_HOLDINGS_PER_ACCOUNT; ++local_10) {
-    // ACCOUNTS[local_10 * 0xc + param_1 * 0x1a4 + 0x28] == '\0'
-    // This checks if the first byte of the symbol for a holding is null.
-    // The offset 0x28 is the start of the symbol field within the account structure.
-    // Each holding is 0xc bytes, so local_10 * 0xc steps through holdings.
-    // The symbol starts at offset 4 within a holding (after the 4-byte value).
-    if (ACCOUNTS[(size_t)param_1 * ACCOUNT_SIZE + 0x24 + (size_t)local_10 * HOLDING_SIZE + 4] == '\0') {
-      // return local_10 * 0xc + param_1 * 0x1a4 + 0x2c044;
-      // The return value seems to be an address or an offset.
-      // 0x2c044 is a large base offset. Let's assume the context implies it's an offset
-      // relative to a global base, or a calculated index.
-      // Given the other functions return indices or offsets relative to ACCOUNTS base,
-      // it's more likely this is an index calculation for a different data structure,
-      // or a specific offset within the ACCOUNTS buffer.
-      // If it's an offset within ACCOUNTS: 0x24 is the start of holdings within an account.
-      // 0x2c044 is 180292. This is too large to be an offset within a single account's
-      // holding section, which is about 0x1a4 - 0x24 = 0x180 bytes.
-      // If 0x2c044 is a base address, then the function returns a pointer.
-      // Let's assume it returns an index to the holding slot, consistent with `param_2` in `init_holding`.
-      // The original C code implies an int return, suggesting an offset or index.
-      // The prompt asks for "Linux compilable C code", so we need to make this valid.
-      // Let's assume 0x2c044 is a magic number that should be ignored or is a base address for something else.
-      // For now, let's just return the local_10 index which represents the first available holding slot.
-      // If it's an actual address, the type should be `void*`.
-      // Given `param_2` in `init_holding` is an `int`, `local_10` seems more appropriate.
-      return local_10;
+  // Reduce intermediate variables: `local_10` is already minimal.
+  // Directly return 0 or the calculated offset.
+  for (int local_10 = 0; local_10 <= 0x1f; local_10++) { // Loop up to and including 0x1f
+    // Calculate the base address for the current holding's name/ID field
+    // Account base + offset to holdings start + (holding index * holding size) + offset to name field
+    size_t holding_name_offset = (size_t)param_1 * ACCOUNT_SIZE + 0x24 + (size_t)local_10 * HOLDING_SIZE + 4;
+    
+    // Check if the first character of the holding name is null
+    if (ACCOUNTS[holding_name_offset] == '\0') {
+      // This return value `local_10 * 0xc + param_1 * 0x1a4 + 0x2c044` is highly suspicious.
+      // If ACCOUNTS is a single array, this offset could point outside or to an unrelated section.
+      // Assuming it's meant to return some identifier/offset for the found slot, as per the original.
+      // It's not a direct pointer into ACCOUNTS given the large 0x2c044 offset.
+      // For compilability, we keep the arithmetic as is.
+      return (int)((size_t)local_10 * HOLDING_SIZE + (size_t)param_1 * ACCOUNT_SIZE + 0x2c044);
     }
   }
-  return 0; // No available holding slot found, return 0 (or -1 to indicate error)
-            // Original returns 0 if 0x1f < local_10, which means no empty slot found.
-            // My loop condition handles this, so if loop finishes, no slot found.
+  return 0; // If no empty holding found within 0x20 (32) slots
 }
 
 // Function: init_holding
-void init_holding(int param_1, int param_2, const char *param_3, undefined4 param_4) {
-  // int iVar1;
-  // size_t __n;
+void init_holding(int param_1, int param_2, char *param_3, undefined4 param_4) {
+  // Reduce intermediate variables: `iVar1` can be integrated directly.
+  // `__n` is needed for `strlen`.
+  size_t account_base_offset = (size_t)param_1 * ACCOUNT_SIZE;
+  size_t holding_base_offset = account_base_offset + 0x24 + (size_t)param_2 * HOLDING_SIZE;
   
-  // iVar1 = param_2 * 0xc + param_1 * 0x1a4;
-  // This calculates the offset to the specific holding within the entire ACCOUNTS block.
-  // It's (account_idx * ACCOUNT_SIZE) + (holding_idx * HOLDING_SIZE)
-  // But the original code misses the 0x24 offset for holdings within an account.
-  // Let's correct this. The 0x24 offset is where holdings start in the account structure.
-  size_t holding_offset = (size_t)param_1 * ACCOUNT_SIZE + 0x24 + (size_t)param_2 * HOLDING_SIZE;
-
-  // *(undefined4 *)(ACCOUNTS + iVar1 + 0x24) = param_4;
-  // This writes param_4 to the value field of the holding.
-  // The 0x24 offset here is relative to the "start of account" (param_1 * 0x1a4).
-  // But our holding_offset already includes 0x24, so for the holding itself, it's offset 0.
-  *((undefined4 *)(ACCOUNTS + holding_offset)) = param_4;
-
-  // __n = strlen(param_3);
-  // memcpy(param_3,ACCOUNTS + iVar1 + 0x28,__n);
-  // This copies the symbol string.
-  // The 0x28 offset here is relative to the "start of account" (param_1 * 0x1a4).
-  // For the holding itself, the symbol starts at offset 4 (after the value).
-  // Also, memcpy arguments are (destination, source, size). The original is reversed.
-  // It should be memcpy(destination, source, size).
-  // Also, need to ensure null termination and not write beyond symbol buffer.
-  size_t len = strlen(param_3);
-  if (len >= SYMBOL_LEN) {
-      len = SYMBOL_LEN - 1; // Truncate if too long, leave space for null terminator
-  }
-  memcpy(ACCOUNTS + holding_offset + 4, param_3, len);
-  ACCOUNTS[holding_offset + 4 + len] = '\0'; // Null-terminate the string
-  return;
+  // Set the holding's value
+  *(undefined4 *)(ACCOUNTS + holding_base_offset) = param_4;
+  
+  // Copy the holding's name/ID
+  // Original `memcpy(param_3,ACCOUNTS + iVar1 + 0x28,__n);` is a source/destination swap.
+  // It should be `memcpy(destination, source, length)`.
+  // The destination is `ACCOUNTS + holding_base_offset + 4` (the name field).
+  // The source is `param_3`.
+  // The length is `strlen(param_3)`.
+  // Also, ensure null termination if `strlen` doesn't include it and the buffer is fixed size.
+  // The holding name field is 8 bytes (`HOLDING_SIZE - 4`).
+  size_t name_len = strlen(param_3);
+  size_t copy_len = (name_len < (HOLDING_SIZE - 4)) ? name_len : (HOLDING_SIZE - 4 - 1); // Ensure space for null terminator
+  
+  memcpy(ACCOUNTS + holding_base_offset + 4, param_3, copy_len);
+  ACCOUNTS[holding_base_offset + 4 + copy_len] = '\0'; // Null-terminate
 }
 
 // Function: init_accounts
 void init_accounts(void) {
+  // The calls themselves are already minimal.
   init_account(0,DAT_0001ae4c,"f97adfe8fa275092adf100d06900aed0");
   init_account(1,DAT_0001ae50,"11160ee476ee4d0e967bc19123306bb6");
   init_account(2,DAT_0001ae54,"0c5701cee646b0f3f87a0fe9db5a024b");
@@ -1449,5 +1450,15 @@ void init_accounts(void) {
   init_holding(99,8,"CROMU",0x8f2836);
   init_holding(99,9,"PIRATE",0x6bc412);
   init_holding(99,10,"MAPLE",0xf0682c);
-  return;
+}
+
+// A main function is required for a compilable C program.
+// This main function just calls init_accounts to demonstrate compilability.
+// You might want to add calls to other functions or print some data for testing.
+int main() {
+    init_accounts();
+    // Example usage:
+    // int next_h = next_holding(0);
+    // printf("Next holding for account 0: %x\n", next_h);
+    return 0;
 }

@@ -1,435 +1,498 @@
-#include <stdio.h>  // For snprintf
-#include <stdint.h> // For uint32_t, uint8_t
+#include <stdio.h>   // For snprintf
+#include <stdint.h>  // For uint32_t (used in sixer_context_t)
+#include <string.h>  // Not explicitly used in the provided snippet but good for char* handling
 
-// Define custom types
-// sixer_t is a placeholder for a structure or array that manages bit-level data.
-// The original code uses `undefined local_24 [12]`, suggesting an array of 12 units
-// of `undefined` type. Assuming `undefined` maps to `uint32_t` (4 bytes), this would be 48 bytes.
-typedef uint32_t sixer_t[12];
-typedef uint8_t byte;
+// Custom type definitions based on common decompilation output
+typedef unsigned char byte;
+typedef unsigned int undefined4; // Assuming 4 bytes, unsigned
+typedef unsigned int uint;       // Assuming unsigned int
 
-// Define constants
-#define ERROR_VAL 0xffffffcd
+// Dummy sixer context structure
+// This structure needs to hold enough information to simulate the bitstream.
+// For the provided code, it needs a 'data' source and a 'bit_offset'.
+typedef struct {
+    uint32_t data_source; // The undefined4 parameter passed to init_sixer
+    int bit_offset;       // Current bit position
+    int total_bits;       // Total length of the message in bits, for sixer_strlen
+} sixer_context_t;
 
-// Forward declarations for external functions
-// These functions are assumed to be defined elsewhere in the project.
-// Their parameters are mapped from the original `undefined4`, `int`, `byte`, `uint` to standard C types.
-byte get_msg_type(uint32_t msg_content_ptr);
-void init_sixer(sixer_t *sixer_data, uint32_t msg_content_ptr);
-int sixer_strlen(const sixer_t *sixer_data);
-int get_bits_from_sixer(sixer_t *sixer_data, int num_bits);
-int sixer_bits_twos_to_sint(int value, int sign_bit_mask);
-char sixer_bits_to_ASCII_str_char(uint8_t six_bit_char_code);
+// Dummy declarations and implementations for external functions and global variables
+// These are minimal implementations to allow the provided code to compile.
+// In a real system, these would have full logic.
 
-// Forward declarations for parse functions
-uint32_t parse_msg_type_1(char *output_buf, uint32_t msg_data_ptr);
-uint32_t parse_msg_type_4(char *output_buf, uint32_t msg_data_ptr);
-uint32_t parse_msg_type_5(char *output_buf, uint32_t msg_data_ptr);
+// get_msg_type: Returns a byte representing the message type.
+// The original code checks if it matches *(byte *)(param_2 + 0x11).
+// For compilation, it can return any byte.
+byte get_msg_type(undefined4 param_1) {
+    (void)param_1; // Suppress unused parameter warning
+    // In a real scenario, this would parse `param_1` to determine message type.
+    // For compilation, let's return a value that allows `to_english` to proceed.
+    // E.g., return 1, 4, or 5 to hit parse_msg_type_X.
+    return 1; // Example: return 1 to test parse_msg_type_1
+}
 
-// Global data (placeholders for compilation)
-// The original code accesses these as `*(undefined4 *)(ARRAY_NAME + index * 4)`,
-// implying an array of 4-byte entities, likely pointers to strings.
-const char *const STATUS[] = {
-    "Status 0", "Status 1", "Status 2", "Status 3", "Status 4",
-    "Status 5", "Status 6", "Status 7", "Status 8"
+// init_sixer: Initializes the sixer context with message data.
+// `param_2` is usually a pointer to the raw message data.
+void init_sixer(void* sixer_ctx_ptr, undefined4 param_2) {
+    sixer_context_t* ctx = (sixer_context_t*)sixer_ctx_ptr;
+    ctx->data_source = param_2; // Store the data source
+    ctx->bit_offset = 0;       // Start at the beginning of the bitstream
+    // For `sixer_strlen`, we need a total length. This is a heuristic for compilation.
+    // The original code checks for specific lengths (0x90, 0x8a, 0x180).
+    // Let's make `total_bits` dependent on `param_2` in a simple way for the dummy.
+    // This is a weak assumption, but allows `sixer_strlen` to return different values.
+    if (param_2 == 0x90) ctx->total_bits = 0x90; // For type 1
+    else if (param_2 == 0x8a) ctx->total_bits = 0x8a; // For type 4
+    else if (param_2 == 0x180) ctx->total_bits = 0x180; // For type 5
+    else ctx->total_bits = 0x90; // Default
+}
+
+// sixer_strlen: Returns the total number of bits in the sixer message.
+int sixer_strlen(void* sixer_ctx_ptr) {
+    sixer_context_t* ctx = (sixer_context_t*)sixer_ctx_ptr;
+    return ctx->total_bits; // Return the total bits stored during init
+}
+
+// get_bits_from_sixer: Extracts `num_bits` from the bitstream.
+// This is a simplified implementation. Real bitstream parsing is more complex.
+int get_bits_from_sixer(void* sixer_ctx_ptr, int num_bits) {
+    sixer_context_t* ctx = (sixer_context_t*)sixer_ctx_ptr;
+    if (ctx->bit_offset + num_bits > ctx->total_bits) {
+        // Attempt to read beyond buffer, return an error value or handle.
+        // The original code checks for < 0, so returning -1 is a good fit.
+        return -1;
+    }
+    // Simulate reading bits from the data_source.
+    // This is a very basic simulation and assumes data_source can be directly bit-shifted.
+    // In reality, it would read from a byte array.
+    int value = (ctx->data_source >> ctx->bit_offset) & ((1 << num_bits) - 1);
+    ctx->bit_offset += num_bits;
+    return value;
+}
+
+// sixer_bits_twos_to_sint: Converts a two's complement value to a signed integer.
+int sixer_bits_twos_to_sint(int value, int sign_bit_mask) {
+    if ((value & sign_bit_mask) != 0) { // Check if the highest bit (sign bit) is set
+        // Perform two's complement conversion by subtracting the full range value
+        return value - (sign_bit_mask << 1);
+    }
+    return value;
+}
+
+// sixer_bits_to_ASCII_str_char: Converts a 6-bit value to an ASCII character.
+char sixer_bits_to_ASCII_str_char(int value) {
+    // This mapping is specific to the six-bit character set used in AIS messages.
+    // Common mappings include 0-25 for A-Z, 0x30-0x39 for 0-9, etc.
+    // The original code checks for 0x40 ('@') as a sentinel, implying a specific charset.
+    // For compilation, we'll return a simple mapping.
+    if (value >= 0x20 && value <= 0x5F) { // Range for printable ASCII including '@'
+        return (char)value;
+    }
+    return '@'; // Default for unknown or sentinel values
+}
+
+// Dummy global variables, likely pointers to string arrays or string literals.
+// Defined as arrays of const char* for direct access.
+const char* STATUS[] = {
+    "Status 0", "Status 1", "Status 2", "Status 3",
+    "Status 4", "Status 5", "Status 6", "Status 7", "Status 8"
 };
 
-const char *const MANEUEVER[] = {
-    "Maneuver 0", "Maneuver 1", "Maneuver 2"
+const char* MANEUEVER[] = {
+    "Maneuver 0", "Maneuver 1", "Maneuver 2", "Maneuver 3"
 };
 
-const char *const EPFD[] = {
-    "EPFD 0", "EPFD 1", "EPFD 2", "EPFD 3", "EPFD 4",
-    "EPFD 5", "EPFD 6", "EPFD 7", "EPFD 8"
+const char* EPFD[] = {
+    "EPFD 0", "EPFD 1", "EPFD 2", "EPFD 3",
+    "EPFD 4", "EPFD 5", "EPFD 6", "EPFD 7", "EPFD 8"
 };
 
-// DAT_000141de is used as a string literal.
-const char DAT_000141de[] = "unk";
+// DAT_000141de is used with "~c," and a buffer size of 5. It's likely a short string, e.g., "unk".
+const char DAT_000141de[] = "unk"; // "unk" + null terminator is 4 bytes. `snprintf` with 5 bytes fits "unk,"
+
+// Function declarations (forward declarations)
+undefined4 parse_msg_type_1(char *param_1, undefined4 param_2);
+undefined4 parse_msg_type_4(char *param_1, undefined4 param_2);
+undefined4 parse_msg_type_5(char *param_1, undefined4 param_2);
+
+// Function: to_english
+undefined4 to_english(undefined4 param_1, void *param_2) { // Changed int to void* for pointer safety
+  // Check the byte at offset 0x10 of the structure pointed to by param_2
+  if (*(char *)((char *)param_2 + 0x10) != '\x03') { // Cast param_2 to char* for byte arithmetic
+    return 0xffffffcd;
+  }
+
+  // Get message type and compare with byte at offset 0x11
+  byte msg_type = get_msg_type(*(undefined4 *)((char *)param_2 + 0x14));
+  if (msg_type != *(byte *)((char *)param_2 + 0x11)) {
+    return 0xffffffcd;
+  }
+
+  // Dispatch based on message type
+  if (msg_type == 5) {
+    return parse_msg_type_5(param_1, *(undefined4 *)((char *)param_2 + 0x14));
+  } else if (msg_type == 1) {
+    return parse_msg_type_1(param_1, *(undefined4 *)((char *)param_2 + 0x14));
+  } else if (msg_type == 4) {
+    return parse_msg_type_4(param_1, *(undefined4 *)((char *)param_2 + 0x14));
+  }
+  // No matching type
+  return 0xffffffcd;
+}
 
 // Function: parse_msg_type_1
-uint32_t parse_msg_type_1(char *output_buf, uint32_t msg_data_ptr) {
-    sixer_t sixer_data;
-    init_sixer(&sixer_data, msg_data_ptr);
+undefined4 parse_msg_type_1(char *param_1, undefined4 param_2) {
+  sixer_context_t sixer_ctx;
+  char *current_pos = param_1;
 
-    if (sixer_strlen(&sixer_data) != 0x90) { // Expected total bit length 144
-        return ERROR_VAL;
+  init_sixer(&sixer_ctx, param_2);
+
+  if (sixer_strlen(&sixer_ctx) != 0x90) {
+    return 0xffffffcd;
+  }
+
+  int bits_val = get_bits_from_sixer(&sixer_ctx, 3);
+  if (bits_val != 1) {
+    return 0xffffffcd;
+  }
+
+  current_pos += snprintf(current_pos, 8, "~c,", "type 1");
+
+  bits_val = get_bits_from_sixer(&sixer_ctx, 0x1e);
+  if (bits_val < 0) {
+    return 0xffffffcd;
+  }
+  current_pos += snprintf(current_pos, 0xb, "~n,", bits_val);
+
+  bits_val = get_bits_from_sixer(&sixer_ctx, 4);
+  if ((bits_val < 0) || (8 < bits_val)) {
+    return 0xffffffcd;
+  }
+  current_pos += snprintf(current_pos, 0x1c, "~c,", STATUS[bits_val]);
+
+  bits_val = get_bits_from_sixer(&sixer_ctx, 8);
+  if (0x80 < bits_val) {
+    bits_val = sixer_bits_twos_to_sint(bits_val, 0x80);
+  }
+  if (bits_val == 0) {
+    current_pos += snprintf(current_pos, 0xd, "~c,", "not turning");
+  } else if (bits_val < 0) {
+    current_pos += snprintf(current_pos, 0x12, "~c ~n,", "turning left", -bits_val);
+  } else {
+    current_pos += snprintf(current_pos, 0x13, "~c ~n,", "turning right", bits_val);
+  }
+
+  bits_val = get_bits_from_sixer(&sixer_ctx, 10);
+  if (bits_val == 0x3ff) {
+    current_pos += snprintf(current_pos, 0xb, "~c,", "speed unk");
+  } else if (bits_val < 0x3fd) {
+    current_pos += snprintf(current_pos, 8, "~nkts,", bits_val / 10);
+  } else {
+    current_pos += snprintf(current_pos, 9, "~c,", ">102kts");
+  }
+
+  get_bits_from_sixer(&sixer_ctx, 1); // Value not used
+
+  bits_val = get_bits_from_sixer(&sixer_ctx, 0x1b);
+  if (0x535020 < bits_val) {
+    bits_val = sixer_bits_twos_to_sint(bits_val, 0x800000);
+  }
+  if (bits_val == 0x535020) {
+    current_pos += snprintf(current_pos, 9, "~c,", "lat unk");
+  } else if (bits_val == 0) {
+    current_pos += snprintf(current_pos, 3, "~n,", 0);
+  } else if (bits_val < 1) {
+    current_pos += snprintf(current_pos, 10, "~nS,", -bits_val);
+  } else {
+    current_pos += snprintf(current_pos, 10, "~nN,", bits_val);
+  }
+
+  bits_val = get_bits_from_sixer(&sixer_ctx, 0x1c);
+  if (0xa5b5e0 < bits_val) {
+    bits_val = sixer_bits_twos_to_sint(bits_val, 0x1000000);
+  }
+  if (bits_val == 0xa5b5e0) {
+    current_pos += snprintf(current_pos, 9, "~c,", "lon unk");
+  } else if (bits_val == 0) {
+    current_pos += snprintf(current_pos, 3, "~n,", 0);
+  } else if (bits_val < 1) {
+    current_pos += snprintf(current_pos, 0xb, "~nW,", -bits_val);
+  } else {
+    current_pos += snprintf(current_pos, 0xb, "~nE,", bits_val);
+  }
+
+  bits_val = get_bits_from_sixer(&sixer_ctx, 0xc);
+  if (bits_val == 0xe10) {
+    current_pos += snprintf(current_pos, 0xc, "~c,", "course unk");
+  } else {
+    if (0xe06 < bits_val) {
+      return 0xffffffcd;
     }
+    current_pos += snprintf(current_pos, 8, "c:~n,", bits_val / 10);
+  }
 
-    int val; // Variable to hold results from get_bits_from_sixer
-
-    val = get_bits_from_sixer(&sixer_data, 3);
-    if (val != 1) {
-        return ERROR_VAL;
+  bits_val = get_bits_from_sixer(&sixer_ctx, 9);
+  if (bits_val == 0x1ff) {
+    current_pos += snprintf(current_pos, 0xd, "~c,", "heading unk");
+  } else {
+    if (0x167 < bits_val) {
+      return 0xffffffcd;
     }
-    output_buf += snprintf(output_buf, 8, "%s,", "type 1");
+    current_pos += snprintf(current_pos, 10, "h:~n TN,", bits_val);
+  }
 
-    val = get_bits_from_sixer(&sixer_data, 0x1e); // 30 bits
-    if (val < 0) {
-        return ERROR_VAL;
-    }
-    output_buf += snprintf(output_buf, 0xb, "%d,", val);
+  get_bits_from_sixer(&sixer_ctx, 6); // Value not used
 
-    val = get_bits_from_sixer(&sixer_data, 4);
-    if (val < 0 || val > 8) {
-        return ERROR_VAL;
-    }
-    output_buf += snprintf(output_buf, 0x1c, "%s,", STATUS[val]);
-
-    val = get_bits_from_sixer(&sixer_data, 8); // 8 bits
-    if (val > 0x80) { // If sign bit is set (0x80 for 8-bit two's complement)
-        val = sixer_bits_twos_to_sint(val, 0x80);
-    }
-    if (val == 0) {
-        output_buf += snprintf(output_buf, 0xd, "%s,", "not turning");
-    } else if (val < 0) {
-        output_buf += snprintf(output_buf, 0x12, "%s %d,", "turning left", -val);
-    } else {
-        output_buf += snprintf(output_buf, 0x13, "%s %d,", "turning right", val);
-    }
-
-    val = get_bits_from_sixer(&sixer_data, 10); // 10 bits
-    if (val == 0x3ff) { // 1023
-        output_buf += snprintf(output_buf, 0xb, "%s,", "speed unk");
-    } else if (val < 0x3fd) { // < 1021
-        output_buf += snprintf(output_buf, 8, "%dkts,", val / 10);
-    } else { // 1021 or 1022
-        output_buf += snprintf(output_buf, 9, "%s,", ">102kts");
-    }
-
-    (void)get_bits_from_sixer(&sixer_data, 1); // Result unused
-
-    val = get_bits_from_sixer(&sixer_data, 0x1b); // 27 bits
-    if (val > 0x535020) { // If sign bit is set (0x800000 for 27-bit two's complement)
-        val = sixer_bits_twos_to_sint(val, 0x800000);
-    }
-    if (val == 0x535020) { // Specific unknown value
-        output_buf += snprintf(output_buf, 9, "%s,", "lat unk");
-    } else if (val == 0) {
-        output_buf += snprintf(output_buf, 3, "%d,", 0);
-    } else if (val < 1) { // Negative
-        output_buf += snprintf(output_buf, 10, "%dS,", -val);
-    } else { // Positive
-        output_buf += snprintf(output_buf, 10, "%dN,", val);
-    }
-
-    val = get_bits_from_sixer(&sixer_data, 0x1c); // 28 bits
-    if (val > 0xa5b5e0) { // If sign bit is set (0x1000000 for 28-bit two's complement)
-        val = sixer_bits_twos_to_sint(val, 0x1000000);
-    }
-    if (val == 0xa5b5e0) { // Specific unknown value
-        output_buf += snprintf(output_buf, 9, "%s,", "lon unk");
-    } else if (val == 0) {
-        output_buf += snprintf(output_buf, 3, "%d,", 0);
-    } else if (val < 1) { // Negative
-        output_buf += snprintf(output_buf, 0xb, "%dW,", -val);
-    } else { // Positive
-        output_buf += snprintf(output_buf, 0xb, "%dE,", val);
-    }
-
-    val = get_bits_from_sixer(&sixer_data, 0xc); // 12 bits
-    if (val == 0xe10) { // 3600
-        output_buf += snprintf(output_buf, 0xc, "%s,", "course unk");
-    } else {
-        if (val > 0xe06) { // Max 3590 (359.0 degrees)
-            return ERROR_VAL;
-        }
-        output_buf += snprintf(output_buf, 8, "c:%d,", val / 10);
-    }
-
-    val = get_bits_from_sixer(&sixer_data, 9); // 9 bits
-    if (val == 0x1ff) { // 511
-        output_buf += snprintf(output_buf, 0xd, "%s,", "heading unk");
-    } else {
-        if (val > 0x167) { // Max 359 degrees
-            return ERROR_VAL;
-        }
-        output_buf += snprintf(output_buf, 10, "h:%d TN,", val);
-    }
-
-    (void)get_bits_from_sixer(&sixer_data, 6); // Result unused
-
-    val = get_bits_from_sixer(&sixer_data, 2); // 2 bits
-    if (val == 3) {
-        return ERROR_VAL;
-    }
-    snprintf(output_buf, 0x18, "%s.", MANEUEVER[val]);
-
-    return 0; // Success
+  bits_val = get_bits_from_sixer(&sixer_ctx, 2);
+  if (bits_val == 3) {
+    return 0xffffffcd;
+  }
+  snprintf(current_pos, 0x18, "~c.", MANEUEVER[bits_val]);
+  return 0;
 }
 
 // Function: parse_msg_type_4
-uint32_t parse_msg_type_4(char *output_buf, uint32_t msg_data_ptr) {
-    sixer_t sixer_data;
-    init_sixer(&sixer_data, msg_data_ptr);
+undefined4 parse_msg_type_4(char *param_1, undefined4 param_2) {
+  sixer_context_t sixer_ctx;
+  char *current_pos = param_1;
 
-    if (sixer_strlen(&sixer_data) != 0x8a) { // Expected total bit length 138
-        return ERROR_VAL;
-    }
+  init_sixer(&sixer_ctx, param_2);
 
-    int val;
+  if (sixer_strlen(&sixer_ctx) != 0x8a) {
+    return 0xffffffcd;
+  }
 
-    val = get_bits_from_sixer(&sixer_data, 3);
-    if (val != 4) {
-        return ERROR_VAL;
-    }
-    output_buf += snprintf(output_buf, 8, "%s,", "type 4");
+  int bits_val = get_bits_from_sixer(&sixer_ctx, 3);
+  if (bits_val != 4) {
+    return 0xffffffcd;
+  }
 
-    val = get_bits_from_sixer(&sixer_data, 0x1e); // 30 bits
-    if (val < 0) {
-        return ERROR_VAL;
-    }
-    output_buf += snprintf(output_buf, 0xb, "%d,", val);
+  current_pos += snprintf(current_pos, 8, "~c,", "type 4");
 
-    val = get_bits_from_sixer(&sixer_data, 0xe); // 14 bits
-    if (val == 0) {
-        output_buf += snprintf(output_buf, 5, "%s,", DAT_000141de);
-    } else {
-        output_buf += snprintf(output_buf, 6, "%d,", val);
-    }
+  bits_val = get_bits_from_sixer(&sixer_ctx, 0x1e);
+  if (bits_val < 0) {
+    return 0xffffffcd;
+  }
+  current_pos += snprintf(current_pos, 0xb, "~n,", bits_val);
 
-    val = get_bits_from_sixer(&sixer_data, 4); // 4 bits
-    if (val >= 0xd) { // Max 12
-        return ERROR_VAL;
-    }
-    if (val == 0) {
-        output_buf += snprintf(output_buf, 5, "%s,", DAT_000141de);
-    } else {
-        output_buf += snprintf(output_buf, 4, "%d,", val);
-    }
+  bits_val = get_bits_from_sixer(&sixer_ctx, 0xe);
+  if (bits_val == 0) {
+    current_pos += snprintf(current_pos, 5, "~c,", DAT_000141de);
+  } else {
+    current_pos += snprintf(current_pos, 6, "~n,", bits_val);
+  }
 
-    val = get_bits_from_sixer(&sixer_data, 5); // 5 bits
-    if (val >= 0x20) { // Max 31
-        return ERROR_VAL;
-    }
-    if (val == 0) {
-        output_buf += snprintf(output_buf, 5, "%s,", DAT_000141de);
-    } else {
-        output_buf += snprintf(output_buf, 4, "%d,", val);
-    }
+  bits_val = get_bits_from_sixer(&sixer_ctx, 4);
+  if (bits_val >= 0xd) {
+    return 0xffffffcd;
+  }
+  if (bits_val == 0) {
+    current_pos += snprintf(current_pos, 5, "~c,", DAT_000141de);
+  } else {
+    current_pos += snprintf(current_pos, 4, "~n,", bits_val);
+  }
 
-    val = get_bits_from_sixer(&sixer_data, 5); // 5 bits
-    if (val >= 0x19) { // Max 24 (0x18 is 24)
-        return ERROR_VAL;
-    }
-    if (val == 0x18) {
-        output_buf += snprintf(output_buf, 5, "%s,", DAT_000141de);
-    } else {
-        output_buf += snprintf(output_buf, 4, "%d,", val);
-    }
+  bits_val = get_bits_from_sixer(&sixer_ctx, 5);
+  if (bits_val >= 0x20) {
+    return 0xffffffcd;
+  }
+  if (bits_val == 0) {
+    current_pos += snprintf(current_pos, 5, "~c,", DAT_000141de);
+  } else {
+    current_pos += snprintf(current_pos, 4, "~n,", bits_val);
+  }
 
-    val = get_bits_from_sixer(&sixer_data, 6); // 6 bits
-    if (val >= 0x3d) { // Max 60 (0x3c is 60)
-        return ERROR_VAL;
-    }
-    if (val == 0x3c) {
-        output_buf += snprintf(output_buf, 5, "%s,", DAT_000141de);
-    } else {
-        output_buf += snprintf(output_buf, 4, "%d,", val);
-    }
+  bits_val = get_bits_from_sixer(&sixer_ctx, 5);
+  if (bits_val >= 0x19) {
+    return 0xffffffcd;
+  }
+  if (bits_val == 0x18) {
+    current_pos += snprintf(current_pos, 5, "~c,", DAT_000141de);
+  } else {
+    current_pos += snprintf(current_pos, 4, "~n,", bits_val);
+  }
 
-    val = get_bits_from_sixer(&sixer_data, 6); // 6 bits
-    if (val >= 0x3d) { // Max 60 (0x3c is 60)
-        return ERROR_VAL;
-    }
-    if (val == 0x3c) {
-        output_buf += snprintf(output_buf, 5, "%s,", DAT_000141de);
-    } else {
-        output_buf += snprintf(output_buf, 4, "%d,", val);
-    }
+  bits_val = get_bits_from_sixer(&sixer_ctx, 6);
+  if (bits_val >= 0x3d) {
+    return 0xffffffcd;
+  }
+  if (bits_val == 0x3c) {
+    current_pos += snprintf(current_pos, 5, "~c,", DAT_000141de);
+  } else {
+    current_pos += snprintf(current_pos, 4, "~n,", bits_val);
+  }
 
-    (void)get_bits_from_sixer(&sixer_data, 1); // Result unused
+  bits_val = get_bits_from_sixer(&sixer_ctx, 6);
+  if (bits_val >= 0x3d) {
+    return 0xffffffcd;
+  }
+  if (bits_val == 0x3c) {
+    current_pos += snprintf(current_pos, 5, "~c,", DAT_000141de);
+  } else {
+    current_pos += snprintf(current_pos, 4, "~n,", bits_val);
+  }
 
-    val = get_bits_from_sixer(&sixer_data, 0x1b); // 27 bits
-    if (val > 0x535020) {
-        val = sixer_bits_twos_to_sint(val, 0x800000);
-    }
-    if (val == 0x535020) {
-        output_buf += snprintf(output_buf, 9, "%s,", "lat unk");
-    } else if (val == 0) {
-        output_buf += snprintf(output_buf, 3, "%d,", 0);
-    } else if (val < 1) { // Negative
-        output_buf += snprintf(output_buf, 10, "%dS,", -val);
-    } else { // Positive
-        output_buf += snprintf(output_buf, 10, "%dN,", val);
-    }
+  get_bits_from_sixer(&sixer_ctx, 1); // Value not used
 
-    val = get_bits_from_sixer(&sixer_data, 0x1c); // 28 bits
-    if (val > 0xa5b5e0) {
-        val = sixer_bits_twos_to_sint(val, 0x1000000);
-    }
-    if (val == 0xa5b5e0) {
-        output_buf += snprintf(output_buf, 9, "%s,", "lon unk");
-    } else if (val == 0) {
-        output_buf += snprintf(output_buf, 3, "%d,", 0);
-    } else if (val < 1) { // Negative
-        output_buf += snprintf(output_buf, 0xb, "%dW,", -val);
-    } else { // Positive
-        output_buf += snprintf(output_buf, 0xb, "%dE,", val);
-    }
+  bits_val = get_bits_from_sixer(&sixer_ctx, 0x1b);
+  if (0x535020 < bits_val) {
+    bits_val = sixer_bits_twos_to_sint(bits_val, 0x800000);
+  }
+  if (bits_val == 0x535020) {
+    current_pos += snprintf(current_pos, 9, "~c,", "lat unk");
+  } else if (bits_val == 0) {
+    current_pos += snprintf(current_pos, 3, "~n,", 0);
+  } else if (bits_val < 1) {
+    current_pos += snprintf(current_pos, 10, "~nS,", -bits_val);
+  } else {
+    current_pos += snprintf(current_pos, 10, "~nN,", bits_val);
+  }
 
-    val = get_bits_from_sixer(&sixer_data, 4); // 4 bits
-    if (val >= 9) { // Max 8
-        return ERROR_VAL;
-    }
-    snprintf(output_buf, 0x1e, "%s.", EPFD[val]);
+  bits_val = get_bits_from_sixer(&sixer_ctx, 0x1c);
+  if (0xa5b5e0 < bits_val) {
+    bits_val = sixer_bits_twos_to_sint(bits_val, 0x1000000);
+  }
+  if (bits_val == 0xa5b5e0) {
+    current_pos += snprintf(current_pos, 9, "~c,", "lon unk");
+  } else if (bits_val == 0) {
+    current_pos += snprintf(current_pos, 3, "~n,", 0);
+  } else if (bits_val < 1) {
+    current_pos += snprintf(current_pos, 0xb, "~nW,", -bits_val);
+  } else {
+    current_pos += snprintf(current_pos, 0xb, "~nE,", bits_val);
+  }
 
-    return 0; // Success
+  bits_val = get_bits_from_sixer(&sixer_ctx, 4);
+  if (bits_val >= 9) {
+    return 0xffffffcd;
+  }
+  snprintf(current_pos, 0x1e, "~c.", EPFD[bits_val]);
+  return 0;
 }
 
 // Function: parse_msg_type_5
-uint32_t parse_msg_type_5(char *output_buf, uint32_t msg_data_ptr) {
-    sixer_t sixer_data;
-    init_sixer(&sixer_data, msg_data_ptr);
+undefined4 parse_msg_type_5(char *param_1, undefined4 param_2) {
+  sixer_context_t sixer_ctx;
+  char *current_pos = param_1;
+  int is_padding_active = 0; // Renamed from local_18
 
-    if (sixer_strlen(&sixer_data) != 0x180) { // Expected total bit length 384
-        return ERROR_VAL;
+  init_sixer(&sixer_ctx, param_2);
+
+  if (sixer_strlen(&sixer_ctx) != 0x180) {
+    return 0xffffffcd;
+  }
+
+  uint bits_val_u = get_bits_from_sixer(&sixer_ctx, 3);
+  if (bits_val_u != 5) {
+    return 0xffffffcd;
+  }
+
+  current_pos += snprintf(current_pos, 8, "~c,", "type 5");
+
+  bits_val_u = get_bits_from_sixer(&sixer_ctx, 0x1e);
+  if ((int)bits_val_u < 0) {
+    return 0xffffffcd;
+  }
+  current_pos += snprintf(current_pos, 0xb, "~n,", bits_val_u);
+
+  bits_val_u = get_bits_from_sixer(&sixer_ctx, 0x1e);
+  if ((int)bits_val_u < 0) {
+    return 0xffffffcd;
+  }
+  current_pos += snprintf(current_pos, 0xb, "~n,", bits_val_u);
+
+  is_padding_active = 0;
+  for (int i = 0; i < 7; ++i) {
+    int char_bits = get_bits_from_sixer(&sixer_ctx, 6);
+    if (char_bits < 0) {
+      return 0xffffffcd;
     }
-
-    int val;
-    int is_at_char_seen = 0; // Flag to stop printing characters after an '@' is encountered
-
-    val = get_bits_from_sixer(&sixer_data, 3);
-    if (val != 5) {
-        return ERROR_VAL;
-    }
-    output_buf += snprintf(output_buf, 8, "%s,", "type 5");
-
-    val = get_bits_from_sixer(&sixer_data, 0x1e); // 30 bits
-    if (val < 0) {
-        return ERROR_VAL;
-    }
-    output_buf += snprintf(output_buf, 0xb, "%d,", val);
-
-    val = get_bits_from_sixer(&sixer_data, 0x1e); // 30 bits
-    if (val < 0) {
-        return ERROR_VAL;
-    }
-    output_buf += snprintf(output_buf, 0xb, "%d,", val);
-
-    is_at_char_seen = 0;
-    for (int i = 0; i < 7; ++i) {
-        val = get_bits_from_sixer(&sixer_data, 6);
-        if (val < 0) {
-            return ERROR_VAL;
-        }
-        char char_val = sixer_bits_to_ASCII_str_char((uint8_t)(val & 0xff));
-        if (char_val == '@' || is_at_char_seen) {
-            is_at_char_seen = 1;
-        } else {
-            *output_buf++ = char_val;
-        }
-    }
-    *output_buf++ = ',';
-
-    is_at_char_seen = 0;
-    for (int i = 0; i < 0x14; ++i) { // 20 iterations
-        val = get_bits_from_sixer(&sixer_data, 6);
-        if (val < 0) {
-            return ERROR_VAL;
-        }
-        char char_val = sixer_bits_to_ASCII_str_char((uint8_t)(val & 0xff));
-        if (char_val == '@' || is_at_char_seen) {
-            is_at_char_seen = 1;
-        } else {
-            *output_buf++ = char_val;
-        }
-    }
-    *output_buf++ = ',';
-
-    val = get_bits_from_sixer(&sixer_data, 4); // 4 bits
-    if (val >= 9) { // Max 8
-        return ERROR_VAL;
-    }
-    output_buf += snprintf(output_buf, 0x1e, "%s,", EPFD[val]);
-
-    val = get_bits_from_sixer(&sixer_data, 4); // 4 bits
-    if (val >= 0xd) { // Max 12
-        return ERROR_VAL;
-    }
-    if (val == 0) {
-        output_buf += snprintf(output_buf, 5, "%s,", DAT_000141de);
+    char c = sixer_bits_to_ASCII_str_char(char_bits & 0xff);
+    if ((c == '@') || (is_padding_active == 1)) {
+      is_padding_active = 1;
     } else {
-        output_buf += snprintf(output_buf, 4, "%d,", val);
+      *current_pos++ = c;
     }
+  }
+  *current_pos++ = ',';
 
-    val = get_bits_from_sixer(&sixer_data, 5); // 5 bits
-    if (val >= 0x20) { // Max 31
-        return ERROR_VAL;
+  is_padding_active = 0;
+  for (int i = 0; i < 0x14; ++i) {
+    int char_bits = get_bits_from_sixer(&sixer_ctx, 6);
+    if (char_bits < 0) {
+      return 0xffffffcd;
     }
-    if (val == 0) {
-        output_buf += snprintf(output_buf, 5, "%s,", DAT_000141de);
+    char c = sixer_bits_to_ASCII_str_char(char_bits & 0xff);
+    if ((c == '@') || (is_padding_active == 1)) {
+      is_padding_active = 1;
     } else {
-        output_buf += snprintf(output_buf, 4, "%d,", val);
+      *current_pos++ = c;
     }
+  }
+  *current_pos++ = ',';
 
-    val = get_bits_from_sixer(&sixer_data, 5); // 5 bits
-    if (val >= 0x19) { // Max 24 (0x18 is 24)
-        return ERROR_VAL;
+  bits_val_u = get_bits_from_sixer(&sixer_ctx, 4);
+  if ((int)bits_val_u >= 9) {
+    return 0xffffffcd;
+  }
+  current_pos += snprintf(current_pos, 0x1e, "~c,", EPFD[bits_val_u]);
+
+  bits_val_u = get_bits_from_sixer(&sixer_ctx, 4);
+  if ((int)bits_val_u >= 0xd) {
+    return 0xffffffcd;
+  }
+  if (bits_val_u == 0) {
+    current_pos += snprintf(current_pos, 5, "~c,", DAT_000141de);
+  } else {
+    current_pos += snprintf(current_pos, 4, "~n,", bits_val_u);
+  }
+
+  bits_val_u = get_bits_from_sixer(&sixer_ctx, 5);
+  if ((int)bits_val_u >= 0x20) {
+    return 0xffffffcd;
+  }
+  if (bits_val_u == 0) {
+    current_pos += snprintf(current_pos, 5, "~c,", DAT_000141de);
+  } else {
+    current_pos += snprintf(current_pos, 4, "~n,", bits_val_u);
+  }
+
+  bits_val_u = get_bits_from_sixer(&sixer_ctx, 5);
+  if ((int)bits_val_u >= 0x19) {
+    return 0xffffffcd;
+  }
+  if (bits_val_u == 0x18) {
+    current_pos += snprintf(current_pos, 5, "~c,", DAT_000141de);
+  } else {
+    current_pos += snprintf(current_pos, 4, "~n,", bits_val_u);
+  }
+
+  bits_val_u = get_bits_from_sixer(&sixer_ctx, 6);
+  if ((int)bits_val_u >= 0x3d) {
+    return 0xffffffcd;
+  }
+  if (bits_val_u == 0x3c) {
+    current_pos += snprintf(current_pos, 5, "~c,", DAT_000141de);
+  } else {
+    current_pos += snprintf(current_pos, 4, "~n,", bits_val_u);
+  }
+
+  bits_val_u = get_bits_from_sixer(&sixer_ctx, 8);
+  current_pos += snprintf(current_pos, 5, "~n,", bits_val_u);
+
+  is_padding_active = 0;
+  for (int i = 0; i < 0x14; ++i) {
+    int char_bits = get_bits_from_sixer(&sixer_ctx, 6);
+    if (char_bits < 0) {
+      return 0xffffffcd;
     }
-    if (val == 0x18) {
-        output_buf += snprintf(output_buf, 5, "%s,", DAT_000141de);
+    char c = sixer_bits_to_ASCII_str_char(char_bits & 0xff);
+    if ((c == '@') || (is_padding_active == 1)) {
+      is_padding_active = 1;
     } else {
-        output_buf += snprintf(output_buf, 4, "%d,", val);
+      *current_pos++ = c;
     }
-
-    val = get_bits_from_sixer(&sixer_data, 6); // 6 bits
-    if (val >= 0x3d) { // Max 60 (0x3c is 60)
-        return ERROR_VAL;
-    }
-    if (val == 0x3c) {
-        output_buf += snprintf(output_buf, 5, "%s,", DAT_000141de);
-    } else {
-        output_buf += snprintf(output_buf, 4, "%d,", val);
-    }
-
-    val = get_bits_from_sixer(&sixer_data, 8); // 8 bits
-    output_buf += snprintf(output_buf, 5, "%d,", val);
-
-    is_at_char_seen = 0;
-    for (int i = 0; i < 0x14; ++i) { // 20 iterations
-        val = get_bits_from_sixer(&sixer_data, 6);
-        if (val < 0) {
-            return ERROR_VAL;
-        }
-        char char_val = sixer_bits_to_ASCII_str_char((uint8_t)(val & 0xff));
-        if (char_val == '@' || is_at_char_seen) {
-            is_at_char_seen = 1;
-        } else {
-            *output_buf++ = char_val;
-        }
-    }
-    *output_buf = '.'; // Final character, no trailing comma
-
-    return 0; // Success
-}
-
-// Function: to_english
-// param_1 is `undefined4` in the snippet, but used as `char *` for output buffer.
-// Changed to `char *output_buf` for correct type usage.
-uint32_t to_english(char *output_buf, int msg_data_ptr) {
-    // Check message header byte at offset 0x10
-    if (*(char *)(msg_data_ptr + 0x10) != '\x03') {
-        return ERROR_VAL;
-    }
-
-    // Get pointer to message content at offset 0x14
-    uint32_t msg_content_ptr = *(uint32_t *)(msg_data_ptr + 0x14);
-    // Get message type
-    byte msg_type = get_msg_type(msg_content_ptr);
-
-    // Check if message type matches expected value at offset 0x11
-    if (msg_type != *(byte *)(msg_data_ptr + 0x11)) {
-        return ERROR_VAL;
-    }
-
-    // Dispatch to appropriate parser function based on message type
-    if (msg_type == 5) {
-        return parse_msg_type_5(output_buf, msg_content_ptr);
-    } else if (msg_type == 1) {
-        return parse_msg_type_1(output_buf, msg_content_ptr);
-    } else if (msg_type == 4) {
-        return parse_msg_type_4(output_buf, msg_content_ptr);
-    }
-    // If message type is not handled (e.g., 0, 2, 3, or >= 6)
-    return ERROR_VAL;
+  }
+  *current_pos = '.'; // Final character, no increment
+  return 0;
 }

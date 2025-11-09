@@ -1,28 +1,35 @@
-#include <stdio.h> // Required for FILE, stdin, stdout, fflush, fread, fgetc, size_t
+#include <stdio.h>   // For fflush, fread, fgetc, FILE, stdout, stdin, EOF
+#include <stddef.h>  // For size_t
 
 // Function: read_until
-// Reads characters from stdin into buffer until max_len-1 characters are read,
-// EOF is encountered, or the specified delimiter is found.
-// The buffer is null-terminated. The delimiter character is consumed but not stored.
+// Reads from stdin into buffer until the specified delimiter, EOF, or max_len-1 characters are read.
+// The buffer is always null-terminated if max_len > 0.
 void read_until(char *buffer, size_t max_len, char delimiter) {
-  fflush(stdout); // Ensure any pending output is displayed before reading input
+  fflush(stdout);
+
+  if (max_len == 0) {
+    return; // Cannot store anything if max_len is 0
+  }
+
   size_t i = 0;
   int c;
 
+  // Read characters one by one until buffer is almost full (leaving space for null terminator),
+  // or EOF is encountered, or the delimiter character is read.
   while (i < max_len - 1 && (c = fgetc(stdin)) != EOF && c != delimiter) {
     buffer[i++] = (char)c;
   }
-  buffer[i] = '\0'; // Null-terminate the string
+
+  // Null-terminate the buffer.
+  buffer[i] = '\0';
 }
 
 // Function: read_n
-// Reads a specified number of bytes from stdin into a buffer.
+// Reads exactly num_bytes from stdin into the provided buffer.
 void read_n(void *buffer, size_t num_bytes) {
-  fflush(stdout); // Ensure any pending output is displayed before reading input
-  // fread(ptr, size, nmemb, stream)
-  // ptr: buffer where data is stored
-  // size: size of each item to be read (1 byte for raw byte reading)
-  // nmemb: number of items to be read (total num_bytes)
-  // stream: input stream (stdin)
+  fflush(stdout);
+
+  // Use fread to read num_bytes bytes into the buffer from stdin.
+  // We read blocks of 1 byte, num_bytes times.
   fread(buffer, 1, num_bytes, stdin);
 }

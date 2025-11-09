@@ -1,177 +1,200 @@
-#include <stdint.h> // For uint8_t, uint16_t, uint32_t, int32_t, ssize_t
-#include <stdlib.h> // For malloc, free, exit, NULL
-#include <string.h> // For memcpy, memcmp
-#include <stdio.h>  // For fprintf (in dummy functions)
-#include <unistd.h> // For ssize_t, and potential use of actual send/recv
+#include <stdint.h> // For uint32_t, size_t
+#include <stdlib.h> // For malloc, free
+#include <string.h> // For memcmp, memcpy
+#include <unistd.h> // For _exit (used by _terminate)
+#include <stdio.h>  // For printf (in mocks) and fprintf (in _terminate)
 
-// --- Global variables and types (declarations and definitions) ---
+// Define custom types from the snippet
+typedef unsigned char byte;
+typedef unsigned int uint;
+typedef unsigned short ushort;
+typedef uint32_t undefined4; // 4-byte unsigned integer
+typedef unsigned char undefined; // 1-byte unsigned char
 
-// Assuming these are global arrays of 4 bytes
-uint8_t OK[4] = {0};
-uint8_t ERR[4] = {0};
+// --- Global variables and external function mocks for compilation ---
 
-// This address is highly system-specific and likely points to unmapped memory in a
-// standard user-space process. For a real application, DATA_BASE_ADDRESS would
-// need to point to a valid, accessible memory region.
-const uint8_t *DATA_BASE_ADDRESS = (const uint8_t *)0x4347c000;
+// Global arrays for results (OK, ERR)
+unsigned char OK[4] = {0};
+unsigned char ERR[4] = {0};
 
-// Global pointer for the input buffer
-uint8_t *in = NULL;
+// Mock base address for global data (0x4347c000).
+// In a real scenario, this would point to a specific memory region or a global array.
+// For compilation, we'll make it point to a static array.
+// The size (0xfff + 1 = 4096 bytes) is inferred from the loop `local_c < 0xfff`.
+static const unsigned char GLOBAL_DATA_STORAGE[4096] = {
+    // Dummy data for compilation. In a real system, this would be actual program data.
+    // Example: fill with a pattern for demonstration
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, /* ... */
+};
+const unsigned char *GLOBAL_DATA_BASE = GLOBAL_DATA_STORAGE;
 
-// Input type identifiers (4-byte strings)
-const char INPUT_TYPE_PLAIN[4] = {'P', 'L', 'A', 'N'};
-const char INPUT_TYPE_SERIALIZED[4] = {'S', 'E', 'R', 'L'};
+// Global input type strings (assuming 4-byte comparison)
+const unsigned char INPUT_TYPE_PLAIN[] = "PLAI"; // Or "PLAIN\0" if 5 bytes and memcmp is 4
+const unsigned char INPUT_TYPE_SERIALIZED[] = "SERI"; // Or "SERIALIZED"
 
-// --- Dummy function prototypes and implementations for compilation ---
+// Global pointer for allocated input buffer
+void *in = NULL;
 
-// Dummy termination function
-#define _terminate() do { fprintf(stderr, "TERMINATION: An error occurred, exiting.\n"); exit(EXIT_FAILURE); } while(0)
+// Global buffer for `recv_all_no_args` (which takes no arguments)
+// It's assumed to fill this buffer and return the count.
+#define GLOBAL_RECV_BUFFER_SIZE 512 // Arbitrary size, large enough for 6 bytes + data
+static unsigned char g_recv_buffer_temp[GLOBAL_RECV_BUFFER_SIZE];
 
-// Dummy recv_all: Simulates receiving data into 'buf' of 'len' bytes.
-// In a real application, this would typically read from a socket or file descriptor.
-ssize_t recv_all(void *buf, size_t len) {
+// Mock external functions:
+
+// `_terminate`: Exits the program due to an unrecoverable error.
+void _terminate(void) {
+    fprintf(stderr, "Program terminated due to error.\n");
+    _exit(1); // Use _exit for immediate termination without cleanup
+}
+
+// `recv_all_no_args`: This is a mock. In a real system, it would perform I/O.
+// It's assumed to fill `g_recv_buffer_temp` and return the number of bytes read.
+// This mock simulates two calls: first for header, second for data.
+size_t recv_all_no_args(void) {
     static int call_count = 0;
     call_count++;
 
-    // Simulate receiving the initial 6 bytes (4 for type, 2 for length)
-    if (call_count == 1 && len == 6) {
-        // Example: "SERL" type, followed by a length of 10 (0x000A, little-endian)
-        uint8_t dummy_initial_data[6] = {'S', 'E', 'R', 'L', 0x0A, 0x00};
-        memcpy(buf, dummy_initial_data, 6);
-        fprintf(stderr, "Dummy recv_all: Received initial 6 bytes (type+length).\n");
-        return 6;
+    if (call_count == 1) {
+        // Simulate receiving "PLAI" and length 10
+        memcpy(g_recv_buffer_temp, INPUT_TYPE_PLAIN, 4);
+        ushort mock_data_len = 10; // Example data length
+        memcpy(g_recv_buffer_temp + 4, &mock_data_len, 2);
+        return 6; // 4 bytes type + 2 bytes length
+    } else if (call_count == 2) {
+        // Simulate receiving 10 bytes of actual data
+        memset(g_recv_buffer_temp, 'A', 10); // Dummy data 'AAAAAAAAAA'
+        return 10; // The actual data length
     }
-    // Simulate receiving the actual data (length 10 from previous step)
-    else if (call_count == 2 && len == 10) {
-        uint8_t dummy_payload_data[10] = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
-        memcpy(buf, dummy_payload_data, 10);
-        fprintf(stderr, "Dummy recv_all: Received 10 bytes of payload data.\n");
-        return 10;
-    }
-    // For subsequent calls or unexpected lengths, return 0 or -1 (error)
-    fprintf(stderr, "Dummy recv_all: No data or unexpected length (%zu) for call %d.\n", len, call_count);
-    return 0; // Simulate no data
+    return 0; // No more data to simulate
 }
 
-// Dummy send function: Simulates sending data.
-// In a real application, this would typically write to a socket or file descriptor.
-// The original code passed an address or constant as the first argument, and 4 as the length.
-// We'll interpret the first argument as a symbolic file descriptor/identifier.
-ssize_t send(int fd, const void *buf, size_t len, int flags) {
-    if (buf && len >= sizeof(int)) {
-        fprintf(stderr, "Dummy SEND to FD %d: Value=%d, Length=%zu, Flags=%d\n", fd, *(const int*)buf, len, flags);
-    } else {
-        fprintf(stderr, "Dummy SEND to FD %d: (Invalid buf/len), Length=%zu, Flags=%d\n", fd, len, flags);
+// `send`: Mock function for `send(int sockfd, const void *buf, size_t len, int flags)`
+int send(int sockfd, const void *buf, size_t len, int flags) {
+    printf("MOCK SEND: Socket %d, Data (hex): '", sockfd);
+    for (size_t i = 0; i < len; ++i) {
+        printf("%02x", ((unsigned char*)buf)[i]);
     }
-    return len; // Simulate success
+    printf("', Length: %zu, Flags: %d\n", len, flags);
+    return len; // Simulate sending all bytes
 }
 
-// Dummy processing functions
-int32_t process_plain_input(uint8_t *input_buffer) {
-    fprintf(stderr, "Processing plain input (dummy).\n");
-    // Simulate success
-    return 0;
-}
-
-int32_t process_serialized_input(uint8_t *input_buffer) {
-    fprintf(stderr, "Processing serialized input (dummy).\n");
-    // Simulate success
-    return 0;
-}
-
-// Symbolic identifiers for send function's first argument
-#define OUT_FD_STATUS_1 100
-#define OUT_FD_STATUS_2 101
-#define OUT_FD_STATUS_FINAL 102
-
-// --- Function: gen_result_bufs ---
-void gen_result_bufs(void) {
-    uint32_t i;
-    for (i = 0; i < 0xfff; i += 2) {
-        // XOR the bytes in OK and ERR arrays using data from DATA_BASE_ADDRESS
-        // The (i & 3) and ((i + 1) & 3) access patterns suggest these arrays are 4 bytes long.
-        OK[i & 3] ^= DATA_BASE_ADDRESS[i];
-        ERR[(i + 1) & 3] ^= DATA_BASE_ADDRESS[i + 1];
-    }
-}
-
-// --- Function: receive_input ---
-int32_t receive_input(void) {
-    uint8_t initial_header_buf[6]; // 4 bytes for type, 2 bytes for length
-    ssize_t bytes_received;
-    uint16_t data_length;
-    int memcmp_result;
-
-    // Receive the first 6 bytes containing input type and data length
-    bytes_received = recv_all(initial_header_buf, sizeof(initial_header_buf));
-    if (bytes_received != sizeof(initial_header_buf)) {
-        _terminate(); // Expected 6 bytes, but didn't receive them
-    }
-
-    // Extract the data length (assuming little-endian as is common in many systems
-    // or network protocols; adjust if big-endian is expected).
-    memcpy(&data_length, initial_header_buf + 4, sizeof(data_length));
-
-    // Compare the received input type (first 4 bytes)
-    memcmp_result = memcmp(INPUT_TYPE_PLAIN, initial_header_buf, 4);
-    if (memcmp_result != 0) { // Not PLAIN type
-        memcmp_result = memcmp(INPUT_TYPE_SERIALIZED, initial_header_buf, 4);
-        if (memcmp_result != 0) { // Not PLAIN and not SERIALIZED
-            return -1; // Indicate an unknown input type (original code returned 0xffffffff)
-        }
-    }
-
-    // Allocate the main input buffer 'in'. It will store:
-    // 4 bytes for type + 2 bytes for length + 'data_length' bytes for actual data.
-    in = (uint8_t *)malloc(4 + 2 + data_length);
-    if (in == NULL) {
-        _terminate(); // Memory allocation failed
-    }
-
-    // Copy the initial 6 bytes (type and length) into the newly allocated 'in' buffer
-    memcpy(in, initial_header_buf, sizeof(initial_header_buf));
-
-    // Receive the remaining data into 'in' buffer, starting after the header
-    bytes_received = recv_all(in + 6, data_length);
-    if (bytes_received != data_length) {
-        _terminate(); // Did not receive the expected amount of data
-    }
-
+// Mock processing functions
+int process_plain_input(void *input_buf) {
+    printf("MOCK: Processing plain input from %p. Content: '%.*s'\n", input_buf, 4, (char*)input_buf);
+    // Simulate some processing and return status
     return 0; // Success
 }
 
-// --- Function: main ---
-int main(void) {
-    int32_t op_result_code; // Stores the result of receive_input or processing functions
-    int status_value = 0x1092; // A status value, incremented in the loop
+int process_serialized_input(void *input_buf) {
+    printf("MOCK: Processing serialized input from %p. Content: '%.*s'\n", input_buf, 4, (char*)input_buf);
+    // Simulate some processing and return status
+    return 0; // Success
+}
 
-    gen_result_bufs(); // Initialize result buffers
+// --- Fixed Functions ---
 
-    while (1) { // Main loop
-        op_result_code = receive_input(); // Get input
+// Function: gen_result_bufs
+void gen_result_bufs(void) {
+  uint local_c;
+  
+  for (local_c = 0; local_c < 0xfff; local_c += 2) {
+    // Perform XOR operations on global buffers OK and ERR using GLOBAL_DATA_BASE
+    OK[local_c & 3] ^= GLOBAL_DATA_BASE[local_c];
+    ERR[(local_c + 1) & 3] ^= GLOBAL_DATA_BASE[local_c + 1];
+  }
+}
 
-        if (op_result_code != -1) { // If receive_input was successful (not an unknown type error)
-            send(OUT_FD_STATUS_1, &status_value, sizeof(status_value), 0); // Send current status
+// Function: receive_input
+undefined4 receive_input(void) {
+  unsigned char input_type_bytes[4]; // Buffer to hold the 4-byte input type
+  ushort data_length;                // Variable to hold the 2-byte data length
+  uint bytes_read_count;             // Stores the return value of recv_all_no_args
 
-            // Determine input type and call appropriate processing function
-            if (memcmp(INPUT_TYPE_PLAIN, in, 4) == 0) {
-                op_result_code = process_plain_input(in);
-            } else {
-                op_result_code = process_serialized_input(in);
-            }
-        }
+  // First call to recv_all_no_args to get the 6-byte header (4 bytes type + 2 bytes length)
+  bytes_read_count = recv_all_no_args();
+  if (bytes_read_count != 6) {
+    _terminate(); // Error: expected 6 bytes for the header
+  }
 
-        if (op_result_code != 0) {
-            // If receive_input returned -1 (unknown type) or a processing function failed
-            break; // Exit the loop
-        }
+  // Copy input type and data length from the global receive buffer
+  memcpy(input_type_bytes, g_recv_buffer_temp, 4);
+  memcpy(&data_length, g_recv_buffer_temp + 4, 2);
 
-        send(OUT_FD_STATUS_2, &status_value, sizeof(status_value), 0); // Send status again
-        free(in); // Free the allocated input buffer
-        in = NULL; // Clear the global pointer to prevent use-after-free or double-free issues
-        status_value++; // Increment status for the next iteration
+  // Compare the received input type with known types
+  if (memcmp(INPUT_TYPE_PLAIN, input_type_bytes, 4) != 0) {
+    if (memcmp(INPUT_TYPE_SERIALIZED, input_type_bytes, 4) != 0) {
+      return 0xffffffff; // Input type not recognized
+    }
+  }
+
+  // Allocate memory for the full input data:
+  // 4 bytes for the type field + 2 bytes for the length field + `data_length` for the actual payload.
+  in = malloc(6 + data_length);
+  if (in == NULL) {
+    _terminate(); // Memory allocation failed
+  }
+
+  // Store the data length at offset 4 within the 'in' buffer
+  // (Assuming 'in' buffer structure is: 0-3 type, 4-5 length, 6+ data payload)
+  *(ushort *)((unsigned char *)in + 4) = data_length;
+
+  // Copy the 4-byte input type into the 'in' buffer at offset 0
+  memcpy(in, input_type_bytes, 4);
+
+  // Second call to recv_all_no_args to get the actual data payload
+  bytes_read_count = recv_all_no_args();
+  if (bytes_read_count != data_length) {
+    _terminate(); // Error: expected `data_length` bytes for the payload
+  }
+
+  // Copy the actual data payload from the global receive buffer into 'in' at offset 6
+  memcpy((unsigned char *)in + 6, g_recv_buffer_temp, data_length);
+
+  return 0; // Successfully received and structured input
+}
+
+// Function: main
+undefined4 main(void) {
+  int result_code;
+  int status_value = 0x1092; // Initial status value
+
+  // Mock socket descriptor (e.g., 1 for stdout, or a specific socket FD)
+  int g_sockfd = 1;
+
+  gen_result_bufs();
+
+  while (1) {
+    result_code = receive_input();
+
+    if (result_code >= 0) { // If receive_input was successful (0 or positive)
+      // Send the current status_value (4 bytes) to the mock socket
+      send(g_sockfd, &status_value, sizeof(status_value), 0);
+
+      // Determine input type by checking the first 4 bytes of 'in' and process
+      if (memcmp(INPUT_TYPE_PLAIN, in, 4) == 0) {
+        result_code = process_plain_input(in);
+      } else {
+        result_code = process_serialized_input(in);
+      }
     }
 
-    send(OUT_FD_STATUS_FINAL, &status_value, sizeof(status_value), 0); // Send final status before exiting
-    return 0; // Program exits successfully
+    if (result_code != 0) {
+      break; // Exit loop if processing failed (result_code is negative or non-zero error)
+    }
+
+    // Send a success status code (0x1708C as a 4-byte integer)
+    int success_status_code = 0x1708C;
+    send(g_sockfd, &success_status_code, sizeof(success_status_code), 0);
+
+    free(in); // Free the allocated input buffer
+    in = NULL; // Clear the global pointer after freeing
+    status_value++; // Increment status counter for the next iteration
+  }
+
+  // If the loop exited due to an error, send an error status code (0x17090 as a 4-byte integer)
+  int error_status_code = 0x17090;
+  send(g_sockfd, &error_status_code, sizeof(error_status_code), 0);
+
+  return 0; // Program exits after handling the error
 }

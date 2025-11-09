@@ -1,29 +1,45 @@
+#include <stddef.h>  // For NULL
 #include <string.h>  // For memcmp, memmove
 #include <stdbool.h> // For bool
-#include <stddef.h>  // For NULL, size_t
-#include <stdint.h>  // For uint32_t, uint16_t
+#include <stdint.h>  // For uint16_t, uint32_t
 
-// Placeholder for DAT_00014144. Assuming it's a 4-byte identifier, e.g., the ELF magic.
-static const unsigned char DAT_00014144[4] = {0x7f, 'E', 'L', 'F'}; // Example: ELF magic (0x7f 'E' 'L' 'F')
+// Forward declaration for cgcf_parse_file_header as it's used by cgcf_parse_section_header
+int cgcf_parse_file_header(const void *param_1, unsigned int param_2, void *param_3);
 
-// Minimal ELF header structure for 32-bit, to extract relevant fields
-// In a real scenario, you would typically include <elf.h>
+// Define minimal ELF structures for 32-bit, based on sizes observed (0x34 and 0x28)
+// These definitions assume standard byte alignment.
 typedef struct {
     unsigned char e_ident[16];
-    uint16_t      e_type;
-    uint16_t      e_machine;
-    uint32_t      e_version;
-    uint32_t      e_entry;
-    uint32_t      e_phoff;
-    uint32_t      e_shoff;      // Section header table file offset
-    uint32_t      e_flags;
-    uint16_t      e_ehsize;
-    uint16_t      e_phentsize;
-    uint16_t      e_phnum;
-    uint16_t      e_shentsize;  // Size of one section header entry
-    uint16_t      e_shnum;      // Number of section header entries
-    uint16_t      e_shstrndx;
-} Elf32_Ehdr; // This struct has a size of 52 bytes (0x34) for 32-bit ELF
+    uint16_t e_type;
+    uint16_t e_machine;
+    uint32_t e_version;
+    uint32_t e_entry;
+    uint32_t e_phoff;
+    uint32_t e_shoff;
+    uint32_t e_flags;
+    uint16_t e_ehsize;
+    uint16_t e_phentsize;
+    uint16_t e_phnum;
+    uint16_t e_shentsize;
+    uint16_t e_shnum;
+    uint16_t e_shstrndx;
+} Elf32_Ehdr; // Size 0x34 (52 bytes)
+
+typedef struct {
+    uint32_t sh_name;
+    uint32_t sh_type;
+    uint32_t sh_flags;
+    uint32_t sh_addr;
+    uint32_t sh_offset;
+    uint32_t sh_size;
+    uint32_t sh_link;
+    uint32_t sh_info;
+    uint32_t sh_addralign;
+    uint32_t sh_entsize;
+} Elf32_Shdr; // Size 0x28 (40 bytes)
+
+// Global constant for ELF magic number (0x7f 'E' 'L' 'F')
+static const unsigned char ELF_MAGIC[4] = {0x7f, 'E', 'L', 'F'};
 
 // Function: cgcf_section_type2str
 char * cgcf_section_type2str(unsigned int param_1) {
@@ -40,29 +56,27 @@ char * cgcf_section_type2str(unsigned int param_1) {
   case 9: return "REL";
   case 10: return "-reserved-";
   case 0xb: return "DYNSYM";
+  default: return "UNKNOWN"; // Covers cases not explicitly listed before it
   case 0xe: return "INIT_ARRAY";
   case 0xf: return "FINI_ARRAY";
   case 0x10: return "PREINIT_ARRAY";
   case 0x11: return "GROUP";
   case 0x12: return "SYMTAB_SHNDX";
   case 0x13: return "NUM";
-  default: return "UNKNOWN";
   }
 }
 
 // Function: cgcf_symbol_bind2str
 char * cgcf_symbol_bind2str(unsigned char param_1) {
-  switch (param_1) {
-    case 0: return "LOCAL";
-    case 1: return "GLOBAL";
-    case 2: return "WEAK";
-    case 3: return "NUM";
-    default: return "UNKNOWN";
-  }
+  if (param_1 == 0) return "LOCAL";
+  if (param_1 == 1) return "GLOBAL";
+  if (param_1 == 2) return "WEAK";
+  if (param_1 == 3) return "NUM";
+  return "UNKNOWN";
 }
 
 // Function: cgcf_symbol_type2str
-char * cgcf_symbol_type2str(unsigned int param_1) {
+char * cgcf_symbol_type2str(unsigned char param_1) {
   switch(param_1) {
   case 0: return "NOTYPE";
   case 1: return "OBJECT";
@@ -77,53 +91,50 @@ char * cgcf_symbol_type2str(unsigned int param_1) {
 }
 
 // Function: cgcf_is_valid
-bool cgcf_is_valid(void *param_1) {
-  return memcmp(param_1, &DAT_00014144, sizeof(DAT_00014144)) == 0;
+_Bool cgcf_is_valid(const void *param_1) {
+  return memcmp(param_1, ELF_MAGIC, 4) == 0;
 }
 
 // Function: cgcf_parse_file_header
-int cgcf_parse_file_header(void *param_1, unsigned int param_2, void *param_3) {
-  if ((param_1 == NULL) || (param_3 == NULL)) {
-    return -1; // Use -1 for error, 0 for success
-  }
-  // Check if the provided buffer is large enough for the ELF header
-  if (param_2 < sizeof(Elf32_Ehdr)) {
-    return -1;
+int cgcf_parse_file_header(const void *param_1, unsigned int param_2, void *param_3) {
+  if (param_1 == NULL || param_3 == NULL || param_2 < sizeof(Elf32_Ehdr)) {
+    return -1; // Error: NULL pointers or insufficient file size
   }
   memmove(param_3, param_1, sizeof(Elf32_Ehdr));
-  return 0;
+  return 0; // Success
 }
 
 // Function: cgcf_parse_section_header
-int cgcf_parse_section_header(const void *param_1, unsigned int param_2, unsigned short param_3, void *param_4) {
-  if ((param_1 == NULL) || (param_4 == NULL)) {
-    return -1;
-  }
+int cgcf_parse_section_header(const unsigned char *base_addr, unsigned int file_size, unsigned short section_idx, void *out_shdr) {
+    if (base_addr == NULL || out_shdr == NULL) {
+        return -1; // Error: NULL pointers
+    }
 
-  Elf32_Ehdr file_header;
-  // Parse the file header to get section table information
-  if (cgcf_parse_file_header((void*)param_1, param_2, &file_header) != 0) {
-    return -1;
-  }
+    Elf32_Ehdr ehdr; // Buffer to hold the parsed file header
+    if (cgcf_parse_file_header(base_addr, file_size, &ehdr) != 0) {
+        return -1; // Error parsing file header
+    }
 
-  uint32_t sh_offset = file_header.e_shoff;      // Offset to section header table
-  uint16_t sh_entsize = file_header.e_shentsize;  // Size of a single section header entry
-  uint16_t sh_num = file_header.e_shnum;          // Number of section header entries
+    // Validate section index against the number of section headers
+    if (section_idx >= ehdr.e_shnum) {
+        return -1; // Error: section_idx out of bounds
+    }
 
-  // Check if the requested section index is within bounds
-  if (param_3 >= sh_num) {
-    return -1;
-  }
+    // Ensure section header entry size is valid to avoid invalid calculations
+    if (ehdr.e_shentsize == 0) {
+        return -1; // Error: Invalid section header entry size
+    }
 
-  // Calculate the starting offset of the desired section header
-  size_t section_header_start_offset = sh_offset + (size_t)param_3 * sh_entsize;
+    // Calculate the offset to the target section header
+    unsigned long target_shdr_offset = (unsigned long)ehdr.e_shoff + (unsigned long)section_idx * ehdr.e_shentsize;
 
-  // Check if the file size is sufficient to contain the entire requested section header
-  if (param_2 < section_header_start_offset + sh_entsize) {
-    return -1;
-  }
+    // Check bounds: ensure the entire section header is within the file
+    if (target_shdr_offset + ehdr.e_shentsize > file_size) {
+        return -1; // Error: Section header extends beyond file bounds
+    }
 
-  // Copy the section header data to the destination buffer
-  memmove(param_4, (const char *)param_1 + section_header_start_offset, sh_entsize);
-  return 0;
+    // Copy the section header data to the output buffer
+    memmove(out_shdr, base_addr + target_shdr_offset, ehdr.e_shentsize);
+
+    return 0; // Success
 }

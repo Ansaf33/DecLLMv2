@@ -1,217 +1,169 @@
-#include <stdio.h>      // For printf
-#include <string.h>     // For memset, memcpy
-#include <stdint.h>     // For uint32_t, uint16_t, uint8_t, uintptr_t
-#include <stdlib.h>     // For malloc, free
-#include <unistd.h>     // For read, STDIN_FILENO
-#include <sys/types.h>  // For ssize_t
+#include <stdio.h>    // For printf
+#include <string.h>   // For memcpy, memset
+#include <stdint.h>   // For uint32_t, uint16_t, uint8_t
 
-// --- Mock Function Declarations and Implementations for External Dependencies ---
+// --- Type definitions for decompiled types ---
+typedef uint32_t undefined4;
+typedef uint8_t undefined;
 
-// Mock for receive (e.g., from stdin or a file descriptor)
-// `fd` is the file descriptor (0 for STDIN_FILENO).
-// `buf` is the buffer to read into.
-// `len` is the maximum number of bytes to read.
-// `bytes_received_out` will store the actual number of bytes read or -1 on error.
-// Returns 0 on success, -1 on error.
-int receive(int fd, void *buf, size_t len, int *bytes_received_out) {
-    ssize_t bytes_read = read(fd, buf, len);
-    if (bytes_read == -1) {
-        if (bytes_received_out) *bytes_received_out = -1; // Indicate error
-        return -1; // Error
-    }
-    if (bytes_received_out) *bytes_received_out = (int)bytes_read; // Store actual bytes read
-    return 0; // Success (0 in original code implies success)
-}
-
-// Mock for allocate (e.g., using malloc)
-// `size` is the number of bytes to allocate.
-// `flags` parameter is ignored for simplicity.
-// `out_ptr` will store the allocated address as a uint32_t.
-// Returns 0 on success, -1 on error.
-int allocate(size_t size, int flags, uint32_t *out_ptr) {
-    void *ptr = malloc(size);
-    if (ptr == NULL) {
-        *out_ptr = 0; // Indicate failure
-        return -1; // Error
-    }
-    // Store address. Assuming a 32-bit environment where void* fits into uint32_t.
-    // Use uintptr_t for safe conversion, then cast to uint32_t.
-    *out_ptr = (uint32_t)(uintptr_t)ptr;
-    return 0; // Success
-}
-
-// Mock for receive_until used in menu
-// Reads characters into buf until max_len, or `terminator`, or EOF.
-// Returns number of bytes read (excluding terminator, but including it if max_len reached)
-// or 0 on error/EOF before any data.
-int receive_until(char *buf, size_t max_len, char terminator) {
-    ssize_t total_read = 0;
-    char c;
-    while (total_read < max_len) {
-        ssize_t bytes_read = read(STDIN_FILENO, &c, 1);
-        if (bytes_read <= 0) { // EOF or error
-            if (total_read == 0) return 0; // No bytes read at all, true error
-            break;
-        }
-        if (c == terminator) {
-            break;
-        }
-        buf[total_read++] = c;
-    }
-    buf[total_read] = '\0'; // Null-terminate the string
-    return (int)total_read;
-}
-
-// Mock display functions
-// Assume they take a pointer to their specific context struct and return 0 on success, non-zero on failure.
-int fpai_display_img(void *ctx) {
-    printf("[MOCK] fpai_display_img called.\n");
-    return 0;
-}
-int fpti_display_img(void *ctx) {
-    printf("[MOCK] fpti_display_img called.\n");
-    return 0;
-}
-int rpti_display_img(void *ctx) {
-    printf("[MOCK] rpti_display_img called.\n");
-    return 0;
-}
-int tbir_display_img(void *ctx) {
-    printf("[MOCK] tbir_display_img called.\n");
-    return 0;
-}
-int tpai_display_image(void *ctx) {
-    printf("[MOCK] tpai_display_image called.\n");
-    return 0;
-}
-
-// --- Original Functions with Fixes ---
+// --- Forward declarations for external functions ---
+// These declarations are assumptions based on their usage in the snippet.
+// The actual signatures might vary.
+int receive(int fd, void *buf, size_t len, int *bytes_received);
+int allocate(size_t size, int flags, uint32_t *out_ptr);
+int fpai_display_img(void *img_data);
+int fpti_display_img(void *img_data);
+int rpti_display_img(void *img_data);
+int tbir_display_img(void *img_data);
+int tpai_display_image(void *img_data);
+int receive_until(char *buffer, char delimiter, size_t max_len);
 
 // Function: readData
-int readData(uint32_t *out_data_ptr) {
-    uint16_t size_val; // To hold the 2-byte size value
-    int bytes_received = 0;
-    uint32_t allocated_ptr_val = 0;
+int readData(uint32_t *out_buffer_ptr) {
+    uint16_t data_size_short = 0; // To correctly read 2-byte size
+    int temp_bytes_read_len = 0;
+    void *allocated_buffer = NULL;
 
-    if (out_data_ptr == NULL) {
+    if (out_buffer_ptr == NULL) {
         return 0;
     }
 
-    // Attempt to receive the 2-byte size
-    if (receive(STDIN_FILENO, &size_val, sizeof(size_val), &bytes_received) != 0 || bytes_received != sizeof(size_val)) {
-        return 0; // Failed to receive size or incorrect bytes received
+    // Receive the size of the data (expected to be 2 bytes)
+    // The original code implies a 16-bit size due to the `0x801` limit.
+    if (receive(0, &data_size_short, sizeof(uint16_t), &temp_bytes_read_len) != 0 || temp_bytes_read_len != sizeof(uint16_t)) {
+        return 0; // Failed to receive size or received an incorrect number of bytes
     }
 
-    // Check size constraints
-    if (size_val == 0 || size_val >= 0x801) { // 0x801 is 2049, as per original logic.
-        return 0;
+    int data_size = (int)data_size_short; // Promote to int for subsequent operations
+
+    // Validate the received size
+    if (data_size == 0 || data_size >= 0x801) { // Max size 2048
+        return 0; // Invalid or excessively large size
     }
 
-    // Allocate memory
-    if (allocate(size_val, 0, &allocated_ptr_val) != 0) {
-        return 0; // Failed to allocate memory
+    // Allocate memory for the incoming data
+    if (allocate(data_size, 0, (uint32_t*)&allocated_buffer) != 0 || allocated_buffer == NULL) {
+        return 0; // Allocation failed
     }
 
-    // Receive the actual data
-    if (receive(STDIN_FILENO, (void*)(uintptr_t)allocated_ptr_val, size_val, &bytes_received) != 0) {
-        // If receive fails, the allocated memory should be freed.
-        free((void*)(uintptr_t)allocated_ptr_val);
-        return 0;
+    // Receive the actual data into the allocated buffer
+    if (receive(0, allocated_buffer, data_size, &temp_bytes_read_len) != 0 || temp_bytes_read_len != data_size) {
+        // In a real scenario, `free(allocated_buffer)` would be called here.
+        // Omitted as `free` is not part of the snippet.
+        return 0; // Failed to receive data or received an incorrect number of bytes
     }
 
-    // Verify if all expected data was received
-    if (bytes_received != size_val) {
-        free((void*)(uintptr_t)allocated_ptr_val); // Free on data mismatch
-        return 0;
-    }
-
-    *out_data_ptr = allocated_ptr_val;
-    return bytes_received; // Return actual bytes received (which is size_val)
+    // On success, return the pointer to the allocated data and the size
+    *out_buffer_ptr = (uint32_t)allocated_buffer;
+    return data_size;
 }
 
-// Struct definitions inferred from selectRenderer's usage
-// Assuming a 32-bit environment where sizeof(void*) == 4 bytes
+// --- Dummy structs for display functions based on memset sizes and assignments ---
+// These structs are inferred from the `memset` calls and subsequent assignments
+// to `ptr` and `size` fields, followed by passing their address to `_display_img`.
+// The padding ensures the struct's size matches the `memset` length.
 typedef struct {
-    uint8_t _padding1[0x10]; // Placeholder for bytes 0x00 to 0x0F
-    uint32_t size;           // At offset 0x10
-    void* data_ptr;          // At offset 0x14
-} ImageInfo;
-
-// Generic base for display contexts
-typedef struct {
-    void* data;
+    void *ptr;
     uint32_t size;
-} ImageRenderContext_Base;
+    uint8_t _padding[32 - sizeof(void*) - sizeof(uint32_t)]; // 0x20 bytes
+} FpaiImgData;
 
-// Specific contexts with padding as implied by memset sizes
-// Using char arrays for padding for portability
-typedef struct { ImageRenderContext_Base base; char padding[0x20 - sizeof(ImageRenderContext_Base)]; } DisplayContext_fpai;
-typedef struct { ImageRenderContext_Base base; char padding[0x14 - sizeof(ImageRenderContext_Base)]; } DisplayContext_fpti;
-typedef struct { ImageRenderContext_Base base; char padding[0x10 - sizeof(ImageRenderContext_Base)]; } DisplayContext_rpti;
-typedef struct { ImageRenderContext_Base base; char padding[0x30 - sizeof(ImageRenderContext_Base)]; } DisplayContext_tbir;
-typedef struct { ImageRenderContext_Base base; char padding[0x20 - sizeof(ImageRenderContext_Base)]; } DisplayContext_tpai;
+typedef struct {
+    void *ptr;
+    uint32_t size;
+    uint8_t _padding[20 - sizeof(void*) - sizeof(uint32_t)]; // 0x14 bytes
+} FptiImgData;
 
+typedef struct {
+    void *ptr;
+    uint32_t size;
+    uint8_t _padding[16 - sizeof(void*) - sizeof(uint32_t)]; // 0x10 bytes
+} RptiImgData;
+
+typedef struct {
+    void *ptr;
+    uint32_t size;
+    uint8_t _padding[48 - sizeof(void*) - sizeof(uint32_t)]; // 0x30 bytes
+} TbirImgData;
+
+typedef struct {
+    void *ptr;
+    uint32_t size;
+    uint8_t _padding[32 - sizeof(void*) - sizeof(uint32_t)]; // 0x20 bytes
+} TpaiImgData;
 
 // Function: selectRenderer
-uint32_t selectRenderer(ImageInfo *img_info) {
-    if (img_info == NULL || img_info->data_ptr == NULL || img_info->size < 4) {
-        return 0; // Invalid input, return 0 as per original logic for early exits
+undefined4 selectRenderer(void *param_1_void_ptr) {
+    if (param_1_void_ptr == NULL) {
+        return 1; // Indicate error
     }
 
-    uint32_t format_magic;
-    // Read the first 4 bytes (magic number) from the data_ptr
-    memcpy(&format_magic, img_info->data_ptr, sizeof(format_magic));
+    // Cast param_1 to a byte pointer for offset arithmetic
+    uint8_t *param_bytes = (uint8_t *)param_1_void_ptr;
 
-    int render_result = -1; // Default to unhandled/error
+    // Extract image_data_ptr and image_data_size from the structure pointed to by param_1
+    void *image_data_ptr = *(void **)(param_bytes + 0x14);
+    uint32_t image_data_size = *(uint32_t *)(param_bytes + 0x10);
 
-    // Use if-else if for cleaner flow
-    if (format_magic == 0x55d9b6de) {
-        DisplayContext_fpai ctx;
-        memset(&ctx, 0, sizeof(ctx));
-        ctx.base.data = img_info->data_ptr;
-        ctx.base.size = img_info->size;
-        render_result = fpai_display_img(&ctx);
-    } else if (format_magic == (uint32_t)0x85eecc24) { // Original -0x7a1138dc
-        DisplayContext_fpti ctx;
-        memset(&ctx, 0, sizeof(ctx));
-        ctx.base.data = img_info->data_ptr;
-        ctx.base.size = img_info->size;
-        render_result = fpti_display_img(&ctx);
-    } else if (format_magic == (uint32_t)0xc35109d3) { // Original -0x3caef62d
-        DisplayContext_rpti ctx;
-        memset(&ctx, 0, sizeof(ctx));
-        ctx.base.data = img_info->data_ptr;
-        ctx.base.size = img_info->size;
-        render_result = rpti_display_img(&ctx);
-    } else if (format_magic == 0x76dfc4b0) {
-        DisplayContext_tbir ctx;
-        memset(&ctx, 0, sizeof(ctx));
-        ctx.base.data = img_info->data_ptr;
-        ctx.base.size = img_info->size;
-        render_result = tbir_display_img(&ctx);
-    } else if (format_magic == 0x310f59cb) {
-        DisplayContext_tpai ctx;
-        memset(&ctx, 0, sizeof(ctx));
-        ctx.base.data = img_info->data_ptr;
-        ctx.base.size = img_info->size;
-        render_result = tpai_display_image(&ctx);
+    if (image_data_ptr == NULL || image_data_size < sizeof(uint32_t)) { // Minimum size for magic number
+        return 1; // Indicate error
+    }
+
+    // Read the magic number (first 4 bytes of image data)
+    uint32_t magic_number;
+    memcpy(&magic_number, image_data_ptr, sizeof(uint32_t));
+
+    int display_result; // 0 for success, non-zero for failure from display functions
+
+    // Dispatch based on magic number
+    if (magic_number == 0x55d9b6de) { // FPAI
+        FpaiImgData img_data_struct;
+        memset(&img_data_struct, 0, sizeof(FpaiImgData));
+        img_data_struct.ptr = image_data_ptr;
+        img_data_struct.size = image_data_size;
+        display_result = fpai_display_img(&img_data_struct);
+        return (display_result == 0) ? 0 : 1; // Return 0 on display success, 1 otherwise
+    } else if (magic_number == (uint32_t)0x85eecc24) { // FPTI (-0x7a1138dc as uint32_t)
+        FptiImgData img_data_struct;
+        memset(&img_data_struct, 0, sizeof(FptiImgData));
+        img_data_struct.ptr = image_data_ptr;
+        img_data_struct.size = image_data_size;
+        display_result = fpti_display_img(&img_data_struct);
+        return (display_result == 0) ? 0 : 1;
+    } else if (magic_number == (uint32_t)0xc35109d3) { // RPTI (-0x3caef62d as uint32_t)
+        RptiImgData img_data_struct;
+        memset(&img_data_struct, 0, sizeof(RptiImgData));
+        img_data_struct.ptr = image_data_ptr;
+        img_data_struct.size = image_data_size;
+        display_result = rpti_display_img(&img_data_struct);
+        return (display_result == 0) ? 0 : 1;
+    } else if (magic_number == 0x76dfc4b0) { // TBIR
+        TbirImgData img_data_struct;
+        memset(&img_data_struct, 0, sizeof(TbirImgData));
+        img_data_struct.ptr = image_data_ptr;
+        img_data_struct.size = image_data_size;
+        display_result = tbir_display_img(&img_data_struct);
+        return (display_result == 0) ? 0 : 1;
+    } else if (magic_number == 0x310f59cb) { // TPAI
+        TpaiImgData img_data_struct;
+        memset(&img_data_struct, 0, sizeof(TpaiImgData));
+        img_data_struct.ptr = image_data_ptr;
+        img_data_struct.size = image_data_size;
+        display_result = tpai_display_image(&img_data_struct);
+        return (display_result == 0) ? 0 : 1;
     } else {
-        printf("[ERROR] Unknown Format (0x%X)\n", format_magic);
-        return 1; // Unhandled format, return 1 as per original logic
+        printf("[ERROR] Unknown Format\n");
+        return 1; // Unknown format is an error
     }
-
-    // Original logic returns 0 on success (iVar2 == 0) and 1 otherwise.
-    return (render_result == 0) ? 0 : 1;
 }
 
 // Function: menu
-uint32_t menu(void) {
-    char input_buffer[16]; // Sufficient for a digit and newline
+undefined4 menu(void) {
+    char input_buffer[4]; // Buffer for user input (e.g., "1\n\0")
+    int choice_val;
     int bytes_read;
-    uint32_t choice_val;
 
-    while (1) { // Loop indefinitely until 'Leave' is chosen
-        printf("\n--- Main Menu ---\n");
+    while (1) {
         printf("1- Upload Image\n");
         printf("2- List Images\n");
         printf("3- Remove Image\n");
@@ -219,53 +171,57 @@ uint32_t menu(void) {
         printf("5- Leave\n");
         printf("} ");
 
-        // Read a single character for the choice, consuming the rest of the line
-        bytes_read = receive_until(input_buffer, sizeof(input_buffer) - 1, '\n');
+        // Clear buffer before reading
+        memset(input_buffer, 0, sizeof(input_buffer));
+        // Read up to `sizeof(input_buffer) - 1` characters to leave space for null terminator
+        bytes_read = receive_until(input_buffer, '\n', sizeof(input_buffer) - 1);
 
-        if (bytes_read <= 0) { // Check for read failure or empty input
-            printf("[ERROR] Failed to read choice. Exiting menu.\n");
-            return 0; // Indicate menu failure
+        if (bytes_read <= 0) {
+            printf("[ERROR] Failed to read choice\n");
+            return 0; // Indicate failure to read input
         }
 
-        // Convert the first character to an integer choice
+        // Convert the first character of input to an integer choice
         choice_val = input_buffer[0] - '0';
 
-        if (choice_val < 1 || choice_val > 5) {
-            printf("[ERROR] Invalid option: %d. Please choose between 1 and 5.\n", choice_val);
-            continue; // Continue loop for invalid input
+        if (choice_val >= 1 && choice_val <= 5) {
+            // Valid choice, break from loop to handle action
+            break;
         }
 
-        // Valid choice, now perform action
-        switch (choice_val) {
-            case 1:
-                printf("[INFO] Upload Image functionality not implemented.\n");
-                // Example usage: uint32_t data_ptr; if (readData(&data_ptr)) { printf("Data uploaded to 0x%X\n", data_ptr); } else { printf("Upload failed.\n"); }
-                break;
-            case 2:
-                printf("[INFO] List Images functionality not implemented.\n");
-                break;
-            case 3:
-                printf("[INFO] Remove Image functionality not implemented.\n");
-                break;
-            case 4:
-                printf("[INFO] Display Image functionality not implemented.\n");
-                // Example usage: ImageInfo img_info = { .data_ptr = (void*)some_ptr, .size = some_size }; selectRenderer(&img_info);
-                break;
-            case 5:
-                printf("[INFO] Leaving menu...\n");
-                return 1; // Indicate successful exit from menu (user chose to leave)
-            default:
-                // This case should ideally not be reached due to the validation loop
-                printf("[ERROR] Unexpected menu choice: %d.\n", choice_val);
-                break;
-        }
+        printf("[ERROR] Invalid option: %d\n", choice_val);
     }
-    // Should not be reached, but for completeness
-    return 0;
+
+    // The original snippet ends abruptly after the loop break.
+    // This switch statement is a placeholder for the menu's actions.
+    switch (choice_val) {
+        case 1:
+            printf("Action: Upload Image\n");
+            // Call function to handle image upload
+            break;
+        case 2:
+            printf("Action: List Images\n");
+            // Call function to list images
+            break;
+        case 3:
+            printf("Action: Remove Image\n");
+            // Call function to remove an image
+            break;
+        case 4:
+            printf("Action: Display Image\n");
+            // Call function to display an image (e.g., selectRenderer)
+            break;
+        case 5:
+            printf("Action: Leaving menu.\n");
+            return 1; // User chose to leave, indicate successful menu interaction
+    }
+
+    // If an action was performed (other than 'Leave'), return 1 to indicate success.
+    return 1;
 }
 
 // Function: main
-uint32_t main(void) {
+undefined4 main(void) {
     menu();
     return 0;
 }

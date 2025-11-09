@@ -1,979 +1,1162 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
+#include <stdbool.h> // For _Bool
 
-// Decompiler artifacts mapping
-typedef unsigned char byte;
+// Decompiled types mapping
 typedef unsigned int uint;
+// `undefined` and `undefined4` are decompilation artifacts.
+// `undefined` is usually `void` or `char` if used for byte-level access.
+// `undefined4` is usually `unsigned int` or `int`.
+// `byte` is `unsigned char`.
+// `bool` is `_Bool` or `bool` from `<stdbool.h>`.
 
-// Custom termination function (replaces _terminate)
-void _terminate(int status) {
-    exit(status);
-}
-
-// Global variables (placeholders, as they are external to the snippet)
-char secret_page[4096]; // Assuming a page size for secret data
-char easteregg[256] = "EASTER_EGG_FOUND"; // Example Easter egg string
+// Global variables (mocked or assumed types/values)
+char easteregg[] = "SUPER_SECRET_EGG"; // Example value
 int eggindex = 0;
+unsigned int page_index = 0;
+// secret_page: Assumed to be a source of "randomness" based on page_index.
+// Mock with some arbitrary data.
+unsigned char secret_page[256] = {
+    0x1A, 0x2B, 0x3C, 0x4D, 0x5E, 0x6F, 0x7A, 0x8B, 0x9C, 0x0D, 0x1E, 0x2F, 0x3A, 0x4B, 0x5C, 0x6D,
+    0x7E, 0x8F, 0x9A, 0x0B, 0x1C, 0x2D, 0x3E, 0x4F, 0x5A, 0x6B, 0x7C, 0x8D, 0x9E, 0x0F, 0x1A, 0x2B,
+    0x3C, 0x4D, 0x5E, 0x6F, 0x7A, 0x8B, 0x9C, 0x0D, 0x1E, 0x2F, 0x3A, 0x4B, 0x5C, 0x6D, 0x7E, 0x8F,
+    0x9A, 0x0B, 0x1C, 0x2D, 0x3E, 0x4F, 0x5A, 0x6B, 0x7C, 0x8D, 0x9E, 0x0F, 0x1A, 0x2B, 0x3C, 0x4D,
+    0x5E, 0x6F, 0x7A, 0x8B, 0x9C, 0x0D, 0x1E, 0x2F, 0x3A, 0x4B, 0x5C, 0x6D, 0x7E, 0x8F, 0x9A, 0x0B,
+    0x1C, 0x2D, 0x3E, 0x4F, 0x5A, 0x6B, 0x7C, 0x8D, 0x9E, 0x0F, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E, 0x6F,
+    0x7A, 0x8B, 0x9C, 0x0D, 0x1E, 0x2F, 0x3A, 0x4B, 0x5C, 0x6D, 0x7E, 0x8F, 0x9A, 0x0B, 0x1C, 0x2D,
+    0x3E, 0x4F, 0x5A, 0x6B, 0x7C, 0x8D, 0x9E, 0x0F, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E, 0x6F, 0x7A, 0x8B,
+    0x9C, 0x0D, 0x1E, 0x2F, 0x3A, 0x4B, 0x5C, 0x6D, 0x7E, 0x8F, 0x9A, 0x0B, 0x1C, 0x2D, 0x3E, 0x4F,
+    0x5A, 0x6B, 0x7C, 0x8D, 0x9E, 0x0F, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E, 0x6F, 0x7A, 0x8B, 0x9C, 0x0D,
+    0x1E, 0x2F, 0x3A, 0x4B, 0x5C, 0x6D, 0x7E, 0x8F, 0x9A, 0x0B, 0x1C, 0x2D, 0x3E, 0x4F, 0x5A, 0x6B,
+    0x7C, 0x8D, 0x9E, 0x0F, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E, 0x6F, 0x7A, 0x8B, 0x9C, 0x0D, 0x1E, 0x2F,
+    0x3A, 0x4B, 0x5C, 0x6D, 0x7E, 0x8F, 0x9A, 0x0B, 0x1C, 0x2D, 0x3E, 0x4F, 0x5A, 0x6B, 0x7C, 0x8D,
+    0x9E, 0x0F, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E, 0x6F, 0x7A, 0x8B, 0x9C, 0x0D, 0x1E, 0x2F, 0x3A, 0x4B,
+    0x5C, 0x6D, 0x7E, 0x8F, 0x9A, 0x0B, 0x1C, 0x2D, 0x3E, 0x4F, 0x5A, 0x6B, 0x7C, 0x8D, 0x9E, 0x0F,
+    0x1A, 0x2B, 0x3C, 0x4D, 0x5E, 0x6F, 0x7A, 0x8B, 0x9C, 0x0D, 0x1E, 0x2F, 0x3A, 0x4B, 0x5C, 0x6D,
+};
+void *queue_matrix = NULL; // Will point to a char array
+// root: head of the queue, defined later as struct QueueNode *
+char *names[] = { // Array of monster names
+    "Goblin", "Orc", "Slime", "Dragon", "Phoenix", "Griffin", "Unicorn", "Sphinx",
+    "Minotaur", "Hydra", "Golem", "Basilisk", NULL // NULL terminated
+};
 
-// Queue for pathfinding
+// Data Structures
 struct QueueNode {
     int x;
     int y;
     struct QueueNode *next;
 };
-struct QueueNode *root = NULL; // Head of the queue
-char *queue_matrix = NULL; // Map of visited states in queue (1 for in queue, 0 for not)
+struct QueueNode *root = NULL; // Global queue root
 
-// Names for monsters/bosses
-char *names[] = {
-    "Goblin", "Orc", "Slime", "Dragon", "Phoenix",
-    "Griffin", "Hydra", "Minotaur", "Sphinx", "Cerberus",
-    NULL // Null-terminate the list
-};
-
-uint page_index = 0; // Index into secret_page for random values
-
-// Struct definitions based on usage
 struct Map {
-    uint width;
-    uint height;
-    uint start_x;
-    uint start_y;
-    uint end_x;
-    uint end_y;
-    uint current_x;
-    uint current_y;
-    uint marker_x; // Used for placing obstacles
-    uint marker_y;
-    char *data; // 1D array representing the map grid
+    unsigned int width; // *param_1
+    unsigned int height; // param_1[1]
+    unsigned int startX; // param_1[2]
+    unsigned int startY; // param_1[3]
+    unsigned int endX; // param_1[4]
+    unsigned int endY; // param_1[5]
+    unsigned int currentX; // param_1[6]
+    unsigned int currentY; // param_1[7]
+    unsigned int markerX; // param_1[8]
+    unsigned int markerY; // param_1[9]
+    char *map_data; // param_1[10]
 };
 
+#define MAX_MONSTERS 5
 struct Monster {
-    char *type;      // Name/type of monster
-    int health;      // Current health
-    int max_health;  // Maximum health (hit points)
-    int power;       // Attack power
-    int xp;          // Experience points towards next level
-    int level;       // Monster level
+    char *name;         // *param_1
+    unsigned int health;      // param_1[1] (current health)
+    unsigned int max_health;  // param_1[2] (initial health / hit points)
+    unsigned int power;       // param_1[3]
+    unsigned int xp;          // param_1[4] (experience points)
+    unsigned int level;       // param_1[5]
 };
 
 struct Player {
-    char name[16];                // Player's name
-    int level;                    // Player's level
-    int num_monsters;             // Number of monsters player has
-    struct Monster *monsters[5];  // Array of pointers to player's monsters (max 5)
+    char name[16];
+    unsigned int level;
+    unsigned int num_monsters;
+    struct Monster *monsters[MAX_MONSTERS];
+    // These fields are inferred from `check_egg`'s usage of `param_1 + 0x18`
+    // and subsequent offsets. Assuming `param_1` points to player struct.
+    unsigned int prize_field1; // e.g., Player->inventory_slot1
+    unsigned int prize_field2; // e.g., Player->inventory_slot2
+    unsigned int prize_field3; // e.g., Player->inventory_slot3
 };
 
-// Function: update_page_index
-void update_page_index(void) {
-    page_index = (page_index + 3) & 0xfff; // Increment and wrap around 0xfff (4095)
+// Function Prototypes
+void _terminate(void);
+int receive(int *bytes_read, char *out_char); // Mocked receive function
+void update_page_index(void);
+char* select_name(void);
+struct Monster* generate_monster(void);
+struct Monster* generate_boss(void);
+void print_monster(struct Monster *monster);
+struct Monster* select_monster(struct Player *player);
+int oneup_monster(struct Monster *monster);
+void set_marker(unsigned int x, unsigned int y, struct Map *map, char marker_char);
+void print_map(struct Map *map);
+void initialize_queue_matrix(struct Map *map);
+int find_path(unsigned int x, unsigned int y, struct Map *map);
+int daboss(struct Player *player);
+int fight(struct Player *player);
+int capture_monster(struct Monster *monster, struct Player *player);
+int capture_boss(struct Monster *boss, struct Player *player);
+int change_monster_name(char **monster_name_ptr);
+
+
+// Mock external functions
+void _terminate(void) {
+    printf("Program terminated.\n");
+    exit(1);
 }
 
-// Function: select_name
-char *select_name(void) {
-    byte rand_byte = secret_page[page_index];
-    update_page_index();
-
-    uint index = 0;
-    for (uint i = 0; i < rand_byte; i++) {
-        index++;
-        if (names[index] == NULL) { // Wrap around if end of names list is reached
-            index = 0;
-        }
+// Mock receive function based on decompiled usage:
+// It seems `receive()` reads one character and returns 0 on success, non-zero on error.
+// `bytes_read` is updated by `receive` to indicate how many bytes were read (e.g., 1 for success).
+// `out_char` is where the character read is stored.
+int receive(int *bytes_read, char *out_char) {
+    int c = getchar();
+    if (c == EOF) {
+        *bytes_read = 0;
+        return 1; // Error
     }
-    return names[index];
-}
-
-// Function: generate_monster
-struct Monster *generate_monster(void) {
-    struct Monster *monster = (struct Monster *)malloc(sizeof(struct Monster));
-    if (monster == NULL) {
-        printf("[ERROR] Failed to allocate monster structure\n");
-        _terminate(1);
-    }
-    memset(monster, 0, sizeof(struct Monster));
-
-    monster->type = select_name();
-    monster->health = (secret_page[page_index] % 10) + 4; // Health 4-13
-    monster->max_health = monster->health;
-    update_page_index();
-
-    monster->power = (secret_page[page_index] % 6) + 2; // Power 2-7
-    update_page_index();
-
-    monster->level = 1;
-    monster->xp = 0;
-    return monster;
-}
-
-// Function: generate_boss
-struct Monster *generate_boss(void) {
-    struct Monster *boss = (struct Monster *)malloc(sizeof(struct Monster));
-    if (boss == NULL) {
-        printf("[ERROR] Failed to allocate boss monster structure\n");
-        _terminate(1);
-    }
-    memset(boss, 0, sizeof(struct Monster));
-
-    boss->type = select_name();
-    boss->health = (secret_page[page_index] % 10) + 9; // Health 9-18
-    boss->max_health = boss->health;
-    update_page_index();
-
-    boss->power = (secret_page[page_index] % 6) + 4; // Power 4-9
-    update_page_index();
-
-    boss->level = 4;
-    boss->xp = 0;
-    return boss;
-}
-
-// Function: generate_player
-struct Player *generate_player(void) {
-    char name_buffer[16];
-    memset(name_buffer, 0, sizeof(name_buffer));
-
-    printf("Enter your name|| ");
-    if (fgets(name_buffer, sizeof(name_buffer), stdin) == NULL) {
-        strcpy(name_buffer, "Player One\n"); // Default if input fails
-    }
-    // Remove trailing newline if present
-    name_buffer[strcspn(name_buffer, "\n")] = 0;
-
-    if (name_buffer[0] == '\0') {
-        strcpy(name_buffer, "Player One");
-    }
-
-    struct Player *player = (struct Player *)malloc(sizeof(struct Player));
-    if (player == NULL) {
-        printf("[ERROR] Failed to malloc player structure\n");
-        _terminate(1);
-    }
-    memset(player, 0, sizeof(struct Player));
-
-    strncpy(player->name, name_buffer, sizeof(player->name) - 1);
-    player->name[sizeof(player->name) - 1] = '\0';
-
-    player->num_monsters = 0;
-    for (uint i = 0; i < 3; i++) {
-        player->monsters[player->num_monsters++] = generate_monster();
-    }
-    player->level = 1;
-    return player;
-}
-
-// Function: read_line (reads into buffer up to max_len or newline)
-uint read_line(char *buffer, uint max_len) {
-    if (buffer == NULL || max_len == 0) {
-        printf("[ERROR] invalid arg for read_line\n");
-        _terminate(1);
-    }
-
-    uint bytes_read = 0;
-    int c;
-
-    // Read characters until max_len-1 is reached (for null terminator) or newline
-    while (bytes_read < max_len - 1 && (c = getchar()) != EOF && c != '\n') {
-        buffer[bytes_read++] = (char)c;
-    }
-    buffer[bytes_read] = '\0'; // Null-terminate the string
-
-    // If a newline was read or EOF, and there are more chars in buffer, clear them
-    if (c != '\n' && c != EOF) {
-        // Discard remaining characters in the line
-        while ((c = getchar()) != EOF && c != '\n');
-    }
-
-    return bytes_read;
-}
-
-// Function: read_line_u (reads into buffer until newline, no max_len)
-int read_line_u(char *buffer) {
-    if (buffer == NULL) {
-        return 0;
-    }
-
-    int bytes_read = 0;
-    int c;
-
-    while ((c = getchar()) != EOF && c != '\n') {
-        // Dynamically resize buffer if needed, or assume large enough.
-        // For this refactor, we'll assume the buffer passed is large enough
-        // or handle overflow by truncating. The original code doesn't specify a max.
-        // Given `change_monster_name` uses `local_34[32]`, let's assume a limit.
-        if (bytes_read < 31) { // Limit to 31 chars + null for a 32-byte buffer
-            buffer[bytes_read++] = (char)c;
-        }
-    }
-    buffer[bytes_read] = '\0'; // Null-terminate
-
-    return bytes_read;
+    *out_char = (char)c;
+    *bytes_read = 1;
+    return 0; // Success
 }
 
 // Function: check_egg
-void check_egg(struct Player *player, char input_char) {
-    if (input_char == easteregg[eggindex]) {
-        eggindex++;
-    } else {
-        eggindex = 0;
-    }
+void check_egg(struct Player *player, char param_2) {
+  if (param_2 == easteregg[eggindex]) {
+    eggindex = eggindex + 1;
+  }
+  else {
+    eggindex = 0;
+  }
+  if (easteregg[eggindex] == '\0') {
+    printf("YOU FOUND THE EGG!!!! Have a prize.\n");
+    // Assuming player is the struct containing these fields
+    player->prize_field1 = 99;
+    player->prize_field2 = 99;
+    player->prize_field3 = 99;
+    eggindex = 0;
+  }
+  return;
+}
 
-    if (easteregg[eggindex] == '\0') {
-        printf("YOU FOUND THE EGG!!!! Have a prize.\n");
-        if (player != NULL && player->num_monsters > 0 && player->monsters[0] != NULL) {
-            struct Monster *first_monster = player->monsters[0];
-            first_monster->max_health = 99;
-            first_monster->health = 99;
-            first_monster->power = 99;
-        }
-        eggindex = 0;
+// Function: read_line
+unsigned int read_line(char *buffer, unsigned int max_len) {
+  if (buffer == NULL) {
+    printf("[ERROR] invalid arg\n");
+    _terminate();
+  }
+  
+  unsigned int current_len = 0;
+  char c = '\0';
+  int bytes_read = 0;
+
+  while (current_len < max_len) {
+    int ret = receive(&bytes_read, &c);
+    if (ret != 0) { // Failed to read byte
+      printf("[ERROR] Failed to read byte\n");
+      _terminate();
     }
+    if (bytes_read == 0) { // Error in receive
+      printf("[ERROR] Error in receive\n");
+      _terminate();
+    }
+    
+    if (c == '\n') {
+      break;
+    }
+    
+    buffer[current_len] = c;
+    current_len++;
+  }
+  
+  // Null-terminate the string if space allows
+  if (current_len < max_len) {
+    buffer[current_len] = '\0';
+  } else if (max_len > 0) { // Ensure buffer is null-terminated if it's not empty
+    buffer[max_len - 1] = '\0';
+  }
+  
+  return current_len;
+}
+
+// Function: read_line_u
+// Modified to take buffer argument as original code implies it fills a buffer
+unsigned int read_line_u(char *buffer) {
+  if (buffer == NULL) {
+    printf("[ERROR] read_line_u() invalid arg\n");
+    _terminate();
+  }
+  
+  unsigned int current_len = 0;
+  char c = '\0';
+  int bytes_read = 0;
+
+  while (c != '\n') { // Loop until newline
+    int ret = receive(&bytes_read, &c);
+    if (ret != 0) { // Failed to read byte
+      printf("[ERROR] Failed to read byte\n");
+      _terminate();
+    }
+    if (bytes_read == 0) { // Error in receive
+      printf("[ERROR] Error in receive\n");
+      _terminate();
+    }
+    
+    if (c != '\n') { // Only store if not newline
+      buffer[current_len] = c;
+      current_len++;
+      // A real implementation would need a max_len check to prevent overflow
+    }
+  }
+  buffer[current_len] = '\0'; // Null-terminate
+  return current_len;
 }
 
 // Function: add_queue
-void add_queue(int x, int y, int map_width, int map_height) {
-    int index = y * map_width + x;
+void add_queue(int x, int y, int map_width) {
+  // `map_width` is inferred from `param_3` in original `add_queue` call context (find_path)
+  // `local_18 = param_1 + (param_3 + 1) * param_2;` -> `x + (map_width + 1) * y`
+  // This looks like a 1D index calculation `x + y * map_width` but with `map_width + 1`
+  // The use of `*(char *)(local_18 + queue_matrix)` suggests `queue_matrix` is a char array.
+  // Let's assume queue_matrix stores visited status for BFS/DFS.
+  
+  // Adjusted index calculation based on common 2D array mapping and usage with queue_matrix
+  // The original `param_1 + (param_3 + 1) * param_2` might be `x + (width) * y`
+  // if `param_3` was width. `param_1` is x, `param_2` is y.
+  // The original `find_path` passes `*param_3 - 1` for `param_3` which is `map->width - 1`.
+  // This is confusing. Let's assume `queue_matrix` is indexed by `y * width + x`.
+  // The expression `param_1 + (param_3 + 1) * param_2` seems incorrect for typical 2D indexing.
+  // The most common 1D index for (x,y) in a 2D array [height][width] is `y * width + x`.
+  // Let's use that for `queue_matrix` access.
+  int index = y * map_width + x;
 
-    if (queue_matrix[index] != 1) { // Check if not already in queue
-        struct QueueNode *newNode = (struct QueueNode *)malloc(sizeof(struct QueueNode));
-        if (newNode == NULL) {
-            printf("[ERROR] malloc() queue structure failed.\n");
-            _terminate(1);
-        }
-        memset(newNode, 0, sizeof(struct QueueNode));
-        newNode->x = x;
-        newNode->y = y;
-        newNode->next = NULL;
-
-        if (root == NULL) {
-            root = newNode;
-        } else {
-            struct QueueNode *current = root;
-            while (current->next != NULL) {
-                current = current->next;
-            }
-            current->next = newNode;
-        }
-        queue_matrix[index] = 1; // Mark as in queue
+  if (((char *)queue_matrix)[index] != 1) { // If not visited
+    struct QueueNode *new_node = (struct QueueNode *)malloc(sizeof(struct QueueNode));
+    if (new_node == NULL) {
+      printf("[ERROR] malloc() queue structure failed.\n");
+      _terminate();
     }
+    memset(new_node, 0, sizeof(struct QueueNode));
+    new_node->x = x;
+    new_node->y = y;
+    new_node->next = NULL;
+
+    if (root == NULL) {
+      root = new_node;
+    }
+    else {
+      struct QueueNode *current = root;
+      while (current->next != NULL) {
+        current = current->next;
+      }
+      current->next = new_node;
+    }
+    ((char *)queue_matrix)[index] = 1; // Mark as visited
+  }
+  return;
 }
 
 // Function: dequeue
-struct QueueNode *dequeue(void) {
-    struct QueueNode *node = root;
-    if (root != NULL) {
-        root = root->next;
-    }
-    return node;
+struct QueueNode* dequeue(void) {
+  struct QueueNode *node_to_dequeue = root;
+  if (root != NULL) {
+    root = root->next;
+  }
+  return node_to_dequeue;
 }
 
 // Function: check_adjacent
-int check_adjacent(int x1, int y1, int x2, int y2) {
-    if (x1 == x2) {
-        if (y2 == y1 + 1 || y2 == y1 - 1) {
-            return 1;
-        }
-    } else if (y1 == y2) {
-        if (x2 == x1 + 1 || x2 == x1 - 1) {
-            return 1;
-        }
+int check_adjacent(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) {
+  if (x1 == x2) {
+    if ((y2 == y1 + 1) || (y2 == y1 - 1)) {
+      return 1;
     }
-    return 0;
+  }
+  else if ((y1 == y2) && ((x2 == x1 + 1 || (x2 == x1 - 1)))) {
+    return 1;
+  }
+  return 0;
 }
 
 // Function: print_map
 void print_map(struct Map *map) {
-    if (map == NULL) {
-        printf("[ERROR] print_map() invalid argument.\n");
-        return;
-    }
+  if (map == NULL) {
+    printf("[ERROR] print_map() invalid argument.\n");
+    return;
+  }
 
-    uint map_size = map->width * map->height;
-    char *display_map = (char *)malloc(map_size + map->height + 1); // For newlines and null terminator
-    if (display_map == NULL) {
-        printf("[ERROR] Failed to allocate map display buffer.\n");
-        _terminate(1);
-    }
-    memset(display_map, 0, map_size + map->height + 1);
+  unsigned int map_size = map->width * map->height;
+  char *display_buffer = (char *)malloc(map_size + map->height + 1); // +height for newlines, +1 for null terminator
+  if (display_buffer == NULL) {
+    printf("[ERROR] Failed to allocate map display buffer.\n");
+    _terminate();
+  }
+  memset(display_buffer, 0, map_size + map->height + 1);
 
-    int display_idx = 0;
-    for (uint i = 0; i < map_size; i++) {
-        if (i != 0 && i % map->width == 0) {
-            display_map[display_idx++] = '\n';
-        }
-        if (map->data[i] == '\0') {
-            display_map[display_idx++] = '.';
-        } else {
-            display_map[display_idx++] = map->data[i];
-        }
+  unsigned int buffer_idx = 0;
+  for (unsigned int i = 0; i < map_size; i++) {
+    if ((i != 0) && (i % map->width == 0)) {
+      display_buffer[buffer_idx++] = '\n';
     }
-    display_map[display_idx++] = '\n';
+    
+    // Original: *(char *)(local_10 + param_1[10])
+    // map->map_data is param_1[10]
+    if (map->map_data[i] == '\0') {
+      display_buffer[buffer_idx++] = '.';
+    }
+    else {
+      display_buffer[buffer_idx++] = map->map_data[i];
+    }
+  }
+  display_buffer[buffer_idx++] = '\n'; // Final newline
+  display_buffer[buffer_idx] = '\0';
 
-    printf("%s", display_map);
-    free(display_map);
+  printf("%s", display_buffer);
+  free(display_buffer);
+  return;
 }
 
 // Function: find_path
-int find_path(uint current_x, uint current_y, struct Map *map) {
-    if (map == NULL) {
-        return 0;
+int find_path(unsigned int x, unsigned int y, struct Map *map) {
+  if (map == NULL) {
+    return 0;
+  }
+  
+  int adjacent = check_adjacent(x, y, map->endX, map->endY);
+  if (adjacent == 1) {
+    return 1;
+  }
+  else {
+    // Add adjacent valid cells to queue
+    if (y > 0) { // Up
+      add_queue(x, y - 1, map->width);
     }
-
-    if (check_adjacent(current_x, current_y, map->end_x, map->end_y) == 1) {
-        return 1; // Path found
+    if (x < map->width - 1) { // Right
+      add_queue(x + 1, y, map->width);
     }
-
-    // Up
-    if (current_y > 0 && map->data[(current_y - 1) * map->width + current_x] != '#') {
-        add_queue(current_x, current_y - 1, map->width, map->height);
+    if (y < map->height - 1) { // Down
+      add_queue(x, y + 1, map->width);
     }
-    // Right
-    if (current_x < map->width - 1 && map->data[current_y * map->width + (current_x + 1)] != '#') {
-        add_queue(current_x + 1, current_y, map->width, map->height);
+    if (x > 0) { // Left
+      add_queue(x - 1, y, map->width);
     }
-    // Down
-    if (current_y < map->height - 1 && map->data[(current_y + 1) * map->width + current_x] != '#') {
-        add_queue(current_x, current_y + 1, map->width, map->height);
-    }
-    // Left
-    if (current_x > 0 && map->data[current_y * map->width + (current_x - 1)] != '#') {
-        add_queue(current_x - 1, current_y, map->width, map->height);
-    }
-
-    struct QueueNode *current_node;
-    while ((current_node = dequeue()) != NULL) {
-        if (find_path(current_node->x, current_node->y, map) == 1) {
-            free(current_node);
-            return 1;
-        }
+    
+    struct QueueNode *current_node = dequeue();
+    while (current_node != NULL) {
+      int path_found = find_path(current_node->x, current_node->y, map);
+      if (path_found == 1) {
         free(current_node);
+        return 1;
+      }
+      free(current_node);
+      current_node = dequeue();
     }
     return 0;
+  }
+}
+
+// Function: update_page_index
+void update_page_index(void) {
+  page_index = (page_index + 3) & 0xfff;
+  return;
 }
 
 // Function: place_marker
 void place_marker(struct Map *map) {
-    uint attempts = 0;
-    uint index;
+  unsigned int attempts = 0;
+  unsigned int index;
+  
+  // Place markerX, markerY
+  do {
+    map->markerX = (unsigned int)secret_page[page_index] % map->width;
+    update_page_index();
+    map->markerY = (unsigned int)secret_page[page_index] % map->height;
+    update_page_index();
+    index = map->markerY * map->width + map->markerX;
+    attempts++;
+  } while (map->map_data[index] != '\0' && attempts < 100);
 
-    do {
-        map->marker_x = (uint)secret_page[page_index] % map->width;
-        update_page_index();
-        map->marker_y = (uint)secret_page[page_index] % map->height;
-        update_page_index();
-        index = map->marker_y * map->width + map->marker_x;
-        attempts++;
-    } while (map->data[index] != '\0' && attempts < 100);
-
-    if (attempts == 100) {
-        index = 0;
-        while (index < map->width * map->height && map->data[index] != '\0') {
-            index++;
-        }
-
-        if (index == map->width * map->height) {
-            printf("FAILED to place marker (no empty spots).\n");
-            print_map(map);
-            _terminate(1);
-        }
-        map->marker_y = index / map->width;
-        map->marker_x = index % map->width;
+  if (attempts == 100) {
+    // If 100 attempts failed, find the first empty spot
+    index = 0;
+    while (map->map_data[index] != '\0' && index < (map->width * map->height)) {
+      index++;
     }
-    map->data[map->marker_y * map->width + map->marker_x] = '#';
+    if (index == (map->width * map->height)) {
+      printf("FAILED\n");
+      print_map(map);
+      _terminate();
+    }
+    map->markerY = index / map->width;
+    map->markerX = index % map->width;
+  }
+  map->map_data[map->markerY * map->width + map->markerX] = '#'; // Use '#' for marker as in original
+  return;
 }
 
 // Function: set_marker
-void set_marker(int x, int y, struct Map *map, char marker_char) {
-    map->data[y * map->width + x] = marker_char;
+void set_marker(unsigned int x, unsigned int y, struct Map *map, char marker_char) {
+  if (map != NULL && map->map_data != NULL) {
+    map->map_data[y * map->width + x] = marker_char;
+  }
+  return;
 }
 
 // Function: initialize_map
 void initialize_map(struct Map *map) {
-    if (map == NULL) {
-        printf("[ERROR] initialize_map() invalid argument.\n");
-        _terminate(1);
+  if (map == NULL) {
+    printf("[ERROR] initialize_map() invalid argument.\n");
+    _terminate();
+  }
+  
+  unsigned int map_size = map->width * map->height;
+  map->map_data = (char *)malloc(map_size);
+  if (map->map_data == NULL) {
+    printf("[ERROR] Failed to allocate map data.\n");
+    _terminate();
+  }
+  memset(map->map_data, 0, map_size); // Initialize map data to '\0'
+
+  map->startX = 0;
+  map->startY = 0;
+  map->endX = 0;
+  map->endY = 0;
+
+  // Generate start and end points ensuring they are not adjacent
+  while (true) {
+    map->startX = (unsigned int)secret_page[page_index] % map->width;
+    update_page_index();
+    map->startY = (unsigned int)secret_page[page_index] % map->height;
+    update_page_index();
+    map->endX = (unsigned int)secret_page[page_index] % map->width;
+    update_page_index();
+    map->endY = (unsigned int)secret_page[page_index] % map->height;
+    update_page_index();
+
+    if (!((map->startX == map->endX || (map->startX - 1 == map->endX) || (map->startX + 1 == map->endX)) &&
+          (map->startY == map->endY || (map->startY + 1 == map->endY) || (map->startY - 1 == map->endY)))) {
+        break; // Found non-adjacent points
     }
-
-    uint map_size = map->width * map->height;
-    map->data = (char *)malloc(map_size);
-    if (map->data == NULL) {
-        printf("[ERROR] Failed to allocate map data.\n");
-        _terminate(1);
-    }
-    memset(map->data, 0, map_size);
-
-    do {
-        map->start_x = (uint)secret_page[page_index] % map->width;
-        update_page_index();
-        map->start_y = (uint)secret_page[page_index] % map->height;
-        update_page_index();
-        map->end_x = (uint)secret_page[page_index] % map->width;
-        update_page_index();
-        map->end_y = (uint)secret_page[page_index] % map->height;
-        update_page_index();
-    } while (
-        (map->start_x == map->end_x && (map->start_y == map->end_y || map->start_y - 1 == map->end_y || map->start_y + 1 == map->end_y)) ||
-        (map->start_y == map->end_y && (map->start_x == map->end_x || map->start_x - 1 == map->end_x || map->start_x + 1 == map->end_x))
-    );
-
-    set_marker(map->start_x, map->start_y, map, '@');
-    set_marker(map->end_x, map->end_y, map, 'X');
-
-    map->current_x = map->start_x;
-    map->current_y = map->start_y;
+  }
+  
+  // Set start ('@') and end ('X') markers
+  set_marker(map->startX, map->startY, map, '@');
+  set_marker(map->endX, map->endY, map, 'X');
+  
+  map->currentX = map->startX;
+  map->currentY = map->startY;
+  return;
 }
 
 // Function: initialize_queue_matrix
 void initialize_queue_matrix(struct Map *map) {
-    if (queue_matrix != NULL) {
-        free(queue_matrix);
-    }
+  if (map == NULL) {
+    printf("[ERROR] initialize_queue_matrix() invalid argument.\n");
+    _terminate();
+  }
 
-    uint matrix_size = map->width * map->height;
-    queue_matrix = (char *)malloc(matrix_size);
-    if (queue_matrix == NULL) {
-        printf("[ERROR] Failed to allocate queue matrix\n");
-        _terminate(1);
-    }
-    memset(queue_matrix, 0, matrix_size);
+  unsigned int matrix_size = map->width * map->height;
+  if (queue_matrix != NULL) {
+    free(queue_matrix);
+  }
+  queue_matrix = malloc(matrix_size);
+  if (queue_matrix == NULL) {
+    printf("[ERROR] Failed to allocate queue matrix\n");
+    _terminate();
+  }
+  memset(queue_matrix, 0, matrix_size); // Initialize to 0 (unvisited)
 
-    for (uint i = 0; i < matrix_size; i++) {
-        if (map->data[i] != '\0') {
-            queue_matrix[i] = 1; // Mark blocked cells as visited for queue purposes
-        }
+  // Mark blocked areas in queue_matrix
+  for (unsigned int i = 0; i < matrix_size; i++) {
+    if (map->map_data[i] != '\0') { // If it's a marker ('#' for egg, '@' for start, 'X' for end)
+      ((char *)queue_matrix)[i] = 1; // Mark as visited/blocked for pathfinding
     }
+  }
+  return;
 }
 
 // Function: generate_map
-struct Map *generate_map(int width, int height) {
-    struct Map *map = (struct Map *)malloc(sizeof(struct Map));
-    if (map == NULL) {
-        printf("[ERROR] Failed to allocate map structure\n");
-        _terminate(1);
+struct Map* generate_map(unsigned int width, unsigned int height) {
+  struct Map *new_map = (struct Map *)malloc(sizeof(struct Map));
+  if (new_map == NULL) {
+    printf("[ERROR] Failed to allocate map structure\n");
+    _terminate();
+  }
+  memset(new_map, 0, sizeof(struct Map));
+
+  new_map->width = width;
+  new_map->height = height;
+  
+  initialize_map(new_map);
+
+  printf("Width: %d Height: %d\n", new_map->width, new_map->height);
+  printf("StartX: %d StartY: %d\n", new_map->startX, new_map->startY);
+  printf("EndX: %d EndY: %d\n\n", new_map->endX, new_map->endY);
+
+  int path_found_loop = 0;
+  while (path_found_loop == 0) {
+    place_marker(new_map);
+    initialize_queue_matrix(new_map);
+    
+    // Check if a path exists from current position to end position
+    // For path generation, we typically want to check from start to end,
+    // not current position to end. Let's assume this is correct for generating a solvable map.
+    // The original code calls find_path(map->currentX, map->currentY, map)
+    int path_exists = find_path(new_map->currentX, new_map->currentY, new_map);
+    
+    if (path_exists != 1) {
+      // If no path, remove the placed marker and retry
+      new_map->map_data[new_map->markerY * new_map->width + new_map->markerX] = '\0';
+    } else {
+      path_found_loop = 1; // Path found, exit loop
     }
-    memset(map, 0, sizeof(struct Map));
-
-    map->width = width;
-    map->height = height;
-
-    initialize_map(map);
-
-    printf("Width: %d Height: %d\n", map->width, map->height);
-    printf("StartX: %d StartY: %d\n", map->start_x, map->start_y);
-    printf("EndX: %d EndY: %d\n\n", map->end_x, map->end_y);
-
-    int path_found = 0;
-    while (!path_found) {
-        place_marker(map);
-        initialize_queue_matrix(map);
-        path_found = find_path(map->start_x, map->start_y, map);
-
-        if (!path_found) {
-            map->data[map->marker_y * map->width + map->marker_x] = '\0'; // Remove last marker
-        }
-
-        while (root != NULL) { // Clear the queue
-            struct QueueNode *temp = root;
-            root = root->next;
-            free(temp);
-        }
+    
+    // Clear the queue for the next iteration of marker placement/pathfinding
+    while (root != NULL) {
+      struct QueueNode *temp = root;
+      root = root->next;
+      free(temp);
     }
+    root = NULL; // Ensure root is NULL
+  }
+  
+  free(queue_matrix); // Free queue matrix as it's no longer needed after map generation
+  queue_matrix = NULL;
 
-    free(queue_matrix);
-    queue_matrix = NULL;
+  print_map(new_map);
+  return new_map;
+}
 
-    print_map(map);
-    return map;
+// Function: select_monster
+struct Monster* select_monster(struct Player *player) {
+  if (player == NULL) {
+    return NULL;
+  }
+  
+  _Bool has_living_monsters = false;
+  for (unsigned int i = 0; i < player->num_monsters; i++) {
+    if (player->monsters[i] != NULL && player->monsters[i]->health > 0) {
+      has_living_monsters = true;
+      break;
+    }
+  }
+
+  if (!has_living_monsters) {
+    return NULL;
+  }
+
+  int selection_made = 0;
+  unsigned int chosen_idx = 0;
+  char input_buffer[4]; // For "Selection: " input
+
+  printf("Monsters: \n");
+  for (unsigned int i = 0; i < player->num_monsters; i++) {
+    if (player->monsters[i] != NULL) { // Only print if slot is not empty
+        printf("\t%d} \n", i + 1);
+        printf("\tType: %s\n", player->monsters[i]->name);
+        printf("\tLevel: %d\n", player->monsters[i]->level);
+        printf("\tHealth: %d\n", player->monsters[i]->health);
+        printf("\tPower: %d\n\n", player->monsters[i]->power);
+    }
+  }
+
+  while (selection_made == 0) {
+    printf("Selection: ");
+    read_line(input_buffer, sizeof(input_buffer));
+    chosen_idx = atoi(input_buffer); // Convert 1-based index to 0-based
+    
+    if (chosen_idx < 1 || chosen_idx > player->num_monsters) {
+      printf("bad choice: %s\n", input_buffer);
+    }
+    else if (player->monsters[chosen_idx - 1] == NULL) {
+      printf("bad choice: %s\n", input_buffer); // Slot is empty
+    }
+    else if (player->monsters[chosen_idx - 1]->health < 1) {
+      printf("he dead\n");
+    }
+    else {
+      selection_made = 1;
+    }
+  }
+  return player->monsters[chosen_idx - 1];
 }
 
 // Function: reset_monsters
 void reset_monsters(struct Player *player) {
-    if (player == NULL) {
-        return;
-    }
-    for (uint i = 0; i < player->num_monsters; i++) {
+  if (player != NULL) {
+    for (unsigned int i = 0; i < player->num_monsters; i++) {
         if (player->monsters[i] != NULL) {
             player->monsters[i]->health = player->monsters[i]->max_health;
         }
     }
+  }
+  return;
 }
 
 // Function: print_monster
 void print_monster(struct Monster *monster) {
-    if (monster != NULL) {
-        printf("\tType: %s\n", monster->type);
-        printf("\tLevel: %d\n", monster->level);
-        printf("\tHealth: %d\n", monster->health);
-        printf("\tHit Points: %d\n", monster->max_health);
-        printf("\tPower: %d\n\n", monster->power);
-    }
+  if (monster != NULL) {
+    printf("\tType: %s\n", monster->name);
+    printf("\tLevel: %d\n", monster->level);
+    printf("\tHealth: %d\n", monster->health);
+    printf("\tHit Points: %d\n", monster->max_health); // Original uses param_1[2] for this
+    printf("\tPower: %d\n\n", monster->power);
+  }
+  return;
 }
 
 // Function: oneup_monster
 int oneup_monster(struct Monster *monster) {
-    if (monster == NULL) {
-        return 0;
-    }
-
-    monster->xp++;
-    if (monster->xp >= 15) { // Assuming 0xf is 15
-        printf("%s gained a level\n", monster->type);
-        monster->max_health++;
-        monster->power++;
-        monster->health = monster->max_health;
-        monster->level++;
-        monster->xp = 0;
-    }
-    return 1;
+  if (monster == NULL) {
+    return 0;
+  }
+  
+  monster->xp = monster->xp + 1;
+  // Level up every 15 XP (original: ((uint)param_1[4] / 0xf) * 0xf)
+  if (monster->xp >= 15) { // Simplified level up logic
+    printf("%s gained a level\n", monster->name);
+    monster->max_health = monster->max_health + 1; // Hit Points
+    monster->power = monster->power + 1;
+    monster->health = monster->max_health; // Restore health on level up
+    monster->level = monster->level + 1;
+    monster->xp = 0; // Reset XP
+  }
+  return 1;
 }
 
-// Function: select_monster
-struct Monster *select_monster(struct Player *player) {
-    if (player == NULL) {
-        return NULL;
-    }
+// Function: generate_boss
+struct Monster* generate_boss(void) {
+  struct Monster *boss = (struct Monster *)malloc(sizeof(struct Monster));
+  if (boss == NULL) {
+    printf("[ERROR] Failed to allocate boss monster structure\n");
+    _terminate();
+  }
+  memset(boss, 0, sizeof(struct Monster));
+  
+  boss->name = select_name();
+  // Health: random between 9 and 18 (original: ((uint)*(byte *)(page_index + secret_page) + (uint)(*(byte *)(page_index + secret_page) / 10) * -10 & 0xff) + 9)
+  boss->health = (secret_page[page_index] % 10) + 9;
+  boss->max_health = boss->health;
+  update_page_index();
+  // Power: random between 4 and 9 (original: ((uint)*(byte *)(page_index + secret_page) + (uint)(*(byte *)(page_index + secret_page) / 6) * -6 & 0xff) + 4)
+  boss->power = (secret_page[page_index] % 6) + 4;
+  update_page_index();
+  boss->level = 4; // Boss starts at level 4
+  boss->xp = 0; // Boss has no XP
 
-    bool has_living_monsters = false;
-    for (uint i = 0; i < player->num_monsters; i++) {
-        if (player->monsters[i] != NULL && player->monsters[i]->health > 0) {
-            has_living_monsters = true;
-            break;
-        }
-    }
-
-    if (!has_living_monsters) {
-        return NULL;
-    }
-
-    int choice_made = 0;
-    char input_buffer[4];
-    uint selected_idx;
-
-    printf("Monsters: \n");
-    for (uint i = 0; i < player->num_monsters; i++) {
-        struct Monster *m = player->monsters[i];
-        if (m != NULL) {
-            printf("\t%u} \n", i + 1);
-            printf("\tType: %s\n", m->type);
-            printf("\tLevel: %d\n", m->level);
-            printf("\tHealth: %d\n", m->health);
-            printf("\tPower: %d\n\n", m->power);
-        }
-    }
-
-    while (!choice_made) {
-        printf("Selection: ");
-        read_line(input_buffer, sizeof(input_buffer));
-        selected_idx = atoi(input_buffer);
-
-        if (selected_idx < 1 || selected_idx > player->num_monsters) {
-            printf("bad choice: %s\n", input_buffer);
-        } else {
-            struct Monster *selected_monster = player->monsters[selected_idx - 1];
-            if (selected_monster == NULL) {
-                printf("bad choice: %s\n", input_buffer);
-            } else if (selected_monster->health < 1) {
-                printf("he dead\n");
-            } else {
-                choice_made = 1;
-                return selected_monster;
-            }
-        }
-    }
-    return NULL;
+  return boss;
 }
 
 // Function: change_monster_name
 int change_monster_name(char **monster_name_ptr) {
-    char new_name_buffer[32];
-    memset(new_name_buffer, 0, sizeof(new_name_buffer));
-
-    printf("New name: ");
-    int bytes_read = read_line_u(new_name_buffer);
-
-    char *new_name = (char *)malloc(bytes_read + 1);
-    if (new_name == NULL) {
-        printf("[ERROR] Failed to malloc name buffer\n");
-        _terminate(1);
-    }
-    strncpy(new_name, new_name_buffer, bytes_read);
-    new_name[bytes_read] = '\0';
-
-    // Assuming names returned by select_name are string literals and not freed.
-    // If previous `monster_name_ptr` pointed to a malloc'd string, it should be freed here.
-    *monster_name_ptr = new_name;
-    return 1;
+  char new_name_buffer[32]; // Max 31 chars + null
+  memset(new_name_buffer, 0, sizeof(new_name_buffer));
+  
+  printf("New name: ");
+  unsigned int name_len = read_line_u(new_name_buffer);
+  
+  char *new_name = (char *)malloc(name_len + 1);
+  if (new_name == NULL) {
+    printf("[ERROR] Failed to malloc name buffer\n");
+    _terminate();
+  }
+  memset(new_name, 0, name_len + 1);
+  memcpy(new_name, new_name_buffer, name_len);
+  
+  // Free old name if it was dynamically allocated
+  if (*monster_name_ptr != NULL && *monster_name_ptr != names[0]) { // Check if it's from `names` array
+      free(*monster_name_ptr);
+  }
+  *monster_name_ptr = new_name;
+  return 1;
 }
 
-// Function: capture_boss (or monster if passed a boss)
+// Function: capture_boss
 int capture_boss(struct Monster *boss, struct Player *player) {
-    if (boss == NULL || player == NULL) {
-        return 0;
+  if (boss == NULL || player == NULL) {
+    return 0;
+  }
+  
+  char input_buffer[4];
+  printf("capture monster? (y/n): ");
+  read_line(input_buffer, sizeof(input_buffer));
+  
+  if (input_buffer[0] == 'y') {
+    printf("update boss name? (y/n): ");
+    read_line(input_buffer, sizeof(input_buffer));
+    if (input_buffer[0] == 'y') {
+      change_monster_name(&(boss->name));
     }
 
-    char response[4];
-    printf("capture monster? (y/n): ");
-    read_line(response, sizeof(response));
-
-    if (response[0] == 'y') {
-        printf("update boss name? (y/n): ");
-        read_line(response, sizeof(response));
-        if (response[0] == 'y') {
-            change_monster_name(&(boss->type));
+    if (player->num_monsters < MAX_MONSTERS) {
+      player->monsters[player->num_monsters] = boss;
+      player->num_monsters++;
+      return 1;
+    }
+    else {
+      printf("your cart is full.\n");
+      for (unsigned int i = 0; i < MAX_MONSTERS; i++) {
+        printf("%d} \n", i + 1);
+        print_monster(player->monsters[i]);
+      }
+      printf("*********************************\n");
+      boss->health = boss->max_health; // Restore boss health before offering replacement
+      print_monster(boss);
+      printf("*********************************\n");
+      
+      printf("replace one of yours? (y/n): ");
+      read_line(input_buffer, sizeof(input_buffer));
+      if (input_buffer[0] == 'y') {
+        printf("which one: ");
+        read_line(input_buffer, sizeof(input_buffer));
+        unsigned int selection = atoi(input_buffer);
+        
+        if (selection == 0 || selection > MAX_MONSTERS) {
+          printf("invalid\n");
+          // Free the boss if not captured
+          if (boss->name != NULL && boss->name != names[0]) free(boss->name);
+          free(boss);
+          return 0;
         }
-
-        if (player->num_monsters < 5) {
-            player->monsters[player->num_monsters++] = boss;
-            return 1;
-        } else {
-            printf("your cart is full.\n");
-            for (uint i = 0; i < 5; i++) {
-                printf("%u} \n", i + 1);
-                print_monster(player->monsters[i]);
-            }
-            printf("*********************************\n");
-            boss->health = boss->max_health; // Restore boss health for display
-            print_monster(boss);
-            printf("*********************************\n");
-            printf("replace one of yours? (y/n): ");
-            read_line(response, sizeof(response));
-
-            if (response[0] == 'y') {
-                printf("which one: ");
-                read_line(response, sizeof(response));
-                uint choice = atoi(response);
-                if (choice == 0 || choice > 5) {
-                    printf("invalid\n");
-                    free(boss->type); // Free boss's dynamically allocated name
-                    free(boss);
-                    return 0;
-                } else {
-                    free(player->monsters[choice - 1]->type); // Free old monster's dynamically allocated name
-                    free(player->monsters[choice - 1]);
-                    player->monsters[choice - 1] = boss;
-                    return 1;
-                }
-            } else {
-                free(boss->type); // Free boss's dynamically allocated name
-                free(boss);
-                return 0;
-            }
+        else {
+          // Free the monster being replaced
+          struct Monster *replaced_monster = player->monsters[selection - 1];
+          if (replaced_monster != NULL) {
+              if (replaced_monster->name != NULL && replaced_monster->name != names[0]) free(replaced_monster->name);
+              free(replaced_monster);
+          }
+          player->monsters[selection - 1] = boss;
+          return 1;
         }
-    } else {
-        free(boss->type); // Free boss's dynamically allocated name
+      }
+      else {
+        // Free the boss if not captured
+        if (boss->name != NULL && boss->name != names[0]) free(boss->name);
         free(boss);
         return 0;
+      }
     }
+  }
+  else {
+    // Free the boss if not captured
+    if (boss->name != NULL && boss->name != names[0]) free(boss->name);
+    free(boss);
+    return 0;
+  }
 }
 
 // Function: daboss
 int daboss(struct Player *player) {
-    if (player == NULL) {
-        return 0;
+  if (player == NULL) {
+    return 0;
+  }
+  
+  struct Monster *boss = generate_boss();
+  reset_monsters(player); // Reset player monsters' health
+  
+  printf("\nDUN DUN DUUUUUUUUUUUUUUN\n");
+  printf("You have reached the boss!!!!!\n\n");
+  print_monster(boss);
+  
+  while (boss->health > 0) {
+    struct Monster *selected_monster = select_monster(player);
+    if (selected_monster == NULL) {
+      printf("You have no living monsters. You lose.\n");
+      if (boss->name != NULL && boss->name != names[0]) free(boss->name);
+      free(boss);
+      return 0; // Player lost
     }
-
-    struct Monster *boss = generate_boss();
-    reset_monsters(player);
-
-    printf("\nDUN DUN DUUUUUUUUUUUUUUN\n");
-    printf("You have reached the boss!!!!!\n\n");
-    print_monster(boss);
-
-    while (boss->health > 0) {
-        struct Monster *selected_player_monster = select_monster(player);
-        if (selected_player_monster == NULL) {
-            printf("You have no living monsters. You lose.\n");
-            free(boss->type);
-            free(boss);
-            return 0;
-        }
-
-        uint player_hit = secret_page[page_index] % selected_player_monster->power;
-        update_page_index();
-        boss->health -= player_hit;
-        printf("You hit for %u. %d left\n", player_hit, boss->health);
-        oneup_monster(selected_player_monster);
-
-        if (boss->health < 1) {
-            printf("You destroyed the boss!!!!\n");
-            reset_monsters(player);
-            return capture_boss(boss, player);
-        }
-
-        uint boss_hit = secret_page[page_index] % boss->power;
-        update_page_index();
-        printf("%s hits %s for %u\n", boss->type, selected_player_monster->type, boss_hit);
-        selected_player_monster->health -= boss_hit;
-
-        if (selected_player_monster->health < 1) {
-            printf("%s was knocked out\n", selected_player_monster->type);
-        }
+    
+    // Player's monster attacks boss
+    unsigned int player_damage = secret_page[page_index] % selected_monster->power;
+    update_page_index();
+    boss->health -= player_damage;
+    printf("You hit for %d. %d left\n", player_damage, boss->health);
+    oneup_monster(selected_monster); // Player monster gains XP
+    
+    if (boss->health < 1) {
+      printf("You destroyed the boss!!!!\n");
+      reset_monsters(player);
+      capture_boss(boss, player);
+      return 1; // Player won
     }
-    return 1;
+    
+    // Boss attacks player's monster
+    unsigned int boss_damage = secret_page[page_index] % boss->power;
+    update_page_index();
+    printf("%s hits %s for %d\n", boss->name, selected_monster->name, boss_damage);
+    selected_monster->health -= boss_damage;
+    
+    if (selected_monster->health < 1) {
+      printf("%s was knocked out\n", selected_monster->name);
+    }
+  }
+  return 1; // Should not reach here if loop condition is correct
 }
 
 // Function: capture_monster
 int capture_monster(struct Monster *monster, struct Player *player) {
-    if (monster == NULL || player == NULL) {
-        return 0;
+  if (monster == NULL || player == NULL) {
+    return 0;
+  }
+  
+  char input_buffer[4];
+  printf("capture monster? (y/n): ");
+  read_line(input_buffer, sizeof(input_buffer));
+  
+  if (input_buffer[0] == 'y') {
+    if (player->num_monsters < MAX_MONSTERS) {
+      player->monsters[player->num_monsters] = monster;
+      player->num_monsters++;
+      return 1;
     }
-
-    char response[4];
-    printf("capture monster? (y/n): ");
-    read_line(response, sizeof(response));
-
-    if (response[0] == 'y') {
-        if (player->num_monsters < 5) {
-            player->monsters[player->num_monsters++] = monster;
-            return 1;
-        } else {
-            printf("your cart is full.\n");
-            for (uint i = 0; i < 5; i++) {
-                printf("%u} \n", i + 1);
-                print_monster(player->monsters[i]);
-            }
-            printf("*********************************\n");
-            print_monster(monster);
-            printf("*********************************\n");
-            printf("replace one of yours? (y/n): ");
-            read_line(response, sizeof(response));
-
-            if (response[0] == 'y') {
-                printf("which one: ");
-                read_line(response, sizeof(response));
-                uint choice = atoi(response);
-                if (choice == 0 || choice > 5) {
-                    printf("invalid\n");
-                    free(monster->type); // Free new monster's dynamically allocated name
-                    free(monster);
-                    return 0;
-                } else {
-                    free(player->monsters[choice - 1]->type); // Free old monster's dynamically allocated name
-                    free(player->monsters[choice - 1]);
-                    player->monsters[choice - 1] = monster;
-                    return 1;
-                }
-            } else {
-                free(monster->type); // Free new monster's dynamically allocated name
-                free(monster);
-                return 0;
-            }
+    else {
+      printf("your cart is full.\n");
+      for (unsigned int i = 0; i < MAX_MONSTERS; i++) {
+        printf("%d} \n", i + 1);
+        print_monster(player->monsters[i]);
+      }
+      printf("*********************************\n");
+      print_monster(monster);
+      printf("*********************************\n");
+      
+      printf("replace one of yours? (y/n): ");
+      read_line(input_buffer, sizeof(input_buffer));
+      if (input_buffer[0] == 'y') {
+        printf("which one: ");
+        read_line(input_buffer, sizeof(input_buffer));
+        unsigned int selection = atoi(input_buffer);
+        
+        if (selection == 0 || selection > MAX_MONSTERS) {
+          printf("invalid\n");
+          // Free the monster if not captured
+          if (monster->name != NULL && monster->name != names[0]) free(monster->name);
+          free(monster);
+          return 0;
         }
-    } else {
-        free(monster->type); // Free new monster's dynamically allocated name
+        else {
+          // Free the monster being replaced
+          struct Monster *replaced_monster = player->monsters[selection - 1];
+          if (replaced_monster != NULL) {
+              if (replaced_monster->name != NULL && replaced_monster->name != names[0]) free(replaced_monster->name);
+              free(replaced_monster);
+          }
+          player->monsters[selection - 1] = monster;
+          return 1;
+        }
+      }
+      else {
+        // Free the monster if not captured
+        if (monster->name != NULL && monster->name != names[0]) free(monster->name);
         free(monster);
         return 0;
+      }
     }
+  }
+  else {
+    // Free the monster if not captured
+    if (monster->name != NULL && monster->name != names[0]) free(monster->name);
+    free(monster);
+    return 0;
+  }
 }
 
 // Function: fight
 int fight(struct Player *player) {
-    if (player == NULL) {
-        return 0;
+  if (player == NULL) {
+    return 0;
+  }
+  
+  reset_monsters(player); // Reset player's monsters' health
+  struct Monster *enemy_monster = generate_monster();
+  
+  printf("You are being attacked!!!\n");
+  print_monster(enemy_monster);
+  
+  while (enemy_monster->health > 0) {
+    struct Monster *selected_monster = select_monster(player);
+    if (selected_monster == NULL) {
+      printf("You have no living monsters. You lose.\n");
+      if (enemy_monster->name != NULL && enemy_monster->name != names[0]) free(enemy_monster->name);
+      free(enemy_monster);
+      return 0; // Player lost
     }
-
-    reset_monsters(player);
-    struct Monster *enemy_monster = generate_monster();
-    printf("You are being attacked!!!\n");
-    print_monster(enemy_monster);
-
-    while (enemy_monster->health > 0) {
-        struct Monster *selected_player_monster = select_monster(player);
-        if (selected_player_monster == NULL) {
-            printf("You have no living monsters. You lose.\n");
-            free(enemy_monster->type);
-            free(enemy_monster);
-            return 0;
-        }
-
-        uint player_hit = secret_page[page_index] % selected_player_monster->power;
-        update_page_index();
-        enemy_monster->health -= player_hit;
-        printf("You hit for %u. %d left\n", player_hit, enemy_monster->health);
-        oneup_monster(selected_player_monster);
-
-        if (enemy_monster->health < 1) {
-            printf("You knocked out %s\n", enemy_monster->type);
-            reset_monsters(player);
-            return capture_monster(enemy_monster, player);
-        }
-
-        uint enemy_hit = secret_page[page_index] % enemy_monster->power;
-        update_page_index();
-        printf("%s hits %s for %u\n", enemy_monster->type, selected_player_monster->type, enemy_hit);
-        selected_player_monster->health -= enemy_hit;
-
-        if (selected_player_monster->health < 1) {
-            printf("%s was knocked out\n", selected_player_monster->type);
-        }
+    
+    // Player's monster attacks enemy
+    unsigned int player_damage = secret_page[page_index] % selected_monster->power;
+    update_page_index();
+    enemy_monster->health -= player_damage;
+    printf("You hit for %d. %d left\n", player_damage, enemy_monster->health);
+    oneup_monster(selected_monster); // Player monster gains XP
+    
+    if (enemy_monster->health < 1) {
+      printf("You knocked out %s\n", enemy_monster->name);
+      reset_monsters(player);
+      capture_monster(enemy_monster, player);
+      return 1; // Player won
     }
-    return 1;
+    
+    // Enemy attacks player's monster
+    unsigned int enemy_damage = secret_page[page_index] % enemy_monster->power;
+    update_page_index();
+    printf("%s hits %s for %d\n", enemy_monster->name, selected_monster->name, enemy_damage);
+    selected_monster->health -= enemy_damage;
+    
+    if (selected_monster->health < 1) {
+      printf("%s was knocked out\n", selected_monster->name);
+    }
+  }
+  return 1; // Should not reach here if loop condition is correct
 }
 
 // Function: movement_loop
 int movement_loop(struct Map *map, struct Player *player) {
-    if (map == NULL || player == NULL) {
-        return 0;
+  if (map == NULL || player == NULL) {
+    return 0;
+  }
+  
+  int game_over = 0;
+  char direction_input[4]; // Buffer for 'u', 'd', 'l', 'r' + newline + null
+  
+  while (game_over == 0) {
+    memset(direction_input, 0, sizeof(direction_input));
+    printf("Move (u/d/l/r): ");
+    read_line(direction_input, sizeof(direction_input));
+    
+    check_egg(player, direction_input[0]); // Check for Easter egg with player context
+    
+    unsigned int old_x = map->currentX;
+    unsigned int old_y = map->currentY;
+    
+    switch (direction_input[0]) {
+      case 'u': // Up
+        if (map->currentY == 0) {
+          printf("off map\n");
+        }
+        else if (map->map_data[(map->currentY - 1) * map->width + map->currentX] == '#') {
+          printf("blocked\n");
+        }
+        else {
+          set_marker(old_x, old_y, map, '\0'); // Clear old marker
+          map->currentY--;
+          set_marker(map->currentX, map->currentY, map, '@'); // Set new marker
+        }
+        break;
+      case 'd': // Down
+        if (map->currentY == map->height - 1) {
+          printf("off map\n");
+        }
+        else if (map->map_data[(map->currentY + 1) * map->width + map->currentX] == '#') {
+          printf("blocked\n");
+        }
+        else {
+          set_marker(old_x, old_y, map, '\0');
+          map->currentY++;
+          set_marker(map->currentX, map->currentY, map, '@');
+        }
+        break;
+      case 'l': // Left
+        if (map->currentX == 0) {
+          printf("off map\n");
+        }
+        else if (map->map_data[map->currentY * map->width + (map->currentX - 1)] == '#') {
+          printf("blocked\n");
+        }
+        else {
+          set_marker(old_x, old_y, map, '\0');
+          map->currentX--;
+          set_marker(map->currentX, map->currentY, map, '@');
+        }
+        break;
+      case 'r': // Right
+        if (map->currentX == map->width - 1) {
+          printf("off map\n");
+        }
+        else if (map->map_data[map->currentY * map->width + (map->currentX + 1)] == '#') {
+          printf("blocked\n");
+        }
+        else {
+          set_marker(old_x, old_y, map, '\0');
+          map->currentX++;
+          set_marker(map->currentX, map->currentY, map, '@');
+        }
+        break;
+      default:
+        printf("[ERROR] Invalid direction: %c\n", direction_input[0]);
+        break;
     }
+    
+    print_map(map); // Always print map after movement attempt
 
-    int game_over = 0;
-    char direction_input[4];
-
-    while (!game_over) {
-        memset(direction_input, 0, sizeof(direction_input));
-        printf("Move (u/d/l/r): ");
-        read_line(direction_input, sizeof(direction_input));
-
-        if (direction_input[0] == '\0') {
-            printf("[ERROR] Failed to receive movement byte\n");
-            _terminate(1);
-        }
-
-        check_egg(player, direction_input[0]);
-
-        char move = direction_input[0];
-        bool moved = false;
-
-        switch (move) {
-            case 'u':
-                if (map->current_y == 0) {
-                    printf("off map\n");
-                } else if (map->data[(map->current_y - 1) * map->width + map->current_x] == '#') {
-                    printf("blocked\n");
-                } else {
-                    set_marker(map->current_x, map->current_y, map, '\0');
-                    map->current_y--;
-                    set_marker(map->current_x, map->current_y, map, '@');
-                    moved = true;
-                }
-                break;
-            case 'd':
-                if (map->current_y == map->height - 1) {
-                    printf("off map\n");
-                } else if (map->data[(map->current_y + 1) * map->width + map->current_x] == '#') {
-                    printf("blocked\n");
-                } else {
-                    set_marker(map->current_x, map->current_y, map, '\0');
-                    map->current_y++;
-                    set_marker(map->current_x, map->current_y, map, '@');
-                    moved = true;
-                }
-                break;
-            case 'l':
-                if (map->current_x == 0) {
-                    printf("off map\n");
-                } else if (map->data[map->current_y * map->width + (map->current_x - 1)] == '#') {
-                    printf("blocked\n");
-                } else {
-                    set_marker(map->current_x, map->current_y, map, '\0');
-                    map->current_x--;
-                    set_marker(map->current_x, map->current_y, map, '@');
-                    moved = true;
-                }
-                break;
-            case 'r':
-                if (map->current_x == map->width - 1) {
-                    printf("off map\n");
-                } else if (map->data[map->current_y * map->width + (map->current_x + 1)] == '#') {
-                    printf("blocked\n");
-                } else {
-                    set_marker(map->current_x, map->current_y, map, '\0');
-                    map->current_x++;
-                    set_marker(map->current_y, map->current_y, map, '@'); // This line was map->current_y, map->current_y. Likely a typo in original. Changed to map->current_x, map->current_y
-                    moved = true;
-                }
-                break;
-            default:
-                printf("[ERROR] Invalid direction: %c\n", move);
-                break;
-        }
-
-        if (moved) {
-            print_map(map);
-
-            if (map->current_x == map->end_x && map->current_y == map->end_y) {
-                printf("reached the end\n");
-                if (daboss(player) == 1) {
-                    printf("You won!!!\n");
-                } else {
-                    printf("You failed!!!\n");
-                }
-                game_over = 1;
-            } else {
-                // Simplified random encounter check: secret_page[page_index] % 100 < 10 for 10% chance
-                if (secret_page[page_index] % 100 < 10) {
-                    update_page_index();
-                    if (fight(player) == 1) {
-                        player->level++;
-                        printf("player gains a level. now %d\n", player->level);
-                    }
-                    print_map(map);
-                } else {
-                    update_page_index();
-                }
-            }
-        }
+    if (map->currentX == map->endX && map->currentY == map->endY) {
+      printf("reached the end\n");
+      int boss_result = daboss(player);
+      if (boss_result == 1) {
+        printf("You won!!!\n");
+      }
+      else {
+        printf("You failed!!!\n");
+      }
+      game_over = 1;
     }
-    return 1;
+    else {
+      // Random encounter check (original: (byte)(*(byte *)(page_index + secret_page) + (byte)((ushort)((ushort)*(byte *)(page_index + secret_page) * 0x29) >> 0xc) * -100) < 10)
+      // Simplified: 10% chance of encounter
+      if ((secret_page[page_index] % 100) < 10) {
+        update_page_index();
+        int fight_result = fight(player);
+        if (fight_result == 1) {
+          player->level++;
+          printf("player gains a level. now %d\n", player->level);
+        }
+        print_map(map); // Print map again after fight
+      }
+      else {
+        update_page_index(); // Still consume a random byte even if no fight
+      }
+    }
+  }
+  return 1;
+}
+
+// Function: select_name
+char* select_name(void) {
+  unsigned char rand_val = secret_page[page_index];
+  update_page_index();
+  
+  unsigned int name_idx = 0;
+  for (unsigned int i = 0; i < rand_val; i++) {
+    name_idx++;
+    if (names[name_idx] == NULL) { // Loop back to start if end of list
+      name_idx = 0;
+    }
+  }
+  return names[name_idx];
+}
+
+// Function: generate_monster
+struct Monster* generate_monster(void) {
+  struct Monster *monster = (struct Monster *)malloc(sizeof(struct Monster));
+  if (monster == NULL) {
+    printf("[ERROR] Failed to allocate monster structure\n");
+    _terminate();
+  }
+  memset(monster, 0, sizeof(struct Monster));
+  
+  monster->name = select_name();
+  // Health: random between 4 and 13 (original: ((uint)*(byte *)(page_index + secret_page) + (uint)(*(byte *)(page_index + secret_page) / 10) * -10 & 0xff) + 4)
+  monster->health = (secret_page[page_index] % 10) + 4;
+  monster->max_health = monster->health;
+  update_page_index();
+  // Power: random between 2 and 7 (original: ((uint)*(byte *)(page_index + secret_page) + (uint)(*(byte *)(page_index + secret_page) / 6) * -6 & 0xff) + 2)
+  monster->power = (secret_page[page_index] % 6) + 2;
+  update_page_index();
+  monster->level = 1; // Monsters start at level 1
+  monster->xp = 0; // Monsters start with 0 XP
+
+  return monster;
+}
+
+// Function: generate_player
+struct Player* generate_player(void) {
+  char player_name_buffer[16]; // Max 15 chars + null
+  memset(player_name_buffer, 0, sizeof(player_name_buffer));
+  
+  printf("Enter your name|| ");
+  unsigned int name_len = read_line(player_name_buffer, sizeof(player_name_buffer));
+  if (name_len == 0) {
+    strncpy(player_name_buffer, "Player One", sizeof(player_name_buffer) - 1);
+    player_name_buffer[sizeof(player_name_buffer) - 1] = '\0';
+  }
+  
+  struct Player *player = (struct Player *)malloc(sizeof(struct Player));
+  if (player == NULL) {
+    printf("[ERROR] Failed to malloc player structure\n");
+    _terminate();
+  }
+  memset(player, 0, sizeof(struct Player));
+  
+  strncpy(player->name, player_name_buffer, sizeof(player->name) - 1);
+  player->name[sizeof(player->name) - 1] = '\0';
+  
+  // Generate initial 3 monsters
+  for (unsigned int i = 0; i < 3; i++) {
+    player->monsters[player->num_monsters] = generate_monster();
+    player->num_monsters++;
+  }
+  
+  player->level = 1;
+  return player;
 }
 
 // Function: print_player
 void print_player(struct Player *player) {
-    if (player != NULL) {
-        printf("Name: %s\n", player->name);
-        printf("Level: %d\n", player->level);
-        printf("Monsters: \n");
-        for (uint i = 0; i < player->num_monsters; i++) {
-            struct Monster *m = player->monsters[i];
-            if (m != NULL) {
-                printf("\tType: %s\n", m->type);
-                printf("\tHealth: %d\n", m->health);
-                printf("\tPower: %d\n\n", m->power);
-            }
-        }
+  if (player != NULL) {
+    printf("Name: %s\n", player->name);
+    printf("Level: %d\n", player->level);
+    printf("Monsters: \n");
+    for (unsigned int i = 0; i < player->num_monsters; i++) {
+      if (player->monsters[i] != NULL) {
+        printf("\tType: %s\n", player->monsters[i]->name);
+        printf("\tHealth: %d\n", player->monsters[i]->health);
+        printf("\tPower: %d\n\n", player->monsters[i]->power);
+      }
     }
+  }
+  return;
 }
 
-// Main function to tie everything together
+// Main function (inferred structure)
 int main() {
-    // Initialize secret_page with some dummy data for "randomness"
-    for (int i = 0; i < sizeof(secret_page); i++) {
-        secret_page[i] = (char)i; // Simple incrementing pattern
-    }
+    // Seed random number generator (for testing secret_page, if not using actual random source)
+    // srand(time(NULL));
 
-    // Initialize names (already done globally)
-    // You might want to populate `names` with more meaningful strings.
-
-    printf("Welcome to the Dungeon Crawler!\n");
+    printf("Welcome to the adventure!\n");
 
     struct Player *player = generate_player();
     print_player(player);
 
-    int map_width = 10;
-    int map_height = 10;
-    struct Map *game_map = generate_map(map_width, map_height);
+    struct Map *game_map = generate_map(10, 10); // Example map size
 
+    // Start the movement loop
     movement_loop(game_map, player);
 
-    printf("Game Over!\n");
-
-    // Clean up allocated memory
-    free(game_map->data);
-    free(game_map);
-    for (uint i = 0; i < player->num_monsters; i++) {
-        // Only free monster->type if it was dynamically allocated (e.g., by change_monster_name)
-        // If it's from `names` array, it's a literal and should not be freed.
-        // This logic needs careful handling if names can be both literal and dynamic.
-        // For simplicity, assuming all monster->type are literals unless changed by user.
-        // If changed, the old literal is replaced by a malloc'd string.
-        // In this case, `free(player->monsters[i]->type);` might be needed if it points to malloc'd memory.
-        // For this refactor, we'll assume `names` are static and only user-entered names are freed.
-        // The `change_monster_name`, `capture_boss`, `capture_monster` already handle freeing.
-        free(player->monsters[i]);
+    // Cleanup resources
+    if (game_map != NULL) {
+        if (game_map->map_data != NULL) {
+            free(game_map->map_data);
+        }
+        free(game_map);
     }
-    free(player);
+    if (player != NULL) {
+        for (unsigned int i = 0; i < player->num_monsters; i++) {
+            if (player->monsters[i] != NULL) {
+                // Free monster name if it was dynamically allocated (not from `names` array)
+                bool is_static_name = false;
+                for (int j = 0; names[j] != NULL; j++) {
+                    if (player->monsters[i]->name == names[j]) {
+                        is_static_name = true;
+                        break;
+                    }
+                }
+                if (!is_static_name && player->monsters[i]->name != NULL) {
+                    free(player->monsters[i]->name);
+                }
+                free(player->monsters[i]);
+            }
+        }
+        free(player);
+    }
+    
+    printf("Game Over. Thanks for playing!\n");
 
     return 0;
 }

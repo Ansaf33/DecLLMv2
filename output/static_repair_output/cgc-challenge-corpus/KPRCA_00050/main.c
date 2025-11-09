@@ -1,207 +1,158 @@
-#include <stdint.h> // For uint32_t, uint16_t, etc.
-#include <stdlib.h> // For malloc, realloc, free, NULL
-#include <unistd.h> // For read, write, STDIN_FILENO, STDOUT_FILENO
-#include <string.h> // For memcpy (used in store_in_vault mock)
+#include <stdlib.h> // For realloc, free
+#include <stdint.h> // For fixed-width integers
+#include <stddef.h> // For size_t
 
-// --- Helper Functions and Globals ---
+// External function declarations (assuming they are defined elsewhere)
+// These functions are placeholders for actual I/O and vault operations.
+extern int read_bytes(void* buf, size_t count);
+extern int write_bytes(const void* buf, size_t count);
+extern void init_vault(void);
+extern void store_in_vault(uint32_t idx, void* data, size_t size);
+extern uint16_t swap16(uint16_t val);
+extern uint32_t swap32(uint32_t val);
 
-// Generic byte swapping functions
-static uint16_t swap16(uint16_t val) {
-    return (val << 8) | (val >> 8);
-}
+// Type definition for message handler functions
+typedef uint32_t (*msg_handler_func)(void*, uint32_t);
 
-static uint32_t swap32(uint32_t val) {
-    return (val << 24) | ((val << 8) & 0x00FF0000) | ((val >> 8) & 0x0000FF00) | (val >> 24);
-}
-
-// Mock read/write_bytes.
-// These functions assume reading from STDIN_FILENO and writing to STDOUT_FILENO.
-// They return 1 on full success (all bytes read/written), 0 on error or EOF.
-static int read_bytes(void *buf, size_t count) {
-    size_t bytes_read = 0;
-    while (bytes_read < count) {
-        ssize_t r = read(STDIN_FILENO, (char*)buf + bytes_read, count - bytes_read);
-        if (r <= 0) { // EOF or error
-            return 0;
-        }
-        bytes_read += r;
-    }
-    return 1; // Success
-}
-
-static int write_bytes(const void *buf, size_t count) {
-    size_t bytes_written = 0;
-    while (bytes_written < count) {
-        ssize_t w = write(STDOUT_FILENO, (const char*)buf + bytes_written, count - bytes_written);
-        if (w <= 0) { // Error
-            return 0;
-        }
-        bytes_written += w;
-    }
-    return 1; // Success
-}
-
-// Function pointer type for message handlers
-typedef uint32_t (*msg_handler_func)(uint32_t, uint32_t);
-
-// Global array of function pointers
-// Size 3 based on `param_1 < 3` check in `handle_msg` and `store_in_vault` size 0xc (3 * 4 bytes for 32-bit pointers)
+// Global array of message handlers
+// The size '3' is inferred from handle_msg's `param_1 < 3` check.
 msg_handler_func handlers[3];
 
-// External functions declarations (mocked implementations provided for completeness)
-void init_vault(void) {
-    // Placeholder for vault initialization
-}
-
-void store_in_vault(int index, void* data, size_t size) {
-    // Placeholder for storing data in vault.
-    // Assumed to store the 'handlers' array based on `main`'s call.
-    if (index == 0 && size == sizeof(handlers)) {
-        memcpy(handlers, data, size);
-    }
-}
-
-// --- Original Functions (refactored) ---
-
 // Function: is_supported
-uint32_t is_supported(int32_t param_1) {
-    return (param_1 == 0 || param_1 == 1 || param_1 == 2);
+uint32_t is_supported(int msg_type) {
+  return (msg_type == 0 || msg_type == 1 || msg_type == 2);
 }
 
 // Function: consume_bytes
-uint32_t consume_bytes(uint32_t param_1) {
-    uint8_t buffer[512]; // Buffer to read bytes into
-    uint32_t bytes_to_read;
-
-    while (param_1 > 0) {
-        bytes_to_read = (param_1 < sizeof(buffer)) ? param_1 : sizeof(buffer);
-        if (read_bytes(buffer, bytes_to_read) == 0) {
-            return 0; // Error or EOF
-        }
-        param_1 -= bytes_to_read;
+uint32_t consume_bytes(size_t bytes_to_consume) {
+  uint8_t buffer[512]; // Using fixed-size buffer for chunks
+  while (bytes_to_consume > 0) {
+    size_t chunk_size = (bytes_to_consume < sizeof(buffer)) ? bytes_to_consume : sizeof(buffer);
+    if (read_bytes(buffer, chunk_size) == 0) { // read_bytes returns 0 on error/EOF
+      return 0; // Error or EOF
     }
-    return 1; // Success
+    bytes_to_consume -= chunk_size;
+  }
+  return 1; // Success
 }
 
 // Function: handle_msg
-uint32_t handle_msg(uint16_t param_1, uint32_t param_2, uint32_t param_3) {
-    if (param_1 < 3) {
-        if (handlers[param_1] == NULL) {
-            return 0;
-        } else {
-            return handlers[param_1](param_2, param_3);
-        }
+uint32_t handle_msg(uint16_t msg_type, void* data, uint32_t size) {
+  if (msg_type < (sizeof(handlers) / sizeof(handlers[0]))) {
+    if (handlers[msg_type] == NULL) { // Check if handler is registered
+      return 0;
+    } else {
+      return handlers[msg_type](data, size);
     }
-    return 0;
+  }
+  return 0; // Unsupported message type
 }
 
 // Function: handle_msg_ping
-uint32_t handle_msg_ping(uint32_t param_1, uint32_t param_2) {
-    uint16_t msg_type = swap16(0);
-    uint32_t ret_val = 1; // Assume success
-
-    if (param_2 < 0x8000) {
-        uint16_t msg_len_short = swap16(param_2 & 0xffff);
-        
-        // Structure for a 4-byte header (type + short length)
-        struct __attribute__((packed)) {
-            uint16_t type;
-            uint16_t length;
-        } header_short = { .type = msg_type, .length = msg_len_short };
-
-        if (write_bytes(&header_short, sizeof(header_short)) == 0) {
-            ret_val = 0;
-        }
-    } else {
-        uint32_t msg_len_long = swap32(param_2 | 0x80000000); // Set MSB for long length
-        
-        if (write_bytes(&msg_type, sizeof(msg_type)) == 0) { // Write 2-byte type
-            ret_val = 0;
-        } else if (write_bytes(&msg_len_long, sizeof(msg_len_long)) == 0) { // Write 4-byte length
-            ret_val = 0;
-        }
-    }
-
-    if (ret_val == 1) { // Only write payload if header was sent successfully
-        if (write_bytes((const void*)param_1, param_2) == 0) { // param_1 is treated as a pointer to data
-            ret_val = 0;
-        }
-    }
-    return ret_val;
+uint32_t handle_msg_ping(void* data, size_t size) {
+  if (size < 0x8000) { // Size fits in 16 bits
+    // Header format: 2 bytes type (0), 2 bytes size
+    struct __attribute__((packed)) {
+      uint16_t type;
+      uint16_t size;
+    } header;
+    header.type = swap16(0);
+    header.size = swap16((uint16_t)size);
+    write_bytes(&header, sizeof(header));
+  } else { // Size requires 32 bits
+    // Header format: 2 bytes type (0), 4 bytes size (MSB set)
+    struct __attribute__((packed)) {
+      uint16_t type;
+      uint32_t size;
+    } header;
+    header.type = swap16(0);
+    header.size = swap32((uint32_t)size | 0x80000000); // Set MSB for 32-bit size
+    write_bytes(&header, sizeof(header));
+  }
+  write_bytes(data, size); // Write the actual payload
+  return 1;
 }
 
 // Function: main
-uint32_t main(void) {
-    void *message_buffer = NULL; // Buffer for message body
-    uint16_t msg_type;           // Message type
-    uint32_t msg_len;            // Message length
+int main(void) {
+  uint16_t msg_type;
+  uint32_t msg_size;
+  void* msg_buffer = NULL; // Buffer for message payload
 
-    init_vault();
-    // Initialize handlers array. 0xc is 12 bytes, suggesting 3 * sizeof(void*) on a 32-bit system.
-    store_in_vault(0, handlers, sizeof(handlers));
+  init_vault();
+  // Initialize handlers. Example:
+  handlers[0] = &handle_msg_ping;
+  handlers[1] = NULL; // Example: no handler for type 1
+  handlers[2] = NULL; // Example: no handler for type 2
 
-    int overall_success = 1; // Flag to control the main processing loop
+  // Store the address of the handlers array in the vault.
+  // The size 0xc (12 bytes) implies 3 pointers of 4 bytes each,
+  // which is typical for 32-bit systems.
+  store_in_vault(0, handlers, sizeof(handlers));
 
-    while (overall_success) {
-        uint16_t initial_header_type_val;
-        uint16_t initial_header_len_val;
+  while (1) { // Main message processing loop
+    // Read the initial 4-byte header prefix
+    union {
+      uint8_t bytes[4];
+      struct __attribute__((packed)) {
+        uint16_t type;
+        uint16_t size_prefix;
+      } fields;
+    } header_prefix;
 
-        // Read the first 4 bytes of the message header (type and initial length part)
-        if (read_bytes(&initial_header_type_val, sizeof(initial_header_type_val)) == 0) {
-            overall_success = 0; // EOF or error
-            break;
-        }
-        if (read_bytes(&initial_header_len_val, sizeof(initial_header_len_val)) == 0) {
-            overall_success = 0; // EOF or error
-            break;
-        }
+    if (read_bytes(&header_prefix, sizeof(header_prefix)) == 0) {
+      // If read fails (EOF or error), exit loop
+      break;
+    }
 
-        msg_type = swap16(initial_header_type_val);
-        uint32_t uVar2_raw = swap16(initial_header_len_val);
-        msg_len = uVar2_raw & 0xffff; // Initial 16-bit length (low 16 bits)
+    msg_type = swap16(header_prefix.fields.type);
+    uint32_t size_val = swap16(header_prefix.fields.size_prefix);
+    msg_size = size_val & 0xffff; // Initial 16 bits of size
 
-        // Check for extended length flag (MSB of the initial length part)
-        if ((uVar2_raw & 0x8000) != 0) {
-            uint16_t extended_len_part; // Read the next 2 bytes for full 32-bit length
-            if (read_bytes(&extended_len_part, sizeof(extended_len_part)) == 0) {
-                overall_success = 0; // EOF or error
-                break;
-            }
-            // Reconstruct the 32-bit raw length, then byte-swap and clear MSB flag
-            uint32_t full_raw_len = ((uint32_t)initial_header_len_val << 16) | extended_len_part;
-            msg_len = swap32(full_raw_len);
-            msg_len &= 0x7fffffff; // Clear the MSB flag
-        }
+    if ((size_val & 0x8000) != 0) { // Check if MSB is set, indicating a 32-bit size
+      uint16_t size_upper_half_net;
+      if (read_bytes(&size_upper_half_net, sizeof(size_upper_half_net)) == 0) {
+        // If read fails, exit loop
+        break;
+      }
+      // Combine the lower 16 bits (size_val) with the newly read upper 16 bits
+      uint32_t full_size_net = ((uint32_t)size_upper_half_net << 16) | size_val;
+      msg_size = swap32(full_size_net) & 0x7fffffff; // Clear the MSB as it's a flag
+    }
 
-        int should_process_message_body_into_buffer = 1; // Flag for current message's body processing
+    int proceed_with_payload = 1; // Flag to determine if payload should be processed
 
-        if (is_supported(msg_type) == 0) {
-            should_process_message_body_into_buffer = 0; // Not supported, just consume bytes
-        } else {
-            void *new_buffer = realloc(message_buffer, msg_len);
-            if (new_buffer == NULL) {
-                should_process_message_body_into_buffer = 0; // realloc failed, just consume bytes
-                overall_success = 0; // Stop processing further messages after this one
-            }
-            message_buffer = new_buffer; // Update buffer pointer
-        }
+    if (!is_supported(msg_type)) {
+      proceed_with_payload = 0; // Message type not supported
+    } else {
+      void* realloc_ptr = realloc(msg_buffer, msg_size);
+      if (realloc_ptr == NULL) {
+        proceed_with_payload = 0; // realloc failed
+      } else {
+        msg_buffer = realloc_ptr; // Update buffer pointer on success
+      }
+    }
 
-        if (should_process_message_body_into_buffer) {
-            // Read message body into the allocated buffer
-            if (read_bytes(message_buffer, msg_len) == 0) {
-                overall_success = 0; // EOF or error during body read
-                break;
-            }
-            handle_msg(msg_type, (uint32_t)message_buffer, msg_len);
-        } else {
-            // Message not supported or realloc failed, consume bytes without storing
-            if (consume_bytes(msg_len) == 0) {
-                overall_success = 0; // Error during consume_bytes
-                break;
-            }
-        }
-    } // End of while (overall_success)
+    if (!proceed_with_payload) {
+      // If message type is not supported or realloc failed,
+      // consume the payload bytes to maintain stream synchronization.
+      if (consume_bytes(msg_size) == 0) {
+        // If consuming bytes fails, something is wrong, terminate.
+        break;
+      }
+      continue; // Go to the next message
+    }
 
-    free(message_buffer); // Free any allocated memory
-    return 0;
+    // If we reach here, msg_type is supported and msg_buffer is allocated.
+    if (read_bytes(msg_buffer, msg_size) == 0) {
+      // If reading the message payload fails, exit loop
+      break;
+    }
+
+    handle_msg(msg_type, msg_buffer, msg_size);
+    // No explicit error handling for handle_msg result; loop continues.
+  } // End of while(1) loop
+
+  free(msg_buffer); // Free any allocated buffer
+  return 0; // Main always returns 0
 }

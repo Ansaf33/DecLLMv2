@@ -1,113 +1,114 @@
-#include <stdio.h>   // For printf, fgets
+#include <stdio.h>   // For printf, stdin
 #include <stdlib.h>  // For atoi, exit
-#include <string.h>  // For strcspn (to remove newline from fgets output)
+#include <string.h>  // For strlen, strcspn, memset
 
-// Dummy function declarations for functions called in main
-// The original `receive_until` takes an integer for `timeout` (0x15).
-// The `size` parameter (10) indicates the buffer should be able to hold at least that many bytes.
-int receive_until(char *buffer, int size, int timeout);
-void show_players(char *players_data);
-void play_round(char *players_data);
-void add_player(char *players_data);
-void delete_player(char *players_data);
+// --- Stub function definitions for compilation ---
+// These functions simulate the behavior of the original undefined functions.
 
-// Dummy implementation for receive_until
-// Simulates reading input from stdin.
-// Returns 1 if input was successfully read, 0 otherwise (e.g., EOF or error).
-int receive_until(char *buffer, int size, int timeout) {
-    // In a real scenario, 'timeout' (0x15 or 21) might be used for non-blocking I/O.
-    // For this dummy, we'll use blocking fgets.
-    printf("> "); // Prompt for user input
+// Simulates receiving input until a certain condition or timeout.
+// For this example, it reads a line from stdin.
+int receive_until(char *buffer, int size, int timeout_ms) {
+    printf("Enter choice: ");
     if (fgets(buffer, size, stdin) != NULL) {
         // Remove trailing newline character if present
         buffer[strcspn(buffer, "\n")] = 0;
-        return 1; // Input received
+        return strlen(buffer); // Return number of characters read
     }
-    return 0; // No input (e.g., EOF or read error)
+    return 0; // Error or no input
 }
 
-// Dummy implementation for show_players
-void show_players(char *players_data) {
-    printf("--- Showing players (data reference: %p) ---\n", (void*)players_data);
-    // In a real application, 'players_data' would be processed here.
+// Displays information about players.
+void show_players(char *players_data_buffer) {
+    printf("--- Statistics ---\n");
+    printf("Displaying players data from buffer at %p.\n", (void*)players_data_buffer);
+    // In a real application, this would parse players_data_buffer
+    // and print player information.
 }
 
-// Dummy implementation for play_round
-void play_round(char *players_data) {
-    printf("--- Playing a round (data reference: %p) ---\n", (void*)players_data);
-    // In a real application, 'players_data' would be processed here.
+// Simulates playing a round of a game.
+void play_round(char *players_data_buffer) {
+    printf("--- Play Round ---\n");
+    printf("Playing a round with players from data at %p.\n", (void*)players_data_buffer);
+    // In a real application, this would simulate game logic.
 }
 
-// Dummy implementation for add_player
-void add_player(char *players_data) {
-    printf("--- Adding a player (data reference: %p) ---\n", (void*)players_data);
-    // In a real application, 'players_data' would be modified here.
+// Adds a new player.
+void add_player(char *players_data_buffer) {
+    printf("--- Add Player ---\n");
+    printf("Adding a player to data at %p.\n", (void*)players_data_buffer);
+    // In a real application, this would prompt for player details
+    // and add them to players_data_buffer.
 }
 
-// Dummy implementation for delete_player
-void delete_player(char *players_data) {
-    printf("--- Deleting a player (data reference: %p) ---\n", (void*)players_data);
-    // In a real application, 'players_data' would be modified here.
+// Deletes an existing player.
+void delete_player(char *players_data_buffer) {
+    printf("--- Delete Player ---\n");
+    printf("Deleting a player from data at %p.\n", (void*)players_data_buffer);
+    // In a real application, this would prompt for a player to delete
+    // and remove them from players_data_buffer.
 }
 
-// Main function
+// Terminates the program.
+void _terminate(int status) {
+    printf("Terminating program with status %d.\n", status);
+    exit(status);
+}
+
+// --- Main function ---
 int main(void) {
-    int choice = 99; // Corresponds to local_14, initialized to a non-zero value to enter the loop
-    
-    // local_19c [4] was too small for receive_until's size parameter (10).
-    // input_buffer is sized to 10 bytes for consistency with the 'size' argument to receive_until.
-    char input_buffer[10]; 
-    char players_data[384]; // Corresponds to local_198, a buffer for player data
+  int choice = 99; // User's menu choice, initialized to a non-zero value
+  char input_buffer[16]; // Buffer to store user input (e.g., "1\n")
+  char players_data[384]; // Buffer to hold player-related data
 
-    // local_18 was initialized to 0 and never changed, making its 'if (local_18 == 0)' always true.
-    // This implies the menu was always printed. The variable is removed, and the menu is printed unconditionally.
-    // local_19e was unused except for an apparent decompiler artifact. It has been removed.
-    // Other decompiler artifacts like in_stack_fffffe54, puStack_10, stack0x00000004 have also been removed.
+  // Initialize the players_data buffer (e.g., to all zeros)
+  memset(players_data, 0, sizeof(players_data));
 
-    while (choice != 0) {
-        // Display the menu
-        printf("\n");
-        printf("1) Add Player\n");
-        printf("2) Delete Player\n");
-        printf("3) Play\n");
-        printf("4) Statistics\n");
-        printf("0) Exit\n");
+  // The original code's 'local_18' variable was always 0,
+  // causing the menu to print every time.
+  // The 'in_stack_fffffe54', 'local_19e', and 'puStack_10'
+  // variables were decompiler artifacts and are removed.
 
-        // Read user input. 0x15 (21 decimal) is passed as the timeout.
-        if (receive_until(input_buffer, sizeof(input_buffer), 21) != 0) {
-            choice = atoi(input_buffer); // Convert input string to integer
+  while (choice != 0) {
+    // Print the menu options
+    printf("\n");
+    printf("1) Add Player\n");
+    printf("2) Delete Player\n");
+    printf("3) Play\n");
+    printf("4) Statistics\n");
+    printf("0) Exit\n");
 
-            // Use a switch statement for cleaner handling of menu choices
-            switch (choice) {
-                case 1:
-                    add_player(players_data);
-                    break;
-                case 2:
-                    delete_player(players_data);
-                    break;
-                case 3:
-                    play_round(players_data);
-                    break;
-                case 4:
-                    show_players(players_data);
-                    break;
-                case 0:
-                    // Loop will terminate naturally after this iteration
-                    printf("Exiting program.\n");
-                    break;
-                default:
-                    printf("Invalid choice. Please enter a number between 0 and 4.\n");
-                    break;
-            }
-        } else {
-            printf("Error reading input or EOF encountered. Exiting.\n");
-            choice = 0; // Force loop termination
-        }
+    // Read user input for menu choice
+    // The original timeout (0x15) is handled by the stub receive_until.
+    if (receive_until(input_buffer, sizeof(input_buffer), 0x15) != 0) {
+      choice = atoi(input_buffer); // Convert input string to integer
+
+      // Process the user's choice
+      if (choice == 4) {
+        show_players(players_data);
+      } else if (choice == 3) {
+        play_round(players_data);
+      } else if (choice == 1) {
+        add_player(players_data);
+      } else if (choice == 2) {
+        delete_player(players_data);
+      } else if (choice == 0) {
+        // Exit choice, loop will terminate
+        printf("Exiting application.\n");
+      } else {
+        printf("Invalid choice. Please try again.\n");
+      }
+    } else {
+        printf("Error reading input or no input received. Please try again.\n");
+        // Optionally, reset choice to force menu reprint or exit
+        // choice = -1;
     }
+  }
 
-    // _terminate(0) in the original code is equivalent to exit(0)
-    exit(0);
+  // The original code had an unreachable 'if' block after '_terminate(0)'.
+  // Since '_terminate' calls 'exit', any code after it is unreachable.
+  _terminate(0);
 
-    // The code after _terminate(0) in the original snippet is unreachable and likely a decompiler artifact.
-    // It has been removed.
+  // This return statement is technically unreachable because _terminate(0) calls exit(0).
+  // It's included for completeness if _terminate were a function that returns.
+  return 0; // Standard successful exit for main
 }

@@ -1,632 +1,797 @@
-#include <stdio.h>
-#include <stdlib.h> // For malloc, free
-#include <string.h> // For memset, memcpy
-#include <ctype.h>  // For isalpha, isdigit, isspace, isascii
-#include <stdint.h> // For uint32_t, uintptr_t
+#include <stdio.h>    // For printf
+#include <stdlib.h>   // For malloc, free
+#include <string.h>   // For memset, memcpy
+#include <ctype.h>    // For isalpha, isdigit, isspace, isascii
+#include <unistd.h>   // For read (simulating receive)
+#include <errno.h>    // For errno
 
-// Type definitions for decompiled code, assuming a 32-bit environment
-// where pointers and unsigned ints are 4 bytes.
+// --- Type Definitions (replacing ghidra's undefined types) ---
 typedef unsigned int uint;
-typedef uint32_t undefined4; // Assuming 4-byte unsigned integer, used for status/return values
 typedef unsigned char byte;
+// 'undefined' typically means a single byte, 'char' is suitable.
+// 'undefined4' typically means 4 bytes, 'unsigned int' or 'int' is suitable.
 
-// Forward declarations for functions defined later
-void *initCVF(void);
-void freeCVF(void *param_1);
-int bitsNeeded(uint val);
-uint receiveWrapper(void *buffer, uint count);
-undefined4 parseCVFHeader(int fd, uint *cvf_data);
-undefined4 parseCVFName(int fd, int *cvf_data);
-undefined4 parseCVFDescription(int fd, int *cvf_data);
-uint parseCVFPixelDict(int fd, int *cvf_data, int dict_idx);
-undefined4 parseCVFFrame(int fd, int *cvf_data);
-undefined4 playVideo(uint *cvf_data);
-void renderCVF(int fd);
+// --- Dummy/Simulated Functions ---
 
-// Dummy function for receive, as its actual implementation is not provided.
-// It simulates reading a single byte and storing it in the buffer.
-// For playVideo's specific call, it simulates reading from stdin.
-int receive(int fd, void *buf, size_t count, int *bytesRead) {
-    if (buf == NULL || bytesRead == NULL || count == 0) {
-        return -1; // Error
-    }
-    // Simulate reading 1 byte.
-    if (count > 0) {
-        if (fd == 0) { // Assuming fd 0 is stdin for interactive input
-            char c = getchar();
-            if (c != EOF) {
-                *((char*)buf) = c;
-                *bytesRead = 1;
-                return 0; // Success
-            }
-        }
-        // Fallback for other cases or if getchar fails
-        *((char*)buf) = 'A'; // Example data
-        *bytesRead = 1;
-        return 0; // Success
-    }
-    return -1; // Error
+// Global buffer and position for simulating readBits
+static unsigned char *sim_buffer = NULL;
+static size_t sim_buffer_len = 0;
+static size_t sim_buffer_pos = 0;
+static unsigned int sim_bit_buffer = 0;
+static int sim_bits_in_buffer = 0;
+
+// A simple way to provide input for readBits for testing.
+// In a real scenario, 'fd' would be a file descriptor or similar.
+// For compilation, we'll simulate it with an in-memory buffer.
+void set_simulated_input(unsigned char *buffer, size_t len) {
+    sim_buffer = buffer;
+    sim_buffer_len = len;
+    sim_buffer_pos = 0;
+    sim_bit_buffer = 0;
+    sim_bits_in_buffer = 0;
 }
 
-// Dummy function for readBits, as its actual implementation is not provided.
-// It simulates reading bits and storing them in the provided uint pointer.
-// The values assigned here are based on the context of how they are used in the original code
-// to allow the logic to flow through different branches.
-int readBits(int fd, int bits_to_read, uint *out_val) {
-    if (out_val == NULL || bits_to_read <= 0 || bits_to_read > 32) {
-        return 0; // Failure
+// Dummy implementation for receive.
+// In playVideo, it's used to wait for a keypress (fd 0, count 1).
+// In receiveWrapper, it's used to read 1 byte at a time into a buffer.
+int receive(int fd, char *buf, size_t count, int *bytes_read_ptr) {
+    if (fd == 0 && count == 1) { // Simulating stdin read for keypress
+        char temp_char;
+        // Use unistd.h read for actual stdin interaction
+        ssize_t res = read(STDIN_FILENO, &temp_char, 1); 
+        if (res == 1) {
+            if (buf) {
+                *buf = temp_char;
+            }
+            if (bytes_read_ptr) {
+                *bytes_read_ptr = 1;
+            }
+            return 1; // Success
+        }
+        if (bytes_read_ptr) {
+            *bytes_read_ptr = 0;
+        }
+        return 0; // Error or EOF
     }
-    *out_val = 1; // Default success value
+    
+    // Simulating reading from the global buffer for receiveWrapper's data
+    if (sim_buffer && sim_buffer_pos < sim_buffer_len) {
+        if (buf) {
+            *buf = sim_buffer[sim_buffer_pos++];
+        }
+        if (bytes_read_ptr) {
+            *bytes_read_ptr = 1;
+        }
+        return 1; // Success
+    }
+    if (bytes_read_ptr) {
+        *bytes_read_ptr = 0;
+    }
+    return 0; // End of simulated input or error
+}
 
-    if (bits_to_read == 32) { // Magic number
-        *out_val = 0x435646; // "CVF"
-    } else if (bits_to_read == 16) { // Section type
-        static int section_type_idx = 0;
-        uint section_types[] = {
-            0x1111, // Header
-            0x2222, // Name
-            0x3333, // Description
-            0x4444, // Pixel Dict 0
-            0x4445, // Pixel Dict 1
-            0x5555, // Frame
-            0x5555, // Another Frame
-            0xEEEE  // End or unknown marker
-        };
-        *out_val = section_types[section_type_idx % (sizeof(section_types)/sizeof(section_types[0]))];
-        section_type_idx++;
-    } else if (bits_to_read == 8) { // Height, Width, Description length, Name length, Pixel dict length, Frame info byte
-        *out_val = 10; // Example value for most 8-bit reads
-    } else if (bits_to_read == 10) { // Example for max_frames (0x801 needs 11 bits, but original used 0x10=16 bits)
-        *out_val = 5;
-    } else if (bits_to_read == 11) { // bitsNeeded(0x801-1) = 11
-        *out_val = 5;
-    } else if (bits_to_read == 1) { // Flags like is_delta_frame, is_compressed
-        *out_val = 0; // Default to non-delta, non-compressed for simplicity
-    } else if (bits_to_read == 3) { // dict_type, custom_dict_idx
-        *out_val = 1; // Default to dict_type 1 (common) or custom_dict_idx 1
-    } else if (bits_to_read <= 7) { // Various small bit counts
-        *out_val = 1; // General small value
+// Dummy implementation for readBits.
+// Reads a specified number of bits from the simulated input buffer.
+int readBits(int fd, int num_bits, uint *out_val) {
+    (void)fd; // fd is unused in this dummy implementation
+
+    if (!out_val || num_bits <= 0 || num_bits > 32) {
+        return 0; // Invalid arguments
+    }
+    *out_val = 0;
+
+    if (!sim_buffer) {
+        return 0; // No simulated input set
     }
 
+    for (int i = 0; i < num_bits; ++i) {
+        if (sim_bits_in_buffer == 0) {
+            if (sim_buffer_pos >= sim_buffer_len) {
+                return 0; // End of input
+            }
+            sim_bit_buffer = sim_buffer[sim_buffer_pos++];
+            sim_bits_in_buffer = 8;
+        }
+
+        *out_val = (*out_val << 1) | ((sim_bit_buffer >> (sim_bits_in_buffer - 1)) & 1);
+        sim_bits_in_buffer--;
+    }
     return 1; // Success
 }
 
-// Structure for a CVF Frame, derived from parseCVFFrame usage
-typedef struct {
-    int height;
-    int width;
-    char *pixel_data;
-} CVF_Frame;
-
-// Function: receiveWrapper
-uint receiveWrapper(void *buffer, uint count) {
-    if (buffer == NULL) {
+// --- Function: receiveWrapper ---
+// Reads 'total_size' bytes into the buffer starting at 'dest_address'.
+uint receiveWrapper(int dest_address, uint total_size) {
+    uint total_received = 0;
+    
+    if (dest_address == 0) {
         return 0;
     }
-
-    uint total_bytes_read = 0;
-    int bytes_read_this_iter = 0;
     
-    while (total_bytes_read < count) {
-        bytes_read_this_iter = 0;
-        int iVar1 = receive(0, (char*)buffer + total_bytes_read, 1, &bytes_read_this_iter);
-        if (iVar1 != 0) {
+    char *buffer = (char *)dest_address;
+
+    while (total_received < total_size) {
+        int bytes_read_this_call = 0;
+        int result = receive(0, buffer + total_received, 1, &bytes_read_this_call);
+        
+        if (result == 0 || bytes_read_this_call == 0) {
             printf("[ERROR] Read fail\n");
             return 0;
         }
-        if (bytes_read_this_iter == 0) { // Prevent infinite loop if receive reads 0 bytes
-            printf("[ERROR] Receive returned 0 bytes, expected more.\n");
-            return 0;
-        }
-        total_bytes_read += bytes_read_this_iter;
+        total_received += bytes_read_this_call;
     }
-    return total_bytes_read;
+    
+    return total_received;
 }
 
-// Function: freeCVF
-void freeCVF(void *param_1) {
-    if (param_1 == NULL) {
+// --- Function: freeCVF ---
+// Frees memory associated with a CVF video object.
+void freeCVF(void *cvf_obj_ptr) {
+    if (cvf_obj_ptr == NULL) {
         return;
     }
 
-    char *base_ptr = (char *)param_1; // Use char* for byte-level pointer arithmetic
+    char *cvf_base = (char *)cvf_obj_ptr;
+    uint i;
 
     // Free custom pixel dictionaries (8 of them)
-    // Dictionaries are stored as `uint size` and `void* data` in 8-byte slots
-    // starting at `base_ptr + 0x200`.
-    // Size is at offset 0, data pointer at offset 4 within each 8-byte slot.
-    for (uint i = 0; i < 8; ++i) {
-        void **dict_data_loc = (void **)(base_ptr + 0x200 + i * 8 + 4);
-        undefined4 *dict_size_loc = (undefined4 *)(base_ptr + 0x200 + i * 8);
-
-        if (*dict_data_loc != NULL) {
-            free(*dict_data_loc);
-            *dict_data_loc = NULL;
-            *dict_size_loc = 0;
+    // Dictionaries are stored starting at offset 0x200 (0x40 * 8).
+    // Each entry is 8 bytes: 4 bytes for length, 4 bytes for data pointer.
+    // Length at (i*8 + 0x20c), Data pointer at (i*8 + 0x210).
+    for (i = 0; i < 8; ++i) {
+        char **dict_data_ptr = (char **)(cvf_base + (i * 8) + 0x210);
+        if (*dict_data_ptr != NULL) {
+            free(*dict_data_ptr);
+            *dict_data_ptr = NULL;
+            *(uint *)(cvf_base + (i * 8) + 0x20c) = 0; // Reset dictionary length
         }
     }
 
-    // Free frames data
-    // `base_ptr + 0x24c` is the current frame count (uint)
-    // `base_ptr + 0x250` is a pointer to an array of `CVF_Frame*`
-    uint frame_count = *(uint *)(base_ptr + 0x24c);
-    CVF_Frame **frames_array = *(CVF_Frame ***)(base_ptr + 0x250);
+    // Free frame data
+    // Frame count at offset 0x24c. Array of frame pointers at offset 0x250.
+    uint *num_frames_ptr = (uint *)(cvf_base + 0x24c);
+    char ***frames_array_ptr = (char ***)(cvf_base + 0x250);
 
-    if (frames_array != NULL) {
-        for (uint i = 0; i < frame_count; ++i) {
-            CVF_Frame *frame_struct = frames_array[i];
-            if (frame_struct != NULL) {
-                if (frame_struct->pixel_data != NULL) {
-                    free(frame_struct->pixel_data);
-                    frame_struct->pixel_data = NULL;
+    if (*frames_array_ptr != NULL) {
+        char **frames_array = *frames_array_ptr;
+        uint num_frames = *num_frames_ptr;
+
+        for (i = 0; i < num_frames; ++i) {
+            char *frame_obj = frames_array[i];
+            if (frame_obj != NULL) {
+                // Frame object structure: { uint height, uint width, char* pixel_data }
+                // Pixel data pointer is at offset 8 within the frame object.
+                char **pixel_data_ptr = (char **)(frame_obj + 8);
+                if (*pixel_data_ptr != NULL) {
+                    free(*pixel_data_ptr);
+                    *pixel_data_ptr = NULL;
+                    *(uint *)(frame_obj + 0) = 0; // Reset height
+                    *(uint *)(frame_obj + 4) = 0; // Reset width
                 }
-                free(frame_struct);
+                free(frame_obj);
                 frames_array[i] = NULL;
             }
         }
         free(frames_array);
-        *(CVF_Frame ***)(base_ptr + 0x250) = NULL;
+        *frames_array_ptr = NULL;
     }
-    free(param_1); // Finally, free the main CVF structure
+
+    free(cvf_obj_ptr); // Free the main CVF structure
 }
 
-// Function: playVideo
-undefined4 playVideo(uint *param_1) { // param_1 is the CVF header structure pointer
-    if (param_1 == NULL || ((uintptr_t)param_1[0x94]) == 0) {
+// --- Function: playVideo ---
+// Plays the video stored in the CVF object.
+uint playVideo(uint *cvf_data) {
+    uint success = 1;
+    
+    if (cvf_data == NULL || cvf_data[0x94] == 0) { // Check for valid CVF data and frame array
         return 0;
     }
-
-    uint height = param_1[0];
-    uint width = param_1[1];
-    uint frame_count = param_1[0x93];
-    CVF_Frame **frames_array = (CVF_Frame **)param_1[0x94];
-
-    int video_buffer_size = height * width;
-
+    
+    uint height = cvf_data[0];
+    uint width = cvf_data[1];
+    uint total_frames_expected = cvf_data[2]; // Total frames from header
+    uint frames_loaded = cvf_data[0x93];     // Actual frames loaded
+    
+    uint frame_pixel_count = height * width;
+    
     printf("--------------------Playing video-------------------\n");
-    printf("INFO: Height: %u Width: %u Frames: %u\n", height, width, frame_count);
+    printf("INFO: Height: %u Width: %u Frames: %u\n", height, width, total_frames_expected);
     printf("INFO: Set your terminal height so that only the '|'s show.\n");
     printf("INFO: This will provide a better viewing experience\n");
     printf("INFO: When ready press a key...\n");
-
+    
+    // Print vertical lines for terminal height guidance
     for (uint i = 0; i < height; ++i) {
         printf("|\n");
     }
-
-    undefined4 user_input_char = 0;
-    if (receiveWrapper(&user_input_char, 1) == 0) {
-        return 0; // Read fail
-    }
-
-    for (uint current_frame_idx = 0; current_frame_idx < frame_count; ++current_frame_idx) {
-        CVF_Frame *current_frame_struct = frames_array[current_frame_idx];
-        if (current_frame_struct == NULL || current_frame_struct->pixel_data == NULL) {
-            printf("[ERROR] Frame %u data is missing.\n", current_frame_idx);
-            return 0;
-        }
-
-        for (uint pixel_idx = 0; pixel_idx < video_buffer_size; ++pixel_idx) {
-            if ((pixel_idx != 0) && (current_frame_struct->width != 0) && (pixel_idx % current_frame_struct->width == 0)) {
-                printf("\n");
-            }
-            printf("%c", current_frame_struct->pixel_data[pixel_idx]);
-        }
-        printf("\n");
-    }
-    return 1; // Success
-}
-
-// Function: bitsNeeded
-int bitsNeeded(uint val) {
-    if (val == 0) {
-        return 1;
-    }
-    int bits = 0;
-    while (val != 0) {
-        val >>= 1;
-        bits++;
-    }
-    return bits;
-}
-
-// Function: parseCVFFrame
-undefined4 parseCVFFrame(int fd, int *cvf_data) { // cvf_data is the main CVF header structure
-    if (fd == 0 || cvf_data == NULL || cvf_data[0] == 0) {
-        printf("[ERROR] Header must be specified prior to frame rendering.\n");
-        return 0;
-    }
-
-    uint header_byte = 0;
-    if (readBits(fd, 8, &header_byte) == 0) return 0;
-
-    uint is_delta_frame = (header_byte >> 7) & 1;
-    // uint is_compressed = (header_byte >> 6) & 1; // Not used
-    uint dict_type = (header_byte >> 3) & 7;
-    uint custom_dict_idx = header_byte & 7;
-
-    if (cvf_data[0x93] == 0 && is_delta_frame != 0) { // cvf_data[0x93] is current_frame_count
-        printf("[ERROR] First frame must be full\n");
-        return 0;
-    }
-
-    uint dict_size = 0;
-    const char *dict_data = NULL; // Use const char* for string literals or dictionary data
-
-    if (dict_type == 0) { // Custom dictionary
-        char *base_ptr = (char *)cvf_data;
-        uint *custom_dict_size_ptr = (uint*)(base_ptr + 0x200 + custom_dict_idx * 8);
-        char **custom_dict_data_ptr = (char**)(base_ptr + 0x200 + custom_dict_idx * 8 + 4);
-
-        if (*custom_dict_size_ptr == 0) {
-            printf("[ERROR] Custom Dictionary %u does not exist\n", custom_dict_idx);
-            return 0;
-        }
-        dict_size = *custom_dict_size_ptr;
-        dict_data = *custom_dict_data_ptr;
-    } else { // Standard dictionaries
-        switch (dict_type) {
-            case 1: dict_size = 2; dict_data = " ."; break;
-            case 2: dict_size = 4; dict_data = " .|#"; break;
-            case 3: dict_size = 8; dict_data = " .|#@$()"; break;
-            case 4: dict_size = 0x10; dict_data = " .|#@$()*HOEWM%&"; break;
-            case 5: dict_size = 0x2a; dict_data = " .|#@$()*HOEWM%&abcdefghijklmnopqrstuvwxyz"; break;
-            case 6: dict_size = 0x3e; dict_data = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; break;
-            case 7: dict_size = 0x5f; dict_data = " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"; break;
-            default:
-                printf("[ERROR] Invalid dictionary type %u\n", dict_type);
-                return 0;
-        }
-    }
-
-    int bits_per_pixel = bitsNeeded(dict_size - 1);
     
-    CVF_Frame *new_frame = (CVF_Frame *)malloc(sizeof(CVF_Frame));
-    if (new_frame == NULL) return 0;
+    // Wait for user input (keypress)
+    char dummy_input_buffer;
+    if (receive(0, &dummy_input_buffer, 1, NULL) == 0) {
+        success = 0;
+    } else {
+        char **frames_array = (char **)cvf_data[0x94];
+        for (uint current_frame_idx = 0; current_frame_idx < frames_loaded; ++current_frame_idx) {
+            char *frame_obj = frames_array[current_frame_idx];
+            
+            if (frame_obj == NULL) {
+                printf("[ERROR] Frame %u is null\n", current_frame_idx);
+                return 0;
+            }
+            
+            // Frame object: { uint height, uint width, char* pixel_data }
+            uint frame_width_for_linebreak = *(uint *)(frame_obj + 4); // Width of the frame
+            char *pixel_data = *(char **)(frame_obj + 8);
+            
+            for (uint pixel_idx = 0; pixel_idx < frame_pixel_count; ++pixel_idx) {
+                if ((pixel_idx != 0) && (pixel_idx % frame_width_for_linebreak == 0)) {
+                    printf("\n");
+                }
+                printf("%c", pixel_data[pixel_idx]);
+            }
+            printf("\n"); // Newline after each frame
+        }
+    }
+    return success;
+}
 
-    size_t total_pixels = (size_t)cvf_data[1] * cvf_data[0]; // width * height
-    new_frame->height = cvf_data[0];
-    new_frame->width = cvf_data[1];
-    new_frame->pixel_data = (char *)malloc(total_pixels);
+// --- Function: bitsNeeded ---
+// Calculates the number of bits required to represent a given unsigned integer.
+int bitsNeeded(uint value) {
+    if (value == 0) {
+        return 1; // 0 needs 1 bit (to represent 0)
+    }
+    int count = 0;
+    for (; value != 0; value >>= 1) {
+        count++;
+    }
+    return count;
+}
 
-    if (new_frame->pixel_data == NULL) {
-        free(new_frame);
+// --- Helper structure for dictionaries in parseCVFFrame ---
+typedef struct {
+    uint count;
+    char *chars;
+} PixelDict;
+
+// Built-in dictionaries. Using static const for read-only memory.
+static const PixelDict builtin_dicts[] = {
+    {0, NULL}, // Type 0 is custom
+    {2, " ."},
+    {4, " .|#"},
+    {8, " .|#@$()"},
+    {16, " .|#@$()*HOEWM%&"},
+    {42, " .|#@$()*HOEWM%&abcdefghijklmnopqrstuvwxyz"},
+    {62, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"},
+    {95, " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"}
+};
+
+// --- Function: parseCVFFrame ---
+// Parses a single video frame from the input stream.
+uint parseCVFFrame(int fd, uint *cvf_data) {
+    if (fd == 0 || cvf_data == NULL || *cvf_data == 0) {
+        if (cvf_data != NULL && *cvf_data == 0) {
+            printf("[ERROR] Header must be specified prior to frame rendering.\n");
+        }
         return 0;
     }
 
-    uint num_pixels_to_read = total_pixels;
-    int bits_for_index = 0;
-    if (is_delta_frame) {
-        bits_for_index = bitsNeeded(total_pixels - 1);
-        if (readBits(fd, bits_for_index, &num_pixels_to_read) == 0) {
-            free(new_frame->pixel_data); free(new_frame); return 0;
-        }
-        if (num_pixels_to_read == 0) {
-            printf("[ERROR] Empty frames not allowed for delta frame\n");
-            free(new_frame->pixel_data); free(new_frame); return 0;
-        }
+    uint frame_header_byte;
+    if (!readBits(fd, 8, &frame_header_byte)) {
+        return 0;
     }
 
-    if (!is_delta_frame) {
-        memset(new_frame->pixel_data, ' ', total_pixels); // Fill with spaces
-        for (uint i = 0; i < num_pixels_to_read; ++i) {
-            uint pixel_value_idx = 0;
-            if (readBits(fd, bits_per_pixel, &pixel_value_idx) == 0) {
-                free(new_frame->pixel_data); free(new_frame); return 0;
-            }
-            if (dict_size <= pixel_value_idx) {
-                printf("[ERROR] Invalid pixel (value %u out of dict bounds %u)\n", pixel_value_idx, dict_size);
-                free(new_frame->pixel_data); free(new_frame); return 0;
-            }
-            new_frame->pixel_data[i] = dict_data[pixel_value_idx];
-        }
-    } else { // Delta frame
-        CVF_Frame **frames_array = (CVF_Frame **)cvf_data[0x94];
-        uint prev_frame_idx = cvf_data[0x93] - 1; // Current frame count is 0x93, so previous is 0x93 - 1
-        CVF_Frame *prev_frame = frames_array[prev_frame_idx];
+    byte is_diff_frame = (frame_header_byte >> 7) & 1; // 1 for diff frame, 0 for full frame
+    byte builtin_dict_type = (frame_header_byte >> 3) & 7;
+    byte custom_dict_idx = frame_header_byte & 7;
 
-        if (prev_frame == NULL || prev_frame->pixel_data == NULL) {
-            printf("[ERROR] Previous frame data not available for delta frame.\n");
-            free(new_frame->pixel_data); free(new_frame); return 0;
-        }
-        memcpy(new_frame->pixel_data, prev_frame->pixel_data, total_pixels);
-
-        for (uint i = 0; i < num_pixels_to_read; ++i) {
-            uint pixel_index = 0;
-            uint pixel_value_idx = 0;
-
-            if (readBits(fd, bits_for_index, &pixel_index) == 0) {
-                free(new_frame->pixel_data); free(new_frame); return 0;
-            }
-            if (readBits(fd, bits_per_pixel, &pixel_value_idx) == 0) {
-                free(new_frame->pixel_data); free(new_frame); return 0;
-            }
-            if (total_pixels <= pixel_index) {
-                printf("[ERROR] Index %u out of image bounds %zu\n", pixel_index, total_pixels);
-                free(new_frame->pixel_data); free(new_frame); return 0;
-            }
-            if (dict_size <= pixel_value_idx) {
-                printf("[ERROR] Pixel %u beyond dictionary bounds %u\n", pixel_value_idx, dict_size);
-                free(new_frame->pixel_data); free(new_frame); return 0;
-            }
-            new_frame->pixel_data[pixel_index] = dict_data[pixel_value_idx];
-        }
+    // "First frame must be full" (i.e., not a diff frame)
+    if ((cvf_data[0x93] == 0) && (is_diff_frame != 0)) { // 0x93 is current frame count
+        printf("[ERROR] First frame must be a full frame (diff_frame bit must be 0).\n");
+        return 0;
     }
 
-    // Padding bits
-    uint bits_read_in_frame_data = 0;
-    if (!is_delta_frame) {
-        bits_read_in_frame_data = num_pixels_to_read * bits_per_pixel;
+    PixelDict current_pixel_dict;
+    if (builtin_dict_type == 0) { // Custom Dictionary
+        uint *dict_len_ptr = (uint *)((char *)cvf_data + (custom_dict_idx * 8) + 0x20c);
+        char **dict_data_ptr = (char **)((char *)cvf_data + (custom_dict_idx * 8) + 0x210);
+
+        if (*dict_len_ptr == 0) {
+            printf("[ERROR] Custom Dictionary %u does not exist\n", (uint)custom_dict_idx);
+            return 0;
+        }
+        current_pixel_dict.count = *dict_len_ptr;
+        current_pixel_dict.chars = *dict_data_ptr;
+    } else { // Built-in Dictionary
+        if (builtin_dict_type >= sizeof(builtin_dicts)/sizeof(builtin_dicts[0])) {
+             printf("[ERROR] Invalid built-in dictionary type %u\n", (uint)builtin_dict_type);
+             return 0;
+        }
+        current_pixel_dict = builtin_dicts[builtin_dict_type];
+    }
+
+    int bits_for_pixel_value = bitsNeeded(current_pixel_dict.count - 1);
+
+    // Allocate new frame object: { height, width, pixel_data_ptr } (12 bytes)
+    uint *new_frame_obj = (uint *)malloc(12);
+    if (new_frame_obj == NULL) {
+        return 0;
+    }
+
+    size_t frame_pixel_count = (size_t)cvf_data[1] * cvf_data[0]; // width * height
+    new_frame_obj[0] = cvf_data[0]; // Height
+    new_frame_obj[1] = cvf_data[1]; // Width
+
+    char *pixel_data_buffer = (char *)malloc(frame_pixel_count);
+    new_frame_obj[2] = (uint)pixel_data_buffer; // Store pixel data pointer
+    if (pixel_data_buffer == NULL) {
+        free(new_frame_obj);
+        return 0;
+    }
+
+    uint success = 0; // Assume failure until frame is fully processed
+
+    if (is_diff_frame == 0) { // Full Frame
+        memset(pixel_data_buffer, 0x20, frame_pixel_count); // Initialize with spaces
+        for (uint i = 0; i < frame_pixel_count; ++i) {
+            uint pixel_value_read;
+            if (!readBits(fd, bits_for_pixel_value, &pixel_value_read)) {
+                printf("[ERROR] Failed to read pixel value for full frame\n");
+                goto cleanup_frame;
+            }
+            if (current_pixel_dict.count <= pixel_value_read) {
+                printf("[ERROR] Invalid pixel value %u (dict count %u)\n", pixel_value_read, current_pixel_dict.count);
+                goto cleanup_frame;
+            }
+            pixel_data_buffer[i] = current_pixel_dict.chars[pixel_value_read];
+        }
+        success = 1;
+    } else { // Diff Frame
+        // Copy data from previous frame
+        char **frames_array = (char **)cvf_data[0x94];
+        uint prev_frame_idx = cvf_data[0x93] - 1;
+        char *prev_frame_obj = frames_array[prev_frame_idx];
+
+        if (prev_frame_obj == NULL) {
+            printf("[ERROR] Previous frame is null for diff frame\n");
+            goto cleanup_frame;
+        }
+        char *prev_pixel_data = *(char **)(prev_frame_obj + 8);
+        memcpy(pixel_data_buffer, prev_pixel_data, frame_pixel_count);
+
+        // Read num_pixels_to_write
+        uint num_pixels_to_write;
+        int bits_for_index_count = bitsNeeded(frame_pixel_count); // To represent up to frame_pixel_count
+        if (!readBits(fd, bits_for_index_count, &num_pixels_to_write)) {
+            printf("[ERROR] Failed to read number of diff pixels\n");
+            goto cleanup_frame;
+        }
+
+        if (num_pixels_to_write == 0) {
+            printf("[ERROR] Empty diff frames not allowed (num_pixels_to_write 0)\n");
+            goto cleanup_frame;
+        }
+
+        int bits_for_pixel_index = bitsNeeded(frame_pixel_count - 1); // To represent up to max index
+
+        for (uint i = 0; i < num_pixels_to_write; ++i) {
+            uint pixel_index;
+            uint pixel_value_read;
+
+            if (!readBits(fd, bits_for_pixel_index, &pixel_index)) {
+                printf("[ERROR] Failed to read pixel index for diff frame\n");
+                goto cleanup_frame;
+            }
+            if (!readBits(fd, bits_for_pixel_value, &pixel_value_read)) {
+                printf("[ERROR] Failed to read pixel value for diff frame\n");
+                goto cleanup_frame;
+            }
+
+            if (frame_pixel_count <= pixel_index) {
+                printf("[ERROR] Index %u out of image bounds %zu\n", pixel_index, frame_pixel_count);
+                goto cleanup_frame;
+            }
+            if (current_pixel_dict.count <= pixel_value_read) {
+                printf("[ERROR] Pixel value %u beyond dictionary bounds %u\n", pixel_value_read, current_pixel_dict.count);
+                goto cleanup_frame;
+            }
+            pixel_data_buffer[pixel_index] = current_pixel_dict.chars[pixel_value_read];
+        }
+        success = 1;
+    }
+
+    // If parsing was successful, add the frame to the CVF structure
+    if (success) {
+        char **frames_array_base = (char **)cvf_data[0x94];
+        uint current_frame_count = cvf_data[0x93];
+        frames_array_base[current_frame_count] = (char *)new_frame_obj;
+        cvf_data[0x93]++; // Increment frame count in header
     } else {
-        bits_read_in_frame_data = bits_for_index + (bits_for_index + bits_per_pixel) * num_pixels_to_read;
+        // Cleanup if an error occurred during frame parsing
+cleanup_frame:
+        if (pixel_data_buffer) free(pixel_data_buffer);
+        if (new_frame_obj) free(new_frame_obj);
+        return 0;
     }
-
-    uint padding_bits = (-bits_read_in_frame_data) & 7;
-    uint dummy_val = 0;
-    if (padding_bits != 0 && readBits(fd, padding_bits, &dummy_val) == 0) {
-        printf("[ERROR] Failed to read padding bits\n");
-        free(new_frame->pixel_data); free(new_frame); return 0;
-    }
-
-    // Store the new frame
-    CVF_Frame **frames_array_ptr = (CVF_Frame **)cvf_data[0x94];
-    frames_array_ptr[cvf_data[0x93]] = new_frame;
-    cvf_data[0x93]++; // Increment current_frame_count
-
-    return 1; // Success
+    
+    return success;
 }
 
-// Function: parseCVFPixelDict
-uint parseCVFPixelDict(int fd, int *cvf_data, int dict_idx) { // cvf_data is main CVF header structure
+// --- Function: parseCVFPixelDict ---
+// Parses a custom pixel dictionary from the input stream.
+uint parseCVFPixelDict(int fd, uint *cvf_data, int dict_idx) {
     if (fd == 0 || cvf_data == NULL || dict_idx < 0 || dict_idx > 7) {
         return 0;
     }
 
-    char *base_ptr = (char *)cvf_data;
-    // Dictionaries are stored as `uint size` and `void* data` in 8-byte slots
-    // starting at `base_ptr + 0x200`.
-    // Size is at offset 0, data pointer at offset 4 within each 8-byte slot.
-    uint *dict_size_loc = (uint *)(base_ptr + 0x200 + dict_idx * 8);
-    void **dict_data_loc = (void **)(base_ptr + 0x200 + dict_idx * 8 + 4);
-
-    if (*dict_size_loc != 0) { // Check if dictionary already exists
+    // Check if dictionary already exists at cvf_data + (dict_idx * 8) + 0x20c
+    uint *existing_dict_len_ptr = (uint *)((char *)cvf_data + (dict_idx * 8) + 0x20c);
+    if (*existing_dict_len_ptr != 0) {
         printf("[ERROR] Only one type %d pixel dictionary allowed.\n", dict_idx);
         return 0;
     }
 
-    uint dict_length = 0;
-    if (readBits(fd, 8, &dict_length) == 0) return 0;
-    if (dict_length == 0) {
+    uint dict_len;
+    if (!readBits(fd, 8, &dict_len)) {
+        return 0;
+    }
+
+    if (dict_len == 0) {
         printf("[ERROR] Zero length pixel dictionary not allowed.\n");
         return 0;
     }
 
-    char *dict_buffer = (char *)malloc(dict_length + 1);
-    if (dict_buffer == NULL) return 0;
-    memset(dict_buffer, 0, dict_length + 1);
+    char *dict_data = (char *)malloc(dict_len + 1); // +1 for null terminator
+    if (dict_data == NULL) {
+        return 0;
+    }
+    memset(dict_data, 0, dict_len + 1);
 
-    uint char_val = 0;
-    for (uint i = 0; i < dict_length; ++i) {
-        if (readBits(fd, 8, &char_val) == 0) {
+    for (uint i = 0; i < dict_len; ++i) {
+        uint char_val;
+        if (!readBits(fd, 8, &char_val)) {
             printf("[ERROR] Failed to read custom pixel dictionary character\n");
-            free(dict_buffer);
+            free(dict_data);
             return 0;
         }
-        dict_buffer[i] = (char)char_val;
+        dict_data[i] = (char)char_val;
     }
 
-    *dict_size_loc = dict_length;
-    *dict_data_loc = dict_buffer;
-
-    return 1; // Success
+    // Store dictionary in CVF structure
+    *existing_dict_len_ptr = dict_len;
+    char **dict_data_ptr = (char **)((char *)cvf_data + (dict_idx * 8) + 0x210);
+    *dict_data_ptr = dict_data;
+    
+    return 1;
 }
 
-// Function: parseCVFDescription
-undefined4 parseCVFDescription(int fd, int *cvf_data) { // cvf_data is main CVF header structure
+// --- Function: parseCVFDescription ---
+// Parses the video description from the input stream.
+uint parseCVFDescription(int fd, char *cvf_data) {
     if (fd == 0 || cvf_data == NULL) {
         return 0;
     }
 
-    char *description_buffer = (char *)cvf_data + 0x10c;
-    if (description_buffer[0] != '\0') { // Check if description already exists
-        printf("[ERROR] Multiple description sections are not permitted.\n");
+    // Description stored starting at offset 0x10c.
+    // Check if description already exists (first char is not null).
+    if (cvf_data[0x10c] != '\0') {
         return 0;
     }
 
-    uint description_length = 0;
-    if (readBits(fd, 8, &description_length) == 0) return 0;
-    if (description_length >= 0x100) { // Max length is 255 for 8-bit length field
-        printf("[ERROR] Description length %u exceeds maximum 255\n", description_length);
+    uint desc_len;
+    if (!readBits(fd, 8, &desc_len)) {
         return 0;
     }
 
-    uint char_val = 0;
-    for (uint i = 0; i < description_length; ++i) {
-        if (readBits(fd, 8, &char_val) == 0) return 0;
+    if (desc_len >= 0x100) { // Max description length 255
+        return 0;
+    }
+
+    char *description_buffer = cvf_data + 0x10c;
+    for (uint i = 0; i < desc_len; ++i) {
+        uint char_val;
+        if (!readBits(fd, 8, &char_val)) {
+            return 0;
+        }
         description_buffer[i] = (char)char_val;
     }
-    description_buffer[description_length] = '\0'; // Null-terminate
+    description_buffer[desc_len] = '\0'; // Null-terminate
 
-    for (uint i = 0; i < description_length; ++i) {
+    // Validate characters
+    for (uint i = 0; i < desc_len; ++i) {
         char c = description_buffer[i];
         if (!isalpha(c) && !isdigit(c) && !isspace(c)) {
             printf("[ERROR] Invalid character in description: '%c'\n", c);
             return 0;
         }
     }
-    return 1; // Success
+    
+    return 1;
 }
 
-// Function: parseCVFName
-undefined4 parseCVFName(int fd, int *cvf_data) { // cvf_data is main CVF header structure
+// --- Function: parseCVFName ---
+// Parses the video name from the input stream.
+uint parseCVFName(int fd, char *cvf_data) {
     if (fd == 0 || cvf_data == NULL) {
         return 0;
     }
 
-    char *name_buffer = (char *)cvf_data + 0xc;
-    if (name_buffer[0] != '\0') { // Check if name already exists
-        printf("[ERROR] Multiple name sections are not permitted.\n");
+    // Name stored starting at offset 0xc.
+    // Check if name already exists (first char is not null).
+    if (cvf_data[0xc] != '\0') {
         return 0;
     }
 
-    uint name_length = 0;
-    if (readBits(fd, 8, &name_length) == 0) return 0;
-    if (name_length >= 0x100) { // Max length is 255 for 8-bit length field
-        printf("[ERROR] Name length %u exceeds maximum 255\n", name_length);
+    uint name_len;
+    if (!readBits(fd, 8, &name_len)) {
         return 0;
     }
 
-    uint char_val = 0;
-    for (uint i = 0; i < name_length; ++i) {
-        if (readBits(fd, 8, &char_val) == 0) return 0;
+    if (name_len >= 0x100) { // Max name length 255
+        return 0;
+    }
+
+    char *name_buffer = cvf_data + 0xc;
+    for (uint i = 0; i < name_len; ++i) {
+        uint char_val;
+        if (!readBits(fd, 8, &char_val)) {
+            return 0;
+        }
         name_buffer[i] = (char)char_val;
     }
-    name_buffer[name_length] = '\0'; // Null-terminate
+    name_buffer[name_len] = '\0'; // Null-terminate
 
-    for (uint i = 0; i < name_length; ++i) {
-        if (!isascii(name_buffer[i])) {
-            printf("[ERROR] Invalid value in name field: '%c'\n", name_buffer[i]);
+    // Validate characters (ASCII)
+    for (uint i = 0; i < name_len; ++i) {
+        char c = name_buffer[i];
+        if (!isascii(c)) {
+            printf("[ERROR] Invalid value in name field: '%c'\n", c);
             return 0;
         }
     }
-    return 1; // Success
+    
+    return 1;
 }
 
-// Function: parseCVFHeader
-undefined4 parseCVFHeader(int fd, uint *cvf_data) { // cvf_data is main CVF header structure
+// --- Function: parseCVFHeader ---
+// Parses the video header (height, width, frame count) from the input stream.
+uint parseCVFHeader(int fd, uint *cvf_data) {
     if (fd == 0 || cvf_data == NULL) {
         return 0;
     }
-    if (cvf_data[0] != 0) { // Check if header already exists (height is 0 initially)
+
+    // Check if header already parsed (height field at cvf_data[0] is non-zero)
+    if (cvf_data[0] != 0) {
         printf("[ERROR] Multiple header sections are not permitted.\n");
         return 0;
     }
 
-    uint height = 0;
-    if (readBits(fd, 8, &height) == 0) return 0;
-    if (height == 0) { printf("[ERROR] Zero length height is not permitted\n"); return 0; }
-    if (height >= 0x24) { printf("[ERROR] Height must be less than 36 (0x24), got %u\n", height); return 0; }
-    cvf_data[0] = height;
-
-    uint width = 0;
-    if (readBits(fd, 8, &width) == 0) return 0;
-    if (width == 0) { printf("[ERROR] Zero length width is not permitted\n"); return 0; }
-    if (width >= 0x81) { printf("[ERROR] Width must be less than 129 (0x81), got %u\n", width); return 0; }
-    cvf_data[1] = width;
-
-    uint max_frames = 0;
-    if (readBits(fd, 0x10, &max_frames) == 0) return 0; // Read 16 bits
-    if (max_frames == 0) { printf("[ERROR] Zero frame count is not permitted\n"); return 0; }
-    if (max_frames >= 0x801) { printf("[ERROR] Maximum frame count is 2048 (0x800), got %u\n", max_frames); return 0; }
-    cvf_data[2] = max_frames; // Store max_frames
-
-    // Allocate array of pointers to frames
-    // cvf_data[0x94] is the offset for the frames array pointer
-    CVF_Frame **frames_array = (CVF_Frame **)malloc(max_frames * sizeof(CVF_Frame*));
-    if (frames_array == NULL) {
+    // Read Height (8 bits)
+    if (!readBits(fd, 8, &cvf_data[0])) { // cvf_data[0] is height
         return 0;
     }
-    memset(frames_array, 0, max_frames * sizeof(CVF_Frame*));
-    cvf_data[0x94] = (uintptr_t)frames_array; // Store pointer to frames array
+    if (cvf_data[0] == 0) {
+        printf("[ERROR] Zero length height is not permitted\n");
+        return 0;
+    }
+    if (cvf_data[0] >= 36) { // Height must be < 36
+        printf("[ERROR] Height must be less than 36\n");
+        return 0;
+    }
 
-    // cvf_data[0x93] (current_frame_count) is initialized to 0 by memset in initCVF.
-    return 1; // Success
+    // Read Width (8 bits)
+    if (!readBits(fd, 8, &cvf_data[1])) { // cvf_data[1] is width
+        return 0;
+    }
+    if (cvf_data[1] == 0) {
+        printf("[ERROR] Zero length width is not permitted\n");
+        return 0;
+    }
+    if (cvf_data[1] >= 129) { // Width must be < 129
+        printf("[ERROR] Width must be less than 129\n");
+        return 0;
+    }
+
+    // Read Frame Count (16 bits)
+    if (!readBits(fd, 16, &cvf_data[2])) { // cvf_data[2] is total frames
+        return 0;
+    }
+    if (cvf_data[2] == 0) {
+        printf("[ERROR] Zero frame count is not permitted\n");
+        return 0;
+    }
+    if (cvf_data[2] >= 2049) { // Max frame count is 2048
+        printf("[ERROR] Maximum frame count is 2048\n");
+        return 0;
+    }
+
+    // Allocate memory for frame pointers array
+    // cvf_data[0x94] will store the pointer to this array.
+    void *frames_array = malloc(cvf_data[2] * sizeof(void *));
+    cvf_data[0x94] = (uint)frames_array; // Store the pointer (cast to uint)
+
+    if (frames_array == NULL) {
+        printf("[ERROR] Failed to allocate memory for frame pointers array\n");
+        return 0;
+    }
+    memset(frames_array, 0, cvf_data[2] * sizeof(void *)); // Initialize to NULL
+
+    return 1;
 }
 
-// Function: renderCVF
+// --- Function: initCVF ---
+// Allocates and initializes the main CVF structure.
+// The size 0x254 is determined by the maximum offset used (0x250 for frames array pointer, plus 4 bytes).
+void *initCVF(void) {
+    void *cvf_obj = malloc(0x254);
+    if (cvf_obj != NULL) {
+        memset(cvf_obj, 0, 0x254);
+    }
+    return cvf_obj;
+}
+
+// --- Function: renderCVF ---
+// Main function to parse and render a CVF file.
 void renderCVF(int fd) {
     if (fd == 0) {
         return;
     }
 
-    uint magic = 0;
-    if (readBits(fd, 0x20, &magic) == 0) {
+    uint magic_val;
+    if (!readBits(fd, 0x20, &magic_val)) { // Read 32-bit magic
         return;
     }
 
-    if (magic != 0x435646) { // "CVF" magic
-        printf("[ERROR] Invalid magic: 0x%x\n", magic);
+    if (magic_val != 0x435646) { // 'CVF' in little-endian ASCII
+        printf("[ERROR] Invalid magic: 0x%x (expected 0x435646)\n", magic_val);
         return;
     }
 
-    void *cvf_data = initCVF();
-    if (cvf_data == NULL) {
-        printf("[ERROR] Failed to initialize CVF structure.\n");
+    uint *cvf_object = (uint *)initCVF();
+    if (cvf_object == NULL) {
+        printf("[ERROR] Failed to initialize CVF object\n");
         return;
     }
 
-    uint section_type = 0;
-    int success = 1; // Flag to control the loop
+    uint section_type;
+    int parse_result;
 
-    while (success) {
-        if (readBits(fd, 0x10, &section_type) == 0) { // Read section type
-            break; // End of file or read error, exit loop
+    while (1) {
+        section_type = 0;
+        if (!readBits(fd, 0x10, &section_type)) { // Read 16-bit section type
+            // End of file or read error, proceed to play video and cleanup
+            break;
         }
 
         switch (section_type) {
-            case 0x1111: // Header
-                success = parseCVFHeader(fd, (uint *)cvf_data);
+            case 0x1111: // Header Section
+                parse_result = parseCVFHeader(fd, cvf_object);
                 break;
-            case 0x2222: // Name
-                success = parseCVFName(fd, (int *)cvf_data);
+            case 0x2222: // Name Section
+                parse_result = parseCVFName(fd, (char*)cvf_object);
                 break;
-            case 0x3333: // Description
-                success = parseCVFDescription(fd, (int *)cvf_data);
+            case 0x3333: // Description Section
+                parse_result = parseCVFDescription(fd, (char*)cvf_object);
                 break;
-            case 0x4444: // Custom Pixel Dictionary 0
-            case 0x4445: // Custom Pixel Dictionary 1
-            case 0x4446: // Custom Pixel Dictionary 2
-            case 0x4447: // Custom Pixel Dictionary 3
-            case 0x4448: // Custom Pixel Dictionary 4
-            case 0x4449: // Custom Pixel Dictionary 5
-            case 0x444A: // Custom Pixel Dictionary 6
-            case 0x444B: // Custom Pixel Dictionary 7
-                success = parseCVFPixelDict(fd, (int *)cvf_data, section_type - 0x4444);
+            case 0x4444: // Pixel Dictionary 0
+            case 0x4445: // Pixel Dictionary 1
+            case 0x4446: // Pixel Dictionary 2
+            case 0x4447: // Pixel Dictionary 3
+            case 0x4448: // Pixel Dictionary 4
+            case 0x4449: // Pixel Dictionary 5
+            case 0x444A: // Pixel Dictionary 6
+            case 0x444B: // Pixel Dictionary 7
+                parse_result = parseCVFPixelDict(fd, cvf_object, section_type - 0x4444);
                 break;
-            case 0x5555: // Frame
-                success = parseCVFFrame(fd, (int *)cvf_data);
+            case 0x5555: // Frame Section
+                parse_result = parseCVFFrame(fd, cvf_object);
                 break;
-            default:
+            default: // Unknown section type
                 printf("[ERROR] Invalid section type: 0x%x\n", section_type);
-                success = 0; // Unrecognized section, stop processing
+                parse_result = 0; // Indicate parsing failure
                 break;
         }
 
-        if (!success) {
+        if (parse_result == 0) {
             printf("[ERROR] Parsing section 0x%x failed.\n", section_type);
-            break; // Exit loop on parsing error
+            freeCVF(cvf_object);
+            return;
         }
     }
 
-    // After loop, if parsing was successful (or gracefully ended), play video
-    // The condition `section_type == 0` handles the case where `readBits` failed
-    // on the very first attempt to read a section type, meaning an empty or malformed file.
-    if (success || (section_type == 0 && (uintptr_t)((uint*)cvf_data)[0x94] != 0)) { // Only play if frames array was initialized
-        playVideo((uint *)cvf_data);
-    }
-    freeCVF(cvf_data);
+    playVideo(cvf_object);
+    freeCVF(cvf_object);
+    return;
 }
 
-// Function: initCVF
-void *initCVF(void) {
-    void *cvf_data = malloc(0x254); // Assuming 0x254 bytes is the size of the CVF structure
-    if (cvf_data != NULL) {
-        memset(cvf_data, 0, 0x254);
-    }
-    return cvf_data;
-}
-
-// Main function to demonstrate the code
+// --- Main Function (for compilation and testing) ---
 int main() {
-    // In a real scenario, you would open a file:
-    // int fd = open("video.cvf", O_RDONLY);
-    // if (fd == -1) { perror("Failed to open file"); return 1; }
-    // renderCVF(fd);
-    // close(fd);
+    // Example 1: A simple 10x20 video with 1 full frame, using custom dict 0 = " ."
+    // All pixels are index 0 (space).
+    unsigned char test_cvf_data_simple[] = {
+        // Magic: CVF (0x43 0x56 0x46 0x00) - Assuming little-endian 0x00435646
+        0x46, 0x56, 0x43, 0x00, 
+        
+        // Header Section (0x1111)
+        0x11, 0x11,
+        // Height (8 bits): 10
+        10,
+        // Width (8 bits): 20
+        20,
+        // Frames (16 bits): 1
+        0x01, 0x00, // Little endian 1
+        
+        // Pixel Dictionary 0 Section (0x4444)
+        0x44, 0x44,
+        // Dict Length (8 bits): 2
+        2,
+        // Dict Data (2 bytes): " ."
+        ' ', '.',
+        
+        // Frame Section (0x5555) - Frame 0 (Full frame)
+        0x55, 0x55,
+        // Frame Header Byte: 0x00 (Full frame, custom dict 0)
+        0x00,
+        // Pixel data for 10x20 = 200 pixels.
+        // bitsNeeded(2-1)=1 bit per pixel. So, 200 bits = 25 bytes.
+        // All pixels are ' ', so all bits are 0.
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, // 25 bytes
+    };
 
-    // For this dummy implementation, we pass a non-zero integer as a dummy file descriptor.
-    // The dummy `readBits` will simulate data reading.
-    // The `receive` function (used by receiveWrapper for playVideo's "press a key" prompt)
-    // will read from stdin (fd 0).
-    renderCVF(1); // Using 1 as a dummy file descriptor
+    printf("Simulating CVF rendering (simple full frame)...\n");
+    set_simulated_input(test_cvf_data_simple, sizeof(test_cvf_data_simple));
+    renderCVF(1); // Pass a non-zero fd to indicate a valid stream
+
+    // Example 2: Diff frame test. 5x5 video, 2 frames.
+    // Frame 1: All spaces.
+    // Frame 2: Changes some pixels to '#'.
+    unsigned char test_cvf_data_diff[] = {
+        // Magic: CVF
+        0x46, 0x56, 0x43, 0x00, 
+        
+        // Header (0x1111): H=5, W=5, Frames=2
+        0x11, 0x11, 5, 5, 0x02, 0x00,
+        
+        // Pixel Dictionary 0 (0x4444): Length=3, Data=" #."
+        0x44, 0x44, 3, ' ', '#', '.',
+        
+        // Frame 1 (0x5555) - Full frame
+        // Header: 0x00 (Full frame, custom dict 0)
+        0x55, 0x55, 0x00,
+        // Pixel data for 5x5 = 25 pixels. bitsNeeded(3-1)=2 bits per pixel.
+        // 25 pixels * 2 bits = 50 bits = 6 bytes and 2 bits.
+        // All pixels are index 0 (' ').
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 7 bytes (56 bits), padding 6 bits
+        
+        // Frame 2 (0x5555) - Diff frame
+        // Header: 0x80 (Diff frame, custom dict 0)
+        0x55, 0x55, 0x80,
+        // Num diff pixels: 5. bitsNeeded(25)=5 bits for num_diff.
+        // Pixel indices: (0,2)=2, (1,1)=6, (1,3)=8, (2,0)=10, (2,2)=12.
+        // Each index (5 bits), each value (2 bits). Total 7 bits per diff.
+        // Total bits: 5 (num_diff) + 5 * 7 (diffs) = 40 bits = 5 bytes.
+        //
+        // Bit stream:
+        // Num diff: 5 (00101)
+        // Diffs: [idx 2, val 1], [idx 6, val 1], [idx 8, val 1], [idx 10, val 1], [idx 12, val 1]
+        //        00010 01,      00110 01,      01000 01,      01010 01,       01100 01
+        // Bytes:
+        // 00101000 (0x28) - num_diff 5, start of idx 2 val 1
+        // 10010010 (0x92) - rest of idx 2 val 1, start of idx 6 val 1
+        // 10000101 (0x85) - rest of idx 6 val 1, start of idx 8 val 1
+        // 01010010 (0x52) - rest of idx 8 val 1, start of idx 10 val 1
+        // 11000100 (0xC4) - rest of idx 10 val 1, start of idx 12 val 1
+        0x28, 0x92, 0x85, 0x52, 0xC4,
+    };
+    
+    printf("\nSimulating CVF rendering with diff frame...\n");
+    set_simulated_input(test_cvf_data_diff, sizeof(test_cvf_data_diff));
+    renderCVF(1);
+
+    printf("\nSimulation finished.\n");
+
     return 0;
 }

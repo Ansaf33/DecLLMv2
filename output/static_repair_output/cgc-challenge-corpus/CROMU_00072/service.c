@@ -1,48 +1,42 @@
-#include <stdio.h> // Standard input/output header for general C programs
+// Global variables
+int Nodes = 0;
+int Edges = 0;
 
-// Global variables, as implied by their usage without declaration in main
-int Nodes;
-int Edges;
-
-// Function stubs - Implementations would be provided elsewhere in a full program
-// For compilation, they need to be defined.
-char ReadCmd() {
-    // Placeholder: Simulate reading a command.
-    // For example, return 'a' a few times, then '\0' to stop the loop.
-    static int call_count = 0;
-    if (call_count < 5) { // Example: allows 5 iterations before signaling end
+// Simulates reading a command.
+static char ReadCmd() {
+    static unsigned int call_count = 0;
+    if (call_count < 5) {
         call_count++;
-        return 'a';
+        return 'A';
     }
-    return '\0'; // Signal end of commands
+    return '\0';
 }
 
+// Dummy function to destroy nodes
 void DestroyNodes() {
-    // Placeholder: Clean up node resources
-    // printf("DestroyNodes called.\n");
+    // Implementation would go here
 }
 
+// Dummy function to destroy edges
 void DestroyEdges() {
-    // Placeholder: Clean up edge resources
-    // printf("DestroyEdges called.\n");
+    // Implementation would go here
 }
 
 // Function: main
-// 'undefined4' typically translates to 'int' for return types in C.
 int main(void) {
+  char cVar1;
+  unsigned int local_14;
+  
+  local_14 = 0;
   Nodes = 0;
   Edges = 0;
-
-  // The original loop iterates up to 32 times (0 to 31 inclusive)
-  // or until ReadCmd() returns '\0'.
-  // We can reduce intermediate variables by using a for loop and
-  // checking ReadCmd() directly.
-  for (unsigned int i = 0; i <= 0x1f; ++i) { // 0x1f is 31 in decimal. Loop for i = 0, 1, ..., 31.
-    if (ReadCmd() == '\0') {
-      break; // Exit loop if ReadCmd() signals termination
+  while(1) {
+    cVar1 = ReadCmd();
+    if ((cVar1 == '\0') || (0x1f < local_14)) {
+      break;
     }
+    local_14 = local_14 + 1;
   }
-
   DestroyNodes();
   DestroyEdges();
   return 0;

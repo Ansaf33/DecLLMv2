@@ -1,207 +1,198 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-#include <stdbool.h>
+#include <stdint.h> // For uint8_t, uint16_t, uint32_t, uintptr_t
+#include <stdlib.h> // For malloc, free
+#include <string.h> // For memcpy
+#include <stdio.h>  // For a dummy write_bytes
 
-// Global variables
-uint32_t *the_vault;
-uint32_t current_time;
-uint32_t DAT_0001600c;
+// --- Type Definitions ---
+typedef uint8_t  undefined;
+typedef uint16_t undefined2;
+typedef uint32_t undefined4;
 
-// Helper functions for byte swapping
-uint16_t swap16(uint16_t val) {
+// --- Global Variables (placeholders if not defined elsewhere) ---
+uint32_t *the_vault = NULL;
+uint32_t current_time = 0; // Placeholder for a global timestamp
+uint32_t DAT_0001600c = 0; // Placeholder for another global timestamp/limit
+
+// --- External Functions (placeholders if not defined elsewhere) ---
+// Dummy implementation for compilation. In a real system, this would interact with I/O.
+void write_bytes(void *data, size_t size) {
+    // Example: fwrite(data, 1, size, stdout);
+}
+
+// --- Byte Swap Functions (assuming these are intended as generic byte swaps) ---
+static inline uint16_t swap16(uint16_t val) {
     return (val << 8) | (val >> 8);
 }
 
-uint32_t swap32(uint32_t val) {
-    return ((val << 24) & 0xff000000) |
-           ((val << 8)  & 0x00ff0000) |
-           ((val >> 8)  & 0x0000ff00) |
-           ((val >> 24) & 0x000000ff);
+static inline uint32_t swap32(uint32_t val) {
+    return ((val << 24) & 0xFF000000) |
+           ((val << 8)  & 0x00FF0000) |
+           ((val >> 8)  & 0x0000FF00) |
+           ((val >> 24) & 0x000000FF);
 }
 
-// Placeholder for write_bytes function
-void write_bytes(const void *buf, size_t len) {
-    // In a real application, this would write to a file descriptor, socket, etc.
-    // For compilation, it can be a no-op or print to stdout for debugging.
-    // Example: fwrite(buf, 1, len, stdout);
+// Dummy CARRY4 function - this is a common pattern for detecting carry-out from 32-bit addition.
+static inline uint32_t CARRY4(uint32_t a, uint32_t b) {
+    return (uint32_t)(a + b < a); // Returns 1 if a+b overflows, 0 otherwise
 }
 
 // Function: write_msg
-void write_msg(uint8_t msg_type, const void *data, int data_len) {
-    uint16_t header_type_fixed = swap16(2);
-    unsigned int total_len = data_len + 1;
+void write_msg(uint8_t msg_id, void *data_ptr, int data_len) {
+  uint32_t total_len_field = data_len + 1; // +1 for the msg_id itself
+  uint8_t header_buf[7]; 
+  uint16_t header_type_val = swap16(2);
+  memcpy(header_buf, &header_type_val, 2);
 
-    if (total_len < 0x8000) {
-        struct {
-            uint16_t type;
-            uint16_t length;
-            uint8_t msg_type_byte;
-        } __attribute__((packed)) header_small;
-        header_small.type = header_type_fixed;
-        header_small.length = swap16((uint16_t)total_len);
-        header_small.msg_type_byte = msg_type;
-        write_bytes(&header_small, sizeof(header_small));
-    } else {
-        struct {
-            uint16_t type;
-            uint32_t length;
-            uint8_t msg_type_byte;
-        } __attribute__((packed)) header_large;
-        header_large.type = header_type_fixed;
-        header_large.length = swap32(total_len | 0x80000000);
-        header_large.msg_type_byte = msg_type;
-        write_bytes(&header_large, sizeof(header_large));
-    }
-    write_bytes(data, data_len);
+  if (total_len_field < 0x8000) {
+    uint16_t short_len_val = swap16(total_len_field & 0xffff);
+    memcpy(header_buf + 2, &short_len_val, 2);
+    header_buf[4] = msg_id;
+    write_bytes(header_buf, 5);
+  } else {
+    uint32_t long_len_val = swap32(total_len_field | 0x80000000);
+    memcpy(header_buf + 2, &long_len_val, 4);
+    header_buf[6] = msg_id;
+    write_bytes(header_buf, 7);
+  }
+  write_bytes(data_ptr, data_len);
 }
 
 // Function: init_vault
 void init_vault(void) {
-    the_vault = (uint32_t *)malloc(0xfb0); // Allocate 4016 bytes
-    if (the_vault == NULL) {
-        // Handle allocation failure appropriately
-        return;
-    }
-    the_vault[0] = 0xd0856180;
-    the_vault[1] = 0x34c;
-    the_vault[2] = 3600000;
-    the_vault[0x3eb] = 0; // Index 0x3eb (1003) corresponds to 0xfac bytes offset
+  the_vault = (uint32_t *)malloc(0xfb0);
+  if (the_vault == NULL) {
+      // Handle allocation error, e.g., print error and exit
+      return;
+  }
+  the_vault[0] = 0xd0856180;
+  the_vault[1] = 0x34c;
+  the_vault[2] = 3600000;
+  the_vault[0x3eb] = 0; // This element stores the count of items in the vault
 }
 
 // Function: store_in_vault
-uint32_t *store_in_vault(uint32_t *item_id_ptr_or_null, const void *data, size_t data_len) {
-    uint32_t *vault_base = the_vault;
-    uint32_t *vault_entry_ptr = NULL;
-
-    if (item_id_ptr_or_null == NULL) { // New item
-        if (the_vault[0x3eb] >= 500) { // Max 500 items (0x3eb is index for item count)
-            return NULL;
-        }
-        vault_entry_ptr = vault_base + 3 + the_vault[0x3eb] * 2; // the_vault[3] is start, each item is 2 uint32_t
-        the_vault[0x3eb]++;
-    } else { // Update existing item
-        vault_entry_ptr = item_id_ptr_or_null;
-        // Validate item_id_ptr_or_null is within bounds and properly aligned
-        if (vault_entry_ptr < vault_base + 3 ||
-            vault_entry_ptr >= vault_base + 3 + the_vault[0x3eb] * 2 ||
-            ((uintptr_t)vault_entry_ptr - (uintptr_t)(vault_base + 3)) % (2 * sizeof(uint32_t)) != 0) {
-            return NULL; // Invalid item_id_ptr_or_null
-        }
-        // Free existing data before overwriting
-        if (*vault_entry_ptr != 0) {
-            free((void *)(uintptr_t)*vault_entry_ptr);
-        }
+// param_1: If not NULL, it's a pointer to an existing vault entry (uint32_t* to data_ptr/size pair)
+// param_2: The data to store (void*)
+// param_3: The size of the data (size_t, but stored as uint32_t)
+uint32_t *store_in_vault(uint32_t *param_1, void *param_2, size_t param_3) {
+  uint32_t *entry_ptr;
+  
+  if (param_1 == NULL) { // Allocate new entry
+    if (the_vault[0x3eb] >= 499) { // Check if vault is full (max 499 entries)
+      return NULL;
     }
-
-    void *new_data_buffer = malloc(data_len);
-    if (new_data_buffer == NULL) {
-        return NULL; // Failed to allocate new data buffer
+    entry_ptr = &the_vault[3 + the_vault[0x3eb] * 2]; // Point to the next available slot
+    the_vault[0x3eb]++; // Increment item count
+  } else { // Update existing entry
+    entry_ptr = param_1;
+    // Check if entry_ptr is within valid bounds of the vault entries
+    if (entry_ptr < &the_vault[3] || entry_ptr >= &the_vault[3 + the_vault[0x3eb] * 2]) {
+      return NULL; // Invalid entry pointer
     }
+    // Free existing data if it exists before overwriting
+    if (entry_ptr[0] != 0) {
+        free((void*)(uintptr_t)entry_ptr[0]);
+    }
+  }
 
-    memcpy(new_data_buffer, data, data_len);
-    *vault_entry_ptr = (uint32_t)(uintptr_t)new_data_buffer; // Store pointer (assuming 32-bit pointers or truncation is acceptable)
-    vault_entry_ptr[1] = (uint32_t)data_len; // Store size
-
-    return vault_entry_ptr;
+  void *__dest = malloc(param_3);
+  if (__dest == NULL) {
+    if (param_1 != NULL) { // If updating an existing entry, and malloc fails, clear it.
+      entry_ptr[0] = 0;
+      entry_ptr[1] = 0;
+    } else { // If new entry, decrement count as it wasn't successfully added
+        the_vault[0x3eb]--;
+    }
+    return NULL; // Allocation failed
+  }
+  
+  memcpy(__dest, param_2, param_3);
+  
+  // Store the allocated data pointer and its size
+  entry_ptr[0] = (uint32_t)(uintptr_t)__dest; // Store data pointer
+  entry_ptr[1] = (uint32_t)param_3; // Store size
+  
+  // Return the address of the data pointer within the vault entry
+  return entry_ptr;
 }
 
 // Function: retrieve_from_vault
-uint32_t retrieve_from_vault(uint32_t *item_entry_ptr, uint32_t *retrieved_len_ptr) {
-    uint32_t ret_data_ptr_val = 0;
+// param_1: Pointer to the vault entry (uint32_t* to data_ptr/size pair)
+// param_2: Pointer to store the retrieved size (uint32_t*)
+uint32_t retrieve_from_vault(uint32_t *param_1, uint32_t *param_2) {
+  // Translate the complex condition from the original snippet.
+  // The expression `(uint)(boolean_expression)` casts boolean to int (0 or 1).
+  uint32_t condition_val1 = (uint32_t)(current_time < the_vault[0]);
+  uint32_t uVar2_val = the_vault[1] + CARRY4(the_vault[0], the_vault[2]);
+  uint32_t condition_val2 = (uint32_t)(current_time < (the_vault[0] + the_vault[2]));
 
-    // Reconstructing CARRY4 for *the_vault + the_vault[2] overflow check
-    unsigned int carry_val_for_uVar2 = (UINT32_MAX - *the_vault < the_vault[2]) ? 1 : 0;
-    unsigned int uVar2_val = the_vault[1] + carry_val_for_uVar2;
-
-    uint32_t sum_vault0_vault2 = *the_vault + the_vault[2];
-
-    unsigned int cond_current_time_lt_vault0 = (current_time < *the_vault) ? 1U : 0U;
-    unsigned int cond_current_time_lt_sum = (current_time < sum_vault0_vault2) ? 1U : 0U;
-
-    bool condition_part1 = (DAT_0001600c < the_vault[1]) || (DAT_0001600c - the_vault[1] < cond_current_time_lt_vault0);
-    bool condition_part2 = (uVar2_val <= DAT_0001600c) && (cond_current_time_lt_sum <= (DAT_0001600c - uVar2_val));
-
-    if (condition_part1 || condition_part2) {
-        ret_data_ptr_val = 0; // Vault expired or invalid
-    } else {
-        ret_data_ptr_val = *item_entry_ptr;
-        *retrieved_len_ptr = item_entry_ptr[1];
-        *item_entry_ptr = 0; // Clear pointer in vault
-        item_entry_ptr[1] = 0; // Clear size in vault
+  if ((DAT_0001600c < the_vault[1] || (DAT_0001600c - the_vault[1]) < condition_val1) ||
+      (uVar2_val <= DAT_0001600c && condition_val2 <= (DAT_0001600c - uVar2_val))) {
+    return 0;
+  } else {
+    // Additionally, check if the entry itself is valid (not null/cleared)
+    if (param_1 == NULL || param_1[0] == 0) {
+        return 0; // Invalid entry
     }
-    return ret_data_ptr_val;
+
+    uint32_t data_ptr = param_1[0];
+    *param_2 = param_1[1];
+    param_1[0] = 0; // Clear data pointer in vault
+    param_1[1] = 0; // Clear size in vault
+    return data_ptr;
+  }
 }
 
 // Function: handle_msg_vault
-uint32_t handle_msg_vault(char *msg_buf, int msg_len) {
-    uint32_t ret_val = 1;
-
-    if (msg_len == 0) {
-        return 0;
-    }
-
-    uint8_t msg_type_byte = (uint8_t)*msg_buf;
-    int data_len_remaining = msg_len - 1;
-    char *data_ptr = msg_buf + 1;
-
-    if (msg_type_byte == 0x01) { // List items
-        unsigned int vault_item_count = the_vault[0x3eb];
-        size_t total_list_size = vault_item_count * 8;
-
-        void *temp_buf = malloc(total_list_size);
-        if (temp_buf == NULL) {
-            write_msg(1, NULL, 0);
-        } else {
-            for (unsigned int i = 0; i < vault_item_count; ++i) {
-                uint32_t *current_item_output = (uint32_t *)((char *)temp_buf + i * 8);
-                uint32_t *vault_entry = the_vault + 3 + i * 2;
-                current_item_output[0] = swap32(*vault_entry);
-                current_item_output[1] = swap32(vault_entry[1]);
-            }
-            write_msg(1, temp_buf, total_list_size);
-            free(temp_buf);
-        }
-    } else if (msg_type_byte == 0x02) { // Store new item
-        uint32_t *stored_ptr = store_in_vault(NULL, data_ptr, data_len_remaining);
-        uint32_t stored_id_swapped = swap32((uint32_t)(uintptr_t)stored_ptr);
-        write_msg(2, &stored_id_swapped, 4);
-    } else if (msg_type_byte == 0x03 && data_len_remaining > 3) { // Update item
-        uint32_t item_id_to_update = swap32(*(uint32_t*)data_ptr);
-        uint32_t *updated_ptr = store_in_vault((uint32_t*)(uintptr_t)item_id_to_update, data_ptr + 4, data_len_remaining - 4);
-        uint32_t update_result_swapped = swap32((uint32_t)(uintptr_t)updated_ptr);
-        write_msg(3, &update_result_swapped, 4);
-    } else if (msg_type_byte == 0x04 && data_len_remaining > 3) { // Retrieve item
-        uint32_t item_id_to_retrieve = swap32(*(uint32_t*)data_ptr);
-        uint32_t retrieved_len = 0;
-        uint32_t retrieved_data_ptr_val = retrieve_from_vault((uint32_t*)(uintptr_t)item_id_to_retrieve, &retrieved_len);
-        void *retrieved_data = (void *)(uintptr_t)retrieved_data_ptr_val;
-
-        if (retrieved_data == NULL) {
-            write_msg(4, NULL, 0);
-        } else {
-            write_msg(4, retrieved_data, retrieved_len);
-        }
-        free(retrieved_data);
-    } else {
-        ret_val = 0; // Unknown message type or invalid length
-    }
-    return ret_val;
-}
-
-// Main function (minimal for compilation)
-int main() {
-    init_vault();
-
-    // Example: Clean up the vault if it was initialized
-    if (the_vault != NULL) {
-        // In a real scenario, you'd free all dynamically allocated data
-        // pointed to by vault entries before freeing the vault itself.
-        // For this minimal example, we just free the vault itself.
-        free(the_vault);
-        the_vault = NULL;
-    }
-
+undefined4 handle_msg_vault(char *param_1, int param_2) {
+  if (param_2 == 0) {
     return 0;
+  }
+
+  uint8_t msg_type = param_1[0];
+  uint32_t data_len = param_2 - 1;
+  uint32_t *data_ptr_in_msg = (uint32_t *)(param_1 + 1);
+  undefined4 result = 1; // Default return value for success paths
+
+  if (msg_type == 0x01) {
+    uint32_t count = the_vault[0x3eb];
+    size_t total_size = count * 8; // Each entry is 8 bytes (data_ptr + size)
+    void *allocated_data = malloc(total_size);
+    if (allocated_data == NULL) {
+      write_msg(1, NULL, 0);
+    } else {
+      for (uint32_t i = 0; i < count; ++i) {
+        ((uint32_t*)allocated_data)[i * 2] = swap32(the_vault[3 + i * 2]);
+        ((uint32_t*)allocated_data)[i * 2 + 1] = swap32(the_vault[3 + i * 2 + 1]);
+      }
+      write_msg(1, allocated_data, total_size);
+      free(allocated_data);
+    }
+  } else if (msg_type == 0x02) {
+    uint32_t *stored_entry_ptr = store_in_vault(NULL, data_ptr_in_msg, data_len);
+    uint32_t response_val = stored_entry_ptr ? swap32((uint32_t)(uintptr_t)stored_entry_ptr) : 0;
+    write_msg(2, &response_val, 4);
+  } else if (msg_type == 0x03 && data_len > 3) {
+    uint32_t target_entry_val = swap32(*data_ptr_in_msg);
+    uint32_t *entry_address = (uint32_t *)(uintptr_t)target_entry_val;
+    uint32_t *stored_entry_ptr = store_in_vault(entry_address, param_1 + 5, param_2 - 5);
+    uint32_t response_val = stored_entry_ptr ? swap32((uint32_t)(uintptr_t)stored_entry_ptr) : 0;
+    write_msg(3, &response_val, 4);
+  } else if (msg_type == 0x04 && data_len > 3) {
+    uint32_t target_entry_val = swap32(*data_ptr_in_msg);
+    uint32_t retrieved_size;
+    uint32_t *entry_address = (uint32_t *)(uintptr_t)target_entry_val;
+    uint32_t retrieved_data_ptr = retrieve_from_vault(entry_address, &retrieved_size);
+    
+    if (retrieved_data_ptr == 0) {
+      write_msg(4, NULL, 0);
+    } else {
+      write_msg(4, (void*)(uintptr_t)retrieved_data_ptr, retrieved_size);
+      free((void*)(uintptr_t)retrieved_data_ptr);
+    }
+  } else {
+      // Unhandled message type or invalid length for type 3/4
+      // The original code implies result is still 1 here even if no action matched.
+  }
+  return result;
 }

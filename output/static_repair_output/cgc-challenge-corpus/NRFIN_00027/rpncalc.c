@@ -1,1036 +1,1286 @@
-#include <stdlib.h> // For malloc, free, div_t
-#include <stdio.h>  // For read_all, write_all (mocked)
-#include <stdint.h> // For uint32_t, uint64_t
-#include <math.h>   // For isinf, isnan, double operations
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
 #include <string.h> // For memcpy
+#include <math.h>   // For isnan, isinf
 
-// --- Type Definitions and Mocks ---
-typedef uint32_t undefined4;
-typedef uint64_t undefined8;
-typedef unsigned int uint;
+// Define the value_t type as a 64-bit unsigned integer.
+// It acts as a union/variant type where interpretation depends on `get_type`.
+typedef uint64_t value_t;
 
-// CONCAT44 macro: Combines two 32-bit values into a 64-bit value.
-// high is the most significant 32 bits, low is the least significant 32 bits.
-#define CONCAT44(high, low) (((uint64_t)(high) << 32) | (uint64_t)(low))
+// CONCAT44 macro: combines two 32-bit unsigned integers into a 64-bit unsigned integer.
+// Assuming high is the upper 32 bits, low is the lower 32 bits.
+#define CONCAT44(high, low) (((value_t)(high) << 32) | (low))
 
-// RPNCalc_State structure for the calculator's stack (linked list)
-// A node is allocated with malloc(sizeof(RPNCalc_State_Node))
-// The first 8 bytes (offset 0) is the 'next' pointer.
-// The next 8 bytes (offset 8) is the 'value' (undefined8).
-typedef struct RPNCalc_State_Node {
-    struct RPNCalc_State_Node *next; // At offset 0
-    undefined8 value;                 // At offset 8
-} RPNCalc_State_Node;
+// Type codes (assuming these are return values of get_type)
+#define TYPE_INTEGER 0
+#define TYPE_MATRIX  1
+#define TYPE_DOUBLE  2
 
-typedef struct RPNCalc_State {
-    RPNCalc_State_Node *head;
-} RPNCalc_State;
+// --- Mock Implementations for type handling and I/O ---
+// These are illustrative. A real implementation would define how value_t encodes types
+// (e.g., using specific bit patterns, a tag, or a separate registry).
+// For compilation, this mock simulates the expected behavior.
 
-// Mock function signatures for external dependencies
-// These are minimal mocks to allow compilation. Actual behavior would vary.
+// Mock data structures for internal type tracking.
+// In a real system, value_t would be self-describing (e.g., tagged union).
+// This mock uses a simple "registry" to associate value_t (uint64_t) with its type and actual data.
+#define MAX_MOCK_VALUES 100
+typedef struct {
+    value_t val_id; // The uint64_t identifier
+    int type_tag;   // 0: int, 1: matrix ptr, 2: double
+    union {
+        int32_t i_val;
+        double d_val;
+        uint32_t *m_val; // For matrix: [rows, cols, val0_low, val0_high, ...]
+    } actual_data;
+} MockValueEntry;
 
-// get_type: Returns 0 for integer, 1 for matrix, 2 for double.
-// Assumes the undefined8 value is tagged in its high 32 bits.
-int get_type(undefined8 val) {
-    uint32_t high_part = (uint32_t)(val >> 32);
-    if (high_part == 0x00000000) return 0; // Integer
-    if (high_part == 0x00000001) return 1; // Matrix
-    if (high_part == 0x00000002) return 2; // Double
-    return -1; // Unknown type
+static MockValueEntry mock_value_registry[MAX_MOCK_VALUES];
+static int mock_value_count = 0;
+
+// Helper to register a value_t with its type and data in the mock registry.
+static int register_mock_value(value_t val, int type, void *data_ptr) {
+    if (mock_value_count >= MAX_MOCK_VALUES) {
+        fprintf(stderr, "Mock value registry full!\n");
+        return -1;
+    }
+    mock_value_registry[mock_value_count].val_id = val;
+    mock_value_registry[mock_value_count].type_tag = type;
+    if (type == TYPE_INTEGER) mock_value_registry[mock_value_count].actual_data.i_val = *(int32_t*)data_ptr;
+    else if (type == TYPE_DOUBLE) mock_value_registry[mock_value_count].actual_data.d_val = *(double*)data_ptr;
+    else if (type == TYPE_MATRIX) mock_value_registry[mock_value_count].actual_data.m_val = (uint32_t*)data_ptr;
+    return mock_value_count++;
 }
 
-// as_double: Extracts a double from undefined8. Returns 0 on success.
-int as_double(undefined8 val, double *out) {
-    if (get_type(val) != 2) return -1; // Type mismatch
-    memcpy(out, &val, sizeof(double)); // Assume the double is directly stored in the undefined8
+// Helper to find a value_t in the mock registry.
+static MockValueEntry* find_mock_value(value_t val) {
+    for (int i = 0; i < mock_value_count; ++i) {
+        if (mock_value_registry[i].val_id == val) {
+            return &mock_value_registry[i];
+        }
+    }
+    return NULL;
+}
+
+// get_type: returns the type of the value (0 for int, 1 for matrix, 2 for double, -1 for error)
+int get_type(value_t val) {
+    MockValueEntry *mv = find_mock_value(val);
+    if (mv) return mv->type_tag;
+
+    // Fallback heuristic for un-registered values:
+    // Check for NaN/Inf pattern first, as it's specific to doubles in IEEE 754.
+    // This check is on the high 32 bits of the 64-bit value.
+    if (((uint32_t)(val >> 32) & 0x7ff00000) == 0x7ff00000) {
+        double d_val = *(double*)&val; // Interpret raw bits as double
+        register_mock_value(val, TYPE_DOUBLE, &d_val);
+        return TYPE_DOUBLE;
+    }
+
+    // Heuristic for integers: if the value fits in a 32-bit signed integer and has no other tag.
+    // This is a weak heuristic; a real system would use explicit tags.
+    if ((val & ~((uint64_t)0xFFFFFFFF)) == 0 && (int32_t)val >= INT32_MIN && (int32_t)val <= INT32_MAX) {
+        int32_t i_val = (int32_t)val;
+        register_mock_value(val, TYPE_INTEGER, &i_val);
+        return TYPE_INTEGER;
+    }
+    return -1; // Default to unknown if no tag or heuristic applies
+}
+
+// as_double: converts value_t to double. Returns 0 on success, -1 on failure.
+int as_double(value_t val, double *out_double) {
+    if (out_double == NULL) return -1;
+    MockValueEntry *mv = find_mock_value(val);
+    if (mv) {
+        if (mv->type_tag == TYPE_DOUBLE) {
+            *out_double = mv->actual_data.d_val;
+            return 0;
+        }
+        if (mv->type_tag == TYPE_INTEGER) {
+            *out_double = (double)mv->actual_data.i_val;
+            return 0;
+        }
+    }
+    // If not in registry or type mismatch, try interpreting raw bits as double.
+    // This is the behavior implied by original code's bit checks.
+    *out_double = *(double*)&val;
+    if (get_type(val) == TYPE_DOUBLE) return 0; // Re-check if heuristic now classifies it
+    return -1;
+}
+
+// set_double: sets a value_t * to represent a double. Returns 0 on success, -1 on failure.
+int set_double(double d, value_t *result_ptr) {
+    if (result_ptr == NULL) return -1;
+    if (isnan(d) || isinf(d)) {
+        // Original code checked (val_high & 0x7ff00000) == 0x7ff00000, which indicates NaN/Inf.
+        // Returning -1 for these.
+        return -1;
+    }
+    *result_ptr = *(value_t*)&d; // Store raw double bits
+    register_mock_value(*result_ptr, TYPE_DOUBLE, &d); // Register for mock `get_type`
     return 0;
 }
 
-// as_integer: Extracts an int from undefined8. Returns 0 on success.
-int as_integer(undefined8 val, int *out) {
-    if (get_type(val) != 0) return -1; // Type mismatch
-    *out = (int)(uint32_t)val; // Assume integer is stored in the low 32 bits
+// as_integer: converts value_t to int. Returns 0 on success, -1 on failure.
+int as_integer(value_t val, int32_t *out_int) {
+    if (out_int == NULL) return -1;
+    MockValueEntry *mv = find_mock_value(val);
+    if (mv && mv->type_tag == TYPE_INTEGER) {
+        *out_int = mv->actual_data.i_val;
+        return 0;
+    }
+    // If not in registry or type mismatch, try interpreting raw bits as int.
+    if (get_type(val) == TYPE_INTEGER) { // Re-check if heuristic now classifies it
+        *out_int = (int32_t)val;
+        return 0;
+    }
+    return -1;
+}
+
+// set_integer: sets a value_t * to represent an int. Returns 0 on success, -1 on failure.
+int set_integer(int32_t i, value_t *result_ptr) {
+    if (result_ptr == NULL) return -1;
+    *result_ptr = (value_t)i; // Store raw integer value
+    register_mock_value(*result_ptr, TYPE_INTEGER, &i); // Register for mock `get_type`
     return 0;
 }
 
-// as_matrix: Extracts a matrix (uint*) from undefined8. Returns 0 on success.
-// Assumes undefined8 contains a pointer to the matrix data in its low 32 bits.
-int as_matrix(undefined8 val, uint **out) {
-    if (get_type(val) != 1) return -1; // Type mismatch
-    *out = (uint *)(uintptr_t)(val & 0xFFFFFFFFULL); // Assume pointer is in low 32 bits
+// as_matrix: converts value_t to matrix (uint32_t*). Returns 0 on success, -1 on failure.
+// uint32_t* matrix format: [rows, cols, val0_low, val0_high, val1_low, val1_high, ...]
+// This function returns a *copy* of the matrix data, which the caller must free.
+int as_matrix(value_t val, uint32_t **out_matrix_ptr) {
+    if (out_matrix_ptr == NULL) return -1;
+    MockValueEntry *mv = find_mock_value(val);
+    if (mv && mv->type_tag == TYPE_MATRIX && mv->actual_data.m_val != NULL) {
+        uint32_t *src_mat = mv->actual_data.m_val;
+        uint32_t rows = src_mat[0];
+        uint32_t cols = src_mat[1];
+        size_t total_data_elements = rows * cols * (sizeof(value_t) / sizeof(uint32_t)); // Each value_t takes 2 uint32_t slots
+        size_t total_size = 2 * sizeof(uint32_t) + total_data_elements * sizeof(uint32_t);
+
+        uint32_t *copy = (uint32_t *)malloc(total_size);
+        if (copy == NULL) return -1;
+        memcpy(copy, src_mat, total_size);
+        *out_matrix_ptr = copy;
+        return 0;
+    }
+    return -1;
+}
+
+// set_matrix: sets a value_t * to represent a matrix. Returns 0 on success, -1 on failure.
+// This function takes *ownership* of `matrix_ptr` (the allocated matrix data).
+int set_matrix(uint32_t *matrix_ptr, value_t *result_ptr) {
+    if (result_ptr == NULL) {
+        free(matrix_ptr); // Caller passed a bad result_ptr, free the matrix_ptr
+        return -1;
+    }
+    if (matrix_ptr == NULL) {
+        return -1;
+    }
+    // Generate a unique value_t ID for this matrix.
+    // For mock, use a simple counter-based ID.
+    static uint64_t matrix_id_counter = 0x1000000000000000ULL; // Start high to avoid collision
+    *result_ptr = matrix_id_counter++;
+    register_mock_value(*result_ptr, TYPE_MATRIX, matrix_ptr); // Register for mock `get_type`
     return 0;
-}
-
-// set_double: Sets undefined8 with a double value.
-void set_double(double val, undefined8 *out) {
-    memcpy(out, &val, sizeof(double));
-    // Tag the high 32 bits as double type
-    *out = (*out & 0x00000000FFFFFFFFULL) | (0x00000002ULL << 32);
-}
-
-// set_integer: Sets undefined8 with an integer value.
-void set_integer(int val, undefined8 *out) {
-    *out = (undefined8)(uint32_t)val;
-    // Tag the high 32 bits as integer type (0x00000000)
-    *out = (*out & 0x00000000FFFFFFFFULL) | (0x00000000ULL << 32);
-}
-
-// set_matrix: Sets undefined8 with a matrix pointer.
-void set_matrix(uint *matrix_data, undefined8 *out) {
-    *out = (undefined8)(uintptr_t)matrix_data;
-    // Tag the high 32 bits as matrix type (0x00000001)
-    *out = (*out & 0x00000000FFFFFFFFULL) | (0x00000001ULL << 32);
 }
 
 // Mock I/O functions
-int read_all(int fd, void *buf, size_t count) { return (int)count; }
-int write_all(int fd, const void *buf, size_t count) { return (int)count; }
-
-// Mock List functions for RPNCalc_State
-void list_push_front(RPNCalc_State *state, RPNCalc_State_Node *node_to_push) {
-    if (!state || !node_to_push) return;
-    node_to_push->next = state->head;
-    state->head = node_to_push;
+ssize_t read_all(int fd, void *buf, size_t count) {
+    (void)fd; // Unused parameter
+    memset(buf, 0, count); // Simulate reading zeros
+    return count;
 }
 
-RPNCalc_State_Node *list_pop_front(RPNCalc_State *state) {
-    if (!state || !state->head) return NULL;
-    RPNCalc_State_Node *node = state->head;
-    state->head = node->next;
+ssize_t write_all(int fd, const void *buf, size_t count) {
+    (void)fd; (void)buf; // Unused parameters
+    return count;
+}
+
+// --- Mock RPN stack functions ---
+typedef struct ListNode {
+    struct ListNode *next;
+    value_t value; // The actual data
+} ListNode;
+
+// list_push_front: Pushes a node onto the stack. Takes ownership of `node_to_push`.
+int list_push_front(ListNode **stack_head_ptr, ListNode *node_to_push) {
+    if (stack_head_ptr == NULL || node_to_push == NULL) {
+        free(node_to_push); // If we can't push, free it.
+        return -1;
+    }
+    node_to_push->next = *stack_head_ptr;
+    *stack_head_ptr = node_to_push;
+    return 0;
+}
+
+// list_pop_front: Pops a node from the stack. Returns pointer to node, or NULL.
+// Caller is responsible for freeing the returned node.
+ListNode *list_pop_front(ListNode **stack_head_ptr) {
+    if (stack_head_ptr == NULL || *stack_head_ptr == NULL) {
+        return NULL;
+    }
+    ListNode *node = *stack_head_ptr;
+    *stack_head_ptr = node->next;
     node->next = NULL; // Detach
     return node;
 }
 
-int list_length(RPNCalc_State *state) {
-    if (!state) return 0;
+// list_length: Returns the number of elements in the stack.
+int list_length(ListNode *stack_head) {
     int count = 0;
-    RPNCalc_State_Node *current = state->head;
-    while (current) {
+    ListNode *current = stack_head;
+    while (current != NULL) {
         count++;
         current = current->next;
     }
     return count;
 }
 
-void list_remove(RPNCalc_State *state, RPNCalc_State_Node *node_to_remove) {
-    if (!state || !state->head || !node_to_remove) return;
-
-    if (state->head == node_to_remove) {
-        state->head = node_to_remove->next;
-        node_to_remove->next = NULL;
-        return;
+// list_remove: Removes a specific node from the list. Does NOT free the node.
+// Returns 0 on success, -1 if node not found or list is empty.
+int list_remove(ListNode **stack_head_ptr, ListNode *node_to_remove) {
+    if (stack_head_ptr == NULL || *stack_head_ptr == NULL || node_to_remove == NULL) {
+        return -1;
     }
-
-    RPNCalc_State_Node *current = state->head;
-    while (current && current->next != node_to_remove) {
+    if (*stack_head_ptr == node_to_remove) {
+        *stack_head_ptr = node_to_remove->next;
+        return 0;
+    }
+    ListNode *current = *stack_head_ptr;
+    while (current->next != NULL && current->next != node_to_remove) {
         current = current->next;
     }
-    if (current && current->next == node_to_remove) {
+    if (current->next == node_to_remove) {
         current->next = node_to_remove->next;
-        node_to_remove->next = NULL;
+        return 0;
     }
+    return -1; // Node not found
 }
 
-// --- Original Functions (Fixed) ---
+// Forward declarations for RPN operations
+int generic_add(uint32_t val1_low, uint32_t val1_high, uint32_t val2_low, uint32_t val2_high, value_t *result_ptr);
+int generic_sub(uint32_t val1_low, uint32_t val1_high, uint32_t val2_low, uint32_t val2_high, value_t *result_ptr);
+int generic_mul(uint32_t val1_low, uint32_t val1_high, uint32_t val2_low, uint32_t val2_high, value_t *result_ptr);
+int generic_div(uint32_t val1_low, uint32_t val1_high, uint32_t val2_low, uint32_t val2_high, value_t *result_ptr);
+int matrix_inv(uint32_t *input_mat, uint32_t **output_mat_ptr);
+
+// Global array of function pointers for RPN operations
+typedef int (*rpn_op_func_ptr)(ListNode **);
+rpn_op_func_ptr rpncalc_ops[8];
 
 // Function: swap
-void swap(undefined8 *param_1, undefined8 *param_2) {
-  undefined8 temp = *param_1;
+void swap(value_t *param_1, value_t *param_2) {
+  value_t temp = *param_1;
   *param_1 = *param_2;
   *param_2 = temp;
 }
 
 // Function: generic_add
-undefined4 generic_add(undefined8 op1_val, undefined8 op2_val, undefined8 *result_ptr) {
-  if (result_ptr == NULL) {
-    return 0xffffffff;
+int generic_add(uint32_t val1_low, uint32_t val1_high, uint32_t val2_low, uint32_t val2_high, value_t *result_ptr) {
+  if (result_ptr == NULL) return -1;
+
+  value_t val1 = CONCAT44(val1_high, val1_low);
+  value_t val2 = CONCAT44(val2_high, val2_low);
+
+  int type1 = get_type(val1);
+  int type2 = get_type(val2);
+
+  // Original code swaps if type2 < type1 to maintain some canonical order
+  if (type2 < type1) {
+    swap(&val1, &val2);
+    type1 = get_type(val1); // Recalculate type1 after potential swap
+    type2 = get_type(val2); // Recalculate type2 after potential swap (redundant but matches original)
+  }
+  type1 = get_type(val1); // Recalculate type1 again (matches original behavior)
+
+  if (type1 == TYPE_DOUBLE) {
+    double d_val1, d_val2;
+    if (as_double(val1, &d_val1) != 0) return -1;
+    if (as_double(val2, &d_val2) != 0) return -1;
+
+    if (set_double(d_val1 + d_val2, result_ptr) != 0) return -1;
+    // Check for NaN/Infinity on the result (bit pattern check on high 32 bits)
+    if ((*(uint32_t *)((uint8_t *)result_ptr + 4) & 0x7ff00000) == 0x7ff00000) return -1;
+    return 0;
   }
 
-  int type1 = get_type(op1_val);
-  int type2 = get_type(op2_val);
+  if (type1 > TYPE_DOUBLE) return -1; // Type must be 0, 1, or 2. Anything higher is an error.
 
-  // Ensure op1_val has the higher or equal type (double > matrix > integer)
-  if (type1 < type2) {
-    swap(&op1_val, &op2_val);
-    int temp_type = type1;
-    type1 = type2;
-    type2 = temp_type;
-  }
+  if (type1 == TYPE_INTEGER) {
+    int32_t i_val1;
+    if (as_integer(val1, &i_val1) != 0) return -1;
 
-  if (type1 == 2) { // op1 is double
-    double d_op1, d_op2;
-    if (as_double(op1_val, &d_op1) != 0) return 0xffffffff;
-    if (as_double(op2_val, &d_op2) != 0) return 0xffffffff;
-    
-    set_double(d_op1 + d_op2, result_ptr);
-    if ((*(uint32_t *)((uintptr_t)result_ptr + 4) & 0x7ff00000) != 0x7ff00000) { // Check high 32 bits for NaN/Inf
-      return 0;
-    }
-    return 0xffffffff;
-  }
-  
-  if (type1 > 2) return 0xffffffff; // Unknown type
+    int type2_inner = get_type(val2);
 
-  if (type1 == 0) { // op1 is integer
-    int i_op1;
-    if (as_integer(op1_val, &i_op1) != 0) return 0xffffffff;
+    if (type2_inner == TYPE_DOUBLE) {
+      double d_val2;
+      if (as_double(val2, &d_val2) != 0) return -1;
+      if (set_double(d_val2 + (double)i_val1, result_ptr) != 0) return -1;
+      if ((*(uint32_t *)((uint8_t *)result_ptr + 4) & 0x7ff00000) == 0x7ff00000) return -1;
+    } else if (type2_inner > TYPE_DOUBLE) {
+      return -1;
+    } else if (type2_inner == TYPE_INTEGER) {
+      int32_t i_val2;
+      if (as_integer(val2, &i_val2) != 0) return -1;
+      if (set_integer(i_val1 + i_val2, result_ptr) != 0) return -1;
+    } else if (type2_inner == TYPE_MATRIX) {
+      uint32_t *mat_val2;
+      if (as_matrix(val2, &mat_val2) != 0) return -1;
 
-    if (type2 == 2) { // op2 is double
-      double d_op2;
-      if (as_double(op2_val, &d_op2) != 0) return 0xffffffff;
-      
-      set_double(d_op2 + (double)i_op1, result_ptr);
-      if ((*(uint32_t *)((uintptr_t)result_ptr + 4) & 0x7ff00000) == 0x7ff00000) {
-        return 0xffffffff;
+      uint32_t rows = mat_val2[0];
+      uint32_t cols = mat_val2[1];
+      size_t total_data_elements = rows * cols * (sizeof(value_t) / sizeof(uint32_t));
+      uint32_t *res_mat_storage = (uint32_t *)malloc(2 * sizeof(uint32_t) + total_data_elements * sizeof(uint32_t));
+      if (res_mat_storage == NULL) {
+        free(mat_val2); // Free the copy obtained from as_matrix
+        return -1;
       }
-    } else if (type2 > 2) {
-      return 0xffffffff;
-    } else if (type2 == 0) { // op2 is integer
-      int i_op2;
-      if (as_integer(op2_val, &i_op2) != 0) return 0xffffffff;
-      set_integer(i_op1 + i_op2, result_ptr);
-    } else { // type2 == 1 (matrix)
-      uint *m_op2;
-      if (as_matrix(op2_val, &m_op2) != 0) return 0xffffffff;
-      
-      uint *result_matrix = (uint *)malloc((size_t)(m_op2[1] * m_op2[0] + 1) * sizeof(undefined8));
-      if (result_matrix == NULL) return 0xffffffff;
-      
-      result_matrix[0] = m_op2[0];
-      result_matrix[1] = m_op2[1];
+      res_mat_storage[0] = rows;
+      res_mat_storage[1] = cols;
 
-      for (uint r = 0; r < m_op2[0]; ++r) {
-        for (uint c = 0; c < m_op2[1]; ++c) {
-          undefined8 element_val_op2;
-          memcpy(&element_val_op2, m_op2 + (r + m_op2[0] * c) * 2 + 2, sizeof(undefined8));
-          
-          undefined8 element_result_val;
-          if (generic_add(op1_val, element_val_op2, &element_result_val) != 0) {
-            free(result_matrix);
-            return 0xffffffff;
-          }
-          memcpy(result_matrix + (r + result_matrix[0] * c) * 2 + 2, &element_result_val, sizeof(undefined8));
-        }
-      }
-      set_matrix(result_matrix, result_ptr);
-    }
-  } else { // type1 == 1 (op1 is matrix)
-    uint *m_op1;
-    if (as_matrix(op1_val, &m_op1) != 0) return 0xffffffff;
+      for (uint32_t r = 0; r < rows; ++r) {
+        for (uint32_t c = 0; c < cols; ++c) {
+          // Element at (r, c) in row-major order: mat_val2[2 + (r * cols + c) * 2] for low part
+          value_t mat_elem = CONCAT44(mat_val2[2 + (r * cols + c) * 2 + 1], mat_val2[2 + (r * cols + c) * 2]);
+          value_t *res_elem_ptr = (value_t *)(res_mat_storage + 2 + (r * cols + c) * 2);
 
-    if (type2 == 1) { // op2 is matrix
-      uint *m_op2;
-      if (as_matrix(op2_val, &m_op2) != 0) return 0xffffffff;
-
-      if ((m_op1[0] != m_op2[0]) || (m_op1[1] != m_op2[1])) { // Dimensions must match
-        return 0xffffffff;
-      }
-      
-      uint *result_matrix = (uint *)malloc((size_t)(m_op1[1] * m_op1[0] + 1) * sizeof(undefined8));
-      if (result_matrix == NULL) return 0xffffffff;
-      
-      result_matrix[0] = m_op1[0];
-      result_matrix[1] = m_op1[1];
-
-      for (uint r = 0; r < m_op1[0]; ++r) {
-        for (uint c = 0; c < m_op1[1]; ++c) {
-          // Matrix elements are doubles
-          double d_op1_elem, d_op2_elem;
-          memcpy(&d_op1_elem, m_op1 + (r + m_op1[0] * c) * 2 + 2, sizeof(double));
-          memcpy(&d_op2_elem, m_op2 + (r + m_op2[0] * c) * 2 + 2, sizeof(double));
-          
-          double sum = d_op1_elem + d_op2_elem;
-          memcpy(result_matrix + (r + result_matrix[0] * c) * 2 + 2, &sum, sizeof(double));
-          
-          if ((result_matrix[(r + result_matrix[0] * c) * 2 + 3] & 0x7ff00000) == 0x7ff00000) {
-            free(result_matrix);
-            return 0xffffffff;
+          if (generic_add((uint32_t)val1, (uint32_t)(val1 >> 32),
+                          (uint32_t)mat_elem, (uint32_t)(mat_elem >> 32),
+                          res_elem_ptr) != 0) {
+            free(res_mat_storage);
+            free(mat_val2);
+            return -1;
           }
         }
       }
-      set_matrix(result_matrix, result_ptr);
-    } else if (type2 == 2) { // op2 is double
-      double d_op2;
-      if (as_double(op2_val, &d_op2) != 0) return 0xffffffff;
-      
-      uint *result_matrix = (uint *)malloc((size_t)(m_op1[1] * m_op1[0] + 1) * sizeof(undefined8));
-      if (result_matrix == NULL) return 0xffffffff;
-      
-      result_matrix[0] = m_op1[0];
-      result_matrix[1] = m_op1[1];
+      if (set_matrix(res_mat_storage, result_ptr) != 0) {
+        free(res_mat_storage); // set_matrix failed, so we free the data.
+        free(mat_val2);
+        return -1;
+      }
+      free(mat_val2); // Free the copy obtained from as_matrix
+    } else {
+      return -1; // Unknown type2_inner
+    }
+  } else if (type1 == TYPE_MATRIX) {
+    uint32_t *mat_val1;
+    if (as_matrix(val1, &mat_val1) != 0) return -1;
 
-      for (uint r = 0; r < m_op1[0]; ++r) {
-        for (uint c = 0; c < m_op1[1]; ++c) {
-          double d_op1_elem;
-          memcpy(&d_op1_elem, m_op1 + (r + m_op1[0] * c) * 2 + 2, sizeof(double));
-          
-          double sum = d_op1_elem + d_op2;
-          memcpy(result_matrix + (r + result_matrix[0] * c) * 2 + 2, &sum, sizeof(double));
+    int type2_inner = get_type(val2);
+    if (type2_inner == TYPE_MATRIX) {
+      uint32_t *mat_val2;
+      if (as_matrix(val2, &mat_val2) != 0) {
+        free(mat_val1);
+        return -1;
+      }
 
-          if ((result_matrix[(r + result_matrix[0] * c) * 2 + 3] & 0x7ff00000) == 0x7ff00000) {
-            free(result_matrix);
-            return 0xffffffff;
+      if (mat_val1[0] != mat_val2[0] || mat_val1[1] != mat_val2[1]) { // Mismatch dimensions
+        free(mat_val1);
+        free(mat_val2);
+        return -1;
+      }
+
+      uint32_t rows = mat_val1[0];
+      uint32_t cols = mat_val1[1];
+      size_t total_data_elements = rows * cols * (sizeof(value_t) / sizeof(uint32_t));
+      uint32_t *res_mat_storage = (uint32_t *)malloc(2 * sizeof(uint32_t) + total_data_elements * sizeof(uint32_t));
+      if (res_mat_storage == NULL) {
+        free(mat_val1);
+        free(mat_val2);
+        return -1;
+      }
+      res_mat_storage[0] = rows;
+      res_mat_storage[1] = cols;
+
+      for (uint32_t r = 0; r < rows; ++r) {
+        for (uint32_t c = 0; c < cols; ++c) {
+          // Element at (r, c) in row-major order
+          value_t elem_mat1 = CONCAT44(mat_val1[2 + (r * cols + c) * 2 + 1], mat_val1[2 + (r * cols + c) * 2]);
+          value_t elem_mat2 = CONCAT44(mat_val2[2 + (r * cols + c) * 2 + 1], mat_val2[2 + (r * cols + c) * 2]);
+          double d_elem_mat1, d_elem_mat2;
+
+          if (as_double(elem_mat1, &d_elem_mat1) != 0 || as_double(elem_mat2, &d_elem_mat2) != 0) {
+            free(res_mat_storage); free(mat_val1); free(mat_val2); return -1;
+          }
+          value_t *res_elem_ptr = (value_t *)(res_mat_storage + 2 + (r * cols + c) * 2);
+          if (set_double(d_elem_mat1 + d_elem_mat2, res_elem_ptr) != 0) {
+            free(res_mat_storage); free(mat_val1); free(mat_val2); return -1;
+          }
+          if ((*(uint32_t *)((uint8_t *)res_elem_ptr + 4) & 0x7ff00000) == 0x7ff00000) {
+            free(res_mat_storage); free(mat_val1); free(mat_val2); return -1;
           }
         }
       }
-      set_matrix(result_matrix, result_ptr);
-    } else { // Matrix + Integer or other unsupported type
-      return 0xffffffff;
+      if (set_matrix(res_mat_storage, result_ptr) != 0) {
+        free(res_mat_storage); // set_matrix failed, so we free the data.
+        free(mat_val1); free(mat_val2);
+        return -1;
+      }
+      free(mat_val1); free(mat_val2); // Free copies obtained from as_matrix
+    } else if (type2_inner == TYPE_DOUBLE) {
+      double d_val2;
+      if (as_double(val2, &d_val2) != 0) {
+        free(mat_val1);
+        return -1;
+      }
+
+      uint32_t rows = mat_val1[0];
+      uint32_t cols = mat_val1[1];
+      size_t total_data_elements = rows * cols * (sizeof(value_t) / sizeof(uint32_t));
+      uint32_t *res_mat_storage = (uint32_t *)malloc(2 * sizeof(uint32_t) + total_data_elements * sizeof(uint32_t));
+      if (res_mat_storage == NULL) {
+        free(mat_val1);
+        return -1;
+      }
+      res_mat_storage[0] = rows;
+      res_mat_storage[1] = cols;
+
+      for (uint32_t r = 0; r < rows; ++r) {
+        for (uint32_t c = 0; c < cols; ++c) {
+          // Element at (r, c) in row-major order
+          value_t elem_mat1 = CONCAT44(mat_val1[2 + (r * cols + c) * 2 + 1], mat_val1[2 + (r * cols + c) * 2]);
+          double d_elem_mat1;
+          if (as_double(elem_mat1, &d_elem_mat1) != 0) {
+            free(res_mat_storage); free(mat_val1); return -1;
+          }
+          value_t *res_elem_ptr = (value_t *)(res_mat_storage + 2 + (r * cols + c) * 2);
+          if (set_double(d_val2 + d_elem_mat1, res_elem_ptr) != 0) {
+            free(res_mat_storage); free(mat_val1); return -1;
+          }
+          if ((*(uint32_t *)((uint8_t *)res_elem_ptr + 4) & 0x7ff00000) == 0x7ff00000) {
+            free(res_mat_storage); free(mat_val1); return -1;
+          }
+        }
+      }
+      if (set_matrix(res_mat_storage, result_ptr) != 0) {
+        free(res_mat_storage); // set_matrix failed, so we free the data.
+        free(mat_val1);
+        return -1;
+      }
+      free(mat_val1); // Free copy obtained from as_matrix
+    } else {
+      free(mat_val1); // Free copy obtained from as_matrix
+      return -1; // Unknown type2_inner
     }
+  } else {
+    return -1; // Unknown type1
   }
   return 0;
 }
 
 // Function: generic_sub
-undefined4 generic_sub(undefined8 op1_val, undefined8 op2_val, undefined8 *result_ptr) {
-  if (result_ptr == NULL) return 0xffffffff;
+int generic_sub(uint32_t val1_low, uint32_t val1_high, uint32_t val2_low, uint32_t val2_high, value_t *result_ptr) {
+  if (result_ptr == NULL) return -1;
 
-  int type2 = get_type(op2_val);
-  undefined8 neg_op2_val;
-  
-  if (type2 == 2) { // op2 is double
-    double d_op2;
-    if (as_double(op2_val, &d_op2) != 0) return 0xffffffff;
-    set_double(-d_op2, &neg_op2_val);
-    return generic_add(op1_val, neg_op2_val, result_ptr);
-  }
-  
-  if (type2 < 3) {
-    if (type2 == 0) { // op2 is integer
-      int i_op2;
-      if (as_integer(op2_val, &i_op2) != 0) return 0xffffffff;
-      set_integer(-i_op2, &neg_op2_val);
-      return generic_add(op1_val, neg_op2_val, result_ptr);
-    }
-    if (type2 == 1) { // op2 is matrix
-      uint *m_op2;
-      if (as_matrix(op2_val, &m_op2) != 0) return 0xffffffff;
-      
-      uint *neg_matrix = (uint *)malloc((size_t)(m_op2[1] * m_op2[0] + 1) * sizeof(undefined8));
-      if (neg_matrix == NULL) return 0xffffffff;
-      
-      neg_matrix[0] = m_op2[0];
-      neg_matrix[1] = m_op2[1];
+  value_t val1 = CONCAT44(val1_high, val1_low);
+  value_t val2 = CONCAT44(val2_high, val2_low);
+  value_t negated_val2;
 
-      for (uint r = 0; r < m_op2[0]; ++r) {
-        for (uint c = 0; c < m_op2[1]; ++c) {
-          double d_op2_elem;
-          memcpy(&d_op2_elem, m_op2 + (r + m_op2[0] * c) * 2 + 2, sizeof(double));
-          double neg_elem = -d_op2_elem;
-          memcpy(neg_matrix + (r + neg_matrix[0] * c) * 2 + 2, &neg_elem, sizeof(double));
+  int type2 = get_type(val2);
+
+  if (type2 == TYPE_DOUBLE) {
+    double d_val2;
+    if (as_double(val2, &d_val2) != 0) return -1;
+    if (set_double(-d_val2, &negated_val2) != 0) return -1;
+    return generic_add(val1_low, val1_high, (uint32_t)negated_val2, (uint32_t)(negated_val2 >> 32), result_ptr);
+  } else if (type2 < TYPE_DOUBLE) {
+    if (type2 == TYPE_INTEGER) {
+      int32_t i_val2;
+      if (as_integer(val2, &i_val2) != 0) return -1;
+      if (set_integer(-i_val2, &negated_val2) != 0) return -1;
+      return generic_add(val1_low, val1_high, (uint32_t)negated_val2, (uint32_t)(negated_val2 >> 32), result_ptr);
+    } else if (type2 == TYPE_MATRIX) {
+      uint32_t *mat_val2;
+      if (as_matrix(val2, &mat_val2) != 0) return -1;
+
+      uint32_t rows = mat_val2[0];
+      uint32_t cols = mat_val2[1];
+      size_t total_data_elements = rows * cols * (sizeof(value_t) / sizeof(uint32_t));
+      uint32_t *neg_mat_storage = (uint32_t *)malloc(2 * sizeof(uint32_t) + total_data_elements * sizeof(uint32_t));
+      if (neg_mat_storage == NULL) {
+        free(mat_val2);
+        return -1;
+      }
+      neg_mat_storage[0] = rows;
+      neg_mat_storage[1] = cols;
+
+      for (uint32_t r = 0; r < rows; ++r) {
+        for (uint32_t c = 0; c < cols; ++c) {
+          value_t elem_mat2 = CONCAT44(mat_val2[2 + (r * cols + c) * 2 + 1], mat_val2[2 + (r * cols + c) * 2]);
+          double d_elem;
+          if (as_double(elem_mat2, &d_elem) != 0) {
+            free(neg_mat_storage); free(mat_val2); return -1;
+          }
+          value_t *neg_elem_ptr = (value_t *)(neg_mat_storage + 2 + (r * cols + c) * 2);
+          if (set_double(-d_elem, neg_elem_ptr) != 0) {
+            free(neg_mat_storage); free(mat_val2); return -1;
+          }
         }
       }
-      set_matrix(neg_matrix, &neg_op2_val);
-      undefined4 ret = generic_add(op1_val, neg_op2_val, result_ptr);
-      free(neg_matrix); 
-      return ret;
+      if (set_matrix(neg_mat_storage, &negated_val2) != 0) { // Set negated_val2 to the new matrix
+        free(neg_mat_storage); // set_matrix failed, so we free the data.
+        free(mat_val2);
+        return -1;
+      }
+      free(neg_mat_storage); // set_matrix copied, so we free the temporary neg_mat_storage
+      free(mat_val2); // Free the copy obtained from as_matrix
+
+      return generic_add(val1_low, val1_high, (uint32_t)negated_val2, (uint32_t)(negated_val2 >> 32), result_ptr);
     }
   }
-  return 0xffffffff; // Unhandled type
+  return -1;
 }
 
 // Function: generic_mul
-undefined4 generic_mul(undefined8 op1_val, undefined8 op2_val, undefined8 *result_ptr) {
-  if (result_ptr == NULL) return 0xffffffff;
+int generic_mul(uint32_t val1_low, uint32_t val1_high, uint32_t val2_low, uint32_t val2_high, value_t *result_ptr) {
+  if (result_ptr == NULL) return -1;
 
-  int type1 = get_type(op1_val);
-  int type2 = get_type(op2_val);
+  value_t val1 = CONCAT44(val1_high, val1_low);
+  value_t val2 = CONCAT44(val2_high, val2_low);
 
-  // Ensure op1_val has the higher or equal type (double > matrix > integer)
-  if (type1 < type2) {
-    swap(&op1_val, &op2_val);
-    int temp_type = type1;
-    type1 = type2;
-    type2 = temp_type;
+  int type1 = get_type(val1);
+  int type2 = get_type(val2);
+
+  if (type2 < type1) {
+    swap(&val1, &val2);
+    type1 = get_type(val1);
+    type2 = get_type(val2);
+  }
+  type1 = get_type(val1);
+
+  if (type1 == TYPE_DOUBLE) {
+    double d_val1, d_val2;
+    if (as_double(val1, &d_val1) != 0) return -1;
+    if (as_double(val2, &d_val2) != 0) return -1;
+    if (set_double(d_val1 * d_val2, result_ptr) != 0) return -1;
+    if ((*(uint32_t *)((uint8_t *)result_ptr + 4) & 0x7ff00000) == 0x7ff00000) return -1;
+    return 0;
   }
 
-  if (type1 == 2) { // op1 is double
-    double d_op1, d_op2;
-    if (as_double(op1_val, &d_op1) != 0) return 0xffffffff;
-    if (as_double(op2_val, &d_op2) != 0) return 0xffffffff;
-    
-    set_double(d_op1 * d_op2, result_ptr);
-    if ((*(uint32_t *)((uintptr_t)result_ptr + 4) & 0x7ff00000) != 0x7ff00000) {
-      return 0;
-    }
-    return 0xffffffff;
-  }
-  
-  if (type1 > 2) return 0xffffffff; // Unknown type
+  if (type1 > TYPE_DOUBLE) return -1;
 
-  if (type1 == 0) { // op1 is integer
-    int i_op1;
-    if (as_integer(op1_val, &i_op1) != 0) return 0xffffffff;
+  if (type1 == TYPE_INTEGER) {
+    int32_t i_val1;
+    if (as_integer(val1, &i_val1) != 0) return -1;
 
-    if (type2 == 2) { // op2 is double
-      double d_op2;
-      if (as_double(op2_val, &d_op2) != 0) return 0xffffffff;
-      
-      set_double(d_op2 * (double)i_op1, result_ptr);
-      if ((*(uint32_t *)((uintptr_t)result_ptr + 4) & 0x7ff00000) == 0x7ff00000) {
-        return 0xffffffff;
+    int type2_inner = get_type(val2);
+    if (type2_inner == TYPE_DOUBLE) {
+      double d_val2;
+      if (as_double(val2, &d_val2) != 0) return -1;
+      if (set_double(d_val2 * (double)i_val1, result_ptr) != 0) return -1;
+      if ((*(uint32_t *)((uint8_t *)result_ptr + 4) & 0x7ff00000) == 0x7ff00000) return -1;
+    } else if (type2_inner > TYPE_DOUBLE) {
+      return -1;
+    } else if (type2_inner == TYPE_INTEGER) {
+      int32_t i_val2;
+      if (as_integer(val2, &i_val2) != 0) return -1;
+      if (set_integer(i_val1 * i_val2, result_ptr) != 0) return -1;
+    } else if (type2_inner == TYPE_MATRIX) {
+      uint32_t *mat_val2;
+      if (as_matrix(val2, &mat_val2) != 0) return -1;
+
+      uint32_t rows = mat_val2[0];
+      uint32_t cols = mat_val2[1];
+      size_t total_data_elements = rows * cols * (sizeof(value_t) / sizeof(uint32_t));
+      uint32_t *res_mat_storage = (uint32_t *)malloc(2 * sizeof(uint32_t) + total_data_elements * sizeof(uint32_t));
+      if (res_mat_storage == NULL) {
+        free(mat_val2);
+        return -1;
       }
-    } else if (type2 > 2) {
-      return 0xffffffff;
-    } else if (type2 == 0) { // op2 is integer
-      int i_op2;
-      if (as_integer(op2_val, &i_op2) != 0) return 0xffffffff;
-      set_integer(i_op1 * i_op2, result_ptr);
-    } else { // type2 == 1 (matrix)
-      uint *m_op2;
-      if (as_matrix(op2_val, &m_op2) != 0) return 0xffffffff;
-      
-      uint *result_matrix = (uint *)malloc((size_t)(m_op2[1] * m_op2[0] + 1) * sizeof(undefined8));
-      if (result_matrix == NULL) return 0xffffffff;
-      
-      result_matrix[0] = m_op2[0];
-      result_matrix[1] = m_op2[1];
+      res_mat_storage[0] = rows;
+      res_mat_storage[1] = cols;
 
-      for (uint r = 0; r < m_op2[0]; ++r) {
-        for (uint c = 0; c < m_op2[1]; ++c) {
-          undefined8 element_val_op2;
-          memcpy(&element_val_op2, m_op2 + (r + m_op2[0] * c) * 2 + 2, sizeof(undefined8));
-          
-          int element_type = get_type(element_val_op2);
-          if (element_type == 0) { // Element is integer
-            int i_elem_op2;
-            if (as_integer(element_val_op2, &i_elem_op2) != 0) {
-              free(result_matrix);
-              return 0xffffffff;
+      for (uint32_t r = 0; r < rows; ++r) {
+        for (uint32_t c = 0; c < cols; ++c) {
+          value_t mat_elem = CONCAT44(mat_val2[2 + (r * cols + c) * 2 + 1], mat_val2[2 + (r * cols + c) * 2]);
+          int elem_type = get_type(mat_elem);
+          value_t *res_elem_ptr = (value_t *)(res_mat_storage + 2 + (r * cols + c) * 2);
+
+          if (elem_type == TYPE_INTEGER) {
+            int32_t i_elem;
+            if (as_integer(mat_elem, &i_elem) != 0) { free(res_mat_storage); free(mat_val2); return -1; }
+            if (set_integer(i_elem * i_val1, res_elem_ptr) != 0) { free(res_mat_storage); free(mat_val2); return -1; }
+          } else if (elem_type == TYPE_DOUBLE) {
+            double d_elem;
+            if (as_double(mat_elem, &d_elem) != 0) { free(res_mat_storage); free(mat_val2); return -1; }
+            if (set_double(d_elem * (double)i_val1, res_elem_ptr) != 0) { free(res_mat_storage); free(mat_val2); return -1; }
+            if ((*(uint32_t *)((uint8_t *)res_elem_ptr + 4) & 0x7ff00000) == 0x7ff00000) {
+              free(res_mat_storage); free(mat_val2); return -1;
             }
-            undefined8 element_result_val;
-            set_integer(i_elem_op2 * i_op1, &element_result_val);
-            memcpy(result_matrix + (r + result_matrix[0] * c) * 2 + 2, &element_result_val, sizeof(undefined8));
-          } else if (element_type == 2) { // Element is double
-            double d_elem_op2;
-            if (as_double(element_val_op2, &d_elem_op2) != 0) {
-              free(result_matrix);
-              return 0xffffffff;
-            }
-            double prod_double = d_elem_op2 * (double)i_op1;
-            memcpy(result_matrix + (r + result_matrix[0] * c) * 2 + 2, &prod_double, sizeof(double));
-            if ((result_matrix[(r + result_matrix[0] * c) * 2 + 3] & 0x7ff00000) == 0x7ff00000) {
-              free(result_matrix);
-              return 0xffffffff;
-            }
-          } else { // Other element types in matrix not supported for scalar mult.
-            free(result_matrix);
-            return 0xffffffff;
+          } else {
+            free(res_mat_storage); free(mat_val2); return -1; // Unsupported element type in matrix
           }
         }
       }
-      set_matrix(result_matrix, result_ptr);
+      if (set_matrix(res_mat_storage, result_ptr) != 0) {
+        free(res_mat_storage); // set_matrix failed, so we free the data.
+        free(mat_val2);
+        return -1;
+      }
+      free(mat_val2); // Free the copy obtained from as_matrix
+    } else {
+      return -1; // Unknown type2_inner
     }
-  } else { // type1 == 1 (op1 is matrix)
-    uint *m_op1;
-    if (as_matrix(op1_val, &m_op1) != 0) return 0xffffffff;
+  } else if (type1 == TYPE_MATRIX) {
+    uint32_t *mat_val1;
+    if (as_matrix(val1, &mat_val1) != 0) return -1;
 
-    if (type2 == 1) { // op2 is matrix (matrix multiplication)
-      uint *m_op2;
-      if (as_matrix(op2_val, &m_op2) != 0) return 0xffffffff;
-
-      // Check dimensions for matrix multiplication (m1_cols == m2_rows)
-      if (m_op1[1] != m_op2[0]) {
-        return 0xffffffff;
-      }
-      
-      uint result_rows = m_op1[0];
-      uint result_cols = m_op2[1];
-      uint *result_matrix = (uint *)malloc((size_t)(result_cols * result_rows + 1) * sizeof(undefined8));
-      if (result_matrix == NULL) return 0xffffffff;
-      
-      result_matrix[0] = result_rows;
-      result_matrix[1] = result_cols;
-
-      // Initialize result matrix elements to 0
-      for (uint i = 0; i < result_rows * result_cols; ++i) {
-        undefined8 zero_val;
-        set_double(0.0, &zero_val); // Assuming matrix multiplication deals with doubles
-        memcpy(result_matrix + i * 2 + 2, &zero_val, sizeof(undefined8));
+    int type2_inner = get_type(val2);
+    if (type2_inner == TYPE_MATRIX) {
+      uint32_t *mat_val2;
+      if (as_matrix(val2, &mat_val2) != 0) {
+        free(mat_val1);
+        return -1;
       }
 
-      for (uint r = 0; r < result_rows; ++r) {
-        for (uint c = 0; c < result_cols; ++c) {
-          double sum = 0.0;
-          for (uint k = 0; k < m_op1[1]; ++k) { // m_op1[1] is m1_cols, which is m2_rows
-            double m1_elem, m2_elem;
-            memcpy(&m1_elem, m_op1 + (r + m_op1[0] * k) * 2 + 2, sizeof(double));
-            memcpy(&m2_elem, m_op2 + (k + m_op2[0] * c) * 2 + 2, sizeof(double));
-            sum += m1_elem * m2_elem;
-            if (isinf(sum) || isnan(sum)) { // Check for NaN/Inf during accumulation
-              free(result_matrix);
-              return 0xffffffff;
+      // Matrix dimensions check: A(m x n) * B(n x p) -> C(m x p)
+      // mat_val1: rows_A (mat_val1[0]) x cols_A (mat_val1[1])
+      // mat_val2: rows_B (mat_val2[0]) x cols_B (mat_val2[1])
+      // Original check: `*local_44 != local_48[1]` i.e., `mat_val1[0] != mat_val2[1]`
+      // This is non-standard. Standard is `cols_A == rows_B`.
+      // Let's keep the original logic for the specific use case.
+      if (mat_val1[0] != mat_val2[1]) {
+        free(mat_val1); free(mat_val2); return -1;
+      }
+
+      uint32_t rows_res = mat_val1[0]; // Result rows = rows of first matrix
+      uint32_t cols_res = mat_val2[1]; // Result cols = cols of second matrix
+      uint32_t inner_dim = mat_val1[1]; // Inner dimension for summation
+
+      size_t total_data_elements = rows_res * cols_res * (sizeof(value_t) / sizeof(uint32_t));
+      uint32_t *res_mat_storage = (uint32_t *)malloc(2 * sizeof(uint32_t) + total_data_elements * sizeof(uint32_t));
+      if (res_mat_storage == NULL) {
+        free(mat_val1); free(mat_val2); return -1;
+      }
+      res_mat_storage[0] = rows_res;
+      res_mat_storage[1] = cols_res;
+
+      // Initialize result matrix elements to zero (double 0.0)
+      for (uint32_t i = 0; i < rows_res * cols_res; ++i) {
+        set_double(0.0, (value_t *)(res_mat_storage + 2 + i * 2));
+      }
+
+      // Matrix multiplication: C[r][c] = sum_k(A[r][k] * B[k][c])
+      for (uint32_t r = 0; r < rows_res; ++r) {
+        for (uint32_t c = 0; c < cols_res; ++c) {
+          for (uint32_t k = 0; k < inner_dim; ++k) {
+            double elem_A, elem_B, current_C;
+
+            // A[r][k] = mat_val1 element at (r, k) (row-major)
+            value_t val_A_rc = CONCAT44(mat_val1[2 + (r * inner_dim + k) * 2 + 1], mat_val1[2 + (r * inner_dim + k) * 2]);
+            if (as_double(val_A_rc, &elem_A) != 0) { free(res_mat_storage); free(mat_val1); free(mat_val2); return -1; }
+
+            // B[k][c] = mat_val2 element at (k, c) (row-major)
+            value_t val_B_kc = CONCAT44(mat_val2[2 + (k * cols_res + c) * 2 + 1], mat_val2[2 + (k * cols_res + c) * 2]);
+            if (as_double(val_B_kc, &elem_B) != 0) { free(res_mat_storage); free(mat_val1); free(mat_val2); return -1; }
+
+            // Current C[r][c]
+            value_t *res_elem_ptr = (value_t *)(res_mat_storage + 2 + (r * cols_res + c) * 2);
+            if (as_double(*res_elem_ptr, &current_C) != 0) { free(res_mat_storage); free(mat_val1); free(mat_val2); return -1; }
+
+            if (set_double(current_C + (elem_A * elem_B), res_elem_ptr) != 0) {
+              free(res_mat_storage); free(mat_val1); free(mat_val2); return -1;
+            }
+            if ((*(uint32_t *)((uint8_t *)res_elem_ptr + 4) & 0x7ff00000) == 0x7ff00000) {
+              free(res_mat_storage); free(mat_val1); free(mat_val2); return -1;
             }
           }
-          memcpy(result_matrix + (r + result_matrix[0] * c) * 2 + 2, &sum, sizeof(double));
         }
       }
-      set_matrix(result_matrix, result_ptr);
-    } else if (type2 == 2) { // op2 is double (scalar multiplication)
-      double d_op2;
-      if (as_double(op2_val, &d_op2) != 0) return 0xffffffff;
-      
-      uint *result_matrix = (uint *)malloc((size_t)(m_op1[1] * m_op1[0] + 1) * sizeof(undefined8));
-      if (result_matrix == NULL) return 0xffffffff;
-      
-      result_matrix[0] = m_op1[0];
-      result_matrix[1] = m_op1[1];
+      if (set_matrix(res_mat_storage, result_ptr) != 0) {
+        free(res_mat_storage); // set_matrix failed, so we free the data.
+        free(mat_val1); free(mat_val2);
+        return -1;
+      }
+      free(mat_val1); free(mat_val2); // Free copies obtained from as_matrix
+    } else if (type2_inner == TYPE_DOUBLE) {
+      double d_val2;
+      if (as_double(val2, &d_val2) != 0) {
+        free(mat_val1);
+        return -1;
+      }
 
-      for (uint r = 0; r < m_op1[0]; ++r) {
-        for (uint c = 0; c < m_op1[1]; ++c) {
-          double d_op1_elem;
-          memcpy(&d_op1_elem, m_op1 + (r + m_op1[0] * c) * 2 + 2, sizeof(double));
-          
-          double prod = d_op1_elem * d_op2;
-          memcpy(result_matrix + (r + result_matrix[0] * c) * 2 + 2, &prod, sizeof(double));
-          if ((result_matrix[(r + result_matrix[0] * c) * 2 + 3] & 0x7ff00000) == 0x7ff00000) {
-            free(result_matrix);
-            return 0xffffffff;
+      uint32_t rows = mat_val1[0];
+      uint32_t cols = mat_val1[1];
+      size_t total_data_elements = rows * cols * (sizeof(value_t) / sizeof(uint32_t));
+      uint32_t *res_mat_storage = (uint32_t *)malloc(2 * sizeof(uint32_t) + total_data_elements * sizeof(uint32_t));
+      if (res_mat_storage == NULL) {
+        free(mat_val1);
+        return -1;
+      }
+      res_mat_storage[0] = rows;
+      res_mat_storage[1] = cols;
+
+      for (uint32_t r = 0; r < rows; ++r) {
+        for (uint32_t c = 0; c < cols; ++c) {
+          value_t elem_mat1 = CONCAT44(mat_val1[2 + (r * cols + c) * 2 + 1], mat_val1[2 + (r * cols + c) * 2]);
+          double d_elem;
+          if (as_double(elem_mat1, &d_elem) != 0) { free(res_mat_storage); free(mat_val1); return -1; }
+          value_t *res_elem_ptr = (value_t *)(res_mat_storage + 2 + (r * cols + c) * 2);
+          if (set_double(d_elem * d_val2, res_elem_ptr) != 0) {
+            free(res_mat_storage); free(mat_val1); return -1;
+          }
+          if ((*(uint32_t *)((uint8_t *)res_elem_ptr + 4) & 0x7ff00000) == 0x7ff00000) {
+            free(res_mat_storage); free(mat_val1); return -1;
           }
         }
       }
-      set_matrix(result_matrix, result_ptr);
-    } else { // Scalar multiplication by integer or other type, not handled explicitly in original
-      return 0xffffffff;
+      if (set_matrix(res_mat_storage, result_ptr) != 0) {
+        free(res_mat_storage); // set_matrix failed, so we free the data.
+        free(mat_val1);
+        return -1;
+      }
+      free(mat_val1); // Free copy obtained from as_matrix
+    } else {
+      free(mat_val1); // Free copy obtained from as_matrix
+      return -1; // Unknown type2_inner
     }
+  } else {
+    return -1; // Unknown type1
   }
   return 0;
 }
 
 // Function: generic_div
-undefined4 generic_div(undefined8 op1_val, undefined8 op2_val, undefined8 *result_ptr) {
-  if (result_ptr == NULL) return 0xffffffff;
+int generic_div(uint32_t val1_low, uint32_t val1_high, uint32_t val2_low, uint32_t val2_high, value_t *result_ptr) {
+  if (result_ptr == NULL) return -1;
 
-  int type1 = get_type(op1_val);
-  int type2 = get_type(op2_val);
+  value_t val1 = CONCAT44(val1_high, val1_low);
+  value_t val2 = CONCAT44(val2_high, val2_low);
 
-  // Matrix / Matrix division is not supported
-  if (type1 == 1 && type2 == 1) {
-    return 0xffffffff;
-  }
+  int type1 = get_type(val1);
+  int type2 = get_type(val2);
 
-  if (type1 == 0 && type2 == 0) { // Integer / Integer
-    int i_op1, i_op2;
-    if (as_integer(op1_val, &i_op1) != 0) return 0xffffffff;
-    if (as_integer(op2_val, &i_op2) != 0) return 0xffffffff;
-    if (i_op2 == 0) return 0xffffffff; // Division by zero
-    set_integer(i_op1 / i_op2, result_ptr);
+  // Special case: Matrix / Matrix is not supported
+  if (type1 == TYPE_MATRIX && type2 == TYPE_MATRIX) return -1;
+
+  // Integer / Integer
+  if (type1 == TYPE_INTEGER && type2 == TYPE_INTEGER) {
+    int32_t i_val1, i_val2;
+    if (as_integer(val1, &i_val1) != 0) return -1;
+    if (as_integer(val2, &i_val2) != 0) return -1;
+    if (i_val2 == 0) return -1; // Division by zero
+    if (set_integer(i_val1 / i_val2, result_ptr) != 0) return -1;
     return 0;
   }
 
-  if (type1 == 2) { // op1 is double
-    double d_op1;
-    if (as_double(op1_val, &d_op1) != 0) return 0xffffffff;
+  // Double / X
+  if (type1 == TYPE_DOUBLE) {
+    double d_val1;
+    if (as_double(val1, &d_val1) != 0) return -1;
 
-    if (type2 == 1) { // Double / Matrix (element-wise inverse multiplication)
-      uint *m_op2;
-      if (as_matrix(op2_val, &m_op2) != 0) return 0xffffffff;
-      
-      uint *result_matrix = (uint *)malloc((size_t)(m_op2[1] * m_op2[0] + 1) * sizeof(undefined8));
-      if (result_matrix == NULL) return 0xffffffff;
-      
-      result_matrix[0] = m_op2[0];
-      result_matrix[1] = m_op2[1];
+    if (type2 == TYPE_MATRIX) {
+      uint32_t *mat_val2;
+      if (as_matrix(val2, &mat_val2) != 0) return -1;
 
-      for (uint r = 0; r < m_op2[0]; ++r) {
-        for (uint c = 0; c < m_op2[1]; ++c) {
-          double d_op2_elem;
-          memcpy(&d_op2_elem, m_op2 + (r + m_op2[0] * c) * 2 + 2, sizeof(double));
-          if (d_op2_elem == 0.0) {
-            free(result_matrix);
-            return 0xffffffff;
+      uint32_t rows = mat_val2[0];
+      uint32_t cols = mat_val2[1];
+      size_t total_data_elements = rows * cols * (sizeof(value_t) / sizeof(uint32_t));
+      uint32_t *res_mat_storage = (uint32_t *)malloc(2 * sizeof(uint32_t) + total_data_elements * sizeof(uint32_t));
+      if (res_mat_storage == NULL) {
+        free(mat_val2);
+        return -1;
+      }
+      res_mat_storage[0] = rows;
+      res_mat_storage[1] = cols;
+
+      for (uint32_t r = 0; r < rows; ++r) {
+        for (uint32_t c = 0; c < cols; ++c) {
+          value_t elem_mat2 = CONCAT44(mat_val2[2 + (r * cols + c) * 2 + 1], mat_val2[2 + (r * cols + c) * 2]);
+          double d_elem;
+          if (as_double(elem_mat2, &d_elem) != 0) { free(res_mat_storage); free(mat_val2); return -1; }
+          if (d_elem == 0.0) { free(res_mat_storage); free(mat_val2); return -1; } // Division by zero
+          value_t *res_elem_ptr = (value_t *)(res_mat_storage + 2 + (r * cols + c) * 2);
+          if (set_double(d_val1 / d_elem, res_elem_ptr) != 0) {
+            free(res_mat_storage); free(mat_val2); return -1;
           }
-          double res = d_op1 / d_op2_elem;
-          memcpy(result_matrix + (r + result_matrix[0] * c) * 2 + 2, &res, sizeof(double));
-          if ((result_matrix[(r + result_matrix[0] * c) * 2 + 3] & 0x7ff00000) == 0x7ff00000) {
-            free(result_matrix);
-            return 0xffffffff;
+          if ((*(uint32_t *)((uint8_t *)res_elem_ptr + 4) & 0x7ff00000) == 0x7ff00000) {
+            free(res_mat_storage); free(mat_val2); return -1;
           }
         }
       }
-      set_matrix(result_matrix, result_ptr);
-    } else { // Double / Scalar (integer or double)
-      double d_op2;
-      if (type2 == 0) { // op2 is integer
-        int i_op2;
-        if (as_integer(op2_val, &i_op2) != 0) return 0xffffffff;
-        d_op2 = (double)i_op2;
-      } else if (type2 == 2) { // op2 is double
-        if (as_double(op2_val, &d_op2) != 0) return 0xffffffff;
+      if (set_matrix(res_mat_storage, result_ptr) != 0) {
+        free(res_mat_storage); // set_matrix failed, so we free the data.
+        free(mat_val2);
+        return -1;
+      }
+      free(mat_val2); // Free copy obtained from as_matrix
+    } else { // Double / Integer or Double / Double
+      double d_val2;
+      if (type2 == TYPE_INTEGER) {
+        int32_t i_val2;
+        if (as_integer(val2, &i_val2) != 0) return -1;
+        d_val2 = (double)i_val2;
+      } else if (type2 == TYPE_DOUBLE) {
+        if (as_double(val2, &d_val2) != 0) return -1;
       } else {
-        return 0xffffffff; // Unhandled type
+        return -1; // Unknown type2
       }
-
-      if (d_op2 == 0.0) return 0xffffffff; // Division by zero
-      set_double(d_op1 / d_op2, result_ptr);
-      if ((*(uint32_t *)((uintptr_t)result_ptr + 4) & 0x7ff00000) == 0x7ff00000) {
-        return 0xffffffff;
-      }
+      if (d_val2 == 0.0) return -1; // Division by zero
+      if (set_double(d_val1 / d_val2, result_ptr) != 0) return -1;
+      if ((*(uint32_t *)((uint8_t *)result_ptr + 4) & 0x7ff00000) == 0x7ff00000) return -1;
     }
-  } else if (type1 == 0) { // op1 is integer
-    int i_op1;
-    if (as_integer(op1_val, &i_op1) != 0) return 0xffffffff;
+  } else if (type1 == TYPE_INTEGER) { // Integer / X
+    int32_t i_val1;
+    if (as_integer(val1, &i_val1) != 0) return -1;
 
-    if (type2 == 1) { // Integer / Matrix (element-wise inverse multiplication)
-      uint *m_op2;
-      if (as_matrix(op2_val, &m_op2) != 0) return 0xffffffff;
-      
-      uint *result_matrix = (uint *)malloc((size_t)(m_op2[1] * m_op2[0] + 1) * sizeof(undefined8));
-      if (result_matrix == NULL) return 0xffffffff;
-      
-      result_matrix[0] = m_op2[0];
-      result_matrix[1] = m_op2[1];
+    if (type2 == TYPE_MATRIX) {
+      uint32_t *mat_val2;
+      if (as_matrix(val2, &mat_val2) != 0) return -1;
 
-      for (uint r = 0; r < m_op2[0]; ++r) {
-        for (uint c = 0; c < m_op2[1]; ++c) {
-          double d_op2_elem;
-          memcpy(&d_op2_elem, m_op2 + (r + m_op2[0] * c) * 2 + 2, sizeof(double));
-          if (d_op2_elem == 0.0) {
-            free(result_matrix);
-            return 0xffffffff;
+      uint32_t rows = mat_val2[0];
+      uint32_t cols = mat_val2[1];
+      size_t total_data_elements = rows * cols * (sizeof(value_t) / sizeof(uint32_t));
+      uint32_t *res_mat_storage = (uint32_t *)malloc(2 * sizeof(uint32_t) + total_data_elements * sizeof(uint32_t));
+      if (res_mat_storage == NULL) {
+        free(mat_val2);
+        return -1;
+      }
+      res_mat_storage[0] = rows;
+      res_mat_storage[1] = cols;
+
+      for (uint32_t r = 0; r < rows; ++r) {
+        for (uint32_t c = 0; c < cols; ++c) {
+          value_t elem_mat2 = CONCAT44(mat_val2[2 + (r * cols + c) * 2 + 1], mat_val2[2 + (r * cols + c) * 2]);
+          double d_elem;
+          if (as_double(elem_mat2, &d_elem) != 0) { free(res_mat_storage); free(mat_val2); return -1; }
+          if (d_elem == 0.0) { free(res_mat_storage); free(mat_val2); return -1; } // Division by zero
+          value_t *res_elem_ptr = (value_t *)(res_mat_storage + 2 + (r * cols + c) * 2);
+          if (set_double((double)i_val1 / d_elem, res_elem_ptr) != 0) {
+            free(res_mat_storage); free(mat_val2); return -1;
           }
-          double res = (double)i_op1 / d_op2_elem;
-          memcpy(result_matrix + (r + result_matrix[0] * c) * 2 + 2, &res, sizeof(double));
-          if ((result_matrix[(r + result_matrix[0] * c) * 2 + 3] & 0x7ff00000) == 0x7ff00000) {
-            free(result_matrix);
-            return 0xffffffff;
+          if ((*(uint32_t *)((uint8_t *)res_elem_ptr + 4) & 0x7ff00000) == 0x7ff00000) {
+            free(res_mat_storage); free(mat_val2); return -1;
           }
         }
       }
-      set_matrix(result_matrix, result_ptr);
-    } else { // Integer / Scalar (double)
-      double d_op2;
-      if (as_double(op2_val, &d_op2) != 0) return 0xffffffff;
-      if (d_op2 == 0.0) return 0xffffffff; // Division by zero
-      set_double((double)i_op1 / d_op2, result_ptr);
-      if ((*(uint32_t *)((uintptr_t)result_ptr + 4) & 0x7ff00000) == 0x7ff00000) {
-        return 0xffffffff;
+      if (set_matrix(res_mat_storage, result_ptr) != 0) {
+        free(res_mat_storage); // set_matrix failed, so we free the data.
+        free(mat_val2);
+        return -1;
       }
+      free(mat_val2); // Free copy obtained from as_matrix
+    } else { // Integer / Double
+      double d_val2;
+      // The original code implies that if type2 is not matrix, it must be convertible to double.
+      // This covers integer / double and integer / integer where integer is converted to double.
+      if (as_double(val2, &d_val2) != 0) return -1;
+      if (d_val2 == 0.0) return -1; // Division by zero
+      if (set_double((double)i_val1 / d_val2, result_ptr) != 0) return -1;
+      if ((*(uint32_t *)((uint8_t *)result_ptr + 4) & 0x7ff00000) == 0x7ff00000) return -1;
     }
-  } else if (type1 == 1) { // op1 is matrix
-    uint *m_op1;
-    if (as_matrix(op1_val, &m_op1) != 0) return 0xffffffff;
+  } else if (type1 == TYPE_MATRIX) { // Matrix / X (scalar)
+    uint32_t *mat_val1;
+    if (as_matrix(val1, &mat_val1) != 0) return -1;
 
-    // Matrix / Scalar (integer or double)
-    double d_op2;
-    if (type2 == 0) { // op2 is integer
-      int i_op2;
-      if (as_integer(op2_val, &i_op2) != 0) return 0xffffffff;
-      d_op2 = (double)i_op2;
-    } else if (type2 == 2) { // op2 is double
-      if (as_double(op2_val, &d_op2) != 0) return 0xffffffff;
+    double d_val2;
+    if (type2 == TYPE_INTEGER) {
+      int32_t i_val2;
+      if (as_integer(val2, &i_val2) != 0) { free(mat_val1); return -1; }
+      d_val2 = (double)i_val2;
+    } else if (type2 == TYPE_DOUBLE) {
+      if (as_double(val2, &d_val2) != 0) { free(mat_val1); return -1; }
     } else {
-      return 0xffffffff; // Unhandled type
+      free(mat_val1); return -1; // Matrix / Unknown type
     }
-    
-    if (d_op2 == 0.0) return 0xffffffff; // Division by zero
 
-    uint *result_matrix = (uint *)malloc((size_t)(m_op1[1] * m_op1[0] + 1) * sizeof(undefined8));
-    if (result_matrix == NULL) return 0xffffffff;
-    
-    result_matrix[0] = m_op1[0];
-    result_matrix[1] = m_op1[1];
+    uint32_t rows = mat_val1[0];
+    uint32_t cols = mat_val1[1];
+    size_t total_data_elements = rows * cols * (sizeof(value_t) / sizeof(uint32_t));
+    uint32_t *res_mat_storage = (uint32_t *)malloc(2 * sizeof(uint32_t) + total_data_elements * sizeof(uint32_t));
+    if (res_mat_storage == NULL) {
+      free(mat_val1);
+      return -1;
+    }
+    res_mat_storage[0] = rows;
+    res_mat_storage[1] = cols;
 
-    for (uint r = 0; r < m_op1[0]; ++r) {
-      for (uint c = 0; c < m_op1[1]; ++c) {
-        double d_op1_elem;
-        memcpy(&d_op1_elem, m_op1 + (r + m_op1[0] * c) * 2 + 2, sizeof(double));
-        double res = d_op1_elem / d_op2;
-        memcpy(result_matrix + (r + result_matrix[0] * c) * 2 + 2, &res, sizeof(double));
-        if ((result_matrix[(r + result_matrix[0] * c) * 2 + 3] & 0x7ff00000) == 0x7ff00000) {
-          free(result_matrix);
-          return 0xffffffff;
+    for (uint32_t r = 0; r < rows; ++r) {
+      for (uint32_t c = 0; c < cols; ++c) {
+        if (d_val2 == 0.0) { free(res_mat_storage); free(mat_val1); return -1; } // Division by zero
+        value_t elem_mat1 = CONCAT44(mat_val1[2 + (r * cols + c) * 2 + 1], mat_val1[2 + (r * cols + c) * 2]);
+        double d_elem;
+        if (as_double(elem_mat1, &d_elem) != 0) { free(res_mat_storage); free(mat_val1); return -1; }
+        value_t *res_elem_ptr = (value_t *)(res_mat_storage + 2 + (r * cols + c) * 2);
+        if (set_double(d_elem / d_val2, res_elem_ptr) != 0) {
+          free(res_mat_storage); free(mat_val1); return -1;
+        }
+        if ((*(uint32_t *)((uint8_t *)res_elem_ptr + 4) & 0x7ff00000) == 0x7ff00000) {
+          free(res_mat_storage); free(mat_val1); return -1;
         }
       }
     }
-    set_matrix(result_matrix, result_ptr);
+    if (set_matrix(res_mat_storage, result_ptr) != 0) {
+      free(res_mat_storage); // set_matrix failed, so we free the data.
+      free(mat_val1);
+      return -1;
+    }
+    free(mat_val1); // Free copy obtained from as_matrix
   } else {
-    return 0xffffffff; // Unhandled type combination
+    return -1; // Unknown type1
   }
   return 0;
 }
 
 // Function: matrix_inv
-undefined4 matrix_inv(uint *matrix_in, uint **matrix_out_ptr) {
-  if (matrix_out_ptr == NULL) return 0xffffffff;
+int matrix_inv(uint32_t *input_mat, uint32_t **output_mat_ptr) {
+  if (output_mat_ptr == NULL || input_mat == NULL) return -1;
 
-  // Matrix must be square and small (1x1 or 2x2)
-  if (matrix_in[0] != matrix_in[1] || matrix_in[0] == 0 || matrix_in[0] > 2) {
-    return 0xffffffff;
-  }
+  uint32_t rows = input_mat[0];
+  uint32_t cols = input_mat[1];
+
+  if (rows != cols || rows > 2) return -1; // Only square matrices up to 2x2 supported by original code
 
   double determinant;
-  if (matrix_in[0] == 1) { // 1x1 matrix
-    memcpy(&determinant, matrix_in + 2, sizeof(double));
-  } else { // 2x2 matrix
+  if (rows == 1) {
+    double val;
+    value_t elem_00 = CONCAT44(input_mat[2 + (0 * cols + 0) * 2 + 1], input_mat[2 + (0 * cols + 0) * 2]);
+    if (as_double(elem_00, &val) != 0) return -1;
+    determinant = val;
+  } else { // rows == 2 (2x2 matrix)
     double a, b, c, d;
-    memcpy(&a, matrix_in + 2, sizeof(double)); // M[0][0]
-    memcpy(&b, matrix_in + 4, sizeof(double)); // M[0][1]
-    memcpy(&c, matrix_in + 6, sizeof(double)); // M[1][0]
-    memcpy(&d, matrix_in + 8, sizeof(double)); // M[1][1]
+    value_t elem_00 = CONCAT44(input_mat[2 + (0 * cols + 0) * 2 + 1], input_mat[2 + (0 * cols + 0) * 2]); // (0,0)
+    value_t elem_01 = CONCAT44(input_mat[2 + (0 * cols + 1) * 2 + 1], input_mat[2 + (0 * cols + 1) * 2]); // (0,1)
+    value_t elem_10 = CONCAT44(input_mat[2 + (1 * cols + 0) * 2 + 1], input_mat[2 + (1 * cols + 0) * 2]); // (1,0)
+    value_t elem_11 = CONCAT44(input_mat[2 + (1 * cols + 1) * 2 + 1], input_mat[2 + (1 * cols + 1) * 2]); // (1,1)
+
+    if (as_double(elem_00, &a) != 0 || as_double(elem_01, &b) != 0 ||
+        as_double(elem_10, &c) != 0 || as_double(elem_11, &d) != 0) return -1;
     determinant = a * d - b * c;
   }
 
-  if (isinf(determinant) || isnan(determinant) || determinant == 0.0) {
-    return 0xffffffff;
-  }
+  if (determinant == 0.0 || isnan(determinant) || isinf(determinant)) return -1;
 
-  uint *result_matrix = (uint *)malloc((size_t)(matrix_in[1] * matrix_in[0] + 1) * sizeof(undefined8));
-  if (result_matrix == NULL) return 0xffffffff;
-  
-  result_matrix[0] = matrix_in[0];
-  result_matrix[1] = matrix_in[1];
-  *matrix_out_ptr = result_matrix;
+  size_t total_data_elements = rows * cols * (sizeof(value_t) / sizeof(uint32_t));
+  uint32_t *res_mat_storage = (uint32_t *)malloc(2 * sizeof(uint32_t) + total_data_elements * sizeof(uint32_t));
+  if (res_mat_storage == NULL) return -1;
+  *output_mat_ptr = res_mat_storage; // Return the allocated buffer
+  res_mat_storage[0] = rows;
+  res_mat_storage[1] = cols;
 
-  if (matrix_in[0] == 1) {
-    double inv_det = 1.0 / determinant;
-    memcpy(result_matrix + 2, &inv_det, sizeof(double));
-  } else { // 2x2 matrix
+  if (rows == 1) {
+    value_t *res_elem_ptr = (value_t *)(res_mat_storage + 2 + (0 * cols + 0) * 2);
+    if (set_double(1.0 / determinant, res_elem_ptr) != 0) { free(res_mat_storage); return -1; }
+  } else { // rows == 2
     double a, b, c, d;
-    memcpy(&a, matrix_in + 2, sizeof(double)); // M[0][0]
-    memcpy(&b, matrix_in + 4, sizeof(double)); // M[0][1]
-    memcpy(&c, matrix_in + 6, sizeof(double)); // M[1][0]
-    memcpy(&d, matrix_in + 8, sizeof(double)); // M[1][1]
+    value_t elem_00 = CONCAT44(input_mat[2 + (0 * cols + 0) * 2 + 1], input_mat[2 + (0 * cols + 0) * 2]);
+    value_t elem_01 = CONCAT44(input_mat[2 + (0 * cols + 1) * 2 + 1], input_mat[2 + (0 * cols + 1) * 2]);
+    value_t elem_10 = CONCAT44(input_mat[2 + (1 * cols + 0) * 2 + 1], input_mat[2 + (1 * cols + 0) * 2]);
+    value_t elem_11 = CONCAT44(input_mat[2 + (1 * cols + 1) * 2 + 1], input_mat[2 + (1 * cols + 1) * 2]);
 
-    double inv_det = 1.0 / determinant;
-    double inv_a = d * inv_det;
-    double inv_b = -b * inv_det;
-    double inv_c = -c * inv_det;
-    double inv_d = a * inv_det;
+    if (as_double(elem_00, &a) != 0 || as_double(elem_01, &b) != 0 ||
+        as_double(elem_10, &c) != 0 || as_double(elem_11, &d) != 0) { free(res_mat_storage); return -1; }
 
-    memcpy(result_matrix + 2, &inv_a, sizeof(double)); // [0][0]
-    memcpy(result_matrix + 4, &inv_b, sizeof(double)); // [0][1]
-    memcpy(result_matrix + 6, &inv_c, sizeof(double)); // [1][0]
-    memcpy(result_matrix + 8, &inv_d, sizeof(double)); // [1][1]
+    value_t *res_elem_ptr;
+
+    res_elem_ptr = (value_t *)(res_mat_storage + 2 + (0 * cols + 0) * 2); // (0,0)
+    if (set_double(d / determinant, res_elem_ptr) != 0) { free(res_mat_storage); return -1; }
+
+    res_elem_ptr = (value_t *)(res_mat_storage + 2 + (0 * cols + 1) * 2); // (0,1)
+    if (set_double(-b / determinant, res_elem_ptr) != 0) { free(res_mat_storage); return -1; }
+
+    res_elem_ptr = (value_t *)(res_mat_storage + 2 + (1 * cols + 0) * 2); // (1,0)
+    if (set_double(-c / determinant, res_elem_ptr) != 0) { free(res_mat_storage); return -1; }
+
+    res_elem_ptr = (value_t *)(res_mat_storage + 2 + (1 * cols + 1) * 2); // (1,1)
+    if (set_double(a / determinant, res_elem_ptr) != 0) { free(res_mat_storage); return -1; }
   }
   return 0;
 }
 
 // Function: push
-undefined4 push(RPNCalc_State *state) {
-  RPNCalc_State_Node *new_node = NULL;
-  uint *matrix_data = NULL;
-  undefined4 ret_val = 0xffffffff;
+int push(ListNode **stack_head_ptr) {
+  ListNode *new_node = (ListNode *)malloc(sizeof(ListNode));
+  if (new_node == NULL) return -1;
+  new_node->next = NULL;
 
-  new_node = (RPNCalc_State_Node *)malloc(sizeof(RPNCalc_State_Node));
-  if (new_node == NULL) return 0xffffffff;
-
-  uint type_and_dims;
-  if (read_all(0, &type_and_dims, sizeof(uint)) != sizeof(uint)) {
-    goto cleanup_push;
+  uint32_t type_info;
+  if (read_all(0, &type_info, sizeof(type_info)) != sizeof(type_info)) {
+    free(new_node); return -1;
   }
 
-  uint type_val = type_and_dims & 0xffff;
+  int type_code = type_info & 0xffff;
 
-  if (type_val == 2) { // Double
-    undefined4 double_low, double_high;
-    if (read_all(0, &double_low, sizeof(undefined4)) != sizeof(undefined4) ||
-        read_all(0, &double_high, sizeof(undefined4)) != sizeof(undefined4)) {
-      goto cleanup_push;
+  if (type_code == TYPE_DOUBLE) {
+    uint32_t val_low, val_high;
+    if (read_all(0, &val_low, sizeof(val_low)) != sizeof(val_low) ||
+        read_all(0, &val_high, sizeof(val_high)) != sizeof(val_high)) {
+      free(new_node); return -1;
     }
-    // Check for NaN/Inf (high 32 bits of double)
-    if ((double_high & 0x7ff00000) == 0x7ff00000) {
-      goto cleanup_push;
+    // Check for NaN/Infinity on the input value (val_high is higher 32 bits)
+    if ((val_high & 0x7ff00000) == 0x7ff00000) {
+      free(new_node); return -1;
     }
-    set_double(CONCAT44(double_high, double_low), &new_node->value);
-    ret_val = 0;
-  } else if (type_val == 0) { // Integer
-    undefined4 int_val;
-    if (read_all(0, &int_val, sizeof(undefined4)) != sizeof(undefined4)) {
-      goto cleanup_push;
+    new_node->value = CONCAT44(val_high, val_low);
+    // Register the value in mock registry for get_type to work
+    double d_val = *(double*)&new_node->value;
+    register_mock_value(new_node->value, TYPE_DOUBLE, &d_val);
+  } else if (type_code == TYPE_INTEGER) {
+    uint32_t i_val_raw;
+    if (read_all(0, &i_val_raw, sizeof(i_val_raw)) != sizeof(i_val_raw)) {
+      free(new_node); return -1;
     }
-    set_integer(int_val, &new_node->value);
-    ret_val = 0;
-  } else if (type_val == 1) { // Matrix
-    uint rows = (type_and_dims >> 0x18) & 0xff;
-    uint cols = (type_and_dims >> 0x10) & 0xff;
-    size_t matrix_data_size = (size_t)rows * cols * sizeof(undefined8);
-    
-    if (rows == 0 || cols == 0) {
-      goto cleanup_push;
+    if (set_integer((int32_t)i_val_raw, &new_node->value) != 0) {
+        free(new_node); return -1;
+    }
+  } else if (type_code == TYPE_MATRIX) {
+    uint32_t rows = (type_info >> 0x18) & 0xff;
+    uint32_t cols = (type_info >> 0x10) & 0xff;
+    size_t total_data_elements = rows * cols * (sizeof(value_t) / sizeof(uint32_t));
+    size_t data_storage_size = total_data_elements * sizeof(uint32_t);
+
+    if (rows == 0 || cols == 0) { free(new_node); return -1; }
+
+    uint32_t *mat_data_storage = (uint32_t *)malloc(2 * sizeof(uint32_t) + data_storage_size);
+    if (mat_data_storage == NULL) { free(new_node); return -1; }
+    mat_data_storage[0] = rows;
+    mat_data_storage[1] = cols;
+
+    if (read_all(0, mat_data_storage + 2, data_storage_size) != (ssize_t)data_storage_size) {
+      free(mat_data_storage); free(new_node); return -1;
     }
 
-    matrix_data = (uint *)malloc(matrix_data_size + 2 * sizeof(uint)); // +2 for rows/cols
-    if (matrix_data == NULL) goto cleanup_push;
-
-    matrix_data[0] = rows;
-    matrix_data[1] = cols;
-
-    if (read_all(0, matrix_data + 2, matrix_data_size) != matrix_data_size) {
-      free(matrix_data);
-      matrix_data = NULL;
-      goto cleanup_push;
-    }
-
-    for (uint i = 0; i < matrix_data_size / sizeof(undefined8); ++i) {
-      // Check high 32 bits for NaN/Inf for each double element
-      if ((matrix_data[i * 2 + 3] & 0x7ff00000) == 0x7ff00000) {
-        free(matrix_data);
-        matrix_data = NULL;
-        goto cleanup_push;
+    // Check for NaN/Infinity in matrix elements
+    for (uint32_t i = 0; i < rows * cols; ++i) {
+      if ((mat_data_storage[2 + i * 2 + 1] & 0x7ff00000) == 0x7ff00000) {
+        free(mat_data_storage); free(new_node); return -1;
       }
     }
-    set_matrix(matrix_data, &new_node->value);
-    ret_val = 0;
-  } else { // Unknown type
-    goto cleanup_push;
+    if (set_matrix(mat_data_storage, &new_node->value) != 0) {
+      free(mat_data_storage); // set_matrix failed, so we free the data.
+      free(new_node); return -1;
+    }
+  } else {
+    free(new_node); return -1; // Unknown type
   }
 
-  if (ret_val == 0) {
-    list_push_front(state, new_node);
-  } else {
-cleanup_push: // Refactored from original goto labels
-    if (new_node) free(new_node);
-    // matrix_data is freed above if it was allocated but read failed.
-    // If set_matrix was successful, it is assumed to own the matrix_data, and it will be
-    // freed when the RPNCalc_State_Node is freed (e.g., by clear or pop).
-  }
-  return ret_val;
+  return list_push_front(stack_head_ptr, new_node);
 }
 
 // Function: pop
-undefined4 pop(RPNCalc_State *state) {
-  RPNCalc_State_Node *node_to_pop = NULL;
-  uint *matrix_data = NULL;
-  undefined4 ret_val = 0xffffffff;
+int pop(ListNode **stack_head_ptr) {
+  ListNode *node = list_pop_front(stack_head_ptr);
+  if (node == NULL) return -1;
 
-  node_to_pop = list_pop_front(state);
-  if (node_to_pop == NULL) {
-    return 0xffffffff;
-  }
+  int ret = -1;
+  uint32_t *mat_data = NULL; // To store matrix data if type is matrix
 
-  undefined8 *value_ptr = &node_to_pop->value;
-  uint type_val = get_type(*value_ptr);
+  int type = get_type(node->value);
 
-  int result_ok = 0;
-  if (type_val == 2) { // Double
+  if (type == TYPE_DOUBLE) {
     double d_val;
-    if (as_double(*value_ptr, &d_val) == 0) {
-      uint type_code = 2; // Type identifier
-      if (write_all(1, &type_code, sizeof(uint)) == sizeof(uint) &&
-          write_all(1, &d_val, sizeof(double)) == sizeof(double)) {
-        result_ok = 1;
-      }
-    }
-  } else if (type_val == 0) { // Integer
-    int i_val;
-    if (as_integer(*value_ptr, &i_val) == 0) {
-      uint type_code = 0; // Type identifier
-      if (write_all(1, &type_code, sizeof(uint)) == sizeof(uint) &&
-          write_all(1, &i_val, sizeof(int)) == sizeof(int)) {
-        result_ok = 1;
-      }
-    }
-  } else if (type_val == 1) { // Matrix
-    if (as_matrix(*value_ptr, &matrix_data) == 0) {
-      uint rows = matrix_data[0];
-      uint cols = matrix_data[1];
-      size_t matrix_data_size = (size_t)rows * cols * sizeof(undefined8);
-      // Combine type (1), rows, and cols into a single uint for output
-      uint type_and_dims = 1 | (cols << 16) | (rows << 24);
-      
-      if (write_all(1, &type_and_dims, sizeof(uint)) == sizeof(uint) &&
-          write_all(1, matrix_data + 2, matrix_data_size) == matrix_data_size) {
-        result_ok = 1;
-      }
-    }
+    if (as_double(node->value, &d_val) != 0) goto cleanup_pop;
+
+    uint32_t type_info = TYPE_DOUBLE;
+    if (write_all(1, &type_info, sizeof(type_info)) != sizeof(type_info)) goto cleanup_pop;
+    if (write_all(1, &d_val, sizeof(d_val)) != sizeof(d_val)) goto cleanup_pop;
+    ret = 0;
+  } else if (type == TYPE_INTEGER) {
+    int32_t i_val;
+    if (as_integer(node->value, &i_val) != 0) goto cleanup_pop;
+
+    uint32_t type_info = TYPE_INTEGER;
+    if (write_all(1, &type_info, sizeof(type_info)) != sizeof(type_info)) goto cleanup_pop;
+    if (write_all(1, &i_val, sizeof(i_val)) != sizeof(i_val)) goto cleanup_pop;
+    ret = 0;
+  } else if (type == TYPE_MATRIX) {
+    if (as_matrix(node->value, &mat_data) != 0) goto cleanup_pop;
+
+    uint32_t rows = mat_data[0];
+    uint32_t cols = mat_data[1];
+    size_t total_data_elements = rows * cols * (sizeof(value_t) / sizeof(uint32_t));
+    size_t data_storage_size = total_data_elements * sizeof(uint32_t);
+
+    uint32_t type_info = TYPE_MATRIX | (rows << 0x18) | (cols << 0x10);
+    if (write_all(1, &type_info, sizeof(type_info)) != sizeof(type_info)) goto cleanup_pop;
+    if (write_all(1, mat_data + 2, data_storage_size) != (ssize_t)data_storage_size) goto cleanup_pop;
+    ret = 0;
+  } else {
+    goto cleanup_pop;
   }
 
-  if (result_ok) {
-    ret_val = 0;
-  }
-
-  // Common cleanup (freed whether operation succeeded or failed)
-  // `as_matrix` might return a pointer to data owned by the `undefined8` value.
-  // The original code frees `local_38` (matrix_data) and `local_18` (value_ptr's node).
-  // This implies `as_matrix` returns a newly allocated copy of the matrix data.
-  if (matrix_data) free(matrix_data);
-  if (node_to_pop) free(node_to_pop); // Free the RPNCalc_State_Node
-  
-  return ret_val;
+cleanup_pop:
+  if (mat_data != NULL) free(mat_data); // Free matrix data copy obtained from as_matrix
+  free(node); // Free the ListNode itself
+  return ret;
 }
 
 // Function: clear
-undefined4 clear(RPNCalc_State *state) {
-  RPNCalc_State_Node *current = state->head;
-  RPNCalc_State_Node *next_node;
-  uint *matrix_data = NULL;
+int clear(ListNode **stack_head_ptr) {
+  ListNode *current_node = *stack_head_ptr;
+  ListNode *next_node;
+  uint32_t *mat_data;
 
-  while (current != NULL) {
-    next_node = current->next;
-    
-    // Check if the value is a matrix and free its data
-    if (get_type(current->value) == 1 && as_matrix(current->value, &matrix_data) == 0) {
-      free(matrix_data);
+  while (current_node != NULL) {
+    next_node = current_node->next;
+
+    if (get_type(current_node->value) == TYPE_MATRIX) {
+      // as_matrix returns a copy, but set_matrix takes ownership.
+      // So, we need to free the original matrix data pointed to by current_node->value.
+      // The mock registry holds the actual pointer.
+      MockValueEntry *mv = find_mock_value(current_node->value);
+      if (mv && mv->type_tag == TYPE_MATRIX && mv->actual_data.m_val != NULL) {
+        free(mv->actual_data.m_val);
+        // Also remove from mock registry if we manage its lifecycle
+        // (Not strictly necessary for mock, but good practice if registry is global)
+      }
     }
-    free(current); // Free the node itself
-    current = next_node;
+    // Remove the node from the list (not strictly necessary here as we iterate manually)
+    // list_remove(stack_head_ptr, current_node); // This would modify stack_head_ptr during iteration
+
+    free(current_node); // Free the ListNode itself
+    current_node = next_node;
   }
-  state->head = NULL; // Empty the list
+  *stack_head_ptr = NULL; // Ensure head is null after clearing
   return 0;
 }
 
 // Function: binary_op
-typedef undefined4 (*generic_op_func)(undefined8, undefined8, undefined8 *);
+int binary_op(ListNode **stack_head_ptr, int (*op_func)(uint32_t, uint32_t, uint32_t, uint32_t, value_t *)) {
+  if (list_length(*stack_head_ptr) < 2) return -1;
 
-undefined4 binary_op(RPNCalc_State *state, generic_op_func op_func) {
-  RPNCalc_State_Node *op1_node = NULL;
-  RPNCalc_State_Node *op2_node = NULL;
-  RPNCalc_State_Node *result_node = NULL;
-  uint *matrix_data_op1 = NULL;
-  uint *matrix_data_op2 = NULL;
-  undefined4 ret_val = 0xffffffff;
+  ListNode *node1 = list_pop_front(stack_head_ptr); // Second operand (top of stack)
+  if (node1 == NULL) return -1;
 
-  if (list_length(state) < 2) {
-    return 0xffffffff;
+  ListNode *node2 = list_pop_front(stack_head_ptr); // First operand
+  if (node2 == NULL) {
+    list_push_front(stack_head_ptr, node1); // Push node1 back if node2 is missing
+    free(node1);
+    return -1;
   }
 
-  op1_node = list_pop_front(state); // First operand popped (top of stack)
-  if (op1_node == NULL) goto cleanup_binary_op;
-
-  op2_node = list_pop_front(state); // Second operand popped
-  if (op2_node == NULL) {
-    list_push_front(state, op1_node); // Push back op1 if op2 is missing
-    goto cleanup_binary_op;
-  }
-
-  result_node = (RPNCalc_State_Node *)malloc(sizeof(RPNCalc_State_Node));
+  ListNode *result_node = (ListNode *)malloc(sizeof(ListNode));
   if (result_node == NULL) {
-    list_push_front(state, op2_node); // Push back op2
-    list_push_front(state, op1_node); // Push back op1
-    goto cleanup_binary_op;
+    list_push_front(stack_head_ptr, node2);
+    list_push_front(stack_head_ptr, node1);
+    free(node1); free(node2);
+    return -1;
+  }
+  result_node->next = NULL;
+
+  // Call the operator function
+  if (op_func((uint32_t)node2->value, (uint32_t)(node2->value >> 32),
+              (uint32_t)node1->value, (uint32_t)(node1->value >> 32),
+              &result_node->value) != 0) {
+    list_push_front(stack_head_ptr, node2);
+    list_push_front(stack_head_ptr, node1);
+    free(node1); free(node2); free(result_node);
+    return -1;
   }
 
-  // Call the generic operation function
-  if (op_func(op2_node->value, op1_node->value, &result_node->value) != 0) {
-    list_push_front(state, op2_node); // Push back op2
-    list_push_front(state, op1_node); // Push back op1
-    free(result_node);
-    result_node = NULL;
-    goto cleanup_binary_op;
-  }
+  list_push_front(stack_head_ptr, result_node); // Push result node
 
-  list_push_front(state, result_node);
-  ret_val = 0;
-
-cleanup_binary_op:
-  // Free operands (matrix data first, then nodes)
-  if (op1_node) {
-    if (get_type(op1_node->value) == 1 && as_matrix(op1_node->value, &matrix_data_op1) == 0) {
-      free(matrix_data_op1);
+  // Free operands and their matrix data if applicable
+  uint32_t *mat_data_copy; // Temporary for freeing copy from as_matrix
+  if (get_type(node1->value) == TYPE_MATRIX) {
+    // Free the original matrix data pointed to by node1->value
+    MockValueEntry *mv = find_mock_value(node1->value);
+    if (mv && mv->type_tag == TYPE_MATRIX && mv->actual_data.m_val != NULL) {
+      free(mv->actual_data.m_val);
     }
-    free(op1_node);
   }
-  if (op2_node) {
-    if (get_type(op2_node->value) == 1 && as_matrix(op2_node->value, &matrix_data_op2) == 0) {
-      free(matrix_data_op2);
-    }
-    free(op2_node);
-  }
+  free(node1);
 
-  return ret_val;
+  if (get_type(node2->value) == TYPE_MATRIX) {
+    // Free the original matrix data pointed to by node2->value
+    MockValueEntry *mv = find_mock_value(node2->value);
+    if (mv && mv->type_tag == TYPE_MATRIX && mv->actual_data.m_val != NULL) {
+      free(mv->actual_data.m_val);
+    }
+  }
+  free(node2);
+
+  return 0;
 }
 
 // Function: add
-void add(RPNCalc_State *state) {
-  binary_op(state, generic_add);
+void add(ListNode **stack_head_ptr) {
+  binary_op(stack_head_ptr, generic_add);
 }
 
 // Function: sub
-void sub(RPNCalc_State *state) {
-  binary_op(state, generic_sub);
+void sub(ListNode **stack_head_ptr) {
+  binary_op(stack_head_ptr, generic_sub);
 }
 
 // Function: mul
-void mul(RPNCalc_State *state) {
-  binary_op(state, generic_mul);
+void mul(ListNode **stack_head_ptr) {
+  binary_op(stack_head_ptr, generic_mul);
 }
 
-// Function: div (renamed to avoid conflict with stdlib.h div_t div(int,int))
-undefined4 divide(RPNCalc_State *state) {
-  return binary_op(state, generic_div);
+// Function: div (renamed to my_div to avoid conflict with stdlib.h)
+int my_div(ListNode **stack_head_ptr) {
+  return binary_op(stack_head_ptr, generic_div);
 }
 
 // Function: inv
-undefined4 inv(RPNCalc_State *state) {
-  RPNCalc_State_Node *op_node = NULL;
-  RPNCalc_State_Node *result_node = NULL;
-  uint *matrix_in_data = NULL;
-  uint *matrix_out_data = NULL;
-  undefined4 ret_val = 0xffffffff;
+int inv(ListNode **stack_head_ptr) {
+  if (list_length(*stack_head_ptr) == 0) return -1;
 
-  if (list_length(state) == 0) {
-    return 0xffffffff;
-  }
+  ListNode *operand_node = list_pop_front(stack_head_ptr);
+  if (operand_node == NULL) return -1;
 
-  op_node = list_pop_front(state);
-  if (op_node == NULL) return 0xffffffff;
+  int ret = -1;
+  uint32_t *mat_data_copy = NULL; // Copy of original matrix data from as_matrix
+  uint32_t *inv_mat_data = NULL; // Allocated by matrix_inv
 
-  if (get_type(op_node->value) != 1) { // Only matrix inversion is supported
-    list_push_front(state, op_node); // Push back if not a matrix
-    return 0xffffffff;
-  }
-  
-  if (as_matrix(op_node->value, &matrix_in_data) != 0) {
-    list_push_front(state, op_node);
-    return 0xffffffff;
-  }
+  if (get_type(operand_node->value) == TYPE_MATRIX) {
+    if (as_matrix(operand_node->value, &mat_data_copy) != 0) goto cleanup_inv;
 
-  result_node = (RPNCalc_State_Node *)malloc(sizeof(RPNCalc_State_Node));
-  if (result_node == NULL) {
-    list_push_front(state, op_node);
+    ListNode *result_node = (ListNode *)malloc(sizeof(ListNode));
+    if (result_node == NULL) goto cleanup_inv;
+    result_node->next = NULL;
+
+    if (matrix_inv(mat_data_copy, &inv_mat_data) != 0) {
+      free(result_node);
+      goto cleanup_inv;
+    }
+
+    if (set_matrix(inv_mat_data, &result_node->value) != 0) {
+      free(inv_mat_data); // set_matrix failed, so inv_mat_data is not owned by result_node
+      free(result_node);
+      goto cleanup_inv;
+    }
+    // inv_mat_data is now owned by the result_node's value. No need to free here.
+
+    list_push_front(stack_head_ptr, result_node);
+    ret = 0;
+  } else {
+    // Not a matrix, so inversion is not supported
     goto cleanup_inv;
   }
-
-  if (matrix_inv(matrix_in_data, &matrix_out_data) != 0) {
-    list_push_front(state, op_node);
-    free(result_node);
-    result_node = NULL;
-    goto cleanup_inv;
-  }
-
-  set_matrix(matrix_out_data, &result_node->value);
-  list_push_front(state, result_node);
-  ret_val = 0;
 
 cleanup_inv:
-  if (matrix_in_data) free(matrix_in_data); // Free input matrix data if allocated by as_matrix
-  if (op_node) free(op_node); // Free the operand node
-
-  return ret_val;
+  if (mat_data_copy != NULL) free(mat_data_copy); // Free original matrix data copy
+  // Free the original matrix data pointed to by operand_node->value
+  if (get_type(operand_node->value) == TYPE_MATRIX) {
+    MockValueEntry *mv = find_mock_value(operand_node->value);
+    if (mv && mv->type_tag == TYPE_MATRIX && mv->actual_data.m_val != NULL) {
+      free(mv->actual_data.m_val);
+    }
+  }
+  free(operand_node); // Free the operand node
+  return ret;
 }
 
 // Function: rpncalc_init
-void rpncalc_init(RPNCalc_State *state) {
-  if (state) {
-    state->head = NULL;
-  }
+void rpncalc_init(ListNode **stack_head_ptr) {
+  *stack_head_ptr = NULL;
+  // Original `param_1[1] = 0;` implies other fields might exist, but we only manage the head pointer.
 }
 
 // Function: rpncalc_destroy
-void rpncalc_destroy(RPNCalc_State *state) {
-  clear(state);
+void rpncalc_destroy(ListNode **stack_head_ptr) {
+  clear(stack_head_ptr);
 }
 
 // Function: perform_rpncalc_op
-typedef undefined4 (*rpncalc_op_func)(RPNCalc_State *);
-
-// Array of function pointers for RPN operations
-rpncalc_op_func rpncalc_ops[] = {
-    push,      // 0
-    pop,       // 1
-    add,       // 2
-    sub,       // 3
-    mul,       // 4
-    divide,    // 5 (renamed from div to avoid conflict)
-    inv,       // 6
-    (rpncalc_op_func)clear // 7 (clear expects RPNCalc_State*, but its return value is ignored by perform_rpncalc_op)
-};
-
-undefined4 perform_rpncalc_op(RPNCalc_State *state, uint op_code) {
-  if (op_code < sizeof(rpncalc_ops) / sizeof(rpncalc_ops[0])) {
-    return rpncalc_ops[op_code](state);
-  } else {
-    return 0xffffffff; // Invalid operation code
+int perform_rpncalc_op(ListNode **stack_head_ptr, uint32_t op_code) {
+  if (op_code < 8) { // Assuming 8 ops based on original code structure
+    if (rpncalc_ops[op_code] != NULL) {
+        return rpncalc_ops[op_code](stack_head_ptr);
+    }
   }
+  return -1; // Invalid op_code or NULL function pointer
 }

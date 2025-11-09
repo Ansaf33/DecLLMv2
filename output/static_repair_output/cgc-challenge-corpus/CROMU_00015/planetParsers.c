@@ -1,526 +1,247 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdbool.h> // For bool type
+#include <stdlib.h> // For atoi, atof
+#include <string.h> // For memset, strlen, strncpy, strcmp
+#include <ctype.h>  // For isalnum
+#include <stdbool.h> // For bool
 
-// Define the structs based on the original code's memory access patterns
-#define MAX_PLANET_NAME_LEN 19 // +1 for null terminator = 20 bytes
-#define MAX_COUNTRIES_PER_PLANET 30
-#define MAX_COUNTRY_NAME_LEN 255 // Inferred from allocate(0x218) for Country_t
+// --- Assumed custom type definitions from decompiler ---
+// Based on usage, these are mapped to standard C types.
+typedef int UNDEFINED4;
+typedef double UNDEFINED8;
+typedef long double LONGDOUBLE;
+typedef unsigned int UINT;
 
+// --- Assumed parser state struct ---
+// The original code uses an `int *` for parser state, accessing elements like `param_1[0]`, `param_1[1]`, `param_1[2]`.
+// This struct provides a more type-safe and readable representation.
+typedef struct ParserState {
+    char *buffer;        // param_1[0]: Base address of the input buffer
+    int length;          // param_1[1]: Length of the input buffer
+    int current_index;   // param_1[2]: Current parsing index/offset in the buffer
+} ParserState;
+
+// --- Forward declarations for custom functions ---
+// These functions are not provided in the snippet but are called by it.
+// Their signatures are inferred from context.
+void *allocate(size_t size, int param2, void **out_ptr);
+void deallocate(void *ptr, size_t size);
+void receive_until(char *buffer, int delimiter, int max_len);
+int initCountry(void *country_ptr); // Assume it returns 0 on success
+void printCountryInfo(void *country_ptr);
+void freeCountry(void *country_ptr);
+int countryMenu(void *country_ptr); // Assume it returns 0 if country is deleted, 1 otherwise
+
+void skipWhiteSpace(ParserState *parser);
+char *pullNextElementName(ParserState *parser);
+void getIndex(ParserState *parser, int *index_ptr);
+int elementNameToEnum(char *name); // Returns an int representing the element type
+char *extractName(ParserState *parser);
+UNDEFINED4 extractPopulation(ParserState *parser); // Returns int population
+int atChar(ParserState *parser, char c); // Returns 1 if char matches, 0 otherwise
+int incChar(ParserState *parser); // Increments index, returns new index or -1 on error
+int skipLength(ParserState *parser, int length); // Skips length chars, returns new index or -1 on error
+int skipToNonAlphaNum(ParserState *parser); // Returns index of non-alphanum char or -1
+char *copyData(ParserState *parser, int start_idx, int end_idx); // Copies data from buffer, returns new string or NULL
+int skipFloat(ParserState *parser); // Skips float, returns end index or -1
+int skipAlpha(ParserState *parser); // Skips alpha chars, returns end index or -1
+void *countryTopLevel(ParserState *parser); // Assumed to return a Country*
+
+// --- Struct definitions ---
+#define MAX_COUNTRIES 30
+#define PLANET_NAME_MAX_LEN 19 // 19 chars + null terminator = 20 bytes
+
+// Placeholder for Country struct, based on usage in planetMenu and planetTopLevel.
+// allocate(0x218,...) suggests its size is 0x218 bytes.
+// *(char *)(local_14 + local_38) = local_32[local_14]; suggests name is at offset 0.
 typedef struct Country {
-    char name[MAX_COUNTRY_NAME_LEN + 1]; // Offset 0, size 256 (0x100)
-    // Other fields (if any) would follow here. Total size 0x218.
-} Country_t;
+    char name[64]; // Example size, actual size would be 0x218
+    // ... other country fields
+} Country;
 
+// Inferred Planet struct based on offsets and data types.
+// Total size: 0xd4 bytes, matching allocate(0xd4, ...)
 typedef struct Planet {
-    char name[MAX_PLANET_NAME_LEN + 1]; // 0x0 - 0x13
-    double period;                      // 0x14
-    double orbit_speed;                 // 0x1c
-    double aphelion;                    // 0x24
-    double perihelion;                  // 0x2c
-    double mean_radius;                 // 0x34
-    double equatorial_radius;           // 0x3c
-    double mass;                        // 0x44
-    double gravity;                     // 0x4c
-    int population;                     // 0x54
-    int num_countries;                  // 0x58
-    Country_t *countries[MAX_COUNTRIES_PER_PLANET]; // 0x5c to 0xd3. Total size 0xd4.
-} Planet_t;
+    char name[PLANET_NAME_MAX_LEN + 1]; // 0x00 - 0x13 (20 bytes)
+    double period;                      // 0x14 - 0x1b (8 bytes)
+    double orbit_speed;                 // 0x1c - 0x23 (8 bytes)
+    double aphelion;                    // 0x24 - 0x2b (8 bytes)
+    double perihelion;                  // 0x2c - 0x33 (8 bytes)
+    double mean_radius;                 // 0x34 - 0x3b (8 bytes)
+    double equatorial_radius;           // 0x3c - 0x43 (8 bytes)
+    double mass;                        // 0x44 - 0x4b (8 bytes)
+    double gravity;                     // 0x4c - 0x53 (8 bytes)
+    int population;                     // 0x54 - 0x57 (4 bytes)
+    int country_count;                  // 0x58 - 0x5b (4 bytes)
+    Country *countries[MAX_COUNTRIES];  // 0x5c - 0xd3 (30 * 4 = 120 bytes)
+} Planet;
 
-// Parsing context structure
-typedef struct ParseContext {
-    const char *input_buffer;
-    size_t buffer_len;
-    size_t current_idx;
-} ParseContext_t;
+// Enum for element names used in planetTopLevel's switch statement
+enum PlanetElement {
+    ELEMENT_UNKNOWN = 0,
+    ELEMENT_NAME = 1,
+    ELEMENT_PERIOD = 2,
+    ELEMENT_ORBIT_SPEED = 3,
+    ELEMENT_APHELION = 4,
+    ELEMENT_PERIHELION = 5,
+    ELEMENT_MEAN_RADIUS = 6,
+    ELEMENT_EQUATORIAL_RADIUS = 7,
+    ELEMENT_MASS = 8,
+    ELEMENT_GRAVITY = 9,
+    ELEMENT_POPULATION = 10,
+    ELEMENT_COUNTRY = 11
+};
 
+// --- Function Prototypes for the supplied snippet ---
+// These are declared here to ensure they are available for use in the fixed code.
+void freePlanet(Planet *planet);
+void printPlanetInfo(Planet *planet);
+void initPlanet(Planet *planet);
+Planet *planetTopLevel(ParserState *parser);
+LONGDOUBLE extractPeriod(ParserState *parser);
+LONGDOUBLE extractOrbitSpeed(ParserState *parser);
+LONGDOUBLE extractAphelion(ParserState *parser);
+LONGDOUBLE extractPerihelion(ParserState *parser);
+LONGDOUBLE extractRadius(ParserState *parser);
+LONGDOUBLE extractERadius(ParserState *parser);
+LONGDOUBLE extractMass(ParserState *parser);
+LONGDOUBLE extractGravity(ParserState *parser);
 
-// --- Dummy Function Declarations (for compilation) ---
-// These functions are not part of the original snippet but are called by it.
-// They are provided as minimal implementations to allow the snippet to compile.
+// Helper function to reduce code duplication in extractX functions
+static LONGDOUBLE extractValue(ParserState *parser, const char *element_name_str) {
+    LONGDOUBLE result = -1.0L;
+    char *copied_data = NULL;
+    char *element_id = NULL;
+    int start_idx_data = -1, end_idx_data = -1;
+    int start_idx_tag = -1, end_idx_tag = -1;
 
-// In a real scenario, this would read from stdin or a socket
-void receive_until(char *buffer, size_t max_len, int terminator) {
-    if (fgets(buffer, max_len + 1, stdin) != NULL) {
-        // Remove trailing newline if present
-        buffer[strcspn(buffer, "\n")] = 0;
-    } else {
-        buffer[0] = '\0'; // Ensure null-termination on error
+    if (parser == NULL) {
+        return result;
     }
+
+    skipWhiteSpace(parser);
+    if (!atChar(parser, '{')) {
+        printf("!!Failed to locate opening brace for %s\n", element_name_str);
+        return result;
+    }
+    if (skipLength(parser, 1) == -1) { // Skip '{'
+        printf("!!Failed to skip opening brace for %s\n", element_name_str);
+        return result;
+    }
+
+    skipWhiteSpace(parser);
+    getIndex(parser, &start_idx_tag); // Get start index of element ID
+    end_idx_tag = skipToNonAlphaNum(parser); // Get end index of element ID
+    if (end_idx_tag == -1) {
+        printf("!!Failed to locate the end of the element id for %s\n", element_name_str);
+        return result;
+    }
+
+    element_id = copyData(parser, start_idx_tag, end_idx_tag);
+    if (element_id == NULL) {
+        printf("!!Copy element ID from %d to %d failed for %s\n", start_idx_tag, end_idx_tag, element_name_str);
+        return result;
+    }
+
+    if (strcmp(element_id, element_name_str) != 0) {
+        printf("!!Element id is not \"%s\", got \"%s\"\n", element_name_str, element_id);
+        deallocate(element_id, strlen(element_id) + 1);
+        return result;
+    }
+    deallocate(element_id, strlen(element_id) + 1);
+    element_id = NULL; // Clear pointer after use
+
+    skipWhiteSpace(parser);
+    if (!atChar(parser, '}')) {
+        printf("!!Failed to locate initial closing brace for %s\n", element_name_str);
+        return result;
+    }
+    if (skipLength(parser, 1) == -1) { // Skip '}'
+        printf("!!Failed to skip initial closing brace for %s\n", element_name_str);
+        return result;
+    }
+
+    skipWhiteSpace(parser);
+    getIndex(parser, &start_idx_data); // Get start index of data
+    end_idx_data = skipFloat(parser); // Get end index of data
+    if (end_idx_data == -1) {
+        printf("!!Failed to locate the end of the %s data\n", element_name_str);
+        return result;
+    }
+
+    skipWhiteSpace(parser);
+    if (!atChar(parser, '{')) {
+        printf("!!Failed to locate the final opening brace for %s\n", element_name_str);
+        return result;
+    }
+    if (skipLength(parser, 1) == -1) { // Skip '{'
+        printf("!!Failed to skip the final opening brace for %s\n", element_name_str);
+        return result;
+    }
+
+    skipWhiteSpace(parser);
+    if (!atChar(parser, '#')) {
+        printf("!!Failed to locate the closing mark for %s\n", element_name_str);
+        return result;
+    }
+    if (skipLength(parser, 1) == -1) { // Skip '#'
+        printf("!!Failed to skip closing mark for %s\n", element_name_str);
+        return result;
+    }
+
+    getIndex(parser, &start_idx_tag); // Get start index of closing element ID
+    end_idx_tag = skipToNonAlphaNum(parser); // Get end index of closing element ID
+    if (end_idx_tag == -1) {
+        printf("!!Failed to locate the end of the closing element id for %s\n", element_name_str);
+        return result;
+    }
+
+    element_id = copyData(parser, start_idx_tag, end_idx_tag);
+    if (element_id == NULL) {
+        printf("!!Failed to copy closing element ID for %s\n", element_name_str);
+        return result;
+    }
+
+    if (strcmp(element_id, element_name_str) != 0) {
+        printf("!!Invalid closing element id: \"%s\", expected \"%s\"\n", element_id, element_name_str);
+        deallocate(element_id, strlen(element_id) + 1);
+        return result;
+    }
+    deallocate(element_id, strlen(element_id) + 1);
+    element_id = NULL;
+
+    skipWhiteSpace(parser);
+    if (!atChar(parser, '}')) {
+        printf("!!Failed to locate final closing brace for %s\n", element_name_str);
+        return result;
+    }
+    skipLength(parser, 1); // Skip the final '}'
+
+    copied_data = copyData(parser, start_idx_data, end_idx_data);
+    if (copied_data == NULL) {
+        printf("!!Failed to copy %s data\n", element_name_str);
+        return result;
+    }
+
+    result = atof(copied_data);
+    deallocate(copied_data, strlen(copied_data) + 1);
+
+    return result;
 }
 
-// Simple malloc/free for dummies. Real allocate/deallocate might involve memory pools.
-// The original `allocate` had `param_3` as an `int*` to store the allocated address.
-// This dummy uses `void**` for `out_ptr` to be more flexible.
-void *allocate(size_t size, int flags, void **out_ptr) {
-    void *mem = malloc(size);
-    if (out_ptr) *out_ptr = mem; // Store allocated pointer if `out_ptr` is provided
-    // flags unused for dummy
-    return mem;
-}
-
-void deallocate(void *ptr, size_t size) {
-    free(ptr);
-    // size unused for dummy, but kept for signature matching
-}
-
-void initCountry(Country_t *country) {
-    if (country) {
-        memset(country->name, 0, sizeof(country->name));
-        // Initialize other country fields if they existed
-    }
-}
-
-// Returns 0 to delete country, 1 to exit menu (without delete)
-int countryMenu(Country_t *country) {
-    printf("Entering Country Menu for %s (dummy)\n", country ? country->name : "NULL");
-    // In a real scenario, this would present a menu for country options.
-    // Simulate exit without deletion for now.
-    return 1;
-}
-
-void freeCountry(Country_t *country) {
-    if (country) {
-        printf("Freeing Country: %s (dummy)\n", country->name);
-        deallocate(country, sizeof(Country_t));
-    }
-}
-
-void printCountryInfo(Country_t *country) {
-    if (country) {
-        printf("\tCountry: %s (dummy info)\n", country->name);
-    }
-}
-
-void skipWhiteSpace(ParseContext_t *ctx) {
-    if (!ctx || !ctx->input_buffer) return;
-    while (ctx->current_idx < ctx->buffer_len && isspace((unsigned char)ctx->input_buffer[ctx->current_idx])) {
-        ctx->current_idx++;
-    }
-}
-
-char *pullNextElementName(ParseContext_t *ctx) {
-    if (!ctx || !ctx->input_buffer) return NULL;
-    skipWhiteSpace(ctx);
-    if (ctx->current_idx >= ctx->buffer_len || ctx->input_buffer[ctx->current_idx] != '{') {
-        return NULL; // No more elements or not an opening brace
-    }
-    size_t initial_idx = ctx->current_idx; // Save for potential reset
-    ctx->current_idx++; // Skip '{'
-    skipWhiteSpace(ctx);
-    if (ctx->current_idx >= ctx->buffer_len || ctx->input_buffer[ctx->current_idx] == '#') {
-        ctx->current_idx = initial_idx; // It's a closing tag, not an element
-        return NULL;
-    }
-    size_t start_name = ctx->current_idx;
-    while (ctx->current_idx < ctx->buffer_len && isalnum((unsigned char)ctx->input_buffer[ctx->current_idx])) {
-        ctx->current_idx++;
-    }
-    if (start_name == ctx->current_idx) { // No name extracted
-        ctx->current_idx = initial_idx;
-        return NULL;
-    }
-    size_t name_len = ctx->current_idx - start_name;
-    char *name = (char *)allocate(name_len + 1, 0, NULL);
-    if (name) {
-        strncpy(name, ctx->input_buffer + start_name, name_len);
-        name[name_len] = '\0';
-    }
-    // Rewind ctx->current_idx to just after '{' for subsequent parsing
-    ctx->current_idx = initial_idx + 1; 
-    return name; // Caller is responsible for deallocating
-}
-
-void getIndex(ParseContext_t *ctx, size_t *index) {
-    if (ctx && index) {
-        *index = ctx->current_idx;
-    }
-}
-
-// Maps element name strings to integer "enums"
-int elementNameToEnum(const char *name) {
-    if (!name) return 0; // Default/Unknown
-    if (strcmp(name, "Name") == 0) return 1;
-    if (strcmp(name, "Period") == 0) return 2;
-    if (strcmp(name, "OrbitSpeed") == 0) return 3;
-    if (strcmp(name, "Aphelion") == 0) return 4;
-    if (strcmp(name, "Perihelion") == 0) return 5;
-    if (strcmp(name, "Radius") == 0) return 6; // Mean Radius
-    if (strcmp(name, "ERadius") == 0) return 7; // Equatorial Radius
-    if (strcmp(name, "Mass") == 0) return 8;
-    if (strcmp(name, "Gravity") == 0) return 9;
-    if (strcmp(name, "Population") == 0) return 10;
-    if (strcmp(name, "Country") == 0) return 11;
-    return 0; // Unknown element
-}
-
-bool atChar(ParseContext_t *ctx, char c) {
-    if (!ctx || !ctx->input_buffer || ctx->current_idx >= ctx->buffer_len) return false;
-    return ctx->input_buffer[ctx->current_idx] == c;
-}
-
-int incChar(ParseContext_t *ctx) {
-    if (!ctx || !ctx->input_buffer || ctx->current_idx >= ctx->buffer_len) return -1;
-    ctx->current_idx++;
-    return ctx->current_idx;
-}
-
-int skipLength(ParseContext_t *ctx, size_t length) {
-    if (!ctx || !ctx->input_buffer || ctx->current_idx + length > ctx->buffer_len) return -1;
-    ctx->current_idx += length;
-    return ctx->current_idx;
-}
-
-size_t skipToNonAlphaNum(ParseContext_t *ctx) {
-    if (!ctx || !ctx->input_buffer) return (size_t)-1;
-    size_t initial_idx = ctx->current_idx;
-    while (ctx->current_idx < ctx->buffer_len && isalnum((unsigned char)ctx->input_buffer[ctx->current_idx])) {
-        ctx->current_idx++;
-    }
-    return (initial_idx == ctx->current_idx) ? (size_t)-1 : ctx->current_idx; // Return new index or -1 if no movement
-}
-
-char *copyData(ParseContext_t *ctx, size_t start_idx, size_t end_idx) {
-    if (!ctx || !ctx->input_buffer || start_idx > end_idx || end_idx > ctx->buffer_len) return NULL;
-    size_t len = end_idx - start_idx;
-    char *data = (char *)allocate(len + 1, 0, NULL);
-    if (data) {
-        strncpy(data, ctx->input_buffer + start_idx, len);
-        data[len] = '\0';
-    }
-    return data;
-}
-
-size_t skipFloat(ParseContext_t *ctx) {
-    if (!ctx || !ctx->input_buffer) return (size_t)-1;
-    size_t initial_idx = ctx->current_idx;
-    bool has_digit = false;
-    // Handle optional sign
-    if (ctx->current_idx < ctx->buffer_len && (ctx->input_buffer[ctx->current_idx] == '-' || ctx->input_buffer[ctx->current_idx] == '+')) {
-        ctx->current_idx++;
-    }
-    // Handle integer part
-    while (ctx->current_idx < ctx->buffer_len && isdigit((unsigned char)ctx->input_buffer[ctx->current_idx])) {
-        ctx->current_idx++;
-        has_digit = true;
-    }
-    // Handle fractional part
-    if (ctx->current_idx < ctx->buffer_len && ctx->input_buffer[ctx->current_idx] == '.') {
-        ctx->current_idx++;
-        while (ctx->current_idx < ctx->buffer_len && isdigit((unsigned char)ctx->input_buffer[ctx->current_idx])) {
-            ctx->current_idx++;
-            has_digit = true;
-        }
-    }
-    // Handle exponent part (e.g., 1.23e-4)
-    if (ctx->current_idx < ctx->buffer_len && (ctx->input_buffer[ctx->current_idx] == 'e' || ctx->input_buffer[ctx->current_idx] == 'E')) {
-        ctx->current_idx++;
-        if (ctx->current_idx < ctx->buffer_len && (ctx->input_buffer[ctx->current_idx] == '-' || ctx->input_buffer[ctx->current_idx] == '+')) {
-            ctx->current_idx++;
-        }
-        bool has_exp_digit = false;
-        while (ctx->current_idx < ctx->buffer_len && isdigit((unsigned char)ctx->input_buffer[ctx->current_idx])) {
-            ctx->current_idx++;
-            has_exp_digit = true;
-        }
-        if (!has_exp_digit) return (size_t)-1; // Exponent sign without digits is invalid
-    }
-    return (has_digit || (initial_idx != ctx->current_idx && (ctx->input_buffer[initial_idx] == '.' || (ctx->input_buffer[initial_idx] == '-' && ctx->current_idx > initial_idx+1 && ctx->input_buffer[initial_idx+1] == '.')))) ? ctx->current_idx : (size_t)-1;
-}
-
-size_t skipInt(ParseContext_t *ctx) {
-    if (!ctx || !ctx->input_buffer) return (size_t)-1;
-    size_t initial_idx = ctx->current_idx;
-    bool has_digit = false;
-    // Handle optional sign
-    if (ctx->current_idx < ctx->buffer_len && (ctx->input_buffer[ctx->current_idx] == '-' || ctx->input_buffer[ctx->current_idx] == '+')) {
-        ctx->current_idx++;
-    }
-    while (ctx->current_idx < ctx->buffer_len && isdigit((unsigned char)ctx->input_buffer[ctx->current_idx])) {
-        ctx->current_idx++;
-        has_digit = true;
-    }
-    return has_digit ? ctx->current_idx : (size_t)-1;
-}
-
-size_t skipAlpha(ParseContext_t *ctx) {
-    if (!ctx || !ctx->input_buffer) return (size_t)-1;
-    size_t initial_idx = ctx->current_idx;
-    while (ctx->current_idx < ctx->buffer_len && isalpha((unsigned char)ctx->input_buffer[ctx->current_idx])) {
-        ctx->current_idx++;
-    }
-    return (initial_idx == ctx->current_idx) ? (size_t)-1 : ctx->current_idx;
-}
-
-// Helper function for extractX (double version)
-double extractDoubleValue(ParseContext_t *ctx, const char *expected_name) {
-    double value = -1.0;
-    char *extracted_name = NULL;
-    char *extracted_value_str = NULL;
-    size_t start_idx_value = 0;
-    size_t end_idx_value = 0;
-    
-    if (ctx == NULL) return -1.0;
-
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '{')) { printf("!!Failed to locate opening brace for %s\n", expected_name); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip opening brace for %s\n", expected_name); goto cleanup; }
-
-    skipWhiteSpace(ctx);
-    size_t start_name_idx = ctx->current_idx;
-    if (skipToNonAlphaNum(ctx) == (size_t)-1) { printf("!!Failed to locate end of element ID for %s\n", expected_name); goto cleanup; }
-    extracted_name = copyData(ctx, start_name_idx, ctx->current_idx);
-    if (extracted_name == NULL) { printf("!!Failed to copy element ID for %s\n", expected_name); goto cleanup; }
-    if (strcmp(extracted_name, expected_name) != 0) {
-        printf("!!Element ID is not \"%s\", found \"%s\"\n", expected_name, extracted_name);
-        goto cleanup;
-    }
-    deallocate(extracted_name, strlen(extracted_name) + 1);
-    extracted_name = NULL;
-
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '}')) { printf("!!Failed to locate initial closing brace for %s\n", expected_name); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip initial closing brace for %s\n", expected_name); goto cleanup; }
-
-    skipWhiteSpace(ctx);
-    start_idx_value = ctx->current_idx;
-    end_idx_value = skipFloat(ctx);
-    if (end_idx_value == (size_t)-1) { printf("!!Failed to locate end of data for %s\n", expected_name); goto cleanup; }
-    
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '{')) { printf("!!Failed to locate final opening brace for %s\n", expected_name); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip final opening brace for %s\n", expected_name); goto cleanup; }
-    
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '#')) { printf("!!Failed to locate closing mark for %s\n", expected_name); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip closing mark for %s\n", expected_name); goto cleanup; }
-
-    start_name_idx = ctx->current_idx;
-    if (skipToNonAlphaNum(ctx) == (size_t)-1) { printf("!!Failed to locate end of closing element ID for %s\n", expected_name); goto cleanup; }
-    extracted_name = copyData(ctx, start_name_idx, ctx->current_idx);
-    if (extracted_name == NULL) { printf("!!Failed to copy closing element ID for %s\n", expected_name); goto cleanup; }
-    if (strcmp(extracted_name, expected_name) != 0) {
-        printf("!!Invalid closing element ID: \"%s\", expected \"%s\"\n", extracted_name, expected_name);
-        goto cleanup;
-    }
-    deallocate(extracted_name, strlen(extracted_name) + 1);
-    extracted_name = NULL;
-
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '}')) { printf("!!Failed to locate final closing brace for %s\n", expected_name); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip final closing brace for %s\n", expected_name); goto cleanup; }
-
-    extracted_value_str = copyData(ctx, start_idx_value, end_idx_value);
-    if (extracted_value_str == NULL) { printf("!!Failed to copy data for %s\n", expected_name); goto cleanup; }
-    value = atof(extracted_value_str);
-
-cleanup:
-    if (extracted_name != NULL) deallocate(extracted_name, strlen(extracted_name) + 1);
-    if (extracted_value_str != NULL) deallocate(extracted_value_str, strlen(extracted_value_str) + 1);
-    return value;
-}
-
-int extractPopulation(ParseContext_t *ctx) {
-    int value = -1; // Default for unset population
-    char *extracted_name = NULL;
-    char *extracted_value_str = NULL;
-    size_t start_idx_value = 0;
-    size_t end_idx_value = 0;
-    
-    if (ctx == NULL) return -1;
-
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '{')) { printf("!!Failed to locate opening brace for Population\n"); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip opening brace for Population\n"); goto cleanup; }
-
-    skipWhiteSpace(ctx);
-    size_t start_name_idx = ctx->current_idx;
-    if (skipToNonAlphaNum(ctx) == (size_t)-1) { printf("!!Failed to locate end of element ID for Population\n"); goto cleanup; }
-    extracted_name = copyData(ctx, start_name_idx, ctx->current_idx);
-    if (extracted_name == NULL) { printf("!!Failed to copy element ID for Population\n"); goto cleanup; }
-    if (strcmp(extracted_name, "Population") != 0) {
-        printf("!!Element ID is not \"Population\", found \"%s\"\n", extracted_name);
-        goto cleanup;
-    }
-    deallocate(extracted_name, strlen(extracted_name) + 1);
-    extracted_name = NULL;
-
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '}')) { printf("!!Failed to locate initial closing brace for Population\n"); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip initial closing brace for Population\n"); goto cleanup; }
-
-    skipWhiteSpace(ctx);
-    start_idx_value = ctx->current_idx;
-    end_idx_value = skipInt(ctx); // Assuming a skipInt function exists
-    if (end_idx_value == (size_t)-1) { printf("!!Failed to locate end of data for Population\n"); goto cleanup; }
-    
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '{')) { printf("!!Failed to locate final opening brace for Population\n"); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip final opening brace for Population\n"); goto cleanup; }
-    
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '#')) { printf("!!Failed to locate closing mark for Population\n"); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip closing mark for Population\n"); goto cleanup; }
-
-    start_name_idx = ctx->current_idx;
-    if (skipToNonAlphaNum(ctx) == (size_t)-1) { printf("!!Failed to locate end of closing element ID for Population\n"); goto cleanup; }
-    extracted_name = copyData(ctx, start_name_idx, ctx->current_idx);
-    if (extracted_name == NULL) { printf("!!Failed to copy closing element ID for Population\n"); goto cleanup; }
-    if (strcmp(extracted_name, "Population") != 0) {
-        printf("!!Invalid closing element ID: \"%s\", expected \"Population\"\n", extracted_name);
-        goto cleanup;
-    }
-    deallocate(extracted_name, strlen(extracted_name) + 1);
-    extracted_name = NULL;
-
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '}')) { printf("!!Failed to locate final closing brace for Population\n"); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip final closing brace for Population\n"); goto cleanup; }
-
-    extracted_value_str = copyData(ctx, start_idx_value, end_idx_value);
-    if (extracted_value_str == NULL) { printf("!!Failed to copy data for Population\n"); goto cleanup; }
-    value = atoi(extracted_value_str);
-
-cleanup:
-    if (extracted_name != NULL) deallocate(extracted_name, strlen(extracted_name) + 1);
-    if (extracted_value_str != NULL) deallocate(extracted_value_str, strlen(extracted_value_str) + 1);
-    return value;
-}
-
-char *extractName(ParseContext_t *ctx) {
-    char *name = NULL;
-    char *extracted_tag = NULL;
-    if (!ctx) return NULL;
-
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '{')) { printf("!!Failed to locate opening brace for Name\n"); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip opening brace for Name\n"); goto cleanup; }
-    
-    skipWhiteSpace(ctx);
-    size_t start_name_idx = ctx->current_idx;
-    if (skipToNonAlphaNum(ctx) == (size_t)-1) { printf("!!Failed to locate end of element ID for Name\n"); goto cleanup; }
-    extracted_tag = copyData(ctx, start_name_idx, ctx->current_idx);
-    if (!extracted_tag || strcmp(extracted_tag, "Name") != 0) {
-        printf("!!Element ID is not \"Name\", found \"%s\"\n", extracted_tag ? extracted_tag : "NULL");
-        goto cleanup;
-    }
-    deallocate(extracted_tag, strlen(extracted_tag) + 1);
-    extracted_tag = NULL;
-
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '}')) { printf("!!Failed to locate initial closing brace for Name\n"); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip initial closing brace for Name\n"); goto cleanup; }
-
-    skipWhiteSpace(ctx);
-    size_t start_value_idx = ctx->current_idx;
-    // Name can contain spaces, so skip until next '{'
-    while (ctx->current_idx < ctx->buffer_len && ctx->input_buffer[ctx->current_idx] != '{') {
-        ctx->current_idx++;
-    }
-    size_t end_value_idx = ctx->current_idx;
-    
-    // Trim trailing whitespace from name
-    while (end_value_idx > start_value_idx && isspace((unsigned char)ctx->input_buffer[end_value_idx - 1])) {
-        end_value_idx--;
-    }
-
-    skipWhiteSpace(ctx); // Skip to the next '{'
-    if (!atChar(ctx, '{')) { printf("!!Failed to locate final opening brace for Name\n"); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip final opening brace for Name\n"); goto cleanup; }
-    
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '#')) { printf("!!Failed to locate closing mark for Name\n"); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip closing mark for Name\n"); goto cleanup; }
-
-    start_name_idx = ctx->current_idx;
-    if (skipToNonAlphaNum(ctx) == (size_t)-1) { printf("!!Failed to locate end of closing element ID for Name\n"); goto cleanup; }
-    extracted_tag = copyData(ctx, start_name_idx, ctx->current_idx);
-    if (!extracted_tag || strcmp(extracted_tag, "Name") != 0) {
-        printf("!!Invalid closing element ID: \"%s\", expected \"Name\"\n", extracted_tag ? extracted_tag : "NULL");
-        goto cleanup;
-    }
-    deallocate(extracted_tag, strlen(extracted_tag) + 1);
-    extracted_tag = NULL;
-
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '}')) { printf("!!Failed to locate final closing brace for Name\n"); goto cleanup; }
-    if (incChar(ctx) == -1) { printf("!!Failed to skip final closing brace for Name\n"); goto cleanup; }
-
-    name = copyData(ctx, start_value_idx, end_value_idx);
-    
-cleanup:
-    if (extracted_tag) deallocate(extracted_tag, strlen(extracted_tag) + 1);
-    return name;
-}
-
-Country_t *countryTopLevel(ParseContext_t *ctx) {
-    printf("Entering countryTopLevel (dummy)\n");
-    // Simulate parsing a country block
-    // For simplicity, just consume some input and return a dummy country
-    skipWhiteSpace(ctx);
-    char *tag = "{Country}";
-    size_t tag_len = strlen(tag);
-    if (ctx->buffer_len - ctx->current_idx < tag_len ||
-        strncmp(ctx->input_buffer + ctx->current_idx, tag, tag_len) != 0) {
-        printf("Missing {Country} tag (dummy)\n");
-        return NULL;
-    }
-    ctx->current_idx += tag_len; // Skip "{Country}"
-    skipWhiteSpace(ctx);
-
-    // Consume until a closing tag for Country
-    size_t initial_country_idx = ctx->current_idx; // Save context for error reporting
-    while(ctx->current_idx < ctx->buffer_len) {
-        if (ctx->input_buffer[ctx->current_idx] == '{' && 
-            ctx->current_idx + 1 < ctx->buffer_len && ctx->input_buffer[ctx->current_idx+1] == '#') {
-            // Found potential closing tag
-            size_t temp_idx = ctx->current_idx + 2;
-            size_t start_closing_name_idx = temp_idx;
-            while (temp_idx < ctx->buffer_len && isalpha((unsigned char)ctx->input_buffer[temp_idx])) {
-                temp_idx++;
-            }
-            char *closing_name = copyData(ctx, start_closing_name_idx, temp_idx);
-            if (closing_name && strcmp(closing_name, "Country") == 0) {
-                deallocate(closing_name, strlen(closing_name) + 1);
-                // Found {#Country}
-                ctx->current_idx = temp_idx; // Move past name
-                skipWhiteSpace(ctx);
-                if (atChar(ctx, '}')) {
-                    incChar(ctx); // Skip '}'
-                    Country_t *new_country = (Country_t*)allocate(sizeof(Country_t), 0, NULL);
-                    if (new_country) {
-                        initCountry(new_country);
-                        // Dummy name for testing
-                        strncpy(new_country->name, "DummyCountry", MAX_COUNTRY_NAME_LEN);
-                        new_country->name[MAX_COUNTRY_NAME_LEN] = '\0';
-                    }
-                    return new_country;
-                }
-            }
-            if (closing_name) deallocate(closing_name, strlen(closing_name) + 1);
-        }
-        ctx->current_idx++;
-    }
-    printf("Failed to find closing tag for Country (dummy) at index %zu\n", initial_country_idx);
-    return NULL;
-}
-
-
-// --- Original Functions (Fixed) ---
 
 // Function: planetMenu
-int planetMenu(Planet_t *planet) {
-    int choice = 0;
+int planetMenu(Planet *planet) {
+    int choice;
     char input_buffer[30];
-    int menu_status = 3; // 3 means continue, 0 means delete and exit, 1 means exit
+    Country *new_country_ptr = NULL; // For allocate output
+    int i; // Loop counter
 
     if (planet == NULL) {
-        return 0; // Invalid planet pointer
+        return 0; // Return 0 to indicate exit/failure
     }
 
-    do {
+    choice = 0; // Initialize to enter the loop
+    while (choice != 14 && choice != 13) {
         memset(input_buffer, 0, sizeof(input_buffer));
         printf("\nPlanet: %s\n", planet->name);
         printf("1) Display planet information\n");
@@ -538,86 +259,101 @@ int planetMenu(Planet_t *planet) {
         printf("13) Delete Planet and exit menu\n");
         printf("14) Exit menu\n");
         printf("Selection: ");
-        receive_until(input_buffer, sizeof(input_buffer) - 1, '\n'); // Read up to newline
+
+        receive_until(input_buffer, 10, sizeof(input_buffer) - 1); // 10 is newline, max_len is buffer size - 1
         choice = atoi(input_buffer);
 
         switch (choice) {
             case 1:
                 printPlanetInfo(planet);
                 break;
-            case 2:
+            case 2: {
                 printf("\n-> ");
-                receive_until(input_buffer, sizeof(input_buffer) - 1, '\n');
+                receive_until(input_buffer, 10, sizeof(input_buffer) - 1);
                 planet->period = atof(input_buffer);
                 break;
-            case 3:
+            }
+            case 3: {
                 printf("\n-> ");
-                receive_until(input_buffer, sizeof(input_buffer) - 1, '\n');
+                receive_until(input_buffer, 10, sizeof(input_buffer) - 1);
                 planet->orbit_speed = atof(input_buffer);
                 break;
-            case 4:
+            }
+            case 4: {
                 printf("\n-> ");
-                receive_until(input_buffer, sizeof(input_buffer) - 1, '\n');
+                receive_until(input_buffer, 10, sizeof(input_buffer) - 1);
                 planet->aphelion = atof(input_buffer);
                 break;
-            case 5:
+            }
+            case 5: {
                 printf("\n-> ");
-                receive_until(input_buffer, sizeof(input_buffer) - 1, '\n');
+                receive_until(input_buffer, 10, sizeof(input_buffer) - 1);
                 planet->perihelion = atof(input_buffer);
                 break;
-            case 6:
+            }
+            case 6: {
                 printf("\n-> ");
-                receive_until(input_buffer, sizeof(input_buffer) - 1, '\n');
+                receive_until(input_buffer, 10, sizeof(input_buffer) - 1);
                 planet->mean_radius = atof(input_buffer);
                 break;
-            case 7:
+            }
+            case 7: {
                 printf("\n-> ");
-                receive_until(input_buffer, sizeof(input_buffer) - 1, '\n');
+                receive_until(input_buffer, 10, sizeof(input_buffer) - 1);
                 planet->equatorial_radius = atof(input_buffer);
                 break;
-            case 8:
+            }
+            case 8: {
                 printf("\n-> ");
-                receive_until(input_buffer, sizeof(input_buffer) - 1, '\n');
+                receive_until(input_buffer, 10, sizeof(input_buffer) - 1);
                 planet->mass = atof(input_buffer);
                 break;
-            case 9:
+            }
+            case 9: {
                 printf("\n-> ");
-                receive_until(input_buffer, sizeof(input_buffer) - 1, '\n');
+                receive_until(input_buffer, 10, sizeof(input_buffer) - 1);
                 planet->gravity = atof(input_buffer);
                 break;
-            case 10:
+            }
+            case 10: {
                 printf("\n-> ");
-                receive_until(input_buffer, sizeof(input_buffer) - 1, '\n');
+                receive_until(input_buffer, 10, sizeof(input_buffer) - 1);
                 planet->population = atoi(input_buffer);
                 break;
-            case 11: { // Add Country
-                if (planet->num_countries < MAX_COUNTRIES_PER_PLANET) {
+            }
+            case 11: // Add Country
+                if (planet->country_count < MAX_COUNTRIES) {
                     printf("\nNew Name: ");
-                    receive_until(input_buffer, sizeof(input_buffer) - 1, '\n'); 
-                    int country_slot_idx = -1;
-                    for (int j = 0; j < MAX_COUNTRIES_PER_PLANET; ++j) {
-                        if (planet->countries[j] == NULL) {
-                            country_slot_idx = j;
+                    receive_until(input_buffer, 10, PLANET_NAME_MAX_LEN); // Max 19 chars for country name
+
+                    // Find first available slot
+                    int slot_idx = -1;
+                    for (i = 0; i < MAX_COUNTRIES; i++) {
+                        if (planet->countries[i] == NULL) {
+                            slot_idx = i;
                             break;
                         }
                     }
 
-                    if (country_slot_idx == -1) {
+                    if (slot_idx == -1) { // Should not happen if country_count < MAX_COUNTRIES
                         printf("!!No country slots\n");
                     } else {
-                        Country_t *new_country = (Country_t*)allocate(sizeof(Country_t), 0, NULL);
-                        if (new_country != NULL) {
-                            initCountry(new_country);
-                            planet->countries[country_slot_idx] = new_country;
-                            
-                            int name_idx = 0;
-                            // Copy alphanumeric characters up to MAX_COUNTRY_NAME_LEN
-                            while (name_idx < MAX_COUNTRY_NAME_LEN && isalnum((unsigned char)input_buffer[name_idx])) {
-                                new_country->name[name_idx] = input_buffer[name_idx];
-                                name_idx++;
+                        // allocate(0x218,0,&local_38);
+                        if (allocate(sizeof(Country), 0, (void**)&new_country_ptr) == 0 && new_country_ptr != NULL) {
+                            initCountry(new_country_ptr);
+                            planet->countries[slot_idx] = new_country_ptr;
+
+                            // Copy name, only alphanumeric chars
+                            for (i = 0; i < (int)strlen(input_buffer) && i < sizeof(new_country_ptr->name) - 1; i++) {
+                                if (isalnum((int)input_buffer[i])) {
+                                    new_country_ptr->name[i] = input_buffer[i];
+                                } else {
+                                    // Stop copying if non-alphanumeric char encountered
+                                    break;
+                                }
                             }
-                            new_country->name[name_idx] = '\0'; // Null-terminate
-                            planet->num_countries++;
+                            new_country_ptr->name[i] = '\0'; // Null-terminate
+                            planet->country_count++;
                         } else {
                             printf("!!Failed to allocate structure\n");
                         }
@@ -626,98 +362,92 @@ int planetMenu(Planet_t *planet) {
                     printf("Too many countries\n");
                 }
                 break;
-            }
-            case 12: { // Select country
+            case 12: // Select country
                 printf("\nCountries:\n");
-                for (int j = 0; j < MAX_COUNTRIES_PER_PLANET; ++j) {
-                    if (planet->countries[j] != NULL) {
-                        printf("%d) %s\n", j + 1, planet->countries[j]->name);
+                for (i = 0; i < MAX_COUNTRIES; i++) { // Iterate through all possible slots
+                    if (planet->countries[i] != NULL) {
+                        printf("%d) %s\n", i + 1, planet->countries[i]->name);
                     }
                 }
                 memset(input_buffer, 0, sizeof(input_buffer));
                 printf("\n-> ");
-                receive_until(input_buffer, sizeof(input_buffer) - 1, '\n');
-                int country_selection = atoi(input_buffer);
+                receive_until(input_buffer, 10, sizeof(input_buffer) - 1);
+                int country_choice = atoi(input_buffer);
 
-                if ((country_selection < 1) || (MAX_COUNTRIES_PER_PLANET < country_selection)) {
+                if (country_choice < 1 || country_choice > MAX_COUNTRIES) {
                     printf("Invalid choice...\n");
-                } else if (planet->countries[country_selection - 1] == NULL) {
+                } else if (planet->countries[country_choice - 1] == NULL) {
                     printf("Invalid choice...\n");
                 } else {
-                    int country_menu_result = countryMenu(planet->countries[country_selection - 1]);
-                    if (country_menu_result == 0) { // If countryMenu returns 0, delete country
-                        freeCountry(planet->countries[country_selection - 1]);
-                        planet->countries[country_selection - 1] = NULL;
-                        planet->num_countries--;
+                    // countryMenu returns 0 if country was deleted, 1 otherwise
+                    if (countryMenu(planet->countries[country_choice - 1]) == 0) {
+                        planet->countries[country_choice - 1] = NULL; // Mark as deleted
+                        planet->country_count--;
                     }
                 }
                 break;
-            }
-            case 13:
+            case 13: // Delete Planet and exit menu
                 freePlanet(planet);
-                menu_status = 0; // Delete planet and exit
-                break;
-            case 14:
-                menu_status = 1; // Exit menu
-                break;
+                return 0; // Indicate planet deleted and menu exited
+            case 14: // Exit menu
+                return 1; // Indicate menu exited, planet not deleted
             default:
                 printf("Invalid...\n");
-                // menu_status remains 3, loop continues
+                break;
         }
-    } while (menu_status == 3); // Loop until an exit condition is met
-
-    return menu_status;
+    }
+    return 1; // Should not be reached if 13 or 14 are chosen, but as a fallback
 }
 
 // Function: freePlanet
-void freePlanet(Planet_t *planet) {
+void freePlanet(Planet *planet) {
     if (planet != NULL) {
-        for (int i = 0; i < MAX_COUNTRIES_PER_PLANET; ++i) {
+        for (int i = 0; i < MAX_COUNTRIES; i++) {
             if (planet->countries[i] != NULL) {
                 freeCountry(planet->countries[i]);
                 planet->countries[i] = NULL;
             }
         }
-        deallocate(planet, sizeof(Planet_t)); // Using sizeof(Planet_t) for deallocation
+        deallocate(planet, sizeof(Planet));
     }
 }
 
 // Function: printPlanetInfo
-void printPlanetInfo(Planet_t *planet) {
+void printPlanetInfo(Planet *planet) {
     if (planet != NULL) {
         if (planet->name[0] == '\0') {
             printf("Name: Unknown\n");
         } else {
-            printf("Name: %s\n", planet->name); // Fixed format specifier
+            printf("Name: %s\n", planet->name);
         }
-        if (planet->population > -1) { // Check for valid population (assuming -1 means unset)
-            printf("\tPopulation: %d\n", planet->population); // Fixed format specifier
+        if (planet->population >= 0) {
+            printf("\tPopulation: %d\n", planet->population);
         }
-        if (planet->period >= 0.0) { // Check for valid period (assuming -1.0 means unset)
-            printf("\tPeriod: %f\n", planet->period); // Fixed format specifier
+        if (planet->period >= 0.0) {
+            printf("\tPeriod: %lf\n", planet->period);
         }
         if (planet->orbit_speed >= 0.0) {
-            printf("\tOrbit Speed: %f\n", planet->orbit_speed);
+            printf("\tOrbit Speed: %lf\n", planet->orbit_speed);
         }
         if (planet->aphelion >= 0.0) {
-            printf("\tAphelion: %f\n", planet->aphelion);
+            printf("\tAphelion: %lf\n", planet->aphelion);
         }
         if (planet->perihelion >= 0.0) {
-            printf("\tPerihelion: %f\n", planet->perihelion);
+            printf("\tPerihelion: %lf\n", planet->perihelion);
         }
         if (planet->mean_radius >= 0.0) {
-            printf("\tRadius: %f\n", planet->mean_radius);
+            printf("\tRadius: %lf\n", planet->mean_radius);
         }
         if (planet->equatorial_radius >= 0.0) {
-            printf("\tERadius: %f\n", planet->equatorial_radius);
+            printf("\tERadius: %lf\n", planet->equatorial_radius);
         }
         if (planet->mass >= 0.0) {
-            printf("\tMass: %f\n", planet->mass);
+            printf("\tMass: %lf\n", planet->mass);
         }
         if (planet->gravity >= 0.0) {
-            printf("\tGravity: %f\n", planet->gravity);
+            printf("\tGravity: %lf\n", planet->gravity);
         }
-        for (int i = 0; i < MAX_COUNTRIES_PER_PLANET; ++i) {
+        for (int i = 0; i < MAX_COUNTRIES; i++) {
             if (planet->countries[i] != NULL) {
                 printCountryInfo(planet->countries[i]);
             }
@@ -726,9 +456,9 @@ void printPlanetInfo(Planet_t *planet) {
 }
 
 // Function: initPlanet
-void initPlanet(Planet_t *planet) {
+void initPlanet(Planet *planet) {
     if (planet != NULL) {
-        memset(planet->name, 0, sizeof(planet->name)); // bzero -> memset
+        memset(planet->name, 0, sizeof(planet->name));
         planet->period = -1.0;
         planet->orbit_speed = -1.0;
         planet->aphelion = -1.0;
@@ -738,220 +468,252 @@ void initPlanet(Planet_t *planet) {
         planet->mass = -1.0;
         planet->gravity = -1.0;
         planet->population = -1;
-        planet->num_countries = 0;
-        for (int i = 0; i < MAX_COUNTRIES_PER_PLANET; ++i) {
+        planet->country_count = 0;
+        for (int i = 0; i < MAX_COUNTRIES; i++) {
             planet->countries[i] = NULL;
         }
     }
 }
 
 // Function: planetTopLevel
-Planet_t *planetTopLevel(ParseContext_t *ctx) {
+Planet *planetTopLevel(ParserState *parser) {
+    Planet *new_planet = NULL;
     char *element_name = NULL;
-    Planet_t *new_planet = NULL;
-    size_t initial_ctx_idx; 
-    
-    if (ctx == NULL || ctx->input_buffer == NULL) {
+    int initial_parser_index;
+    bool success = false; // Flag to track overall success
+
+    if (parser == NULL) {
         return NULL;
     }
 
-    skipWhiteSpace(ctx);
-    initial_ctx_idx = ctx->current_idx; // Save current index for error reset
+    skipWhiteSpace(parser);
+    initial_parser_index = parser->current_index; // Store original index for rollback on error
 
     // Check for "{Planet}" tag
-    const char *planet_tag = "{Planet}";
-    size_t tag_len = strlen(planet_tag);
-    if (ctx->buffer_len - ctx->current_idx < tag_len ||
-        strncmp(ctx->input_buffer + ctx->current_idx, planet_tag, tag_len) != 0) {
-        return NULL; // Not a Planet block
-    }
-    ctx->current_idx += tag_len; // Skip "{Planet}"
-    
-    skipWhiteSpace(ctx);
-    
-    new_planet = (Planet_t*)allocate(sizeof(Planet_t), 0, NULL);
-    if (new_planet == NULL) {
-        printf("!!Failed to allocate Planet structure\n");
-        return NULL;
-    }
-    initPlanet(new_planet); // Initialize the new planet
-
-    element_name = pullNextElementName(ctx); // pullNextElementName returns allocated char*
-    while (element_name != NULL) {
-        int element_enum = elementNameToEnum(element_name);
-        deallocate(element_name, strlen(element_name) + 1); // Free element_name after use
-        element_name = NULL; // Clear for next iteration
-
-        switch (element_enum) {
-            case 1: // Name
-                element_name = extractName(ctx); // extractName returns allocated char*
-                if (element_name != NULL) {
-                    strncpy(new_planet->name, element_name, MAX_PLANET_NAME_LEN);
-                    new_planet->name[MAX_PLANET_NAME_LEN] = '\0'; // Ensure null termination
-                    deallocate(element_name, strlen(element_name) + 1);
-                    element_name = NULL;
-                } else {
-                    goto parse_error;
-                }
-                break;
-            case 2: // Period
-                new_planet->period = extractDoubleValue(ctx, "Period");
-                if (new_planet->period < 0.0) goto parse_error;
-                break;
-            case 3: // OrbitSpeed
-                new_planet->orbit_speed = extractDoubleValue(ctx, "OrbitSpeed");
-                if (new_planet->orbit_speed < 0.0) goto parse_error;
-                break;
-            case 4: // Aphelion
-                new_planet->aphelion = extractDoubleValue(ctx, "Aphelion");
-                if (new_planet->aphelion < 0.0) goto parse_error;
-                break;
-            case 5: // Perihelion
-                new_planet->perihelion = extractDoubleValue(ctx, "Perihelion");
-                if (new_planet->perihelion < 0.0) goto parse_error;
-                break;
-            case 6: // Radius (Mean Radius)
-                new_planet->mean_radius = extractDoubleValue(ctx, "Radius");
-                if (new_planet->mean_radius < 0.0) goto parse_error;
-                break;
-            case 7: // ERadius (Equatorial Radius)
-                new_planet->equatorial_radius = extractDoubleValue(ctx, "ERadius");
-                if (new_planet->equatorial_radius < 0.0) goto parse_error;
-                break;
-            case 8: // Mass
-                new_planet->mass = extractDoubleValue(ctx, "Mass");
-                if (new_planet->mass < 0.0) goto parse_error;
-                break;
-            case 9: // Gravity
-                new_planet->gravity = extractDoubleValue(ctx, "Gravity");
-                if (new_planet->gravity < 0.0) goto parse_error;
-                break;
-            case 10: // Population
-                new_planet->population = extractPopulation(ctx);
-                if (new_planet->population < -1) goto parse_error; // Assuming -1 means not set/invalid
-                break;
-            case 11: { // Country
-                if (new_planet->num_countries < MAX_COUNTRIES_PER_PLANET) {
-                    Country_t *country = countryTopLevel(ctx); // countryTopLevel returns allocated Country_t*
-                    if (country != NULL) {
-                        // Find first empty slot
-                        int slot_idx = -1;
-                        for(int i = 0; i < MAX_COUNTRIES_PER_PLANET; ++i) {
-                            if(new_planet->countries[i] == NULL) {
-                                slot_idx = i;
-                                break;
-                            }
-                        }
-                        if (slot_idx != -1) {
-                           new_planet->countries[slot_idx] = country;
-                           new_planet->num_countries++;
-                        } else { // Should not happen if num_countries < MAX_COUNTRIES_PER_PLANET
-                           printf("!!No available country slots despite check\n");
-                           freeCountry(country);
-                           goto parse_error;
-                        }
-                    } else {
-                        printf("!!Failed to parse country block\n");
-                        goto parse_error;
-                    }
-                } else {
-                    printf("!!Only %d countries allowed\n", MAX_COUNTRIES_PER_PLANET);
-                    goto parse_error; // Too many countries is an error for parsing
-                }
+    if (parser->length - parser->current_index >= 8) { // 8 is length of "{Planet}"
+        const char *planet_tag = "{Planet}";
+        bool tag_match = true;
+        for (int i = 0; i < 8; i++) {
+            if (parser->buffer[parser->current_index + i] != planet_tag[i]) {
+                tag_match = false;
                 break;
             }
-            default:
-                printf("Not allowed under Planet: %s\n", element_name ? element_name : "NULL");
-                goto parse_error;
         }
-        
-        element_name = pullNextElementName(ctx); // Get next element
+        if (!tag_match) {
+            return NULL;
+        }
+        parser->current_index += 8;
+        skipWhiteSpace(parser);
+
+        // Allocate Planet structure
+        if (allocate(sizeof(Planet), 0, (void**)&new_planet) == 0 && new_planet != NULL) {
+            initPlanet(new_planet);
+            success = true; // Assume success initially, will set false on error
+
+            element_name = pullNextElementName(parser);
+            while (element_name != NULL && success) {
+                enum PlanetElement element_type = elementNameToEnum(element_name);
+                deallocate(element_name, strlen(element_name) + 1); // Free element_name
+                element_name = NULL; // Clear for next iteration
+
+                switch (element_type) {
+                    case ELEMENT_NAME:
+                        element_name = extractName(parser);
+                        if (element_name != NULL) {
+                            strncpy(new_planet->name, element_name, PLANET_NAME_MAX_LEN);
+                            new_planet->name[PLANET_NAME_MAX_LEN] = '\0'; // Ensure null-termination
+                            deallocate(element_name, strlen(element_name) + 1);
+                            element_name = NULL;
+                        } else {
+                            success = false;
+                        }
+                        break;
+                    case ELEMENT_PERIOD:
+                        new_planet->period = (double)extractPeriod(parser);
+                        if (new_planet->period < 0.0) success = false;
+                        break;
+                    case ELEMENT_ORBIT_SPEED:
+                        new_planet->orbit_speed = (double)extractOrbitSpeed(parser);
+                        if (new_planet->orbit_speed < 0.0) success = false;
+                        break;
+                    case ELEMENT_APHELION:
+                        new_planet->aphelion = (double)extractAphelion(parser);
+                        if (new_planet->aphelion < 0.0) success = false;
+                        break;
+                    case ELEMENT_PERIHELION:
+                        new_planet->perihelion = (double)extractPerihelion(parser);
+                        if (new_planet->perihelion < 0.0) success = false;
+                        break;
+                    case ELEMENT_MEAN_RADIUS:
+                        new_planet->mean_radius = (double)extractRadius(parser);
+                        if (new_planet->mean_radius < 0.0) success = false;
+                        break;
+                    case ELEMENT_EQUATORIAL_RADIUS:
+                        new_planet->equatorial_radius = (double)extractERadius(parser);
+                        if (new_planet->equatorial_radius < 0.0) success = false;
+                        break;
+                    case ELEMENT_MASS:
+                        new_planet->mass = (double)extractMass(parser);
+                        if (new_planet->mass < 0.0) success = false;
+                        break;
+                    case ELEMENT_GRAVITY:
+                        new_planet->gravity = (double)extractGravity(parser);
+                        if (new_planet->gravity < 0.0) success = false;
+                        break;
+                    case ELEMENT_POPULATION:
+                        new_planet->population = extractPopulation(parser);
+                        if (new_planet->population < 0) success = false;
+                        break;
+                    case ELEMENT_COUNTRY:
+                        if (new_planet->country_count < MAX_COUNTRIES) {
+                            Country *country_ptr = (Country *)countryTopLevel(parser); // Assume countryTopLevel returns Country*
+                            if (country_ptr != NULL) {
+                                // Find first empty slot for the new country
+                                int slot_found = -1;
+                                for(int k = 0; k < MAX_COUNTRIES; k++) {
+                                    if (new_planet->countries[k] == NULL) {
+                                        new_planet->countries[k] = country_ptr;
+                                        slot_found = k;
+                                        break;
+                                    }
+                                }
+                                if (slot_found != -1) {
+                                    new_planet->country_count++;
+                                } else { // Should not happen if country_count < MAX_COUNTRIES
+                                    printf("!!No country slot found despite count being less than max.\n");
+                                    freeCountry(country_ptr); // Free allocated country
+                                    success = false;
+                                }
+                            } else {
+                                success = false; // countryTopLevel failed
+                            }
+                        } else {
+                            printf("!!Only %d countries allowed\n", MAX_COUNTRIES);
+                            success = false; // Too many countries, treat as error for parsing
+                        }
+                        break;
+                    default:
+                        printf("Not allowed under Planet: %s\n", element_name);
+                        success = false;
+                        break;
+                }
+                if (success) {
+                    element_name = pullNextElementName(parser);
+                } else {
+                    // If an error occurred, break out of the loop
+                    if (element_name != NULL) { // Free any pending element_name
+                        deallocate(element_name, strlen(element_name) + 1);
+                    }
+                    break;
+                }
+            }
+            if (element_name != NULL) { // Free any remaining element_name if loop exited due to error
+                deallocate(element_name, strlen(element_name) + 1);
+            }
+
+            // After parsing elements, check closing tag
+            if (success) {
+                skipWhiteSpace(parser);
+                if (!atChar(parser, '{')) {
+                    printf("!!Closing value failed for Planet\n");
+                    success = false;
+                } else if (incChar(parser) == -1) { // Skip '{'
+                    printf("!!Failed to skip opening brace for closing tag\n");
+                    success = false;
+                } else {
+                    skipWhiteSpace(parser);
+                    if (!atChar(parser, '#')) {
+                        printf("!!Malformed closing element\n");
+                        success = false;
+                    } else if (incChar(parser) == -1) { // Skip '#'
+                        printf("!!Failed to skip closing mark\n");
+                        success = false;
+                    } else {
+                        int start_idx_tag;
+                        getIndex(parser, &start_idx_tag);
+                        int end_idx_tag = skipAlpha(parser);
+                        if (end_idx_tag == -1) {
+                            printf("!!Failed to locate end of closing element ID\n");
+                            success = false;
+                        } else {
+                            char *closing_tag_name = copyData(parser, start_idx_tag, end_idx_tag);
+                            if (closing_tag_name != NULL) {
+                                if (strcmp(closing_tag_name, "Planet") == 0) {
+                                    deallocate(closing_tag_name, strlen(closing_tag_name) + 1);
+                                    skipWhiteSpace(parser);
+                                    if (!atChar(parser, '}')) {
+                                        printf("!!Failed to find final closing brace\n");
+                                        success = false;
+                                    } else {
+                                        incChar(parser); // Skip '}'
+                                        // Final success!
+                                    }
+                                } else {
+                                    printf("!!Closing element malformed, expected 'Planet' but got '%s'\n", closing_tag_name);
+                                    deallocate(closing_tag_name, strlen(closing_tag_name) + 1);
+                                    success = false;
+                                }
+                            } else {
+                                printf("!!Failed to copy closing tag name\n");
+                                success = false;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            printf("!!Failed to allocate Planet structure\n");
+            return NULL;
+        }
     }
 
-    // After parsing all elements, check for closing tag
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '{')) {
-        printf("!!Closing value failed for Planet\n");
-        goto parse_error;
+    if (!success) {
+        parser->current_index = initial_parser_index; // Rollback parser state
+        printf("!!Error at: %s\n", parser->buffer + parser->current_index);
+        if (new_planet != NULL) {
+            freePlanet(new_planet);
+            new_planet = NULL;
+        }
     }
-    if (incChar(ctx) == -1) goto parse_error; // Skip '{'
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '#')) {
-        printf("!!Malformed closing element (missing #)\n");
-        goto parse_error;
-    }
-    if (incChar(ctx) == -1) goto parse_error; // Skip '#'
-
-    size_t start_name_idx = ctx->current_idx;
-    if (skipAlpha(ctx) == (size_t)-1) { // Advance past element name
-        printf("!!Malformed closing element name\n");
-        goto parse_error;
-    }
-    char *closing_tag_name = copyData(ctx, start_name_idx, ctx->current_idx);
-    if (closing_tag_name == NULL || strcmp(closing_tag_name, "Planet") != 0) {
-        printf("!!Closing element malformed or mismatch: %s\n", closing_tag_name ? closing_tag_name : "NULL");
-        if (closing_tag_name) deallocate(closing_tag_name, strlen(closing_tag_name) + 1);
-        goto parse_error;
-    }
-    deallocate(closing_tag_name, strlen(closing_tag_name) + 1);
-
-    skipWhiteSpace(ctx);
-    if (!atChar(ctx, '}')) {
-        printf("!!Failed to find final closing brace\n");
-        goto parse_error;
-    }
-    if (incChar(ctx) == -1) goto parse_error; // Skip '}'
-
-    return new_planet; // Success
-
-parse_error:
-    printf("!!Error at: %s\n", ctx->input_buffer + ctx->current_idx);
-    if (new_planet != NULL) {
-        freePlanet(new_planet);
-    }
-    if (element_name != NULL) {
-        deallocate(element_name, strlen(element_name) + 1);
-    }
-    ctx->current_idx = initial_ctx_idx; // Reset context index on error (optional, but good practice for nested parsing)
-    return NULL;
+    return new_planet;
 }
 
 // Function: extractPeriod
-double extractPeriod(ParseContext_t *ctx) {
-    return extractDoubleValue(ctx, "Period");
+LONGDOUBLE extractPeriod(ParserState *parser) {
+    return extractValue(parser, "Period");
 }
 
 // Function: extractOrbitSpeed
-double extractOrbitSpeed(ParseContext_t *ctx) {
-    return extractDoubleValue(ctx, "OrbitSpeed");
+LONGDOUBLE extractOrbitSpeed(ParserState *parser) {
+    return extractValue(parser, "OrbitSpeed");
 }
 
 // Function: extractAphelion
-double extractAphelion(ParseContext_t *ctx) {
-    return extractDoubleValue(ctx, "Aphelion");
+LONGDOUBLE extractAphelion(ParserState *parser) {
+    return extractValue(parser, "Aphelion");
 }
 
 // Function: extractPerihelion
-double extractPerihelion(ParseContext_t *ctx) {
-    return extractDoubleValue(ctx, "Perihelion");
+LONGDOUBLE extractPerihelion(ParserState *parser) {
+    return extractValue(parser, "Perihelion");
 }
 
 // Function: extractRadius
-double extractRadius(ParseContext_t *ctx) {
-    return extractDoubleValue(ctx, "Radius");
+LONGDOUBLE extractRadius(ParserState *parser) {
+    return extractValue(parser, "Radius");
 }
 
 // Function: extractERadius
-double extractERadius(ParseContext_t *ctx) {
-    return extractDoubleValue(ctx, "ERadius");
+LONGDOUBLE extractERadius(ParserState *parser) {
+    return extractValue(parser, "ERadius");
 }
 
 // Function: extractMass
-double extractMass(ParseContext_t *ctx) {
-    return extractDoubleValue(ctx, "Mass");
+LONGDOUBLE extractMass(ParserState *parser) {
+    return extractValue(parser, "Mass");
 }
 
 // Function: extractGravity
-double extractGravity(ParseContext_t *ctx) {
-    return extractDoubleValue(ctx, "Gravity");
+LONGDOUBLE extractGravity(ParserState *parser) {
+    return extractValue(parser, "Gravity");
 }

@@ -1,54 +1,85 @@
-#include <stddef.h> // For size_t, though not strictly needed here
-#include <stdint.h> // For fixed-width integer types if desired, but unsigned char/int are sufficient
+#include <stdio.h>   // For printf in main
+#include <string.h>  // For strlen in main
 
-// Global variables
+// Global variables (replacing 'byte', 'undefined', 'uint' with standard C types)
 unsigned char g_state;
 unsigned char DAT_000160a1;
-unsigned char DAT_000160a2[256]; // Array size 0x100
+unsigned char DAT_000160a2[256]; // Array of 256 bytes
 
-// Function: parcour_byte
+// Function: parcour_byte (RC4-like PRGA)
+// Returns an unsigned char (byte)
 unsigned char parcour_byte(void) {
-  unsigned char bVar2_val = g_state + 1;
-  unsigned char bVar3_val = DAT_000160a2[bVar2_val] + DAT_000160a1;
-  unsigned char uVar1_val = DAT_000160a2[bVar2_val];
-
-  g_state = bVar2_val;
-  DAT_000160a1 = bVar3_val;
-
-  DAT_000160a2[bVar2_val] = DAT_000160a2[bVar3_val];
-  DAT_000160a2[bVar3_val] = uVar1_val;
-
-  return DAT_000160a2[DAT_000160a2[bVar3_val] + DAT_000160a2[bVar2_val]];
+  // Intermediate variables 'i' and 'j' are essential for distinct indices and updates.
+  // 'temp_val_for_swap' is essential for swapping two values.
+  // These variables are already minimal for the algorithm's logic.
+  unsigned char i = g_state + 1; // Unsigned char arithmetic handles modulo 256 automatically
+  unsigned char j = DAT_000160a2[i] + DAT_000160a1; // Unsigned char arithmetic handles modulo 256 automatically
+  
+  unsigned char temp_val_for_swap = DAT_000160a2[i]; // Temporary variable for the swap
+  
+  // Update global state variables
+  g_state = i;
+  DAT_000160a1 = j;
+  
+  // Swap DAT_000160a2[i] and DAT_000160a2[j]
+  DAT_000160a2[i] = DAT_000160a2[j];
+  DAT_000160a2[j] = temp_val_for_swap;
+  
+  // Return value, based on the newly swapped elements
+  return DAT_000160a2[DAT_000160a2[i] + DAT_000160a2[j]]; // Unsigned char arithmetic handles modulo 256
 }
 
-// Function: parcour_init
-void parcour_init(const char *param_1, unsigned int param_2) {
-  unsigned char uVar1;
-  int local_10;
-  unsigned int local_c;
-
-  for (local_c = 0; local_c < 256; local_c++) {
-    DAT_000160a2[local_c] = (unsigned char)local_c;
+// Function: parcour_init (RC4-like KSA)
+// param_1 is interpreted as a pointer to a key string, param_2 as its length.
+void parcour_init(const char *key, unsigned int key_len) {
+  unsigned int i; // Loop counter, 'local_c' in original snippet
+  unsigned char j = 0; // Accumulator for permutation, 'local_10' in original snippet
+  
+  // Initialize S-box (DAT_000160a2)
+  for (i = 0; i < 256; i++) {
+    DAT_000160a2[i] = (unsigned char)i;
   }
-
-  local_10 = 0;
-  for (local_c = 0; local_c < 256; local_c++) {
-    // Original calculation:
-    // local_10 = (int)(((local_10 + 0x100) - (uint)(byte)(&DAT_000160a2)[local_c]) +
-    //                 (int)*(char *)(param_1 + local_c % param_2)) % 0x100;
-    //
-    // Simplified to ensure positive modulo result for (A - B + C) % N:
-    local_10 = (local_10 - (int)DAT_000160a2[local_c] + (int)param_1[local_c % param_2]);
-    local_10 = (local_10 % 256 + 256) % 256; // Ensure result is in [0, 255]
-
-    uVar1 = DAT_000160a2[local_c];
-    DAT_000160a2[local_c] = DAT_000160a2[local_10];
-    DAT_000160a2[local_10] = uVar1;
+  
+  // Permute S-box based on key
+  for (i = 0; i < 256; i++) {
+    // The original expression was:
+    // local_10 = (int)(((local_10 + 0x100) - (uint)(byte)(&DAT_000160a2)[local_c]) + (int)*(char *)(param_1 + local_c % param_2)) % 0x100;
+    // This logic corresponds to: j = (j - S[i] + K[i % key_len]) % 256.
+    // Using unsigned char for 'j' and 'DAT_000160a2' elements, and allowing C's
+    // integer promotion and wrapping rules for unsigned types, correctly implements
+    // the modulo 256 arithmetic even with potential negative intermediate results
+    // when a signed 'char' from the key is involved.
+    j = (unsigned char)(j - DAT_000160a2[i] + key[i % key_len]);
+    
+    // Swap DAT_000160a2[i] and DAT_000160a2[j]
+    unsigned char temp_val_for_swap = DAT_000160a2[i]; // 'uVar1' in original snippet
+    DAT_000160a2[i] = DAT_000160a2[j];
+    DAT_000160a2[j] = temp_val_for_swap;
   }
-
+  
+  // Reset state variables after KSA
   g_state = 0;
   DAT_000160a1 = 0;
-  for (local_c = 0; local_c < 5000; local_c++) {
+  
+  // Discard first 5000 bytes (common practice in RC4 for security)
+  for (i = 0; i < 5000; i++) {
     parcour_byte();
   }
+}
+
+// Main function for compilation and demonstration
+int main() {
+    const char *my_key = "example_key";
+    unsigned int my_key_len = strlen(my_key);
+
+    printf("Initializing PRNG with key: \"%s\"\n", my_key);
+    parcour_init(my_key, my_key_len);
+
+    printf("Generating 10 bytes:\n");
+    for (int k = 0; k < 10; k++) {
+        unsigned char byte_val = parcour_byte();
+        printf("Byte %d: %02x\n", k + 1, byte_val);
+    }
+
+    return 0;
 }

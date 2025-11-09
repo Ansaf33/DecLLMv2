@@ -1,75 +1,106 @@
-#include <unistd.h>    // For write, ssize_t, STDOUT_FILENO
-#include <string.h>    // For strlen, strcpy, memcpy, memset
-#include <stdbool.h>   // For bool type
-#include <stdio.h>     // For fprintf, stderr, printf (in dummy main)
-#include <sys/types.h> // For size_t (often included by others, but good practice)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <stdbool.h>
 
-// Define custom types based on typical decompiled output
+// Type definitions for clarity, matching original intent
 typedef unsigned int uint;
 typedef unsigned char byte;
-typedef unsigned char undefined;
-typedef unsigned int undefined4;
 
-// --- Dummy Implementations for Linux Compilability ---
+// --- Mock/External Function Declarations ---
 
-// A global file descriptor for outgoing packets, used by default if no fd is passed.
-// In a real application, this would be a socket FD passed around.
-static int g_output_fd = STDOUT_FILENO;
-
-// Dummy receive function
-// Mimics read(fd, buf, count) but also updates bytes_received.
-ssize_t receive(int fd, void *buf, size_t count, int *bytes_received) {
-    fprintf(stderr, "DUMMY: receive(fd=%d, buf=%p, count=%zu)\n", fd, buf, count);
-    // Simulate reading some bytes from stdin for testing
-    // In a real system, this would block or read from a network socket.
-    ssize_t actual_read = read(fd, buf, count);
-    if (actual_read > 0 && bytes_received != NULL) {
-        *bytes_received = (int)actual_read;
+// Mock for receive.
+// In a real system, this would be `read` from a socket or similar,
+// and `bytes_received` would be the actual count.
+ssize_t receive(int fd, void *buf, size_t nbytes, int *bytes_received_out) {
+    if (fd == 0) { // Assuming fd 0 is stdin or a mock input channel
+        // For testing, simulate receiving specific data for ReceivePacket.
+        // ReceivePacket first reads 2 bytes, then more.
+        // To make ReceivePacket proceed past `*param_1 == '\0'` and `param_1[1]` checks:
+        // Set `buf[0] = 0` and `buf[1]` to a value that makes `expected_len` plausible.
+        if (nbytes >= 2) {
+            ((char*)buf)[0] = 0; // Ensures `*param_1 == '\0'` is true
+            ((char*)buf)[1] = 10; // `expected_len` will be 10 + 2 = 12
+        }
+        // Fill the rest with dummy data
+        if (nbytes > 2) {
+            memset((char*)buf + 2, 'A', nbytes - 2);
+        }
+        *bytes_received_out = nbytes; // Simulate full read
+        return nbytes;
     }
-    return actual_read;
+    *bytes_received_out = 0;
+    return -1; // Error or invalid fd
 }
 
-// Dummy SearchVARS function
-int SearchVARS(char *name, char *src_unused, size_t n, undefined4 arg4_unused) {
-    fprintf(stderr, "DUMMY: SearchVARS(name='%.*s', n=%zu)\n", (int)n, name, n);
-    // Simulate finding a variable and returning a pointer/ID (non-zero for success)
-    return (n > 0 && name[0] != '\0') ? 0x1000 : 0; // Dummy non-zero value if name is not empty
+// Dummy buffer to simulate the structure expected by SendResponse
+// This buffer is used by mock SearchVARS and UpdateVARSObject to return data.
+// It must be large enough to accommodate the 0x80 offset + type + data.
+static char mock_response_buffer[512];
+
+// SearchVARS: Returns a pointer to a response data structure (as int) or 0 (NULL)
+// `name_buffer`: the name to search for (null-terminated string)
+// `original_src_ptr`: pointer to the original packet data (for context, potentially redundant)
+// `name_len`: length of the name
+// `magic_val`: a magic constant (0x112e2)
+int SearchVARS(char *name_buffer, char *original_src_ptr, unsigned int name_len, int magic_val) {
+    (void)original_src_ptr; // Unused in this mock
+    (void)name_len;         // Unused in this mock, assuming name_buffer is null-terminated
+    (void)magic_val;        // Unused in this mock
+
+    printf("SearchVARS called for: %s\n", name_buffer);
+
+    // For mock, always "find" something and put it in mock_response_buffer
+    memset(mock_response_buffer, 0, sizeof(mock_response_buffer));
+    mock_response_buffer[0x80] = 0x01; // Simulate type 1 (string)
+    snprintf(mock_response_buffer + 0x81, sizeof(mock_response_buffer) - 0x81, "Value_for_%s", name_buffer);
+    return (int)(long)mock_response_buffer; // Return pointer to this buffer
 }
 
-// Dummy UpdateVARSObject function
-int UpdateVARSObject(undefined *name_buf, undefined type_byte, undefined *value_buf, undefined4 arg4_unused) {
-    fprintf(stderr, "DUMMY: UpdateVARSObject(name='%.*s', type=0x%x, value='%.*s')\n",
-            127, name_buf, type_byte, 127, value_buf);
-    // Simulate successful update
-    return 0x2000; // Dummy non-zero value
+// UpdateVARSObject: Returns a pointer to a response data structure (as int) or 0 (NULL)
+// `name`: name of the variable to update/create
+// `type`: type of the variable's value
+// `value`: new value for the variable
+// `magic_val`: a magic constant (0x113d5)
+int UpdateVARSObject(char *name, char type, char *value, int magic_val) {
+    (void)magic_val; // Unused in this mock
+
+    printf("UpdateVARSObject called for: %s, type: %c, value: %s\n", name, type, value);
+
+    // For mock, always "update" successfully and put it in mock_response_buffer
+    memset(mock_response_buffer, 0, sizeof(mock_response_buffer));
+    mock_response_buffer[0x80] = 0x01; // Simulate type 1 (string)
+    snprintf(mock_response_buffer + 0x81, sizeof(mock_response_buffer) - 0x81, "Updated_%s_to_%s", name, value);
+    return (int)(long)mock_response_buffer; // Return pointer to this buffer
 }
 
-// --- Original Functions, Fixed and Optimized ---
+// --- Original Functions (Refactored) ---
 
-uint ReceivePacket(char *param_1) {
-    int bytes_read;
-    ssize_t rv;
-    uint total_read = 0;
+unsigned int ReceivePacket(char *param_1) {
+    ssize_t bytes_read;
+    int actual_bytes_received = 0;
+    unsigned int total_received = 0;
 
-    // First loop: read 2 bytes
-    for (total_read = 0; total_read != 2; total_read += bytes_read) {
-        rv = receive(0, param_1 + total_read, 2 - total_read, &bytes_read);
-        if (rv < 0 || bytes_read == 0) {
+    for (total_received = 0; total_received < 2; total_received += actual_bytes_received) {
+        bytes_read = receive(0, param_1 + total_received, 2 - total_received, &actual_bytes_received);
+        if (bytes_read < 0 || actual_bytes_received == 0) {
             return 0;
         }
     }
 
     if (*param_1 == '\0') {
-        // Original logic: `(byte)param_1[1] < 4` or `param_1[1] == -1`
-        // Ensure signed char -1 check is performed before unsigned comparison.
-        if ((char)param_1[1] == -1 || (byte)param_1[1] < 4) {
+        // param_1[1] is a signed char, comparing with -1 is specific.
+        // (unsigned char)param_1[1] < 4 is comparing unsigned char.
+        // The original code implies these are error conditions.
+        if (((unsigned char)param_1[1] < 4) || (param_1[1] == (char)-1)) {
             return 0;
         } else {
-            byte expected_len = param_1[1] + 2;
-            total_read = 0; // Reset total_read for the second read operation
-            for (; total_read != expected_len; total_read += bytes_read) {
-                rv = receive(0, param_1 + total_read, expected_len - total_read, &bytes_read);
-                if (rv < 0 || bytes_read == 0) {
+            unsigned char expected_len = (unsigned char)param_1[1] + 2;
+            for (; total_received < expected_len; total_received += actual_bytes_received) {
+                bytes_read = receive(0, param_1 + total_received, expected_len - total_received, &actual_bytes_received);
+                if (bytes_read < 0 || actual_bytes_received == 0) {
                     return 0;
                 }
             }
@@ -77,241 +108,242 @@ uint ReceivePacket(char *param_1) {
     } else {
         return 0;
     }
-    return total_read;
+    return total_received;
 }
 
-bool SendError(int fd, undefined param_1, undefined param_2) {
-    unsigned char packet[5] = {0, 3, 4, param_1, param_2};
-    ssize_t bytes_written = write(fd, packet, sizeof(packet));
-    return bytes_written == sizeof(packet);
+_Bool SendError(char session_id, char error_code) {
+    char packet_buf[5];
+    packet_buf[0] = 0;
+    packet_buf[1] = 3; // Seems to be a fixed length for error packets
+    packet_buf[2] = 4; // Command type for error
+    packet_buf[3] = session_id;
+    packet_buf[4] = error_code;
+
+    ssize_t bytes_written = write(0, packet_buf, sizeof(packet_buf)); // Assuming FD 0 for output
+    printf("SendError: Session %d, Error %d. Bytes written: %zd\n", session_id, error_code, bytes_written);
+    return bytes_written == sizeof(packet_buf);
 }
 
-uint SendResponse(int fd, undefined param_1, int param_2) {
-    // Packet structure:
-    // Header: byte 0 (0), byte 1 (3), byte 2 (param_1)
-    // Followed by payload data.
-    // The total length for comparison (`expected_write_len`) is derived from original `local_10b + 2`.
+unsigned int SendResponse(char session_id, const char *response_data_ptr) {
+    char full_packet[4 + 256]; // Max size: 1 (cmd) + 1 (len) + 1 (type) + 1 (session_id) + 256 (data)
+    size_t content_len = 0;
 
-    struct __attribute__((packed)) {
-        undefined header0;
-        undefined header1;
-        undefined param1_val;
-        char payload[256];
-    } packet_buffer;
+    full_packet[0] = 0; // Fixed first byte
+    full_packet[2] = 3; // Command/type byte for response
+    full_packet[3] = session_id; // Session ID
 
-    packet_buffer.header0 = 0;
-    packet_buffer.header1 = 3;
-    packet_buffer.param1_val = param_1;
+    // `response_data_ptr` is assumed to point to a buffer that contains the type indicator at offset 0x80
+    // and the actual content at offset 0x81, as implied by the original disassembler code.
+    char type_indicator = response_data_ptr[0x80];
+    const char *actual_response_content = response_data_ptr + 0x81;
 
-    size_t actual_payload_len;   // Actual length of data copied into packet_buffer.payload
-    size_t expected_write_len; // The total length expected to be written, used for comparison
-
-    if (*(char *)(param_2 + 0x80) == '\x01') { // Type 1: String
-        size_t str_len = strlen((char *)(param_2 + 0x81));
-        if (0xfc < str_len) { // Check for buffer overflow (252 bytes max for string + null)
-            return SendError(fd, param_1, 1);
+    if (type_indicator == '\x01') { // Type 1: string
+        content_len = strlen(actual_response_content);
+        if (content_len > 0xfc) { // Max string length (252 bytes)
+            return SendError(session_id, 1);
         }
-        strcpy(packet_buffer.payload, (char *)(param_2 + 0x81));
-        actual_payload_len = str_len + 1; // Include null terminator as per original length logic
-        expected_write_len = str_len + 4;   // 3 (header) + (str_len + 1) (payload)
-    } else if (*(char *)(param_2 + 0x80) == '\x02') { // Type 2: Raw 4 bytes
-        memcpy(packet_buffer.payload, (void *)(param_2 + 0x81), 4);
-        actual_payload_len = 4;
-        // Original logic: `local_10b` was 6. Return check `sVar3 == local_10b + 2` means `sVar3 == 8`.
-        // This implies an expected total write of 8 bytes (3 header + 5 payload).
-        // However, `memcpy` copies only 4 payload bytes.
-        // This discrepancy is preserved: write 7 bytes, but compare against 8.
-        expected_write_len = 8;
+        memcpy(full_packet + 4, actual_response_content, content_len);
+    } else if (type_indicator == '\x02') { // Type 2: fixed 4 bytes
+        content_len = 4;
+        memcpy(full_packet + 4, actual_response_content, content_len);
     } else {
-        return SendError(fd, param_1, 4);
+        return SendError(session_id, 4);
     }
 
-    size_t total_bytes_to_write = 3 + actual_payload_len; // 3 header bytes + actual payload length
+    full_packet[1] = (unsigned char)(content_len + 2); // Length byte: actual data length + 2 (for type and session_id bytes)
 
-    ssize_t bytes_written = write(fd, &packet_buffer, total_bytes_to_write);
-    return (uint)(bytes_written == expected_write_len);
+    ssize_t bytes_written = write(0, full_packet, 4 + content_len); // Assuming FD 0 for output
+    printf("SendResponse: Session %d, Content '%s', Total Bytes written: %zd\n",
+           session_id, actual_response_content, bytes_written);
+    return (unsigned int)(bytes_written == (ssize_t)(4 + content_len));
 }
 
-undefined4 HandleReadRequest(int fd, int param_1, uint param_2) {
-    if (param_1 == 0) {
+int HandleReadRequest(const char *packet, unsigned int total_packet_len) {
+    if (packet == NULL) {
         return 0;
     }
 
-    undefined packet_id = *(undefined *)(param_1 + 3);
-    char search_buffer[128];
-    memset(search_buffer, 0, sizeof(search_buffer));
+    char session_id = packet[3];
+    char var_name_buffer[128];
+    memset(var_name_buffer, 0, sizeof(var_name_buffer));
 
-    byte data_len = *(byte *)(param_1 + 4);
+    unsigned char var_name_len = packet[4];
 
-    // (param_2 & 0xff) - 5 is the expected total length of payload bytes in the packet
-    // This assumes 5 bytes for packet header before the data starts:
-    // [byte 0][byte 1][byte 2][byte 3 (packet_id)][byte 4 (data_len)][data...]
-    if ((uint)data_len == (param_2 & 0xff) - 5) {
-        strncpy(search_buffer, (char *)(param_1 + 5), data_len);
-        if (data_len < sizeof(search_buffer)) {
-            search_buffer[data_len] = '\0'; // Ensure null termination
-        } else {
-            search_buffer[sizeof(search_buffer) - 1] = '\0';
-        }
-
-        int search_result = SearchVARS(search_buffer, (char *)(param_1 + 5), data_len, 0x112e2);
-        if (search_result == 0) {
-            SendError(fd, packet_id, 4);
-            return 0;
-        } else {
-            SendResponse(fd, packet_id, search_result);
-            return 1;
-        }
-    } else {
-        SendError(fd, packet_id, 1);
+    // Check if `var_name_len` is consistent with `total_packet_len`
+    // `total_packet_len - 5` is the expected length of the variable name if packet is well-formed.
+    if (var_name_len != (total_packet_len - 5)) {
+        SendError(session_id, 1);
         return 0;
     }
-}
-
-undefined4 HandleWriteRequest(int fd, int param_1, uint param_2) {
-    if (param_1 == 0) {
+    // Additional check for negative value after implicit cast, or extremely large unsigned value.
+    if ((char)var_name_len < 0 || var_name_len >= sizeof(var_name_buffer)) {
+        SendError(session_id, 1); // Length too large or invalid
         return 0;
     }
 
-    undefined packet_id = *(undefined *)(param_1 + 3);
+    memcpy(var_name_buffer, packet + 5, var_name_len);
+    var_name_buffer[var_name_len] = '\0'; // Ensure null termination
 
-    undefined name_buffer[128];
-    memset(name_buffer, 0, sizeof(name_buffer));
-
-    byte name_len = *(byte *)(param_1 + 4);
-
-    // The condition `(uint)name_len < (param_2 & 0xff) - 7` checks if `name_len + 7 < param_2`.
-    // This implies that the total packet length `param_2` must be at least `name_len + 7`.
-    // The `7` accounts for: [byte 0][byte 1][byte 2][packet_id][name_len][type_byte][value_len]
-    // i.e., 3 fixed header bytes + packet_id + name_len field + type_byte field + value_len field.
-    if ((uint)name_len < (param_2 & 0xff) - 7) {
-        if ((char)name_len < 0) { // Check for negative length (though byte is unsigned, original code had this check)
-            SendError(fd, packet_id, 1);
-            return 0;
-        } else {
-            memcpy(name_buffer, (void *)(param_1 + 5), name_len);
-            if (name_len < sizeof(name_buffer)) {
-                name_buffer[name_len] = '\0';
-            } else {
-                name_buffer[sizeof(name_buffer) - 1] = '\0';
-            }
-
-            undefined type_byte = *(undefined *)(param_1 + name_len + 5);
-
-            undefined value_buffer[128];
-            memset(value_buffer, 0, sizeof(value_buffer));
-
-            byte value_len = *(byte *)(param_1 + name_len + 6);
-
-            // Calculate offset to value data: 3 (fixed header) + 1 (packet_id) + 1 (name_len field)
-            // + name_len (actual name data) + 1 (type_byte field) + 1 (value_len field) = 7 + name_len.
-            // `remaining_packet_len_for_value = param_2 - (7 + name_len)`.
-            // Original check: `remaining_packet_len_for_value < value_len` (this is an error condition)
-            if ((param_2 & 0xff) - (7 + name_len) < value_len) {
-                SendError(fd, packet_id, 1);
-                return 0;
-            } else if ((char)value_len < 0) { // Check for negative length
-                SendError(fd, packet_id, 1);
-                return 0;
-            } else {
-                memcpy(value_buffer, (void *)(param_1 + name_len + 7), value_len);
-                if (value_len < sizeof(value_buffer)) {
-                    value_buffer[value_len] = '\0';
-                } else {
-                    value_buffer[sizeof(value_buffer) - 1] = '\0';
-                }
-
-                int update_result = UpdateVARSObject(name_buffer, type_byte, value_buffer, 0x113d5);
-                if (update_result == 0) {
-                    SendError(fd, packet_id, 2);
-                } else {
-                    SendResponse(fd, packet_id, update_result);
-                }
-                return 1;
-            }
-        }
-    } else {
-        SendError(fd, packet_id, 1);
-        return 0;
-    }
-}
-
-undefined4 HandlePacket(int fd, int param_1) {
-    if (param_1 == 0) {
-        return 0;
-    }
-
-    byte packet_len_indicator = *(byte *)(param_1 + 1);
-    uint total_packet_len = packet_len_indicator + 2; // Original `bVar1` was `*(char*)(param_1+1) + 2`
-
-    if (total_packet_len < 4) { // Minimum packet size check
+    int var_result_ptr_as_int = SearchVARS(var_name_buffer, (char *)(packet + 5), var_name_len, 0x112e2);
+    if (var_result_ptr_as_int == 0) {
+        SendError(session_id, 4);
         return 0;
     } else {
-        if (*(char *)(param_1 + 2) == '\x01') { // Read Request
-            HandleReadRequest(fd, param_1, total_packet_len);
-        } else if (*(char *)(param_1 + 2) == '\x02') { // Write Request
-            HandleWriteRequest(fd, param_1, total_packet_len);
-        } else { // Unknown Request Type
-            SendError(fd, *(undefined *)(param_1 + 3), 3);
-        }
+        SendResponse(session_id, (const char *)(long)var_result_ptr_as_int);
         return 1;
     }
 }
 
-// Dummy main function to demonstrate compilability and basic usage
+int HandleWriteRequest(const char *packet, unsigned int total_packet_len) {
+    if (packet == NULL) {
+        return 0;
+    }
+
+    char session_id = packet[3];
+
+    char var_name_buffer[128];
+    char var_value_buffer[128];
+    memset(var_name_buffer, 0, sizeof(var_name_buffer));
+    memset(var_value_buffer, 0, sizeof(var_value_buffer));
+
+    unsigned char var_name_len = packet[4];
+
+    // Calculate offsets and remaining lengths
+    unsigned int name_start_offset = 5; // offset of var_name
+    unsigned int type_start_offset = name_start_offset + var_name_len; // offset of var_type
+    unsigned int value_len_start_offset = type_start_offset + 1; // offset of var_value_len
+    unsigned int value_start_offset = value_len_start_offset + 1; // offset of var_value
+
+    // Check if var_name_len is valid and fits within the packet
+    // Minimum expected packet length up to value_len_start_offset should be `value_len_start_offset`
+    if (var_name_len == 0 || (value_len_start_offset >= total_packet_len)) { // `var_name_len` must be at least 1, otherwise `type_start_offset` will be 5, which is `packet[5]`.
+        SendError(session_id, 1);
+        return 0;
+    }
+    if ((char)var_name_len < 0 || var_name_len >= sizeof(var_name_buffer)) { // Check for overflow or too large
+        SendError(session_id, 1);
+        return 0;
+    }
+
+    memcpy(var_name_buffer, packet + name_start_offset, var_name_len);
+    var_name_buffer[var_name_len] = '\0'; // Null-terminate
+
+    char var_type_byte = packet[type_start_offset];
+    unsigned char var_value_len = packet[value_len_start_offset];
+
+    // Check if var_value_len is valid and fits within the packet
+    unsigned int expected_total_len = value_start_offset + var_value_len;
+    if (expected_total_len > total_packet_len) { // value goes beyond packet boundary
+        SendError(session_id, 1);
+        return 0;
+    }
+    if ((char)var_value_len < 0 || var_value_len >= sizeof(var_value_buffer)) { // Check for overflow or too large
+        SendError(session_id, 1);
+        return 0;
+    }
+
+    memcpy(var_value_buffer, packet + value_start_offset, var_value_len);
+    var_value_buffer[var_value_len] = '\0'; // Null-terminate
+
+    int update_result_ptr_as_int = UpdateVARSObject(var_name_buffer, var_type_byte, var_value_buffer, 0x113d5);
+    if (update_result_ptr_as_int == 0) {
+        SendError(session_id, 2);
+        return 0;
+    } else {
+        SendResponse(session_id, (const char *)(long)update_result_ptr_as_int);
+        return 1;
+    }
+}
+
+int HandlePacket(const char *packet) {
+    if (packet == NULL) {
+        return 0;
+    }
+
+    // Packet structure:
+    // [0] some_fixed_byte (ignored by HandlePacket)
+    // [1] length_of_payload_plus_two_bytes (this is `total_packet_len - 2`)
+    // [2] packet_type (0x01 for read, 0x02 for write)
+    // [3] session_id
+
+    unsigned char total_packet_len = (unsigned char)packet[1] + 2;
+
+    if (total_packet_len < 4) { // Minimum packet length (byte0, len_byte, type_byte, session_id)
+        return 0;
+    }
+
+    char packet_type = packet[2];
+
+    if (packet_type == '\x01') {
+        HandleReadRequest(packet, total_packet_len);
+    } else if (packet_type == '\x02') {
+        HandleWriteRequest(packet, total_packet_len);
+    } else {
+        SendError(packet[3], 3); // Unknown packet type error, packet[3] is session_id
+    }
+    return 1; // Return 1 for handled, regardless of sub-function's success/failure
+}
+
+// Minimal main function
 int main() {
-    char test_packet_buffer[512]; // A buffer to simulate received packets
+    printf("--- Starting mock packet processing ---\n");
 
-    printf("--- Test ReceivePacket (failure) ---\n");
-    memset(test_packet_buffer, 0, sizeof(test_packet_buffer));
-    uint received = ReceivePacket(test_packet_buffer);
-    printf("ReceivePacket returned: %u (expected 0 if no input)\n", received);
+    // Example Read Request:
+    // Packet format: [0] [total_len-2] [type] [session_id] [name_len] [name...]
+    // Name: "test_var", len = 8.
+    // `name_len = 8`. `total_packet_len - 5 = 8`. So `total_packet_len = 13`.
+    // `packet[1]` = `total_packet_len - 2 = 11`.
+    // Packet content: 0x00, 0x0B, 0x01, 0x64, 0x08, 't', 'e', 's', 't', '_', 'v', 'a', 'r'
+    char read_request_packet[] = {
+        0x00, // Ignored by HandlePacket
+        11,   // total_len - 2 = 13 - 2 = 11
+        0x01, // Type: Read Request
+        100,  // Session ID
+        8,    // Name length
+        't', 'e', 's', 't', '_', 'v', 'a', 'r' // Name (8 bytes)
+    };
+    printf("\n--- Sending mock Read Request ---\n");
+    int handle_result_read = HandlePacket(read_request_packet);
+    printf("HandlePacket result for Read Request: %d\n", handle_result_read);
 
-    printf("\n--- Test HandlePacket (Read Request) ---\n");
-    memset(test_packet_buffer, 0, sizeof(test_packet_buffer));
-    // Simulate a packet: [0][len_indicator=7][type=1][id=0xAA][name_len=4][name="test\0"]
-    test_packet_buffer[0] = 0;
-    test_packet_buffer[1] = 7; // Packet length indicator for total_packet_len = 7 + 2 = 9
-    test_packet_buffer[2] = 0x01; // Read request type
-    test_packet_buffer[3] = 0xAA; // Packet ID
-    test_packet_buffer[4] = 4; // Length of name "test"
-    strcpy(test_packet_buffer + 5, "test"); // Name "test" (occupies bytes 5,6,7,8)
-    // Total bytes: 0(byte0) + 1(len_indicator) + 1(type) + 1(id) + 1(name_len) + 4(name) = 9 bytes.
-    // In HandleReadRequest, param_2 (total_packet_len) is 9.
-    // data_len is 4. `(param_2 & 0xff) - 5` is `9 - 5 = 4`. Condition `4 == 4` is true.
+    // Example Write Request:
+    // Packet format: [0] [total_len-2] [type] [session_id] [name_len] [name...] [value_type] [value_len] [value...]
+    // Name: "new_var", len=7. Value type: 'S'. Value: "hello", len=5.
+    // `name_len = 7`. `value_len = 5`.
+    // `value_start_offset = 5 (header) + 7 (name_len) + 1 (type) + 1 (value_len) = 14`.
+    // `expected_total_len = value_start_offset + value_len = 14 + 5 = 19`.
+    // `total_packet_len = 19`.
+    // `packet[1]` = `total_packet_len - 2 = 17`.
+    // Packet content: 0x00, 0x11, 0x02, 0x65, 0x07, 'n', 'e', 'w', '_', 'v', 'a', 'r', 'S', 0x05, 'h', 'e', 'l', 'l', 'o'
+    char write_request_packet[] = {
+        0x00, // Ignored
+        17,   // total_len - 2 = 19 - 2 = 17
+        0x02, // Type: Write Request
+        101,  // Session ID
+        7,    // Name length
+        'n', 'e', 'w', '_', 'v', 'a', 'r', // Name (7 bytes)
+        'S',  // Value type (1 byte)
+        5,    // Value length (1 byte)
+        'h', 'e', 'l', 'l', 'o' // Value (5 bytes)
+    };
+    printf("\n--- Sending mock Write Request ---\n");
+    int handle_result_write = HandlePacket(write_request_packet);
+    printf("HandlePacket result for Write Request: %d\n", handle_result_write);
 
-    undefined4 handle_result = HandlePacket(g_output_fd, (int)test_packet_buffer);
-    printf("HandlePacket (Read Request) returned: %u (expected 1)\n", handle_result);
+    // Test ReceivePacket separately
+    char packet_recv_buf[128];
+    memset(packet_recv_buf, 0, sizeof(packet_recv_buf));
+    printf("\n--- Testing ReceivePacket ---\n");
+    // The mock `receive` is configured to make `ReceivePacket` succeed with `total_received = 12`.
+    unsigned int received_len = ReceivePacket(packet_recv_buf);
+    printf("ReceivePacket result: %u\n", received_len);
+    if (received_len > 0) {
+        printf("Received packet content (first few bytes): 0x%02x 0x%02x 0x%02x 0x%02x ...\n",
+               (unsigned char)packet_recv_buf[0], (unsigned char)packet_recv_buf[1],
+               (unsigned char)packet_recv_buf[2], (unsigned char)packet_recv_buf[3]);
+    }
 
-    printf("\n--- Test HandlePacket (Write Request) ---\n");
-    memset(test_packet_buffer, 0, sizeof(test_packet_buffer));
-    // Packet: [0][len_indicator=12][type=2][id=0xBB][name_len=3][name="key\0"][type_val=0][value_len=4][value="data\0"]
-    test_packet_buffer[0] = 0;
-    test_packet_buffer[1] = 12; // total_packet_len = 12 + 2 = 14
-    test_packet_buffer[2] = 0x02; // Write request type
-    test_packet_buffer[3] = 0xBB; // Packet ID
-    test_packet_buffer[4] = 3; // name_len for "key"
-    strcpy(test_packet_buffer + 5, "key"); // Name "key" (bytes 5,6,7)
-    test_packet_buffer[5+3] = 0x00; // Type byte for value (e.g., string type) (byte 8)
-    test_packet_buffer[5+3+1] = 4; // value_len for "data" (byte 9)
-    strcpy(test_packet_buffer + 5+3+1+1, "data"); // Value "data" (bytes 10,11,12,13)
-    // Total bytes: 0(byte0) + 1(len_indicator) + 1(type) + 1(id) + 1(name_len) + 3(name) + 1(type_val) + 1(value_len) + 4(value) = 14 bytes.
-    // In HandleWriteRequest, param_2 (total_packet_len) is 14.
-    // name_len is 3. Condition `(uint)name_len < (param_2 & 0xff) - 7` -> `3 < (14 - 7)` -> `3 < 7` is true.
-    // value_len is 4. Condition `(param_2 & 0xff) - (7 + name_len) < value_len` -> `14 - (7 + 3) < 4` -> `14 - 10 < 4` -> `4 < 4` is false.
-
-    handle_result = HandlePacket(g_output_fd, (int)test_packet_buffer);
-    printf("HandlePacket (Write Request) returned: %u (expected 1)\n", handle_result);
-
-    printf("\n--- Test HandlePacket (Unknown Request) ---\n");
-    memset(test_packet_buffer, 0, sizeof(test_packet_buffer));
-    test_packet_buffer[0] = 0;
-    test_packet_buffer[1] = 2; // total_packet_len = 2 + 2 = 4
-    test_packet_buffer[2] = 0x03; // Unknown request type
-    test_packet_buffer[3] = 0xCC; // Packet ID
-
-    handle_result = HandlePacket(g_output_fd, (int)test_packet_buffer);
-    printf("HandlePacket (Unknown Request) returned: %u (expected 1)\n", handle_result);
+    printf("\n--- Mock packet processing finished ---\n");
 
     return 0;
 }

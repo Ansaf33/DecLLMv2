@@ -1,148 +1,130 @@
-#include <stdlib.h> // For calloc
+#include <stdlib.h> // For calloc, NULL
 #include <string.h> // For strlen
+#include <stddef.h> // For size_t
+
+// Define the TrieNode structure.
+// The original code implies a node size of 16 bytes (0x10) and pointer arithmetic
+// that suggests 4-byte pointers (e.g., on a 32-bit system).
+// For standard Linux compilation (typically 64-bit), pointers are 8 bytes.
+// This struct definition is portable; `sizeof(TrieNode)` will correctly determine
+// the necessary memory size (e.g., 32 bytes on 64-bit systems due to pointer size and padding).
+typedef struct TrieNode {
+    struct TrieNode *child;   // Points to the first child node (downwards in the trie)
+    struct TrieNode *sibling; // Points to the next sibling node (sideways in the trie)
+    char data;                // The character stored in this node
+    // Padding will be added by the compiler to align `value` member.
+    // On a 32-bit system: 4 (child) + 4 (sibling) + 1 (data) + 3 (padding) + 4 (value) = 16 bytes.
+    // On a 64-bit system: 8 (child) + 8 (sibling) + 1 (data) + 7 (padding) + 8 (value) = 32 bytes.
+    int *value;               // Pointer to an integer value associated with the end of a word
+} TrieNode;
+
+// Helper function to create and initialize a new TrieNode.
+static TrieNode *createTrieNode(char data) {
+    TrieNode *newNode = (TrieNode *)calloc(1, sizeof(TrieNode));
+    if (newNode != NULL) {
+        newNode->data = data;
+    }
+    return newNode;
+}
 
 // Function: initTrie
-// Allocates memory for a new Trie node.
-// The size 0x10 (16 bytes) implies a specific 32-bit memory layout
-// (e.g., 4 pointers of 4 bytes each). For portability on 64-bit systems,
-// where pointers are 8 bytes, we explicitly allocate for 4 void pointers.
-// This ensures the memory layout for child, sibling, char, and value is consistent.
-void *initTrie(void) {
-  return calloc(1, 4 * sizeof(void*));
+// Initializes and returns a new empty trie (root node).
+void * initTrie(void) {
+  return calloc(1, sizeof(TrieNode));
 }
 
 // Function: insertInTrie
-// Inserts a word and its associated value into the Trie.
-// param_1: A pointer to the root of the Trie (void**).
-// param_2: The word (char*) to insert.
-// param_3: A pointer to the integer value (int*) to associate with the word.
-void insertInTrie(void **root_ptr, char *word, int *val_ptr) {
-    size_t word_len = strlen(word);
-    unsigned int char_index = 0; // Current character index in word
-    void *current_node; // Pointer to the current Trie node being processed
+// Inserts a string `str` into the trie, associating it with `value_ptr`.
+// `root_ptr` is a pointer to the root of the trie (or a child pointer in a recursive context).
+void insertInTrie(TrieNode **root_ptr, char *str, int *value_ptr) {
+    size_t str_len = strlen(str);
+    size_t str_idx = 0;
 
-    // Handle initial Trie creation if the root is NULL.
-    // The first node created is considered the root, and its character field
-    // is set to the first character of the word being inserted.
-    if (*root_ptr == NULL) {
-        *root_ptr = calloc(1, 4 * sizeof(void*));
-        // The character field is located at an offset of 2 * sizeof(void*) from the node's base address.
-        *(char *)((char*)*root_ptr + 2 * sizeof(void*)) = word[0];
-    }
+    // `current_node_ptr` is a pointer to a `TrieNode*` variable.
+    // It is used to correctly update `root_ptr`, `node->child`, or `node->sibling`.
+    TrieNode **current_node_ptr = root_ptr;
 
-    current_node = *root_ptr;
+    // Iterate through the characters of the string, including the null terminator.
+    // The null terminator marks the end of the word where the `value_ptr` should be stored.
+    while (str_idx <= str_len) {
+        char char_to_insert = str[str_idx];
+        TrieNode *found_node = NULL;
 
-    // Main loop to traverse or create nodes for the word.
-    // The loop condition `char_index <= word_len` allows processing up to and including
-    // the implicit null terminator position to correctly set the value.
-    while (char_index <= word_len) {
-        // If we have reached the end of the word (either by index or null terminator character),
-        // we break to set the value at the `current_node`.
-        if (char_index == word_len || word[char_index] == '\0') {
-            break;
-        }
-
-        // Search for the character `word[char_index]` within the current sibling list.
-        // `current_node` initially points to the head of the current sibling list.
-        void *iter_node = current_node;
-        // Iterate through siblings until a match is found or the end of the sibling list is reached.
-        while (((void**)iter_node)[1] != NULL && *(char *)((char*)iter_node + 2 * sizeof(void*)) != word[char_index]) {
-            iter_node = ((void**)iter_node)[1]; // Move to the next sibling (index 1)
-        }
-        current_node = iter_node; // `current_node` now points to the found sibling or the last sibling.
-
-        // If the character `word[char_index]` was not found among the siblings (including `current_node`).
-        if (*(char *)((char*)current_node + 2 * sizeof(void*)) != word[char_index]) {
-            // Create a new node and link it as a sibling to `current_node`.
-            void *new_node = calloc(1, 4 * sizeof(void*));
-            ((void**)current_node)[1] = new_node; // Link new_node as a sibling (index 1).
-            *(char *)((char*)new_node + 2 * sizeof(void*)) = word[char_index]; // Set new sibling's character.
-            current_node = new_node; // Move to the newly created sibling.
-            char_index++; // Increment index to process the next character.
-
-            // Create subsequent child nodes for the rest of the word.
-            while (char_index < word_len) {
-                new_node = calloc(1, 4 * sizeof(void*));
-                ((void**)current_node)[0] = new_node; // Link new_node as a child (index 0).
-                *(char *)((char*)new_node + 2 * sizeof(void*)) = word[char_index]; // Set new child's character.
-                current_node = new_node; // Move to the newly created child.
-                char_index++;
+        // Traverse the current level's sibling list to find `char_to_insert`.
+        // `traverse_sibling_ptr` points to the `sibling` pointer that needs to be updated.
+        TrieNode **traverse_sibling_ptr = current_node_ptr;
+        while (*traverse_sibling_ptr != NULL) {
+            if ((*traverse_sibling_ptr)->data == char_to_insert) {
+                found_node = *traverse_sibling_ptr;
+                break;
             }
-            break; // All remaining characters have been inserted; exit loop to set the value.
+            traverse_sibling_ptr = &((*traverse_sibling_ptr)->sibling); // Move to the next sibling's pointer
         }
 
-        // If the character `word[char_index]` was found in the sibling list.
-        // Move to the child path for the next character.
-        if (((void**)current_node)[0] == NULL) { // If `current_node` has no child (index 0).
-            void *new_node = calloc(1, 4 * sizeof(void*));
-            ((void**)current_node)[0] = new_node; // Link new_node as a child.
-            // A specific behavior: the new child's character is set to the *next* character in the word.
-            *(char *)((char*)new_node + 2 * sizeof(void*)) = word[char_index + 1];
+        if (found_node == NULL) {
+            // If the character was not found at this level, create a new node.
+            TrieNode *new_node = createTrieNode(char_to_insert);
+            if (new_node == NULL) {
+                // Handle memory allocation failure.
+                return;
+            }
+            *traverse_sibling_ptr = new_node; // Attach the new node to the sibling list.
+            found_node = new_node;
         }
-        current_node = ((void**)current_node)[0]; // Move to the child node.
-        char_index++; // Increment index for the next character.
+
+        // If the current character is the null terminator, the word ends here.
+        if (char_to_insert == '\0') {
+            found_node->value = value_ptr; // Store the associated value.
+            return;
+        }
+
+        // For the next character, move to the child level of the `found_node`.
+        current_node_ptr = &(found_node->child);
+        str_idx++;
     }
-
-    // Set the value pointer for the final node reached/created.
-    // The value pointer is stored at an offset of 3 * sizeof(void*) from the node's base.
-    ((void**)current_node)[3] = val_ptr;
 }
 
 // Function: findInTrie
-// Searches for a word in the Trie.
-// param_1: A pointer to the root of the Trie (void**).
-// param_2: The word (char*) to find.
-// Returns a pointer to the Trie node if the word is found and has an associated value,
+// Searches for a string `str` in the trie.
+// `root_ptr` is a pointer to the root of the trie.
+// Returns a pointer to the TrieNode representing the end of the word if found and has a value,
 // otherwise returns NULL.
-void *findInTrie(void **root_ptr, char *word) {
-  unsigned int char_index = 0; // Current character index in word
-  void *found_node = NULL;     // Stores the node matching the current character
-  void *current_search_head;   // Head of the current sibling list to search
+TrieNode * findInTrie(TrieNode **root_ptr, char *str) {
+    size_t str_idx = 0;
+    // Start the search from the node pointed to by `root_ptr`.
+    TrieNode *current_level_node = *root_ptr;
 
-  // If the Trie is empty, the word cannot be found.
-  if (*root_ptr == NULL) {
-    return NULL;
-  }
+    // Iterate through the characters of the string, including the null terminator.
+    while (1) {
+        char char_to_match = str[str_idx];
+        TrieNode *found_node = NULL;
 
-  current_search_head = *root_ptr;
+        // Search for `char_to_match` among the siblings at the current level.
+        TrieNode *traverse_node = current_level_node;
+        while (traverse_node != NULL) {
+            if (traverse_node->data == char_to_match) {
+                found_node = traverse_node;
+                break;
+            }
+            traverse_node = traverse_node->sibling;
+        }
 
-  // Loop to traverse the Trie based on the characters in the word.
-  while (1) {
-    found_node = NULL; // Reset for each level of search.
-    void *iter = current_search_head;
+        if (found_node == NULL) {
+            // Character not found at this level, so the string is not in the trie.
+            return NULL;
+        }
 
-    // Search for the character `word[char_index]` in the current sibling list.
-    while (iter != NULL) {
-      // Check if the character at the current node (offset 2 * sizeof(void*)) matches.
-      if (*(char *)((char*)iter + 2 * sizeof(void*)) == word[char_index]) {
-        found_node = iter;
-        break; // Character found, break from sibling search.
-      }
-      iter = ((void**)iter)[1]; // Move to the next sibling (index 1).
+        // If the current character is the null terminator, we've reached the end of the search string.
+        if (char_to_match == '\0') {
+            // Check if this node actually marks the end of a complete word (has an associated value).
+            if (found_node->value != NULL) {
+                return found_node; // Return the node if it's a complete word.
+            }
+            return NULL; // String found as a prefix, but not as a complete word with a value.
+        }
+
+        // Not the end of the string, so move to the child level for the next character.
+        current_level_node = found_node->child;
+        str_idx++;
     }
-
-    // If no matching character was found in the current sibling list.
-    if (found_node == NULL) {
-      return NULL; // Word cannot be found.
-    }
-
-    // If the current character in the word is the null terminator, it means we've reached the end of the word.
-    if (word[char_index] == '\0') {
-      // Check if the `found_node` has an associated value (index 3).
-      if (((void**)found_node)[3] != NULL) {
-        return found_node; // Word found and has a value.
-      }
-      return NULL; // Word found but no value associated.
-    }
-
-    // If the character was found and it's not the end of the word, move to its children.
-    current_search_head = ((void**)found_node)[0]; // Move to the child of the found node (index 0).
-
-    // If there are no children, the word path cannot continue.
-    if (current_search_head == NULL) {
-      return NULL;
-    }
-
-    char_index++; // Move to the next character in the word.
-  }
 }

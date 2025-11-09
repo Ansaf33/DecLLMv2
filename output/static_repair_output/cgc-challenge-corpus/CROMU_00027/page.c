@@ -1,47 +1,42 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
+#include <stdio.h>   // For printf, fprintf, putc, NULL, FILE
+#include <stdlib.h>  // For calloc, free, exit, EXIT_FAILURE, atoi
+#include <string.h>  // For strchr, strlen, strncmp, memcpy, memset
 
-// Global variables (inferred from usage)
-char line[0x51]; // Buffer for output lines, 81 bytes (index 0-80)
-int line_length = 0; // Current length of content in 'line'
-bool in_a_box = false; // Flag for box mode
+// Global variables
+char line[81]; // Buffer for output line. Max 78 chars for content + 2 stars + null terminator = 81, or 80 for normal.
+int line_length = 0; // Current actual content length in 'line' buffer.
+int in_a_box = 0;    // Boolean flag: 0 for false, non-zero for true.
 
-// Placeholder for VerifyPointerOrTerminate
+// Forward declarations
+typedef struct PageVar PageVar;
+
+// Helper function to verify memory allocation
 void VerifyPointerOrTerminate(void *ptr, const char *msg) {
     if (ptr == NULL) {
-        fprintf(stderr, "ERROR: %s failed. Terminating.\n", msg);
+        fprintf(stderr, "Fatal Error: %s failed to allocate memory.\n", msg);
         exit(EXIT_FAILURE);
     }
 }
 
-// Inferred structure for PageVar (32-bit compilation assumption based on 0x48 bytes)
-// 0x40 (64 bytes) for name + 4 bytes for value* + 4 bytes for next* = 72 bytes (0x48)
-typedef struct PageVar {
-    char name[64];           // Stores the name of the variable (null-terminated)
-    char *value;             // Pointer to the dynamically allocated value string (null-terminated)
-    struct PageVar *next;    // Pointer to the next PageVar in the list
-} PageVar;
+// Structure definition for PageVar
+struct PageVar {
+    char name[64]; // Variable name. Max length 64 bytes.
+    char *value;   // Pointer to dynamically allocated value string.
+    PageVar *next; // Pointer to the next PageVar in the list.
+}; // Total size 64 + sizeof(char*) + sizeof(PageVar*). Assumed 72 bytes (0x48) from original decompiler output.
 
 // Function: GetPageVar
-// Searches for a PageVar by name within a specified range.
-// list_head: The head of the PageVar linked list (can be a dummy head).
-// name_start: Pointer to the beginning of the name in the input buffer.
-// name_end: Pointer to the character immediately after the end of the name in the input buffer.
-PageVar *GetPageVar(PageVar *list_head, const char *name_start, const char *name_end) {
-    size_t name_len = name_end - name_start;
-    PageVar *current = list_head;
+// list_dummy_head: A dummy PageVar node whose 'next' points to the first actual variable.
+// var_name_start: Pointer to the beginning of the variable name in the input string.
+// var_name_end: Pointer to the end of the variable name in the input string.
+PageVar *GetPageVar(PageVar *list_dummy_head, const char *var_name_start, const char *var_name_end) {
+    size_t name_len = var_name_end - var_name_start;
 
-    // Skip the dummy head if it exists and is empty
-    if (current != NULL && current->name[0] == '\0' && current->value == NULL && current->next != NULL) {
-        current = current->next;
-    }
-
+    PageVar *current = list_dummy_head->next; // Start searching from the first actual variable
     while (current != NULL) {
-        // Compare the name stored in the PageVar with the target name segment
-        if (name_len == strlen(current->name) && strncmp(current->name, name_start, name_len) == 0) {
-            return current;
+        // Compare with the variable name stored in the struct
+        if (strncmp(current->name, var_name_start, name_len) == 0 && current->name[name_len] == '\0') {
+            return current; // Return pointer to the found PageVar struct
         }
         current = current->next;
     }
@@ -49,183 +44,169 @@ PageVar *GetPageVar(PageVar *list_head, const char *name_start, const char *name
 }
 
 // Function: DestroyVarList
-// Frees all memory associated with a PageVar linked list.
-// list_head: The head of the PageVar linked list (can be a dummy head).
-void DestroyVarList(PageVar *list_head) {
-    if (list_head == NULL) {
-        return;
-    }
+// list_dummy_head: The dummy PageVar node that initiated the list.
+void DestroyVarList(PageVar *list_dummy_head) {
+    if (list_dummy_head == NULL) return;
 
-    // Recursively destroy the rest of the list
-    if (list_head->next != NULL) {
-        DestroyVarList(list_head->next);
-        list_head->next = NULL;
-    }
-
-    // Free the value string if it exists
-    if (list_head->value != NULL) {
-        free(list_head->value);
-        list_head->value = NULL;
-    }
-
-    // Free the PageVar structure itself
-    free(list_head);
-}
-
-// Function: FlushOutput
-// Prints the current line buffer and resets it.
-void FlushOutput(void) {
-    line[line_length] = '\0'; // Ensure line is null-terminated before printing
-    printf("%s\n", line);
-    memset(line, 0, sizeof(line));
-    if (!in_a_box) {
-        line_length = 0;
-    } else {
-        memset(line, ' ', 0x50); // Fill with spaces up to index 79
-        line[0] = '*';           // Set first char to '*'
-        line[0x4f] = '*';        // Set char at index 79 to '*' (0x50 - 1)
-        line[0x50] = '\0';       // Null terminate the string
-        line_length = 2;         // Indicates 2 characters (boundaries) are already set
-    }
-}
-
-// Function: OutputChar
-// Outputs a single character to the line buffer, flushing if necessary.
-void OutputChar(char c) {
-    if (line_length < (sizeof(line) - 1)) { // Check if there's space for char + null terminator
-        line[line_length] = c;
-        line_length++;
-        line[line_length] = '\0'; // Always keep null-terminated
-
-        // Conditions to NOT flush:
-        // If line_length is not 0x50 AND (not in_a_box OR line_length is not 0x4e) then RETURN
-        if (line_length != 0x50 && (!in_a_box || line_length != 0x4e)) {
-            return;
+    PageVar *current = list_dummy_head->next;
+    PageVar *next_node;
+    while (current != NULL) {
+        next_node = current->next;
+        if (current->value != NULL) {
+            free(current->value);
         }
+        free(current);
+        current = next_node;
     }
-    // If buffer full, or conditions met for flushing
-    FlushOutput();
-}
-
-// Function: OutputStr
-// Outputs a string to the line buffer, flushing if necessary.
-void OutputStr(const char *str) {
-    size_t str_len = strlen(str);
-
-    if (str_len >= sizeof(line)) { // If the string itself is too long for the buffer
-        if (line_length > 0) { // Flush existing content first
-            FlushOutput();
-        }
-        printf("%s\n", str); // Print directly
-        return;
-    }
-
-    if (line_length + str_len >= sizeof(line)) { // If string won't fit entirely
-        FlushOutput();
-    }
-
-    // Now it should fit
-    memcpy(&line[line_length], str, str_len);
-    line_length += str_len;
-    line[line_length] = '\0'; // Null terminate
+    free(list_dummy_head); // Free the dummy head itself
 }
 
 // Function: AddPageVar
-// Adds or updates a PageVar in the list.
-// list_head: The head of the PageVar linked list (can be a dummy head).
-// param_2: The input string containing "[TAG:NAME:VALUE]" format.
-// Returns 0 on success, -1 on error.
-int AddPageVar(PageVar *list_head, char *param_2) {
-    // Expected format: [TAG:NAME:VALUE]
-    // param_2 points to the '['
-    if (param_2[0] != '[') return -1; // Must start with '['
+// list_dummy_head: A dummy PageVar node for the list.
+// var_string_segment: A string segment like "type:name:value]"
+int AddPageVar(PageVar *list_dummy_head, char *var_string_segment) {
+    char *first_colon = strchr(var_string_segment, ':');
+    if (first_colon == NULL) return 0; // Malformed string
 
-    char *tag_colon = strchr(param_2, ':'); // Finds ':' after TAG
-    if (!tag_colon) return -1;
+    char *name_start = first_colon + 1;
+    char *second_colon = strchr(name_start, ':');
+    if (second_colon == NULL) return 0; // Malformed string
 
-    char *name_start = tag_colon + 1; // Points to start of NAME
+    char *value_start = second_colon + 1;
+    char *closing_bracket = strchr(var_string_segment, ']');
+    if (closing_bracket == NULL) return 0; // Malformed string
 
-    char *name_colon = strchr(name_start, ':'); // Finds ':' after NAME
-    if (!name_colon) return -1;
+    size_t name_len = second_colon - name_start;
+    size_t value_len = closing_bracket - value_start;
 
-    char *value_start = name_colon + 1; // Points to start of VALUE
-
-    char *block_end = strchr(param_2, ']'); // Finds ']'
-    if (!block_end) return -1;
-
-    size_t name_len = name_colon - name_start;
-    size_t value_len = block_end - value_start;
-
-    if (name_len == 0 || name_len >= sizeof(((PageVar*)0)->name)) { // Name too long or empty
-        return -1;
+    if (name_len >= sizeof(list_dummy_head->name)) { // Max name length 64 bytes
+        return 0; // Name too long
     }
 
-    PageVar *page_var = GetPageVar(list_head, name_start, name_start + name_len);
+    PageVar *current_var = GetPageVar(list_dummy_head, name_start, second_colon);
 
-    if (page_var == NULL) {
-        // Find the last node (or the dummy head if list is empty)
-        PageVar *current = list_head;
-        while (current->next != NULL) {
-            current = current->next;
+    if (current_var == NULL) {
+        // Variable not found, create a new one and add to list
+        PageVar *new_var = calloc(1, sizeof(PageVar));
+        VerifyPointerOrTerminate(new_var, "New PageVar");
+
+        // Find the end of the list (starting from dummy head) to append
+        PageVar *tail = list_dummy_head;
+        while (tail->next != NULL) {
+            tail = tail->next;
         }
-        page_var = (PageVar *)calloc(1, sizeof(PageVar));
-        VerifyPointerOrTerminate(page_var, "New PageVar");
-        current->next = page_var; // Append new node
+        tail->next = new_var;
+        current_var = new_var; // Use the newly created variable
     } else {
-        // PageVar already exists, free its old value if any
-        if (page_var->value != NULL) {
-            free(page_var->value);
-            page_var->value = NULL;
+        // Variable found, free existing value if any
+        if (current_var->value != NULL) {
+            free(current_var->value);
+            current_var->value = NULL;
         }
     }
 
-    // Copy name into the PageVar structure
-    memcpy(page_var->name, name_start, name_len);
-    page_var->name[name_len] = '\0'; // Null-terminate the name
+    // Copy name
+    strncpy(current_var->name, name_start, name_len);
+    current_var->name[name_len] = '\0'; // Null-terminate the name
 
     // Allocate and copy value
-    page_var->value = (char *)calloc(value_len + 1, 1);
-    VerifyPointerOrTerminate(page_var->value, "PageVar->value");
-    memcpy(page_var->value, value_start, value_len);
-    page_var->value[value_len] = '\0'; // Null-terminate the value
+    current_var->value = calloc(value_len + 1, 1);
+    VerifyPointerOrTerminate(current_var->value, "PageVar->value");
+    strncpy(current_var->value, value_start, value_len);
+    current_var->value[value_len] = '\0'; // Null-terminate the value
 
-    return 0; // Success
+    return 1; // Success
+}
+
+// Function: FlushOutput
+void FlushOutput(void) {
+    if (line_length > 0 || in_a_box != 0) { // Always flush if in a box, even if empty line, to print border
+        if (in_a_box == 0) {
+            line[line_length] = '\0'; // Null-terminate for printf
+            printf("%s\n", line);
+        } else {
+            char buffer[81];
+            memset(buffer, ' ', 80); // Fill with spaces for 80 characters
+            memcpy(buffer + 1, line, line_length); // Copy content from line[0] to buffer[1]
+            buffer[0] = '*';
+            buffer[79] = '*';
+            buffer[80] = '\0';
+            printf("%s\n", buffer);
+        }
+    }
+    memset(line, 0, sizeof(line)); // Clear the buffer
+    line_length = 0; // Reset content length
+}
+
+// Function: OutputChar
+void OutputChar(char c) {
+    int max_content_len = (in_a_box == 0) ? 80 : 78; // 80 for normal, 78 for box content
+
+    if (line_length < max_content_len) {
+        line[line_length] = c;
+        line_length++;
+    }
+
+    if (line_length == max_content_len) {
+        FlushOutput();
+    }
+}
+
+// Function: OutputStr
+void OutputStr(const char *str) {
+    size_t len = strlen(str);
+    int max_content_len = (in_a_box == 0) ? 80 : 78;
+
+    // If the string is too long for the current line buffer, flush and print directly
+    if (len + line_length > max_content_len) {
+        FlushOutput();
+        // If it's still too long for a single line, print directly
+        if (len > max_content_len) {
+            printf("%s\n", str);
+            return;
+        }
+    }
+
+    // Copy to line buffer
+    memcpy(line + line_length, str, len);
+    line_length += len;
+
+    // Flush if buffer is full
+    if (line_length == max_content_len) {
+        FlushOutput();
+    }
 }
 
 // Function: ServePageWithOverride
-// Processes page content from a buffer, interpreting tags and variables.
-// page_content_ptr: Pointer to the current character in the page content buffer.
-// page_content_len: Remaining length of the page content buffer.
-// override_list_head: Head of a PageVar list for overriding variables.
-// Returns 0 on success, -1 on error.
-int ServePageWithOverride(char *page_content_ptr, int page_content_len, PageVar *override_list_head) {
-    PageVar *page_var_list_head = (PageVar *)calloc(1, sizeof(PageVar)); // Dummy head for local page vars
-    VerifyPointerOrTerminate(page_var_list_head, "VarList initialization");
+// page_content: The actual page template string.
+// content_length: Max chars to process (0 to process until null terminator).
+// override_list_dummy_head: Dummy head of a linked list of PageVar structs for overrides.
+void ServePageWithOverride(const char *page_content, int content_length, PageVar *override_list_dummy_head) {
+    PageVar *var_list_dummy_head = calloc(1, sizeof(PageVar)); // Dummy head for general page variables
+    VerifyPointerOrTerminate(var_list_dummy_head, "VarList initialization");
 
-    in_a_box = false;
+    in_a_box = 0;
     memset(line, 0, sizeof(line));
     line_length = 0;
 
-    char *current_char_ptr = page_content_ptr;
-    int current_remaining_len = page_content_len;
-    bool error_occurred = false;
+    const char *current_char_ptr = page_content;
+    int chars_processed = 0;
 
-    while (current_remaining_len > 0 && !error_occurred) {
-        char c = *current_char_ptr;
-        current_char_ptr++;
-        current_remaining_len--;
+    while (*current_char_ptr != '\0' && (content_length == 0 || chars_processed < content_length)) {
+        char current_char = *current_char_ptr;
 
-        if (c == '~') {
-            if (current_remaining_len == 0) {
-                fprintf(stderr, "ERROR: Incomplete control code at end of page.\n");
-                error_occurred = true;
+        if (current_char == '~') {
+            current_char_ptr++;
+            chars_processed++;
+            if (*current_char_ptr == '\0') {
+                fprintf(stderr, "ERROR: Incomplete escape sequence.\n");
                 break;
             }
-            char control_char = *current_char_ptr;
+            char escaped_char = *current_char_ptr;
             current_char_ptr++;
-            current_remaining_len--;
+            chars_processed++;
 
-            switch (control_char) {
+            switch (escaped_char) {
                 case '#': OutputChar('#'); break;
                 case '[': OutputChar('['); break;
                 case ']': OutputChar(']'); break;
@@ -235,222 +216,163 @@ int ServePageWithOverride(char *page_content_ptr, int page_content_len, PageVar 
                     break;
                 case '~': OutputChar('~'); break;
                 default:
-                    fprintf(stderr, "ERROR: Invalid control code ~%c\n", control_char);
-                    error_occurred = true;
+                    fprintf(stderr, "ERROR: Invalid control code ~%c\n", escaped_char);
+                    break;
             }
-        } else if (c == '[') {
-            char *tag_start_in_buffer = current_char_ptr;
-            int tag_content_len = 0;
-            while (current_remaining_len > 0 && *current_char_ptr != ']' && *current_char_ptr != '\0') {
-                current_char_ptr++;
-                current_remaining_len--;
-                tag_content_len++;
-            }
+        } else if (current_char == '[') {
+            const char *command_start = current_char_ptr + 1; // After '['
+            const char *command_end = strchr(command_start, ']');
 
-            if (*current_char_ptr != ']') {
-                fprintf(stderr, "ERROR: Missing closing ']' for tag.\n");
-                error_occurred = true;
+            if (command_end == NULL) {
+                fprintf(stderr, "ERROR: Invalid syntax, missing ']'.\n");
                 break;
             }
-            current_char_ptr++; // Consume ']'
-            current_remaining_len--;
 
-            // Temporarily null-terminate the tag content for string operations
-            char temp_tag_content[tag_content_len + 1];
-            memcpy(temp_tag_content, tag_start_in_buffer, tag_content_len);
-            temp_tag_content[tag_content_len] = '\0';
+            size_t command_name_len = command_end - command_start; // Length of content inside []
 
-            if (strncmp(temp_tag_content, "line:", strlen("line:")) == 0) {
-                char *char_code_str = temp_tag_content + strlen("line:");
-                char *num_str = strchr(char_code_str, ':');
-                if (num_str && num_str > char_code_str) {
-                    char char_to_repeat = *(num_str - 1);
-                    int num_repeats = atoi(num_str + 1);
-                    for (int i = 0; i < num_repeats; i++) {
-                        OutputChar(char_to_repeat);
-                    }
-                } else {
-                    fprintf(stderr, "ERROR: Malformed [line:C:N] tag.\n");
-                    error_occurred = true;
+            if (command_name_len >= 4 && strncmp(command_start, "line", 4) == 0) { // "[line:C:N]"
+                const char *first_colon = strchr(command_start, ':');
+                if (first_colon == NULL || first_colon >= command_end) {
+                    fprintf(stderr, "ERROR: Malformed [line:C:N] command.\n");
+                    break;
                 }
-            } else if (strncmp(temp_tag_content, "var:", strlen("var:")) == 0) {
-                // Construct the full "[var:name:value]" string for AddPageVar
-                char full_var_string[tag_content_len + 3]; // + '[' + ']' + '\0'
-                snprintf(full_var_string, sizeof(full_var_string), "[%s]", temp_tag_content);
-
-                if (AddPageVar(page_var_list_head, full_var_string) == -1) {
-                    fprintf(stderr, "ERROR: Failed to add page variable from [var:%s]\n", temp_tag_content + strlen("var:"));
-                    error_occurred = true;
+                char fill_char = first_colon[1];
+                const char *second_colon = strchr(first_colon + 1, ':');
+                if (second_colon == NULL || second_colon >= command_end) {
+                    fprintf(stderr, "ERROR: Malformed [line:C:N] command.\n");
+                    break;
                 }
-            } else if (strcmp(temp_tag_content, "box") == 0) {
-                in_a_box = true;
-                FlushOutput();
-                for (int i = 0; i < 0x50; i++) putc('*', stdout);
+                int count = atoi(second_colon + 1);
+                for (int i = 0; i < count; i++) {
+                    OutputChar(fill_char);
+                }
+            } else if (command_name_len >= 3 && strncmp(command_start, "var", 3) == 0) { // "[var:type:name:value]"
+                // AddPageVar expects string starting from "type:name:value"
+                if (!AddPageVar(var_list_dummy_head, (char *)command_start + 4)) { // Skip "var:"
+                    fprintf(stderr, "Warning: Failed to add page variable from command: [%.*s]\n", (int)command_name_len, command_start);
+                }
+            } else if (command_name_len == 3 && strncmp(command_start, "box", 3) == 0) { // "[box]"
+                in_a_box = 1;
+                FlushOutput(); // Flush any current line content before drawing box
+                // Print top border for the box
+                for (int i = 0; i < 80; i++) {
+                    putc('*', stdout);
+                }
                 printf("\n");
             } else {
-                fprintf(stderr, "ERROR: Invalid tag [%s]\n", temp_tag_content);
-                error_occurred = true;
+                fprintf(stderr, "ERROR: Unrecognized command: [%.*s]\n", (int)command_name_len, command_start);
             }
-        } else if (c == ']') {
-            if (!in_a_box) {
-                fprintf(stderr, "ERROR: Closing ']' without opening 'box'.\n");
-                error_occurred = true;
-            } else {
-                in_a_box = false;
-                FlushOutput();
-                for (int i = 0; i < 0x50; i++) putc('*', stdout);
-                printf("\n");
-            }
-        } else if (c == '#') {
-            char *var_name_start_in_buffer = current_char_ptr;
-            int var_name_len = 0;
-            while (current_remaining_len > 0 && *current_char_ptr != '#' && *current_char_ptr != '\0') {
-                current_char_ptr++;
-                current_remaining_len--;
-                var_name_len++;
-            }
+            current_char_ptr = command_end + 1; // Move past ']'
+            chars_processed = (int)(current_char_ptr - page_content); // Update total processed chars
 
-            if (*current_char_ptr != '#') {
-                fprintf(stderr, "ERROR: Missing closing '#' for variable name.\n");
-                error_occurred = true;
+        } else if (current_char == ']') {
+            if (in_a_box != 0) {
+                in_a_box = 0;
+                FlushOutput(); // Flush content within the box
+                // Print bottom border for the box
+                for (int i = 0; i < 80; i++) {
+                    putc('*', stdout);
+                }
+                printf("\n");
+            } else {
+                fprintf(stderr, "ERROR: Mismatched ']' without preceding '[box]'.\n");
                 break;
             }
-            current_char_ptr++; // Consume '#'
-            current_remaining_len--;
+            current_char_ptr++;
+            chars_processed++;
+        } else if (current_char == '#') {
+            const char *var_name_start = current_char_ptr + 1; // After '#'
+            const char *var_name_end = strchr(var_name_start, '#');
+
+            if (var_name_end == NULL) {
+                fprintf(stderr, "ERROR: Invalid syntax, missing closing '#'.\n");
+                break;
+            }
 
             PageVar *found_var = NULL;
-
-            // Search in override list first
-            if (override_list_head != NULL) {
-                found_var = GetPageVar(override_list_head, var_name_start_in_buffer, var_name_start_in_buffer + var_name_len);
+            if (override_list_dummy_head != NULL) {
+                found_var = GetPageVar(override_list_dummy_head, var_name_start, var_name_end);
             }
-
-            // If not found in override, search in local page var list
             if (found_var == NULL) {
-                found_var = GetPageVar(page_var_list_head, var_name_start_in_buffer, var_name_start_in_buffer + var_name_len);
+                found_var = GetPageVar(var_list_dummy_head, var_name_start, var_name_end);
             }
 
             if (found_var != NULL && found_var->value != NULL) {
                 OutputStr(found_var->value);
             }
+            current_char_ptr = var_name_end + 1; // Move past closing '#'
+            chars_processed = (int)(current_char_ptr - page_content); // Update total processed chars
         } else {
-            OutputChar(c);
+            OutputChar(current_char);
+            current_char_ptr++;
+            chars_processed++;
         }
-    } // End while loop
+    }
 
     if (line_length != 0) {
         FlushOutput();
     }
-
-    DestroyVarList(page_var_list_head);
-    // The override_list_head is managed by its caller (InteractWithPage or main)
-    // The original code `DestroyVarList(param_3)` in ServePageWithOverride implies it *is* destroyed here.
-    DestroyVarList(override_list_head);
-
-    return error_occurred ? -1 : 0;
-}
-
-// Function: InteractWithPage
-// Processes an input string containing override variable definitions and serves a page.
-// page_content_buffer: The content of the page to serve.
-// page_content_len: The length of the page content buffer.
-// input_string: A string containing override variable definitions, e.g., "[tag:name:value][tag2:name2:value2]".
-void InteractWithPage(char *page_content_buffer, int page_content_len, char *input_string) {
-    PageVar *override_list_head = (PageVar *)calloc(1, sizeof(PageVar)); // Dummy head for the override list
-    VerifyPointerOrTerminate(override_list_head, "Override_list initialization");
-
-    char *current_pos = input_string;
-    bool error_parsing_overrides = false;
-
-    while (*current_pos != '\0' && !error_parsing_overrides) {
-        if (*current_pos == '[') {
-            char *block_start = current_pos;
-            char *block_end = strchr(current_pos, ']');
-            if (block_end == NULL) {
-                fprintf(stderr, "ERROR: Missing closing ']' in override string: %s\n", block_start);
-                error_parsing_overrides = true;
-                break;
-            }
-
-            // Temporarily null-terminate the block for AddPageVar
-            char temp_block_buffer[block_end - block_start + 1];
-            memcpy(temp_block_buffer, block_start, block_end - block_start);
-            temp_block_buffer[block_end - block_start] = '\0';
-
-            if (AddPageVar(override_list_head, temp_block_buffer) == -1) {
-                fprintf(stderr, "ERROR: Failed to add override variable from: %s\n", temp_block_buffer);
-                error_parsing_overrides = true;
-                break;
-            }
-            current_pos = block_end + 1; // Move past ']'
-        } else {
-            current_pos++; // Skip non-'[' characters
-        }
-    }
-
-    if (!error_parsing_overrides) {
-        ServePageWithOverride(page_content_buffer, page_content_len, override_list_head);
-    } else {
-        DestroyVarList(override_list_head); // Clean up if an error occurred before serving
+    
+    // ServePageWithOverride takes ownership of the lists and frees them.
+    DestroyVarList(var_list_dummy_head);
+    if (override_list_dummy_head != NULL) {
+        DestroyVarList(override_list_dummy_head);
     }
 }
 
 // Function: ServePage
-// Serves a page without any override variables.
-// page_content_buffer: The content of the page to serve.
-// page_content_len: The length of the page content buffer.
-void ServePage(char *page_content_buffer, int page_content_len) {
-    ServePageWithOverride(page_content_buffer, page_content_len, NULL);
+// page_content: The actual page template string.
+// content_length: Max chars to process (0 to process until null terminator).
+void ServePage(const char *page_content, int content_length) {
+    ServePageWithOverride(page_content, content_length, NULL); // No overrides
 }
 
-// Minimal main function for demonstration and compilation
+// Function: InteractWithPage
+// page_content: The actual page template string.
+// content_length: Max chars to process (0 to process until null terminator).
+// override_definitions_string: A string containing override definitions like "[type:name:value][type2:name2:value2]"
+void InteractWithPage(const char *page_content, int content_length, char *override_definitions_string) {
+    PageVar *override_list_dummy_head = calloc(1, sizeof(PageVar)); // Dummy head for the list
+    VerifyPointerOrTerminate(override_list_dummy_head, "Override_list initialization");
+
+    char *current_override_pos = override_definitions_string;
+
+    // Loop through override definitions like "[type:name:value]"
+    while (*current_override_pos != '\0' && *current_override_pos == '[') {
+        current_override_pos++; // Skip '['
+        // AddPageVar expects string starting from "type:name:value"
+        if (!AddPageVar(override_list_dummy_head, current_override_pos)) {
+            fprintf(stderr, "Warning: Failed to add page variable from: %s\n", current_override_pos);
+        }
+        current_override_pos = strchr(current_override_pos, ']');
+        if (current_override_pos == NULL) {
+            fprintf(stderr, "Error: Malformed override string, missing ']'.\n");
+            break;
+        }
+        current_override_pos++; // Skip ']'
+    }
+    ServePageWithOverride(page_content, content_length, override_list_dummy_head);
+    // ServePageWithOverride takes ownership of override_list_dummy_head and frees it.
+}
+
+// Main function for demonstration and compilation
 int main() {
-    // Example page content (as a string literal)
-    char *page_content =
-        "This is a sample page.\n"
-        "~n"
-        "[box]This is in a box.[var:myvar:Hello World!][var:another:123][line:x:5]~n"
-        "Value of myvar: #myvar#~n"
-        "Value of another: #another#~n"
-        "~n"
-        "This is outside the box. ~tIndented.~n"
-        "[var:localvar:Local Value]"
-        "Local var: #localvar#~n"
-        "[box]Another box. #localvar# is still available.[var:myvar:Override Box Value]#myvar#[/box]~n"
-        "After box, myvar is #myvar# (should be Hello World again).~n"
-        "~[~]~#~#~n" // Escaped characters
-        "End of page.\n";
-    int page_len = strlen(page_content);
+    printf("--- ServePage Example ---\n");
+    const char *simple_page = "Hello, world!~nThis is a simple page.~tTabbed line.~n"
+                              "[box]This is in a box.[var:type:myvar:123]This is a var: #myvar#.[line:X:5] [/box]~n"
+                              "End of page. Another var: #another#";
+    ServePage(simple_page, 0); // 0 for content_length means process until null terminator
 
-    printf("--- Serving Page (No Overrides) ---\n");
-    ServePage(page_content, page_len);
-    printf("\n");
+    printf("\n--- InteractWithPage Example (Overrides) ---\n");
+    const char *page_with_vars = "My name is #name#. My city is #city#. Default var: #defaultvar#. "
+                                 "This is #anothervar#.";
+    char overrides[] = "[type:name:Alice][type:city:Wonderland][type:anothervar:OverrideValue]";
 
-    printf("--- Interacting With Page (Overrides) ---\n");
-    char *override_string = "[override:myvar:Overridden Value][override:newvar:New Variable]";
-    InteractWithPage(page_content, page_len, override_string);
-    printf("\n");
+    InteractWithPage(page_with_vars, 0, overrides);
 
-    // Test error cases
-    printf("--- Testing Error: Malformed Override String ---\n");
-    char *malformed_override = "[override:badvar:value"; // Missing ']'
-    InteractWithPage(page_content, page_len, malformed_override);
-    printf("\n");
-
-    printf("--- Testing Error: Malformed Page Content (Invalid Control Code) ---\n");
-    char *bad_control_page = "Hello ~z World!\n";
-    ServePage(bad_control_page, strlen(bad_control_page));
-    printf("\n");
-
-    printf("--- Testing Error: Malformed Page Content (Missing ']') ---\n");
-    char *bad_tag_page = "Hello [box World!\n";
-    ServePage(bad_tag_page, strlen(bad_tag_page));
-    printf("\n");
-
-    printf("--- Testing Error: Malformed Page Content (Missing '#') ---\n");
-    char *bad_var_page = "Hello #myvar\n";
-    ServePage(bad_var_page, strlen(bad_var_page));
-    printf("\n");
+    printf("\n--- ServePage with no vars ---\n");
+    const char *no_vars_page = "This page has no variables.";
+    ServePage(no_vars_page, 0);
 
     return 0;
 }

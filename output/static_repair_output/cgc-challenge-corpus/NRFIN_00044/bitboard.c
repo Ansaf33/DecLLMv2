@@ -1,13 +1,14 @@
-#include <stdio.h>    // For printf
-#include <string.h>   // For memset, strcmp
-#include <stdbool.h>  // For bool type
-#include <stdlib.h>   // For abs
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdint.h> // For uint32_t, uint64_t, int32_t
+#include <math.h>   // For abs in pawn_moves
 
-// Define standard C types for clarity and portability
-typedef unsigned int uint;
-typedef unsigned long long ulonglong;
+// Constants for piece types and colors
+#define WHITE 0
+#define BLACK 1
 
-// --- Constants for Piece Types and Colors ---
 #define PAWN   0
 #define ROOK   1
 #define KNIGHT 2
@@ -15,260 +16,285 @@ typedef unsigned long long ulonglong;
 #define QUEEN  4
 #define KING   5
 
-#define WHITE  0
-#define BLACK  1
-
-// --- Bitboard Structure ---
-// Offsets from the original code:
-// 0x60: white_queenside_castle_rights
-// 0x64: black_kingside_castle_rights (from 100 in init)
-// 0x68: white_kingside_castle_rights
-// 0x6c: black_queenside_castle_rights
-// 0x70: en_passant_row
-// 0x74: en_passant_col
-// 0x78: halfmove_clock
+// A structure to hold piece information (color and type)
 typedef struct {
-    ulonglong boards[12]; // 6 piece types * 2 colors (type*2 + color)
-    uint white_kingside_castle_rights;  // 0x68
-    uint white_queenside_castle_rights; // 0x60
-    uint black_kingside_castle_rights;  // 0x64 (originally 100)
-    uint black_queenside_castle_rights; // 0x6c
-    int en_passant_row; // 0x70, -1 if no en passant target
-    int en_passant_col; // 0x74, -1 if no en passant target
-    int halfmove_clock; // 0x78, for 50-move rule
-    int fullmove_number; // Not in snippet, but common.
-} Bitboard;
+    uint32_t color;
+    uint32_t type;
+} PieceInfo;
 
-// --- Move Info Structure ---
-// Based on usage in parse_san, validate_move, make_move
+// A structure to represent the chess board state
 typedef struct {
-    int color; // param_2[0]
-    int piece_type; // param_2[1]
-    int promotion_type; // param_2[2] (0=none, 1=R, 2=N, 3=B, 4=Q)
-    int is_kingside_castle_flag; // param_2[3]
-    int is_queenside_castle_flag; // param_2[4]
-    int is_capture; // param_2[5]
-    int is_promotion; // param_2[6]
-    int src_row; // param_2[9]
-    int src_col; // param_2[10]
-    int dst_row; // param_2[0xb]
-    int dst_col; // param_2[0xc]
-} MoveInfo;
+    uint64_t piece_bitboards[12]; // 6 piece types * 2 colors
+                                  // [0]: White Pawns, [1]: Black Pawns
+                                  // [2]: White Rooks, [3]: Black Rooks
+                                  // ...
+                                  // [10]: White King, [11]: Black King
+    uint32_t white_queenside_castle; // Offset 0x60 (96 bytes)
+    uint32_t black_queenside_castle; // Offset 0x64 (100 bytes)
+    uint32_t white_kingside_castle;  // Offset 0x68 (104 bytes)
+    uint32_t black_kingside_castle;  // Offset 0x6c (108 bytes)
+    int32_t en_passant_row;         // Offset 0x70 (112 bytes)
+    int32_t en_passant_col;         // Offset 0x74 (116 bytes)
+    uint32_t halfmove_clock;        // Offset 0x78 (120 bytes)
+} Board; // Total size: 12*8 + 6*4 = 96 + 24 = 120 bytes (0x78)
 
-// --- Global Constants for print_bitboard ---
-// These are inferred from DAT_00016000 etc.
-// Assuming ANSI escape codes for colors
-const char* const SQUARE_BG_COLORS[4] = {
-    "\x1b[47m", // White square, color 0, index 0 (light square)
-    "\x1b[40m", // Black square, color 0, index 1 (dark square)
-    "\x1b[47m", // White square, color 1, index 2 (light square)
-    "\x1b[40m"  // Black square, color 1, index 3 (dark square)
+// MoveInfo struct to hold parsed move details
+typedef struct {
+    uint32_t color;
+    uint32_t type;
+    uint32_t promo_type;
+    uint32_t kingside_castle;
+    uint32_t queenside_castle;
+    uint32_t is_capture;
+    uint32_t is_en_passant;
+    uint32_t is_check;
+    uint32_t is_checkmate;
+    int32_t src_row;
+    int32_t src_col;
+    int32_t dest_row;
+    int32_t dest_col;
+} MoveInfo; // Total size 13 * sizeof(uint32_t) = 52 bytes (0x34)
+
+// Function prototypes (to allow global array of function pointers)
+uint64_t pawn_moves(Board *board, int color, int row, int col);
+uint64_t rook_moves(Board *board, int color, int row, int col);
+uint64_t knight_moves(Board *board, int color, int row, int col);
+uint64_t bishop_moves(Board *board, int color, int row, int col);
+uint64_t queen_moves(Board *board, int color, int row, int col);
+uint64_t king_moves(Board *board, int color, int row, int col);
+uint32_t is_at_risk(Board *board, int king_color, int king_row, int king_col, int is_king_move);
+uint32_t infer_src(Board *board, MoveInfo *move_info);
+uint32_t can_castle(Board *board, int color, int is_kingside);
+uint32_t set_piece(Board *board, int row, int col, uint32_t color, uint32_t type);
+uint32_t clear_piece(Board *board, int row, int col);
+int get_piece(Board *board, int row, int col, PieceInfo *piece_out);
+
+
+// Global array of function pointers for piece moves
+typedef uint64_t (*PieceMoveFunc)(Board *, int, int, int);
+PieceMoveFunc piece_moves[6]; // Index by piece type (PAWN to KING)
+
+// String literals for printing
+const char *piece_symbols[2][6] = { // [color][type]
+    {"P", "R", "N", "B", "Q", "K"}, // White
+    {"p", "r", "n", "b", "q", "k"}  // Black
 };
-
-const char* const PIECE_FG_COLORS[4] = {
-    "\x1b[30m", // Black piece, color 0 (WHITE)
-    "\x1b[37m", // White piece, color 1 (BLACK)
-    "\x1b[30m", // Black piece, color 2 (WHITE)
-    "\x1b[37m"  // White piece, color 3 (BLACK)
-};
-
-const char* const PIECE_SYMBOLS[6] = {
-    "P", "R", "N", "B", "Q", "K"
-};
-
-const char* const RESET_COLOR = "\x1b[0m";
-
-// --- Function Prototypes ---
-// CONCAT44 is a Ghidra macro, replaced with standard C bitwise operations
-#define CONCAT44(high, low) (((ulonglong)(high)) << 32 | (low))
-
-// piece_moves is an array of function pointers. Declared globally.
-typedef ulonglong (*PieceMoveFunc)(const Bitboard*, int, int, int);
-PieceMoveFunc piece_moves[6]; // One for each piece type (PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING)
-
-// Helper for bit manipulation
-static inline int get_bit(ulonglong board, int row, int col) {
-    if (row < 0 || row >= 8 || col < 0 || col >= 8) return 0;
-    return (int)((board >> (ulonglong)(row * 8 + col)) & 1ULL);
-}
-
-static inline void set_bit(ulonglong *board, int row, int col) {
-    if (row < 0 || row >= 8 || col < 0 || col >= 8) return;
-    *board |= (1ULL << (ulonglong)(row * 8 + col));
-}
-
-static inline void clear_bit(ulonglong *board, int row, int col) {
-    if (row < 0 || row >= 8 || col < 0 || col >= 8) return;
-    *board &= ~(1ULL << (ulonglong)(row * 8 + col));
-}
+const char *bg_white_square = "\033[47m";
+const char *bg_black_square = "\033[40m";
+const char *fg_white_piece = "\033[37m";
+const char *fg_black_piece = "\033[30m";
+const char *reset_color = "\033[0m";
 
 // Function: make_piece
-// Stores color and type into a 2-element int array/struct
-int * make_piece(int *piece_info, int color, int type) {
-  piece_info[0] = color;
-  piece_info[1] = type;
-  return piece_info;
+void make_piece(PieceInfo *piece, uint32_t color, uint32_t type) {
+  piece->color = color;
+  piece->type = type;
+}
+
+// Helper for bitboard manipulation
+// Sets a bit at (row, col) in a 64-bit bitboard
+static inline void set_bit(uint64_t *bitboard, int row, int col) {
+    if (row >= 0 && row < 8 && col >= 0 && col < 8) {
+        int pos = row * 8 + col;
+        *bitboard |= (1ULL << pos);
+    }
+}
+
+// Clears a bit at (row, col) in a 64-bit bitboard
+static inline void clear_bit(uint64_t *bitboard, int row, int col) {
+    if (row >= 0 && row < 8 && col >= 0 && col < 8) {
+        int pos = row * 8 + col;
+        *bitboard &= ~(1ULL << pos);
+    }
+}
+
+// Checks if a bit is set at (row, col) in a 64-bit bitboard
+static inline bool get_bit(uint64_t bitboard, int row, int col) {
+    if (row < 0 || row > 7 || col < 0 || col > 7) {
+        return false;
+    }
+    int pos = row * 8 + col;
+    return (bitboard >> pos) & 1ULL;
+}
+
+// Function: init_bitboard
+void init_bitboard(Board *board) {
+  // Initialize all bitboards to 0 and other state variables
+  memset(board, 0, sizeof(Board)); // Use sizeof(Board) for robustness
+
+  // Initialize castling rights (original offsets: 0x60, 0x64, 0x68, 0x6c)
+  board->white_kingside_castle = 1;  // At 0x68
+  board->white_queenside_castle = 1; // At 0x60
+  board->black_kingside_castle = 1;  // At 0x6c
+  board->black_queenside_castle = 1; // At 0x64
+  board->en_passant_row = -1; // -1 for no en passant target
+  board->en_passant_col = -1; // -1 for no en passant target
+  board->halfmove_clock = 0;
+
+  PieceInfo piece;
+  uint32_t color_idx;
+  int row_offset;
+
+  for (color_idx = 0; color_idx < 2; ++color_idx) {
+    row_offset = (color_idx == WHITE) ? 0 : 7; // Row 0 for WHITE, Row 7 for BLACK
+
+    // Rooks
+    make_piece(&piece, color_idx, ROOK);
+    set_piece(board, row_offset, 0, piece.color, piece.type);
+    set_piece(board, row_offset, 7, piece.color, piece.type);
+
+    // Knights
+    make_piece(&piece, color_idx, KNIGHT);
+    set_piece(board, row_offset, 1, piece.color, piece.type);
+    set_piece(board, row_offset, 6, piece.color, piece.type);
+
+    // Bishops
+    make_piece(&piece, color_idx, BISHOP);
+    set_piece(board, row_offset, 2, piece.color, piece.type);
+    set_piece(board, row_offset, 5, piece.color, piece.type);
+
+    // Queen
+    make_piece(&piece, color_idx, QUEEN);
+    set_piece(board, row_offset, 3, piece.color, piece.type);
+
+    // King
+    make_piece(&piece, color_idx, KING);
+    set_piece(board, row_offset, 4, piece.color, piece.type);
+
+    // Pawns
+    uint32_t pawn_row = (color_idx == WHITE) ? 1 : 6;
+    make_piece(&piece, color_idx, PAWN);
+    for (int col_idx = 0; col_idx < 8; ++col_idx) {
+      set_piece(board, pawn_row, col_idx, piece.color, piece.type);
+    }
+  }
+}
+
+// Function: print_bitboard
+void print_bitboard(Board *board, int player_color) {
+  PieceInfo piece_info;
+  int display_row, display_col;
+  const char *current_bg;
+  const char *current_fg;
+  const char *piece_char;
+
+  for (int r = 0; r < 8; ++r) {
+    display_row = (player_color == WHITE) ? (7 - r) : r; // Invert rows for black player
+    printf("%d ", display_row + 1); // Print rank number (1-8)
+
+    for (int c = 0; c < 8; ++c) {
+      display_col = (player_color == WHITE) ? c : (7 - c); // Invert columns for black player
+
+      // Determine square background color
+      current_bg = ((display_row + display_col) % 2 == 0) ? bg_white_square : bg_black_square;
+      printf("%s", current_bg);
+
+      // Get piece information
+      int result = get_piece(board, display_row, display_col, &piece_info);
+      if (result == 1) { // Piece found
+        current_fg = (piece_info.color == WHITE) ? fg_white_piece : fg_black_piece;
+        piece_char = piece_symbols[piece_info.color][piece_info.type];
+        printf("%s %s %s", current_fg, piece_char, reset_color); // Use reset after piece char
+      } else { // Empty square
+        printf("   %s", reset_color); // Print empty space with reset
+      }
+    }
+    printf("%s\n", reset_color); // Reset color at end of line
+  }
+
+  // Print file labels (a-h)
+  printf("  ");
+  if (player_color == WHITE) {
+    for (char file = 'a'; file <= 'h'; ++file) {
+      printf("%c  ", file);
+    }
+  } else {
+    for (char file = 'h'; file >= 'a'; --file) {
+      printf("%c  ", file);
+    }
+  }
+  printf("\n");
 }
 
 // Function: set_piece
-int set_piece(Bitboard *board, int row, int col, int color, int type) {
-  if (row < 0 || row >= 8 || col < 0 || col >= 8) {
-    return -1; // Out of bounds
+uint32_t set_piece(Board *board, int row, int col, uint32_t color, uint32_t type) {
+  if (row < 0 || col < 0 || row > 7 || col > 7) {
+    return 0xFFFFFFFF; // Out of bounds
   }
-  uint board_idx = (uint)type * 2 + (uint)color;
-  set_bit(&board->boards[board_idx], row, col);
+  uint32_t piece_idx = type * 2 + color;
+  set_bit(&board->piece_bitboards[piece_idx], row, col);
   return 0;
 }
 
 // Function: clear_piece
-int clear_piece(Bitboard *board, int row, int col) {
-  if (row < 0 || row >= 8 || col < 0 || col >= 8) {
-    return -1; // Out of bounds
+uint32_t clear_piece(Board *board, int row, int col) {
+  if (row < 0 || col < 0 || row > 7 || col > 7) {
+    return 0xFFFFFFFF; // Out of bounds
   }
-  for (int i = 0; i < 12; ++i) { // Clear from all bitboards
-    clear_bit(&board->boards[i], row, col);
+  for (int i = 0; i < 12; ++i) {
+    clear_bit(&board->piece_bitboards[i], row, col);
   }
   return 0;
 }
 
 // Function: get_piece
-// Stores color in piece_info[0] and type in piece_info[1]
-// Returns 1 if a piece is found, 0 if not, -1 if out of bounds.
-int get_piece(const Bitboard *board, int row, int col, int *piece_info) {
-  if (row < 0 || row >= 8 || col < 0 || col >= 8) {
+int get_piece(Board *board, int row, int col, PieceInfo *piece_out) {
+  if (row < 0 || col < 0 || row > 7 || col > 7) {
     return -1; // Out of bounds
   }
-  for (int type = 0; type < 6; ++type) {
-    for (int color = 0; color < 2; ++color) {
-      uint board_idx = (uint)type * 2 + (uint)color;
-      if (get_bit(board->boards[board_idx], row, col)) {
-        if (piece_info) {
-          piece_info[0] = color;
-          piece_info[1] = type;
-        }
-        return 1; // Piece found
+  for (int i = 0; i < 12; ++i) {
+    if (get_bit(board->piece_bitboards[i], row, col)) {
+      if (piece_out) {
+        make_piece(piece_out, i & 1, i >> 1); // i&1 is color, i>>1 is type
       }
+      return 1; // Piece found
     }
   }
   return 0; // No piece found
 }
 
-// Function: init_bitboard
-void init_bitboard(Bitboard *board) {
-  memset(board, 0, sizeof(Bitboard));
+// Function: pawn_moves
+uint64_t pawn_moves(Board *board, int color, int row, int col) {
+  uint64_t moves = 0ULL;
+  PieceInfo target_piece;
+  int dir = (color == WHITE) ? 1 : -1; // Direction for pawn movement
+  int target_row;
+  int result;
 
-  // Initialize castling rights, en passant, halfmove clock
-  board->white_kingside_castle_rights = 1;  // 0x68
-  board->white_queenside_castle_rights = 1; // 0x60
-  board->black_kingside_castle_rights = 1;  // 0x64 (originally 100)
-  board->black_queenside_castle_rights = 1; // 0x6c
-  board->en_passant_row = -1; // 0x70
-  board->en_passant_col = -1; // 0x74
-  board->halfmove_clock = 0;  // 0x78
-  board->fullmove_number = 1;
-
-  for (int color = 0; color < 2; ++color) {
-    int row = (color == WHITE) ? 0 : 7;
-    int pawn_row = (color == WHITE) ? 1 : 6;
-
-    // Rooks
-    set_piece(board, row, 0, color, ROOK);
-    set_piece(board, row, 7, color, ROOK);
-    // Knights
-    set_piece(board, row, 1, color, KNIGHT);
-    set_piece(board, row, 6, color, KNIGHT);
-    // Bishops
-    set_piece(board, row, 2, color, BISHOP);
-    set_piece(board, row, 5, color, BISHOP);
-    // Queen
-    set_piece(board, row, 3, color, QUEEN);
-    // King
-    set_piece(board, row, 4, color, KING);
-
-    // Pawns
-    for (int col = 0; col < 8; ++col) {
-      set_piece(board, pawn_row, col, color, PAWN);
-    }
-  }
-  return;
-}
-
-// Function: print_bitboard
-void print_bitboard(const Bitboard *board, int inverted_view) {
-  int piece_info[2]; // piece_info[0]=color, piece_info[1]=type
-
-  for (int row_idx = 0; row_idx < 8; ++row_idx) {
-    int current_row = inverted_view ? (7 - row_idx) : row_idx;
-    printf("%d ", 8 - current_row); // Print row number
-
-    for (int col_idx = 0; col_idx < 8; ++col_idx) {
-      int current_col = inverted_view ? (7 - col_idx) : col_idx;
-
-      // Determine square color for background
-      int square_color_idx = ((current_row % 2 + current_col % 2) % 2); // 0 for light, 1 for dark
-      const char* bg_color = SQUARE_BG_COLORS[square_color_idx * 2]; // Always use index 0 or 2 for BG color
-
-      int piece_found = get_piece(board, current_row, current_col, piece_info);
-      if (piece_found == 1) {
-        int piece_color = piece_info[0]; // WHITE or BLACK
-        int piece_type = piece_info[1];
-        // Index for PIECE_FG_COLORS: (piece_color * 2) + square_color_idx (0 for light, 1 for dark)
-        // 0: White piece on Light square, 1: White piece on Dark square
-        // 2: Black piece on Light square, 3: Black piece on Dark square
-        const char* fg_color = PIECE_FG_COLORS[piece_color * 2 + square_color_idx];
-        printf("%s%s%s %s", bg_color, fg_color, PIECE_SYMBOLS[piece_type], RESET_COLOR);
-      } else {
-        printf("%s  %s", bg_color, RESET_COLOR); // Empty square
+  // Single step forward
+  target_row = row + dir;
+  result = get_piece(board, target_row, col, NULL); // Check if square is empty
+  if (result == 0) { // Empty square
+    set_bit(&moves, target_row, col);
+    // Double step from starting rank
+    if ((color == WHITE && row == 1) || (color == BLACK && row == 6)) {
+      target_row = row + 2 * dir;
+      result = get_piece(board, target_row, col, NULL); // Check if square is empty
+      if (result == 0) { // Empty square
+        set_bit(&moves, target_row, col);
       }
     }
-    printf("\n");
   }
 
-  printf("  "); // Spacer for column labels
-  if (inverted_view == 0) {
-    for (char c = 'a'; c <= 'h'; ++c) {
-      printf("%c ", c);
-    }
-  } else {
-    for (char c = 'h'; c >= 'a'; --c) {
-      printf("%c ", c);
-    }
+  // Captures
+  // Left diagonal capture
+  result = get_piece(board, row + dir, col - 1, &target_piece);
+  if (result == 1 && target_piece.color != color) {
+    set_bit(&moves, row + dir, col - 1);
   }
-  printf("\n");
-  return;
-}
-
-// Function: pawn_moves
-ulonglong pawn_moves(const Bitboard *board, int piece_color, int row, int col) {
-  ulonglong moves = 0ULL;
-  int piece_info[2];
-  int direction = (piece_color == WHITE) ? 1 : -1;
-
-  // Single push
-  if (get_piece(board, row + direction, col, NULL) == 0) {
-    set_bit(&moves, row + direction, col);
-    // Double push from starting rank
-    int start_rank = (piece_color == WHITE) ? 1 : 6;
-    if (row == start_rank && get_piece(board, row + 2 * direction, col, NULL) == 0) {
-      set_bit(&moves, row + 2 * direction, col);
-    }
-  }
-
-  // Captures (diagonal)
-  // Left diagonal
-  if (col > 0 && get_piece(board, row + direction, col - 1, piece_info) == 1 && piece_info[0] != piece_color) {
-    set_bit(&moves, row + direction, col - 1);
-  }
-  // Right diagonal
-  if (col < 7 && get_piece(board, row + direction, col + 1, piece_info) == 1 && piece_info[0] != piece_color) {
-    set_bit(&moves, row + direction, col + 1);
+  // Right diagonal capture
+  result = get_piece(board, row + dir, col + 1, &target_piece);
+  if (result == 1 && target_piece.color != color) {
+    set_bit(&moves, row + dir, col + 1);
   }
 
   // En passant
   if (board->en_passant_row != -1 && board->en_passant_col != -1) {
-    if ((row + direction == board->en_passant_row) &&
-        (col - 1 == board->en_passant_col || col + 1 == board->en_passant_col)) {
-      set_bit(&moves, board->en_passant_row, board->en_passant_col);
+    if (board->en_passant_row == row + dir && board->en_passant_col == col - 1) {
+      set_bit(&moves, row + dir, col - 1);
+    }
+    if (board->en_passant_row == row + dir && board->en_passant_col == col + 1) {
+      set_bit(&moves, row + dir, col + 1);
     }
   }
 
@@ -276,155 +302,144 @@ ulonglong pawn_moves(const Bitboard *board, int piece_color, int row, int col) {
 }
 
 // Function: rook_moves
-ulonglong rook_moves(const Bitboard *board, int piece_color, int row, int col) {
-  ulonglong moves = 0ULL;
-  int piece_info[2];
+uint64_t rook_moves(Board *board, int color, int row, int col) {
+  uint64_t moves = 0ULL;
+  PieceInfo target_piece;
   int directions[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}; // N, S, E, W
 
   for (int i = 0; i < 4; ++i) {
     int dr = directions[i][0];
     int dc = directions[i][1];
-    int curr_row = row + dr;
-    int curr_col = col + dc;
-
-    while (curr_row >= 0 && curr_row < 8 && curr_col >= 0 && curr_col < 8) {
-      int piece_found = get_piece(board, curr_row, curr_col, piece_info);
-      if (piece_found == 0) { // Empty square
-        set_bit(&moves, curr_row, curr_col);
-      } else if (piece_found == 1) { // Piece found
-        if (piece_info[0] != piece_color) { // Opponent's piece (capture)
-          set_bit(&moves, curr_row, curr_col);
+    int r = row + dr;
+    int c = col + dc;
+    while (true) {
+      int result = get_piece(board, r, c, &target_piece);
+      if (result == -1) break; // Out of bounds
+      if (result == 0) { // Empty square
+        set_bit(&moves, r, c);
+      } else { // Piece found
+        if (target_piece.color != color) { // Opponent piece
+          set_bit(&moves, r, c);
         }
-        break; // Blocked by own or opponent's piece
-      } else { // Out of bounds
-        break;
+        break; // Stop sliding in this direction
       }
-      curr_row += dr;
-      curr_col += dc;
+      r += dr;
+      c += dc;
     }
   }
   return moves;
 }
 
 // Function: knight_moves
-ulonglong knight_moves(const Bitboard *board, int piece_color, int row, int col) {
-  ulonglong moves = 0ULL;
-  int piece_info[2];
-  int knight_moves_offsets[8][2] = {
-    {2, 1}, {1, 2}, {-1, 2}, {-2, 1},
-    {-2, -1}, {-1, -2}, {1, -2}, {2, -1}
+uint64_t knight_moves(Board *board, int color, int row, int col) {
+  uint64_t moves = 0ULL;
+  PieceInfo target_piece;
+  int offsets[8][2] = {
+      {2, 1}, {1, 2}, {1, -2}, {-2, 1},
+      {-1, 2}, {-2, -1}, {-1, -2}, {2, -1}
   };
 
   for (int i = 0; i < 8; ++i) {
-    int target_row = row + knight_moves_offsets[i][0];
-    int target_col = col + knight_moves_offsets[i][1];
-
-    int piece_found = get_piece(board, target_row, target_col, piece_info);
-    if (piece_found == 0) { // Empty square
-      set_bit(&moves, target_row, target_col);
-    } else if (piece_found == 1) { // Piece found
-      if (piece_info[0] != piece_color) { // Opponent's piece (capture)
-        set_bit(&moves, target_row, target_col);
-      }
+    int r = row + offsets[i][0];
+    int c = col + offsets[i][1];
+    int result = get_piece(board, r, c, &target_piece);
+    if (result == 0) { // Empty square
+      set_bit(&moves, r, c);
+    } else if (result == 1 && target_piece.color != color) { // Opponent piece
+      set_bit(&moves, r, c);
     }
   }
   return moves;
 }
 
 // Function: bishop_moves
-ulonglong bishop_moves(const Bitboard *board, int piece_color, int row, int col) {
-  ulonglong moves = 0ULL;
-  int piece_info[2];
+uint64_t bishop_moves(Board *board, int color, int row, int col) {
+  uint64_t moves = 0ULL;
+  PieceInfo target_piece;
   int directions[4][2] = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}}; // NE, NW, SE, SW
 
   for (int i = 0; i < 4; ++i) {
     int dr = directions[i][0];
     int dc = directions[i][1];
-    int curr_row = row + dr;
-    int curr_col = col + dc;
-
-    while (curr_row >= 0 && curr_row < 8 && curr_col >= 0 && curr_col < 8) {
-      int piece_found = get_piece(board, curr_row, curr_col, piece_info);
-      if (piece_found == 0) { // Empty square
-        set_bit(&moves, curr_row, curr_col);
-      } else if (piece_found == 1) { // Piece found
-        if (piece_info[0] != piece_color) { // Opponent's piece (capture)
-          set_bit(&moves, curr_row, curr_col);
+    int r = row + dr;
+    int c = col + dc;
+    while (true) {
+      int result = get_piece(board, r, c, &target_piece);
+      if (result == -1) break; // Out of bounds
+      if (result == 0) { // Empty square
+        set_bit(&moves, r, c);
+      } else { // Piece found
+        if (target_piece.color != color) { // Opponent piece
+          set_bit(&moves, r, c);
         }
-        break; // Blocked by own or opponent's piece
-      } else { // Out of bounds
-        break;
+        break; // Stop sliding in this direction
       }
-      curr_row += dr;
-      curr_col += dc;
+      r += dr;
+      c += dc;
     }
   }
   return moves;
 }
 
 // Function: queen_moves
-ulonglong queen_moves(const Bitboard *board, int piece_color, int row, int col) {
-  ulonglong bishop_m = bishop_moves(board, piece_color, row, col);
-  ulonglong rook_m = rook_moves(board, piece_color, row, col);
+uint64_t queen_moves(Board *board, int color, int row, int col) {
+  uint64_t bishop_m = bishop_moves(board, color, row, col);
+  uint64_t rook_m = rook_moves(board, color, row, col);
   return bishop_m | rook_m;
 }
 
 // Function: is_at_risk
-// Checks if a square (king_row, king_col) is attacked by opponent's pieces
-// check_king_moves_only: 1 if only checking squares for king movement, 0 for general risk
-bool is_at_risk(const Bitboard *board, int king_color, int king_row, int king_col, int check_king_moves_only) {
-  int opponent_color = 1 - king_color;
+uint32_t is_at_risk(Board *board, int king_color, int king_row, int king_col, int is_king_move) {
+  int opponent_color = (king_color == WHITE) ? BLACK : WHITE;
 
-  // Iterate through all opponent's pieces
-  // If check_king_moves_only is true, we don't need to consider opponent kings for attack
-  // (as kings cannot attack adjacent squares if it puts themselves in check)
-  int max_piece_type = check_king_moves_only ? KING : KING; // All piece types can attack
-  
-  for (int type = 0; type <= max_piece_type; ++type) {
-    uint board_idx = (uint)type * 2 + (uint)opponent_color;
-    ulonglong opponent_board = board->boards[board_idx];
+  // Iterate through all piece types
+  for (int piece_type = PAWN; piece_type <= KING; ++piece_type) {
+    // If checking for king moves, we only need to check up to QUEEN attacks (excluding king vs king)
+    if (is_king_move && piece_type == KING) {
+        continue;
+    }
 
+    uint64_t opponent_bitboard = board->piece_bitboards[piece_type * 2 + opponent_color];
+
+    // Iterate through all squares to find opponent pieces of current type
     for (int r = 0; r < 8; ++r) {
       for (int c = 0; c < 8; ++c) {
-        if (get_bit(opponent_board, r, c)) { // If opponent has a piece at (r, c)
-          ulonglong opponent_piece_moves = piece_moves[type](board, opponent_color, r, c);
-          
-          // Check if any of these moves target the king's square
-          if (get_bit(opponent_piece_moves, king_row, king_col)) {
-            return true; // King is at risk
+        if (get_bit(opponent_bitboard, r, c)) {
+          // Original decompiler condition: (piece_type != PAWN || (c != king_col))
+          // This prevents checking for pawn attacks directly in front, which are not attacks.
+          if (piece_type != PAWN || (c != king_col)) {
+            uint64_t piece_attacks = piece_moves[piece_type](board, opponent_color, r, c);
+            if (get_bit(piece_attacks, king_row, king_col)) {
+              return 1; // King is at risk
+            }
           }
         }
       }
     }
   }
-  return false; // King is not at risk
+  return 0; // King is not at risk
 }
 
 // Function: king_moves
-ulonglong king_moves(const Bitboard *board, int piece_color, int row, int col) {
-  ulonglong moves = 0ULL;
-  int piece_info[2];
-  int king_moves_offsets[8][2] = {
-    {1, 1}, {0, 1}, {-1, 1}, {-1, 0},
-    {-1, -1}, {0, -1}, {1, -1}, {1, 0}
+uint64_t king_moves(Board *board, int color, int row, int col) {
+  uint64_t moves = 0ULL;
+  PieceInfo target_piece;
+  int offsets[8][2] = {
+      {1, 1}, {0, 1}, {-1, 1}, {-1, 0},
+      {-1, -1}, {0, -1}, {1, -1}, {1, 0}
   };
 
   for (int i = 0; i < 8; ++i) {
-    int target_row = row + king_moves_offsets[i][0];
-    int target_col = col + king_moves_offsets[i][1];
-
-    if (target_row >= 0 && target_row < 8 && target_col >= 0 && target_col < 8) {
-      int piece_found = get_piece(board, target_row, target_col, piece_info);
-      if (piece_found == 0) { // Empty square
-        // Check if moving to this square puts the king in check
-        if (!is_at_risk(board, piece_color, target_row, target_col, 1)) {
-          set_bit(&moves, target_row, target_col);
-        }
-      } else if (piece_found == 1) { // Piece found
-        if (piece_info[0] != piece_color) { // Opponent's piece (capture)
-          if (!is_at_risk(board, piece_color, target_row, target_col, 1)) {
-            set_bit(&moves, target_row, target_col);
-          }
+    int r = row + offsets[i][0];
+    int c = col + offsets[i][1];
+    // Check if target square is on board
+    if (r >= 0 && r <= 7 && c >= 0 && c <= 7) {
+      int result = get_piece(board, r, c, &target_piece);
+      // Check if square is empty or has opponent piece
+      if (result == 0 || (result == 1 && target_piece.color != color)) {
+        // Crucially, a king cannot move into a square that is attacked by an opponent piece.
+        if (is_at_risk(board, color, r, c, 1) == 0) { // Check if new square is safe for king
+          set_bit(&moves, r, c);
         }
       }
     }
@@ -433,530 +448,453 @@ ulonglong king_moves(const Bitboard *board, int piece_color, int row, int col) {
 }
 
 // Function: is_checkmate
-// king_color: color of the king to check
-// king_row, king_col: position of the king
-bool is_checkmate(const Bitboard *board, int king_color, int king_row, int king_col) {
-  // Check if king is currently at risk
-  if (is_at_risk(board, king_color, king_row, king_col, 0)) {
-    // If king has no valid moves, it's checkmate
+uint32_t is_checkmate(Board *board, int king_color, int king_row, int king_col) {
+  // Simplified checkmate: King is at risk AND King has no safe moves
+  if (is_at_risk(board, king_color, king_row, king_col, 0) == 1) {
     if (king_moves(board, king_color, king_row, king_col) == 0ULL) {
-        // Also need to check if any other piece can block the check or capture the attacker.
-        // This is a complex check, but the original code only checks king moves.
-        // For now, we'll stick to the original logic which only checks if the king can move.
-        // A full checkmate detection involves iterating through all possible moves of all pieces
-        // to see if any move can resolve the check.
-        
-        // This simplified check for checkmate (only checking king moves) is generally insufficient.
-        // However, replicating the given snippet's logic:
-        return true;
+      return 1; // Checkmate
     }
   }
-  return false;
+  return 0; // Not checkmate (or not in check)
 }
 
 // Function: is_stalemate
-bool is_stalemate(const Bitboard *board, int current_turn_color) {
-  // 50-move rule check
-  if (board->halfmove_clock >= 100) { // 100 half-moves = 50 full moves
+bool is_stalemate(Board *board, int color) {
+  uint64_t all_possible_moves = 0ULL;
+
+  if (board->halfmove_clock >= 100) { // 50-move rule (50 full moves)
     return true;
   }
 
-  // Find the king's position for current_turn_color
-  int king_row = -1, king_col = -1;
-  ulonglong king_board = board->boards[KING * 2 + current_turn_color];
-  for (int r = 0; r < 8; ++r) {
-    for (int c = 0; c < 8; ++c) {
-      if (get_bit(king_board, r, c)) {
-        king_row = r;
-        king_col = c;
-        break;
-      }
-    }
-    if (king_row != -1) break;
-  }
-
-  // If king is not found (shouldn't happen in a valid game state), return false
-  if (king_row == -1) return false;
-
-  // Check if current player is in check
-  bool in_check = is_at_risk(board, current_turn_color, king_row, king_col, 0);
-
-  // If in check, it's not stalemate (could be checkmate, handled by is_checkmate)
-  if (in_check) return false;
-
-  // If not in check, check if there are ANY legal moves for current player
-  for (int type = 0; type < 6; ++type) {
-    uint board_idx = (uint)type * 2 + (uint)current_turn_color;
-    ulonglong player_piece_board = board->boards[board_idx];
+  for (int piece_type = PAWN; piece_type <= KING; ++piece_type) {
+    uint64_t player_bitboard = board->piece_bitboards[piece_type * 2 + color];
 
     for (int r = 0; r < 8; ++r) {
       for (int c = 0; c < 8; ++c) {
-        if (get_bit(player_piece_board, r, c)) { // If player has a piece at (r, c)
-          ulonglong possible_moves = piece_moves[type](board, current_turn_color, r, c);
-
-          // For each possible move, check if it leaves the king in check
-          for (int tr = 0; tr < 8; ++tr) {
-            for (int tc = 0; tc < 8; ++tc) {
-              if (get_bit(possible_moves, tr, tc)) {
-                // Simulate the move
-                Bitboard temp_board = *board; // Copy current board state
-                int piece_info[2];
-                get_piece(&temp_board, r, c, piece_info); // Get piece to move
-                
-                clear_piece(&temp_board, r, c); // Clear source
-                int captured_piece_row = -1, captured_piece_col = -1;
-                // Check if it's an en passant capture
-                if (type == PAWN && c != tc && get_piece(board, tr, tc, NULL) == 0) {
-                    captured_piece_row = r;
-                    captured_piece_col = tc;
-                    clear_piece(&temp_board, captured_piece_row, captured_piece_col);
-                } else {
-                    clear_piece(&temp_board, tr, tc); // Clear destination (for captures)
-                }
-                
-                set_piece(&temp_board, tr, tc, piece_info[0], piece_info[1]); // Set piece at destination
-
-                // Find king's new position (it might have moved)
-                int new_king_row = king_row, new_king_col = king_col;
-                if (type == KING) {
-                    new_king_row = tr;
-                    new_king_col = tc;
-                }
-                
-                // If this move does NOT result in the king being at risk, then it's a legal move
-                if (!is_at_risk(&temp_board, current_turn_color, new_king_row, new_king_col, 0)) {
-                  return false; // Found a legal move, not stalemate
-                }
-              }
-            }
-          }
+        if (get_bit(player_bitboard, r, c)) {
+          // Get moves for this piece
+          all_possible_moves |= piece_moves[piece_type](board, color, r, c);
         }
       }
     }
   }
-  return true; // No legal moves found, and not in check = stalemate
+  return (all_possible_moves == 0ULL); // If no possible moves, it's stalemate
 }
 
 // Function: infer_src
-// Tries to infer the source square (src_row, src_col) given a destination and piece type/color
-// Returns 0 on success, -1 on failure
-int infer_src(const Bitboard *board, MoveInfo *move_info) {
-  // Iterate through all possible source squares for the given piece type and color
-  ulonglong candidate_src_board = board->boards[move_info->piece_type * 2 + move_info->color];
+uint32_t infer_src(Board *board, MoveInfo *move_info) {
+  // If destination is not set, cannot infer source
+  if (move_info->dest_row == -1 || move_info->dest_col == -1) {
+    return 0xFFFFFFFF; // Error
+  }
+
+  uint32_t player_color = move_info->color;
+  uint32_t piece_type = move_info->type;
+  uint64_t piece_bb = board->piece_bitboards[piece_type * 2 + player_color];
+
+  int found_src_row = -1;
+  int found_src_col = -1;
+  int num_possible_src = 0;
 
   for (int r = 0; r < 8; ++r) {
     for (int c = 0; c < 8; ++c) {
-      if (get_bit(candidate_src_board, r, c)) { // If there's a piece of the correct type/color at (r,c)
-        ulonglong possible_moves = piece_moves[move_info->piece_type](board, move_info->color, r, c);
-
-        // Check if this piece can move to the destination (dst_row, dst_col)
-        if (get_bit(possible_moves, move_info->dst_row, move_info->dst_col)) {
-          // If disambiguation is provided, check if it matches
+      if (get_bit(piece_bb, r, c)) { // If there's a piece of the correct type and color
+        uint64_t possible_moves = piece_moves[piece_type](board, player_color, r, c);
+        if (get_bit(possible_moves, move_info->dest_row, move_info->dest_col)) {
+          // This piece at (r,c) can move to the destination
+          // Check for disambiguation (if src_row/col is specified)
           if ((move_info->src_row == -1 || move_info->src_row == r) &&
               (move_info->src_col == -1 || move_info->src_col == c)) {
-
-            // Simulate the move to check if it leaves the king in check
-            Bitboard temp_board = *board;
-            clear_piece(&temp_board, r, c);
-            int captured_piece_row = -1, captured_piece_col = -1;
-            // Check if it's an en passant capture
-            if (move_info->piece_type == PAWN && c != move_info->dst_col && get_piece(board, move_info->dst_row, move_info->dst_col, NULL) == 0) {
-                captured_piece_row = r;
-                captured_piece_col = move_info->dst_col;
-                clear_piece(&temp_board, captured_piece_row, captured_piece_col);
-            } else {
-                clear_piece(&temp_board, move_info->dst_row, move_info->dst_col); // Clear potential captured piece
-            }
-            
-            set_piece(&temp_board, move_info->dst_row, move_info->dst_col, move_info->color, move_info->piece_type);
-
-            // Find king's position
-            int king_r = -1, king_c = -1;
-            ulonglong king_b = temp_board.boards[KING * 2 + move_info->color];
-            for (int kr = 0; kr < 8; ++kr) {
-                for (int kc = 0; kc < 8; ++kc) {
-                    if (get_bit(king_b, kr, kc)) {
-                        king_r = kr; king_c = kc; break;
-                    }
-                }
-                if (king_r != -1) break;
-            }
-
-            if (!is_at_risk(&temp_board, move_info->color, king_r, king_c, 0)) {
-                // This is a legal move
-                move_info->src_row = r;
-                move_info->src_col = c;
-                return 0; // Source inferred successfully
-            }
+            found_src_row = r;
+            found_src_col = c;
+            num_possible_src++;
           }
         }
       }
     }
   }
-  return -1; // Could not infer source
+
+  // If exactly one possible source found, set it in move_info
+  if (num_possible_src == 1) {
+    move_info->src_row = found_src_row;
+    move_info->src_col = found_src_col;
+    return 0; // Success
+  }
+  // If no source or multiple sources, it's an error or requires more disambiguation
+  return 0xFFFFFFFF; // Error or ambiguous
 }
 
 // Function: can_castle
-// is_queenside: 0 for kingside, 1 for queenside
-int can_castle(const Bitboard *board, int color, int is_queenside) {
+uint32_t can_castle(Board *board, int color, int is_kingside) {
+  uint32_t castling_right;
   int king_row = (color == WHITE) ? 0 : 7;
-  int king_col = 4;
-  int rook_col = is_queenside ? 0 : 7;
+  int king_col = 4; // King's starting column
 
-  // Check if castling rights exist
+  // Check castling rights based on board state
   if (color == WHITE) {
-    if (is_queenside && !board->white_queenside_castle_rights) return 0;
-    if (!is_queenside && !board->white_kingside_castle_rights) return 0;
-  } else { // BLACK
-    if (is_queenside && !board->black_queenside_castle_rights) return 0;
-    if (!is_queenside && !board->black_kingside_castle_rights) return 0;
+    castling_right = is_kingside ? board->white_kingside_castle : board->white_queenside_castle;
+  } else {
+    castling_right = is_kingside ? board->black_kingside_castle : board->black_queenside_castle;
+  }
+  if (castling_right == 0) { // Castling not allowed due to previous move
+    return 0;
   }
 
-  // Check if king and rook are in original positions
-  int piece_info[2];
-  if (get_piece(board, king_row, king_col, piece_info) != 1 || piece_info[0] != color || piece_info[1] != KING) return 0;
-  if (get_piece(board, king_row, rook_col, piece_info) != 1 || piece_info[0] != color || piece_info[1] != ROOK) return 0;
+  // Check if King is on its starting square and is a King piece
+  PieceInfo king_piece;
+  int result = get_piece(board, king_row, king_col, &king_piece);
+  if (result != 1 || king_piece.color != color || king_piece.type != KING) {
+    return 0;
+  }
 
-  // Check if squares between king and rook are empty and not under attack
-  int start_path_col = is_queenside ? 1 : 5;
-  int end_path_col = is_queenside ? 3 : 6;
+  // Check if Rook is on its starting square and is a Rook piece
+  int rook_col = is_kingside ? 7 : 0;
+  PieceInfo rook_piece;
+  result = get_piece(board, king_row, rook_col, &rook_piece);
+  if (result != 1 || rook_piece.color != color || rook_piece.type != ROOK) {
+    return 0;
+  }
 
-  for (int col = start_path_col; col <= end_path_col; ++col) {
-    if (get_piece(board, king_row, col, NULL) != 0) { // Square is not empty
+  // Check squares between King and Rook are empty and not under attack
+  int start_path_col = is_kingside ? king_col + 1 : rook_col + 1;
+  int end_path_col = is_kingside ? rook_col : king_col;
+  
+  // Ensure start_path_col is always less than end_path_col for the loop
+  if (start_path_col > end_path_col) {
+      int temp = start_path_col;
+      start_path_col = end_path_col;
+      end_path_col = temp;
+  }
+
+  for (int c = start_path_col; c < end_path_col; ++c) {
+    if (get_piece(board, king_row, c, NULL) != 0) { // Square not empty
       return 0;
     }
-    // King cannot pass through or land on an attacked square
-    if (col == king_col || col == king_col + (is_queenside ? -1 : 1) || col == king_col + (is_queenside ? -2 : 2)) {
-        if (is_at_risk(board, color, king_row, col, 0)) {
-            return 0;
-        }
+    if (is_at_risk(board, color, king_row, c, 0) != 0) { // Square under attack
+      return 0;
     }
   }
-  
-  // Also check the king's start position for attack
-  if (is_at_risk(board, color, king_row, king_col, 0)) return 0;
+
+  // Also check the king's current square and destination square for attacks
+  if (is_at_risk(board, color, king_row, king_col, 0) != 0) { // King's current square under attack
+      return 0;
+  }
+  int king_dest_col = is_kingside ? 6 : 2;
+  if (is_at_risk(board, color, king_row, king_dest_col, 0) != 0) { // King's destination square under attack
+      return 0;
+  }
 
   return 1; // Can castle
 }
 
 // Function: validate_move
-// Returns 1 on valid, 0 on invalid
-int validate_move(const Bitboard *board, MoveInfo *move_info) {
+uint32_t validate_move(Board *board, MoveInfo *move_info) {
+  // 1. Basic checks: source and destination must be set
   if (move_info->src_row == -1 || move_info->src_col == -1 ||
-      move_info->dst_row == -1 || move_info->dst_col == -1) {
-    return 0; // Incomplete move info
+      move_info->dest_row == -1 || move_info->dest_col == -1) {
+    return 0; // Invalid move: source or destination not specified
   }
 
-  int piece_info[2]; // piece_info[0]=color, piece_info[1]=type
-  int src_piece_found = get_piece(board, move_info->src_row, move_info->src_col, piece_info);
-
-  // Check if source square has a piece of the correct color and type
-  if (src_piece_found != 1 || piece_info[0] != move_info->color || piece_info[1] != move_info->piece_type) {
-    return 0;
+  // 2. Check if there's a piece of the correct type and color at the source
+  PieceInfo src_piece;
+  int result = get_piece(board, move_info->src_row, move_info->src_col, &src_piece);
+  if (result != 1 || src_piece.color != move_info->color || src_piece.type != move_info->type) {
+    return 0; // Invalid move: no matching piece at source
   }
 
-  // Handle castling as a special case
-  if (move_info->is_kingside_castle_flag || move_info->is_queenside_castle_flag) {
-    return can_castle(board, move_info->color, move_info->is_queenside_castle_flag);
+  // 3. Handle special moves: Castling
+  if (move_info->kingside_castle || move_info->queenside_castle) {
+    return can_castle(board, move_info->color, move_info->kingside_castle);
   }
 
-  // Get all possible moves for the piece at src_row, src_col
-  ulonglong possible_moves = piece_moves[move_info->piece_type](board, move_info->color, move_info->src_row, move_info->src_col);
-
-  // Check if destination square is in the set of possible moves
-  if (!get_bit(possible_moves, move_info->dst_row, move_info->dst_col)) {
-    return 0; // Destination is not a valid move for this piece
-  }
-
-  // Check if destination has a piece of the same color (cannot capture own piece)
-  int dst_piece_found = get_piece(board, move_info->dst_row, move_info->dst_col, piece_info);
-  if (dst_piece_found == 1 && piece_info[0] == move_info->color) {
-    return 0; // Cannot capture own piece
-  }
-
-  // En passant specific check:
-  // If pawn moves diagonally to an empty square, it must be an en passant capture
-  if (move_info->piece_type == PAWN && move_info->src_col != move_info->dst_col && dst_piece_found == 0) {
-      if (!(move_info->dst_row == board->en_passant_row && move_info->dst_col == board->en_passant_col)) {
-          return 0; // Invalid pawn diagonal move to empty square (not en passant)
+  // 4. Check if destination square is occupied by own piece (unless it's an en passant capture)
+  // The original code's logic here for en passant is slightly convoluted. Let's simplify:
+  // If it's an en passant move, the destination square is logically "empty" for the capture,
+  // but there's an opponent pawn one square behind it.
+  // The `pawn_moves` function already handles en passant captures.
+  // So, we only need to check for regular captures/moves.
+  if (!move_info->is_en_passant) {
+      PieceInfo dest_piece;
+      result = get_piece(board, move_info->dest_row, move_info->dest_col, &dest_piece);
+      if (result == 1 && dest_piece.color == move_info->color) {
+          return 0; // Invalid move: destination occupied by own piece
       }
-      move_info->is_capture = 1; // Mark as capture for en passant
-  }
-  
-  // Simulate the move to check for leaving king in check
-  Bitboard temp_board = *board;
-  int src_piece_color = move_info->color;
-  int src_piece_type = move_info->piece_type;
-
-  clear_piece(&temp_board, move_info->src_row, move_info->src_col);
-  
-  // If en passant, clear the captured pawn
-  if (move_info->piece_type == PAWN && move_info->is_capture &&
-      move_info->dst_row == board->en_passant_row && move_info->dst_col == board->en_passant_col) {
-      int captured_pawn_row = move_info->src_row; // Pawn always captured on its rank
-      int captured_pawn_col = move_info->dst_col;
-      clear_piece(&temp_board, captured_pawn_row, captured_pawn_col);
-  } else {
-      clear_piece(&temp_board, move_info->dst_row, move_info->dst_col); // Clear potential captured piece
-  }
-  
-  // For promotion, set the promoted piece type
-  int final_piece_type = src_piece_type;
-  if (move_info->is_promotion) {
-      final_piece_type = move_info->promotion_type;
   }
 
-  set_piece(&temp_board, move_info->dst_row, move_info->dst_col, src_piece_color, final_piece_type);
-
-  // Find king's current position for the player making the move
-  int king_r = -1, king_c = -1;
-  ulonglong king_board = temp_board.boards[KING * 2 + src_piece_color];
-  for (int r = 0; r < 8; ++r) {
-      for (int c = 0; c < 8; ++c) {
-          if (get_bit(king_board, r, c)) {
-              king_r = r; king_c = c; break;
-          }
-      }
-      if (king_r != -1) break;
-  }
-  
-  // If the king is at risk after the move, it's an invalid move
-  if (is_at_risk(&temp_board, src_piece_color, king_r, king_c, 0)) {
-    return 0;
+  // 5. Calculate possible moves for the piece at source and check if destination is among them
+  uint64_t possible_moves = piece_moves[move_info->type](board, move_info->color, move_info->src_row, move_info->src_col);
+  if (!get_bit(possible_moves, move_info->dest_row, move_info->dest_col)) {
+    return 0; // Invalid move: destination not reachable by this piece
   }
 
-  return 1; // Move is valid
+  // 6. Check for leaving own king in check (or moving into check)
+  // This requires a temporary board or undo mechanism for a full implementation,
+  // which is not present in the original decompiled code.
+  // For now, we will assume the decompiled code's simplified validation.
+
+  return 1; // Valid move
 }
 
 // Function: make_move
-// Returns 0: success, 1: check, 2: checkmate, 3: stalemate, -1: invalid move
-int make_move(Bitboard *board, MoveInfo *move_info) {
-  if (!validate_move(board, move_info)) {
-    return -1; // Invalid move
+uint32_t make_move(Board *board, MoveInfo *move_info) {
+  if (validate_move(board, move_info) == 0) {
+    return 0xFFFFFFFF; // Invalid move
   }
 
-  // Reset halfmove clock if it's a pawn move or a capture
-  if (move_info->piece_type == PAWN || move_info->is_capture) {
-    board->halfmove_clock = 0;
+  // Update halfmove clock
+  PieceInfo dest_piece;
+  int dest_has_piece = get_piece(board, move_info->dest_row, move_info->dest_col, &dest_piece);
+  if (move_info->type == PAWN || (dest_has_piece == 1 && dest_piece.color != move_info->color)) {
+    board->halfmove_clock = 0; // Reset for pawn move or capture
   } else {
     board->halfmove_clock++;
   }
 
-  // Clear en passant target from previous turn
+  // Clear en passant target squares
   board->en_passant_row = -1;
   board->en_passant_col = -1;
 
-  // Handle castling
-  if (move_info->is_kingside_castle_flag || move_info->is_queenside_castle_flag) {
+  // Handle special moves
+  if (move_info->kingside_castle) {
     int king_row = (move_info->color == WHITE) ? 0 : 7;
-    int king_src_col = 4;
-    int king_dst_col;
-    int rook_src_col;
-    int rook_dst_col;
-
-    if (move_info->is_kingside_castle_flag) {
-      king_dst_col = 6;
-      rook_src_col = 7;
-      rook_dst_col = 5;
-    } else { // Queenside
-      king_dst_col = 2;
-      rook_src_col = 0;
-      rook_dst_col = 3;
-    }
-
-    clear_piece(board, king_row, king_src_col);
-    clear_piece(board, king_row, rook_src_col);
-    set_piece(board, king_row, king_dst_col, move_info->color, KING);
-    set_piece(board, king_row, rook_dst_col, move_info->color, ROOK);
-
+    clear_piece(board, king_row, 4); // Clear king
+    clear_piece(board, king_row, 7); // Clear rook
+    set_piece(board, king_row, 6, move_info->color, KING);   // Place king
+    set_piece(board, king_row, 5, move_info->color, ROOK);   // Place rook
     // Revoke castling rights for this color
     if (move_info->color == WHITE) {
-      board->white_kingside_castle_rights = 0;
-      board->white_queenside_castle_rights = 0;
+      board->white_kingside_castle = 0;
+      board->white_queenside_castle = 0;
     } else {
-      board->black_kingside_castle_rights = 0;
-      board->black_queenside_castle_rights = 0;
+      board->black_kingside_castle = 0;
+      board->black_queenside_castle = 0;
     }
-  } else { // Regular move
-    // Handle en passant capture (if pawn moved diagonally to an empty en passant target square)
-    if (move_info->piece_type == PAWN && move_info->is_capture &&
-        move_info->dst_row == board->en_passant_row && move_info->dst_col == board->en_passant_col) {
-        int captured_pawn_row = move_info->src_row; // Pawn always captured on its rank
-        int captured_pawn_col = move_info->dst_col;
-        clear_piece(board, captured_pawn_row, captured_pawn_col);
+  } else if (move_info->queenside_castle) {
+    int king_row = (move_info->color == WHITE) ? 0 : 7;
+    clear_piece(board, king_row, 4); // Clear king
+    clear_piece(board, king_row, 0); // Clear rook
+    set_piece(board, king_row, 2, move_info->color, KING);   // Place king
+    set_piece(board, king_row, 3, move_info->color, ROOK);   // Place rook
+    // Revoke castling rights for this color
+    if (move_info->color == WHITE) {
+      board->white_kingside_castle = 0;
+      board->white_queenside_castle = 0;
     } else {
-        // Clear captured piece at destination if not en passant
-        clear_piece(board, move_info->dst_row, move_info->dst_col);
+      board->black_kingside_castle = 0;
+      board->black_queenside_castle = 0;
     }
-    
-    clear_piece(board, move_info->src_row, move_info->src_col);
+  } else if (move_info->is_en_passant) {
+    clear_piece(board, move_info->src_row, move_info->src_col); // Clear attacking pawn
+    int captured_pawn_row = (move_info->color == WHITE) ? move_info->dest_row - 1 : move_info->dest_row + 1;
+    clear_piece(board, captured_pawn_row, move_info->dest_col); // Clear captured pawn
+    set_piece(board, move_info->dest_row, move_info->dest_col, move_info->color, PAWN); // Place attacking pawn
+  } else { // Regular Move / Capture / Promotion
+    clear_piece(board, move_info->src_row, move_info->src_col); // Clear source square
+    clear_piece(board, move_info->dest_row, move_info->dest_col); // Clear destination square (if piece captured)
 
-    int final_piece_type = move_info->piece_type;
-    if (move_info->is_promotion) {
-      final_piece_type = move_info->promotion_type;
+    // Handle Pawn Promotion
+    if (move_info->type == PAWN &&
+        ((move_info->color == WHITE && move_info->dest_row == 7) ||
+         (move_info->color == BLACK && move_info->dest_row == 0))) {
+      // Promote pawn to specified promotion type, default to Queen if not specified
+      uint32_t promo_type = (move_info->promo_type != 0 && move_info->promo_type <= QUEEN) ? move_info->promo_type : QUEEN;
+      set_piece(board, move_info->dest_row, move_info->dest_col, move_info->color, promo_type);
+    } else {
+      set_piece(board, move_info->dest_row, move_info->dest_col, move_info->color, move_info->type);
     }
-    set_piece(board, move_info->dst_row, move_info->dst_col, move_info->color, final_piece_type);
 
-    // Set new en passant target if pawn moved two squares
-    if (move_info->piece_type == PAWN && abs(move_info->src_row - move_info->dst_row) == 2) {
-      board->en_passant_row = (move_info->src_row + move_info->dst_row) / 2;
-      board->en_passant_col = move_info->dst_col;
-    }
-
-    // Revoke castling rights if king or rook moved
-    if (move_info->piece_type == KING) {
-      if (move_info->color == WHITE) {
-        board->white_kingside_castle_rights = 0;
-        board->white_queenside_castle_rights = 0;
-      } else {
-        board->black_kingside_castle_rights = 0;
-        board->black_queenside_castle_rights = 0;
-      }
-    } else if (move_info->piece_type == ROOK) {
-      if (move_info->color == WHITE) {
-        if (move_info->src_row == 0 && move_info->src_col == 0) board->white_queenside_castle_rights = 0;
-        if (move_info->src_row == 0 && move_info->src_col == 7) board->white_kingside_castle_rights = 0;
-      } else { // BLACK
-        if (move_info->src_row == 7 && move_info->src_col == 0) board->black_queenside_castle_rights = 0;
-        if (move_info->src_row == 7 && move_info->src_col == 7) board->black_kingside_castle_rights = 0;
-      }
+    // Set new en passant target if double pawn push
+    if (move_info->type == PAWN && abs(move_info->src_row - move_info->dest_row) == 2) {
+      board->en_passant_row = (move_info->color == WHITE) ? move_info->src_row + 1 : move_info->src_row - 1;
+      board->en_passant_col = move_info->src_col;
     }
   }
 
-  // After move, check game state for the OPPONENT
-  int opponent_color = 1 - move_info->color;
-  int king_r = -1, king_c = -1;
-  ulonglong king_b = board->boards[KING * 2 + opponent_color];
+  // Determine game state for the OPPONENT
+  uint32_t current_king_row, current_king_col;
+  int opponent_color = (move_info->color == WHITE) ? BLACK : WHITE;
+  uint64_t king_bb = board->piece_bitboards[KING * 2 + opponent_color];
+  bool found_king = false;
   for (int r = 0; r < 8; ++r) {
-      for (int c = 0; c < 8; ++c) {
-          if (get_bit(king_b, r, c)) {
-              king_r = r; king_c = c; break;
-          }
+    for (int c = 0; c < 8; ++c) {
+      if (get_bit(king_bb, r, c)) {
+        current_king_row = r;
+        current_king_col = c;
+        found_king = true;
+        break;
       }
-      if (king_r != -1) break;
+    }
+    if (found_king) break;
+  }
+  if (!found_king) {
+      return 2; // King captured, implies checkmate (shouldn't happen in valid games)
   }
 
-  // If opponent's king not found (error state), return 0
-  if (king_r == -1) return 0;
-
+  uint32_t result_status = 0; // 0: success, 1: check, 2: checkmate, 3: stalemate
   if (is_stalemate(board, opponent_color)) {
-    return 3; // Stalemate
-  } else if (is_checkmate(board, opponent_color, king_r, king_c)) {
-    return 2; // Checkmate
-  } else if (is_at_risk(board, opponent_color, king_r, king_c, 0)) {
-    return 1; // Check
+      result_status = 3;
+  } else if (is_checkmate(board, opponent_color, current_king_row, current_king_col)) {
+      result_status = 2;
+  } else if (is_at_risk(board, opponent_color, current_king_row, current_king_col, 0)) {
+      result_status = 1;
   }
 
-  return 0; // Move successful
+  return result_status;
 }
 
 // Function: parse_san
-// board: current board state
-// current_player_color: color of the player making the move
-// san_string: SAN string of the move
-// move_info: struct to populate with parsed move details
-// This is a simplified SAN parser. It handles "O-O", "O-O-O", and basic moves like "e2e4" (pawn), "Nb1c3" (knight).
-// It does not handle full SAN grammar (disambiguation, checks, mates, etc.) beyond basic source/destination.
-// Returns 0 on success, -1 on failure
-int parse_san(const Bitboard *board, int current_player_color, const char *san_string, MoveInfo *move_info) {
+uint32_t parse_san(Board *board, int color, const char *san_str, MoveInfo *move_info) {
   memset(move_info, 0, sizeof(MoveInfo));
-  move_info->color = current_player_color;
+  move_info->color = color;
   move_info->src_row = -1;
   move_info->src_col = -1;
-  move_info->dst_row = -1;
-  move_info->dst_col = -1;
-  move_info->promotion_type = -1; // Default to no promotion
+  move_info->dest_row = -1;
+  move_info->dest_col = -1;
 
-  // Handle castling
-  if (strcmp(san_string, "O-O") == 0 || strcmp(san_string, "0-0") == 0) {
-    move_info->piece_type = KING;
-    move_info->is_kingside_castle_flag = 1;
-    move_info->src_row = (current_player_color == WHITE) ? 0 : 7;
+  if (strcmp(san_str, "O-O") == 0) { // Kingside castle
+    move_info->type = KING;
+    move_info->kingside_castle = 1;
+    move_info->src_row = (color == WHITE) ? 0 : 7;
     move_info->src_col = 4;
-    move_info->dst_row = move_info->src_row;
-    move_info->dst_col = 6; // Kingside castle destination
+    move_info->dest_row = move_info->src_row;
+    move_info->dest_col = 6;
     return 0;
-  }
-  if (strcmp(san_string, "O-O-O") == 0 || strcmp(san_string, "0-0-0") == 0) {
-    move_info->piece_type = KING;
-    move_info->is_queenside_castle_flag = 1;
-    move_info->src_row = (current_player_color == WHITE) ? 0 : 7;
+  } else if (strcmp(san_str, "O-O-O") == 0) { // Queenside castle
+    move_info->type = KING;
+    move_info->queenside_castle = 1;
+    move_info->src_row = (color == WHITE) ? 0 : 7;
     move_info->src_col = 4;
-    move_info->dst_row = move_info->src_row;
-    move_info->dst_col = 2; // Queenside castle destination
+    move_info->dest_row = move_info->src_row;
+    move_info->dest_col = 2;
     return 0;
-  }
-
-  // Basic parsing for "e2e4", "Nb1c3", etc.
-  int len = strlen(san_string);
-  if (len < 2) return -1; // Minimum length for a destination like "e4"
-
-  int current_char_idx = 0;
-  char piece_char = san_string[0];
-
-  // Determine piece type (default to pawn if no piece character)
-  if (piece_char == 'N') move_info->piece_type = KNIGHT;
-  else if (piece_char == 'B') move_info->piece_type = BISHOP;
-  else if (piece_char == 'R') move_info->piece_type = ROOK;
-  else if (piece_char == 'Q') move_info->piece_type = QUEEN;
-  else if (piece_char == 'K') move_info->piece_type = KING;
-  else {
-    move_info->piece_type = PAWN;
-    current_char_idx = 0; // No piece char, first char is part of source/destination
-  }
-  
-  if (move_info->piece_type != PAWN) {
-      current_char_idx = 1; // Piece char was present, move to next char
   } else {
-      current_char_idx = 0; // No piece char, start parsing from the beginning
+    // This branch corresponds to the complex SAN parsing logic that was missing from the decompiler output.
+    // As per instructions, I will not implement new logic, but will provide a minimal
+    // interpretation based on the `infer_src` call hint and direct coordinate input.
+    // This is NOT a full SAN parser.
+
+    // A very basic attempt to parse "colrowcolrow" (e.g., "e2e4") for testing.
+    if (strlen(san_str) == 4 &&
+        san_str[0] >= 'a' && san_str[0] <= 'h' && san_str[1] >= '1' && san_str[1] <= '8' &&
+        san_str[2] >= 'a' && san_str[2] <= 'h' && san_str[3] >= '1' && san_str[3] <= '8') {
+        move_info->src_col = san_str[0] - 'a';
+        move_info->src_row = san_str[1] - '1';
+        move_info->dest_col = san_str[2] - 'a';
+        move_info->dest_row = san_str[3] - '1';
+
+        // Try to infer piece type based on source square
+        PieceInfo src_piece;
+        if (get_piece(board, move_info->src_row, move_info->src_col, &src_piece) == 1) {
+            move_info->type = src_piece.type;
+            move_info->color = src_piece.color;
+            return 0; // Successfully parsed basic coordinate move
+        } else {
+            return 0xFFFFFFFF; // No piece at source
+        }
+    }
+
+    // If dest_row/col are already set (e.g., from a more complex parser not provided)
+    // and src_row/col are not, try to infer.
+    // This aligns with the decompiler's output:
+    // `if ((param_4[0xb] == -1) || (param_4[0xc] == -1))` -> checks if dest is NOT set
+    // `else if (((param_4[9] == -1) || (param_4[0xc] == -1)) && (iVar1 = infer_src(param_1,param_4), iVar1 != 0))` ->
+    // if dest IS set, but src is NOT set, then call infer_src.
+    if (move_info->dest_row != -1 && move_info->dest_col != -1 &&
+        (move_info->src_row == -1 || move_info->src_col == -1)) {
+        if (infer_src(board, move_info) != 0) {
+            return 0xFFFFFFFF; // Could not infer unique source
+        }
+        return 0;
+    }
   }
 
-  // Check for capture indicator 'x' (e.g., "Nxf3", "exd5")
-  if (san_string[current_char_idx] == 'x') {
-      move_info->is_capture = 1;
-      current_char_idx++;
-  }
-
-  // Parse destination square (e.g., "e4")
-  if (current_char_idx + 1 < len &&
-      san_string[current_char_idx] >= 'a' && san_string[current_char_idx] <= 'h' &&
-      san_string[current_char_idx+1] >= '1' && san_string[current_char_idx+1] <= '8') {
-    move_info->dst_col = san_string[current_char_idx] - 'a';
-    move_info->dst_row = san_string[current_char_idx+1] - '1';
-    current_char_idx += 2;
-  } else {
-    return -1; // Invalid destination format
-  }
-
-  // Check for promotion (e.g., "e8=Q")
-  if (current_char_idx < len && san_string[current_char_idx] == '=') {
-      move_info->is_promotion = 1;
-      current_char_idx++;
-      if (current_char_idx < len) {
-          char promo_char = san_string[current_char_idx];
-          if (promo_char == 'R') move_info->promotion_type = ROOK;
-          else if (promo_char == 'N') move_info->promotion_type = KNIGHT;
-          else if (promo_char == 'B') move_info->promotion_type = BISHOP;
-          else if (promo_char == 'Q') move_info->promotion_type = QUEEN;
-          else return -1; // Invalid promotion piece
-      } else return -1; // Missing promotion piece
-  }
-
-  // The original Ghidra code inferred source if not provided in the move string.
-  // This is a minimal implementation, a full SAN parser is complex.
-  if (infer_src(board, move_info) != 0) {
-    return -1; // Failed to infer source
-  }
-
-  return 0; // Success
+  // If none of the above, it's an unhandled SAN format
+  return 0xFFFFFFFF; // Error: Unrecognized SAN format
 }
 
-// --- Main function to initialize piece_moves array ---
-void init_piece_moves_array() {
-    piece_moves[PAWN] = pawn_moves;
-    piece_moves[ROOK] = rook_moves;
+// Function to initialize the global piece_moves array
+void setup_piece_move_functions() {
+    piece_moves[PAWN]   = pawn_moves;
+    piece_moves[ROOK]   = rook_moves;
     piece_moves[KNIGHT] = knight_moves;
     piece_moves[BISHOP] = bishop_moves;
-    piece_moves[QUEEN] = queen_moves;
-    piece_moves[KING] = king_moves;
+    piece_moves[QUEEN]  = queen_moves;
+    piece_moves[KING]   = king_moves;
+}
+
+// Main function for demonstration
+int main() {
+    setup_piece_move_functions(); // Initialize function pointers
+
+    Board board;
+    init_bitboard(&board);
+
+    printf("Initial board:\n");
+    print_bitboard(&board, WHITE);
+
+    MoveInfo move;
+    uint32_t move_status;
+
+    // Example moves:
+    // 1. White pawn e2-e4
+    printf("\nAttempting move: e2e4 (White)\n");
+    move_status = parse_san(&board, WHITE, "e2e4", &move);
+    if (move_status == 0) {
+        move_status = make_move(&board, &move);
+        if (move_status == 0) {
+            printf("Move successful.\n");
+        } else if (move_status == 1) {
+            printf("Move successful. Check!\n");
+        } else if (move_status == 2) {
+            printf("Move successful. Checkmate!\n");
+        } else if (move_status == 3) {
+            printf("Move successful. Stalemate!\n");
+        } else {
+            printf("Move failed: %u\n", move_status);
+        }
+    } else {
+        printf("SAN parsing failed for 'e2e4'.\n");
+    }
+    print_bitboard(&board, WHITE);
+
+    // 2. Black pawn d7-d5
+    printf("\nAttempting move: d7d5 (Black)\n");
+    move_status = parse_san(&board, BLACK, "d7d5", &move);
+    if (move_status == 0) {
+        move_status = make_move(&board, &move);
+        if (move_status == 0) {
+            printf("Move successful.\n");
+        } else {
+            printf("Move failed: %u\n", move_status);
+        }
+    } else {
+        printf("SAN parsing failed for 'd7d5'.\n");
+    }
+    print_bitboard(&board, WHITE);
+
+    // 3. White kingside castle (O-O) - requires clearing pieces in between
+    // For demonstration, let's manually clear pieces for castling
+    printf("\nAttempting to setup for White O-O\n");
+    clear_piece(&board, 0, 1); // clear Knight
+    clear_piece(&board, 0, 2); // clear Bishop
+    clear_piece(&board, 0, 3); // clear Queen
+    clear_piece(&board, 0, 5); // clear Bishop
+    clear_piece(&board, 0, 6); // clear Knight
+    print_bitboard(&board, WHITE);
+
+    printf("\nAttempting move: O-O (White)\n");
+    move_status = parse_san(&board, WHITE, "O-O", &move);
+    if (move_status == 0) {
+        move_status = make_move(&board, &move);
+        if (move_status == 0) {
+            printf("Move successful.\n");
+        } else {
+            printf("Move failed: %u\n", move_status);
+        }
+    } else {
+        printf("SAN parsing failed for 'O-O'.\n");
+    }
+    print_bitboard(&board, WHITE);
+
+    return 0;
 }

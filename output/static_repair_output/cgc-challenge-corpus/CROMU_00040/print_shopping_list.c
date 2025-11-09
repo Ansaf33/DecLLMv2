@@ -1,122 +1,104 @@
-#include <stdio.h>  // For printf
-#include <stdlib.h> // For malloc, free, exit
+#include <stdio.h>   // For printf, fprintf
+#include <stdlib.h>  // For malloc, free, exit
+#include <stdint.h>  // For uintptr_t, intptr_t
 
-// Forward declarations of structures
-typedef struct Product Product;
-typedef struct ItemDetails ItemDetails;
-typedef struct ShoppingItem ShoppingItem;
+// Defines the structure for a node in the shopping list.
+// The original code used malloc(8), which suggests a 32-bit environment
+// where a pointer and an int are both 4 bytes.
+// Using sizeof(ShoppingItemNode) makes the code portable to 64-bit systems,
+// where sizeof(void*) would typically be 8 bytes, making the node 16 bytes.
+typedef struct ShoppingItemNode {
+    void *item_data_ptr; // Pointer to the actual item data (expected to be a string based on printf usage)
+    struct ShoppingItemNode *next; // Pointer to the next node in the list
+} ShoppingItemNode;
 
-// Dummy declaration for the external sort function
-// A real implementation would be required for actual sorting.
-void sort_shopping_list(ShoppingItem *head);
-
-// Structure for a node in the shopping list
-struct ShoppingItem {
-    int item_value;         // The actual item identifier or value
-    ShoppingItem *next;     // Pointer to the next item in the list
-};
-
-// Structure representing details of an item within a product's list
-// The original code accessed item_id at offset 0x14 and next_item_detail at 0x78.
-// In standard C, we declare fields and let the compiler determine layout.
-// Assuming these are the relevant fields for the logic.
-struct ItemDetails {
-    int item_id;            // Identifier for this specific item detail
-    ItemDetails *next_item_detail; // Pointer to the next item detail in the product's internal list
-    // Other fields that might exist in the original structure are not explicitly used here.
-};
-
-// Structure representing a product
-// The original code accessed is_purchasable at offset 200, items_list_head at 0xcc,
-// and next_product at 0xd4. In standard C, we declare fields and let the compiler
-// determine layout. Assuming these are the relevant fields for the logic.
-struct Product {
-    int is_purchasable;     // Flag indicating if the product can be purchased (e.g., == 1)
-    ItemDetails *items_list_head; // Head of a linked list of ItemDetails for this product
-    Product *next_product;  // Pointer to the next product in the main product list
-    // Other fields that might exist in the original structure are not explicitly used here.
-};
+// Dummy declaration for sort_shopping_list, as its implementation is not provided.
+void sort_shopping_list(ShoppingItemNode *list_head) {
+    // Placeholder for sorting logic.
+    // In a real application, this would sort the linked list.
+    (void)list_head; // Suppress unused parameter warning
+}
 
 // Function: build_shopping_list
-// Creates a flattened shopping list (linked list of ShoppingItem) from a list of products.
-// Only items from "purchasable" products are included.
-ShoppingItem *build_shopping_list(Product *product_list_head) {
-    ShoppingItem *head = NULL;
-    // `current_link` is a pointer to the `next` field of the last `ShoppingItem`
-    // added to the list, or to `head` if the list is empty. This simplifies
-    // appending new nodes.
-    ShoppingItem **current_link = &head;
+// param_1 is expected to be a pointer to a structure that contains:
+// - a flag at offset +200
+// - a pointer to a sub-list head at offset +0xcc
+// - a pointer to the next such structure at offset +0xd4
+ShoppingItemNode *build_shopping_list(void *param_1) {
+    ShoppingItemNode *head = NULL;
+    ShoppingItemNode *prev_node = NULL; // Tracks the previous node to link new nodes
 
-    // Iterate through the main list of products
-    while (product_list_head != NULL) {
-        // Check if the current product is marked as purchasable
-        if (product_list_head->is_purchasable == 1) {
-            // Iterate through the list of item details for this purchasable product
-            ItemDetails *current_item_detail = product_list_head->items_list_head;
-            while (current_item_detail != NULL) {
-                // Allocate memory for a new shopping list item
-                *current_link = (ShoppingItem *)malloc(sizeof(ShoppingItem));
-                if (*current_link == NULL) {
-                    // Handle memory allocation failure
-                    printf("Error: unable to malloc memory for shopping list item.\n");
-                    exit(EXIT_FAILURE); // Replaced _terminate() with standard exit
+    // Use a char pointer to safely perform byte-offset arithmetic on param_1
+    char *current_param_struct = (char *)param_1;
+
+    while (current_param_struct != NULL) {
+        // Check the flag at offset 200. *(int *)(current_param_struct + 200) == 1
+        if (*(int *)(current_param_struct + 200) == 1) {
+            // Get the head of a sub-list. This value is an `int` that represents a pointer.
+            // Cast to uintptr_t to handle pointer values robustly across 32-bit/64-bit.
+            uintptr_t sub_item_ptr_val = (uintptr_t)*(int *)(current_param_struct + 0xcc);
+
+            while (sub_item_ptr_val != 0) {
+                // Allocate a new node for the shopping list
+                ShoppingItemNode *new_node = (ShoppingItemNode *)malloc(sizeof(ShoppingItemNode));
+                if (new_node == NULL) {
+                    fprintf(stderr, "unable to malloc memory\n");
+                    exit(EXIT_FAILURE); // Terminate on memory allocation failure
                 }
 
-                // Initialize the new shopping list item
-                (*current_link)->item_value = current_item_detail->item_id;
-                (*current_link)->next = NULL; // New node is initially the last
+                // Set the item data pointer for the new node.
+                // It's `0x14` bytes past the start of the `sub_item_ptr_val`.
+                new_node->item_data_ptr = (void *)(sub_item_ptr_val + 0x14);
+                new_node->next = NULL; // Initialize next pointer
 
-                // Advance `current_link` to point to the `next` field of the newly added node.
-                // This prepares it for linking the *next* new node.
-                current_link = &(*current_link)->next;
+                // Link the new node into the shopping list
+                if (head == NULL) {
+                    head = new_node; // First node becomes the head
+                } else {
+                    prev_node->next = new_node; // Link previous node to the new one
+                }
+                prev_node = new_node; // Update prev_node to the newly added node
 
-                // Move to the next item detail in the product's internal list
-                current_item_detail = current_item_detail->next_item_detail;
+                // Move to the next item in the sub-list.
+                // This value is also an `int` representing a pointer.
+                sub_item_ptr_val = (uintptr_t)*(int *)(sub_item_ptr_val + 0x78);
             }
         }
-        // Move to the next product in the main product list
-        product_list_head = product_list_head->next_product;
+        // Move to the next `param_1` type structure in the main chain.
+        // This pointer is at offset 0xd4. It's an `int` representing a pointer.
+        current_param_struct = (char *)(uintptr_t)*(int *)(current_param_struct + 0xd4);
     }
+
     return head;
 }
 
 // Function: print_shopping_list
-// Generates a shopping list, prints it, and then frees the allocated memory.
-void print_shopping_list(Product *product_list_head) {
-    ShoppingItem *shopping_list_head;
-
-    shopping_list_head = build_shopping_list(product_list_head);
+// param_1 is passed to build_shopping_list, so it should be a void pointer.
+void print_shopping_list(void *param_1) {
+    ShoppingItemNode *list_head = build_shopping_list(param_1);
+    ShoppingItemNode *current_node;
 
     printf("\n");
     printf("Shopping List\n");
     printf("-------------\n");
 
-    if (shopping_list_head != NULL) {
-        // Sort the shopping list (assuming sort_shopping_list is implemented elsewhere)
-        sort_shopping_list(shopping_list_head);
+    if (list_head != NULL) {
+        sort_shopping_list(list_head); // Sort the list (dummy function provided)
 
-        // Print each item in the sorted shopping list
-        ShoppingItem *current_node;
-        for (current_node = shopping_list_head; current_node != NULL; current_node = current_node->next) {
-            printf("%d\n", current_node->item_value); // Assuming item_value is an integer ID
+        // Iterate and print each item in the sorted list
+        for (current_node = list_head; current_node != NULL; current_node = current_node->next) {
+            // The original printf format "@s" implies printing a string.
+            // item_data_ptr holds a void* which points to the string.
+            printf("%s\n", (char *)current_node->item_data_ptr);
         }
 
-        // Free the dynamically allocated shopping list
-        ShoppingItem *temp_node;
-        current_node = shopping_list_head; // Start from the head
+        // Free all nodes in the list to prevent memory leaks
+        current_node = list_head;
         while (current_node != NULL) {
-            temp_node = current_node->next; // Save pointer to the next node
-            free(current_node);             // Free the current node
-            current_node = temp_node;       // Move to the next node
+            ShoppingItemNode *next_node_to_free = current_node->next;
+            free(current_node);
+            current_node = next_node_to_free;
         }
     }
     printf("\n");
-    return;
-}
-
-// Dummy implementation for sort_shopping_list to make the code compilable.
-// In a real application, this function would contain logic to sort the linked list.
-void sort_shopping_list(ShoppingItem *head) {
-    // This is a placeholder. A real implementation would sort the list.
-    (void)head; // Suppress unused parameter warning
 }

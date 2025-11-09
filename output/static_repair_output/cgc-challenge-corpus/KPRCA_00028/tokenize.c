@@ -1,235 +1,218 @@
 #include <stdio.h>   // For printf
-#include <stdlib.h>  // For malloc, realloc, free
+#include <stdlib.h>  // For malloc, realloc, free, strdup
 #include <string.h>  // For strlen, strncpy, strdup
 #include <ctype.h>   // For isspace, isalnum
 
-// Function: ok_for_sym
-// Returns 1 if 'c' is a valid character for a symbol, 0 otherwise.
-// A character is valid if it's not '(', not ')', and not a whitespace character.
-int ok_for_sym(char c) {
-  return (c != '(' && c != ')' && !isspace((unsigned char)c));
-}
-
-// Structure to hold the token list
-typedef struct {
-    char** tokens;
-    int count;
-    int capacity;
-} TokenList;
-
-// Function to initialize a TokenList
-TokenList* create_token_list() {
-    TokenList* list = (TokenList*)malloc(sizeof(TokenList));
-    if (list == NULL) return NULL;
-    
-    list->capacity = 4; // Initial capacity
-    list->tokens = (char**)malloc(sizeof(char*) * list->capacity);
-    if (list->tokens == NULL) {
-        free(list);
-        return NULL;
-    }
-    list->count = 0;
-    return list;
-}
-
-// Function to append a token to the TokenList
-// Returns 0 on success, -1 on failure.
-// If an error occurs, the 'token' pointer is freed.
-int tok_list_append(TokenList* list, char* token) {
-    if (list == NULL || token == NULL) {
-        free(token); // Free the token if list or token is invalid
-        return -1;
-    }
-
-    if (list->count >= list->capacity) {
-        int new_capacity = list->capacity * 2;
-        char** new_tokens = (char**)realloc(list->tokens, sizeof(char*) * new_capacity);
-        if (new_tokens == NULL) {
-            free(token); // Free the token if reallocation fails
+// --- Helper function for dynamic array management ---
+// This function appends a token to the dynamic array of tokens.
+// It resizes the array if necessary.
+// Parameters:
+//   list_ptr: Pointer to the char** (the token list)
+//   count_ptr: Pointer to the current number of tokens
+//   capacity_ptr: Pointer to the current capacity of the token list
+//   token: The string token to add (can be NULL for the list terminator)
+// Returns 0 on success, -1 on failure (e.g., realloc failure).
+static int tok_list_append(char*** list_ptr, int* count_ptr, int* capacity_ptr, char* token) {
+    // If current count equals capacity, we need to resize
+    if (*count_ptr == *capacity_ptr) {
+        // Determine new capacity: start with 3, then double
+        int new_capacity = (*capacity_ptr == 0) ? 3 : *capacity_ptr * 2;
+        char** new_list = realloc(*list_ptr, new_capacity * sizeof(char*));
+        if (new_list == NULL) {
             return -1; // Reallocation failed
         }
-        list->tokens = new_tokens;
-        list->capacity = new_capacity;
+        *list_ptr = new_list;
+        *capacity_ptr = new_capacity;
     }
-    list->tokens[list->count++] = token;
+    // Add the token and increment count
+    (*list_ptr)[*count_ptr] = token;
+    (*count_ptr)++;
     return 0; // Success
 }
 
-// Function to free a TokenList and its contained tokens
-void free_token_list(TokenList* list) {
-    if (list == NULL) return;
-    for (int i = 0; i < list->count; ++i) {
-        free(list->tokens[i]); // Free individual tokens
-    }
-    free(list->tokens); // Free the array of token pointers
-    free(list);         // Free the TokenList struct itself
+// Function: ok_for_sym
+// Determines if a character is valid for a symbol (not '(', ')', or whitespace).
+// Returns 1 if valid, 0 otherwise.
+int ok_for_sym(char c) {
+  // Use unsigned char with ctype functions to avoid issues with negative char values
+  return (c != '(' && c != ')' && !isspace((unsigned char)c));
 }
 
 // Function: tokenize
-// Tokenizes the input string into a list of dynamically allocated strings.
-// Returns a pointer to a TokenList on success, or NULL on failure.
-TokenList* tokenize(const char* input_string) {
-    size_t input_len = strlen(input_string);
-    size_t current_pos = 0;
+// Tokenizes an input string into an array of dynamically allocated string tokens.
+// The returned array is NULL-terminated.
+// Returns char** on success, where each element is a dynamically allocated string.
+// Returns NULL on any error (e.g., memory allocation failure).
+char** tokenize(const char* input_string) {
+    size_t len = strlen(input_string);
+    size_t current_pos = 0; // Current position in the input string
     
-    TokenList* list = create_token_list();
-    if (list == NULL) {
-        return NULL;
+    char** tokens = NULL;      // Pointer to the array of token strings
+    int token_count = 0;     // Current number of tokens in the array
+    int token_capacity = 0;  // Current allocated capacity of the array
+
+    // Add the initial "START" token
+    char* start_token_str = strdup("START"); // Duplicate "START" to manage its memory
+    if (start_token_str == NULL) {
+        return NULL; // strdup failed
+    }
+    if (tok_list_append(&tokens, &token_count, &token_capacity, start_token_str) < 0) {
+        free(start_token_str); // Free the token string itself if append failed
+        return NULL; // Realloc failed
     }
 
-    // Add "START" token
-    // strdup allocates memory, so it needs to be freed later
-    if (tok_list_append(list, strdup("START")) < 0) { 
-        free_token_list(list);
-        return NULL;
-    }
-
-    // Main tokenization loop
-    while (current_pos < input_len) {
-        // Skip whitespace
-        while (current_pos < input_len && isspace((unsigned char)input_string[current_pos])) {
+    // Process the input string character by character
+    while (current_pos < len) {
+        // 1. Skip leading whitespace characters
+        while (current_pos < len && isspace((unsigned char)input_string[current_pos])) {
             current_pos++;
         }
-
-        // If end of string after skipping spaces, break
-        if (current_pos >= input_len) {
-            break;
+        if (current_pos == len) { // If end of string reached after skipping spaces
+            break; // Exit the main loop
         }
 
-        char* token = NULL;
-        int append_status;
+        size_t token_start_pos = current_pos; // Mark the beginning of the current token
 
-        // Handle parentheses as single-character tokens
+        // 2. Handle single-character tokens: '(' or ')'
         if (input_string[current_pos] == '(' || input_string[current_pos] == ')') {
-            token = (char*)malloc(2);
-            if (token == NULL) {
-                free_token_list(list);
+            char* current_token_str = (char*)malloc(2); // Allocate space for char + null terminator
+            if (current_token_str == NULL) {
+                // Cleanup on malloc failure
+                for (int i = 0; i < token_count; ++i) {
+                    free(tokens[i]);
+                }
+                free(tokens);
                 return NULL;
             }
-            token[0] = input_string[current_pos];
-            token[1] = '\0';
-            current_pos++; // Move past the parenthesis
-        } else {
-            // Assume it's an alphanumeric token (or error if not)
-            size_t token_start_pos = current_pos;
-
-            // Check if the current character is valid to start a symbol/alphanumeric token
+            current_token_str[0] = input_string[current_pos];
+            current_token_str[1] = '\0'; // Null-terminate the token string
+            
+            if (tok_list_append(&tokens, &token_count, &token_capacity, current_token_str) < 0) {
+                free(current_token_str); // Free the token string itself
+                // Cleanup on append (realloc) failure
+                for (int i = 0; i < token_count; ++i) {
+                    free(tokens[i]);
+                }
+                free(tokens);
+                return NULL;
+            }
+            current_pos++; // Move past the processed character
+        } 
+        // 3. Handle multi-character tokens (alphanumeric sequences)
+        else {
+            // If the character is not alphanumeric, it's an unexpected character
+            // (since spaces and parentheses are handled, this implies an error)
             if (!isalnum((unsigned char)input_string[current_pos])) {
-                // If it's not a parenthesis, space, or alphanumeric, it's an unrecognized character
-                free_token_list(list);
+                // Cleanup: free all previously allocated tokens and the token list
+                for (int i = 0; i < token_count; ++i) {
+                    free(tokens[i]);
+                }
+                free(tokens);
                 return NULL;
             }
 
-            // Find the end of the alphanumeric token
-            while (current_pos < input_len && isalnum((unsigned char)input_string[current_pos])) {
+            // Advance current_pos until a non-alphanumeric character or end of string is found
+            while (current_pos < len && isalnum((unsigned char)input_string[current_pos])) {
                 current_pos++;
             }
-            
-            size_t token_len = current_pos - token_start_pos;
-            token = (char*)malloc(token_len + 1);
-            if (token == NULL) {
-                free_token_list(list);
+
+            // This check ensures a valid token was found (current_pos must have advanced)
+            if (current_pos <= token_start_pos) {
+                for (int i = 0; i < token_count; ++i) {
+                    free(tokens[i]);
+                }
+                free(tokens);
                 return NULL;
             }
-            strncpy(token, input_string + token_start_pos, token_len);
-            token[token_len] = '\0';
-        }
-        
-        // Append the token to the list
-        append_status = tok_list_append(list, token);
-        if (append_status < 0) {
-            // tok_list_append already freed the 'token' on failure.
-            // Now free the list itself.
-            free_token_list(list);
-            return NULL;
+
+            // Allocate memory for the token substring
+            size_t token_len = current_pos - token_start_pos;
+            char* current_token_str = (char*)malloc(token_len + 1); // +1 for null terminator
+            if (current_token_str == NULL) {
+                // Cleanup on malloc failure
+                for (int i = 0; i < token_count; ++i) {
+                    free(tokens[i]);
+                }
+                free(tokens);
+                return NULL;
+            }
+            // Copy the token characters and null-terminate
+            strncpy(current_token_str, input_string + token_start_pos, token_len);
+            current_token_str[token_len] = '\0'; 
+
+            if (tok_list_append(&tokens, &token_count, &token_capacity, current_token_str) < 0) {
+                free(current_token_str); // Free the token string itself
+                // Cleanup on append (realloc) failure
+                for (int i = 0; i < token_count; ++i) {
+                    free(tokens[i]);
+                }
+                free(tokens);
+                return NULL;
+            }
         }
     }
-    
-    return list; // Return the successfully created token list
+
+    // Add a NULL pointer at the end of the tokens array to mark its end.
+    // This allows easy iteration (e.g., `for (i=0; tokens[i] != NULL; ++i)`).
+    if (tok_list_append(&tokens, &token_count, &token_capacity, NULL) < 0) {
+        // This case would mean realloc failed for the NULL terminator slot.
+        // Free all previously successful tokens and the array.
+        for (int i = 0; i < token_count; ++i) {
+            free(tokens[i]);
+        }
+        free(tokens);
+        return NULL;
+    }
+
+    return tokens; // Return the successfully created token list
 }
 
-// Main function for testing
+// Main function for demonstration and testing
 int main() {
-    const char* test_string1 = "(hello world) (123)";
-    const char* test_string2 = " ( ) ";
-    const char* test_string3 = "  a(b c)d ";
-    const char* test_string4 = "invalid@char";
-    const char* test_string5 = "";
-    const char* test_string6 = "just_a_symbol";
+    // Test cases
+    const char* test_strings[] = {
+        " ( def main ( print \"hello\" ) ) ",
+        "  (add 10 20) ",
+        "  (  func  (x y) (+ x y) )  ",
+        "  just_a_symbol  ",
+        "()",
+        " (a(b)c) ",
+        "", // Empty string
+        " (123 + 456) ", // Will fail on '+' if not alphanumeric
+        NULL // Sentinel for end of test cases
+    };
 
-    TokenList* tokens = NULL;
+    for (int j = 0; test_strings[j] != NULL; ++j) {
+        const char* input = test_strings[j];
+        printf("Tokenizing: \"%s\"\n", input);
+        char** tokens = tokenize(input);
 
-    printf("Tokenizing: \"%s\"\n", test_string1);
-    tokens = tokenize(test_string1);
-    if (tokens) {
-        for (int i = 0; i < tokens->count; ++i) {
-            printf("  Token %d: \"%s\"\n", i, tokens->tokens[i]);
+        if (tokens == NULL) {
+            printf("  Error: Tokenization failed.\n");
+        } else {
+            printf("  Tokens:\n");
+            for (int i = 0; tokens[i] != NULL; ++i) {
+                printf("    [%d]: \"%s\"\n", i, tokens[i]);
+            }
+            // Free allocated memory for tokens
+            // Remember to free each token string first, then the array itself
+            for (int i = 0; tokens[i] != NULL; ++i) {
+                free(tokens[i]);
+            }
+            free(tokens); // Free the array of char* pointers
         }
-        free_token_list(tokens);
-    } else {
-        printf("  Tokenization failed.\n");
+        printf("\n");
     }
-    printf("\n");
 
-    printf("Tokenizing: \"%s\"\n", test_string2);
-    tokens = tokenize(test_string2);
-    if (tokens) {
-        for (int i = 0; i < tokens->count; ++i) {
-            printf("  Token %d: \"%s\"\n", i, tokens->tokens[i]);
-        }
-        free_token_list(tokens);
-    } else {
-        printf("  Tokenization failed.\n");
-    }
-    printf("\n");
-
-    printf("Tokenizing: \"%s\"\n", test_string3);
-    tokens = tokenize(test_string3);
-    if (tokens) {
-        for (int i = 0; i < tokens->count; ++i) {
-            printf("  Token %d: \"%s\"\n", i, tokens->tokens[i]);
-        }
-        free_token_list(tokens);
-    } else {
-        printf("  Tokenization failed.\n");
-    }
-    printf("\n");
-
-    printf("Tokenizing: \"%s\"\n", test_string4);
-    tokens = tokenize(test_string4);
-    if (tokens) {
-        for (int i = 0; i < tokens->count; ++i) {
-            printf("  Token %d: \"%s\"\n", i, tokens->tokens[i]);
-        }
-        free_token_list(tokens);
-    } else {
-        printf("  Tokenization failed (as expected for invalid char).\n");
-    }
-    printf("\n");
-
-    printf("Tokenizing: \"%s\"\n", test_string5);
-    tokens = tokenize(test_string5);
-    if (tokens) {
-        for (int i = 0; i < tokens->count; ++i) {
-            printf("  Token %d: \"%s\"\n", i, tokens->tokens[i]);
-        }
-        free_token_list(tokens);
-    } else {
-        printf("  Tokenization failed.\n"); // Empty string should still produce "START" token
-    }
-    printf("\n");
-    
-    printf("Tokenizing: \"%s\"\n", test_string6);
-    tokens = tokenize(test_string6);
-    if (tokens) {
-        for (int i = 0; i < tokens->count; ++i) {
-            printf("  Token %d: \"%s\"\n", i, tokens->tokens[i]);
-        }
-        free_token_list(tokens);
-    } else {
-        printf("  Tokenization failed.\n");
-    }
-    printf("\n");
+    // Test ok_for_sym
+    printf("Testing ok_for_sym:\n");
+    printf("  'a': %d\n", ok_for_sym('a'));
+    printf("  '(': %d\n", ok_for_sym('('));
+    printf("  ')': %d\n", ok_for_sym(')'));
+    printf("  ' ': %d\n", ok_for_sym(' '));
+    printf("  '\\t': %d\n", ok_for_sym('\t'));
+    printf("  'Z': %d\n", ok_for_sym('Z'));
+    printf("  '9': %d\n", ok_for_sym('9'));
 
     return 0;
 }

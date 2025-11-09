@@ -1,61 +1,67 @@
-#include <stdio.h>    // For fprintf, stderr
-#include <stdlib.h>   // For calloc, free, exit, random
-#include <stdint.h>   // For fixed-size integer types like uint32_t (though not explicitly used for Node fields after refactoring)
-#include <string.h>   // For strcmp
-// #include <stddef.h>   // For offsetof (not directly used after struct refactoring)
+#include <stdio.h>  // For fprintf, stderr, printf
+#include <stdlib.h> // For calloc, free, exit, random, srandom
+#include <string.h> // For strcmp, strdup
+#include <time.h>   // For time (to seed srandom)
 
-// Simple _error function to replace the one from the challenge environment
-void _error(int exit_code, const char *file, int line) {
-    fprintf(stderr, "ERROR: %s:%d - Exiting with code %d\n", file, line, exit_code);
-    exit(exit_code);
-}
-
-// Define the list node structure for 64-bit Linux.
-// The `data` field is `char*` as implied by `strcmp` and `append_list`'s `param_2`.
-// For lists of lists, this implies `Node*` values are cast to `char*` for storage and back.
-// This is a common pattern in C for generic lists without explicit type tags, though it requires careful handling.
-typedef struct Node {
-    struct Node *next;
-    struct Node *prev;
-    char *data; // Stores string data, or for list-of-lists, a Node* cast to char*.
-} Node;
+// Define the list node structure
+typedef struct List {
+    struct List *next;
+    struct List *prev;
+    void *data; // Use void* for generic data, cast to specific types as needed
+} List;
 
 // Function: init_list
-// param_1 (original `undefined4`) is `char*` based on `append_list` usage.
-Node *init_list(char *data_str) {
-    // Original `calloc(1, 0xc)` implies 12 bytes. On a 64-bit system, `sizeof(Node)` would be 24 bytes (3 * 8 bytes).
-    // Using `sizeof(Node)` ensures correct allocation for 64-bit architecture, which is standard for Linux.
-    Node *newNode = (Node *)calloc(1, sizeof(Node));
+// Allocates and initializes a new list node.
+List *init_list(void *data) {
+    List *newNode = (List *)calloc(1, sizeof(List));
     if (newNode == NULL) {
-        _error(1, __FILE__, __LINE__);
+        fprintf(stderr, "Error: Memory allocation failed in init_list at %s:%d\n", __FILE__, __LINE__);
+        exit(EXIT_FAILURE);
     }
-    newNode->data = data_str;
-    // `next` and `prev` are already NULL due to `calloc` initializing memory to zero.
+    newNode->data = data;
+    // calloc already initializes next and prev to NULL
     return newNode;
 }
 
-// Forward declaration for `len_list` as it's used before its definition
-int len_list(const Node *head);
+// Function: len_list (forward declaration as it's used by other functions)
+int len_list(List *head);
 
 // Function: append_list
-void append_list(Node **head_ptr, char *data_str, int unique_check) {
+// Appends data to a list. If unique_check is 0, it prevents duplicates (assuming string data).
+// This version makes a deep copy of the string data using strdup.
+void append_list(List **head_ptr, const char *data, int unique_check) {
+    char *data_copy = NULL;
+    if (data != NULL) {
+        data_copy = strdup(data);
+        if (data_copy == NULL) {
+            fprintf(stderr, "Error: Memory allocation failed for data copy in append_list at %s:%d\n", __FILE__, __LINE__);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    List *newNode = init_list(data_copy);
+
     if (*head_ptr == NULL) {
-        *head_ptr = init_list(data_str);
+        *head_ptr = newNode;
     } else {
-        Node *current = *head_ptr;
+        List *current = *head_ptr;
         if (unique_check == 0) {
             for (; current != NULL; current = current->next) {
-                if (strcmp(data_str, current->data) == 0) {
-                    return; // Element already exists, do nothing
+                // Assuming data is a string for strcmp comparison
+                if (current->data != NULL && data_copy != NULL && strcmp(data_copy, (char *)current->data) == 0) {
+                    free(newNode->data); // Duplicate found, free the strdup'd data for the new node
+                    free(newNode);       // Free the new node itself
+                    return;              // Do not add duplicate
                 }
             }
+            // If loop finishes, no duplicate found, proceed to append.
+            // current is now NULL, reset to head to find end of list.
+            current = *head_ptr;
         }
 
-        Node *newNode = init_list(data_str);
-        // Find the last node
-        current = *head_ptr; // Reset current to head if unique_check was 0 and no match found
-        for (; current->next != NULL; current = current->next) {
-            // Loop until current is the last node
+        // Find the last node in the list
+        while (current->next != NULL) {
+            current = current->next;
         }
         current->next = newNode;
         newNode->prev = current;
@@ -63,55 +69,54 @@ void append_list(Node **head_ptr, char *data_str, int unique_check) {
 }
 
 // Function: concat_list
-// Appends elements of `list2_head` to `list1_head` by copying, but with specific handling for `list1_head == NULL`.
-// Returns the head of the resulting list.
-Node *concat_list(Node *list1_head, Node *list2_head) {
-    Node *result_head = list1_head;
+// Concatenates src_list to dest_list. Returns the head of the modified dest_list.
+// This creates new nodes and new copies of data for the appended elements.
+List *concat_list(List *dest_list, List *src_list) {
+    List *result_head = dest_list;
+    List *current_src = src_list;
 
-    if (list1_head == NULL) {
-        // If `list1_head` is initially NULL, the original code returned `list2_head` directly,
-        // implying no copying of `list2_head` elements in this case.
-        result_head = list2_head;
-    } else {
-        // If `list1_head` exists, append elements of `list2_head` to it by copying.
-        if (list2_head != NULL) {
-            for (Node *current_list2 = list2_head; current_list2 != NULL; current_list2 = current_list2->next) {
-                // `append_list` will append to `result_head` (which is `list1_head` here).
-                append_list(&result_head, current_list2->data, 1); // `1` means no unique check
-            }
-        }
+    while (current_src != NULL) {
+        // Append data from src_list to dest_list. '1' means no unique check.
+        // append_list will create a new node and strdup the data.
+        append_list(&result_head, (char *)current_src->data, 1);
+        current_src = current_src->next;
     }
     return result_head;
 }
 
 // Function: len_list
-// Calculates the number of elements in the list.
-int len_list(const Node *head) {
+// Returns the number of elements in the list.
+int len_list(List *head) {
     int count = 0;
-    for (const Node *current = head; current != NULL; current = current->next) {
+    List *current = head;
+    while (current != NULL) {
         count++;
+        current = current->next;
     }
     return count;
 }
 
 // Function: lindex
-// Retrieves the data of the element at the specified index. Supports negative indexing from the end.
-char *lindex(const Node *head, int index) {
+// Returns the data at a specified index. Supports negative indexing (from end of list).
+// Returns NULL if the list is empty or index is out of bounds.
+void *lindex(List *head, int index) {
     if (head == NULL) {
         return NULL;
     }
 
-    int len = len_list(head);
+    int list_len = len_list(head);
 
+    // Adjust index for negative values (e.g., -1 means last element)
     if (index < 0) {
-        index = len + index; // Adjust negative index (e.g., -1 is len-1)
+        index = list_len + index;
     }
 
-    if (index < 0 || index >= len) { // Check if index is still out of bounds after adjustment
-        return NULL;
+    // Check if the adjusted index is within valid bounds
+    if (index < 0 || index >= list_len) {
+        return NULL; // Index out of bounds
     }
 
-    const Node *current = head;
+    List *current = head;
     for (int i = 0; i < index; i++) {
         current = current->next;
     }
@@ -119,102 +124,242 @@ char *lindex(const Node *head, int index) {
 }
 
 // Function: copy_list
-// Creates a new list containing a sub-section of the original list.
-Node *copy_list(const Node *head, unsigned int start_idx, unsigned int end_idx) {
-    if (head == NULL) {
+// Creates a new list containing a slice of the source_list from start_index to end_index.
+// This creates new nodes and new copies of string data.
+List *copy_list(List *source_list, unsigned int start_index, unsigned int end_index) {
+    if (source_list == NULL) {
         return NULL;
     }
 
-    unsigned int list_len = len_list(head);
-    Node *new_list_head = NULL;
+    int list_len = len_list(source_list);
 
-    // Adjust `end_idx`: if 0 or beyond list length, set to list length.
-    if (end_idx == 0 || list_len < end_idx) {
-        end_idx = list_len;
+    // If end_index is 0 or exceeds list_len, set it to list_len
+    if (end_index == 0 || list_len < end_index) {
+        end_index = list_len;
     }
 
-    // Ensure `start_idx` is not beyond `end_idx`.
-    if (start_idx >= end_idx) {
-        return NULL; // Empty range, return NULL
+    // Validate the range
+    if (start_index >= end_index || start_index >= list_len) {
+        return NULL; // Invalid range or empty slice
     }
 
-    // Traverse to the starting position.
-    const Node *current = head;
-    for (unsigned int i = 0; i < start_idx; i++) {
-        if (current == NULL) return NULL; // Should not happen if `start_idx` is within bounds
-        current = current->next;
+    List *newList = NULL;
+    List *current_src = source_list;
+
+    // Advance current_src to the starting position
+    for (unsigned int i = 0; i < start_index; i++) {
+        current_src = current_src->next;
+        // This check is defensive; if start_index < list_len, current_src should not be NULL.
+        if (current_src == NULL) {
+            return NULL; // Should not happen if start_index is valid
+        }
     }
 
-    // Copy elements from `start_idx` to `end_idx`.
-    for (unsigned int i = start_idx; i < end_idx; i++) {
-        if (current == NULL) break; // Reached end of original list prematurely
-        append_list(&new_list_head, current->data, 1); // `1` means no unique check
-        current = current->next;
+    // Copy elements from start_index up to (but not including) end_index
+    for (unsigned int i = start_index; i < end_index; i++) {
+        // append_list will create a new node and strdup the data.
+        append_list(&newList, (char *)current_src->data, 1); // '1' for no unique check
+        current_src = current_src->next;
+        if (current_src == NULL && i + 1 < end_index) {
+            // Reached end of source list prematurely
+            break;
+        }
     }
-    return new_list_head;
+    return newList;
 }
 
 // Function: free_list
-// Frees all nodes in a list. If `free_data_flag` is 0, it also frees the `data` (assumed to be `char*`).
-void free_list(Node *head, int free_data_flag) {
-    Node *current = head;
-    Node *next_node;
+// Frees all nodes in a list. If free_data_flag is 0, it also frees the data payload of each node.
+// Note: 'free_data_flag' convention: 0 means free data, non-zero means don't free data.
+void free_list(List *head, int free_data_flag) {
+    List *current = head;
+    List *next_node;
 
     while (current != NULL) {
-        next_node = current->next; // Store next before freeing current
-        // `free_data_flag == 0` means free the data (string).
+        next_node = current->next; // Store next node before freeing current
         if (free_data_flag == 0 && current->data != NULL) {
-            free(current->data);
+            free(current->data); // Free the data payload (e.g., strdup'd strings)
         }
-        free(current); // Free the node itself
+        // The original code `if (local_10[1] != 0) { free((void *)local_10[1]); }`
+        // which implies freeing `current->prev`, is incorrect for a standard doubly linked list.
+        // `prev` is just a pointer to another node, not separately allocated memory owned by the current node.
+        // This line has been removed.
+        free(current); // Free the list node itself
         current = next_node;
     }
-    // Original code had `free((void *)0x0);`, which is a no-op and unnecessary. Removed.
 }
 
 // Function: free_list_of_lists
-// Frees a list where each node's `data` field is itself a pointer to another list.
-void free_list_of_lists(Node *head_of_list_of_lists, int depth) {
-    Node *current = head_of_list_of_lists;
-    Node *next_node;
+// Frees a list where each node's data is itself a list.
+// 'free_data_depth' determines how many levels deep to free the actual data.
+// A depth of 1 means free data of the inner lists. A depth of 0 means don't free any data.
+void free_list_of_lists(List *head_of_lists, int free_data_depth) {
+    List *current = head_of_lists;
+    List *next_list_node;
 
     while (current != NULL) {
-        next_node = current->next; // Save next node before freeing current
-
-        if (depth > 0 && current->data != NULL) {
-            // Cast `current->data` to `Node*` because it's the head of a sublist.
-            // Recursively free the sublist and its data.
-            // `depth - 1` determines if the string data in the sublist should be freed.
-            free_list((Node *)current->data, depth - 1);
+        next_list_node = current->next; // Store next node before freeing current
+        if (current->data != NULL && free_data_depth > 0) {
+            // Recursively free the inner list.
+            // The free_data_flag for the inner list will be (free_data_depth - 1).
+            free_list((List *)current->data, free_data_depth - 1);
         }
-        // Original code had `if (local_10[1] != 0) { free((void *)local_10[1]); }`, which would attempt
-        // to free the `prev` pointer (a pointer to another node), leading to errors. This is removed.
-        free(current); // Free the node itself
-        current = next_node;
+        // Again, remove incorrect freeing of `current->prev`.
+        free(current); // Free the list node itself
+        current = next_list_node;
     }
-    // Original code had `free((void *)0x0);`, which is a no-op and unnecessary. Removed.
 }
 
 // Function: random_element
-// Returns the data of a randomly selected element from the list.
-char *random_element(const Node *head) {
-    if (head == NULL) {
+// Returns a random element's data from the list.
+// Returns NULL if the list is empty.
+void *random_element(List *head) {
+    int list_len = len_list(head);
+    if (list_len == 0) {
         return NULL;
     }
 
-    int len = len_list(head);
-    if (len == 0) {
-        return NULL;
+    // `random()` returns a long int, typically non-negative.
+    // Ensure `srandom(time(NULL))` is called once in main for proper randomness.
+    long r_val = random();
+    if (r_val < 0) {
+        // This condition is defensive; `random()` usually returns non-negative values.
+        fprintf(stderr, "Error: random() returned a negative value in random_element at %s:%d\n", __FILE__, __LINE__);
+        exit(EXIT_FAILURE);
     }
 
-    long rand_val = random();
-    // POSIX `random()` returns a non-negative value. The original check `lVar1 < 0`
-    // is likely dead code or for a specific environment where `random` might return negative.
-    if (rand_val < 0) {
-        _error(5, __FILE__, __LINE__);
+    unsigned int index = (unsigned int)(r_val % list_len);
+    return lindex(head, index);
+}
+
+// Main function to demonstrate usage and test functionalities
+int main() {
+    // Seed the random number generator once for `random_element`
+    srandom(time(NULL));
+
+    List *myList = NULL;
+
+    printf("--- Appending elements ---\n");
+    // append_list now handles strdup, so we can pass string literals directly
+    append_list(&myList, "apple", 0);  // Unique check, adds "apple"
+    append_list(&myList, "banana", 0); // Unique check, adds "banana"
+    append_list(&myList, "cherry", 0); // Unique check, adds "cherry"
+    append_list(&myList, "apple", 0);  // Unique check, should NOT add "apple" again
+
+    printf("List length: %d\n", len_list(myList)); // Expected: 3 (apple, banana, cherry)
+
+    printf("List elements:\n");
+    for (int i = 0; i < len_list(myList); ++i) {
+        printf("  [%d]: %s\n", i, (char *)lindex(myList, i));
     }
 
-    unsigned int random_index = (unsigned int)(rand_val % len);
+    // Test non-unique append
+    append_list(&myList, "grape", 1); // No unique check, adds "grape"
+    printf("List length after non-unique append: %d\n", len_list(myList)); // Expected: 4
+    printf("  [3]: %s\n", (char *)lindex(myList, 3)); // Expected: grape
 
-    return lindex(head, random_index);
+    // Test lindex
+    printf("\n--- Testing lindex ---\n");
+    printf("Element at index 1: %s\n", (char *)lindex(myList, 1));   // Expected: banana
+    printf("Element at index -1: %s\n", (char *)lindex(myList, -1)); // Expected: grape
+    printf("Element at index 0: %s\n", (char *)lindex(myList, 0));   // Expected: apple
+    printf("Element at index 10 (out of bounds): %s\n", (char *)lindex(myList, 10)); // Expected: (null)
+
+    // Test copy_list
+    printf("\n--- Testing copy_list ---\n");
+    List *copiedList = copy_list(myList, 1, 3); // Copy "banana", "cherry"
+    printf("Copied list length: %d\n", len_list(copiedList)); // Expected: 2
+    printf("Copied list elements:\n");
+    for (int i = 0; i < len_list(copiedList); ++i) {
+        printf("  [%d]: %s\n", i, (char *)lindex(copiedList, i));
+    }
+
+    List *fullCopy = copy_list(myList, 0, 0); // Full copy (start 0, end 0 means up to list_len)
+    printf("Full copied list length: %d\n", len_list(fullCopy)); // Expected: 4
+    printf("Full copied list elements:\n");
+    for (int i = 0; i < len_list(fullCopy); ++i) {
+        printf("  [%d]: %s\n", i, (char *)lindex(fullCopy, i));
+    }
+
+    // Test concat_list
+    printf("\n--- Testing concat_list ---\n");
+    List *otherList = NULL;
+    append_list(&otherList, "date", 0);
+    append_list(&otherList, "elderberry", 0);
+    printf("Other list length: %d\n", len_list(otherList)); // Expected: 2
+
+    myList = concat_list(myList, otherList); // Append otherList's elements to myList
+    printf("Concatenated list length (myList): %d\n", len_list(myList)); // Expected: 4 + 2 = 6
+    printf("Concatenated list elements:\n");
+    for (int i = 0; i < len_list(myList); ++i) {
+        printf("  [%d]: %s\n", i, (char *)lindex(myList, i));
+    }
+
+    // Test random_element
+    printf("\n--- Testing random_element ---\n");
+    printf("Random element: %s\n", (char *)random_element(myList));
+    printf("Random element: %s\n", (char *)random_element(myList));
+    printf("Random element: %s\n", (char *)random_element(myList));
+
+    // Test nested lists (list of lists)
+    printf("\n--- Testing free_list_of_lists ---\n");
+    List *nestedList = NULL;
+    append_list(&nestedList, "inner_a", 0);
+    append_list(&nestedList, "inner_b", 0);
+
+    List *listOfLists = NULL;
+    append_list(&listOfLists, "outer_1", 0);
+    // Add the nested list as data to the outer list.
+    // Note: This makes the outer list node "own" the nested list.
+    // The data for "outer_1" (a string) will be freed by free_list(listOfLists, 0).
+    // To add a list, we need to bypass strdup and directly set the data.
+    List *listNodeForNested = init_list(nestedList); // create a node whose data is nestedList
+    if (listOfLists == NULL) {
+        listOfLists = listNodeForNested;
+    } else {
+        List *current = listOfLists;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = listNodeForNested;
+        listNodeForNested->prev = current;
+    }
+    append_list(&listOfLists, "outer_2", 0);
+
+    printf("List of lists length: %d\n", len_list(listOfLists)); // Expected: 3
+    printf("Outer list elements:\n");
+    for (int i = 0; i < len_list(listOfLists); ++i) {
+        void *data = lindex(listOfLists, i);
+        if (i == 1) { // The nested list is at index 1
+            printf("  [%d]: (Nested List) Length: %d\n", i, len_list((List*)data));
+            for (int j = 0; j < len_list((List*)data); ++j) {
+                printf("    Inner [%d]: %s\n", j, (char*)lindex((List*)data, j));
+            }
+        } else {
+            printf("  [%d]: %s\n", i, (char *)data);
+        }
+    }
+
+
+    // Free all lists
+    printf("\n--- Freeing lists ---\n");
+    // myList, copiedList, fullCopy, otherList have nodes whose data was strdup'd by append_list.
+    // So, free_data_flag should be 0 to free these strdup'd strings.
+    free_list(myList, 0);       // Free myList and its data
+    free_list(copiedList, 0);   // Free copiedList and its data
+    free_list(fullCopy, 0);     // Free fullCopy and its data
+    free_list(otherList, 0);    // Free otherList and its data
+
+    // For listOfLists:
+    // - "outer_1" and "outer_2" are strings (data should be freed).
+    // - The data for the second node is `nestedList` (a `List*`).
+    //   `free_data_depth=1` means free the string data *within* the `nestedList`.
+    //   `free_list_of_lists` will free the "outer_1" and "outer_2" nodes.
+    //   When it encounters the `nestedList` as data, it calls `free_list(nestedList, 0)`.
+    //   `free_list(nestedList, 0)` will free "inner_a" and "inner_b" strings and their nodes.
+    free_list_of_lists(listOfLists, 1); // Free listOfLists, and its inner lists' data
+
+    printf("All lists freed.\n");
+
+    return 0;
 }

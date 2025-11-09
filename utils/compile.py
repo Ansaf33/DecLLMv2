@@ -128,6 +128,7 @@ class Compiler:
       
       if result.returncode == 0:
         success_message = f"Compilation succeeded: {output_file_path}"
+        os.chmod(output_file_path, 0o777)  # make executable
         #self.logger.info(success_message)
         return True, success_message
       else:
@@ -282,4 +283,6 @@ class Compiler:
     self.logger.info(f"Successfully compiled {compiled_count} out of {len(results)} files.")
       
     return results
+  
+
   

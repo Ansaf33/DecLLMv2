@@ -1,24 +1,22 @@
-#include <stdio.h>    // For sprintf, NULL, printf (for dummy functions), stderr
-#include <stdlib.h>   // For malloc, free, exit
-#include <string.h>   // For memset, strlen
-#include <unistd.h>   // For read, write (used by dummy read_n_bytes/transmit_all)
-#include <stdint.h>   // For fixed-width integer types if needed (e.g., uint8_t)
+#include <stdio.h>   // For sprintf
+#include <stdlib.h>  // For malloc
+#include <string.h>  // For bzero, strlen
+#include <unistd.h>  // For read (if read_n_bytes wraps it)
+#include <stdint.h>  // For uint32_t
 
-// --- Type definitions from decompiler (adjusted for standard C) ---
+// --- Custom types from disassembler output ---
+// Assuming 'byte' is unsigned char
 typedef unsigned char byte;
-// undefined4 is often a 4-byte value, typically an int or unsigned int.
-// Using unsigned int to be safe with raw memory interpretations.
-typedef unsigned int undefined4;
-typedef char undefined; // undefined is often a single byte, char is appropriate.
+// Assuming 'undefined' is a generic void type or char for single bytes
+// We'll use specific types (char, void*, uint32_t) where appropriate
+// Assuming 'undefined4' is a 4-byte unsigned integer
+typedef uint32_t undefined4;
 
-// --- Global variables from original snippet ---
-int flag_index = 0;
-// Dummy data for DAT_4347c000. It's assumed to be a large array of bytes.
-// The original snippet accesses `(&DAT_4347c000)[index]`, which is equivalent to `DAT_4347c000[index]`.
-// The maximum index used is `10 + flag_index`, where `flag_index` goes up to `99`.
-// So an array size of at least 110 (10+99+1) is needed.
-byte DAT_4347c000[120] = {
-    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
+// --- Global variables ---
+// Placeholder for DAT_4347c000, assuming it's an array of chars/bytes
+// and large enough for index + 10 up to 100
+static unsigned char DAT_4347c000[100] = {
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, // Example values
     0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14,
     0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E,
     0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
@@ -27,443 +25,297 @@ byte DAT_4347c000[120] = {
     0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46,
     0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F, 0x50,
     0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A,
-    0x5B, 0x5C, 0x5D, 0x5E, 0x5F, 0x60, 0x61, 0x62, 0x63, 0x64,
-    0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E,
-    0x6F, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78,
+    0x5B, 0x5C, 0x5D, 0x5E, 0x5F, 0x60, 0x61, 0x62, 0x63, 0x64
 };
+static int flag_index = 0; // Global index used by getRandomName
 
-// --- Struct definitions ---
+// --- Forward declarations for external/custom functions ---
+// (Signatures adjusted based on usage in the provided snippet)
+extern int read_n_bytes(int fd, void *buf, size_t count, int *bytes_read);
+extern void _terminate(int status);
+extern int transmit_all(int fd, const void *buf, size_t count);
 
-// Represents a single high score entry in a linked list.
-typedef struct Score {
-    char *name;         // Dynamically allocated string for the player's name
-    int moves;          // Number of moves taken to complete the dungeon
-    struct Score *next; // Pointer to the next score in the list
-} Score;
+// Define a struct to represent the dungeon information,
+// which seems to be passed around as a block of uint32_t values.
+// The member names reflect their apparent usage in main and other functions.
+typedef struct {
+    uint32_t menu_quit_key_game_description_moves_packed1; // local_30
+    uint32_t menu_play_key_game_description_moves_packed2; // local_2c
+    uint32_t menu_inst_hs_keys;                            // local_28
+    uint32_t current_dungeon_view_id;                      // local_24 (param_1[3] in playGame)
+    uint32_t player_data_1;                                // local_20 (param_1[4] in playerDied)
+    uint32_t high_score_list_head;                         // local_1c (param_1[5] in playerDied, head of HS list)
+} DungeonInfo;
 
-// Represents the overall state and configuration of the game.
-// This struct consolidates all the `local_xx` variables and parameters
-// inferred from the decompiled code's usage.
-typedef struct GameState {
-    // Menu navigation characters (used in sendMenuInstruction and main loop)
-    char menu_quit_char;
-    char menu_play_char;
-    char menu_instructions_char;
-    char menu_highscores_char;
+extern void sendCurrentDungeonView(uint32_t dungeon_view_id);
+extern int makeMove(DungeonInfo *info, char move_char);
+extern void playerDied(uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4, uint32_t p5, uint32_t p6);
+extern void playerWon(DungeonInfo *info);
+extern void buildDungeon(DungeonInfo *info);
+extern void destroyDungeon(DungeonInfo *info);
+extern uint32_t insertNewScore(uint32_t *new_score_entry, uint32_t old_head);
 
-    // In-game movement characters (used in sendGameDescription, makeMove, playerDied)
-    char game_move_left_char;
-    char game_move_right_char;
-    char game_move_jump_char;
-    char game_move_jump_left_char;
-    char game_move_jump_right_char;
-    char game_move_wait_char;
-    char game_quit_char; // Character to quit the game itself during play
-
-    // Game data pointers (e.g., for dungeon map, high score list head)
-    void *dungeon_data;               // Placeholder for dungeon map/state
-    Score *high_scores_list_head; // Head of the linked list of high scores
-} GameState;
-
-
-// --- External function declarations (dummy implementations provided for compilation) ---
-
-// Terminates the program with a given exit code.
-void _terminate(int exit_code) {
-    fprintf(stderr, "Program terminated with code %d\n", exit_code);
-    exit(exit_code);
-}
-
-// Reads `count` bytes from `fd` into `buf`. Stores actual bytes read in `bytes_read_ptr`.
-// Returns 0 on success, non-zero on error.
-int read_n_bytes(int fd, char *buf, size_t count, int *bytes_read_ptr) {
-    // Dummy implementation: only handles stdin (fd 0)
-    if (fd != 0) {
-        *bytes_read_ptr = 0;
-        return -1; // Error for unsupported fd
-    }
-    ssize_t bytes_read = read(fd, buf, count);
-    if (bytes_read == -1) {
-        *bytes_read_ptr = 0;
-        perror("read_n_bytes error");
-        return -1; // Error reading
-    }
-    *bytes_read_ptr = (int)bytes_read;
-    return 0; // Success
-}
-
-// Transmits `count` bytes from `buf` to `fd`.
-// Returns 0 on success, non-zero on error.
-int transmit_all(int fd, const char *buf, size_t count) {
-    // Dummy implementation: only handles stdout (fd 1)
-    if (fd != 1) {
-        fprintf(stderr, "transmit_all only supports stdout in dummy implementation.\n");
-        return -1; // Error for unsupported fd
-    }
-    size_t total_written = 0;
-    while (total_written < count) {
-        ssize_t written = write(fd, buf + total_written, count - total_written);
-        if (written == -1) {
-            perror("transmit_all error");
-            return -1; // Error writing
-        }
-        total_written += written;
-    }
-    return 0; // Success
-}
-
-// Displays the current dungeon view to the player.
-void sendCurrentDungeonView(void *dungeon_data) {
-    printf("[DEBUG] Sending current dungeon view (data at %p)...\n", dungeon_data);
-    // Dummy implementation: print a message
-}
-
-// Processes a player's move.
-// Returns 1 for player won, 2 for player died, 0 for game continues.
-int makeMove(GameState *game_state, char move_char) {
-    printf("[DEBUG] Making move '%c' for game state at %p...\n", move_char, (void*)game_state);
-    // Dummy implementation: always continue for now.
-    // In a real game, this would update dungeon_data, player position, etc.
-    // For testing, uncomment lines below to simulate win/lose conditions
-    /*
-    static int move_count = 0;
-    move_count++;
-    if (move_count % 5 == 0) return 1; // Simulate a win
-    if (move_count % 7 == 0) return 2; // Simulate a death
-    */
-    return 0;
-}
-
-// Handles the event when the player dies.
-void playerDied(char game_quit_char, char move_left, char move_right,
-                char move_jump, char move_jump_left, char move_jump_right) {
-    printf("[DEBUG] Player died! Game config: Quit:'%c', Left:'%c', Right:'%c', Jump:'%c', JumpLeft:'%c', JumpRight:'%c'\n",
-           game_quit_char, move_left, move_right, move_jump, move_jump_left, move_jump_right);
-    // Dummy implementation: print a message
-}
-
-// Handles the event when the player wins.
-void playerWon(GameState *game_state) {
-    printf("[DEBUG] Player won! Game state at %p.\n", (void*)game_state);
-    // Dummy implementation: print a message
-}
-
-// Initializes the dungeon for a new game.
-void buildDungeon(GameState *game_state) {
-    printf("[DEBUG] Building dungeon for game state at %p...\n", (void*)game_state);
-    // Dummy implementation: populate GameState with default/initial values
-    game_state->menu_quit_char = 'q';
-    game_state->menu_play_char = 'p';
-    game_state->menu_instructions_char = 'i';
-    game_state->menu_highscores_char = 'h';
-
-    game_state->game_move_left_char = 'a';
-    game_state->game_move_right_char = 'd';
-    game_state->game_move_jump_char = 'w';
-    game_state->game_move_jump_left_char = 'z';
-    game_state->game_move_jump_right_char = 'x';
-    game_state->game_move_wait_char = 's';
-    game_state->game_quit_char = 'Q'; // Different char for quitting game vs menu
-
-    game_state->dungeon_data = (void*)0xDEADBEEF; // Dummy address for dungeon data
-    // high_scores_list_head is initialized by initScoreboard
-}
-
-// Cleans up resources associated with the dungeon.
-void destroyDungeon(GameState *game_state) {
-    printf("[DEBUG] Destroying dungeon for game state at %p...\n", (void*)game_state);
-    // Dummy implementation: cleanup dungeon data
-    game_state->dungeon_data = NULL;
-}
-
-// Inserts a new score into the sorted high scores linked list (lower moves are better).
-// Returns the new head of the list.
-Score *insertNewScore(Score *new_score, Score *head_score) {
-    printf("[DEBUG] Inserting new score: %s (moves: %d)\n", new_score->name, new_score->moves);
-    if (head_score == NULL || new_score->moves < head_score->moves) {
-        new_score->next = head_score;
-        return new_score;
-    }
-    Score *current = head_score;
-    while (current->next != NULL && new_score->moves >= current->next->moves) {
-        current = current->next;
-    }
-    new_score->next = current->next;
-    current->next = new_score;
-    return head_score;
-}
-
-
-// --- Original functions, refactored ---
 
 // Function: getRandomName
-// Generates a random 10-character name (A-Z or a-z) and returns it as a
-// dynamically allocated string. The string is null-terminated.
-char *getRandomName(void) {
-  char *name_buf = (char *)malloc(11); // 10 chars + null terminator
-  if (name_buf == NULL) {
-    return NULL; // Return NULL if memory allocation fails
-  }
-  
-  memset(name_buf, 0, 11); // Initialize buffer with zeros
-  
-  for (int i = 0; i < 10; i++) {
-    // Determine if character should be uppercase or lowercase based on a bit in DAT_4347c000
-    if ((DAT_4347c000[i + flag_index] & 1) == 0) {
-      name_buf[i] = DAT_4347c000[i + flag_index] % 26 + 'A'; // Uppercase (A-Z)
-    } else {
-      name_buf[i] = DAT_4347c000[i + flag_index] % 26 + 'a'; // Lowercase (a-z)
+void *getRandomName(void) {
+    char *s = (char *)malloc(11); // Allocate 11 bytes for a 10-char string + null terminator
+    if (s == NULL) {
+        return NULL;
     }
-  }
-  flag_index = (flag_index + 10) % 100; // Update global index for next call
-  
-  return name_buf;
+
+    bzero(s, 11);
+    for (int i = 0; i < 10; i++) {
+        unsigned char data_val = DAT_4347c000[i + flag_index];
+        if ((data_val & 1) == 0) { // Check least significant bit for case
+            s[i] = (data_val % 26) + 'A'; // Uppercase 'A' (0x41)
+        } else {
+            s[i] = (data_val % 26) + 'a'; // Lowercase 'a' (0x61)
+        }
+    }
+    flag_index = (flag_index + 10) % 100;
+    return s;
 }
 
 // Function: getMove
-// Reads a single character from standard input.
-// Returns the character read, or '\0' if no character was read (e.g., EOF).
-// Terminates the program on read errors.
-char getMove(void) {
-  char input_buffer[8]; // Buffer to hold input, only the first byte is relevant
-  int bytes_read_count = 0; // Stores the number of bytes successfully read
-  
-  memset(input_buffer, 0, sizeof(input_buffer)); // Clear the buffer
-  
-  // Attempt to read 1 byte from file descriptor 0 (stdin)
-  if (read_n_bytes(0, input_buffer, 1, &bytes_read_count) != 0) {
-    _terminate(1); // Terminate if read_n_bytes indicates an error
-  }
-  
-  if (bytes_read_count == 0) {
-    return '\0'; // Return null character if no bytes were read (e.g., EOF or empty input)
-  }
-  
-  return input_buffer[0]; // Return the first character read
+char getMove(void) { // Changed return type to char
+    char input_buffer[8];
+    int bytes_read_count = 0;
+
+    bzero(input_buffer, 4); // Clear first 4 bytes
+    int read_status = read_n_bytes(0, input_buffer, 2, &bytes_read_count);
+    if (read_status != 0) {
+        _terminate(1);
+    }
+    if (bytes_read_count == 0) {
+        input_buffer[0] = 0; // If no bytes read, set to null
+    }
+    return input_buffer[0];
 }
 
 // Function: sendGameDescription
-// Sends a formatted string to stdout describing the available game moves.
-// Replaces custom '!C' format specifiers with standard '%c'.
-void sendGameDescription(char move_left, char move_right, char move_jump,
-                         char move_jump_left, char move_jump_right, char move_wait,
-                         char move_quit) {
-  char buffer[1024]; // Buffer for the formatted string
-  
-  memset(buffer, 0, sizeof(buffer)); // Initialize buffer with zeros
-  
-  // Format the game description string
-  sprintf(buffer,
-          "Game moves\n----------\nLeft: %c\nRight: %c\nJump: %c\nJump Left: %c\nJump Right: %c\nWait: %c\nQuit game: %c\n",
-          move_left, move_right, move_jump, move_jump_left, move_jump_right, move_wait, move_quit);
-  
-  size_t len = strlen(buffer); // Get the length of the formatted string
-  // Transmit the string to stdout (fd 1)
-  if (transmit_all(1, buffer, len) != 0) {
-    _terminate(2); // Terminate if transmission fails
-  }
+// Parameters adjusted to reflect byte-packed characters in main's DungeonInfo
+void sendGameDescription(uint32_t packed_moves1, uint32_t packed_moves2) {
+    char description_buffer[1024];
+    size_t len = 0;
+    int transmit_status = 0;
+
+    bzero(description_buffer, sizeof(description_buffer));
+
+    // Extract characters from packed uint32_t parameters
+    char left_key = (char)(packed_moves1 & 0xFF);
+    char right_key = (char)((packed_moves1 >> 8) & 0xFF);
+    char jump_key = (char)((packed_moves1 >> 16) & 0xFF);
+    char quit_key = (char)((packed_moves1 >> 24) & 0xFF);
+
+    char jump_left_key = (char)(packed_moves2 & 0xFF);
+    char jump_right_key = (char)((packed_moves2 >> 8) & 0xFF);
+    char wait_key = (char)((packed_moves2 >> 16) & 0xFF);
+
+    sprintf(description_buffer,
+            "Game moves\n----------\nLeft: %c\nRight: %c\nJump: %c\nJump Left: %c\nJump Right: %c\nWait: %c\nQuit game: %c\n",
+            left_key, right_key, jump_key, jump_left_key, jump_right_key, wait_key, quit_key);
+
+    len = strlen(description_buffer);
+    transmit_status = transmit_all(1, description_buffer, len);
+    if (transmit_status != 0) {
+        _terminate(2);
+    }
 }
 
 // Function: sendMenuInstruction
-// Sends a formatted string to stdout describing the main menu options.
-// Replaces custom '!C' format specifiers with standard '%c'.
-void sendMenuInstruction(char play_game_char, char get_instructions_char,
-                         char high_scores_char, char quit_game_char) {
-  char buffer[1024]; // Buffer for the formatted string
-  
-  memset(buffer, 0, sizeof(buffer)); // Initialize buffer with zeros
-  
-  // Format the menu instruction string
-  sprintf(buffer,
-          "Menu\n-----\nPlay game: %c\nGet instructions: %c\nHigh Scores: %c\nQuit game: %c\n",
-          play_game_char, get_instructions_char, high_scores_char, quit_game_char);
-  
-  size_t len = strlen(buffer); // Get the length of the formatted string
-  // Transmit the string to stdout (fd 1)
-  if (transmit_all(1, buffer, len) != 0) {
-    _terminate(2); // Terminate if transmission fails
-  }
+// Parameters adjusted to reflect byte-packed characters in main's DungeonInfo
+void sendMenuInstruction(uint32_t quit_packed, uint32_t play_packed, uint32_t inst_hs_packed) {
+    char menu_buffer[1024];
+    size_t len = 0;
+    int transmit_status = 0;
+
+    bzero(menu_buffer, sizeof(menu_buffer));
+
+    // Extract characters from packed uint32_t parameters
+    char play_game_key = (char)((play_packed >> 16) & 0xFF);
+    char get_instructions_key = (char)(inst_hs_packed & 0xFF);
+    char high_scores_key = (char)((inst_hs_packed >> 8) & 0xFF);
+    char quit_game_key = (char)(quit_packed & 0xFF);
+
+    sprintf(menu_buffer,
+            "Menu\n-----\nPlay game: %c\nGet instructions: %c\nHigh Scores: %c\nQuit game: %c\n",
+            play_game_key, get_instructions_key, high_scores_key, quit_game_key);
+
+    len = strlen(menu_buffer);
+    transmit_status = transmit_all(1, menu_buffer, len);
+    if (transmit_status != 0) {
+        _terminate(2);
+    }
 }
 
 // Function: playGame
-// Manages the main game loop, handling player input and game state transitions.
-// Returns 1 if player won, 2 if player died, 3 if player quit mid-game.
-int playGame(GameState *game_state) {
-  sendCurrentDungeonView(game_state->dungeon_data); // Display the initial dungeon state
-  
-  while (1) { // Infinite loop for game play, broken by return statements
-    char move_char = getMove(); // Get player's move input
-    
-    if (move_char == game_state->game_quit_char) {
-      return 3; // Player chose to quit the game
+uint32_t playGame(DungeonInfo *dungeon_info) { // Changed param type to DungeonInfo* and return type to uint32_t
+    char move_char;
+    int move_result;
+
+    sendCurrentDungeonView(dungeon_info->current_dungeon_view_id);
+    while (1) {
+        move_char = getMove();
+        // Compare with the quit key stored in dungeon_info
+        if (move_char == (char)(dungeon_info->menu_quit_key_game_description_moves_packed1 & 0xFF)) {
+            return 3; // Game quit
+        }
+        move_result = makeMove(dungeon_info, move_char);
+        if (move_result == 1) {
+            break; // Player won
+        }
+        if (move_result == 2) {
+            playerDied(dungeon_info->menu_quit_key_game_description_moves_packed1,
+                       dungeon_info->menu_play_key_game_description_moves_packed2,
+                       dungeon_info->menu_inst_hs_keys,
+                       dungeon_info->current_dungeon_view_id,
+                       dungeon_info->player_data_1,
+                       dungeon_info->high_score_list_head);
+            return 2; // Player died
+        }
     }
-    
-    int move_result = makeMove(game_state, move_char); // Process the player's move
-    
-    if (move_result == 1) { // Player won the game
-      playerWon(game_state);
-      return 1;
-    }
-    if (move_result == 2) { // Player died in the game
-      // Call playerDied with relevant game configuration characters
-      playerDied(game_state->game_quit_char, game_state->game_move_left_char,
-                 game_state->game_move_right_char, game_state->game_move_jump_char,
-                 game_state->game_move_jump_left_char, game_state->game_move_jump_right_char);
-      return 2;
-    }
-    // If move_result is 0, the game continues, and the loop reiterates.
-  }
+    playerWon(dungeon_info);
+    return 1; // Player won
 }
 
 // Function: sendHighScores
-// Displays the current high scores list to stdout.
-void sendHighScores(Score *head_score) {
-  char buffer[61]; // Buffer for formatting individual score entries (0x3d = 61 bytes)
-  
-  if (head_score == NULL) {
-    const char *no_scores_msg = "NO HIGH SCORES!\n";
-    // Transmit message directly if no scores exist
-    if (transmit_all(1, no_scores_msg, strlen(no_scores_msg)) != 0) {
-      _terminate(2);
+void sendHighScores(uint32_t *high_score_list_head) { // Renamed param for clarity, kept uint32_t*
+    char buffer[61]; // local_55 was 0x3d = 61 bytes
+    int score_rank = 2; // local_10 initialized to 2
+
+    if (high_score_list_head == NULL) {
+        size_t len = strlen("NO HIGH SCORES!\n");
+        int transmit_status = transmit_all(1, "NO HIGH SCORES!\n", len);
+        if (transmit_status != 0) {
+            _terminate(0); // Status 0 for this case, not 2
+        }
+        return;
     }
-    return;
-  }
 
-  // Display the top score in a special format
-  memset(buffer, 0, sizeof(buffer));
-  // Replaced custom '!U' with '%u' (unsigned int) and '!X' with '%s' (string)
-  sprintf(buffer, "Dungeon conquered in %u moves %s\n", head_score->moves, head_score->name);
-  if (transmit_all(1, buffer, strlen(buffer)) != 0) {
-    _terminate(2);
-  }
-
-  // Display a header for the high scores table
-  const char *header_msg = "\n-------------------\n moves   |   name  \n-------------------\n";
-  if (transmit_all(1, header_msg, strlen(header_msg)) != 0) {
-    _terminate(2);
-  }
-
-  // Iterate through the linked list of scores and display each one
-  int rank = 1; // Start rank from 1
-  Score *current_score = head_score;
-  while (current_score != NULL) {
-    memset(buffer, 0, sizeof(buffer));
-    // Format each score entry with rank, moves, and name
-    sprintf(buffer, "%2d. %5u  %s\n", rank, current_score->moves, current_score->name);
-    if (transmit_all(1, buffer, strlen(buffer)) != 0) {
-      _terminate(2);
+    // First score entry (which is the param_1 itself)
+    bzero(buffer, sizeof(buffer));
+    // Assuming *high_score_list_head is char* name, high_score_list_head[1] is score
+    sprintf(buffer, "Dungeon conquered in %u moves %s\n", high_score_list_head[1], (char *)*high_score_list_head);
+    size_t len = strlen(buffer);
+    int transmit_status = transmit_all(1, buffer, len);
+    if (transmit_status != 0) {
+        _terminate(2);
     }
-    rank++;
-    current_score = current_score->next; // Move to the next score
-  }
+
+    // Separator
+    const char *separator = "\n-------------------\n moves   |   name  \n-------------------\n";
+    len = strlen(separator);
+    transmit_status = transmit_all(1, separator, len);
+    if (transmit_status != 0) {
+        _terminate(2);
+    }
+
+    // Iterate through the rest of the high scores linked list
+    // high_score_list_head[2] is the pointer to the next score entry
+    for (uint32_t *current_score_entry = (uint32_t *)high_score_list_head[2];
+         current_score_entry != NULL;
+         current_score_entry = (uint32_t *)current_score_entry[2]) {
+
+        bzero(buffer, sizeof(buffer));
+        // Assuming *current_score_entry is char* name, current_score_entry[1] is score
+        sprintf(buffer, "%u. %u  %s\n", score_rank, current_score_entry[1], (char *)*current_score_entry);
+        score_rank++;
+
+        len = strlen(buffer);
+        transmit_status = transmit_all(1, buffer, len);
+        if (transmit_status != 0) {
+            _terminate(2);
+        }
+    }
 }
 
 // Function: initScoreboard
-// Initializes the game's high scoreboard with a few predefined dummy scores.
-void initScoreboard(GameState *game_state) {
-  Score *new_score;
+void initScoreboard(DungeonInfo *dungeon_info) { // Changed param type to DungeonInfo*
+    uint32_t *new_score_entry;
+    uint32_t old_head;
 
-  // Create and insert the first dummy score
-  new_score = (Score *)malloc(sizeof(Score));
-  if (new_score == NULL) {
-    _terminate(1); // Terminate if malloc fails
-  }
-  memset(new_score, 0, sizeof(Score)); // Initialize allocated memory
-  new_score->name = getRandomName();   // Get a random name for the score
-  if (new_score->name == NULL) { // Check if getRandomName failed to allocate memory
-      free(new_score); // Free the Score struct itself
-      _terminate(1);
-  }
-  new_score->moves = 600;
-  new_score->next = NULL;
-  game_state->high_scores_list_head = insertNewScore(new_score, game_state->high_scores_list_head);
+    // First score entry
+    new_score_entry = (uint32_t *)malloc(0xc); // Allocate 12 bytes for score entry (name_ptr, score, next_ptr)
+    if (new_score_entry == NULL) {
+        _terminate(1);
+    }
+    bzero(new_score_entry, 0xc);
+    *new_score_entry = (uint32_t)getRandomName(); // Name pointer
+    new_score_entry[1] = 600;                     // Score
+    new_score_entry[2] = 0;                       // Next pointer (initially NULL)
+    
+    old_head = dungeon_info->high_score_list_head; // Get current head of list
+    dungeon_info->high_score_list_head = insertNewScore(new_score_entry, old_head); // Insert and update head
 
-  // Create and insert the second dummy score
-  new_score = (Score *)malloc(sizeof(Score));
-  if (new_score == NULL) {
-    _terminate(1);
-  }
-  memset(new_score, 0, sizeof(Score));
-  new_score->name = getRandomName();
-  if (new_score->name == NULL) {
-      free(new_score);
-      _terminate(1);
-  }
-  new_score->moves = 0x259; // 601 in decimal
-  new_score->next = NULL;
-  game_state->high_scores_list_head = insertNewScore(new_score, game_state->high_scores_list_head);
+    // Second score entry
+    new_score_entry = (uint32_t *)malloc(0xc);
+    if (new_score_entry == NULL) {
+        _terminate(1);
+    }
+    bzero(new_score_entry, 0xc);
+    *new_score_entry = (uint32_t)getRandomName();
+    new_score_entry[1] = 0x259; // 601 in decimal
+    new_score_entry[2] = 0;
+    
+    old_head = dungeon_info->high_score_list_head;
+    dungeon_info->high_score_list_head = insertNewScore(new_score_entry, old_head);
 
-  // Create and insert the third dummy score
-  new_score = (Score *)malloc(sizeof(Score));
-  if (new_score == NULL) {
-    _terminate(1);
-  }
-  memset(new_score, 0, sizeof(Score));
-  new_score->name = getRandomName();
-  if (new_score->name == NULL) {
-      free(new_score);
-      _terminate(1);
-  }
-  new_score->moves = 999999; // A very high score (bad)
-  new_score->next = NULL;
-  game_state->high_scores_list_head = insertNewScore(new_score, game_state->high_scores_list_head);
+    // Third score entry
+    new_score_entry = (uint32_t *)malloc(0xc);
+    if (new_score_entry == NULL) {
+        _terminate(1);
+    }
+    bzero(new_score_entry, 0xc);
+    *new_score_entry = (uint32_t)getRandomName();
+    new_score_entry[1] = 999999;
+    new_score_entry[2] = 0;
+    
+    old_head = dungeon_info->high_score_list_head;
+    dungeon_info->high_score_list_head = insertNewScore(new_score_entry, old_head);
 }
 
 // Function: main
-// Entry point of the program. Manages the main menu and game flow.
-int main(void) {
-  // Declare a single GameState struct to hold all game configuration and dynamic data.
-  // This replaces the multiple `local_xx` undefined4 variables from the original snippet.
-  GameState game_state;
-  memset(&game_state, 0, sizeof(GameState)); // Initialize the struct's memory to zeros
+uint32_t main(void) { // Changed return type to uint32_t
+    DungeonInfo dungeon_info; // Use the struct for dungeon information
+    char menu_choice_char;
+    int game_result = 0;
 
-  // Initialize the dungeon and game configuration
-  buildDungeon(&game_state);
-  // Initialize the scoreboard and populate it with initial scores
-  initScoreboard(&game_state);
+    // Initialize the struct to zero
+    bzero(&dungeon_info, sizeof(DungeonInfo));
 
-  while (1) { // Main menu loop, continues until the player chooses to quit
-    // Display menu instructions using characters from the game_state config
-    sendMenuInstruction(game_state.menu_play_char, game_state.menu_instructions_char,
-                        game_state.menu_highscores_char, game_state.menu_quit_char);
-    
-    char menu_choice = getMove(); // Get player's menu choice
+    buildDungeon(&dungeon_info);
+    initScoreboard(&dungeon_info);
 
-    if (menu_choice == game_state.menu_play_char) {
-      // Player chose to play the game
-      int game_result = playGame(&game_state);
-      if (game_result == 3) { // Player quit the game mid-play
-        // No action needed, loop back to main menu
-      } else { // Game ended (player won or died)
-        destroyDungeon(&game_state); // Clean up current dungeon resources
-        buildDungeon(&game_state);   // Build a new dungeon for the next game
-      }
-    } else if (menu_choice == game_state.menu_instructions_char) {
-      // Player chose to view game instructions/description
-      sendGameDescription(game_state.game_move_left_char, game_state.game_move_right_char,
-                          game_state.game_move_jump_char, game_state.game_move_jump_left_char,
-                          game_state.game_move_jump_right_char, game_state.game_move_wait_char,
-                          game_state.game_quit_char);
-    } else if (menu_choice == game_state.menu_highscores_char) {
-      // Player chose to view high scores
-      sendHighScores(game_state.high_scores_list_head);
-    } else if (menu_choice == game_state.menu_quit_char) {
-      // Player chose to quit the program
-      
-      // Free memory allocated for score names and Score structs
-      Score *current_score = game_state.high_scores_list_head;
-      while (current_score != NULL) {
-          Score *next_score = current_score->next;
-          free(current_score->name); // Free the name string
-          free(current_score);       // Free the Score struct
-          current_score = next_score;
-      }
-      // Clean up dungeon resources, if any were dynamically allocated
-      destroyDungeon(&game_state); 
-      return 0; // Exit successfully
+    while (1) {
+        while (1) {
+            sendMenuInstruction(dungeon_info.menu_quit_key_game_description_moves_packed1,
+                                dungeon_info.menu_play_key_game_description_moves_packed2,
+                                dungeon_info.menu_inst_hs_keys);
+            menu_choice_char = getMove();
+
+            // Compare menu_choice_char with keys stored in dungeon_info
+            char play_game_key = (char)((dungeon_info.menu_play_key_game_description_moves_packed2 >> 16) & 0xFF);
+            char get_instructions_key = (char)(dungeon_info.menu_inst_hs_keys & 0xFF);
+            char high_scores_key = (char)((dungeon_info.menu_inst_hs_keys >> 8) & 0xFF);
+            char quit_game_key = (char)(dungeon_info.menu_quit_key_game_description_moves_packed1 & 0xFF);
+
+            if (menu_choice_char == play_game_key) {
+                break; // Exit inner loop to play game
+            } else if (menu_choice_char == get_instructions_key) {
+                sendGameDescription(dungeon_info.menu_quit_key_game_description_moves_packed1,
+                                    dungeon_info.menu_play_key_game_description_moves_packed2);
+            } else if (menu_choice_char == high_scores_key) {
+                sendHighScores((uint32_t *)dungeon_info.high_score_list_head);
+            } else if (menu_choice_char == quit_game_key) {
+                return 0; // Quit application
+            }
+        }
+        game_result = playGame(&dungeon_info);
+        if (game_result == 3) { // Player explicitly quit during game
+            break;
+        }
+        destroyDungeon(&dungeon_info);
+        buildDungeon(&dungeon_info);
     }
-    // If an invalid choice is made, the loop continues, displaying the menu again.
-  }
-  // This line should theoretically not be reached as the loop always returns or terminates.
-  return 0;
+    return 0;
 }

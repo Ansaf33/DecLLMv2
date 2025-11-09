@@ -1,341 +1,319 @@
-#include <stdbool.h> // For bool type
-#include <stdint.h>  // For uint8_t, uint16_t, uint32_t
+#include <stdbool.h> // For bool
 #include <stdlib.h>  // For malloc, free, exit
 #include <string.h>  // For memset, memcmp
+#include <stdint.h>  // For uint16_t, uint32_t, uintptr_t
+#include <stdio.h>   // For exit(EXIT_FAILURE)
 
-// --- Placeholder External Function Declarations ---
-// These functions are assumed to be defined elsewhere and linked.
-// Their signatures are inferred from the provided snippet.
+// --- Type Definitions ---
+typedef uint16_t address_t;
+typedef uint32_t mail_ptr_t; // Represents a pointer to mail content, cast to uint32_t
+typedef uint8_t byte_t;
 
-// Binary Search Tree (BST) functions
-// Assuming BST stores uint16_t addresses.
-typedef void* bst_t; // Abstract type for BST handle
-extern bst_t bst_init(void); // Initializes a new BST and returns its handle
-extern void* bst_search(bst_t tree_handle, uint16_t key); // Returns pointer to key data if found, NULL otherwise
-extern void bst_insert(bst_t tree_handle, uint16_t key_to_insert); // Inserts a key into the BST
-extern void* bst_iter_start(bst_t tree_handle, int order); // Returns pointer to the first key (uint16_t) in iteration
-extern void* bst_iter_next(bst_t tree_handle); // Returns pointer to the next key (uint16_t) in iteration
+// Mailbox structure inferred from `*(int *)(param_1 + 4)`
+typedef struct mailbox {
+    void *mail_list_head; // Head of the list containing mail_ptr_t
+} mailbox_t;
 
-// Linked List functions
-typedef void* list_t;     // Abstract type for list handle
-typedef void* list_node_t; // Abstract type for list node
-typedef bool (*list_compare_func_t)(void*, void*); // Function pointer for sorting
+// Mail structure inferred from various accesses (e.g., `*(undefined2 *)(iVar3 + 2)`)
+// Assuming 0x184 bytes total for mail data, with addresses at the beginning.
+typedef struct mail_t {
+    address_t sender_address;    // Original `*puVar4` in do_return_to_sender
+    address_t recipient_address; // Original `*(undefined2 *)(iVar3 + 2)` in do_sort_mail, `puVar4[1]` in do_return_to_sender
+    byte_t content[384];         // 0x184 (388) - sizeof(address_t)*2 (4) = 384 bytes for actual content
+} mail_t;
 
-extern void list_init(list_t* list_handle_ptr, int param); // Initializes a list handle
-extern int list_length(list_t list_handle);
-extern void list_insert_at_end(list_t list_handle, void* data);
-extern void* list_pop(list_t list_handle); // Returns data from the head, removes node
-extern void list_destroy_node(list_t list_handle, list_node_t* node_ptr); // Destroys a specific node (if list_pop returns node, not data)
-extern list_node_t list_head_node(list_t list_handle); // Returns the head node
-extern list_node_t list_end_marker(list_t list_handle); // Returns an end marker for iteration
-extern list_node_t list_next_node(list_node_t node); // Returns the next node
-extern void* list_node_data(list_node_t node); // Returns data stored in a node
-extern void list_insert_sorted(list_t list_handle, void* data, list_compare_func_t compare_func, int param);
+// --- External Function Declarations (Assumed to be provided elsewhere) ---
+// These functions are used in the snippet but not defined within it.
+// Their signatures are inferred from their usage.
 
-// I/O and Stamp functions
-extern int recv_bytes(void* buffer, size_t size);
-extern int send_bytes(int flag, const void* buffer, size_t size);
+// BST (Binary Search Tree) functions
+extern void bst_init(void **tree_root);
+extern int bst_search_exists(void *tree_root, address_t address); // Returns 0 if not found, non-zero if found
+extern mailbox_t *bst_search_mailbox(void *tree_root, address_t address); // Returns mailbox_t* if found, NULL otherwise
+extern void *bst_iter_start(void *tree_root, int order); // Returns pointer to the first element's data (address_t*) or NULL
+extern void *bst_iter_next(void *iterator); // Returns pointer to the next element's data (address_t*) or NULL
+extern void bst_insert(void **tree_root, address_t address);
+
+// List functions
+extern void list_init(void *list_head, int type);
+extern int list_length(void *list_head);
+extern void list_insert_at_end(void *list_head, mail_ptr_t mail_data);
+extern void *list_pop(void *list_head); // Returns pointer to the node that was popped, or NULL
+extern void list_destroy_node(void *list_head, void **node_ptr); // Destroys a list node, sets *node_ptr to NULL
+extern void *list_head_node(void *list_head); // Returns pointer to the first node, or end_marker if empty
+extern void *list_end_marker(void *list_head); // Returns pointer to the end marker
+extern void list_insert_sorted(void *list_head, mail_ptr_t mail_data, bool (*compare)(mail_ptr_t, mail_ptr_t), int type);
+extern void *list_next_node(void *node_ptr); // Returns pointer to the next node
+
+// I/O functions
+// Assuming these are wrappers for system calls. Return bytes read/written, or -1 on error.
+extern int recv_bytes(void *buffer, size_t size);
+extern int send_bytes(void *buffer, size_t size);
+
+// Stamp-related functions
+extern int get_new_stamp(void);
+extern int use_stamp(void);
 extern void init_stamp_roll(void);
-extern int use_stamp(void); // Returns stamp value or -1 on error
-extern int get_new_stamp(void); // Returns new stamp value or 0 on error
 
-// --- Custom Data Structures ---
+// --- Global Variables (Assumed) ---
+void *mailboxes = NULL; // Root of the BST for addresses
 
-// Mailbox structure inferred from (param_1 + 4) access patterns
-typedef struct Mailbox {
-    uint32_t id;       // Identifier for the mailbox
-    list_t mail_list; // Handle to the list of mail in this mailbox
-} Mailbox;
+// Static mailbox structures
+mailbox_t undeliverable_box_struct;
+mailbox_t lost_box_struct;
+mailbox_t received_box_struct;
+mailbox_t sorted_box_struct;
 
-// Mail structure inferred from access patterns (e.g., mail_ptr + 2, mail_ptr + 4)
-// Assuming a mail item is a dynamically allocated struct pointer.
-#define MAIL_CONTENT_SIZE 400 // 0x184 (total mail size) - 4 bytes (addresses)
-typedef struct Mail {
-    uint16_t sender_address;
-    uint16_t receiver_address;
-    uint8_t content[MAIL_CONTENT_SIZE];
-} Mail;
+// Pointers to the static mailbox structures
+mailbox_t *undeliverable_box = &undeliverable_box_struct;
+mailbox_t *lost_box = &lost_box_struct;
+mailbox_t *received_box = &received_box_struct;
+mailbox_t *sorted_box = &sorted_box_struct;
 
-// Temporary struct for sorting undeliverable mail
-typedef struct {
-    uint16_t receiver;
-    uint16_t sender;
-} MailAddrPair;
+// Command constants (Assumed these are fixed-size char arrays for `memcmp`)
+extern const char CMD_ADD_ADDRESS[];
+extern const char CMD_RECEIVE_MAIL[];
+extern const char CMD_LIST_ADDRESSES[];
+extern const char CMD_SORT_MAIL[];
+extern const char CMD_LIST_UNDELIVERABLE_MAIL[];
+extern const char CMD_DELIVER_MAIL[];
+extern const char CMD_RETURN_TO_SENDER[];
+extern const char CMD_LIST_LOST_MAIL[];
+extern const char CMD_DESTROY_LOST_MAIL[];
+extern const char CMD_BUY_POSTAGE[];
+extern const char CMD_QUIT[];
 
-// --- Global Variables ---
-bst_t mailboxes; // Global BST handle for addresses
-
-// Global Mailbox instances
-Mailbox undeliverable_box_inst;
-Mailbox lost_box_inst;
-Mailbox received_box_inst;
-Mailbox sorted_box_inst;
-
-// Command strings (assuming these are global constants)
-const char CMD_ADD_ADDRESS[] = "ADD_";
-const char CMD_RECEIVE_MAIL[] = "RECV";
-const char CMD_LIST_ADDRESSES[] = "LSTA";
-const char CMD_SORT_MAIL[] = "SORT";
-const char CMD_LIST_UNDELIVERABLE_MAIL[] = "LSTU";
-const char CMD_DELIVER_MAIL[] = "DELV";
-const char CMD_RETURN_TO_SENDER[] = "RTNS";
-const char CMD_LIST_LOST_MAIL[] = "LSTL";
-const char CMD_DESTROY_LOST_MAIL[] = "DSTL";
-const char CMD_BUY_POSTAGE[] = "BUYP";
-const char CMD_QUIT[] = "QUIT";
-
-// --- Helper for _terminate() ---
-// Replaces decompiler's _terminate() with standard exit.
-void _terminate(int status) {
-    exit(status);
+// --- Helper Functions ---
+// Replaces the decompiled `_terminate()` calls with a standard exit.
+void _terminate(int error_code) {
+    exit(error_code);
 }
 
-// --- Function Implementations ---
+// --- Function Implementations (Fixed from original snippet) ---
 
 // Function: address_exists
-bool address_exists(uint16_t address) {
-  return bst_search(mailboxes, address) != NULL;
+bool address_exists(address_t address) {
+  return bst_search_exists(mailboxes, address) != 0;
 }
 
 // Function: get_mailbox_for_address
-Mailbox* get_mailbox_for_address(uint16_t address) {
-  // Original function returned void after calling bst_search.
-  // However, it is used in do_deliver_mail as a Mailbox* destination.
-  // This is an inferred behavior: if the address exists, mail is delivered to the received_box.
-  // A more complete system would have per-user mailboxes.
-  if (bst_search(mailboxes, address) != NULL) {
-    return &received_box_inst;
-  }
-  return NULL; // Address not found, cannot deliver
+mailbox_t *get_mailbox_for_address(address_t address) {
+  return bst_search_mailbox(mailboxes, address);
 }
 
 // Function: get_undeliverable_mailbox
-Mailbox* get_undeliverable_mailbox(void) {
-  return &undeliverable_box_inst;
+mailbox_t *get_undeliverable_mailbox(void) {
+  return undeliverable_box;
 }
 
 // Function: get_lost_mailbox
-Mailbox* get_lost_mailbox(void) {
-  return &lost_box_inst;
+mailbox_t *get_lost_mailbox(void) {
+  return lost_box;
 }
 
 // Function: get_received_mailbox
-Mailbox* get_received_mailbox(void) {
-  return &received_box_inst;
+mailbox_t *get_received_mailbox(void) {
+  return received_box;
 }
 
 // Function: get_sorted_mailbox
-Mailbox* get_sorted_mailbox(void) {
-  return &sorted_box_inst;
+mailbox_t *get_sorted_mailbox(void) {
+  return sorted_box;
 }
 
 // Function: delete_mail
-void delete_mail(void *mail_ptr) {
-  free(mail_ptr);
+void delete_mail(void *mail_data_ptr) {
+  free(mail_data_ptr);
 }
 
 // Function: is_mailbox_empty
-bool is_mailbox_empty(Mailbox* mailbox_ptr) {
-  return mailbox_ptr->mail_list == NULL || list_length(mailbox_ptr->mail_list) == 0;
+bool is_mailbox_empty(mailbox_t *mailbox) {
+  return mailbox->mail_list_head == NULL || list_length(mailbox->mail_list_head) == 0;
 }
 
 // Function: put_mail_in_mailbox
-void put_mail_in_mailbox(void* mail_ptr, Mailbox* mailbox_ptr) {
-  if (mailbox_ptr->mail_list == NULL) {
-    list_init(&mailbox_ptr->mail_list, 0); // Initialize list if not already
+void put_mail_in_mailbox(mail_ptr_t mail_data, mailbox_t *mailbox) {
+  if (mailbox->mail_list_head == NULL) {
+    void *new_list_head = malloc(sizeof(void*) * 5); // Assuming 0x14 bytes for list head structure
+    if (new_list_head == NULL) {
+      _terminate(EXIT_FAILURE);
+    }
+    mailbox->mail_list_head = new_list_head;
+    list_init(mailbox->mail_list_head, 0); // Assuming 0 is a default type for mailboxes
   }
-  list_insert_at_end(mailbox_ptr->mail_list, mail_ptr);
+  list_insert_at_end(mailbox->mail_list_head, mail_data);
 }
 
 // Function: pop_mail_from_mailbox
-void* pop_mail_from_mailbox(Mailbox* mailbox_ptr) {
-  if (is_mailbox_empty(mailbox_ptr)) {
-    return NULL;
+mail_ptr_t pop_mail_from_mailbox(mailbox_t *mailbox) {
+  void *node_ptr = list_pop(mailbox->mail_list_head);
+  if (node_ptr == NULL) {
+    return 0; // Assuming 0 is NULL/invalid mail_ptr_t
+  } else {
+    mail_ptr_t mail_data = *(mail_ptr_t *)node_ptr;
+    list_destroy_node(mailbox->mail_list_head, &node_ptr);
+    return mail_data;
   }
-  // Assuming list_pop returns the data pointer directly and handles node destruction
-  return list_pop(mailbox_ptr->mail_list);
 }
 
 // Function: do_receive_mail
 uint32_t do_receive_mail(void) {
-  int bytes_received;
-  int stamp_status;
-  Mail* new_mail;
-
-  bytes_received = recv_bytes(NULL, 0); // Assuming recv_bytes without args implies a setup phase or global buffer
-  if (bytes_received < 0) {
-    _terminate(0xfffffff5); // Error code from decompiler
+  // The first `recv_bytes` in original code is unclear, assuming it reads a header.
+  // The mail data size (0x184 = 388 bytes) is inferred from `malloc(0x184)`.
+  // Assuming a small header is read first, then a stamp is used, then mail content.
+  byte_t header_buffer[3]; // Inferred from original stack usage for `local_13`
+  if (recv_bytes(header_buffer, sizeof(header_buffer)) < 0) {
+    _terminate(EXIT_FAILURE);
   }
 
-  stamp_status = use_stamp();
-  if (stamp_status == -1) {
-    return 0xffffffff; // Error
+  if (use_stamp() == -1) {
+    return 0xffffffff; // Error: stamp not usable
   }
 
-  new_mail = (Mail*)malloc(sizeof(Mail)); // Allocate space for a new mail item (0x184 bytes)
-  if (new_mail == NULL) {
-    _terminate(0xfffffff9); // Memory allocation error
+  mail_t *mail_data = (mail_t *)malloc(sizeof(mail_t));
+  if (mail_data == NULL) {
+    _terminate(EXIT_FAILURE);
   }
 
-  // Assuming the first recv_bytes prepared for a subsequent read into `new_mail`
-  // The size 0x184 (404 bytes) is inferred from the original malloc.
-  bytes_received = recv_bytes(new_mail, sizeof(Mail));
-  if (bytes_received < 0) {
-    free(new_mail); // Clean up allocated memory
-    _terminate(0xfffffff5); // Error code from decompiler
+  // Read the full mail content (excluding what might have been in header_buffer)
+  // Assuming `sizeof(mail_t)` is 0x184 (388 bytes)
+  if (recv_bytes(mail_data, sizeof(mail_t)) < 0) {
+    free(mail_data);
+    _terminate(EXIT_FAILURE);
   }
 
-  put_mail_in_mailbox(new_mail, get_received_mailbox());
+  put_mail_in_mailbox((mail_ptr_t)(uintptr_t)mail_data, get_received_mailbox());
   return 0; // Success
 }
 
 // Function: do_list_addresses
 uint32_t do_list_addresses(void) {
-  uint16_t* current_address_ptr;
-  int bytes_sent;
+  void *bst_iterator = bst_iter_start(mailboxes, 1); // 1 for in-order traversal
 
-  current_address_ptr = (uint16_t*)bst_iter_start(mailboxes, 1); // Start iteration (in-order)
-
-  if (current_address_ptr == NULL) {
-    return 0xffffffff; // No addresses found
+  if (bst_iterator == NULL) {
+    return 0xffffffff; // No addresses or error
   }
 
-  while (current_address_ptr != NULL) {
-    // Send the address (assuming 2 bytes for uint16_t)
-    bytes_sent = send_bytes(1, current_address_ptr, sizeof(uint16_t));
-    if (bytes_sent != sizeof(uint16_t)) {
-      _terminate(0xfffffff7); // Send error
+  address_t current_address;
+  while (bst_iterator != NULL) {
+    current_address = *(address_t *)bst_iterator;
+    if (current_address > 9) { // Original `9 < local_12`
+      if (send_bytes(&current_address, sizeof(address_t)) != sizeof(address_t)) {
+        _terminate(EXIT_FAILURE);
+      }
     }
-    current_address_ptr = (uint16_t*)bst_iter_next(mailboxes); // Get next address
+    bst_iterator = bst_iter_next(bst_iterator);
   }
   return 0; // Success
 }
 
 // Function: do_add_address
 uint32_t do_add_address(void) {
-  uint16_t new_address = 0;
-  int bytes_received;
-
-  // Receive the address (assuming 2 bytes for uint16_t)
-  bytes_received = recv_bytes(&new_address, sizeof(uint16_t));
-  if (bytes_received < 0) {
-    _terminate(0xfffffff5); // Receive error
+  address_t new_address = 0;
+  // Assuming `recv_bytes` reads 2 bytes (sizeof(address_t)) into `new_address`
+  if (recv_bytes(&new_address, sizeof(address_t)) < 0) {
+    _terminate(EXIT_FAILURE);
   }
 
-  // Check if address is valid (e.g., > 9) and doesn't already exist
-  if (new_address > 9 && !address_exists(new_address)) {
-    bst_insert(mailboxes, new_address);
-    return 0; // Success
+  if (new_address > 9) { // Original `9 < local_e[0]`
+    if (!address_exists(new_address)) {
+      bst_insert(&mailboxes, new_address);
+      return 0; // Success
+    }
   }
-  return 0xffffffff; // Invalid address or already exists
+  return 0xffffffff; // Address invalid or already exists
 }
 
 // Function: do_sort_mail
 uint32_t do_sort_mail(void) {
-  Mail* mail_ptr;
-
-  if (is_mailbox_empty(get_received_mailbox())) {
-    return 0xffffffff; // Received mailbox is empty
+  mailbox_t *received_mb = get_received_mailbox();
+  if (is_mailbox_empty(received_mb)) {
+    return 0xffffffff;
   }
 
-  while (true) {
-    mail_ptr = (Mail*)pop_mail_from_mailbox(get_received_mailbox());
-    if (mail_ptr == NULL) break; // No more mail
-
-    if (address_exists(mail_ptr->receiver_address)) {
-      put_mail_in_mailbox(mail_ptr, get_sorted_mailbox());
+  mail_ptr_t current_mail_ptr;
+  while ((current_mail_ptr = pop_mail_from_mailbox(received_mb)) != 0) {
+    mail_t *mail = (mail_t *)(uintptr_t)current_mail_ptr;
+    if (address_exists(mail->recipient_address)) {
+      put_mail_in_mailbox(current_mail_ptr, get_sorted_mailbox());
     } else {
-      put_mail_in_mailbox(mail_ptr, get_undeliverable_mailbox());
+      put_mail_in_mailbox(current_mail_ptr, get_undeliverable_mailbox());
     }
   }
   return 0; // Success
 }
 
 // Function: udm_sort (Undeliverable Mail Sort)
-bool udm_sort(uint32_t param_1_raw, uint32_t param_2_raw) {
-  // Cast raw uint32_t to MailAddrPair*
-  MailAddrPair* mail1 = (MailAddrPair*)param_1_raw;
-  MailAddrPair* mail2 = (MailAddrPair*)param_2_raw;
-
-  // Sort by receiver address (descending), then sender address (descending)
-  if (mail1->receiver != mail2->receiver) {
-    return mail2->receiver <= mail1->receiver; // Descending order
-  }
-  return mail2->sender <= mail1->sender; // Descending order
+// Compares two 32-bit values, where each value contains two 16-bit addresses.
+bool udm_sort(uint32_t val1, uint32_t val2) {
+  return val2 <= val1; // Sorts in descending order based on combined address
 }
 
 // Function: do_list_undeliverable_mail
 uint32_t do_list_undeliverable_mail(void) {
-  if (is_mailbox_empty(get_undeliverable_mailbox())) {
-    return 0xffffffff; // Undeliverable mailbox is empty
+  mailbox_t *undeliverable_mb = get_undeliverable_mailbox();
+  if (is_mailbox_empty(undeliverable_mb)) {
+    return 0xffffffff;
   }
 
-  list_t sorted_addr_list;
-  list_init(&sorted_addr_list, 0);
+  void *sorted_list_head = malloc(sizeof(void*) * 5); // Assuming 0x14 bytes for list head
+  if (sorted_list_head == NULL) {
+      _terminate(EXIT_FAILURE);
+  }
+  list_init(sorted_list_head, 0);
 
-  // Iterate through undeliverable mail, extract addresses, and insert into sorted list
-  list_node_t current_node = list_head_node(get_undeliverable_mailbox()->mail_list);
-  list_node_t end_marker = list_end_marker(get_undeliverable_mailbox()->mail_list);
+  void *current_node = list_head_node(undeliverable_mb->mail_list_head);
+  void *end_marker = list_end_marker(undeliverable_mb->mail_list_head);
 
-  while (current_node != end_marker) {
-    Mail* mail_ptr = (Mail*)list_node_data(current_node);
-    MailAddrPair* addr_pair = (MailAddrPair*)malloc(sizeof(MailAddrPair));
-    if (addr_pair == NULL) {
-        // Handle error: free resources and terminate
-        // (Simplified error handling for brevity, real code needs proper cleanup)
-        _terminate(0xfffffff9);
-    }
-    addr_pair->receiver = mail_ptr->receiver_address;
-    addr_pair->sender = mail_ptr->sender_address;
-    // Store the pointer to the allocated MailAddrPair
-    list_insert_sorted(sorted_addr_list, (void*)addr_pair, udm_sort, 0);
-    current_node = list_next_node(current_node);
+  uint32_t combined_address;
+  for (; current_node != end_marker; current_node = list_next_node(current_node)) {
+    mail_t *mail = (mail_t *)(uintptr_t)(*(mail_ptr_t *)current_node);
+    ((address_t*)&combined_address)[0] = mail->recipient_address;
+    ((address_t*)&combined_address)[1] = mail->sender_address;
+    list_insert_sorted(sorted_list_head, combined_address, udm_sort, 0);
   }
 
-  // Pop from sorted list and send addresses
-  MailAddrPair* current_addr_pair;
-  while ((current_addr_pair = (MailAddrPair*)list_pop(sorted_addr_list)) != NULL) {
-    int bytes_sent;
+  void *sorted_node_ptr;
+  while ((sorted_node_ptr = list_pop(sorted_list_head)) != NULL) {
+    combined_address = *(uint32_t *)sorted_node_ptr;
+    address_t recipient_addr = ((address_t*)&combined_address)[0];
+    address_t sender_addr = ((address_t*)&combined_address)[1];
 
-    // Send receiver address
-    bytes_sent = send_bytes(1, &current_addr_pair->receiver, sizeof(uint16_t));
-    if (bytes_sent != sizeof(uint16_t)) {
-      free(current_addr_pair);
-      _terminate(0xfffffff7); // Send error
+    if (send_bytes(&recipient_addr, sizeof(address_t)) != sizeof(address_t)) {
+      _terminate(EXIT_FAILURE);
     }
-
-    // Send sender address
-    bytes_sent = send_bytes(1, &current_addr_pair->sender, sizeof(uint16_t));
-    if (bytes_sent != sizeof(uint16_t)) {
-      free(current_addr_pair);
-      _terminate(0xfffffff7); // Send error
+    if (send_bytes(&sender_addr, sizeof(address_t)) != sizeof(address_t)) {
+      _terminate(EXIT_FAILURE);
     }
-    free(current_addr_pair); // Free the allocated MailAddrPair
+    list_destroy_node(sorted_list_head, &sorted_node_ptr);
   }
-  // The sorted list itself might need to be destroyed if list_init allocated it.
-  // For simplicity, assuming list_pop and free handle node cleanup.
+
+  free(sorted_list_head); // Free the temporary list head
   return 0; // Success
 }
 
 // Function: do_deliver_mail
 uint32_t do_deliver_mail(void) {
-  Mail* mail_ptr;
-  Mailbox* destination_mailbox;
-
-  if (is_mailbox_empty(get_sorted_mailbox())) {
-    return 0xffffffff; // Sorted mailbox is empty
+  mailbox_t *sorted_mb = get_sorted_mailbox();
+  if (is_mailbox_empty(sorted_mb)) {
+    return 0xffffffff;
   }
 
-  while (true) {
-    mail_ptr = (Mail*)pop_mail_from_mailbox(get_sorted_mailbox());
-    if (mail_ptr == NULL) break; // No more mail
-
-    destination_mailbox = get_mailbox_for_address(mail_ptr->receiver_address);
-    if (destination_mailbox != NULL) {
-      put_mail_in_mailbox(mail_ptr, destination_mailbox);
+  mail_ptr_t current_mail_ptr;
+  while ((current_mail_ptr = pop_mail_from_mailbox(sorted_mb)) != 0) {
+    mail_t *mail = (mail_t *)(uintptr_t)current_mail_ptr;
+    mailbox_t *target_mb = get_mailbox_for_address(mail->recipient_address);
+    // Assuming get_mailbox_for_address returns a valid mailbox_t* for existing addresses.
+    // Original code doesn't handle NULL target_mb.
+    if (target_mb != NULL) {
+        put_mail_in_mailbox(current_mail_ptr, target_mb);
     } else {
-        // If receiver address is not found (e.g., deleted), move to undeliverable
-        put_mail_in_mailbox(mail_ptr, get_undeliverable_mailbox());
+        // If recipient address not found, put it in undeliverable?
+        // Original code behavior is unclear for this edge case.
+        // For now, it implicitly proceeds, which might lead to a crash if target_mb is NULL.
+        // Or, it's assumed target_mb is never NULL if address_exists for the sorted mail.
+        // Assuming it means the mail is lost.
+        put_mail_in_mailbox(current_mail_ptr, get_undeliverable_mailbox());
     }
   }
   return 0; // Success
@@ -343,133 +321,127 @@ uint32_t do_deliver_mail(void) {
 
 // Function: do_return_to_sender
 uint32_t do_return_to_sender(void) {
-  Mail* mail_ptr;
-
-  if (is_mailbox_empty(get_undeliverable_mailbox())) {
-    return 0xffffffff; // Undeliverable mailbox is empty
+  mailbox_t *undeliverable_mb = get_undeliverable_mailbox();
+  if (is_mailbox_empty(undeliverable_mb)) {
+    return 0xffffffff;
   }
 
-  while (true) {
-    mail_ptr = (Mail*)pop_mail_from_mailbox(get_undeliverable_mailbox());
-    if (mail_ptr == NULL) break; // No more mail
-
-    if (address_exists(mail_ptr->sender_address)) {
-      // Set receiver address to sender address
-      mail_ptr->receiver_address = mail_ptr->sender_address;
-      put_mail_in_mailbox(mail_ptr, get_received_mailbox());
+  mail_ptr_t current_mail_ptr;
+  while ((current_mail_ptr = pop_mail_from_mailbox(undeliverable_mb)) != 0) {
+    mail_t *mail = (mail_t *)(uintptr_t)current_mail_ptr;
+    if (!address_exists(mail->sender_address)) {
+      put_mail_in_mailbox(current_mail_ptr, get_lost_mailbox());
     } else {
-      put_mail_in_mailbox(mail_ptr, get_lost_mailbox());
+      // Swap recipient and sender to return to sender
+      mail->recipient_address = mail->sender_address;
+      put_mail_in_mailbox(current_mail_ptr, get_received_mailbox());
     }
   }
   return 0; // Success
 }
 
 // Function: hash_mail
-void hash_mail(Mail* mail_ptr, uint8_t* hash_buffer) {
-  // Assuming mail content starts after sender/receiver addresses (4 bytes offset)
-  // and is 0x180 (384) bytes long, split into two parts for hashing.
-  // The original 0x80 and 0x100 loops suggest 128 and 256 bytes.
-  // total 0x180 bytes. Mail struct has 400 bytes, so it fits.
-  int i;
-  uint8_t* mail_data_start = (uint8_t*)mail_ptr + sizeof(uint16_t) * 2; // Offset 4
+void hash_mail(mail_ptr_t mail_data_ptr, uint8_t *hash_buffer) {
+  char *mail_content = (char *)(uintptr_t)mail_data_ptr;
 
-  for (i = 0; i < 0x80; ++i) { // Hash first 128 bytes of content
-    hash_buffer[i % 4] += mail_data_start[i];
+  // First 128 bytes of content (offset 4 to 4+128-1)
+  for (int i = 0; i < 0x80; ++i) {
+    hash_buffer[i % 4] += mail_content[i + 4]; // Start hashing from content[4]
   }
-  for (i = 0; i < 0x100; ++i) { // Hash next 256 bytes of content (total 384 bytes)
-    hash_buffer[4 + (i % 4)] += mail_data_start[0x80 + i];
+  // Next 256 bytes of content (offset 4+128 to 4+128+256-1)
+  for (int i = 0; i < 0x100; ++i) {
+    hash_buffer[4 + (i % 4)] += mail_content[i + 0x84]; // 0x84 = 4 + 0x80
   }
 }
 
 // Function: lm_sort (Lost Mail Sort)
-bool lm_sort(uint32_t mail1_ptr_raw, uint32_t mail2_ptr_raw) {
-  Mail* mail1 = (Mail*)mail1_ptr_raw;
-  Mail* mail2 = (Mail*)mail2_ptr_raw;
-  uint8_t hash1[8] = {0};
-  uint8_t hash2[8] = {0};
+bool lm_sort(mail_ptr_t mail1_ptr, mail_ptr_t mail2_ptr) {
+  uint8_t hash1[8] = {0}; // Initialize to zero
+  uint8_t hash2[8] = {0}; // Initialize to zero
 
-  hash_mail(mail1, hash1);
-  hash_mail(mail2, hash2);
+  hash_mail(mail1_ptr, hash1);
+  hash_mail(mail2_ptr, hash2);
 
-  // Return true if hash1 is "not less than" hash2 (i.e., hash1 >= hash2)
-  return memcmp(hash1, hash2, 8) != -1;
+  // `memcmp` returns 0 if equal, <0 if first is less, >0 if first is greater.
+  // `iVar1 != -1` means it returns true if `iVar1` is 0 or positive.
+  // This sorts in descending lexicographical order (greater or equal).
+  return memcmp(hash1, hash2, sizeof(hash1)) != -1;
 }
 
 // Function: do_list_lost_mail
 uint32_t do_list_lost_mail(void) {
-  if (is_mailbox_empty(get_lost_mailbox())) {
-    return 0xffffffff; // Lost mailbox is empty
+  mailbox_t *lost_mb = get_lost_mailbox();
+  if (is_mailbox_empty(lost_mb)) {
+    return 0xffffffff;
   }
 
-  list_t sorted_mail_list;
-  list_init(&sorted_mail_list, 0);
+  void *sorted_list_head = malloc(sizeof(void*) * 5); // Assuming 0x14 bytes for list head
+  if (sorted_list_head == NULL) {
+      _terminate(EXIT_FAILURE);
+  }
+  list_init(sorted_list_head, 0);
 
-  // Iterate through lost mail and insert into sorted list
-  list_node_t current_node = list_head_node(get_lost_mailbox()->mail_list);
-  list_node_t end_marker = list_end_marker(get_lost_mailbox()->mail_list);
+  void *current_node = list_head_node(lost_mb->mail_list_head);
+  void *end_marker = list_end_marker(lost_mb->mail_list_head);
 
-  while (current_node != end_marker) {
-    Mail* mail_ptr = (Mail*)list_node_data(current_node);
-    list_insert_sorted(sorted_mail_list, (void*)mail_ptr, lm_sort, 0);
-    current_node = list_next_node(current_node);
+  mail_ptr_t current_mail_ptr;
+  for (; current_node != end_marker; current_node = list_next_node(current_node)) {
+    current_mail_ptr = *(mail_ptr_t *)current_node;
+    list_insert_sorted(sorted_list_head, current_mail_ptr, lm_sort, 0);
   }
 
-  // Pop from sorted list, hash, and send hashes
-  Mail* current_mail_ptr;
   uint8_t mail_hash[8];
-  while ((current_mail_ptr = (Mail*)list_pop(sorted_mail_list)) != NULL) {
+  void *sorted_node_ptr;
+  while ((sorted_node_ptr = list_pop(sorted_list_head)) != NULL) {
+    current_mail_ptr = *(mail_ptr_t *)sorted_node_ptr;
+
     memset(mail_hash, 0, sizeof(mail_hash));
     hash_mail(current_mail_ptr, mail_hash);
 
-    int bytes_sent = send_bytes(1, mail_hash, sizeof(mail_hash));
-    if (bytes_sent != sizeof(mail_hash)) {
-      _terminate(0xfffffff7); // Send error
+    if (send_bytes(mail_hash, sizeof(mail_hash)) != sizeof(mail_hash)) {
+      _terminate(EXIT_FAILURE);
     }
-    // Note: The mail items themselves are not freed here, as they still reside
-    // in the original lost_box_inst list until do_destroy_lost_mail is called.
-    // If list_pop from sorted_mail_list duplicated the mail, then it should be freed.
-    // Assuming it passes pointers to existing mail.
+    list_destroy_node(sorted_list_head, &sorted_node_ptr);
   }
+
+  free(sorted_list_head); // Free the temporary list head
   return 0; // Success
 }
 
 // Function: do_destroy_lost_mail
 uint32_t do_destroy_lost_mail(void) {
-  Mail* mail_ptr;
-  list_t lost_mail_list_handle = get_lost_mailbox()->mail_list;
-
-  if (is_mailbox_empty(get_lost_mailbox())) {
-    return 0xffffffff; // Lost mailbox is empty
+  mailbox_t *lost_mb = get_lost_mailbox();
+  if (is_mailbox_empty(lost_mb)) {
+    return 0xffffffff;
   }
 
-  while ((mail_ptr = (Mail*)pop_mail_from_mailbox(get_lost_mailbox())) != NULL) {
-    delete_mail(mail_ptr); // Free the mail item
-    // Assuming list_pop also internally calls list_destroy_node for its own node.
-    // If not, and list_pop returns the *node*, then list_destroy_node needs to be called.
-    // The original code implies list_destroy_node is called after pop:
-    // list_destroy_node(local_10,&local_18); (local_10 is list_handle, local_18 is node_ptr)
-    // This suggests list_pop might return the node.
-    // For simplicity, assuming pop_mail_from_mailbox handles node destruction internally.
+  void *node_ptr;
+  while ((node_ptr = list_pop(lost_mb->mail_list_head)) != NULL) {
+    mail_ptr_t mail_data = *(mail_ptr_t *)node_ptr;
+    delete_mail((void *)(uintptr_t)mail_data);
+    list_destroy_node(lost_mb->mail_list_head, &node_ptr);
   }
 
-  // After popping all elements, the list should be empty.
-  if (list_length(lost_mail_list_handle) == 0) {
+  if (list_length(lost_mb->mail_list_head) == 0) {
     return 0; // Success
+  } else {
+    return 0xffffffff; // Error: list not empty after destruction attempt
   }
-  return 0xffffffff; // List not empty after destruction (error)
 }
 
 // Function: do_buy_postage
 uint32_t do_buy_postage(void) {
-  uint32_t new_stamp_value = get_new_stamp();
-
-  if (new_stamp_value == 0) {
-    return 0xffffffff; // Failed to get a new stamp
+  int stamp_id = get_new_stamp();
+  if (stamp_id == 0) {
+    return 0xffffffff; // Error: failed to get new stamp
   }
 
-  int bytes_sent = send_bytes(1, &new_stamp_value, sizeof(uint32_t)); // Send stamp value (3 bytes implied by original)
-  if (bytes_sent != 3) { // Original code checked for 3 bytes sent
-    _terminate(0xfffffff7); // Send error
+  byte_t postage_data[3];
+  postage_data[0] = 1; // Assuming '1' is a type code for postage
+  ((uint16_t*)&postage_data[1])[0] = (uint16_t)stamp_id; // Stamp ID occupies next 2 bytes
+
+  if (send_bytes(postage_data, sizeof(postage_data)) != sizeof(postage_data)) {
+    _terminate(EXIT_FAILURE);
   }
   return 0; // Success
 }
@@ -477,60 +449,53 @@ uint32_t do_buy_postage(void) {
 // Function: setup
 void setup(void) {
   init_stamp_roll();
-  mailboxes = bst_init(); // Initialize global BST
-  
-  // Initialize global Mailbox instances
-  undeliverable_box_inst.id = 0;
-  undeliverable_box_inst.mail_list = NULL;
-  lost_box_inst.id = 1;
-  lost_box_inst.mail_list = NULL;
-  received_box_inst.id = 2;
-  received_box_inst.mail_list = NULL;
-  sorted_box_inst.id = 3;
-  sorted_box_inst.mail_list = NULL;
+  bst_init(&mailboxes);
+
+  // Initialize the mail_list_head for each static mailbox structure to NULL
+  undeliverable_box_struct.mail_list_head = NULL;
+  lost_box_struct.mail_list_head = NULL;
+  received_box_struct.mail_list_head = NULL;
+  sorted_box_struct.mail_list_head = NULL;
 }
 
 // Function: process_cmd
 uint16_t process_cmd(void) {
-  char cmd_buffer[4]; // Commands are 4 bytes long
-  int bytes_received;
+  char command_buf[4];
+  uint16_t result = 0xffff; // Default error value
 
-  bytes_received = recv_bytes(cmd_buffer, sizeof(cmd_buffer));
-  if (bytes_received < 0) {
-    _terminate(0xfffffff5); // Receive error
+  if (recv_bytes(command_buf, sizeof(command_buf)) < 0) {
+    _terminate(EXIT_FAILURE);
   }
 
-  if (memcmp(cmd_buffer, CMD_ADD_ADDRESS, sizeof(cmd_buffer)) == 0) {
-    return do_add_address();
-  } else if (memcmp(cmd_buffer, CMD_RECEIVE_MAIL, sizeof(cmd_buffer)) == 0) {
-    return do_receive_mail();
-  } else if (memcmp(cmd_buffer, CMD_LIST_ADDRESSES, sizeof(cmd_buffer)) == 0) {
-    return do_list_addresses();
-  } else if (memcmp(cmd_buffer, CMD_SORT_MAIL, sizeof(cmd_buffer)) == 0) {
-    return do_sort_mail();
-  } else if (memcmp(cmd_buffer, CMD_LIST_UNDELIVERABLE_MAIL, sizeof(cmd_buffer)) == 0) {
-    return do_list_undeliverable_mail();
-  } else if (memcmp(cmd_buffer, CMD_DELIVER_MAIL, sizeof(cmd_buffer)) == 0) {
-    return do_deliver_mail();
-  } else if (memcmp(cmd_buffer, CMD_RETURN_TO_SENDER, sizeof(cmd_buffer)) == 0) {
-    return do_return_to_sender();
-  } else if (memcmp(cmd_buffer, CMD_LIST_LOST_MAIL, sizeof(cmd_buffer)) == 0) {
-    return do_list_lost_mail();
-  } else if (memcmp(cmd_buffer, CMD_DESTROY_LOST_MAIL, sizeof(cmd_buffer)) == 0) {
-    return do_destroy_lost_mail();
-  } else if (memcmp(cmd_buffer, CMD_BUY_POSTAGE, sizeof(cmd_buffer)) == 0) {
-    return do_buy_postage();
-  } else if (memcmp(cmd_buffer, CMD_QUIT, sizeof(cmd_buffer)) == 0) {
-    return 0xfffe; // Special status for quit
-  } else {
-    return 0xffff; // Unknown command
+  if (memcmp(command_buf, CMD_ADD_ADDRESS, sizeof(command_buf)) == 0) {
+    result = do_add_address();
+  } else if (memcmp(command_buf, CMD_RECEIVE_MAIL, sizeof(command_buf)) == 0) {
+    result = do_receive_mail();
+  } else if (memcmp(command_buf, CMD_LIST_ADDRESSES, sizeof(command_buf)) == 0) {
+    result = do_list_addresses();
+  } else if (memcmp(command_buf, CMD_SORT_MAIL, sizeof(command_buf)) == 0) {
+    result = do_sort_mail();
+  } else if (memcmp(command_buf, CMD_LIST_UNDELIVERABLE_MAIL, sizeof(command_buf)) == 0) {
+    result = do_list_undeliverable_mail();
+  } else if (memcmp(command_buf, CMD_DELIVER_MAIL, sizeof(command_buf)) == 0) {
+    result = do_deliver_mail();
+  } else if (memcmp(command_buf, CMD_RETURN_TO_SENDER, sizeof(command_buf)) == 0) {
+    result = do_return_to_sender();
+  } else if (memcmp(command_buf, CMD_LIST_LOST_MAIL, sizeof(command_buf)) == 0) {
+    result = do_list_lost_mail();
+  } else if (memcmp(command_buf, CMD_DESTROY_LOST_MAIL, sizeof(command_buf)) == 0) {
+    result = do_destroy_lost_mail();
+  } else if (memcmp(command_buf, CMD_BUY_POSTAGE, sizeof(command_buf)) == 0) {
+    result = do_buy_postage();
+  } else if (memcmp(command_buf, CMD_QUIT, sizeof(command_buf)) == 0) {
+    result = 0xfffe; // Special quit code
   }
+  return result;
 }
 
 // Function: send_status
 void send_status(uint16_t status_code) {
-  int bytes_sent = send_bytes(1, &status_code, sizeof(uint16_t));
-  if (bytes_sent != sizeof(uint16_t)) {
-    _terminate(0xfffffff7); // Send error
+  if (send_bytes(&status_code, sizeof(uint16_t)) != sizeof(uint16_t)) {
+    _terminate(EXIT_FAILURE);
   }
 }

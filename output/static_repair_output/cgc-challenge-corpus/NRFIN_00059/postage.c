@@ -1,73 +1,66 @@
-#include <stdio.h>   // For fprintf, stderr, perror
-#include <stdlib.h>  // For malloc, free, exit, EXIT_FAILURE
-#include <string.h>  // For memcmp, memcpy
 #include <stdbool.h> // For bool type
-#include <stdint.h>  // For uint32_t
+#include <stdlib.h>  // For malloc, free, exit
+#include <string.h>  // For memcmp, memcpy
+#include <stdint.h>  // For uint32_t, uint8_t
 
-// --- Dummy List Implementation (to make the provided functions compilable) ---
-// In a real project, these would be in a separate header/source file.
+// --- Minimal List Library Stub (for compilation) ---
+// In a real scenario, these would come from a separate header/source file.
 
-typedef void (*free_func_t)(void *);
-
-typedef struct list_node {
+typedef struct ListNode {
     void *data;
-    struct list_node *next;
-} list_node_t;
+    struct ListNode *next;
+    struct ListNode *prev;
+} ListNode;
 
-typedef struct list {
-    list_node_t *head;
-    list_node_t *tail;
-    free_func_t free_data;
-} list_t;
+typedef struct List {
+    ListNode *head;
+    ListNode *tail;
+    void (*free_data_fn)(void *); // Function to free data when node is destroyed
+} List;
 
-// Global list instance, initialized by init_stamp_roll
-static list_t *stamp_roll = NULL;
+// Global list head instance (statically allocated)
+static List stamp_roll_instance;
+// Pointer to the global List struct, used by functions
+// Initialized to point to the statically allocated instance
+static List *stamp_roll = &stamp_roll_instance;
 
-// Function to initialize the list
-void list_init(list_t **list_ptr, free_func_t free_func) {
-    if (list_ptr == NULL) {
-        return;
+// Function stubs for list operations
+void list_init(List *list_instance, void (*free_data_fn)(void *)) {
+    // Assumes list_instance points to an already allocated List struct
+    if (!list_instance) {
+        exit(1); // Should not happen with static allocation
     }
-    *list_ptr = (list_t *)malloc(sizeof(list_t));
-    if (*list_ptr == NULL) {
-        perror("Failed to allocate list");
-        exit(EXIT_FAILURE);
-    }
-    (*list_ptr)->head = NULL;
-    (*list_ptr)->tail = NULL;
-    (*list_ptr)->free_data = free_func;
+    list_instance->head = NULL;
+    list_instance->tail = NULL;
+    list_instance->free_data_fn = free_data_fn;
 }
 
-// Function to insert data at the end of the list
-void list_insert_at_end(list_t *list, void *data) {
-    if (list == NULL) {
-        return;
+void list_insert_at_end(List *list, void *data) {
+    if (!list) exit(1);
+    ListNode *newNode = (ListNode *)malloc(sizeof(ListNode));
+    if (!newNode) {
+        exit(1);
     }
-    list_node_t *new_node = (list_node_t *)malloc(sizeof(list_node_t));
-    if (new_node == NULL) {
-        perror("Failed to allocate list node");
-        exit(EXIT_FAILURE);
-    }
-    new_node->data = data;
-    new_node->next = NULL;
+    newNode->data = data;
+    newNode->next = NULL;
+    newNode->prev = list->tail;
 
-    if (list->tail == NULL) {
-        list->head = new_node;
-        list->tail = new_node;
+    if (list->tail) {
+        list->tail->next = newNode;
     } else {
-        list->tail->next = new_node;
-        list->tail = new_node;
+        list->head = newNode;
     }
+    list->tail = newNode;
 }
 
-// Function to find a node with specific data using a comparison function
-list_node_t* list_find_node_with_data(list_t *list, bool (*cmp)(void*, void*), void *data) {
-    if (list == NULL || list->head == NULL) {
-        return NULL;
-    }
-    list_node_t *current = list->head;
-    while (current != NULL) {
-        if (cmp(current->data, data)) {
+// Function pointer type for comparison
+typedef bool (*list_cmp_func)(void *, void *);
+
+ListNode *list_find_node_with_data(List *list, list_cmp_func cmp_fn, void *data) {
+    if (!list) return NULL;
+    ListNode *current = list->head;
+    while (current) {
+        if (cmp_fn(current->data, data)) {
             return current;
         }
         current = current->next;
@@ -75,104 +68,85 @@ list_node_t* list_find_node_with_data(list_t *list, bool (*cmp)(void*, void*), v
     return NULL;
 }
 
-// Function to remove a specific node from the list
-void list_remove_node(list_t *list, list_node_t *node_to_remove) {
-    if (list == NULL || node_to_remove == NULL) {
-        return;
+void list_remove_node(List *list, ListNode *node) {
+    if (!list || !node) return;
+
+    if (node->prev) {
+        node->prev->next = node->next;
+    } else {
+        list->head = node->next;
     }
 
-    if (list->head == node_to_remove) {
-        list->head = node_to_remove->next;
-        if (list->tail == node_to_remove) {
-            list->tail = NULL;
-        }
-        return;
-    }
-
-    list_node_t *current = list->head;
-    while (current != NULL && current->next != node_to_remove) {
-        current = current->next;
-    }
-
-    if (current != NULL) { // current->next is node_to_remove
-        current->next = node_to_remove->next;
-        if (list->tail == node_to_remove) {
-            list->tail = current;
-        }
+    if (node->next) {
+        node->next->prev = node->prev;
+    } else {
+        list->tail = node->prev;
     }
 }
 
-// Function to destroy a list node (and its data if a free_func is provided)
-void list_destroy_node(list_t *list, list_node_t *node) {
-    if (list == NULL || node == NULL) {
-        return;
-    }
-    if (list->free_data && node->data) {
-        list->free_data(node->data);
+void list_destroy_node(List *list, ListNode *node) {
+    if (!list || !node) return;
+    if (list->free_data_fn && node->data) {
+        list->free_data_fn(node->data);
     }
     free(node);
 }
 
-// --- Global variables from the original snippet's context ---
-static uint32_t seed = 0x12345678; // Example initial value for seed
+// --- Global variables ---
+static unsigned int seed = 0x12345678; // Example initial value
 static short seed_idx = 0;
-static const unsigned char BAD_STAMP[3] = {0x00, 0x00, 0x00}; // Example bad stamp value
-static const short MOD_VAL_FOR_SEED_IDX = 0xffd; // 4093, used for seed_idx modulo
-
-// --- Original _terminate function (adapted for standard C) ---
-void _terminate(void) {
-    fprintf(stderr, "Fatal error: _terminate called.\n");
-    exit(EXIT_FAILURE);
-}
-
-// --- Original functions (fixed and refactored) ---
+static unsigned char BAD_STAMP[3] = {0xFF, 0xFF, 0xFF}; // Example BAD_STAMP
 
 // Function: stamp_cmp
-bool stamp_cmp(void *param_1, void *param_2) {
-  return memcmp(param_1, param_2, 3) == 0;
+bool stamp_cmp(void *param_1,void *param_2) {
+  return memcmp(param_1,param_2,3) == 0;
 }
 
 // Function: init_stamp_roll
 void init_stamp_roll(void) {
-  list_init(&stamp_roll, free); // Pass address of the global list_t pointer
+  list_init(stamp_roll, free);
+  return;
 }
 
 // Function: get_new_stamp
 void * get_new_stamp(void) {
-  void *new_stamp_data;
+  void *stamp_ptr;
+  uint32_t stamp_data_val;
+  const size_t STAMP_SIZE = 3; // Stamps are 3 bytes long
   
-  new_stamp_data = malloc(3);
-  if (new_stamp_data == NULL) {
-    _terminate(); // Call the defined _terminate function
+  stamp_ptr = malloc(STAMP_SIZE);
+  if (stamp_ptr == NULL) {
+    exit(1); // Terminate on memory allocation failure
   }
 
-  uint32_t current_seed_val; // Temporary variable to hold the seed value for memcpy
-
   do {
-    current_seed_val = seed + seed_idx;
-    // Copy the first 3 bytes of current_seed_val into the allocated memory
-    memcpy(new_stamp_data, &current_seed_val, 3);
-    
-    // Update seed_idx using modulo arithmetic
-    seed_idx = (short)((seed_idx + 3) % MOD_VAL_FOR_SEED_IDX);
-    
-    // Check if the newly generated stamp matches BAD_STAMP
-  } while (memcmp(new_stamp_data, BAD_STAMP, 3) == 0); // Loop until a unique stamp is generated
-  
-  list_insert_at_end(stamp_roll, new_stamp_data);
-  return new_stamp_data;
+    stamp_data_val = seed + seed_idx;
+    // Copy 3 bytes from the generated 4-byte integer to the 3-byte stamp buffer.
+    // This typically copies the least significant 3 bytes on a little-endian system.
+    memcpy(stamp_ptr, &stamp_data_val, STAMP_SIZE);
+
+    // Update seed_idx using modulo arithmetic to keep it within bounds
+    // 0xffd is 4093 in decimal
+    seed_idx = (seed_idx + STAMP_SIZE) % 4093;
+
+    // Check if the newly generated stamp matches the BAD_STAMP
+  } while (memcmp(stamp_ptr, BAD_STAMP, STAMP_SIZE) == 0);
+
+  list_insert_at_end(stamp_roll, stamp_ptr);
+  return stamp_ptr;
 }
 
 // Function: use_stamp
-int use_stamp(void *param_1) {
-  list_node_t *found_node;
+uint32_t use_stamp(const void *stamp_data) {
+  ListNode *node_ptr;
   
-  found_node = list_find_node_with_data(stamp_roll, stamp_cmp, param_1);
-  if (found_node == NULL) {
-    return -1; // Indicate failure (stamp not found)
-  } else {
-    list_remove_node(stamp_roll, found_node);
-    list_destroy_node(stamp_roll, found_node); // Free the node and its data
-    return 0; // Indicate success
+  node_ptr = list_find_node_with_data(stamp_roll, stamp_cmp, stamp_data);
+  if (node_ptr == NULL) { // If stamp not found
+    return 0xffffffff; // Return -1 (or ULONG_MAX for uint32_t) for failure
+  }
+  else {
+    list_remove_node(stamp_roll, node_ptr);
+    list_destroy_node(stamp_roll, node_ptr); // This frees the node and its data (the stamp_ptr)
+    return 0; // Return 0 for success
   }
 }

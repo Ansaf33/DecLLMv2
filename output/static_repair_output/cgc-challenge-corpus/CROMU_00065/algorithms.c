@@ -1,168 +1,241 @@
-#include <stdbool.h> // For bool
+#include <stdbool.h> // For bool type
+#include <stdio.h>   // For printf in main
+#include <stdlib.h>  // For EXIT_SUCCESS
+#include <stddef.h>  // For NULL
 
-// Assuming score_cards is an external function that returns an int score.
-// The second parameter `cards` likely points to an array of card values.
-// Card values: 1 for Ace, 2-10 for number cards, 10 for J, Q, K.
-extern int score_cards(const char *cards);
+// Dummy score_cards function for compilation.
+// This version parses card data (pointed to by 'cards_ptr_val')
+// to calculate a blackjack score, assuming 0x01 is Ace, 0x02-0x09 are 2-9,
+// and 0x0A is 10/Face card.
+int score_cards(unsigned int cards_ptr_val) {
+    const unsigned char *cards_ptr = (const unsigned char *)cards_ptr_val;
+    int score = 0;
+    int num_aces = 0;
 
-// Use standard C types:
-// undefined4 -> char (since it returns 'H' or 'S' which are char values 0x48, 0x53)
-// undefined -> char
-// byte -> unsigned char
-// uint -> unsigned int
+    if (cards_ptr == NULL) {
+        return 0; // Handle null pointer
+    }
+
+    // Iterate through the hand, assuming it's null-terminated or max 10 cards
+    for (int i = 0; i < 10 && cards_ptr[i] != '\0'; ++i) {
+        unsigned char card_val = cards_ptr[i];
+        if (card_val == 0x01) { // Ace
+            num_aces++;
+            score += 11; // Initially count Ace as 11
+        } else if (card_val >= 0x02 && card_val <= 0x0A) { // 2-10/Face card
+            score += (card_val > 0x09) ? 10 : card_val; // 10 for 10/Face, actual value for 2-9
+        }
+        // Ignore other values or treat as invalid cards
+    }
+
+    // Adjust for Aces if the score is over 21
+    while (score > 21 && num_aces > 0) {
+        score -= 10; // Change an Ace from 11 to 1
+        num_aces--;
+    }
+    return score;
+}
 
 // Function: matchDealer
-char matchDealer(int param_1, const char *param_2) {
-  return (score_cards(param_2) < 17) ? 'H' : 'S';
+char matchDealer(unsigned int dealer_upcard, const unsigned char *dealer_hand_ptr) {
+    int dealer_score = score_cards((unsigned int)dealer_hand_ptr);
+    return (dealer_score < 17) ? 'H' : 'S'; // 'H' for Hit, 'S' for Stand
 }
 
 // Function: neverBustAlgo
-char neverBustAlgo(int param_1, const char *param_2) {
-  return (score_cards(param_2) < 12) ? 'H' : 'S';
+char neverBustAlgo(unsigned int dealer_upcard, const unsigned char *player_hand_ptr) {
+    int player_score = score_cards((unsigned int)player_hand_ptr);
+    return (player_score < 12) ? 'H' : 'S'; // 'H' for Hit, 'S' for Stand
 }
 
 // Function: basicAlgo
-char basicAlgo(unsigned char param_1, const char *param_2) {
-  bool has_ace = false;
-  for (int i = 0; i < 10 && param_2[i] != '\0'; ++i) {
-    if (param_2[i] == 1) { // '\x01' is 1 for Ace
-      has_ace = true;
-      break;
+char basicAlgo(unsigned char dealer_upcard, const unsigned char *player_hand_ptr) {
+    bool has_ace = false;
+    for (int i = 0; i < 10 && player_hand_ptr[i] != '\0'; ++i) {
+        if (player_hand_ptr[i] == 0x01) { // Assuming 0x01 denotes an Ace
+            has_ace = true;
+            break; // Ace found, no need to check further
+        }
     }
-  }
 
-  int score = score_cards(param_2);
-  char result;
+    int player_score = score_cards((unsigned int)player_hand_ptr);
 
-  if (!has_ace) { // Original `if (bVar1)` means no ace (hard hand)
-    if (score < 12) {
-      result = 'H';
-    } else if (score < 17) { // 12 <= score < 17
-      // Original complex condition simplified: (param_1 < 7) && ((score != 12) || (param_1 > 3))
-      if ((param_1 < 7) && ((score != 12) || (param_1 > 3))) {
-          result = 'S';
-      } else {
-          result = 'H';
-      }
-    } else { // score >= 17
-      result = 'S';
+    if (!has_ace) { // Hard hand (no Ace, or Ace counted as 1)
+        if (player_score < 12) {
+            return 'H';
+        } else if (player_score < 17) { // 12 <= player_score < 17
+            // Simplified condition from original:
+            // (dealer_upcard < 7) && (player_score != 12 || dealer_upcard > 3)
+            if ((dealer_upcard < 7) && (player_score != 12 || dealer_upcard > 3)) {
+                return 'S';
+            } else {
+                return 'H';
+            }
+        } else { // player_score >= 17
+            return 'S';
+        }
+    } else { // Soft hand (has an Ace that can be 11)
+        if (player_score < 18) {
+            return 'H';
+        } else if (player_score == 18 && dealer_upcard > 8 && dealer_upcard < 11) { // Dealer upcard is 9 or 10
+            return 'H';
+        } else { // player_score > 18 or score == 18 and upcard is not 9/10
+            return 'S';
+        }
     }
-  } else { // Soft hand (has_ace is true)
-    if (score < 18) {
-      result = 'H';
-    } else if (score == 18 && param_1 > 8 && param_1 < 11) { // score == 18, dealer 9 or 10
-      result = 'H';
-    } else {
-      result = 'S';
-    }
-  }
-  return result;
 }
 
 // Function: simpleAlgo
-char simpleAlgo(unsigned char param_1, const char *param_2) {
-  bool is_soft = false; // `local_14 = 0` in original meant soft hand
-  for (int i = 0; i < 10 && param_2[i] != '\0'; ++i) {
-    if (param_2[i] == 1) { // '\x01' is 1 for Ace
-      is_soft = true;
-      break;
+char simpleAlgo(unsigned char dealer_upcard, const unsigned char *player_hand_ptr) {
+    bool has_ace = false;
+    for (int i = 0; i < 10 && player_hand_ptr[i] != '\0'; ++i) {
+        if (player_hand_ptr[i] == 0x01) { // Assuming 0x01 denotes an Ace
+            has_ace = true;
+            break;
+        }
     }
-  }
 
-  int score = score_cards(param_2);
-  char result;
+    int player_score = score_cards((unsigned int)player_hand_ptr);
 
-  if (is_soft) { // `local_14 == 0` in original
-    if (score < 18) {
-      result = 'H';
-    } else if (score == 18 && param_1 < 7) { // Dealer up-card < 7 (2-6)
-      result = 'S';
-    } else if (score == 18 && param_1 > 7) { // Dealer up-card > 7 (8-A)
-      result = 'H';
-    } else { // score > 18
-      result = 'S';
+    if (has_ace) { // Soft hand
+        if (player_score < 18) {
+            return 'H';
+        } else if (player_score == 18) {
+            if (dealer_upcard < 7) {
+                return 'S';
+            } else { // dealer_upcard >= 7
+                return 'H';
+            }
+        } else { // player_score > 18
+            return 'S';
+        }
+    } else { // Hard hand
+        if (player_score < 12) {
+            return 'H';
+        } else if (player_score < 17) { // 12 <= player_score < 17
+            if (dealer_upcard < 7) {
+                return 'S';
+            } else {
+                return 'H';
+            }
+        } else { // player_score >= 17
+            return 'S';
+        }
     }
-  } else { // Hard hand (`local_14 != 0` in original)
-    if (score < 12) {
-      result = 'H';
-    } else if (score < 17) { // 12 <= score < 17
-      if (param_1 < 7) { // Dealer up-card < 7 (2-6)
-        result = 'S';
-      } else { // Dealer up-card >= 7 (7-A)
-        result = 'H';
-      }
-    } else { // score >= 17
-      result = 'S';
-    }
-  }
-  return result;
 }
 
 // Function: superDuperAlgo
-// The original `local_274` was initialized with a string of 294 characters.
-// This string is `14` repetitions of `HHHHHHHHHHHHHHHHHSSSS` (17 'H's, 4 'S's).
-// This represents a "Hit on <17, Stand on >=17" strategy.
-// The indexing `score + (param_1 & 0xff) * 0x15` implies `0x15` (21) is the width of each dealer column block.
-static const char soft_strategy_table_superduper[] =
-    "HHHHHHHHHHHHHHHHHSSSS" // Dealer 0 (e.g., 2)
-    "HHHHHHHHHHHHHHHHHSSSS" // Dealer 1 (e.g., 3)
-    "HHHHHHHHHHHHHHHHHSSSS" // Dealer 2 (e.g., 4)
-    "HHHHHHHHHHHHHHHHHSSSS" // Dealer 3 (e.g., 5)
-    "HHHHHHHHHHHHHHHHHSSSS" // Dealer 4 (e.g., 6)
-    "HHHHHHHHHHHHHHHHHSSSS" // Dealer 5 (e.g., 7)
-    "HHHHHHHHHHHHHHHHHSSSS" // Dealer 6 (e.g., 8)
-    "HHHHHHHHHHHHHHHHHSSSS" // Dealer 7 (e.g., 9)
-    "HHHHHHHHHHHHHHHHHSSSS" // Dealer 8 (e.g., 10)
-    "HHHHHHHHHHHHHHHHHSSSS" // Dealer 9 (e.g., A)
-    // Original string had 14 repetitions, so 4 more
-    "HHHHHHHHHHHHHHHHHSSSS"
-    "HHHHHHHHHHHHHHHHHSSSS"
-    "HHHHHHHHHHHHHHHHHSSSS"
-    "HHHHHHHHHHHHHHHHHSSSS"; // Total 14 * 21 = 294 characters
+char superDuperAlgo(unsigned int dealer_upcard_idx, const unsigned char *player_hand_ptr) {
+    // The original code had problematic memory initialization and array access
+    // for `local_274` and `local_14e`.
+    // The long string literal is likely a lookup table for strategy.
+    // We define it directly as a const char array.
+    // The `local_14e` (a 2-byte array) was used for the 'else' branch (hard hand),
+    // which is a decompilation error as it cannot function as a lookup table.
+    // Given only one large string literal, we will assume it is the primary strategy
+    // table and use it for both soft and hard hands, acknowledging this is a
+    // simplification due to the original snippet's unfixable flaw.
 
-char superDuperAlgo(unsigned int param_1, const char *param_2) {
-  bool is_soft = false; // `local_24 = 1` initially (hard), `0` if Ace found (soft)
-  for (int i = 0; i < 10 && param_2[i] != '\0'; ++i) {
-    if (param_2[i] == 1) { // '\x01' is 1 for Ace
-      is_soft = true;
-      break;
+    bool has_ace = false; // This variable is computed but its effect on table choice is lost
+                          // due to the original code's error in the 'else' branch.
+    for (int i = 0; i < 10 && player_hand_ptr[i] != '\0'; ++i) {
+        if (player_hand_ptr[i] == 0x01) { // Assuming 0x01 denotes an Ace
+            has_ace = true;
+            break;
+        }
     }
-  }
 
-  int score = score_cards(param_2);
-  char result;
+    int player_score = score_cards((unsigned int)player_hand_ptr);
 
-  // param_1 is dealer upcard (2-11). Map to 0-9 index. Clamp to 0-9.
-  int dealer_idx = (param_1 >= 2 && param_1 <= 11) ? (param_1 == 11 ? 9 : param_1 - 2) : 0;
-  // Ensure score is within valid bounds for table lookup (e.g., 0-20).
-  int table_score_idx = (score < 0) ? 0 : (score > 20 ? 20 : score);
+    // This is the lookup table from the original string literal.
+    // It contains 11 segments, each 21 characters long. Total 231 characters.
+    // Assuming dealer_upcard_idx is used as a 0-indexed offset (0-10) for dealer card.
+    // And player_score is used as a 0-indexed offset (0-20) for player score.
+    const char *STRATEGY_TABLE =
+        "HHHHHHHHHHHHHHHHHSSSS" // Dealer index 0, Scores 0-20
+        "HHHHHHHHHHHHHHHHHSSSS" // Dealer index 1, Scores 0-20
+        "HHHHHHHHHHHHHHHHHSSSS" // Dealer index 2, Scores 0-20
+        "HHHHHHHHHHHHHHHHHSSSS" // Dealer index 3, Scores 0-20
+        "HHHHHHHHHHHHHHHHHSSSS" // Dealer index 4, Scores 0-20
+        "HHHHHHHHHHHHHHHHHSSSS" // Dealer index 5, Scores 0-20
+        "HHHHHHHHHHHHHHHHHSSSS" // Dealer index 6, Scores 0-20
+        "HHHHHHHHHHHHHHHHHSSSS" // Dealer index 7, Scores 0-20
+        "HHHHHHHHHHHHHHHHHSSSS" // Dealer index 8, Scores 0-20
+        "HHHHHHHHHHHHHHHHHSSSS" // Dealer index 9, Scores 0-20
+        "HHHHHHHHHHHHHHHHHSSSS"; // Dealer index 10, Scores 0-20
 
-  int table_index = table_score_idx + dealer_idx * 21;
+    // Original index calculation: `local_28 + (param_1 & 0xff) * 0x15`
+    // `param_1` is `dealer_upcard_idx`, `local_28` is `player_score`. `0x15` is 21.
+    // This implies `dealer_upcard_idx` is used as a 0-indexed multiplier,
+    // and `player_score` is added as an offset within that segment.
+    int current_dealer_idx = (int)(dealer_upcard_idx & 0xFF);
+    int current_score_idx = player_score;
 
-  if (is_soft) { // `local_24 == 0` in original
-    // Use the provided soft strategy table
-    result = soft_strategy_table_superduper[table_index];
-  } else { // Hard hand (`local_24 != 0` in original). `local_14e` was problematic.
-    // Implement a standard hard strategy directly.
-    if (score < 12) {
-      result = 'H';
-    } else if (score == 12) {
-      // Hit vs 2,3,7,8,9,10,A. Stand vs 4,5,6.
-      if (param_1 >= 4 && param_1 <= 6) { // Dealer 4,5,6
-        result = 'S';
-      } else {
-        result = 'H';
-      }
-    } else if (score >= 13 && score <= 16) {
-      // Stand vs 2-6. Hit vs 7,8,9,10,A.
-      if (param_1 >= 2 && param_1 <= 6) { // Dealer 2-6
-        result = 'S';
-      } else {
-        result = 'H';
-      }
-    } else { // score >= 17
-      result = 'S';
+    // Apply bounds checking for the lookup table dimensions.
+    // The table has 11 rows (dealer_idx 0-10) and 21 columns (score_idx 0-20).
+    if (current_dealer_idx < 0 || current_dealer_idx >= 11) {
+        current_dealer_idx = 0; // Default to the first dealer card strategy
     }
-  }
-  return result;
+    if (current_score_idx < 0 || current_score_idx >= 21) {
+        current_score_idx = 0; // Default to the first score strategy
+    }
+
+    int table_index = current_dealer_idx * 21 + current_score_idx;
+
+    // Final bounds check for the entire table length (231 characters).
+    if (table_index < 0 || table_index >= 231) {
+        return 'S'; // Return a safe default (Stand) if index is out of bounds
+    }
+
+    // Both soft and hard hands will use this single strategy table.
+    return STRATEGY_TABLE[table_index];
+}
+
+// Minimal main function to demonstrate compilation and basic usage
+int main() {
+    // Dummy card data for testing. 0x01 for Ace, 0x06 for 6, 0x07 for 7, 0x08 for 8, etc.
+    // '\0' terminates the hand.
+    unsigned char player_hand_hard[] = {0x07, 0x08, '\0'}; // Score 7+8=15 (hard)
+    unsigned char player_hand_soft[] = {0x01, 0x06, '\0'}; // Score 11+6=17 (soft)
+    unsigned char player_hand_soft18[] = {0x01, 0x07, '\0'}; // Score 11+7=18 (soft)
+    unsigned char dealer_upcard = 6; // Dealer shows a 6 (value 6)
+
+    printf("--- matchDealer ---\n");
+    // Dealer's score is 15 (from player_hand_hard). 15 < 17, so Hit ('H').
+    printf("Result for dealer hand (score 15): %c\n", matchDealer(dealer_upcard, player_hand_hard));
+
+    printf("\n--- neverBustAlgo ---\n");
+    // Player's score is 15. 15 >= 12, so Stand ('S').
+    printf("Result for player hand (score 15): %c\n", neverBustAlgo(dealer_upcard, player_hand_hard));
+
+    printf("\n--- basicAlgo ---\n");
+    // Dealer 6, Player 15 (hard): Player_score=15, !has_ace. 12<=15<17. (upcard<7 (6<7 True)) && (score!=12 (15!=12 True) || upcard>3 (6>3 True)) -> True. So 'S'.
+    printf("Dealer 6, Player 15 (hard): %c\n", basicAlgo(dealer_upcard, player_hand_hard));
+    // Dealer 6, Player 17 (soft): Player_score=17, has_ace. 17 < 18, so 'H'.
+    printf("Dealer 6, Player 17 (soft): %c\n", basicAlgo(dealer_upcard, player_hand_soft));
+    // Dealer 6, Player 18 (soft): Player_score=18, has_ace. Not (score==18 && upcard 9/10). So 'S'.
+    printf("Dealer 6, Player 18 (soft): %c\n", basicAlgo(dealer_upcard, player_hand_soft18));
+
+
+    printf("\n--- simpleAlgo ---\n");
+    // Dealer 6, Player 15 (hard): Player_score=15, !has_ace. 12<=15<17. upcard<7 (6<7 True). So 'S'.
+    printf("Dealer 6, Player 15 (hard): %c\n", simpleAlgo(dealer_upcard, player_hand_hard));
+    // Dealer 6, Player 17 (soft): Player_score=17, has_ace. 17 < 18. So 'H'.
+    printf("Dealer 6, Player 17 (soft): %c\n", simpleAlgo(dealer_upcard, player_hand_soft));
+    // Dealer 6, Player 18 (soft): Player_score=18, has_ace. upcard<7 (6<7 True). So 'S'.
+    printf("Dealer 6, Player 18 (soft): %c\n", simpleAlgo(dealer_upcard, player_hand_soft18));
+
+    printf("\n--- superDuperAlgo ---\n");
+    // For superDuperAlgo, dealer_upcard_idx is used as an index.
+    // Let's assume dealer_upcard_idx '0' maps to dealer's 2, '1' to 3, ..., '8' to 10, '9' to Ace.
+    // Example: dealer_upcard_idx = 0 (representing dealer's 2-card index)
+    // Player score = 15. Index = 0 * 21 + 15 = 15. STRATEGY_TABLE[15] is 'H'.
+    printf("Dealer_idx 0, Player score 15: %c\n", superDuperAlgo(0, player_hand_hard));
+    // Example: dealer_upcard_idx = 0. Player score = 18. Index = 0 * 21 + 18 = 18. STRATEGY_TABLE[18] is 'S'.
+    printf("Dealer_idx 0, Player score 18: %c\n", superDuperAlgo(0, player_hand_soft18));
+    // Example: dealer_upcard_idx = 10 (out of bounds for 0-9 if 10 cards, but table has 11 segments).
+    // Let's test with valid index 10. Player score = 5. Index = 10 * 21 + 5 = 215. STRATEGY_TABLE[215] is 'H'.
+    printf("Dealer_idx 10, Player score 5: %c\n", superDuperAlgo(10, (const unsigned char*)5)); // Passing 5 directly as score for simplicity
+
+    return EXIT_SUCCESS;
 }

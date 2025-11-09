@@ -1,329 +1,362 @@
-#include <stdio.h>   // For FILE, stdout, fwrite, printf
-#include <stdlib.h>  // For malloc, free, random
-#include <string.h>  // For memcpy, memset, memcmp
-#include <unistd.h>  // For read (if read_n uses it)
+#include <stdio.h>    // For FILE, stdout, printf, fwrite, NULL
+#include <stdlib.h>   // For malloc, free
+#include <string.h>   // For memcpy, memset, memcmp
+#include <stdint.h>   // For uint32_t, uint8_t, uint16_t
+#include <unistd.h>   // For read, STDIN_FILENO, ssize_t
+#include <sys/random.h> // For getrandom (Linux-specific)
 
-// Type definitions to match the decompiler's output closely
-typedef unsigned int uint;
-typedef unsigned char byte;
-typedef unsigned char undefined;
-typedef unsigned int undefined4;
-typedef unsigned short ushort;
+// Type definitions to match the decompiler's output
+typedef uint32_t uint;
+typedef uint8_t byte;
+typedef uint16_t ushort;
 
-// Dummy implementations for missing external functions
-// In a real scenario, these would be provided by the environment or linked libraries.
-// For compilation, we need placeholders.
-// read_n is typically used for exact byte reads.
+// Global variables (placeholders for external data)
+// Assuming 'secret' is an array of bytes used as a source for OTP generation.
+// The size 0x1000 (4096) bytes is derived from _otp_populate.
+// The loop in otp_handshake suggests it can be read as uint32_t.
+byte secret[4096]; // Placeholder for global secret array.
+char DAT_00015004 = 'O'; // Placeholder for success indicator char
+char DAT_00015006 = 'F'; // Placeholder for failure indicator char
+
+// Helper function: Reads exactly 'count' bytes from 'fd' into 'buf'.
+// Returns the number of bytes read, or -1 on error.
 ssize_t read_n(int fd, void *buf, size_t count) {
     ssize_t bytes_read = 0;
     ssize_t total_read = 0;
     while (total_read < count) {
-        bytes_read = read(fd, (char *)buf + total_read, count - total_read);
-        if (bytes_read <= 0) { // EOF or error
-            break;
+        bytes_read = read(fd, (byte *)buf + total_read, count - total_read);
+        if (bytes_read == -1) {
+            return -1; // Error
+        }
+        if (bytes_read == 0) {
+            break; // EOF
         }
         total_read += bytes_read;
     }
     return total_read;
 }
 
-// read_until is typically used to read until a specific character or max count.
+// Helper function: Reads from 'fd' into 'buf' until a newline character is encountered
+// or 'count' bytes have been read. Returns the number of bytes read (excluding newline),
+// or -1 on error.
 ssize_t read_until(int fd, void *buf, size_t count) {
     ssize_t total_read = 0;
-    char *cbuf = (char *)buf;
+    byte *b = (byte *)buf;
     while (total_read < count) {
-        ssize_t bytes_read = read(fd, cbuf + total_read, 1);
-        if (bytes_read <= 0) { // EOF or error
-            break;
+        ssize_t bytes_read_single = read(fd, b + total_read, 1);
+        if (bytes_read_single == -1) {
+            return -1; // Error
         }
-        if (cbuf[total_read] == '\n') { // Read until newline
-            total_read++;
-            break;
+        if (bytes_read_single == 0) {
+            break; // EOF
         }
-        total_read += bytes_read;
+        if (b[total_read] == '\n') {
+            break; // Newline found
+        }
+        total_read++;
     }
     return total_read;
 }
 
-// Global variables, assuming placeholder values or external linkage
-// `secret` is used as an array of unsigned int (0x400 elements = 0x1000 bytes)
-// and also as a byte array for memcpy.
-static unsigned int secret[0x400] = {0x11223344, /* ... initial secret data ... */};
-// DAT_00015004 and DAT_00015006 are likely single characters or pointers to single characters
-static const char DAT_00015004 = 'S'; // Success indicator
-static const char DAT_00015006 = 'E'; // Error indicator
-
 // Function: _otp_populate
-void _otp_populate(uint *param_1) {
-  byte local_otp_data_buffer[4096]; // 0x1000 bytes for rotating secret
-  uint initial_secret_offset;
-  uint otp_current_index;
-  uint loop_counter;
+// Populates the OTP buffer within the provided OTP structure.
+// otp_struct layout:
+// otp_struct[0]: Current OTP length/offset
+// otp_struct[1]...otp_struct[0x20]: OTP data buffer (0x80 bytes)
+// otp_struct[0x21]: Seed 1 (offset 0x84)
+// otp_struct[0x22]: Seed 2 (offset 0x88)
+// ((byte*)otp_struct)[0x8c]: Session counter
+void _otp_populate(uint *otp_struct) {
+    byte temp_otp_buffer[4096]; // Temporary buffer for OTP generation (local_1014)
+    uint current_seed_offset = otp_struct[0x22] & 0xfff; // Seed 2 value, masked (local_14, first usage)
 
-  // param_1[0x22] is uint, so 0x22 * sizeof(uint) = 0x88 bytes offset.
-  initial_secret_offset = param_1[0x22] & 0xfff; // This is a byte offset into the secret
+    // Copy a portion of the global 'secret' array into 'temp_otp_buffer'.
+    // This handles the main part of a circular buffer fill.
+    memcpy(temp_otp_buffer, secret + current_seed_offset, 0x1000 - current_seed_offset);
 
-  // Copy 0x1000 - initial_secret_offset bytes from secret, starting at initial_secret_offset
-  // This is the first part of a circular copy.
-  memcpy(local_otp_data_buffer, (byte *)secret + initial_secret_offset, 0x1000 - initial_secret_offset);
+    // If the offset is not zero, copy the initial part of 'secret' to fill the wrap-around
+    // portion of 'temp_otp_buffer', effectively making 'temp_otp_buffer' a circular copy of 'secret'.
+    if (current_seed_offset != 0) {
+        memcpy(temp_otp_buffer + (0x1000 - current_seed_offset), secret, current_seed_offset);
+    }
 
-  // If initial_secret_offset is not 0, copy the remaining initial_secret_offset bytes from the beginning of secret.
-  // This completes the circular copy of 0x1000 bytes from 'secret' into 'local_otp_data_buffer',
-  // effectively rotating the secret by 'initial_secret_offset' bytes.
-  if (initial_secret_offset != 0) {
-    memcpy(local_otp_data_buffer + (0x1000 - initial_secret_offset), (byte *)secret, initial_secret_offset);
-  }
+    uint otp_data_length = otp_struct[0]; // Current OTP data length (local_14, second usage, renamed for clarity)
+    
+    // Fill the OTP data portion of the 'otp_struct'.
+    // The OTP data starts at (byte*)(otp_struct + 1), which is 4 bytes after otp_struct[0].
+    for (uint i = otp_data_length; i < 0x80; ++i) { // i corresponds to local_10
+        // Calculate the OTP byte: XOR a byte from Seed 1 with a byte from the temp_otp_buffer.
+        // ((byte*)&otp_struct[0x21])[(i & 3)] accesses bytes within Seed 1 (otp_struct[0x21]).
+        // temp_otp_buffer[otp_data_length & 0xfff] accesses a byte from the circularly copied secret.
+        ((byte *)otp_struct)[i + 4] =
+            ((byte *)&otp_struct[0x21])[(i & 3)] ^ temp_otp_buffer[otp_data_length & 0xfff];
+        otp_data_length += 2; // Increment for the next OTP byte generation
+    }
 
-  // *param_1 stores the current length/index for the OTP buffer within the session object.
-  otp_current_index = *param_1;
-
-  // Populate the OTP buffer located at param_1 + 1 (i.e., bytes 4 to 0x83 relative to param_1).
-  // The loop runs from the current OTP index up to 0x80 (128 bytes).
-  for (loop_counter = otp_current_index; loop_counter < 0x80; loop_counter++) {
-    // Destination: The OTP byte at (param_1 + 1) + loop_counter.
-    // Source 1: A byte from param_1[0x21] (seed 1) based on (loop_counter & 3).
-    // Source 2: A byte from the rotated secret buffer (local_otp_data_buffer)
-    //           indexed by otp_current_index, wrapped around 0xfff.
-    ((byte *)(param_1 + 1))[loop_counter] =
-         ((byte *)(param_1 + 0x21))[(loop_counter & 3)] ^ local_otp_data_buffer[otp_current_index & 0xfff];
-    otp_current_index += 2; // Increment the index for accessing local_otp_data_buffer
-  }
-
-  // Update param_1[0x22] (seed 2) with the final otp_current_index.
-  param_1[0x22] = otp_current_index;
-  // Set *param_1 to 0x80, indicating the OTP buffer is now full (128 bytes are available).
-  *param_1 = 0x80;
+    otp_struct[0x22] = otp_data_length; // Update Seed 2 in the struct with the new offset
+    otp_struct[0] = 0x80;              // Set the current OTP data length to its maximum (0x80 bytes)
 }
 
 // Function: _otp_consume
-// param_1 is a pointer to the session object (uint *), where *param_1 is the current OTP length.
-// bytes_to_consume is the number of OTP bytes to consume.
-uint * _otp_consume(uint *param_1, uint bytes_to_consume) {
-  // Check if there are enough OTP bytes available to consume.
-  if (bytes_to_consume <= *param_1) {
-    // Shift the OTP buffer content to the left.
-    // The OTP data starts at (param_1 + 1) (i.e., byte offset 4 from param_1).
-    // Source: Starts at (param_1 + 1) + bytes_to_consume (byte offset).
-    // Destination: (param_1 + 1).
-    // Number of bytes to copy: The remaining OTP bytes.
-    memcpy((byte *)(param_1 + 1),
-           (byte *)(param_1 + 1) + bytes_to_consume,
-           *param_1 - bytes_to_consume);
-    // Update the current OTP length stored in *param_1.
-    *param_1 -= bytes_to_consume;
-    return param_1; // Return the session object pointer on success.
-  }
-  // If not enough bytes, return NULL to indicate failure.
-  return NULL;
+// Consumes a specified number of OTP bytes from the OTP structure.
+// otp_struct: Pointer to the OTP structure.
+// length_to_consume: The number of OTP bytes to consume.
+void _otp_consume(uint *otp_struct, uint length_to_consume) {
+    // Check if there is enough OTP data available to consume.
+    if (length_to_consume <= otp_struct[0]) {
+        // Shift the remaining OTP data within the buffer.
+        // The OTP data starts at (byte*)(otp_struct + 1).
+        // Source is the data after the consumed part: (byte*)(otp_struct + 1) + length_to_consume.
+        // Destination is the beginning of the OTP data buffer: (byte*)(otp_struct + 1).
+        // Size to move is the total current length minus the length consumed.
+        memcpy((byte *)(otp_struct + 1), (byte *)(otp_struct + 1) + length_to_consume,
+               otp_struct[0] - length_to_consume);
+        otp_struct[0] -= length_to_consume; // Update the current OTP data length.
+    }
+    // The original code returned a pointer, but its usage implies a void return is appropriate.
 }
 
 // Function: otp_handshake
-void otp_handshake(void **param_1) {
-  byte challenge[8];       // Stores a random challenge
-  undefined response[8];   // Stores the client's response
-  undefined4 seed2_value;  // Stores a seed value read from client
-  uint loop_counter;
-  uint *session_obj;       // Pointer to the newly created session object
+// Performs an OTP handshake, involving challenge-response and session setup.
+// otp_session_ptr: Pointer to a void* which will store the allocated OTP session structure.
+void otp_handshake(void **otp_session_ptr) {
+    byte challenge_local[8];  // Buffer for the generated challenge
+    byte response_local[8];   // Buffer for the received response
+    uint seed1_val;           // Value for Seed 1, read from input
+    void *otp_struct_ptr;     // Pointer to the newly allocated OTP session structure
 
-  // If an existing session object is pointed to by *param_1, free it.
-  if (*param_1 != NULL) {
-    free(*param_1);
-    *param_1 = NULL;
-  }
-
-  // Generate 8 random bytes for the challenge.
-  for (loop_counter = 0; loop_counter < 8; loop_counter++) {
-      challenge[loop_counter] = (byte)random(); // random() returns long, cast to byte
-  }
-
-  // Write the generated challenge to standard output.
-  fwrite(challenge, 1, 8, stdout);
-
-  // Perform a nibble swap on each byte of the challenge.
-  for (loop_counter = 0; loop_counter < 8; loop_counter++) {
-    challenge[loop_counter] = (challenge[loop_counter] >> 4) | (challenge[loop_counter] << 4);
-  }
-
-  // Read 8 bytes of response from standard input.
-  if (read_n(0, response, 8) == 8) {
-    seed2_value = 0;
-    // Read 4 bytes for seed2_value from standard input.
-    if ((read_n(0, &seed2_value, 4) == 4) &&
-       // Check if the client's response matches the (nibble-swapped) challenge OR the global secret.
-       ((memcmp(challenge, response, 8) == 0) || (memcmp(secret, response, 8) == 0))) {
-
-      // Allocate memory for the session object (0x90 bytes).
-      session_obj = (uint *)malloc(0x90);
-      if (session_obj == NULL) { // Handle malloc failure
-          *param_1 = NULL;
-          fwrite(&DAT_00015006, 1, 1, stdout); // Write error message
-          return;
-      }
-      memset(session_obj, 0, 0x90); // Initialize the session object to zero.
-
-      // Store seed2_value into param_1[0x21] (byte offset 0x84).
-      session_obj[0x21] = seed2_value;
-
-      // Calculate a sum of all unsigned int elements in the global 'secret' array
-      // and store it (masked) into param_1[0x22] (byte offset 0x88), which serves as seed 1.
-      for (loop_counter = 0; loop_counter < 0x400; loop_counter++) {
-        session_obj[0x22] += secret[loop_counter];
-      }
-      session_obj[0x22] &= 0xfff; // Apply a mask to the sum.
-
-      // Write the calculated seed 1 (masked sum) to standard output.
-      fwrite(&session_obj[0x22], 1, 4, stdout);
-      fwrite(&DAT_00015004, 1, 1, stdout); // Write success indicator.
-
-      // Set a session counter/status byte at offset 0x8c (param_1[0x23]) to 3.
-      ((byte *)session_obj)[0x8c] = 3;
-
-      *param_1 = session_obj; // Store the address of the new session object.
-      return;
+    // If an existing session pointer is not NULL, free the old session memory.
+    if (*otp_session_ptr != NULL) {
+        free(*otp_session_ptr);
+        *otp_session_ptr = NULL;
     }
-  }
-  // If any condition fails (read error, mismatch), set *param_1 to NULL and send an error.
-  *param_1 = NULL;
-  fwrite(&DAT_00015006, 1, 1, stdout); // Write error indicator.
+
+    // Generate 8 random bytes for the challenge.
+    // getrandom is a Linux-specific system call for cryptographic randomness.
+    getrandom(challenge_local, 8, 0);
+
+    // Write the challenge to standard output.
+    fwrite(challenge_local, 1, 8, stdout);
+
+    // Apply a nibble swap to each byte of the challenge in-place.
+    for (uint i = 0; i < 8; ++i) {
+        challenge_local[i] = (challenge_local[i] >> 4) | (challenge_local[i] << 4);
+    }
+
+    // Read 8 bytes for the response from standard input.
+    if (read_n(STDIN_FILENO, response_local, 8) != 8) {
+        *otp_session_ptr = NULL;
+        fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure
+        return;
+    }
+
+    // Read 4 bytes for Seed 1 value from standard input.
+    if (read_n(STDIN_FILENO, &seed1_val, 4) != 4) {
+        *otp_session_ptr = NULL;
+        fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure
+        return;
+    }
+
+    // Verify the response: it must match either the modified challenge or the global secret.
+    if (memcmp(challenge_local, response_local, 8) == 0 || memcmp(secret, response_local, 8) == 0) {
+        // Allocate memory for the OTP session structure (0x90 bytes).
+        otp_struct_ptr = malloc(0x90);
+        if (otp_struct_ptr == NULL) {
+            *otp_session_ptr = NULL;
+            fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure due to allocation error
+            return;
+        }
+        memset(otp_struct_ptr, 0, 0x90); // Initialize the structure to zeros.
+
+        // Set Seed 1 in the structure (at offset 0x84, which is otp_struct_ptr[0x21]).
+        ((uint *)otp_struct_ptr)[0x21] = seed1_val;
+
+        // Calculate Seed 2 (at offset 0x88, which is otp_struct_ptr[0x22]).
+        // It's a sum of uints from the global 'secret' array, masked by 0xfff.
+        ((uint *)otp_struct_ptr)[0x22] = 0; // Initialize directly to reduce variable count
+        for (uint i = 0; i < 0x400; ++i) {
+            ((uint *)otp_struct_ptr)[0x22] += ((uint *)secret)[i];
+        }
+        ((uint *)otp_struct_ptr)[0x22] &= 0xfff;
+
+        // Write the calculated Seed 2 to standard output.
+        fwrite(&((uint *)otp_struct_ptr)[0x22], 1, 4, stdout);
+        fwrite(&DAT_00015004, 1, 1, stdout); // Indicate success.
+
+        // Set the session counter in the structure (at offset 0x8c) to 3.
+        ((byte *)otp_struct_ptr)[0x8c] = 3;
+
+        *otp_session_ptr = otp_struct_ptr; // Store the new session structure pointer.
+        return;
+    }
+
+    // If verification fails, set the session pointer to NULL and indicate failure.
+    *otp_session_ptr = NULL;
+    fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure.
 }
 
 // Function: otp_generate_otp
-void otp_generate_otp(uint *param_1) {
-  uint requested_otp_length; // Stores the desired length of OTP to generate.
-  uint loop_counter;         // Loop counter for printing OTP bytes.
-
-  requested_otp_length = 0;
-  // Read the requested OTP length (4 bytes) from standard input.
-  // Check various conditions for a valid request:
-  // - Read successful.
-  // - Session object (param_1) is not NULL.
-  // - Session counter (byte at param_1[0x23], offset 0x8c) is not zero.
-  // - Requested length is within bounds (1 to 128 bytes).
-  if (read_n(0, &requested_otp_length, 4) == 4 &&
-      param_1 != NULL &&
-      ((byte *)param_1)[0x8c] != '\0' &&
-      requested_otp_length < 0x81 &&
-      requested_otp_length != 0) {
-
-    // If the current OTP buffer (*param_1) has fewer bytes than requested, repopulate it.
-    if (*param_1 < requested_otp_length) {
-      _otp_populate(param_1);
+// Generates and prints a specified number of OTP bytes from the session.
+// otp_struct: Pointer to the current OTP session structure.
+void otp_generate_otp(uint *otp_struct) {
+    uint requested_otp_length; // The number of OTP bytes requested by the user.
+    
+    // Read the requested OTP length from standard input.
+    if (read_n(STDIN_FILENO, &requested_otp_length, 4) != 4) {
+        fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure.
+        return;
     }
 
-    // Print the requested number of OTP bytes in hexadecimal format.
-    // The OTP buffer starts at (param_1 + 1), which is byte offset 4 from param_1.
-    for (loop_counter = 0; loop_counter < requested_otp_length; loop_counter++) {
-      printf("%02X", (uint)((byte *)(param_1 + 1))[loop_counter]);
+    // Check for valid session, active session counter, and valid requested length.
+    if (otp_struct != NULL && ((char *)otp_struct)[0x8c] != '\0' &&
+        requested_otp_length > 0 && requested_otp_length < 0x81) {
+
+        // If the current OTP buffer does not contain enough bytes, populate it.
+        if (otp_struct[0] < requested_otp_length) {
+            _otp_populate(otp_struct);
+        }
+
+        // Print the requested number of OTP bytes in hexadecimal format.
+        // OTP data starts at (byte*)(otp_struct + 1).
+        for (uint i = 0; i < requested_otp_length; ++i) {
+            printf("%02X", (uint)((byte *)(otp_struct + 1))[i]);
+        }
+
+        _otp_consume(otp_struct, requested_otp_length); // Consume the generated OTP bytes.
+        fwrite(&DAT_00015004, 1, 1, stdout);            // Indicate success.
+        ((char *)otp_struct)[0x8c]--;                   // Decrement the session counter.
+    } else {
+        fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure.
     }
-    _otp_consume(param_1, requested_otp_length); // Consume the printed OTP bytes.
-    fwrite(&DAT_00015004, 1, 1, stdout);         // Write success indicator.
-    ((byte *)param_1)[0x8c]--;                   // Decrement the session counter.
-  } else {
-    fwrite(&DAT_00015006, 1, 1, stdout); // Write error indicator for invalid request.
-  }
 }
 
 // Function: otp_extend_session
-void otp_extend_session(uint *param_1) { // param_1 is the session object pointer
-  byte received_data[8192];       // Buffer for received data (0x2000 bytes)
-  ushort data_length;             // Length of data to extend
-  byte *extended_data_buffer;     // Buffer for the extended data to be printed
-  ssize_t bytes_read_until;       // Result of read_until call
+// Extends the OTP session with new data.
+// otp_session_ptr: Pointer to the current OTP session structure.
+void otp_extend_session(void *otp_session_ptr) {
+    ushort data_length;       // Expected length of data to be read.
+    byte temp_buffer[8192];   // Temporary buffer to read incoming data.
+    byte *allocated_data = NULL; // Pointer for dynamically allocated data.
+    ssize_t bytes_read;       // Actual number of bytes read by read_until.
 
-  data_length = 0;
-  // Read the length of the data to extend (2 bytes) from standard input.
-  if (read_n(0, &data_length, 2) == 2) {
-    // Read the actual data from standard input, up to 0x2000 bytes.
-    bytes_read_until = read_until(0, received_data, 0x2000);
-
-    // Check conditions for valid extension:
-    // - Data was actually read.
-    // - Session object (param_1) is not NULL.
-    // - Data length is not zero.
-    if (bytes_read_until != 0 && param_1 != NULL && data_length != 0) {
-      // Allocate memory for the extended data buffer, plus one byte for a null prefix.
-      extended_data_buffer = (byte *)malloc(data_length + 1);
-      if (extended_data_buffer == NULL) { // Handle malloc failure
-          fwrite(&DAT_00015006, 1, 1, stdout); // Write error message
-          return;
-      }
-      extended_data_buffer[0] = 0; // Prefix the data with a null byte.
-      memcpy(extended_data_buffer + 1, received_data, data_length); // Copy the received data.
-      ((byte *)param_1)[0x8c] = 3; // Reset the session counter to 3.
-      // Write the extended data (including the null prefix) to standard output.
-      fwrite(extended_data_buffer, 1, data_length + 1, stdout);
-      free(extended_data_buffer); // Free the allocated buffer.
-      return;
+    // Read the expected data length from standard input.
+    if (read_n(STDIN_FILENO, &data_length, 2) != 2) {
+        fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure.
+        return;
     }
-  }
-  fwrite(&DAT_00015006, 1, 1, stdout); // Write error indicator for invalid extension.
+
+    // Read data from standard input until newline or buffer full.
+    bytes_read = read_until(STDIN_FILENO, temp_buffer, sizeof(temp_buffer));
+    if (bytes_read <= 0) { // Check for read error or no data.
+        fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure.
+        return;
+    }
+
+    // Check for valid session, non-zero data_length, and sufficient data read.
+    if (otp_session_ptr != NULL && data_length > 0 && data_length <= bytes_read) {
+        // Allocate memory for the data plus a null terminator.
+        allocated_data = (byte *)malloc(data_length + 1);
+        if (allocated_data == NULL) {
+            fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure due to allocation error.
+            return;
+        }
+        
+        allocated_data[0] = 0; // Set the first byte to 0 (potential string prefix).
+        memcpy(allocated_data + 1, temp_buffer, data_length); // Copy the actual data.
+        
+        // Update the session counter in the OTP structure (at offset 0x8c).
+        ((byte *)otp_session_ptr)[0x8c] = 3;
+        
+        // Write the allocated data (including the leading null) to standard output.
+        fwrite(allocated_data, 1, data_length + 1, stdout);
+        free(allocated_data); // Free the allocated memory.
+        return;
+    }
+
+    fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure.
 }
 
 // Function: otp_set_seeds
-void otp_set_seeds(uint *param_1) { // param_1 is the session object pointer
-  uint seed2_value; // Stores seed 2 read from client.
-  uint seed1_value; // Stores seed 1 read from client.
+// Sets new seed values for the OTP generation.
+// otp_struct: Pointer to the current OTP session structure.
+void otp_set_seeds(uint *otp_struct) {
+    uint new_seed1_val; // New value for Seed 1.
+    uint new_seed2_val; // New value for Seed 2.
 
-  seed1_value = 0;
-  seed2_value = 0;
-  // Read seed 1 (4 bytes) and seed 2 (4 bytes) from standard input.
-  // Check if both reads were successful and the session object (param_1) is not NULL.
-  if (read_n(0, &seed1_value, 4) == 4 &&
-      read_n(0, &seed2_value, 4) == 4 &&
-      param_1 != NULL) {
+    // Read new Seed 1 value from standard input.
+    if (read_n(STDIN_FILENO, &new_seed1_val, 4) != 4) {
+        fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure.
+        return;
+    }
+    // Read new Seed 2 value from standard input.
+    if (read_n(STDIN_FILENO, &new_seed2_val, 4) != 4) {
+        fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure.
+        return;
+    }
 
-    param_1[0x21] = seed1_value; // Store seed 1 into param_1[0x21].
-    param_1[0x22] = seed2_value; // Store seed 2 into param_1[0x22].
-    *param_1 = 0;                // Reset the current OTP buffer length to 0.
-    // Clear the OTP buffer within the session object (128 bytes starting at param_1 + 1).
-    memset(param_1 + 1, 0, 0x80);
-    _otp_populate(param_1);      // Repopulate the OTP buffer with the new seeds.
-    fwrite(&DAT_00015004, 1, 1, stdout); // Write success indicator.
-  } else {
-    fwrite(&DAT_00015006, 1, 1, stdout); // Write error indicator for invalid input or NULL session.
-  }
+    // Check for a valid OTP structure.
+    if (otp_struct != NULL) {
+        otp_struct[0x21] = new_seed1_val; // Set Seed 1 (at offset 0x84).
+        otp_struct[0x22] = new_seed2_val; // Set Seed 2 (at offset 0x88).
+        otp_struct[0] = 0;               // Reset the current OTP data length to 0.
+        // Clear the OTP data buffer (0x80 bytes starting at otp_struct[1]).
+        memset(otp_struct + 1, 0, 0x80);
+        
+        _otp_populate(otp_struct);       // Repopulate the OTP buffer with new seeds.
+        fwrite(&DAT_00015004, 1, 1, stdout); // Indicate success.
+    } else {
+        fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure.
+    }
 }
 
 // Function: otp_verify_otp
+// Verifies a received OTP against a locally generated one using provided seeds.
 void otp_verify_otp(void) {
-  // Declare a temporary session object on the stack (0x90 bytes = 36 uints).
-  uint temp_session_obj[0x90 / sizeof(uint)];
-  uint seed1_value;      // Stores seed 1 read from client.
-  uint seed2_value;      // Stores seed 2 read from client.
-  uint otp_length;       // Stores the length of the OTP to verify.
-  byte received_otp[132]; // Buffer for the OTP received from client (max 132 bytes).
+    uint seed1_received;    // Seed 1 value received from input.
+    uint seed2_received;    // Seed 2 value received from input.
+    uint otp_length;        // Length of the OTP to verify.
+    byte received_otp[132]; // Buffer to store the received OTP.
+    
+    // Define a local OTP structure for verification purposes.
+    // It needs to be 0x90 bytes, similar to the session structure.
+    uint local_otp_struct[0x90 / sizeof(uint)]; 
 
-  seed1_value = 0;
-  seed2_value = 0;
-  otp_length = 0;
-
-  // Read seed 2, seed 1, OTP length, and the received OTP data from standard input.
-  // Check various conditions for a valid verification request:
-  // - All reads successful.
-  // - OTP length is within bounds (1 to 128 bytes).
-  if (read_n(0, &seed2_value, 4) == 4 &&
-      read_n(0, &seed1_value, 4) == 4 &&
-      read_n(0, &otp_length, 4) == 4 &&
-      read_n(0, received_otp, otp_length) == otp_length &&
-      otp_length < 0x81 &&
-      otp_length != 0) {
-
-    // Initialize the temporary session object to zero.
-    memset(temp_session_obj, 0, sizeof(temp_session_obj));
-
-    // Set the seed values in the temporary session object.
-    temp_session_obj[0x21] = seed1_value;
-    temp_session_obj[0x22] = seed2_value;
-    temp_session_obj[0] = 0; // Initialize current OTP length to 0.
-
-    _otp_populate(temp_session_obj); // Populate the OTP buffer within temp_session_obj.
-
-    // Compare the generated OTP (starting at temp_session_obj + 1, i.e., byte offset 4)
-    // with the received OTP.
-    if (memcmp((byte *)(temp_session_obj + 1), received_otp, otp_length) == 0) {
-      fwrite(&DAT_00015004, 1, 1, stdout); // Write success indicator if OTP matches.
-      return;
+    // Read Seed 1 value from standard input.
+    if (read_n(STDIN_FILENO, &seed1_received, 4) != 4) {
+        fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure.
+        return;
     }
-  }
-  fwrite(&DAT_00015006, 1, 1, stdout); // Write error indicator for any failure.
+    // Read Seed 2 value from standard input.
+    if (read_n(STDIN_FILENO, &seed2_received, 4) != 4) {
+        fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure.
+        return;
+    }
+    // Read the OTP length from standard input.
+    if (read_n(STDIN_FILENO, &otp_length, 4) != 4) {
+        fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure.
+        return;
+    }
+
+    // Check for valid OTP length and read the received OTP data.
+    if (otp_length > 0 && otp_length < 0x81 &&
+        read_n(STDIN_FILENO, received_otp, otp_length) == otp_length) {
+
+        memset(local_otp_struct, 0, 0x90); // Initialize the local OTP structure to zeros.
+
+        // Set the received seeds into the local OTP structure.
+        local_otp_struct[0x21] = seed1_received; // Offset 0x84
+        local_otp_struct[0x22] = seed2_received; // Offset 0x88
+
+        // Populate the OTP buffer within the local structure using the received seeds.
+        _otp_populate(local_otp_struct);
+
+        // Compare the locally generated OTP with the received OTP.
+        // The OTP data starts at (byte*)(local_otp_struct + 1), which is 4 bytes after local_otp_struct[0].
+        if (memcmp(((byte *)local_otp_struct) + 4, received_otp, otp_length) == 0) {
+            fwrite(&DAT_00015004, 1, 1, stdout); // Indicate success if they match.
+            return;
+        }
+    }
+    
+    fwrite(&DAT_00015006, 1, 1, stdout); // Indicate failure if any condition fails or OTPs don't match.
 }

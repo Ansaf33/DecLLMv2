@@ -1,161 +1,179 @@
-#include <stdio.h>   // For printf
-#include <stdlib.h>  // For malloc, free, exit, perror
 #include <stdbool.h> // For bool
-#include <string.h>  // For strcmp
+#include <string.h>  // For strcmp, strdup
+#include <stdio.h>   // For printf, perror
+#include <stdlib.h>  // For malloc, free, exit
 
-// Define the Node structure based on the observed access patterns.
-// The original snippet's `undefined4 *param_1` and `local_10[1]`
-// implies that `item` and `next` are contiguous memory locations
-// and are both of the size of `undefined4` (typically 4 bytes on a 32-bit system
-// where `undefined4` is a pointer type, or 8 bytes on a 64-bit system).
-// We use `char *` for `item` and `struct Node *` for `next`, assuming they are
-// pointer types and thus have consistent sizing for the pointer arithmetic to work.
-typedef struct Node {
-    char *item;
-    struct Node *next;
-} Node;
-
-// Helper function to compare strings.
-// Returns 1 if str1 is lexicographically greater than str2, 0 otherwise.
-// This matches the `if (iVar3 == 1)` condition for triggering a swap in the original snippet.
-int compare_strings(char *str1, char *str2) {
-    return strcmp(str1, str2) > 0;
+// Function to compare two strings
+// Returns 1 if s1 > s2, -1 if s1 < s2, 0 if s1 == s2
+int compare_strings(const char *s1, const char *s2) {
+    int cmp = strcmp(s1, s2);
+    if (cmp > 0) {
+        return 1;
+    } else if (cmp < 0) {
+        return -1;
+    }
+    return 0;
 }
 
 // Function: sort_shopping_list
-// This function sorts a singly linked list using a bubble sort algorithm.
-// `head_item_ptr` is a pointer to the 'item' field of the head node.
-// This allows the function to access both the 'item' and 'next' fields
-// of a node using pointer arithmetic (`current_item_ptr[0]` and `current_item_ptr[1]`).
-void sort_shopping_list(char **head_item_ptr) {
-    bool swapped;
-    char **current_item_ptr; // Corresponds to `local_10` in the original snippet
-    Node *next_node_ptr;     // Temporary for checking the next node
+// param_1: A pointer to a pointer to a char (char**).
+// In the context of the original snippet's `undefined4 *param_1`,
+// this assumes `undefined4` is `char*` (a pointer type) and `undefined4 *` is `char**`.
+//
+// The list structure implied by the original snippet's pointer arithmetic is:
+// Each conceptual "node" in the list is a contiguous block of two `char*` pointers.
+//   - The first `char*` pointer (at index 0) holds the actual string data.
+//   - The second `char*` pointer (at index 1) holds the *address* of the first `char*`
+//     of the *next* conceptual node block in the list.
+// The list terminates when the second `char*` pointer (the "next" pointer) is NULL.
+//
+// `param_1` points to the `char*` (string data) of the first item.
+void sort_shopping_list(char **param_1) {
+    char* temp_item; // Variable corresponding to uVar1 in the original snippet
+    bool swapped;     // Variable corresponding to bVar2 in the original snippet
+    char **current_item_ptr; // Variable corresponding to local_10 in the original snippet
 
-    // Handle empty list or invalid head pointer.
-    // If head_item_ptr is NULL, it's an empty list or an invalid call.
-    if (head_item_ptr == NULL) {
+    if (param_1 == NULL || *param_1 == NULL) { // Handle empty list case
         return;
     }
 
     do {
         swapped = false;
-        current_item_ptr = head_item_ptr; // Start from the beginning of the list for each pass
-
-        // The loop condition `local_10[1] != 0` checks if the 'next' pointer is non-null.
-        // `current_item_ptr[1]` (which is `*(current_item_ptr + 1)`) is the `next` pointer of the current node.
-        // We cast it to `Node *` to check if it's NULL, indicating the end of the list segment.
-        while ((next_node_ptr = (Node *)(current_item_ptr[1])) != NULL) {
-            // Compare `current_node->item` with `current_node->next->item`.
-            // `*current_item_ptr` is `current_node->item`.
-            // `*(char **)(current_item_ptr[1])` effectively dereferences the `next` pointer
-            // (which is `current_item_ptr[1]`) and then treats the memory it points to
-            // as a `char **` to get `next_node->item`.
-            if (compare_strings(*current_item_ptr, *(char **)(current_item_ptr[1])) == 1) {
-                // Swap the 'item' string pointers.
-                // This is equivalent to `uVar1 = *local_10; ...` in the original snippet.
-                char *temp_item = *current_item_ptr;
-                *current_item_ptr = *(char **)(current_item_ptr[1]);
-                *(char **)(current_item_ptr[1]) = temp_item;
-                swapped = true;
+        // Loop through the list to perform bubble sort passes.
+        // `current_item_ptr` points to the `char*` (string) of the current item.
+        // `current_item_ptr[1]` is the `char*` that points to the *next conceptual node block*.
+        // The loop continues as long as `current_item_ptr[1]` is not NULL, meaning there's a next node.
+        for (current_item_ptr = param_1; current_item_ptr[1] != NULL; current_item_ptr = (char**)current_item_ptr[1]) {
+            // Compare the current item with the next item.
+            // `*current_item_ptr` is the current string.
+            // `*(char**)current_item_ptr[1]` is the string of the next item.
+            // The cast `(char**)` is necessary because `current_item_ptr[1]` is a `char*`
+            // that *points to* another `char*` (the next item's string pointer),
+            // so it needs to be dereferenced as a `char**`.
+            if (compare_strings(*current_item_ptr, *(char**)current_item_ptr[1]) == 1) {
+                // If the current item is "greater" than the next item, swap their string pointers.
+                temp_item = *current_item_ptr;
+                *current_item_ptr = *(char**)current_item_ptr[1];
+                *(char**)current_item_ptr[1] = temp_item;
+                swapped = true; // A swap occurred, so another pass is needed
             }
-            // Move to the next node.
-            // `local_10 = (undefined4 *)local_10[1];` means
-            // `current_item_ptr = (char **)(current_item_ptr[1]);`
-            // `current_item_ptr[1]` is the `Node *next` pointer. Casting it to `char **`
-            // makes `current_item_ptr` point to the `item` field of the next node,
-            // preparing for the next iteration.
-            current_item_ptr = (char **)(current_item_ptr[1]);
         }
-    } while (swapped);
+    } while (swapped); // Continue sorting as long as swaps are being made
 }
 
-// --- Main function for demonstration and compilation ---
+// Helper function to create a "node" for this specific list structure.
+// It allocates a block of memory sufficient for two `char*` pointers:
+// one for the item string itself, and one for the "next node" pointer.
+// Returns a `char**` which points to the first `char*` (the item string)
+// within the allocated block.
+char** createNode(const char* item_string) {
+    // Allocate space for two `char*` pointers.
+    // Index 0 will store the actual string pointer.
+    // Index 1 will store the pointer to the next node's item.
+    char** node_block = (char**)malloc(2 * sizeof(char*));
+    if (node_block == NULL) {
+        perror("Failed to allocate node block");
+        exit(EXIT_FAILURE);
+    }
+    node_block[0] = strdup(item_string); // Duplicate the string to manage its memory
+    if (node_block[0] == NULL) {
+        perror("Failed to duplicate string");
+        free(node_block);
+        exit(EXIT_FAILURE);
+    }
+    node_block[1] = NULL; // Initialize the "next" pointer to NULL
+    return node_block; // Return pointer to the block (which is also the address of node_block[0])
+}
 
 // Helper function to print the list
-void print_list(Node *head) {
-    Node *current = head;
-    while (current != NULL) {
-        printf("%s -> ", current->item);
-        current = current->next;
+void printList(char** head_item_ptr) {
+    char** current = head_item_ptr;
+    while (current != NULL && *current != NULL) {
+        printf("%s -> ", *current);
+        // Move to the next conceptual node block using the stored "next" pointer.
+        current = (char**)current[1];
     }
     printf("NULL\n");
 }
 
-// Helper function to create a new node
-Node *create_node(char *item) {
-    Node *new_node = (Node *)malloc(sizeof(Node));
-    if (new_node == NULL) {
-        perror("Failed to allocate memory for new node");
-        exit(EXIT_FAILURE);
-    }
-    new_node->item = item; // Assuming item strings are static or managed elsewhere
-    new_node->next = NULL;
-    return new_node;
-}
-
-// Helper function to free the list memory
-void free_list(Node *head) {
-    Node *current = head;
-    while (current != NULL) {
-        Node *next = current->next;
-        free(current);
+// Helper function to free the list's memory
+void freeList(char** head_item_ptr) {
+    char** current = head_item_ptr;
+    while (current != NULL && *current != NULL) {
+        char** next = (char**)current[1]; // Get the pointer to the next node block
+        free(current[0]); // Free the duplicated string
+        free(current);    // Free the node block itself
         current = next;
     }
 }
 
+// Main function for testing the sort_shopping_list
 int main() {
-    // Create a sample shopping list
-    Node *head = create_node("Milk");
-    head->next = create_node("Bread");
-    head->next->next = create_node("Apples");
-    head->next->next->next = create_node("Butter");
-    head->next->next->next->next = create_node("Cheese");
-    head->next->next->next->next->next = create_node("Yogurt");
+    // Create a sample shopping list using the specific memory structure.
+    // Each `nodeX` is a `char**` that points to a block of `char*`s.
+    char** node1 = createNode("Milk");
+    char** node2 = createNode("Apples");
+    char** node3 = createNode("Bread");
+    char** node4 = createNode("Eggs");
+    char** node5 = createNode("Yogurt");
+    char** node6 = createNode("Cheese");
 
-    printf("Original Shopping List:\n");
-    print_list(head);
+    // Link the nodes: node_block[1] stores the address of the *next* node_block.
+    node1[1] = (char*)node2;
+    node2[1] = (char*)node3;
+    node3[1] = (char*)node4;
+    node4[1] = (char*)node5;
+    node5[1] = (char*)node6;
+    node6[1] = NULL; // The last node's "next" pointer is NULL
 
-    // Call sort_shopping_list with a pointer to the 'item' field of the head node.
-    // This matches the `undefined4 *param_1` interpretation.
-    sort_shopping_list(&(head->item));
+    char** head = node1; // The head of the list is the pointer to the first node block.
 
-    printf("\nSorted Shopping List:\n");
-    print_list(head);
+    printf("Original list: ");
+    printList(head);
+
+    sort_shopping_list(head);
+
+    printf("Sorted list:   ");
+    printList(head);
 
     // Test with an already sorted list
-    Node *head2 = create_node("Apple");
-    head2->next = create_node("Banana");
-    head2->next->next = create_node("Cherry");
-    printf("\nOriginal (sorted) List 2:\n");
-    print_list(head2);
-    sort_shopping_list(&(head2->item));
-    printf("Sorted List 2:\n");
-    print_list(head2);
+    char** head2_node1 = createNode("Apples");
+    char** head2_node2 = createNode("Bread");
+    char** head2_node3 = createNode("Milk");
+    head2_node1[1] = (char*)head2_node2;
+    head2_node2[1] = (char*)head2_node3;
+    head2_node3[1] = NULL;
+    char** head2 = head2_node1;
+
+    printf("\nOriginal (sorted) list: ");
+    printList(head2);
+    sort_shopping_list(head2);
+    printf("Sorted list:            ");
+    printList(head2);
 
     // Test with an empty list
-    Node *head3 = NULL;
-    printf("\nOriginal (empty) List 3:\n");
-    print_list(head3);
-    // Ensure not to take address of NULL for &(head3->item)
-    if (head3 != NULL) {
-        sort_shopping_list(&(head3->item));
-    }
-    printf("Sorted List 3:\n");
-    print_list(head3); // Should remain NULL
+    char** empty_head = NULL;
+    printf("\nOriginal (empty) list: ");
+    printList(empty_head);
+    sort_shopping_list(empty_head);
+    printf("Sorted list:           ");
+    printList(empty_head);
 
     // Test with a single-node list
-    Node *head4 = create_node("Zebra");
-    printf("\nOriginal (single) List 4:\n");
-    print_list(head4);
-    sort_shopping_list(&(head4->item));
-    printf("Sorted List 4:\n");
-    print_list(head4);
+    char** single_head_node = createNode("Zucchini");
+    single_head_node[1] = NULL;
+    char** single_head = single_head_node;
+
+    printf("\nOriginal (single) list: ");
+    printList(single_head);
+    sort_shopping_list(single_head);
+    printf("Sorted list:            ");
+    printList(single_head);
 
     // Clean up allocated memory
-    free_list(head);
-    free_list(head2);
-    free_list(head4);
+    freeList(head);
+    freeList(head2);
+    freeList(single_head);
 
     return 0;
 }

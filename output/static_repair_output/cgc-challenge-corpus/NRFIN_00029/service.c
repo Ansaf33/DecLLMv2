@@ -1,241 +1,206 @@
-#include <stdio.h>   // For NULL, stderr, fprintf
-#include <stdlib.h>  // For malloc, calloc, free
-#include <string.h>  // For strchr, strncpy, strlen, strncmp
-#include <unistd.h>  // For STDIN_FILENO, STDOUT_FILENO, ssize_t, read, write
-#include <stdint.h>  // For uint32_t, uintptr_t
+#include <stdio.h>  // For NULL, size_t, perror
+#include <stdlib.h> // For calloc, free
+#include <string.h> // For strchr, strncpy, strcmp
+#include <unistd.h> // For read, write, ssize_t, STDIN_FILENO, STDOUT_FILENO
 
-// --- Dummy VFS Structures and Functions (to make code compilable) ---
-// These are simplified to match the access patterns of the original snippet.
-// In a real VFS, these would be more robust and complex.
+// --- Dummy Definitions for Compilation ---
+// These would typically be provided by a project's header files or other source files.
 
-// File entry structure. Also used for directory entries.
-// The offsets are chosen to match the original decompiled code's access patterns.
+// Assuming the structure of a file entry based on observed offsets
 typedef struct file_entry {
-    char name[16];          // Offset 0x00: File name (or directory name)
-    char _padding_0x10[0x10 - 0x0C]; // Padding to align owner_id if needed
-    int owner_id;           // Offset 0x10: Owner ID (used for admin check)
-    size_t size;            // Offset 0x14: Size of file data
-    void *data;             // Offset 0x18: Pointer to file data
-    struct file_entry *next; // Offset 0x1C: Next file/directory in a linked list
+    char name[16];      // At offset 0x0, assuming for list_files output
+    int field_0x10;     // At offset 0x10, used for admin check in write_file
+    unsigned int size;  // At offset 0x14, file content size
+    void *data;         // At offset 0x18, pointer to file content
+    struct file_entry *next; // At offset 0x1c, for linked list traversal
+    // Other fields might exist
 } file_entry_t;
 
-// VFS structure (simplified: a linked list of root directories)
-typedef struct {
-    file_entry_t *root_dirs_head; // Head of a linked list of top-level directories
+// Placeholder for a Virtual File System structure
+typedef struct vfs_t {
+    file_entry_t *root_dir; // Example: pointer to the root directory's file_entry_t
 } vfs_t;
 
-// Global VFS instance and special directory pointers/IDs
+// Global VFS instance and special directory handles/IDs
 vfs_t vfs;
-file_entry_t *pubroot = NULL; // Pointer to the "/public/" directory entry
-file_entry_t *admin_dir = NULL; // Pointer to the "/admin" directory entry
-int ADMIN_UID = 1; // Arbitrary admin user ID for owner_id checks
+file_entry_t *pubroot; // Points to the /public/ directory entry (acting as a list head)
+int admin;             // An integer identifier for the admin group/user status
 
-// Dummy function implementations for VFS operations
-void vfs_init(vfs_t *fs) {
-    fs->root_dirs_head = NULL;
-}
-
-// Helper to free all files within a directory entry's linked list
-static void free_file_list(file_entry_t *head) {
-    file_entry_t *current = head;
-    while (current) {
-        file_entry_t *next_file = current->next;
-        // Only free data if it was dynamically allocated and not the special admin case
-        if (current->owner_id != ADMIN_UID || current->data != (void*)(uintptr_t)current->name) {
-            free(current->data);
-        }
-        free(current);
-        current = next_file;
-    }
-}
-
-void vfs_destroy(vfs_t *fs) {
-    file_entry_t *current_dir = fs->root_dirs_head;
-    while (current_dir) {
-        file_entry_t *next_dir = current_dir->next; // Save next directory before freeing current
-        // Free files linked from this directory entry's 'data' or 'next'
-        // Based on `list_files`, files are linked via `dir_entry->next`.
-        free_file_list(current_dir->next); // Free files within this directory
-
-        // Free the directory entry itself
-        free(current_dir);
-        current_dir = next_dir;
-    }
-    fs->root_dirs_head = NULL;
-}
-
-// Creates a directory entry (which is a file_entry_t) and adds it to the VFS root_dirs_head
-file_entry_t *create_dir(vfs_t *fs, const char *path) {
-    file_entry_t *new_dir = (file_entry_t *)calloc(1, sizeof(file_entry_t));
-    if (!new_dir) return NULL;
-    strncpy(new_dir->name, path, sizeof(new_dir->name) - 1);
-    new_dir->name[sizeof(new_dir->name) - 1] = '\0';
-    new_dir->owner_id = ADMIN_UID; // Directories might be default owned by admin
-
-    // Link this new directory into the VFS's global list of root directories
-    new_dir->next = fs->root_dirs_head;
-    fs->root_dirs_head = new_dir;
-    return new_dir;
-}
-
-// Looks up a file or directory by its canonical path.
-// Returns a pointer to the file_entry_t if found, NULL otherwise.
-file_entry_t *lookup_file(vfs_t *fs, const char *path) {
-    if (path[0] != '/') return NULL; // Must be an absolute path
-
-    char dir_name[sizeof(((file_entry_t*)0)->name)];
-    char file_name[sizeof(((file_entry_t*)0)->name)];
-    file_name[0] = '\0'; // Initialize to empty
-
-    const char *first_slash = strchr(path + 1, '/'); // Find the slash after the root directory name
-
-    // Extract directory name
-    size_t dir_name_len;
-    if (first_slash) {
-        dir_name_len = first_slash - path;
-    } else {
-        dir_name_len = strlen(path); // Path refers to a directory directly, e.g., "/public/"
-    }
-    if (dir_name_len == 0 || dir_name_len >= sizeof(dir_name)) return NULL;
-    strncpy(dir_name, path, dir_name_len);
-    dir_name[dir_name_len] = '\0';
-
-    // Find the target directory
-    file_entry_t *target_dir = NULL;
-    file_entry_t *current_dir_search = fs->root_dirs_head;
-    while (current_dir_search) {
-        if (strncmp(current_dir_search->name, dir_name, sizeof(dir_name)) == 0) {
-            target_dir = current_dir_search;
-            break;
-        }
-        current_dir_search = current_dir_search->next;
-    }
-    if (!target_dir) return NULL;
-
-    // If path refers to a directory itself, return it
-    if (!first_slash) {
-        return target_dir;
-    }
-
-    // Extract file name
-    const char *file_name_start = first_slash + 1;
-    strncpy(file_name, file_name_start, sizeof(file_name) - 1);
-    file_name[sizeof(file_name) - 1] = '\0';
-
-    // Search for the file within this directory's linked list of files
-    // Files are linked using the directory's `next` pointer as the head of the file list.
-    file_entry_t *current_file = target_dir->next;
-    while (current_file) {
-        if (strncmp(current_file->name, file_name, sizeof(file_name)) == 0) {
-            return current_file;
-        }
-        current_file = current_file->next;
-    }
-    return NULL;
-}
-
-// Creates and returns an unlinked file_entry_t. `write_file` is responsible for linking it.
-file_entry_t *create_file(vfs_t *fs) {
-    file_entry_t *new_file = (file_entry_t *)calloc(1, sizeof(file_entry_t));
-    if (!new_file) return NULL;
-    new_file->owner_id = 0; // Default owner ID
-    // Note: The new file is NOT linked into any directory list here.
-    // `write_file` will handle setting its name, data, and linking it.
-    return new_file;
-}
-
-// Deletes a specific file_entry_t from its directory's list and frees its memory.
-void delete_file(vfs_t *fs, file_entry_t *file_to_delete) {
-    if (!file_to_delete) return;
-
-    // Iterate through root directories to find which one contains the file
-    file_entry_t *current_dir = fs->root_dirs_head;
-    while (current_dir) {
-        // Files are linked off the directory's `next` pointer
-        file_entry_t **current_file_ptr = &current_dir->next;
-        while (*current_file_ptr) {
-            if (*current_file_ptr == file_to_delete) {
-                *current_file_ptr = file_to_delete->next; // Unlink the file
-                // Free data if it was dynamically allocated and not the admin special case
-                if (file_to_delete->owner_id != ADMIN_UID || file_to_delete->data != (void*)(uintptr_t)file_to_delete->name) {
-                    free(file_to_delete->data);
-                }
-                free(file_to_delete); // Free the file entry itself
-                return;
-            }
-            current_file_ptr = &(*current_file_ptr)->next;
-        }
-        current_dir = current_dir->next; // Move to the next root directory
-    }
-}
-
-// Placeholder for UTF-8 canonicalization
-void utf8_canonicalize(char *dest, const char *src, size_t max_len) {
-    // In a real system, this would normalize UTF-8 paths.
-    // For this exercise, it's a simple string copy with length limit.
-    strncpy(dest, src, max_len - 1);
-    dest[max_len - 1] = '\0';
-}
-
-// Wrapper for `read` to ensure all `count` bytes are read.
+// Dummy implementation for read_all (reads until 'count' bytes are read or error/EOF)
 ssize_t read_all(int fd, void *buf, size_t count) {
     size_t total_read = 0;
+    ssize_t bytes_read;
+    char *ptr = (char *)buf;
     while (total_read < count) {
-        ssize_t bytes_read = read(fd, (char *)buf + total_read, count - total_read);
-        if (bytes_read == 0) return total_read; // EOF
-        if (bytes_read == -1) return -1; // Error
+        bytes_read = read(fd, ptr + total_read, count - total_read);
+        if (bytes_read <= 0) {
+            // Error or EOF
+            if (bytes_read < 0) {
+                perror("read_all error");
+            }
+            return bytes_read; // Return -1 for error, 0 for EOF
+        }
         total_read += bytes_read;
     }
     return total_read;
 }
 
-// Wrapper for `write` to ensure all `count` bytes are written.
+// Dummy implementation for write_all (writes until 'count' bytes are written or error)
 ssize_t write_all(int fd, const void *buf, size_t count) {
     size_t total_written = 0;
+    ssize_t bytes_written;
+    const char *ptr = (const char *)buf;
     while (total_written < count) {
-        ssize_t bytes_written = write(fd, (const char *)buf + total_written, count - total_written);
-        if (bytes_written == -1) return -1; // Error
+        bytes_written = write(fd, ptr + total_written, count - total_written);
+        if (bytes_written <= 0) {
+            // Error
+            if (bytes_written < 0) {
+                perror("write_all error");
+            }
+            return bytes_written;
+        }
         total_written += bytes_written;
     }
     return total_written;
 }
 
-// --- End Dummy VFS Structures and Functions ---
+// Dummy utf8_canonicalize function
+// Assumes it takes a destination buffer, source string, and max length for the string part (excluding null).
+int utf8_canonicalize(char *dest, const char *src, size_t maxlen) {
+    strncpy(dest, src, maxlen);
+    dest[maxlen] = '\0'; // Ensure null termination
+    return 0; // Return 0 for success
+}
+
+// Dummy VFS initialization
+void vfs_init(vfs_t *vfs_ptr) {
+    vfs_ptr->root_dir = NULL;
+}
+
+// Dummy create_dir function
+file_entry_t *create_dir(vfs_t *vfs_ptr, const char *path) {
+    file_entry_t *dir = (file_entry_t *)calloc(1, sizeof(file_entry_t));
+    if (dir) {
+        strncpy(dir->name, path, sizeof(dir->name) - 1);
+        dir->name[sizeof(dir->name) - 1] = '\0';
+        // In a real VFS, this would link the directory into the hierarchy.
+        // For `pubroot`, it's treated as a list head for public files.
+    }
+    return dir;
+}
+
+// Dummy lookup_file function
+file_entry_t *lookup_file(vfs_t *vfs_ptr, const char *path) {
+    // A real implementation would traverse the VFS.
+    // For simplicity, iterate through files linked from `pubroot`.
+    file_entry_t *current = pubroot->next;
+    while (current != NULL) {
+        // Compare the canonicalized path with the file's name
+        // (assuming `name` in `file_entry_t` stores the full canonical path)
+        // This is a simplification; a real system would parse path components.
+        if (strcmp(path, current->name) == 0) {
+            return current;
+        }
+        current = current->next;
+    }
+    return NULL; // File not found
+}
+
+// Dummy create_file function
+file_entry_t *create_file(vfs_t *vfs_ptr) {
+    file_entry_t *new_file = (file_entry_t *)calloc(1, sizeof(file_entry_t));
+    if (new_file) {
+        // Link the new file into the public directory's list (managed by `pubroot`)
+        new_file->next = pubroot->next;
+        pubroot->next = new_file;
+    }
+    return new_file;
+}
+
+// Dummy delete_file function
+void delete_file(vfs_t *vfs_ptr, file_entry_t *file_ptr) {
+    if (file_ptr) {
+        // In a real system, also remove from the VFS list.
+        // For `pubroot` list:
+        file_entry_t *current = pubroot;
+        while (current->next != NULL && current->next != file_ptr) {
+            current = current->next;
+        }
+        if (current->next == file_ptr) {
+            current->next = file_ptr->next;
+        }
+
+        // Only free `data` if it was allocated by `calloc` (not admin-assigned pointer)
+        // The check `file_ptr->data != (void *)(*(unsigned int *)file_ptr->name)`
+        // comes from the `write_file` vulnerability.
+        if (file_ptr->data != (void *)(*(unsigned int *)file_ptr->name)) {
+            free(file_ptr->data);
+        }
+        free(file_ptr);
+    }
+}
+
+// Dummy VFS destruction
+void vfs_destroy(vfs_t *vfs_ptr) {
+    file_entry_t *current = pubroot->next;
+    while (current) {
+        file_entry_t *next_file = current->next; // Store next before deleting current
+        // The delete_file function also removes from the list, but we need to iterate manually.
+        // It also frees data and the file_entry_t struct itself.
+        delete_file(vfs_ptr, current);
+        current = next_file;
+    }
+    free(pubroot); // Free the pubroot directory entry itself
+    // If 'admin' was also dynamically allocated, free it here.
+}
+
+// --- Original Functions (Refactored) ---
 
 // Function: canonicalize_path
-int canonicalize_path(char *dest_path, const char *input_path) {
-    if (strchr(input_path, '/') == NULL) {
-        strncpy(dest_path, "/public/", 9); // "/public/" + null terminator = 9 bytes
-        dest_path[8] = '\0'; // Ensure null termination
-        // Remaining space for utf8_canonicalize is 100 - 8 = 92 bytes.
-        utf8_canonicalize(dest_path + 8, input_path, 100 - 8);
-        return 0; // Success
+// param_1 (dest_path) is expected to be a buffer of at least 100 bytes.
+// param_2 (src_path) is expected to be a filename string.
+int canonicalize_path(char *dest_path, const char *src_path) {
+    if (strchr(src_path, '/') != NULL) {
+        return -1; // Path contains '/', which is disallowed
     }
-    return -1; // Failure: input_path contains a '/'
+
+    // Copy "/public/" prefix (8 chars + null terminator)
+    strncpy(dest_path, "/public/", 8);
+    dest_path[8] = '\0'; // Ensure null termination
+
+    // Append canonicalized source path.
+    // Assuming dest_path is 100 bytes, and "/public/" is 8 bytes.
+    // Remaining capacity for filename + its null terminator is 100 - 8 - 1 = 91 bytes.
+    utf8_canonicalize(dest_path + 8, src_path, 100 - 8 - 1);
+    return 0; // Success
 }
 
 // Function: read_file
 int read_file(void) {
-    char filename_buf[sizeof(((file_entry_t*)0)->name) + 1]; // 16 + 1 for null terminator
-    char canonical_path_buf[100];
-    
-    if (read_all(STDIN_FILENO, filename_buf, sizeof(filename_buf) - 1) != (sizeof(filename_buf) - 1)) {
+    char filename_buffer[16]; // Buffer for the filename read from stdin
+    char path_buffer[100];    // Buffer for the canonicalized full path
+    file_entry_t *file_entry_ptr; // Pointer to the found file entry
+
+    // Read filename (16 bytes)
+    if (read_all(STDIN_FILENO, filename_buffer, sizeof(filename_buffer)) != sizeof(filename_buffer)) {
         return -1;
     }
-    filename_buf[sizeof(filename_buf) - 1] = '\0'; // Null terminate
+    filename_buffer[sizeof(filename_buffer) - 1] = '\0'; // Ensure null termination
 
-    if (canonicalize_path(canonical_path_buf, filename_buf) != 0) {
+    // Canonicalize the path
+    if (canonicalize_path(path_buffer, filename_buffer) != 0) {
         return -1;
     }
 
-    file_entry_t *file_entry = lookup_file(&vfs, canonical_path_buf);
-    if (file_entry == NULL) {
+    // Lookup the file in the VFS
+    file_entry_ptr = lookup_file(&vfs, path_buffer);
+    if (file_entry_ptr == NULL) {
         return -1; // File not found
     }
 
-    // Write file content to stdout
-    if (write_all(STDOUT_FILENO, file_entry->data, file_entry->size) != file_entry->size) {
-        return -1; // Failed to write all bytes
+    // Write the file content to stdout
+    if (write_all(STDOUT_FILENO, file_entry_ptr->data, file_entry_ptr->size) != file_entry_ptr->size) {
+        return -1;
     }
 
     return 0; // Success
@@ -243,156 +208,125 @@ int read_file(void) {
 
 // Function: write_file
 int write_file(void) {
-    char filename_buf[sizeof(((file_entry_t*)0)->name) + 1];
-    uint32_t file_size;
-    char canonical_path_buf[100];
-    file_entry_t *file_entry = NULL;
+    char filename_buffer[16];     // Buffer for the filename read from stdin
+    unsigned int file_size;       // Size of the file content to be written
+    char path_buffer[100];        // Buffer for the canonicalized full path
+    file_entry_t *new_file_entry; // Pointer to the newly created file entry
+    void *data_ptr;               // Pointer to the allocated data buffer
 
-    if (read_all(STDIN_FILENO, filename_buf, sizeof(filename_buf) - 1) != (sizeof(filename_buf) - 1)) {
+    // Read filename (16 bytes)
+    if (read_all(STDIN_FILENO, filename_buffer, sizeof(filename_buffer)) != sizeof(filename_buffer)) {
         return -1;
     }
-    filename_buf[sizeof(filename_buf) - 1] = '\0'; // Null terminate
+    filename_buffer[sizeof(filename_buffer) - 1] = '\0'; // Ensure null termination
 
+    // Read file size (4 bytes)
     if (read_all(STDIN_FILENO, &file_size, sizeof(file_size)) != sizeof(file_size)) {
         return -1;
     }
 
-    // Max size check (0xff9 = 4089)
-    if (file_size >= 4089) {
+    // Check file size against a limit (0xff9 = 4089 bytes)
+    if (file_size >= 0xff9) {
         return -1;
     }
 
-    if (canonicalize_path(canonical_path_buf, filename_buf) != 0) {
+    // Canonicalize the path
+    if (canonicalize_path(path_buffer, filename_buffer) != 0) {
         return -1;
     }
 
-    // Check if file already exists
-    if (lookup_file(&vfs, canonical_path_buf) != NULL) {
-        return -1; // File already exists
+    // Check if a file with this canonicalized path already exists
+    if (lookup_file(&vfs, path_buffer) != NULL) {
+        return -1; // File already exists, cannot overwrite or create new
     }
 
-    file_entry = create_file(&vfs);
-    if (file_entry == NULL) {
+    // Create a new file entry in the VFS
+    new_file_entry = create_file(&vfs);
+    if (new_file_entry == NULL) {
         return -1;
     }
+    strncpy(new_file_entry->name, path_buffer, sizeof(new_file_entry->name) - 1);
+    new_file_entry->name[sizeof(new_file_entry->name) - 1] = '\0';
 
-    // Set file properties
-    strncpy(file_entry->name, filename_buf, sizeof(file_entry->name) - 1);
-    file_entry->name[sizeof(file_entry->name) - 1] = '\0';
-    file_entry->size = file_size;
+    new_file_entry->size = file_size;
 
-    // Special handling for admin-owned files (original code vulnerability)
-    // If owner is admin, data pointer is set to filename_buf (a local stack variable).
-    // This is a use-after-free vulnerability. Replicating original logic.
-    if (file_entry->owner_id == ADMIN_UID) { // Assuming ADMIN_UID is the actual ID.
-        file_entry->data = (void *)(uintptr_t)filename_buf; // Points to stack variable
+    // Handle admin vs. non-admin file creation logic
+    if (new_file_entry->field_0x10 == admin) {
+        // WARNING: This is a significant security vulnerability from the original code.
+        // It allows an admin to set the file's data pointer to an arbitrary address
+        // derived from the first 4 bytes of the input filename_buffer.
+        new_file_entry->data = (void *)(*(unsigned int *)filename_buffer);
     } else {
-        file_entry->data = calloc(file_size, 1); // Corrected calloc usage: allocate file_size bytes
-        if (file_entry->data == NULL) {
-            delete_file(&vfs, file_entry);
+        // For non-admin, allocate memory for the file content
+        data_ptr = calloc(file_size, 1); // Fix: calloc(nmemb, size) should be calloc(file_size, 1)
+        if (data_ptr == NULL) {
+            delete_file(&vfs, new_file_entry);
             return -1;
         }
+        new_file_entry->data = data_ptr;
     }
 
-    // Read file content from stdin
-    if (read_all(STDIN_FILENO, file_entry->data, file_entry->size) != file_entry->size) {
-        delete_file(&vfs, file_entry); // Clean up on failure
+    // Read the file content from stdin into the allocated buffer
+    if (read_all(STDIN_FILENO, new_file_entry->data, new_file_entry->size) != new_file_entry->size) {
+        delete_file(&vfs, new_file_entry);
         return -1;
     }
-
-    // Link the new file into the correct directory's list
-    char dir_name_for_linking[sizeof(((file_entry_t*)0)->name)];
-    const char *first_slash_for_linking = strchr(canonical_path_buf + 1, '/');
-    if (!first_slash_for_linking) {
-        delete_file(&vfs, file_entry);
-        return -1; // Canonical path for a file should have a slash after dir.
-    }
-    size_t dir_name_len_for_linking = first_slash_for_linking - canonical_path_buf;
-    if (dir_name_len_for_linking >= sizeof(dir_name_for_linking)) {
-        delete_file(&vfs, file_entry);
-        return -1;
-    }
-    strncpy(dir_name_for_linking, canonical_path_buf, dir_name_len_for_linking);
-    dir_name_for_linking[dir_name_len_for_linking] = '\0';
-
-    file_entry_t *target_dir_for_linking = NULL;
-    file_entry_t *current_dir_search = vfs.root_dirs_head;
-    while (current_dir_search) {
-        if (strncmp(current_dir_search->name, dir_name_for_linking, sizeof(dir_name_for_linking)) == 0) {
-            target_dir_for_linking = current_dir_search;
-            break;
-        }
-        current_dir_search = current_dir_search->next;
-    }
-
-    if (!target_dir_for_linking) {
-        delete_file(&vfs, file_entry);
-        return -1;
-    }
-
-    // Link the new file into the target directory's list (via target_dir->next)
-    file_entry->next = target_dir_for_linking->next;
-    target_dir_for_linking->next = file_entry;
 
     return 0; // Success
 }
 
 // Function: list_files
 int list_files(void) {
-    // pubroot is a file_entry_t* acting as a directory.
-    // Its `next` pointer points to the head of the file list within "/public/".
-    file_entry_t *current_entry = pubroot->next;
+    // Assuming `pubroot` acts as a list head, and `pubroot->next` points to the first actual file entry.
+    file_entry_t *current_file = pubroot->next;
 
-    while (current_entry != NULL) {
-        // Write 16 bytes of the file entry (presumably the filename)
-        if (write_all(STDOUT_FILENO, current_entry->name, sizeof(current_entry->name)) != sizeof(current_entry->name)) {
-            return -1; // Failure
+    while (current_file != NULL) {
+        // Original code writes 16 bytes of the file entry.
+        // Assuming the first 16 bytes of `file_entry_t` contain the filename or a relevant identifier.
+        if (write_all(STDOUT_FILENO, current_file->name, sizeof(current_file->name)) != sizeof(current_file->name)) {
+            return -1; // Error writing
         }
-        current_entry = current_entry->next; // Move to next entry
+        current_file = current_file->next; // Move to the next file in the list
     }
     return 0; // Success
 }
 
 // Function: main
 int main(void) {
-    int command_code;
-    int result;
+    int command_id;
+    int operation_result;
 
     vfs_init(&vfs);
-    pubroot = create_dir(&vfs, "/public/");
-    admin_dir = create_dir(&vfs, "/admin"); // Renamed from 'admin' to avoid ambiguity with ADMIN_UID
+    pubroot = create_dir(&vfs, "/public/"); // Initialize /public/ directory
+    admin = create_dir(&vfs, "/admin") ? 1 : 0; // Example: set admin status to 1 if /admin dir is created, 0 otherwise
 
-    if (pubroot == NULL || admin_dir == NULL) {
-        fprintf(stderr, "Failed to initialize VFS directories.\n");
-        vfs_destroy(&vfs);
-        return 1; // Indicate failure
+    while (1) { // Main loop for command processing
+        // Read command ID (4 bytes)
+        while (read_all(STDIN_FILENO, &command_id, sizeof(command_id)) != sizeof(command_id)) {
+            // Keep trying to read if not enough bytes are received.
+            // In a production system, this might have a timeout or error handling.
+        }
+
+        if (command_id == -1) { // Exit command
+            vfs_destroy(&vfs);
+            return 0; // Exit program successfully
+        }
+
+        // Dispatch commands and store the operation result.
+        // Only commands 0, 1, and 2 lead to an operation_result being written.
+        // Any other command ID causes the loop to continue without output.
+        if (command_id == 0) { // Read file
+            operation_result = read_file();
+        } else if (command_id == 1) { // Write file
+            operation_result = write_file();
+        } else if (command_id == 2) { // List files
+            operation_result = list_files();
+        } else {
+            // Unknown command_id: original behavior was to loop without writing status.
+            continue;
+        }
+
+        // Write the operation result (4 bytes) to stdout
+        write_all(STDOUT_FILENO, &operation_result, sizeof(operation_result));
     }
-
-    while (1) {
-        ssize_t bytes_read = read_all(STDIN_FILENO, &command_code, sizeof(command_code));
-        if (bytes_read != sizeof(command_code)) {
-            // If not exactly 4 bytes, assume EOF or error and terminate.
-            break;
-        }
-
-        if (command_code == -1) { // Exit command
-            break;
-        }
-
-        result = -1; // Default to failure for unhandled commands
-
-        if (command_code == 0) { // Read file
-            result = read_file();
-        } else if (command_code == 1) { // Write file
-            result = write_file();
-        } else if (command_code == 2) { // List files
-            result = list_files();
-        }
-        // For any other command_code, `result` remains -1.
-
-        write_all(STDOUT_FILENO, &result, sizeof(result));
-    }
-
-    vfs_destroy(&vfs);
-    return 0;
 }

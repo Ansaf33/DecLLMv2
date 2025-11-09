@@ -1,118 +1,170 @@
-#include <stdio.h>   // For NULL, basic I/O (not strictly used but good practice)
-#include <stdlib.h>  // For NULL, potential future malloc/free if allocate/deallocate are implemented
-#include <string.h>  // For memset
+#include <stdio.h>    // For fprintf in _terminate (debugging)
+#include <stdlib.h>   // For exit, calloc, free
+#include <stddef.h>   // For size_t
+#include <stdint.h>   // For uint32_t, uint16_t, uintptr_t
 
-// Define types based on common disassembler output
-typedef char undefined;
-typedef short undefined2;
-typedef int undefined4;
+// Decompiler-specific type aliases
 typedef unsigned short ushort;
+typedef uint32_t undefined4; // Assuming undefined4 is 4 bytes
+typedef uint16_t undefined2; // Assuming undefined2 is 2 bytes
 
-// Define a generic function pointer type based on usage in processMessage
+// 'undefined' is often a placeholder for a type the decompiler couldn't determine.
+// Given its usage as `undefined **` or `undefined *`, `void` is a reasonable substitute for generic pointers in C.
+typedef void undefined;
+
+// 'code' is a function pointer type.
+// In processMessage, it's used as (*(code *)param_1[2])(iVar1); where iVar1 is an int.
 typedef void (*code)(int);
 
-// Declare external functions and global variables (placeholders for compilation)
-extern char **_GLOBAL_OFFSET_TABLE_; // Assumed to be a pointer to a pointer to char
-extern int receive(void);
-extern void _terminate(int); // Deduced from calls with arguments
-extern int transmit_all(int, int, int, int); // Deduced from sendMessage
-extern int allocate(int); // Deduced from computeResult and main
-extern int deallocate(int, int); // Deduced from main
-extern void *constantMap(void); // Declared as used in main but not defined
+// Dummy global offset table to replace _GLOBAL_OFFSET_TABLE_
+void *dummy_global_offset_table = NULL;
+
+// External functions (dummy implementations to allow compilation on Linux)
+// In a real system, these would be provided by a specific runtime environment or library.
+
+// Simulates program termination with a status code.
+void _terminate(int status) {
+    fprintf(stderr, "Program terminated with status %d\n", status);
+    exit(status);
+}
+
+// Simulates receiving data. Assumed to take an integer argument based on usage in receiveMessage.
+// Returns 0 for success, non-zero for failure (triggering _terminate).
+int receive(int arg) {
+    // Dummy implementation: always succeed
+    (void)arg; // Suppress unused parameter warning
+    return 0;
+}
+
+// Simulates transmitting data. The last argument (0x111e0 in original) is treated as a decompiler artifact.
+// Returns 0 for success, non-zero for failure (triggering _terminate).
+int transmit_all(int a, undefined4 b, int c) {
+    // Dummy implementation: always succeed
+    (void)a; (void)b; (void)c; // Suppress unused parameter warnings
+    return 0;
+}
+
+// Simulates memory allocation. Returns a pointer to zero-initialized memory or NULL on failure.
+void *allocate(size_t size) {
+    return calloc(1, size);
+}
+
+// Simulates memory deallocation. The size argument from the original decompiler output
+// is usually an artifact or specific to a custom memory manager; standard C `free` doesn't use it.
+// Returns 0 for success, non-zero for failure (though `free` typically doesn't return).
+int deallocate(void *ptr) {
+    free(ptr);
+    return 0; // Always succeed for dummy implementation
+}
+
+// Dummy function for 'constantMap', which is referenced in `main` but not defined in the snippet.
+void *constantMap(void) {
+    return NULL;
+}
 
 // Function: identityMap
-char **identityMap(void) {
-  return _GLOBAL_OFFSET_TABLE_;
+void ** identityMap(void) {
+  return &dummy_global_offset_table;
 }
 
 // Function: absoluteValueMap
-char **absoluteValueMap(int param_1) {
-  for (ushort local_6 = 1; local_6 < 3; local_6++) {
-    short val = *(short *)(param_1 + local_6 * 2);
-    short sign_ext = val >> 15; // Sign extension for 16-bit
-    *(short *)(param_1 + local_6 * 2) = (sign_ext + val) ^ sign_ext;
+void ** absoluteValueMap(int param_1) {
+  ushort current_index = 1;
+  char *base_address = (char *)(uintptr_t)param_1; // Treat param_1 as a base address for byte arithmetic
+  
+  // Loop for current_index = 1 and 2
+  while (current_index < 3) {
+    short value_at_offset = *(short *)(base_address + current_index * 2);
+    ushort sign_bit = (ushort)(value_at_offset >> 15); // Extract sign bit for 16-bit short
+    
+    // Compute absolute value using bitwise operations: abs(x) = (x ^ (x >> 15)) - (x >> 15)
+    *(ushort *)(base_address + current_index * 2) = sign_bit + value_at_offset ^ sign_bit;
+    
+    current_index++; // Increment loop counter
   }
-  // This return value (e.g., (char**)4) is likely an artifact of register usage
-  // in the original assembly. Returning NULL for compilability.
-  return NULL;
+  
+  // The original decompiled code returned (undefined **)(local_6 + 1) which evaluates to (void **)3.
+  // This is an integer value cast to a pointer. We preserve this behavior.
+  return (void **)(uintptr_t)current_index; // Will return (void **)3
 }
 
 // Function: modulus
 int modulus(short param_1, short param_2) {
   if (param_2 != 0) {
-    return param_1 % param_2;
+    param_1 %= param_2;
   }
   return (int)param_1;
 }
 
 // Function: modulusCoordinatesWithDimensions
 void modulusCoordinatesWithDimensions(int param_1) {
-  *(undefined2 *)(param_1 + 6) = modulus(*(short *)(param_1 + 6), *(short *)(param_1 + 2));
-  *(undefined2 *)(param_1 + 8) = modulus(*(short *)(param_1 + 8), *(short *)(param_1 + 4));
+  char *base_address = (char *)(uintptr_t)param_1;
+  
+  // Directly assign the results of modulus to reduce intermediate variables
+  *(undefined2 *)(base_address + 6) = (undefined2)modulus(*(short *)(base_address + 6), *(short *)(base_address + 2));
+  *(undefined2 *)(base_address + 8) = (undefined2)modulus(*(short *)(base_address + 8), *(short *)(base_address + 4));
 }
 
 // Function: processMessage
 void processMessage(int *param_1) {
-  if (*param_1 != 0) {
-    (*(code)param_1[2])(*param_1);
-    param_1[1] = *param_1;
+  int message_id = *param_1;
+  if (message_id != 0) {
+    (*(code *)param_1[2])(message_id); // Call function pointer stored at param_1[2]
+    param_1[1] = message_id;
     *param_1 = 0;
   }
 }
 
 // Function: receiveMessage
 void receiveMessage(int param_1) {
-  int local_18 = 0;
-  int current_param = param_1; // Maps to local_14 in original
-  // Simulate stack frame for arguments/local values
-  char stack_buffer[20]; // Sufficient for 5 undefined4 (int) values
-
-  for (int local_10 = 10; local_10 != 0; local_10--) { // local_10 from 10 down to 1
-    int iVar1 = current_param; // iVar1 = local_14
-    current_param++;           // local_14 = local_14 + 1
-
-    // Simulate stack writes, assuming stack_buffer + 20 is the "puVar3" base
-    *(int **)(stack_buffer + 16) = &local_18; // puVar3 + -4
-    *(int *)(stack_buffer + 12) = 1;          // puVar3 + -8
-    *(int *)(stack_buffer + 8) = iVar1;       // puVar3 + -0xc
-    *(int *)(stack_buffer + 4) = 0;           // puVar3 + -0x10
-    *(int *)(stack_buffer + 0) = 0x111b2;    // puVar3 + -0x14
-
-    if (receive() != 0) {
-      _terminate(4); // Deduced argument from `*(undefined4 *)(puVar3 + -0x10) = 4;`
+  // The original code involved complex stack manipulation before calling receive().
+  // Interpreting this as passing param_1 (incremented each loop) as an argument to receive().
+  // The loop runs 10 times.
+  for (int i = 0; i < 10; ++i) {
+    if (receive(param_1 + i) != 0) {
+      _terminate(4); // Call terminate with status 4 on receive error
     }
-    // `puVar3 = puVar2;` logic is effectively a no-op if _terminate is called,
-    // or if receive() returns 0. So no actual adjustment to stack_ptr here.
   }
 }
 
 // Function: sendMessage
 void sendMessage(undefined4 param_1) {
-  if (transmit_all(1, param_1, 0xc, 0x111e0) != 0) {
-    _terminate(5);
+  // The value 0x111e0 from the original snippet is treated as a decompiler artifact (e.g., return address) and removed.
+  if (transmit_all(1, param_1, 0xc) != 0) {
+    _terminate(5); // Call terminate with status 5 on transmit error
   }
 }
 
 // Function: swap
 void swap(int param_1, int param_2) {
-  int temp = *(undefined4 *)(param_1 + 8);
-  *(undefined4 *)(param_1 + 8) = *(undefined4 *)(param_2 + 8);
-  *(undefined4 *)(param_2 + 8) = temp;
+  char *base1 = (char *)(uintptr_t)param_1;
+  char *base2 = (char *)(uintptr_t)param_2;
+  
+  undefined4 temp_val = *(undefined4 *)(base1 + 8);
+  *(undefined4 *)(base1 + 8) = *(undefined4 *)(base2 + 8);
+  *(undefined4 *)(base2 + 8) = temp_val;
 }
 
 // Function: permute
 void permute(int param_1, int param_2, int param_3, int *param_4, int param_5) {
-  if (param_5 != *param_4) {
+  if (param_5 != *param_4) { // Check against permutation count limit
     if (param_2 == param_3) {
-      (*param_4)++;
+      (*param_4)++; // Increment permutation count
     } else {
-      for (int local_10 = param_2; local_10 <= param_3; local_10++) {
-        swap(param_1 + param_2 * 0xc, local_10 * 0xc + param_1);
+      for (int current_index = param_2; current_index <= param_3; current_index++) {
+        // Swap elements to generate permutations. Elements are 12 bytes apart.
+        swap((int)(uintptr_t)((char *)(uintptr_t)param_1 + param_2 * 12), 
+             (int)(uintptr_t)((char *)(uintptr_t)param_1 + current_index * 12));
+        
         permute(param_1, param_2 + 1, param_3, param_4, param_5);
+        
         if (param_5 == *param_4) {
-          return;
+          return; // Early exit if target permutation count is reached
         }
-        swap(param_1 + param_2 * 0xc, local_10 * 0xc + param_1);
+        
+        // Backtrack: swap elements back to restore original order for next iteration
+        swap((int)(uintptr_t)((char *)(uintptr_t)param_1 + param_2 * 12), 
+             (int)(uintptr_t)((char *)(uintptr_t)param_1 + current_index * 12));
       }
     }
   }
@@ -120,134 +172,151 @@ void permute(int param_1, int param_2, int param_3, int *param_4, int param_5) {
 
 // Function: computeResult
 void computeResult(int param_1) {
-  short local_e = *(short *)(param_1 + 6);
-  short local_10 = *(short *)(param_1 + 8);
-  int local_20; // Result of an allocate call
+  char *base_param = (char *)(uintptr_t)param_1;
+  short current_e = *(short *)(base_param + 6);
+  short current_10 = *(short *)(base_param + 8);
+  
+  void *allocated_ptr_c = NULL; // Corresponds to *(int *)(param_1 + 0xc)
+  void *allocated_ptr_20 = NULL; // Corresponds to local_20 in original decompilation
+  
+  // Check if the pointer at offset +0xc is null (needs allocation)
+  if (*(undefined4 *)(base_param + 0xc) == 0) {
+    // Allocate memory for an array of pointers/integers
+    size_t size_for_ptrs = (size_t)*(short *)(base_param + 2) * 4; // Size based on param_1+2 (dimension) * 4 bytes per pointer
+    allocated_ptr_c = allocate(size_for_ptrs);
+    if (allocated_ptr_c == NULL) {
+      _terminate(1); // Error status 1 for allocation failure
+    }
+    *(undefined4 *)(base_param + 0xc) = (undefined4)(uintptr_t)allocated_ptr_c;
 
-  if (*(undefined4 *)(param_1 + 0xc) == 0) {
-    // First allocate call. Arguments are inferred as 0x10 for size
-    if (allocate(0x10) != 0) { // Assuming allocate takes a size argument
-      _terminate(1); // Deduced argument for _terminate
+    // Allocate memory for actual data
+    size_t size_for_data = (size_t)*(short *)(base_param + 4) * *(short *)(base_param + 2) * 2; // Dimensions * 2 bytes per element
+    allocated_ptr_20 = allocate(size_for_data);
+    if (allocated_ptr_20 == NULL) {
+      _terminate(1); // Error status 1 for allocation failure
     }
 
-    short sVar1 = *(short *)(param_1 + 2); // param_1 + 2
-    short sVar2 = *(short *)(param_1 + 4); // param_1 + 4
-    // Second allocate call. Arguments are inferred from stack writes.
-    // `(int)sVar2 * (int)sVar1 * 2` is the size.
-    local_20 = allocate((int)sVar2 * (int)sVar1 * 2);
-    if (local_20 != 0) {
-      _terminate(1); // Deduced argument for _terminate
+    // Initialize the array of pointers (allocated_ptr_c) to point into the data block (allocated_ptr_20)
+    for (int i = 0; i < *(short *)(base_param + 2); i++) {
+      *(undefined4 *)((char *)allocated_ptr_c + i * 4) = 
+          (undefined4)((uintptr_t)allocated_ptr_20 + (size_t)*(short *)(base_param + 4) * i * 2);
     }
-
-    // Initialize allocated memory
-    for (int local_14 = 0; local_14 < sVar1; local_14++) {
-      *(undefined4 *)(*(undefined4 *)(param_1 + 0xc) + local_14 * 4) =
-          local_20 + sVar2 * local_14 * 2;
-    }
+  } else {
+      // If already allocated, retrieve the pointers
+      allocated_ptr_c = (void *)(uintptr_t)*(undefined4 *)(base_param + 0xc);
+      // Assuming allocated_ptr_20 is the first element pointed to by allocated_ptr_c
+      if (allocated_ptr_c != NULL) {
+          allocated_ptr_20 = (void*)(uintptr_t)*(undefined4*)allocated_ptr_c;
+      }
   }
 
-  // Main loop for result computation
-  for (int local_18 = 0; local_18 < (int)*(short *)(param_1 + 4) * (int)*(short *)(param_1 + 2);
-       local_18++) {
-    *(undefined2 *)(*(undefined4 *)(*(undefined4 *)(param_1 + 0xc) + local_e * 4) + local_10 * 2) =
-        1;
-
-    // Call to modulus with inferred arguments from stack writes
-    // `local_e = modulus((short)(local_e + *(short *)(param_1 + 6)), *(short *)(param_1 + 2));`
-    local_e = modulus((short)(local_e + *(short *)(param_1 + 6)), *(short *)(param_1 + 2));
-
-    // Another call to modulus with inferred arguments
-    // `local_10 = modulus((short)(local_10 + *(short *)(param_1 + 8)), *(short *)(param_1 + 4));`
-    local_10 = modulus((short)(local_10 + *(short *)(param_1 + 8)), *(short *)(param_1 + 4));
+  // Second loop: modify values based on modulo arithmetic
+  // Loop count is product of dimensions
+  for (int i = 0; i < (int)*(short *)(base_param + 4) * (int)*(short *)(base_param + 2); i++) {
+    // Access a 2D-like array element: *(type *)(row_ptr[current_e] + current_10 * element_size) = value;
+    undefined4 *row_ptr_array = (undefined4 *)allocated_ptr_c;
+    char *row_base_address = (char *)(uintptr_t)row_ptr_array[current_e];
+    *(undefined2 *)(row_base_address + current_10 * 2) = 1; // Set value to 1
+    
+    // Update current_e and current_10 using modulus
+    current_e = (short)modulus((short)(current_e + *(short *)(base_param + 6)), *(short *)(base_param + 2));
+    current_10 = (short)modulus((short)(current_10 + *(short *)(base_param + 8)), *(short *)(base_param + 4));
   }
 }
 
 // Function: main
-void main(void) {
-  // `local_2c` is a `short *`, initialized to NULL.
-  short *local_2c = NULL;
-  // `local_5c` is treated as a base address for an array of 12-byte structs/blocks.
-  // `permute`'s param_3 is 3, implying 4 elements (0 to 3). So 4 * 12 = 48 bytes.
-  char local_5c_buffer[4 * 12]; // Array of 4 elements, each 12 bytes long
-
-  // Initialize `local_5c_buffer` to zeros.
-  // The original loop initializes 12 `short *` sized locations, which is inconsistent
-  // with the 4-element 12-byte struct usage later.
-  // A full memset is safer for compilation.
-  memset(local_5c_buffer, 0, sizeof(local_5c_buffer));
-
-  // `local_28 = allocate();` in original implies `allocate()` with size `0x10` from `uStack_70`.
-  if (allocate(0x10) != 0) {
-    _terminate(1); // Deduced argument for _terminate
+int main(void) {
+  // local_5c is used as an array of elements. In permute, it's param_1 + N * 12.
+  // In processMessage, it's local_5c + N * 3.
+  // This suggests elements are 12 bytes, and local_5c + N * 3 is an address to an element's component.
+  // Assuming each element is a struct of 3 undefined4 (12 bytes).
+  undefined4 local_5c[12]; // Array of 4 elements, each 3 undefined4 (12 bytes), totaling 48 bytes.
+  
+  // Initialize local_5c to zeros.
+  for (int i = 0; i < 12; i++) {
+    local_5c[i] = 0;
   }
+  
+  undefined4 permute_counter = 0; // Corresponds to local_60, used as param_4 in permute
+  void *allocated_message_buffer = NULL; // Corresponds to local_2c
+  
+  // Allocate initial message buffer, size 0x10 (16 bytes)
+  allocated_message_buffer = allocate(0x10);
+  if (allocated_message_buffer == NULL) {
+    _terminate(1); // Terminate on allocation failure
+  }
+  
+  // Receive initial message, passing the allocated buffer's address
+  receiveMessage((int)(uintptr_t)allocated_message_buffer);
+  
+  // Assign function pointers to local variables
+  code func_ptr_identity = (code)identityMap;
+  code func_ptr_constant = (code)constantMap;
+  code func_ptr_absolute = (code)absoluteValueMap;
+  code func_ptr_modulus_coords = (code)modulusCoordinatesWithDimensions;
+  
+  // Call permute function
+  // param_1: base address of local_5c array
+  // param_2: 0 (start index)
+  // param_3: 3 (end index)
+  // param_4: pointer to permute_counter
+  // param_5: value from the allocated message buffer (first 4 bytes)
+  permute((int)(uintptr_t)local_5c, 0, 3, (int *)&permute_counter, *(int *)allocated_message_buffer);
+  
+  undefined4 message_ptr = 0; // Corresponds to local_34, likely a pointer to a message struct
+  
+  do { // Main infinite loop
+    // Assign the allocated buffer to the first element of local_5c
+    local_5c[0] = (undefined4)(uintptr_t)allocated_message_buffer;
 
-  // `receiveMessage()` call, inferred argument `local_2c`.
-  receiveMessage((int)local_2c);
-
-  code local_54 = (code)identityMap; // Cast to common function pointer type
-  void *local_48 = constantMap(); // constantMap is not defined, assumed to return void*
-  code local_3c = (code)absoluteValueMap;
-  code local_30 = modulusCoordinatesWithDimensions;
-
-  int local_60 = 0; // Used as `param_4` for permute
-  int local_34 = 0; // Uninitialized in original, causing potential crash. Initialize for safety.
-
-  // `permute()` call with inferred arguments from stack writes
-  // `param_1`: (int)local_5c_buffer
-  // `param_2`: 0
-  // `param_3`: 3
-  // `param_4`: &local_60
-  // `param_5`: (int)*local_2c. `local_2c` is NULL, dereferencing would crash. Assuming 0.
-  permute((int)local_5c_buffer, 0, 3, &local_60, 0);
-
-  do {
-    // `local_5c[0] = local_2c;` -> `*(short **)(local_5c_buffer) = local_2c;`
-    // This assigns `local_2c` (a `short *`) to the first `short *` sized slot in `local_5c_buffer`.
-    *(short **)(local_5c_buffer) = local_2c;
-
-    for (int local_24 = 3; local_24 >= -1; local_24--) {
-      // `processMessage()` call with inferred argument: `(int*)(local_5c_buffer + local_24 * 12)`
-      processMessage((int *)(local_5c_buffer + local_24 * 12));
-
-      if (local_24 < 3) {
-        // `local_5c[(local_24 + 1) * 3] = local_5c[local_24 * 3 + 1];`
-        // Interpreted as copying the second `int` from the `local_24`-th 12-byte block
-        // to the first `int` of the `(local_24+1)`-th 12-byte block.
-        *(int *)(local_5c_buffer + (local_24 + 1) * 12) =
-            *(int *)(local_5c_buffer + local_24 * 12 + sizeof(int));
+    // Process messages in reverse order of local_5c elements (from index 3 down to 0)
+    for (int i = 3; i >= 0; i--) {
+      // Each element of local_5c is a struct of 3 undefined4s.
+      // processMessage is called with the address of the i-th struct.
+      processMessage((int *)(local_5c + i * 3));
+      
+      if (i < 3) {
+        // Copy a specific field from the current struct to the next struct
+        // local_5c[(i + 1) * 3] is the first field of the (i+1)-th struct.
+        // local_5c[i * 3 + 1] is the second field of the i-th struct.
+        local_5c[(i + 1) * 3] = local_5c[i * 3 + 1];
       }
     }
-
-    if (local_34 != 0) {
-      computeResult(local_34);
-      sendMessage(local_34);
-
-      // Deallocate calls, arguments inferred from stack writes
-      undefined4 uVar1_dealloc_arg1 = **(undefined4 **)(local_34 + 0xc);
-      int iVar_dealloc_arg2 =
-          (int)*(short *)(local_34 + 4) * (int)*(short *)(local_34 + 2) * 2;
-      if (deallocate(iVar_dealloc_arg2, uVar1_dealloc_arg1) != 0) {
-        _terminate(2); // Deduced argument for _terminate
+    
+    // If message_ptr is not null, process and deallocate resources
+    if (message_ptr != 0) {
+      computeResult(message_ptr);
+      sendMessage(message_ptr);
+      
+      // Deallocation sequence
+      // 1. Deallocate data pointed to by the pointer stored at (message_ptr + 0xc),
+      //    which itself is a pointer to another pointer (double dereference).
+      void *ptr_to_free1 = (void *)(uintptr_t)**(undefined4 **)((char *)(uintptr_t)message_ptr + 0xc);
+      if (deallocate(ptr_to_free1) != 0) {
+        _terminate(2); // Error status 2 for deallocation failure
       }
-
-      uVar1_dealloc_arg1 = *(undefined4 *)(local_34 + 0xc);
-      iVar_dealloc_arg2 = *(short *)(local_34 + 2) * 4;
-      if (deallocate(iVar_dealloc_arg2, uVar1_dealloc_arg1) != 0) {
-        _terminate(2); // Deduced argument for _terminate
+      
+      // 2. Deallocate the array of pointers stored at (message_ptr + 0xc).
+      void *ptr_to_free2 = (void *)(uintptr_t)*(undefined4 *)((char *)(uintptr_t)message_ptr + 0xc);
+      if (deallocate(ptr_to_free2) != 0) {
+        _terminate(2); // Error status 2 for deallocation failure
       }
-
-      if (deallocate(0x10, local_34) != 0) {
-        _terminate(2); // Deduced argument for _terminate
+      
+      // 3. Deallocate the message structure itself (message_ptr).
+      void *ptr_to_free3 = (void *)(uintptr_t)message_ptr;
+      if (deallocate(ptr_to_free3) != 0) {
+        _terminate(2); // Error status 2 for deallocation failure
       }
     }
-
-    // Allocate again, inferred size 0x10
-    if (allocate(0x10) != 0) {
-      _terminate(1); // Deduced argument for _terminate
+    
+    // Re-allocate message buffer for the next cycle
+    allocated_message_buffer = allocate(0x10);
+    if (allocated_message_buffer == NULL) {
+      _terminate(1); // Terminate on allocation failure
     }
+    
+    receiveMessage((int)(uintptr_t)allocated_message_buffer);
+  } while(1); // Loop indefinitely
 
-    // Receive message again
-    receiveMessage((int)local_2c);
-
-  } while (1); // Original `do ... while(true)`
+  return 0; // main function should return an int
 }

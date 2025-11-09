@@ -1,92 +1,45 @@
-#include <stdio.h>  // Required for printf
-#include <stdlib.h> // For EXIT_SUCCESS
+#include <stdio.h> // Required for printf
 
-// Declare a global array of string pointers (char*) for gps_tags.
-// The original code implies an array of 4-byte entities that are pointers to strings.
-// Using `const char *` for string literals is good practice.
-const char *gps_tags[] = {
-    "GPS Tag 0: Location",
-    "GPS Tag 1: Time",
-    "GPS Tag 2: Speed",
-    "GPS Tag 3: Heading",
-    "GPS Tag 4: Altitude",
-    "GPS Tag 5: Satellites",
-    "GPS Tag 6: HDOP",
-    "GPS Tag 7: VDOP",
-    "GPS Tag 8: Fix Quality",
-    "GPS Tag 9: Date",
-    "GPS Tag 10: Latitude Ref",
-    "GPS Tag 11: Longitude Ref",
-    "GPS Tag 12: Altitude Ref",
-    "GPS Tag 13: Status",
-    "GPS Tag 14: Mode",
-    "GPS Tag 15: Type",
-    "GPS Tag 16: Device ID",
-    "GPS Tag 17: Firmware Version",
-    "GPS Tag 18: Battery Level",
-    "GPS Tag 19: Signal Strength",
-    "GPS Tag 20: Error Code",
-    "GPS Tag 21: Calibration Status",
-    "GPS Tag 22: Sensor Temperature",
-    "GPS Tag 23: Pressure",
-    "GPS Tag 24: Humidity",
-    "GPS Tag 25: Orientation X",
-    "GPS Tag 26: Orientation Y",
-    "GPS Tag 27: Orientation Z",
-    "GPS Tag 28: Magnetic Declination",
-    "GPS Tag 29: Horizontal Error",
-    "GPS Tag 30: Vertical Error"
-    // The condition `param_1 < 0x1f` (param_1 < 31) means valid indices are 0-30.
-    // So, 31 elements are needed.
+// Define ushort type for portability
+typedef unsigned short ushort;
+
+// Declare and initialize gps_tags array.
+// The original code implies an array of 4-byte pointers (char*).
+// The size is chosen to accommodate indices 0 through 30 (0x1e), as param_1 < 0x1f.
+const char* gps_tags[] = {
+    "GPS Tag 0", "GPS Tag 1", "GPS Tag 2", "GPS Tag 3", "GPS Tag 4",
+    "GPS Tag 5", "GPS Tag 6", "GPS Tag 7", "GPS Tag 8", "GPS Tag 9",
+    "GPS Tag 10", "GPS Tag 11", "GPS Tag 12", "GPS Tag 13", "GPS Tag 14",
+    "GPS Tag 15", "GPS Tag 16", "GPS Tag 17", "GPS Tag 18", "GPS Tag 19",
+    "GPS Tag 20", "GPS Tag 21", "GPS Tag 22", "GPS Tag 23", "GPS Tag 24",
+    "GPS Tag 25", "GPS Tag 26", "GPS Tag 27", "GPS Tag 28", "GPS Tag 29",
+    "GPS Tag 30"
 };
 
 // Function: print_gps_tag_text
-// Renamed `ushort` to `unsigned short` for standard C compliance.
-void print_gps_tag_text(unsigned short param_1) {
-  // The original condition `param_1 < 0x1f` means param_1 can be 0 up to 30.
-  // 0x1f in hexadecimal is 31 in decimal.
-  if (param_1 < 31) {
-    // Original: printf("@s",*(undefined4 *)(gps_tags + (uint)param_1 * 4));
-    // Fixes:
-    // 1. `@s` -> `%s` for printing a string.
-    // 2. `undefined4` is replaced by `const char *` as it's a pointer to a string.
-    // 3. `gps_tags + (uint)param_1 * 4` implies manual byte offset if `gps_tags`
-    //    was treated as a raw `void*` and elements were 4 bytes.
-    //    For a standard C array `const char *gps_tags[]`, direct array indexing
-    //    `gps_tags[param_1]` is the correct, simpler, and portable way.
-    //    It implicitly handles the size of `const char *` (e.g., 8 bytes on 64-bit Linux).
-    //    This also reduces intermediate variables by avoiding manual pointer arithmetic.
-    printf("%s", gps_tags[param_1]);
+void print_gps_tag_text(ushort param_1) {
+  // Check bounds to ensure param_1 is within the valid range of gps_tags array.
+  // 0x1f (decimal 31) is the upper limit, meaning param_1 can be 0-30.
+  // sizeof(gps_tags) / sizeof(gps_tags[0]) calculates the number of elements in the array.
+  if (param_1 < (sizeof(gps_tags) / sizeof(gps_tags[0]))) {
+    // Corrected format specifier from "@s" to "%s" for string output.
+    // Simplified array access from pointer arithmetic to direct indexing.
+    printf("%s\n", gps_tags[param_1]);
   }
+  return;
 }
 
-// Main function to demonstrate the usage of print_gps_tag_text
+// Main function for demonstration and compilation
 int main() {
-    printf("Demonstrating print_gps_tag_text:\n");
+    printf("--- Testing print_gps_tag_text ---\n");
 
-    // Test with a valid index
-    printf("Tag at index 0: ");
-    print_gps_tag_text(0);
-    printf("\n");
+    print_gps_tag_text(0);      // Valid: prints "GPS Tag 0"
+    print_gps_tag_text(15);     // Valid: prints "GPS Tag 15"
+    print_gps_tag_text(30);     // Valid: prints "GPS Tag 30"
+    print_gps_tag_text(31);     // Invalid: param_1 is not less than 31, no output
+    print_gps_tag_text(0x1e);   // Valid (0x1e is 30 in decimal): prints "GPS Tag 30"
+    print_gps_tag_text(0x1f);   // Invalid (0x1f is 31 in decimal): no output
 
-    // Test with an intermediate valid index
-    printf("Tag at index 15: ");
-    print_gps_tag_text(15);
-    printf("\n");
-
-    // Test with the maximum valid index (30)
-    printf("Tag at index 30: ");
-    print_gps_tag_text(30);
-    printf("\n");
-
-    // Test with an invalid index (out of bounds, should print nothing)
-    printf("Tag at index 31 (invalid): ");
-    print_gps_tag_text(31);
-    printf(" (nothing printed if invalid)\n");
-
-    printf("Tag at index 50 (invalid): ");
-    print_gps_tag_text(50);
-    printf(" (nothing printed if invalid)\n");
-
-    return EXIT_SUCCESS; // Standard way to indicate successful execution
+    printf("--- Test complete ---\n");
+    return 0;
 }

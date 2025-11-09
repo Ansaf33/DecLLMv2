@@ -1,210 +1,207 @@
-#include <stdio.h>   // For fprintf, stderr
-#include <stdlib.h>  // For exit
-#include <string.h>  // For memcmp, memcpy
-#include <stdint.h>  // For uint32_t, uint8_t
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
 
-// Global constants based on usage
-#define MAX_ACCOUNTS 32
-#define MAX_HOLDINGS_PER_ACCOUNT 32
+// --- Global definitions and structures ---
+
+// Constants based on decompiled offsets and loop limits
+#define MAX_ACCOUNTS 100 // Based on check_account_balance_can_buy param_2 < 100
+#define MAX_HOLDINGS_PER_ACCOUNT 32 // Based on 0x1f < local_10 loop limit
+#define SYMBOL_LEN 8 // Symbol length (e.g., "AAPL    ")
+
+// Holding structure within an Account
+typedef struct {
+    char symbol[SYMBOL_LEN]; // Offset 0x0 within Holding struct
+    uint32_t quantity;       // Offset 0x8 within Holding struct
+} Holding; // Size: 0x8 + 0x4 = 0xc
+
+// Account structure, total size 0x1a4 (420 bytes)
+typedef struct {
+    float balance; // Offset 0x0 within Account struct
+    uint8_t _padding1[0x24 - sizeof(float)]; // Padding to 0x24 (20 bytes)
+    Holding holdings[MAX_HOLDINGS_PER_ACCOUNT]; // Offset 0x24 within Account struct
+} Account; // Size: 0x24 + 32 * 0xc = 0x24 + 0x180 = 0x1a4.
+
+// Global array for accounts
+uint8_t ACCOUNTS_RAW[sizeof(Account) * MAX_ACCOUNTS];
+Account* ACCOUNTS_PTR = (Account*)ACCOUNTS_RAW;
+
+// Order structure in ORDERBOOK, total size 0x3c (60 bytes)
 #define MAX_ORDERS 1024
 
-// Forward declarations of structs
-typedef struct Account Account;
-typedef struct AccountHoldingSlot AccountHoldingSlot;
-typedef struct Message Message;
-typedef struct Order Order;
-typedef struct Response Response;
-typedef struct OrderFillResponse OrderFillResponse;
+typedef struct {
+    uint32_t account_id; // 0x0 (Account ID of the order placer)
+    float price;         // 0x4
+    uint32_t quantity;    // 0x8
+    char symbol[SYMBOL_LEN]; // 0xc (8 bytes)
+    uint8_t _padding2[0x34 - (0xc + SYMBOL_LEN)]; // Padding to 0x34 (16 bytes)
+    uint32_t order_id;    // 0x34
+    int order_type;      // 0x38 (0 for buy, 0xff for sell)
+} Order; // Size: 0x3c.
 
-// Custom terminate function replacement
-// This function is called in error conditions and exits the program.
+// Global array for order book
+uint8_t ORDERBOOK_RAW[sizeof(Order) * MAX_ORDERS];
+Order* ORDERBOOK_PTR = (Order*)ORDERBOOK_RAW;
+uint32_t ORDER_ID = 1; // Global order ID counter
+
+// Unified Transaction Request structure
+// This structure attempts to reconcile the various field accesses from the original code,
+// assuming a consistent layout for price, quantity, and symbol in request messages.
+typedef struct {
+    float price;            // Offset 0x0: Used for order price (buy/sell).
+    uint32_t quantity;       // Offset 0x4: Used for order quantity.
+    char symbol[SYMBOL_LEN]; // Offset 0x8: Used for symbol.
+    uint32_t account_id;     // Offset 0x10: Used for seller_account_id in fill_order, or other purposes.
+    uint8_t status;          // Offset 0x14: Used for order status (0=filled).
+    uint8_t _padding3[3];     // Padding to 0x18
+} TransactionRequest; // Size: 0x18
+
+// Generic Response structure
+typedef struct {
+    uint32_t field1;
+    uint32_t field2;
+    uint32_t field3;
+} GenericResponse;
+
+// Order Fill Message structure
+typedef struct {
+    uint32_t account_id;
+    uint32_t status_code;
+    uint32_t value1;
+    uint32_t value2;
+    uint32_t value3;
+} OrderFillMessage;
+
+// --- Helper for _terminate ---
+// Replaces the decompiled `_terminate` calls with a standard exit.
 void _terminate(int error_code) {
-    fprintf(stderr, "Termination with error code: %d\n", error_code);
+    fprintf(stderr, "Termination requested with code: %d\n", error_code);
     exit(error_code);
 }
 
-// Struct definitions based on memory access patterns inferred from the snippet
-
-// Represents a single holding entry within an account.
-// Total size: 4 bytes (quantity) + 8 bytes (symbol) = 0xc bytes.
-typedef struct AccountHoldingSlot {
-    uint32_t quantity; // At offset 0x0 relative to start of AccountHoldingSlot
-    char symbol[8];    // At offset 0x4 relative to start of AccountHoldingSlot
-} AccountHoldingSlot;
-
-// Represents an account structure.
-// Total size: 0x1a4 bytes.
-// Balance is at offset 0x0.
-// Holdings array starts at offset 0x24.
-typedef struct Account {
-    float balance; // Offset 0x0
-    char padding[0x24 - sizeof(float)]; // Padding to reach 0x24
-    AccountHoldingSlot holdings[MAX_HOLDINGS_PER_ACCOUNT]; // Array starts at offset 0x24
-} Account;
-
-// Represents a message or transaction request structure.
-// Contains price, quantity, and symbol.
-// Total size: 4 bytes (price) + 4 bytes (quantity) + 8 bytes (symbol) = 0x10 bytes.
-typedef struct Message {
-    float price;      // At offset 0x0
-    uint32_t quantity; // At offset 0x4
-    char symbol[8];    // At offset 0x8
-} Message;
-
-// Represents an order in the order book.
-// Total size: 0x3c bytes.
-typedef struct Order {
-    uint32_t account_id; // At offset 0x0 (ID of the account that created this order)
-    float price;      // At offset 0x4
-    uint32_t quantity; // At offset 0x8 (remaining quantity for this order)
-    char symbol[8];   // At offset 0xc
-    char padding1[0x34 - 0x14]; // Padding from 0x14 to 0x34
-    uint32_t order_id; // At offset 0x34 (unique ID for the order)
-    int order_type;    // At offset 0x38 (e.g., 0 for buy, 0xff for sell)
-} Order;
-
-// Generic response structure
-typedef struct Response {
-    uint32_t status;
-    uint32_t field1;
-    uint32_t field2;
-} Response;
-
-// Specific response structure for order fill messages
-typedef struct OrderFillResponse {
-    uint32_t status;         // 0x0
-    uint32_t fill_status;    // 0x4
-    uint32_t transaction_id; // 0x8 (placeholder, not explicitly set by generic_resp original)
-    char padding1[0x14 - 0xc]; // Padding to 0x14
-    char symbol_buffer[8];   // 0x14 (buffer to hold a symbol)
-    uint32_t other_data;     // 0x1c (another data field)
-} OrderFillResponse;
-
-
-// Global arrays and counter
-Account ACCOUNTS[MAX_ACCOUNTS];
-Order ORDERBOOK[MAX_ORDERS];
-uint32_t ORDER_ID = 1; // Starts from 1
-
-
-// Function: match_holding
-// Finds a holding for a given symbol within an account.
+// --- Function: match_holding ---
+// Finds a holding for a given symbol in an account.
+// param_1: account_idx - The index of the account.
+// param_2: req - Pointer to a TransactionRequest containing the symbol.
 // Returns a pointer to the holding's quantity if found, otherwise NULL.
-int* match_holding(int account_idx, const Message* msg) {
-    if (account_idx >= MAX_ACCOUNTS) {
-        return NULL; // Invalid account index
-    }
-    for (int holding_idx = 0; holding_idx < MAX_HOLDINGS_PER_ACCOUNT; ++holding_idx) {
-        // Compare the symbol from the message with the current holding's symbol
-        if (memcmp(msg->symbol, ACCOUNTS[account_idx].holdings[holding_idx].symbol, 8) == 0) {
-            return (int*)&ACCOUNTS[account_idx].holdings[holding_idx].quantity;
+uint32_t* match_holding(int account_idx, const TransactionRequest* req) {
+    for (int i = 0; i < MAX_HOLDINGS_PER_ACCOUNT; ++i) {
+        Holding* current_holding = &ACCOUNTS_PTR[account_idx].holdings[i];
+        if (memcmp(req->symbol, current_holding->symbol, SYMBOL_LEN) == 0) {
+            return &current_holding->quantity;
         }
     }
-    return NULL; // Holding not found
+    return NULL;
 }
 
-// Function: add_holding
-// Adds or updates the quantity of a holding for a specific account and symbol.
-// If the holding's quantity is -1 (special value), it is not updated.
+// --- Function: add_holding ---
+// Adds quantity to an existing holding in an account. Terminates if holding not found.
+// param_1: account_idx - The index of the account.
+// param_2: req - Pointer to a TransactionRequest containing the quantity and symbol.
 // Returns a pointer to the updated holding's quantity.
-int* add_holding(int account_idx, const Message* msg) {
-    int* holding_qty_ptr = match_holding(account_idx, msg);
+uint32_t* add_holding(uint32_t account_idx, const TransactionRequest* req) {
+    uint32_t* holding_qty_ptr = match_holding(account_idx, req);
     if (holding_qty_ptr == NULL) {
-        // In a real system, an empty slot would be found and initialized here.
-        // For now, based on original code, it terminates if not found.
-        _terminate(0x4d);
+        _terminate(0x4d); // Error code from original
     }
-    if (*holding_qty_ptr != -1) { // Assuming -1 means "not initialized" or "empty"
-        *holding_qty_ptr += msg->quantity;
+    if (*holding_qty_ptr != (uint32_t)-1) { // -1 might signify an empty slot or special value
+        *holding_qty_ptr += req->quantity;
     }
     return holding_qty_ptr;
 }
 
-// Function: dec_holding
-// Decrements the quantity of a holding for a specific account and symbol.
-// Only decrements if the requested quantity is less than the current holding.
+// --- Function: dec_holding ---
+// Decrements quantity from an existing holding in an account. Terminates if holding not found.
+// param_1: account_idx - The index of the account.
+// param_2: req - Pointer to a TransactionRequest containing the quantity and symbol.
 // Returns a pointer to the updated holding's quantity.
-uint32_t* dec_holding(int account_idx, const Message* msg) {
-    uint32_t* holding_qty_ptr = (uint32_t*)match_holding(account_idx, msg);
+uint32_t* dec_holding(uint32_t account_idx, const TransactionRequest* req) {
+    uint32_t* holding_qty_ptr = match_holding(account_idx, req);
     if (holding_qty_ptr == NULL) {
-        _terminate(0x37);
+        _terminate(0x37); // Error code from original
     }
-    if (msg->quantity < *holding_qty_ptr) { // Original code used strict less than.
-        *holding_qty_ptr -= msg->quantity;
+    if (req->quantity < *holding_qty_ptr) {
+        *holding_qty_ptr -= req->quantity;
     }
     return holding_qty_ptr;
 }
 
-// Function: generic_resp
-// Fills a generic response structure.
-void generic_resp(Response* resp, uint32_t field1_val, uint32_t field2_val) {
-    resp->status = 1;
-    resp->field1 = field1_val;
-    resp->field2 = field2_val;
-}
-
-// Function: fill_order
-// Fills a portion or all of an existing order (e.g., a sell order being bought).
-// Updates account balances, holdings, and the order's remaining quantity.
-// Returns a status code indicating the outcome of the fill.
-uint32_t fill_order(int seller_account_idx, const Message* trade_msg, Order* order_to_fill) {
-    float transaction_value = order_to_fill->price * (float)trade_msg->quantity;
+// --- Function: fill_order ---
+// Processes the filling of a buy order against a sell order.
+// param_1: buyer_account_idx - The account ID of the buyer.
+// param_2: sell_order - Pointer to the sell order being filled from the order book.
+// param_3: client_buy_req - Pointer to the client's buy request (which will be modified).
+// Returns a status code (0, 0xee, 0xff0000).
+uint32_t fill_order(int buyer_account_idx, Order* sell_order, TransactionRequest* client_buy_req) {
+    uint32_t sell_qty = sell_order->quantity;
+    float trade_price = client_buy_req->price;
+    float trade_amount = trade_price * (float)sell_qty;
 
     // Update balances
-    ACCOUNTS[seller_account_idx].balance -= transaction_value;
-    ACCOUNTS[order_to_fill->account_id].balance += transaction_value; // order_to_fill->account_id is the buyer's ID
+    ACCOUNTS_PTR[buyer_account_idx].balance -= trade_amount;
+    ACCOUNTS_PTR[client_buy_req->account_id].balance += trade_amount; // client_buy_req->account_id is the seller's ID
 
-    // Seller's holding of the sold item decreases
-    dec_holding(seller_account_idx, trade_msg);
+    // Seller decrements holding
+    TransactionRequest seller_dec_req;
+    seller_dec_req.quantity = sell_qty;
+    memcpy(seller_dec_req.symbol, sell_order->symbol, SYMBOL_LEN);
+    dec_holding(client_buy_req->account_id, &seller_dec_req);
 
-    // Buyer's holding of the bought item increases
-    int* buyer_holding_qty_ptr = add_holding(order_to_fill->account_id, trade_msg);
+    // Buyer increments holding
+    TransactionRequest buyer_add_req;
+    buyer_add_req.quantity = sell_qty;
+    memcpy(buyer_add_req.symbol, sell_order->symbol, SYMBOL_LEN);
+    uint32_t* buyer_holding_qty_ptr = add_holding(buyer_account_idx, &buyer_add_req);
 
-    // Check if the trade quantity exceeds the order's remaining quantity
-    if (trade_msg->quantity > order_to_fill->quantity) { // Original used (uint) casts; assuming uint32_t comparison is intended
-        _terminate(0x66); // Error: trying to fill more than available
+    // Update client's buy request
+    if (client_buy_req->quantity < sell_qty) {
+        _terminate(0x66);
     }
+    client_buy_req->quantity -= sell_qty;
 
-    order_to_fill->quantity -= trade_msg->quantity;
-
-    if (order_to_fill->quantity == 0) {
-        order_to_fill->order_type = 0; // Mark order as filled/inactive (original set `status` to 0, `price` to 0.0)
-        order_to_fill->price = 0.0f; // Clear price when order is fully filled
-        return 0xff0000; // Fully filled status
-    } else if (*buyer_holding_qty_ptr == -1) {
-        return 0xee; // Partially filled, but buyer's holding was special (-1)
+    uint32_t return_code;
+    if (client_buy_req->quantity == 0) {
+        // If client's order is fully filled
+        client_buy_req->status = 0; // Set status to 0 (filled)
+        client_buy_req->price = 0.0; // Clear price
+        return_code = 0xff0000; // Original return value
+    } else if (*buyer_holding_qty_ptr == (uint32_t)-1) {
+        // If buyer's holding quantity is -1 (special value?)
+        return_code = 0xee;
     } else {
-        return 0; // Partially filled, normal status
+        return_code = 0;
     }
+    return return_code;
 }
 
-// Function: match_symbol
-// Compares symbols from two message/order-like structures.
-// Arguments are pointers to the 'price' field, and symbols are assumed to be at offset +8 from there.
-// (This is based on the original decompiler output's peculiar argument passing for `match_symbol`).
-int match_symbol(const float* ptr1_price, const float* ptr2_price) {
-    // Assuming symbol is at offset +8 from the price field in both structures
-    return memcmp((const char*)ptr1_price + 8, (const char*)ptr2_price + 8, 8);
+// --- Function: match_symbol_internal ---
+// Compares symbols embedded within structures by pointer arithmetic.
+// param_1: order_price_ptr - Pointer to an Order's price field.
+// param_2: client_order_price_ptr - Pointer to a TransactionRequest's price field.
+// Returns 0 if symbols match, non-zero otherwise (as per memcmp).
+int match_symbol_internal(const float* order_price_ptr, const float* client_order_price_ptr) {
+    const char* order_symbol = (const char*)order_price_ptr + (0xc - 0x4); // Offset from Order->price to Order->symbol
+    const char* client_symbol = (const char*)client_order_price_ptr + (0x8 - 0x0); // Offset from TransactionRequest->price to TransactionRequest->symbol
+    return memcmp(order_symbol, client_symbol, SYMBOL_LEN);
 }
 
-// Function: get_current_ask
-// Finds the lowest ask price (sell order price) for a given symbol.
-// Returns 0.0 if no matching sell order is found.
-long double get_current_ask(const Message* msg) {
-    float min_price = 0.0f;
-    uint32_t min_order_id = 0; // 0 for initial state, any real order_id will be positive
+// --- Function: get_current_ask ---
+// Finds the lowest sell price for a given symbol.
+// param_1: symbol - Pointer to the 8-byte symbol string.
+// Returns the lowest ask price as a long double.
+long double get_current_ask(const char* symbol) {
+    float min_price = 0.0;
+    uint32_t min_order_id = 0; // Used to break ties (older order wins)
 
     for (int i = 0; i < MAX_ORDERS; ++i) {
-        Order* order = &ORDERBOOK[i];
-        if (order->order_type == 0xff) { // Check if it's a SELL order
-            // Compare order symbol with message symbol
-            if (memcmp(order->symbol, msg->symbol, 8) == 0) {
-                if (order->quantity != 0) { // Check if order has remaining quantity
-                    // Check for lowest order_id (oldest order) or first valid match
-                    if (order->order_id < min_order_id || min_order_id == 0) {
-                        min_order_id = order->order_id;
-                        min_price = order->price;
-                    }
+        Order* current_order = &ORDERBOOK_PTR[i];
+
+        if (current_order->order_type == 0xff && current_order->quantity != 0) { // Active sell order
+            if (memcmp(current_order->symbol, symbol, SYMBOL_LEN) == 0) { // Symbols match
+                if (min_order_id == 0 || current_order->order_id < min_order_id) { // Find oldest order
+                    min_order_id = current_order->order_id;
+                    min_price = current_order->price;
                 }
             }
         }
@@ -212,172 +209,169 @@ long double get_current_ask(const Message* msg) {
     return (long double)min_price;
 }
 
-// Function: find_sell_order
-// Finds the best (oldest, matching price, sufficient quantity) sell order for a given buy message.
-// Returns a pointer to the best Order if found, otherwise NULL.
-Order* find_sell_order(const Message* buy_msg) {
+// --- Function: find_sell_order ---
+// Finds the best (oldest, matching price/quantity) sell order for a client's buy request.
+// param_1: client_buy_req - Pointer to the client's buy request.
+// Returns a pointer to the best matching sell Order, or NULL if none found.
+Order* find_sell_order(const TransactionRequest* client_buy_req) {
     uint32_t best_order_id = 0;
-    Order* best_order_ptr = NULL;
+    Order* best_sell_order = NULL;
 
     for (int i = 0; i < MAX_ORDERS; ++i) {
-        Order* current_order = &ORDERBOOK[i];
-        // Check if order slot is active (symbol not empty) and is a sell order
-        if (current_order->symbol[0] != '\0' && current_order->order_type == 0xff) {
-            // Check if symbols match
-            if (memcmp(current_order->symbol, buy_msg->symbol, 8) == 0) {
-                // Check if order price is less than or equal to buyer's offered price
-                if (current_order->price <= buy_msg->price) {
-                    // Check if order has quantity and buyer's quantity <= order's quantity
-                    if (current_order->quantity != 0 && buy_msg->quantity <= current_order->quantity) {
-                        // Found a matching sell order
-                        if (best_order_ptr == NULL || current_order->order_id < best_order_id) {
-                            // This is the first matching order or an older (better) one
+        Order* current_order = &ORDERBOOK_PTR[i];
+
+        if (current_order->order_type == 0xff && current_order->quantity > 0) { // Active sell order
+            if (match_symbol_internal(&current_order->price, &client_buy_req->price) == 0) { // Symbols match
+                if (current_order->price <= client_buy_req->price) { // Sell price <= buy price
+                    if (client_buy_req->quantity <= current_order->quantity) { // Sell order has enough quantity
+                        if (best_order_id == 0 || current_order->order_id < best_order_id) { // Find oldest
                             best_order_id = current_order->order_id;
-                            best_order_ptr = current_order;
+                            best_sell_order = current_order;
                         }
                     }
                 }
             }
         }
     }
-    return best_order_ptr;
+    return best_sell_order;
 }
 
-// Function: add_to_order_book
-// Adds a new order to the global order book in the first available empty slot.
-// Returns 0x99 on success, 0xffffff if the order book is full.
-uint32_t add_to_order_book(const Message* msg, uint32_t account_id, int order_type) {
-    int empty_slot_idx = -1;
+// --- Function: add_to_order_book ---
+// Adds a new order (buy or sell) to the order book.
+// param_1: client_order_req - Pointer to the client's order request.
+// param_2: account_idx - The account ID placing the order.
+// param_3: order_type - Type of order (0 for buy, 0xff for sell).
+// Returns a status code (0x99 or 0xffffff).
+uint32_t add_to_order_book(const TransactionRequest* client_order_req, uint32_t account_idx, int order_type) {
     for (int i = 0; i < MAX_ORDERS; ++i) {
-        if (ORDERBOOK[i].symbol[0] == '\0') { // Find empty slot (symbol[0] == '\0' indicates empty)
-            empty_slot_idx = i;
-            break;
+        // Find an empty slot (symbol[0] == '\0' indicates empty)
+        if (ORDERBOOK_PTR[i].symbol[0] == '\0') {
+            Order* new_order = &ORDERBOOK_PTR[i];
+
+            new_order->price = client_order_req->price;
+            new_order->quantity = client_order_req->quantity;
+            memcpy(new_order->symbol, client_order_req->symbol, SYMBOL_LEN);
+            new_order->account_id = account_idx;
+
+            if (order_type != 0 && order_type != 0xff) {
+                _terminate(99);
+            }
+            new_order->order_type = order_type;
+            new_order->order_id = ORDER_ID++;
+            return 0x99; // Original return value
         }
     }
-
-    if (empty_slot_idx == -1) {
-        return 0xffffff; // Order book full
-    }
-
-    Order* new_order_slot = &ORDERBOOK[empty_slot_idx];
-
-    // Copy message details to the order slot
-    memcpy(new_order_slot->symbol, msg->symbol, 8);
-    new_order_slot->quantity = msg->quantity;
-    new_order_slot->price = msg->price;
-    new_order_slot->account_id = account_id;
-
-    if (order_type != 0 && order_type != 0xff) {
-        _terminate(99); // Invalid order type
-    }
-    new_order_slot->order_type = order_type;
-    new_order_slot->order_id = ORDER_ID;
-    ORDER_ID++; // Increment global order ID
-
-    return 0x99; // Success status
+    return 0xffffff; // No empty slot
 }
 
-// Function: check_account_balance_can_buy
-// Checks if an account has sufficient balance to make a purchase.
-// Returns 0 if balance is sufficient, 0x55 if not enough balance, 0xf0 for invalid account.
-uint32_t check_account_balance_can_buy(const Message* buy_msg, uint32_t account_idx) {
+// --- Function: check_account_balance_can_buy ---
+// Checks if an account has sufficient balance to place a buy order.
+// param_1: client_buy_req - Pointer to the client's buy request.
+// param_2: account_idx - The account ID.
+// Returns 0 if balance is sufficient, 0x55 if insufficient, 0xf0 if invalid account.
+uint32_t check_account_balance_can_buy(const TransactionRequest* client_buy_req, uint32_t account_idx) {
     if (account_idx >= MAX_ACCOUNTS) {
-        return 0xf0; // Invalid account
+        return 0xf0;
     }
-
-    float required_funds = buy_msg->price * (float)buy_msg->quantity;
-    // Original code used `<=`, meaning if balance is exactly equal to required funds, it's considered "not enough".
-    // Keeping this behavior.
-    if (ACCOUNTS[account_idx].balance <= required_funds) {
+    float required_amount = client_buy_req->price * (float)client_buy_req->quantity;
+    if (ACCOUNTS_PTR[account_idx].balance <= required_amount) {
         return 0x55; // Not enough balance
-    } else {
-        return 0; // Enough balance
     }
+    return 0; // Can buy
 }
 
-// Function: gen_order_fill_msg
-// Generates an order fill response message.
-// (Note: The original function had complex stack manipulation and implied arguments.
-// This refactored version makes reasonable assumptions for its purpose.)
-uint32_t gen_order_fill_msg(OrderFillResponse* resp, uint32_t fill_status, char* dest_symbol_ptr, uint32_t other_data_val) {
-    // Initialize generic fields in the response
-    resp->status = 1;
-    resp->fill_status = fill_status;
-    // resp->transaction_id is not explicitly set by original generic_resp, leaving as default or assuming prior setup
-
-    if (fill_status != 0 && fill_status != 0xff) { // 0 or 0xff are considered valid fill statuses
-        _terminate(99); // Invalid fill status
-    }
-
-    // Copy symbol from the response's internal buffer to the provided destination pointer
-    memcpy(dest_symbol_ptr, resp->symbol_buffer, 8);
-    
-    // Set an additional data field in the response
-    resp->other_data = other_data_val;
-
-    return 8; // Returns 8, possibly indicating the size of the copied data or a success code
+// --- Function: generic_resp ---
+// Fills a generic response structure.
+// param_1: resp - Pointer to the GenericResponse structure.
+// param_2: val2 - Value for field2.
+// param_3: val3 - Value for field3.
+void generic_resp(GenericResponse* resp, uint32_t val2, uint32_t val3) {
+    resp->field1 = 1;
+    resp->field2 = val2;
+    resp->field3 = val3;
 }
 
-// Function: check_account_holding_in_qty_sell
-// Checks if an account has sufficient quantity of a holding to sell.
-// Returns 0 if holding is sufficient, 0x66 if not enough, 0x88 if holding not found.
-uint32_t check_account_holding_in_qty_sell(const Message* sell_msg, int account_idx) {
-    uint32_t* holding_qty_ptr = dec_holding(account_idx, sell_msg); // match_holding is called internally by dec_holding
-    if (holding_qty_ptr == NULL) { // If holding not found by match_holding
-        return 0x88; // Holding not found
+// --- Function: gen_order_fill_msg ---
+// Generates an order fill message. The original had complex stack manipulation;
+// this version simplifies it to fill a message structure.
+// param_1: msg - Pointer to the OrderFillMessage structure to fill.
+// param_2: account_id - Account ID involved.
+// param_3: status_code - Status of the fill.
+// param_4: val3 - Generic value 3.
+// param_5: val4 - Generic value 4.
+// param_6: val5 - Generic value 5.
+// Returns the size of the message structure.
+uint32_t gen_order_fill_msg(OrderFillMessage* msg, uint32_t account_id, uint32_t status_code, uint32_t val3, uint32_t val4, uint32_t val5) {
+    GenericResponse resp_internal;
+    generic_resp(&resp_internal, status_code, val5);
+
+    if (status_code != 0 && status_code != 0xff) {
+        _terminate(99);
     }
 
-    // Check if the message quantity is less than or equal to the current holding quantity
-    // (dec_holding already checks if msg->quantity < *holding_qty_ptr for decrement,
-    // this check is for overall sufficiency to sell).
-    if (sell_msg->quantity <= *holding_qty_ptr) {
-        return 0; // Enough holding
-    }
-    return 0x66; // Not enough holding
+    msg->account_id = account_id;
+    msg->status_code = status_code;
+    msg->value1 = val3;
+    msg->value2 = val4;
+    msg->value3 = val5;
+
+    return sizeof(OrderFillMessage);
 }
 
-// Function: fill_buy_order
-// Attempts to fill a buy order by finding and processing a matching sell order.
-// Returns a status code from fill_order, or 0x88 if no sell order is found.
-uint32_t fill_buy_order(uint32_t buyer_account_idx, Order* sell_order, const Message* buy_msg) {
-    if (sell_order == NULL) {
-        return 0x88; // No matching sell order found
-    }
-    // `fill_order` expects `seller_account_idx`, `trade_msg`, `order_to_fill`.
-    // The `sell_order->account_id` is the seller's account.
-    // `buy_msg` is the trade message.
-    // `sell_order` is the order to fill.
-    return fill_order(sell_order->account_id, buy_msg, sell_order);
-}
-
-// Function: run_option_transaction
-// Main function to run either a buy or sell transaction.
-// Orchestrates checks and order book operations.
-// Returns 0 on success, or an error code on failure.
-uint32_t run_option_transaction(uint32_t account_idx, Message* transaction_msg, int transaction_type) {
-    uint32_t result = 0; // Default success
-
-    if (transaction_type == 0) { // Buy transaction
-        result = check_account_balance_can_buy(transaction_msg, account_idx);
-        if (result == 0) { // If balance is sufficient
-            Order* sell_order = find_sell_order(transaction_msg);
-            result = fill_buy_order(account_idx, sell_order, transaction_msg);
-            // Convert fill_buy_order's specific success codes (0, 0xff0000, 0xee) to generic 0 for success
-            if (result == 0 || result == 0xff0000 || result == 0xee) {
-                result = 0;
+// --- Function: check_account_holding_in_qty_sell ---
+// Checks if an account has sufficient quantity of a holding to place a sell order.
+// param_1: sell_req - Pointer to the sell request.
+// param_2: account_idx - The account ID.
+// Returns 0 if sufficient, 0x66 if insufficient, 0x88 if holding not found.
+uint32_t check_account_holding_in_qty_sell(const TransactionRequest* sell_req, uint32_t account_idx) {
+    for (int i = 0; i < MAX_HOLDINGS_PER_ACCOUNT; ++i) {
+        Holding* current_holding = &ACCOUNTS_PTR[account_idx].holdings[i];
+        if (memcmp(current_holding->symbol, sell_req->symbol, SYMBOL_LEN) == 0) {
+            if (sell_req->quantity <= current_holding->quantity) {
+                return 0; // Enough quantity
+            } else {
+                return 0x66; // Not enough quantity
             }
         }
-    } else if (transaction_type == 0xff) { // Sell transaction
-        result = check_account_holding_in_qty_sell(transaction_msg, account_idx);
-        if (result == 0) { // If holding is sufficient
-            // `add_to_order_book` returns 0x99 on success, 0xffffff on failure.
-            result = add_to_order_book(transaction_msg, account_idx, 0xff);
-            if (result == 0x99) {
-                result = 0; // Convert 0x99 success to generic 0
-            }
+    }
+    return 0x88; // Holding not found
+}
+
+// --- Function: fill_buy_order ---
+// Initiates the process to fill a buy order.
+// param_1: buyer_account_idx - The account ID of the buyer.
+// param_2: matched_sell_order - Pointer to the matched sell order from the order book.
+// param_3: client_buy_req - Pointer to the client's buy request.
+// Returns a status code from fill_order (0, 0x88, 0xee, 0xff0000).
+uint32_t fill_buy_order(uint32_t buyer_account_idx, Order* matched_sell_order, TransactionRequest* client_buy_req) {
+    if (matched_sell_order == NULL) {
+        return 0x88; // No sell order found
+    }
+    return fill_order(buyer_account_idx, matched_sell_order, client_buy_req);
+}
+
+// --- Function: run_option_transaction ---
+// Main entry point for running a buy or sell transaction.
+// param_1: account_idx - The account ID initiating the transaction.
+// param_2: order_req_ptr - Pointer to the transaction request (TransactionRequest*).
+// param_3: transaction_type - Type of transaction (0 for buy, 0xff for sell).
+// Returns a status code.
+int run_option_transaction(uint32_t account_idx, TransactionRequest* order_req_ptr, int transaction_type) {
+    uint32_t status_code = 0;
+
+    if (transaction_type == 0) { // Buy order
+        status_code = check_account_balance_can_buy(order_req_ptr, account_idx);
+        if (status_code == 0) {
+            Order* matched_sell_order = find_sell_order(order_req_ptr);
+            status_code = fill_buy_order(account_idx, matched_sell_order, order_req_ptr);
+        }
+    } else if (transaction_type == 0xff) { // Sell order
+        status_code = check_account_holding_in_qty_sell(order_req_ptr, account_idx);
+        if (status_code == 0) {
+            status_code = add_to_order_book(order_req_ptr, account_idx, 0xff);
         }
     } else {
-        result = 0xf1; // Invalid transaction type
+        status_code = 0xf1; // Invalid transaction type
     }
-    return result;
+    return status_code;
 }

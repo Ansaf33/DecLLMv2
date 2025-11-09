@@ -1,101 +1,44 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-#include <ctype.h> // For isprint
+#include <stdlib.h> // For malloc, free, calloc, exit
+#include <string.h> // For strlen, memcpy
+#include <stdint.h> // For uint32_t, uint16_t, intptr_t
+#include <stdio.h>  // For fprintf
+#include <ctype.h>  // For isprint
 
-// --- Type Definitions ---
-// Standard integer types to replace decompiler's undefined types
+// Define custom types
 typedef uint32_t undefined4;
 typedef uint16_t ushort;
-typedef uint8_t undefined;
+// 'code' is a generic function pointer type.
+// Specific function signatures will be used via explicit casts at call sites.
+typedef undefined4 (*code)();
 
-// Forward declarations for function pointer types for object methods
-typedef int (*SetDataFunc_L)(void*, uint32_t, uint32_t); // For Liquids, Cereals, Toppings
-typedef int (*SetDataFunc_S)(void*, uint32_t, const char*); // For GenericString, PrinterString
-typedef int (*SetDataFunc_CR)(void*, uint32_t, uint16_t, uint32_t*); // For CommandRunner
-typedef void (*DestructorFunc)(void*);
+// Global variables (string literals)
+const char *typeName = "Liquids";
+const char *PTR_s_Cereals_00017004 = "Cereals";
+const char *PTR_s_Toppings_00017008 = "Toppings";
+const char *PTR_s_GenericString_0001700c = "GenericString";
+const char *PTR_s_PrinterString_00017010 = "PrinterString";
+const char *PTR_s_CommandRunner_00017014 = "CommandRunner";
 
-// Function pointer type for the command to be executed by os_exec
-typedef uint32_t (*CommandToExecuteFunc)(uint32_t, uint32_t, uint32_t);
-
-// --- Global String Literals (Decompiler artifacts, assuming they are const char arrays) ---
-const char typeName_liquids[] = "Liquids";
-const char typeName_cereals[] = "Cereals";
-const char typeName_toppings[] = "Toppings";
-const char typeName_generic_string[] = "GenericString";
-const char typeName_printer_string[] = "PrinterString";
-const char typeName_command_runner[] = "CommandRunner";
-
-// --- Helper Functions ---
-// Replaced _terminate with a standard exit function
-void _terminate(int status) {
-    fprintf(stderr, "Fatal error, terminating with status: %d\n", status);
+// Dummy _terminate function
+static void _terminate(int error_code) {
+    fprintf(stderr, "Error: Program terminated with code 0x%x.\n", error_code);
     exit(EXIT_FAILURE);
 }
 
-// Replaced is_printable with a standard C library check for printable characters
-// Assumes it checks if *all* characters in a string are printable
-static int all_chars_printable(const char* str) {
-    if (str == NULL) return 0;
-    for (size_t i = 0; str[i] != '\0'; ++i) {
-        if (!isprint((unsigned char)str[i])) {
-            return 0; // Not printable
-        }
-    }
-    return 1; // All characters are printable
+// Dummy is_printable function.
+// The original snippet's loop for `is_printable()` is structurally flawed
+// as it doesn't pass a character to check. In set_data_printer_string,
+// `isprint` from <ctype.h> is used on characters of `param_3`.
+// This dummy function is not used in the fixed code.
+static int is_printable(void) {
+    return 1; // Dummy implementation: always assumes characters are printable.
 }
 
-// --- Struct Definitions based on memory layout and field access ---
-
-// Base structure for Liquids/Cereals
-typedef struct {
-    uint32_t data1;
-    char type_name[8]; // Max 7 chars + null, e.g., "Liquids", "Cereals"
-    uint32_t data2;
-    SetDataFunc_L set_data;
-    DestructorFunc destructor;
-} LiquidCereal_Object; // Expected size 0x18 (24 bytes)
-
-// Toppings structure
-typedef struct {
-    uint32_t data1;
-    char type_name[12]; // Max 8 chars + null, e.g., "Toppings"
-    uint32_t data2;
-    SetDataFunc_L set_data;
-    DestructorFunc destructor;
-} Toppings_Object; // Expected size 0x1C (28 bytes)
-
-// Generic String / Printer String structure
-typedef struct {
-    uint32_t data1;
-    char type_name[16]; // Max 13 chars + null, e.g., "GenericString", "PrinterString"
-    char* string_data;  // Pointer to dynamically allocated string content
-    SetDataFunc_S set_data;
-    DestructorFunc destructor;
-} GenericString_Object; // Expected size 0x20 (32 bytes)
-
-// Command Runner structure
-typedef struct {
-    uint32_t data1;
-    char type_name[16]; // Max 13 chars + null, e.g., "CommandRunner"
-    CommandToExecuteFunc command_func; // Function pointer to be called by os_exec
-    uint16_t num_args; // Number of arguments provided for the command_func
-    uint16_t padding;  // To ensure 4-byte alignment for args array
-    uint32_t args[3];  // Max 3 arguments (as used by os_exec)
-    SetDataFunc_CR set_data;
-    DestructorFunc destructor;
-} CommandRunner_Object; // Expected size 0x30 (48 bytes)
-
-// --- Function Implementations ---
-
 // Function: set_data_liquids
-int set_data_liquids(void *param_1, uint32_t param_2, uint32_t param_3) {
-  LiquidCereal_Object* obj = (LiquidCereal_Object*)param_1;
-  obj->data1 = param_2;
-  strncpy(obj->type_name, typeName_liquids, sizeof(obj->type_name) - 1);
-  obj->type_name[sizeof(obj->type_name) - 1] = '\0'; // Ensure null-termination
-  obj->data2 = param_3;
+undefined4 set_data_liquids(uint32_t *param_1, undefined4 param_2, undefined4 param_3) {
+  *param_1 = param_2;
+  memcpy(param_1 + 1, typeName, strlen(typeName));
+  param_1[3] = param_3;
   return 0;
 }
 
@@ -106,22 +49,20 @@ void destructor_liquids(void *param_1) {
 
 // Function: constructor_liquids
 void * constructor_liquids(void) {
-  LiquidCereal_Object *obj = (LiquidCereal_Object*)malloc(sizeof(LiquidCereal_Object));
-  if (obj == NULL) {
+  void *pvVar1 = malloc(0x18); // 24 bytes
+  if (pvVar1 == NULL) {
     _terminate(0xfffffffb);
   }
-  obj->set_data = set_data_liquids;
-  obj->destructor = destructor_liquids;
-  return obj;
+  *(code **)((char *)pvVar1 + 0x10) = (code)set_data_liquids;
+  *(code **)((char *)pvVar1 + 0x14) = (code)destructor_liquids;
+  return pvVar1;
 }
 
 // Function: set_data_cereals
-int set_data_cereals(void *param_1, uint32_t param_2, uint32_t param_3) {
-  LiquidCereal_Object* obj = (LiquidCereal_Object*)param_1;
-  obj->data1 = param_2;
-  strncpy(obj->type_name, typeName_cereals, sizeof(obj->type_name) - 1);
-  obj->type_name[sizeof(obj->type_name) - 1] = '\0';
-  obj->data2 = param_3;
+undefined4 set_data_cereals(uint32_t *param_1, undefined4 param_2, undefined4 param_3) {
+  *param_1 = param_2;
+  memcpy(param_1 + 1, PTR_s_Cereals_00017004, strlen(PTR_s_Cereals_00017004));
+  param_1[3] = param_3;
   return 0;
 }
 
@@ -132,22 +73,20 @@ void destructor_cereals(void *param_1) {
 
 // Function: constructor_cereals
 void * constructor_cereals(void) {
-  LiquidCereal_Object *obj = (LiquidCereal_Object*)malloc(sizeof(LiquidCereal_Object));
-  if (obj == NULL) {
+  void *pvVar1 = malloc(0x18); // 24 bytes
+  if (pvVar1 == NULL) {
     _terminate(0xfffffffb);
   }
-  obj->set_data = set_data_cereals;
-  obj->destructor = destructor_cereals;
-  return obj;
+  *(code **)((char *)pvVar1 + 0x10) = (code)set_data_cereals;
+  *(code **)((char *)pvVar1 + 0x14) = (code)destructor_cereals;
+  return pvVar1;
 }
 
 // Function: set_data_toppings
-int set_data_toppings(void *param_1, uint32_t param_2, uint32_t param_3) {
-  Toppings_Object* obj = (Toppings_Object*)param_1;
-  obj->data1 = param_2;
-  strncpy(obj->type_name, typeName_toppings, sizeof(obj->type_name) - 1);
-  obj->type_name[sizeof(obj->type_name) - 1] = '\0';
-  obj->data2 = param_3;
+undefined4 set_data_toppings(uint32_t *param_1, undefined4 param_2, undefined4 param_3) {
+  *param_1 = param_2;
+  memcpy(param_1 + 1, PTR_s_Toppings_00017008, strlen(PTR_s_Toppings_00017008));
+  param_1[4] = param_3;
   return 0;
 }
 
@@ -158,126 +97,133 @@ void destructor_toppings(void *param_1) {
 
 // Function: constructor_toppings
 void * constructor_toppings(void) {
-  Toppings_Object *obj = (Toppings_Object*)malloc(sizeof(Toppings_Object));
-  if (obj == NULL) {
+  void *pvVar1 = malloc(0x1c); // 28 bytes
+  if (pvVar1 == NULL) {
     _terminate(0xfffffffb);
   }
-  obj->set_data = set_data_toppings;
-  obj->destructor = destructor_toppings;
-  return obj;
+  *(code **)((char *)pvVar1 + 0x14) = (code)set_data_toppings;
+  *(code **)((char *)pvVar1 + 0x18) = (code)destructor_toppings;
+  return pvVar1;
 }
 
 // Function: set_data_generic_string
-int set_data_generic_string(void *param_1, uint32_t param_2, const char *param_3) {
-  GenericString_Object* obj = (GenericString_Object*)param_1;
+undefined4 set_data_generic_string(uint32_t *param_1, undefined4 param_2, char *param_3) {
   size_t string_len = strlen(param_3);
-
-  obj->data1 = param_2;
-  strncpy(obj->type_name, typeName_generic_string, sizeof(obj->type_name) - 1);
-  obj->type_name[sizeof(obj->type_name) - 1] = '\0';
-
-  obj->string_data = (char*)malloc(string_len + 1); // +1 for null terminator
-  if (obj->string_data == NULL) {
-    _terminate(0); // Original code used 0 for this specific terminate status
+  *param_1 = param_2;
+  memcpy(param_1 + 1, PTR_s_GenericString_0001700c, strlen(PTR_s_GenericString_0001700c));
+  
+  // param_1[5] is expected to store a pointer to the newly allocated string buffer (Offset 0x14)
+  void **string_ptr_location = (void **)((char *)param_1 + 0x14); 
+  *string_ptr_location = malloc(string_len + 1); // +1 for null terminator
+  if (*string_ptr_location == NULL) {
+    _terminate(0xfffffffb); // Memory allocation failure
   }
-  memcpy(obj->string_data, param_3, string_len);
-  obj->string_data[string_len] = '\0'; // Ensure null termination
+  memcpy(*string_ptr_location, param_3, string_len + 1); // Copy with null terminator
   return 0;
 }
 
 // Function: destructor_generic_string
 void destructor_generic_string(void *param_1) {
-  GenericString_Object* obj = (GenericString_Object*)param_1;
-  if (obj->string_data != NULL) {
-    free(obj->string_data);
+  // Offset 0x14 (20 bytes) is param_1[5], which stores the allocated string pointer.
+  void *string_buffer = *(void **)((char *)param_1 + 0x14);
+  if (string_buffer != NULL) {
+    free(string_buffer);
   }
   free(param_1);
 }
 
 // Function: constructor_generic_string
 void * constructor_generic_string(void) {
-  GenericString_Object *obj = (GenericString_Object*)calloc(1, sizeof(GenericString_Object)); // calloc to zero-initialize string_data
-  if (obj == NULL) {
+  void *pvVar1 = calloc(1, 0x20); // 32 bytes, initialized to zero
+  if (pvVar1 == NULL) {
     _terminate(0xfffffffb);
   }
-  obj->set_data = set_data_generic_string;
-  obj->destructor = destructor_generic_string;
-  return obj;
+  *(code **)((char *)pvVar1 + 0x18) = (code)set_data_generic_string;
+  *(code **)((char *)pvVar1 + 0x1c) = (code)destructor_generic_string;
+  return pvVar1;
 }
 
 // Function: set_data_printer_string
-int set_data_printer_string(void *param_1, uint32_t param_2, const char *param_3) {
-  GenericString_Object* obj = (GenericString_Object*)param_1;
+undefined4 set_data_printer_string(uint32_t *param_1, undefined4 param_2, char *param_3) {
   size_t string_len = strlen(param_3);
+  *param_1 = param_2;
+  memcpy(param_1 + 1, PTR_s_PrinterString_00017010, strlen(PTR_s_PrinterString_00017010));
 
-  obj->data1 = param_2;
-  strncpy(obj->type_name, typeName_printer_string, sizeof(obj->type_name) - 1);
-  obj->type_name[sizeof(obj->type_name) - 1] = '\0';
-
-  // Check if all characters are printable before proceeding
-  if (!all_chars_printable(param_3)) {
-    return 0xffffffff; // Return error if not printable
+  // The original loop for is_printable() is structurally flawed as it doesn't pass a character to check.
+  // Assuming the *intent* was to check each character of `param_3` for printability.
+  for (size_t i = 0; i < string_len; ++i) {
+    if (!isprint((unsigned char)param_3[i])) { // Using isprint from <ctype.h>
+      return 0xffffffff; // Not all characters are printable
+    }
   }
 
-  obj->string_data = (char*)malloc(string_len + 1); // +1 for null terminator
-  if (obj->string_data == NULL) {
-    _terminate(0);
+  // Offset 0x14 (20 bytes) is param_1[5]
+  void **string_ptr_location = (void **)((char *)param_1 + 0x14); 
+  *string_ptr_location = malloc(string_len + 1); // +1 for null terminator
+  if (*string_ptr_location == NULL) {
+    _terminate(0xfffffffb); // Memory allocation failure
   }
-  memcpy(obj->string_data, param_3, string_len);
-  obj->string_data[string_len] = '\0'; // Ensure null termination
+  memcpy(*string_ptr_location, param_3, string_len + 1); // Copy with null terminator
   return 0;
 }
 
 // Function: destructor_printer_string
 void destructor_printer_string(void *param_1) {
-  // Same destructor logic as generic_string
-  destructor_generic_string(param_1);
+  // Offset 0x14 (20 bytes) is param_1[5]
+  void *string_buffer = *(void **)((char *)param_1 + 0x14); 
+  if (string_buffer != NULL) {
+    free(string_buffer);
+  }
+  free(param_1);
 }
 
 // Function: constructor_printer_string
 void * constructor_printer_string(void) {
-  GenericString_Object *obj = (GenericString_Object*)calloc(1, sizeof(GenericString_Object));
-  if (obj == NULL) {
+  void *pvVar1 = calloc(1, 0x20); // 32 bytes, initialized to zero
+  if (pvVar1 == NULL) {
     _terminate(0xfffffffb);
   }
-  obj->set_data = set_data_printer_string;
-  obj->destructor = destructor_printer_string;
-  return obj;
+  *(code **)((char *)pvVar1 + 0x18) = (code)set_data_printer_string;
+  *(code **)((char *)pvVar1 + 0x1c) = (code)destructor_printer_string;
+  return pvVar1;
 }
 
-// Function: os_exec (corrected based on call site in set_data_command_runner)
-uint32_t os_exec(CommandToExecuteFunc func_ptr, uint32_t arg1, uint32_t arg2, uint32_t arg3) {
-  if (func_ptr != NULL) {
-    return func_ptr(arg1, arg2, arg3);
-  }
-  return 0xffffffff; // Indicate error if function pointer is null
+// Function: os_exec
+// This function takes a function pointer and other arguments, but only passes its 4th argument
+// to the function pointer.
+undefined4 os_exec(code func_ptr_to_execute, undefined4 unused_param2, undefined4 unused_param3, undefined4 actual_param) {
+  // Cast `func_ptr_to_execute` to a function pointer type that takes one `undefined4` argument.
+  return ((undefined4 (*)(undefined4))func_ptr_to_execute)(actual_param);
 }
 
 // Function: set_data_command_runner
-int set_data_command_runner(void *param_1, uint32_t param_2, ushort num_args_for_cmd, uint32_t *args_array) {
-  CommandRunner_Object* obj = (CommandRunner_Object*)param_1;
+undefined4 set_data_command_runner(uint32_t *param_1, undefined4 param_2, ushort param_3, uint32_t *param_4) {
+  *param_1 = param_2;
+  memcpy(param_1 + 1, PTR_s_CommandRunner_00017014, strlen(PTR_s_CommandRunner_00017014));
+  
+  // Offset 0x18 (24 bytes) is param_1[6]
+  *(ushort *)((char *)param_1 + 0x18) = param_3;
 
-  obj->data1 = param_2;
-  strncpy(obj->type_name, typeName_command_runner, sizeof(obj->type_name) - 1);
-  obj->type_name[sizeof(obj->type_name) - 1] = '\0';
-  obj->num_args = num_args_for_cmd;
-
-  // Original check: (num_args_for_cmd < 2) || (4 < num_args_for_cmd)
-  // This means valid num_args_for_cmd are 2, 3, 4.
-  // os_exec only uses 3 arguments (obj->args[0], obj->args[1], obj->args[2]).
-  if ((num_args_for_cmd < 2) || (4 < num_args_for_cmd)) {
-    return 0xffffffff; // Error: Invalid number of arguments
+  if ((param_3 < 2) || (4 < param_3)) {
+    return 0xffffffff;
   }
 
-  // args_array is assumed to be `[command_func_ptr, arg1, arg2, arg3, ...]`
-  obj->command_func = (CommandToExecuteFunc)args_array[0];
-  // Copy up to 3 arguments, even if num_args_for_cmd is 4, as os_exec only uses 3.
-  for (int i = 0; i < num_args_for_cmd && i < 3; ++i) {
-    obj->args[i] = args_array[1 + i];
+  // Offset 0x14 (20 bytes) is param_1[5]
+  *(code *)((char *)param_1 + 0x14) = (code)*param_4; // Store function pointer
+
+  // Copy arguments: param_4 points to the function pointer, followed by arguments.
+  // The function pointer itself is `param_4[0]`. The actual arguments start from `param_4[1]`.
+  // `param_3` is the count of arguments *including* the function pointer (e.g., if param_3=2, it means 1 func ptr + 1 arg).
+  // The loop copies `param_3 - 1` arguments. Max `param_3` is 4, so max 3 args are copied.
+  uint32_t *current_arg_ptr = param_4 + 1; // Skip the function pointer itself
+  for (uint32_t i = 0; i < param_3 - 1; ++i) { // Copy `param_3 - 1` arguments
+    param_1[i + 7] = current_arg_ptr[i]; // Arguments stored at param_1[7], param_1[8], param_1[9]
   }
 
-  // Execute the command immediately after setting data
-  os_exec(obj->command_func, obj->args[0], obj->args[1], obj->args[2]);
+  // Call os_exec with the stored function pointer and its arguments.
+  // os_exec will only use param_1[9] as the actual argument for the command.
+  os_exec(*(code *)((char *)param_1 + 0x14), param_1[7], param_1[8], param_1[9]);
+  
   return 0;
 }
 
@@ -288,185 +234,178 @@ void destructor_command_runner(void *param_1) {
 
 // Function: constructor_command_runner
 void * constructor_command_runner(void) {
-  CommandRunner_Object *obj = (CommandRunner_Object*)calloc(1, sizeof(CommandRunner_Object));
-  if (obj == NULL) {
+  void *pvVar1 = calloc(1, 0x30); // 48 bytes, initialized to zero
+  if (pvVar1 == NULL) {
     _terminate(0xfffffffb);
   }
-  obj->set_data = set_data_command_runner;
-  obj->destructor = destructor_command_runner;
+  *(code **)((char *)pvVar1 + 0x28) = (code)set_data_command_runner;
+  *(code **)((char *)pvVar1 + 0x2c) = (code)destructor_command_runner;
+  return pvVar1;
+}
+
+// Function: deserialize_liquids
+void * deserialize_liquids(char **param_1) {
+  uint32_t val1 = *(uint32_t *)*param_1;
+  *param_1 += sizeof(uint32_t); // Advance pointer by 4 bytes
+
+  *param_1 += strlen(typeName); // Advance pointer by string length
+
+  uint32_t val2 = *(uint32_t *)*param_1;
+  *param_1 += sizeof(uint32_t); // Advance pointer by 4 bytes
+
+  void *obj = constructor_liquids();
+  if (obj == NULL) return NULL;
+  // Cast function pointer to the correct signature for the call
+  int call_result = ((undefined4 (*)(void*, undefined4, undefined4))(*(code *)((char *)obj + 0x10)))(obj, val1, val2);
+  if (call_result < 0) {
+    ((void (*)(void*))(*(code *)((char *)obj + 0x14)))(obj); // Call destructor
+    obj = NULL;
+  }
   return obj;
 }
 
-// --- Deserialize Functions ---
-// Changed param_1 to char** to allow byte-wise pointer advancement
-
-// Function: deserialize_liquids
-int deserialize_liquids(char **param_1) {
-  uint32_t data1 = *(uint32_t*)*param_1;
-  *param_1 += sizeof(uint32_t); // Advance past data1
-
-  size_t name_len = strlen(typeName_liquids);
-  *param_1 += name_len; // Skip the type name in the buffer
-
-  uint32_t data2 = *(uint32_t*)*param_1;
-  *param_1 += sizeof(uint32_t); // Advance past data2
-
-  LiquidCereal_Object* obj = (LiquidCereal_Object*)constructor_liquids();
-  if (obj == NULL) return 0;
-
-  if (obj->set_data(obj, data1, data2) < 0) {
-    obj->destructor(obj);
-    return 0;
-  }
-  return (int)obj;
-}
-
 // Function: deserialize_cereals
-int deserialize_cereals(char **param_1) {
-  uint32_t data1 = *(uint32_t*)*param_1;
+void * deserialize_cereals(char **param_1) {
+  uint32_t val1 = *(uint32_t *)*param_1;
   *param_1 += sizeof(uint32_t);
 
-  size_t name_len = strlen(typeName_cereals);
-  *param_1 += name_len;
+  *param_1 += strlen(PTR_s_Cereals_00017004);
 
-  uint32_t data2 = *(uint32_t*)*param_1;
+  uint32_t val2 = *(uint32_t *)*param_1;
   *param_1 += sizeof(uint32_t);
 
-  LiquidCereal_Object* obj = (LiquidCereal_Object*)constructor_cereals();
-  if (obj == NULL) return 0;
-
-  if (obj->set_data(obj, data1, data2) < 0) {
-    obj->destructor(obj);
-    return 0;
+  void *obj = constructor_cereals();
+  if (obj == NULL) return NULL;
+  int call_result = ((undefined4 (*)(void*, undefined4, undefined4))(*(code *)((char *)obj + 0x10)))(obj, val1, val2);
+  if (call_result < 0) {
+    ((void (*)(void*))(*(code *)((char *)obj + 0x14)))(obj);
+    obj = NULL;
   }
-  return (int)obj;
+  return obj;
 }
 
 // Function: deserialize_toppings
-int deserialize_toppings(char **param_1) {
-  uint32_t data1 = *(uint32_t*)*param_1;
+void * deserialize_toppings(char **param_1) {
+  uint32_t val1 = *(uint32_t *)*param_1;
   *param_1 += sizeof(uint32_t);
 
-  size_t name_len = strlen(typeName_toppings);
-  *param_1 += name_len;
+  *param_1 += strlen(PTR_s_Toppings_00017008);
 
-  uint32_t data2 = *(uint32_t*)*param_1;
+  uint32_t val2 = *(uint32_t *)*param_1;
   *param_1 += sizeof(uint32_t);
 
-  Toppings_Object* obj = (Toppings_Object*)constructor_toppings();
-  if (obj == NULL) return 0;
-
-  if (obj->set_data(obj, data1, data2) < 0) {
-    obj->destructor(obj);
-    return 0;
+  void *obj = constructor_toppings();
+  if (obj == NULL) return NULL;
+  // Note: deserialize_toppings calls offset 0x14 (set_data) and 0x18 (destructor)
+  // which is consistent with constructor_toppings.
+  int call_result = ((undefined4 (*)(void*, undefined4, undefined4))(*(code *)((char *)obj + 0x14)))(obj, val1, val2);
+  if (call_result < 0) {
+    ((void (*)(void*))(*(code *)((char *)obj + 0x18)))(obj);
+    obj = NULL;
   }
-  return (int)obj;
+  return obj;
 }
 
 // Function: deserialize_generic_string
-int deserialize_generic_string(char **param_1) {
-  uint32_t data1 = *(uint32_t*)*param_1;
+void * deserialize_generic_string(char **param_1) {
+  uint32_t val1 = *(uint32_t *)*param_1;
   *param_1 += sizeof(uint32_t);
 
-  size_t name_len = strlen(typeName_generic_string);
-  *param_1 += name_len;
+  *param_1 += strlen(PTR_s_GenericString_0001700c);
 
-  char *str_val = *param_1;
-  size_t str_val_len = strlen(str_val);
-  *param_1 += str_val_len + 1; // Advance past string and its null terminator
+  char *str_data = *param_1;
+  *param_1 += strlen(str_data) + 1; // Advance past string and its null terminator
 
-  GenericString_Object* obj = (GenericString_Object*)constructor_generic_string();
-  if (obj == NULL) return 0;
-
-  if (obj->set_data(obj, data1, str_val) < 0) {
-    obj->destructor(obj);
-    return 0;
+  void *obj = constructor_generic_string();
+  if (obj == NULL) return NULL;
+  // Note: deserialize_generic_string calls offset 0x18 (set_data) and 0x1c (destructor)
+  // which is consistent with constructor_generic_string.
+  int call_result = ((undefined4 (*)(void*, undefined4, char*))(*(code *)((char *)obj + 0x18)))(obj, val1, str_data);
+  if (call_result < 0) {
+    ((void (*)(void*))(*(code *)((char *)obj + 0x1c)))(obj);
+    obj = NULL;
   }
-  return (int)obj;
+  return obj;
 }
 
 // Function: deserialize_printer_string
-int deserialize_printer_string(char **param_1) {
-  uint32_t data1 = *(uint32_t*)*param_1;
+void * deserialize_printer_string(char **param_1) {
+  uint32_t val1 = *(uint32_t *)*param_1;
   *param_1 += sizeof(uint32_t);
 
-  size_t name_len = strlen(typeName_printer_string);
-  *param_1 += name_len;
+  *param_1 += strlen(PTR_s_PrinterString_00017010);
 
-  char *str_val = *param_1;
-  size_t str_val_len = strlen(str_val);
-  *param_1 += str_val_len + 1;
+  char *str_data = *param_1;
+  *param_1 += strlen(str_data) + 1; // Advance past string and its null terminator
 
-  GenericString_Object* obj = (GenericString_Object*)constructor_printer_string();
-  if (obj == NULL) return 0;
-
-  if (obj->set_data(obj, data1, str_val) < 0) {
-    obj->destructor(obj);
-    return 0;
+  void *obj = constructor_printer_string();
+  if (obj == NULL) return NULL;
+  // Note: deserialize_printer_string calls offset 0x18 (set_data) and 0x1c (destructor)
+  // which is consistent with constructor_printer_string.
+  int call_result = ((undefined4 (*)(void*, undefined4, char*))(*(code *)((char *)obj + 0x18)))(obj, val1, str_data);
+  if (call_result < 0) {
+    ((void (*)(void*))(*(code *)((char *)obj + 0x1c)))(obj);
+    obj = NULL;
   }
-  return (int)obj;
+  return obj;
 }
 
 // Function: deserialize_command_runner
-int deserialize_command_runner(char **param_1) {
-  uint32_t data1 = *(uint32_t*)*param_1;
+void * deserialize_command_runner(char **param_1) {
+  uint32_t val1 = *(uint32_t *)*param_1;
   *param_1 += sizeof(uint32_t);
 
-  size_t name_len = strlen(typeName_command_runner);
-  *param_1 += name_len;
+  *param_1 += strlen(PTR_s_CommandRunner_00017014);
 
-  ushort num_args_for_cmd = *(ushort*)*param_1;
-  *param_1 += sizeof(ushort);
+  ushort uVar1 = *(ushort *)*param_1;
+  *param_1 += sizeof(ushort); // Advance pointer by 2 bytes for ushort
 
-  // Original check: (num_args_for_cmd < 2) || (4 < num_args_for_cmd)
-  if ((num_args_for_cmd < 2) || (4 < num_args_for_cmd)) {
-    return 0; // Invalid number of arguments
+  if ((uVar1 < 2) || (4 < uVar1)) {
+    return NULL; // Return NULL on invalid count
   }
 
-  // Assume args_data points to `[command_func_ptr, arg1, arg2, ...]`
-  // So, total `(1 + num_args_for_cmd)` uint32_t elements.
-  uint32_t *args_data = (uint32_t*)*param_1;
-  *param_1 += (1 + num_args_for_cmd) * sizeof(uint32_t);
+  uint32_t *args_ptr = (uint32_t *)*param_1; // Pointer to the function pointer and its args
+  // Advance param_1 past the function pointer + uVar1 arguments.
+  // Assuming each argument (including the function pointer) is a uint32_t (4 bytes).
+  *param_1 += (uVar1 + 1) * sizeof(uint32_t);
 
-  CommandRunner_Object* obj = (CommandRunner_Object*)constructor_command_runner();
-  if (obj == NULL) return 0;
-
-  if (obj->set_data(obj, data1, num_args_for_cmd, args_data) < 0) {
-    obj->destructor(obj);
-    return 0;
+  void *obj = constructor_command_runner();
+  if (obj == NULL) return NULL;
+  // Note: deserialize_command_runner calls offset 0x28 (set_data) and 0x2c (destructor)
+  // which is consistent with constructor_command_runner.
+  int call_result = ((undefined4 (*)(void*, undefined4, ushort, uint32_t*))(*(code *)((char *)obj + 0x28)))(obj, val1, uVar1, args_ptr);
+  if (call_result < 0) {
+    ((void (*)(void*))(*(code *)((char *)obj + 0x2c)))(obj);
+    obj = NULL;
   }
-  return (int)obj;
+  return obj;
 }
 
 // Function: check_inherited_types
-int check_inherited_types(uint32_t param_1, char *param_2) {
-  int obj_ptr = 0; // Renamed iVar1 to obj_ptr for clarity
+undefined4 check_inherited_types(uint32_t param_1, char **param_2) {
+  void *obj = NULL;
 
-  switch (param_1) {
-    case 5: // CommandRunner
-      obj_ptr = deserialize_command_runner(&param_2);
-      if (obj_ptr == 0) {
-        return 0xffffffff;
-      }
-      ((CommandRunner_Object*)obj_ptr)->destructor((void*)obj_ptr);
-      break;
-    case 3: // GenericString
-      obj_ptr = deserialize_generic_string(&param_2);
-      if (obj_ptr == 0) {
-        return 0xffffffff;
-      }
-      ((GenericString_Object*)obj_ptr)->destructor((void*)obj_ptr);
-      break;
-    case 4: // PrinterString
-      obj_ptr = deserialize_printer_string(&param_2);
-      if (obj_ptr == 0) {
-        return 0xffffffff;
-      }
-      ((GenericString_Object*)obj_ptr)->destructor((void*)obj_ptr);
-      break;
-    default: // Other types (0, 1, 2) or invalid
-      // Original code returns 0xffffffff for other cases, implying they are not handled here.
+  if (param_1 == 5) { // Command Runner
+    obj = deserialize_command_runner(param_2);
+    if (obj == NULL) {
       return 0xffffffff;
+    }
+    ((void (*)(void*))(*(code *)((char *)obj + 0x2c)))(obj); // Call destructor
+  } else if (param_1 == 3) { // Generic String
+    obj = deserialize_generic_string(param_2);
+    if (obj == NULL) {
+      return 0xffffffff;
+    }
+    ((void (*)(void*))(*(code *)((char *)obj + 0x1c)))(obj); // Call destructor
+  } else if (param_1 == 4) { // Printer String
+    obj = deserialize_printer_string(param_2);
+    if (obj == NULL) {
+      return 0xffffffff;
+    }
+    ((void (*)(void*))(*(code *)((char *)obj + 0x1c)))(obj); // Call destructor
+  } else {
+    // Covers cases where param_1 is < 3, or param_1 is > 5, or param_1 is 0, 1, 2.
+    return 0xffffffff;
   }
   return 0;
 }

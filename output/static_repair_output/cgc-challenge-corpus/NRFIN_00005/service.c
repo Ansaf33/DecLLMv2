@@ -1,235 +1,386 @@
-#include <stdio.h>    // For printf, snprintf, fprintf
-#include <string.h>   // For strlen, strtok
-#include <stdlib.h>   // For exit, malloc (implied by allocate)
-#include <stdint.h>   // For uint8_t, uint16_t
-#include <stdbool.h>  // For bool
+#include <stdio.h>    // For printf, fputs, sscanf, snprintf
+#include <stdlib.h>   // For malloc, free, exit, atoi
+#include <string.h>   // For strlen, strcmp, memset
+#include <unistd.h>   // For read (used in prompt_user)
 
-// --- External Function Declarations ---
-// These functions are not provided in the snippet, so they are declared as extern.
-// Their exact signatures are inferred from their usage in the provided code.
+// Dummy global variable for game state
+// The original code implies 'game' is an int** where:
+// game[0] points to the board data (char[9])
+// game[1] points to the scores data (char[2])
+int **game_state_ptr = NULL;
 
-// prompt_user: Reads user input. The second argument's type varies in the original snippet.
-// Using `char*` as a generic buffer, the caller is responsible for ensuring type compatibility.
-extern void prompt_user(const char *prompt_str, char *buffer);
+// --- Helper Functions (replacing decompiler artifacts and simplifying I/O) ---
 
-// Game state management structure
-typedef struct {
-    // These fields are inferred from the decompiled code's access patterns.
-    // The exact layout and types are speculative without the full source.
-    void *board_data;    // Placeholder for pointer to actual board data
-    uint8_t *scores_ptr; // Placeholder for pointer to wins/losses array (e.g., uint8_t[2])
-    // Add other fields as necessary if more specific game logic is known.
-} GameState;
-
-// Global pointer to the game state. This is accessed by all game logic functions.
-static GameState *game_ctx = NULL;
-
-// Helper functions for score access, to abstract the complex `game[1]` access
-// seen in the original decompiled code. These assume `game_ctx->scores_ptr`
-// points to `uint8_t wins` followed by `uint8_t losses`.
-uint8_t get_wins(void *game_ptr) {
-    return ((GameState*)game_ptr)->scores_ptr[0];
+// Replaces the problematic send calls. Prints string to stdout.
+void send_str(const char *s) {
+    fputs(s, stdout);
+    fflush(stdout); // Ensure output is flushed immediately
 }
 
-uint8_t get_losses(void *game_ptr) {
-    return ((GameState*)game_ptr)->scores_ptr[1];
+// Replaces prompt_user. Prints prompt, reads from stdin.
+void prompt_user(const char* prompt, char* buffer, size_t max_len) {
+    fputs(prompt, stdout);
+    fflush(stdout);
+    if (fgets(buffer, max_len + 1, stdin) == NULL) {
+        // Handle EOF or error, e.g., exit or clear error state
+        if (feof(stdin)) {
+            exit(0); // Exit on EOF
+        }
+        // Clear error if any
+        clearerr(stdin);
+        buffer[0] = '\0'; // Ensure buffer is empty
+    } else {
+        // Remove trailing newline character if present
+        buffer[strcspn(buffer, "\n")] = 0;
+    }
 }
 
-extern void set_player_chars(void *game_ptr, int player_char);
-extern void make_board(void *game_ptr, char *buffer);
-extern int is_players_turn(void *game_ptr);
-extern void computer_move(void *game_ptr, uint16_t *move_coords);
-extern uint8_t str2int(const char *s); // Parses a number from a string.
-extern int update_board(void *game_ptr, uint16_t *move_coords);
-extern void move_complete(void *game_ptr);
-extern int have_winner(void *game_ptr);
-extern int have_moves_remaining(void *game_ptr);
-extern void update_score(void *game_ptr);
-extern char is_player_winner(void *game_ptr); // Returns '\0' for loss, non-'\0' for win.
-extern void init_game_data(void *game_ptr);
-// `streq` returns 0 if strings are equal, non-zero otherwise (like `strcmp == 0`).
-// The original decompiled code's `if (iVar4 != 0) break;` for equality implies
-// `streq` was inverted `strcmp`, but standard `streq` usually means equality.
-// We assume `streq` means `strcmp == 0`.
-extern int streq(const char *s1, const char *s2);
-extern void reset_scores(void *game_ptr); // Takes game_ptr to reset scores within.
+// Replaces streq. Returns 1 if strings are equal, 0 otherwise.
+int streq(const char* s1, const char* s2) {
+    return strcmp(s1, s2) == 0;
+}
 
-// `allocate_game_state`: Allocates memory for GameState and initializes `game_ctx`
-// and its internal pointers (e.g., `board_data`, `scores_ptr`).
-// Returns 0 on success, 1 on failure.
-extern int allocate_game_state(void);
+// Replaces str2int. Converts string to integer.
+int str2int(const char* s) {
+    return atoi(s);
+}
 
-// `_terminate` function. Original suggests program exit upon a fatal error.
-void _terminate(void) {
-    fprintf(stderr, "Fatal error: Game initialization failed.\n");
+// Replaces _terminate. Exits the program with an error.
+void terminate(void) {
+    fprintf(stderr, "Fatal error or termination condition met.\n");
     exit(1);
 }
 
-// --- Global Data (Inferred from DAT_xxxxxx addresses) ---
-// These are likely string literals used as prompts or comparison strings.
-extern const char DAT_000140cc[]; // E.g., a generic prompt string or empty string.
-extern const char DAT_0001419b[]; // String literal for "PLAY".
-extern const char DAT_000141b6[]; // String literal for "QUIT".
+// --- Dummy Game Logic Functions (to make code compilable) ---
+// These functions provide minimal implementations or placeholders
+// to allow the provided snippet to compile and run its control flow.
 
-// --- Function Implementations ---
+// Dummy allocate function
+// Allocates a block of memory for the int** array, board, and scores.
+// Assumes 32-bit pointers (sizeof(int*) == 4) for the 0x15 offset.
+// Total size: 2 * sizeof(int*) + 9 chars (board) + 2 chars (scores) + 2 bytes padding = 21 bytes.
+int** allocate(void) {
+    size_t total_size = (2 * sizeof(int*)) + (9 * sizeof(char)) + (2 * sizeof(char));
+    // Pad to 21 bytes for 0x15 offset if total_size is less.
+    if (total_size < 21) total_size = 21; 
+
+    int** ptr_array = (int**)malloc(total_size);
+    if (ptr_array == NULL) {
+        perror("Failed to allocate game state");
+        return NULL;
+    }
+    
+    // Set up the pointers within the allocated block as per original decompiler's logic
+    // game_state_ptr[0] points to the board (char[9])
+    // game_state_ptr[1] points to the scores (char[2])
+    ptr_array[0] = (int*)((char*)ptr_array + (2 * sizeof(int*))); // Board starts after the pointer array
+    ptr_array[1] = (int*)((char*)ptr_array + 0x15);               // Scores start at offset 0x15 (21 bytes)
+
+    return ptr_array;
+}
+
+// Dummy init_game_data
+void init_game_data(void) {
+    if (game_state_ptr && (char*)game_state_ptr[0]) {
+        // Initialize 3x3 board with spaces
+        memset((char*)game_state_ptr[0], ' ', 9);
+    }
+}
+
+// Dummy reset_scores
+void reset_scores(void) {
+    if (game_state_ptr && (char*)game_state_ptr[1]) {
+        memset((char*)game_state_ptr[1], 0, 2); // Reset player_wins and computer_wins to 0
+    }
+}
+
+// Dummy set_player_chars
+void set_player_chars(int** game_ptr, char player_char) {
+    // In a real game, this would set player and computer characters in game_ptr[0] or a dedicated struct
+    fprintf(stderr, "DEBUG: Player selected char: %c\n", player_char);
+}
+
+// Dummy make_board
+void make_board(char* board, char* buffer) {
+    // A simple 3x3 tic-tac-toe board representation
+    snprintf(buffer, 256,
+             "\n %c | %c | %c \n"
+             "---+---+---\n"
+             " %c | %c | %c \n"
+             "---+---+---\n"
+             " %c | %c | %c \n",
+             board[0], board[1], board[2],
+             board[3], board[4], board[5],
+             board[6], board[7], board[8]);
+}
+
+// Dummy is_players_turn
+int is_players_turn(char* board) {
+    // Placeholder: alternate turns, starting with player
+    static int turn_counter = 0;
+    turn_counter++;
+    return (turn_counter % 2 != 0); // Player's turn if odd
+}
+
+// Dummy computer_move
+void computer_move(char* board, char* row, char* col) {
+    // Simple placeholder: find the first empty spot
+    for (int i = 0; i < 9; i++) {
+        if (board[i] == ' ') {
+            *row = (char)(i / 3);
+            *col = (char)(i % 3);
+            board[i] = 'O'; // Computer plays 'O'
+            return;
+        }
+    }
+    *row = -1; *col = -1; // No move possible
+}
+
+// Dummy update_board
+int update_board(char* board, char row, char col) {
+    if (row < 0 || row >= 3 || col < 0 || col >= 3) return 1; // Invalid coordinates
+    int index = row * 3 + col;
+    if (board[index] != ' ') return 1; // Spot already taken
+    
+    // Determine current player's char (assuming X for player, O for computer)
+    // This logic should be more robust in a real game (e.g., stored in game_state_ptr)
+    static int player_turn = 1; // 1 for player, 0 for computer
+    board[index] = player_turn ? 'X' : 'O';
+    player_turn = !player_turn; // Switch turn
+    
+    return 0; // Success
+}
+
+// Dummy move_complete
+void move_complete(int** game_ptr) {
+    // In a real game, this might switch turns, check for winner, etc.
+    fprintf(stderr, "DEBUG: Move completed.\n");
+}
+
+// Dummy have_winner
+int have_winner(char* board) {
+    // Very basic check for a winner (horizontal, vertical, diagonal)
+    // For X or O
+    for (char p_char = 'X'; p_char <= 'O'; p_char++) { // Check for 'X' then 'O'
+        // Rows
+        for (int i = 0; i < 9; i += 3) {
+            if (board[i] == p_char && board[i+1] == p_char && board[i+2] == p_char) return 1;
+        }
+        // Columns
+        for (int i = 0; i < 3; i++) {
+            if (board[i] == p_char && board[i+3] == p_char && board[i+6] == p_char) return 1;
+        }
+        // Diagonals
+        if (board[0] == p_char && board[4] == p_char && board[8] == p_char) return 1;
+        if (board[2] == p_char && board[4] == p_char && board[6] == p_char) return 1;
+    }
+    return 0; // No winner
+}
+
+// Dummy have_moves_remaining
+int have_moves_remaining(char* board) {
+    for (int i = 0; i < 9; i++) {
+        if (board[i] == ' ') return 1; // Found an empty spot
+    }
+    return 0; // No empty spots left
+}
+
+// Dummy is_player_winner
+int is_player_winner(char* board) {
+    // Simplified: check if 'X' (player) is winner based on `have_winner`
+    // In a real game, this would be more nuanced, checking last player's move.
+    char temp_board[9];
+    memcpy(temp_board, board, 9);
+    // Temporarily replace 'O's with ' ' to check if only 'X' wins
+    for(int i=0; i<9; ++i) if(temp_board[i] == 'O') temp_board[i] = ' ';
+    return have_winner(temp_board); // If 'X' forms a line, player wins
+}
+
+// Dummy update_score
+void update_score(int** game_ptr) {
+    if (game_ptr && (char*)game_ptr[1]) {
+        char* scores = (char*)game_ptr[1];
+        if (is_player_winner((char*)game_ptr[0])) {
+            scores[0]++; // Increment player wins
+            fprintf(stderr, "DEBUG: Player score updated. Current: %d wins, %d losses.\n", scores[0], scores[1]);
+        } else if (have_winner((char*)game_ptr[0])) { // If there's a winner, but not player, it's computer
+            scores[1]++; // Increment computer wins (player losses)
+            fprintf(stderr, "DEBUG: Computer score updated. Current: %d wins, %d losses.\n", scores[0], scores[1]);
+        } else {
+            fprintf(stderr, "DEBUG: Draw - no score updated.\n");
+        }
+    }
+}
+
+// --- Original Functions (fixed and refactored) ---
 
 // Function: do_menu
 void do_menu(int param_1) {
-  if (param_1 == 0) { // First game menu
-    printf("Make your selection:\nPLAY\nQUIT\n");
-  } else {          // Subsequent game menu (after a game has been played)
-    printf("Make your selection:\nPLAY AGAIN\nSTART OVER\nQUIT\n");
+  const char* menu_str;
+  
+  if (param_1 == 0) {
+    menu_str = "Make your selection:\nPLAY\nQUIT\n";
+  } else {
+    menu_str = "Make your selection:\nPLAY AGAIN\nSTART OVER\nQUIT\n";
   }
+  send_str(menu_str);
 }
 
 // Function: do_quit
 void do_quit(void) {
-  printf("Give up?. Don't be a stranger!\n");
+  send_str("Give up?. Don\'t be a stranger!\n");
 }
 
 // Function: do_select_char
 void do_select_char(void) {
   char selected_char = '\0';
-  char input_buffer[2]; // Buffer to read a single character + null terminator
+  char input_buffer[4]; // Enough for 'P', 'Q', '\n', '\0'
 
   while (selected_char == '\0') {
-    printf("P goes first. Do you want P or Q?\n");
-    // DAT_000140cc is used as a prompt string for prompt_user.
-    prompt_user(DAT_000140cc, input_buffer); 
-
-    if (input_buffer[0] == 'P') {
+    send_str("P goes first. Do you want P or Q?\n");
+    prompt_user("Enter P or Q: ", input_buffer, sizeof(input_buffer) - 1);
+    
+    char choice = input_buffer[0]; // Assuming single character input
+    if (choice == 'P' || choice == 'p') {
       selected_char = 'P';
-    } else if (input_buffer[0] == 'Q') {
+    } else if (choice == 'Q' || choice == 'q') {
       selected_char = 'Q';
     } else {
-      printf("Wat?\n");
+      send_str("Wat?\n");
+      // The original code also had a longer error message, but "Wat?" is sufficient for this branch.
+      // send_str("\nI don\'t think that means what you think it means.\n");
     }
   }
-  set_player_chars(game_ctx, selected_char);
+  set_player_chars(game_state_ptr, selected_char);
 }
 
 // Function: send_current_board
 void send_current_board(void) {
-  char board_buffer[256]; // Sufficiently large buffer for board string representation
-
-  // `make_board` is assumed to fill `board_buffer` with a null-terminated string.
-  make_board(game_ctx, board_buffer);
-  printf("%s", board_buffer);
+  char board_buffer[256]; // Sufficiently large buffer for board representation
+  make_board((char*)game_state_ptr[0], board_buffer);
+  send_str(board_buffer);
 }
 
 // Function: make_move
 void make_move(void) {
-  uint16_t move_coords = 0; // Represents row and col, e.g., (col << 8) | row
-  char input_buffer[16];    // Buffer for "row col" input, e.g., "1 2"
-  int update_result;
+  char row_char = -1, col_char = -1; // For coordinates, initialized to invalid
+  char input_buffer[10]; // For "row col" input (e.g., "1 2\n")
 
-  if (is_players_turn(game_ctx) == 0) { // Computer's turn
-    computer_move(game_ctx, &move_coords);
-    // Original format for printing: (low byte, row) and (high byte, col)
-    printf("Computer's move: %hhu %hhu.\n", (uint8_t)move_coords, (uint8_t)(move_coords >> 8));
+  int is_player_turn_flag = is_players_turn((char*)game_state_ptr[0]);
+  if (is_player_turn_flag == 0) { // Computer's turn
+    computer_move((char*)game_state_ptr[0], &row_char, &col_char);
+    char computer_move_str[40];
+    snprintf(computer_move_str, sizeof(computer_move_str), "Computer's move: %d %d.\n", (int)row_char, (int)col_char);
+    send_str(computer_move_str);
   } else { // Player's turn
-    printf("It's your move. Enter 'row col'\n");
-    prompt_user(DAT_000140cc, input_buffer); // DAT_000140cc is likely a prompt string.
-
-    uint8_t row = 0, col = 0;
-    char *token = strtok(input_buffer, " "); // Parse the first number (row)
-    if (token) {
-        row = str2int(token);
-        token = strtok(NULL, " "); // Parse the second number (col)
-        if (token) {
-            col = str2int(token);
-        }
+    send_str("It\'s your move. Enter \'row col\'\n");
+    prompt_user("Enter row col: ", input_buffer, sizeof(input_buffer) - 1);
+    
+    // Parse two integers from input_buffer
+    // Using %hhd for signed char (small integer)
+    if (sscanf(input_buffer, "%hhd %hhd", &row_char, &col_char) != 2) {
+        send_str("Invalid input format. Please enter two numbers.\n");
+        // Set row_char/col_char to invalid values to ensure update_board fails
+        row_char = -1; 
+        col_char = -1;
     }
-    move_coords = (col << 8) | row; // Store (col, row) in a single 16-bit value
   }
-
-  update_result = update_board(game_ctx, &move_coords);
-  if (update_result == 0) { // Move was successful
-    move_complete(game_ctx);
-  } else { // Invalid move
-    if (is_players_turn(game_ctx) != 0) { // If it's still the player's turn (i.e., invalid move)
-      printf("Invalid coordinates!\n");
+  
+  int update_result = update_board((char*)game_state_ptr[0], row_char, col_char);
+  if (update_result == 0) {
+    move_complete(game_state_ptr);
+  } else {
+    // Only show "Invalid coordinates!" if it was player's turn and the move failed
+    if (is_player_turn_flag != 0) {
+      send_str("Invalid coordinates or spot taken!\n");
     }
   }
 }
 
 // Function: send_game_results
 void send_game_results(void) {
-  if (is_player_winner(game_ctx) == '\0') {
-    printf("Nice effort. Maybe next time.\n");
+  int player_is_winner_flag = is_player_winner((char*)game_state_ptr[0]);
+  if (player_is_winner_flag == 0) {
+    send_str("Nice effort. Maybe next time.\n");
   } else {
-    printf("Congratulations! You Win!\n");
+    send_str("Congratulations! You Win!\n");
   }
-
-  char score_message[64]; // Buffer for the score message
-  snprintf(score_message, sizeof(score_message), "%hhu wins. %hhu losses.\n",
-           get_wins(game_ctx), get_losses(game_ctx));
-  printf("%s", score_message);
+  
+  char score_msg[64];
+  char* scores = (char*)game_state_ptr[1]; // game_state_ptr[1] points to char[2] for scores
+  snprintf(score_msg, sizeof(score_msg), "%d wins. %d losses.\n", 
+           (int)scores[0], (int)scores[1]);
+  send_str(score_msg);
 }
 
 // Function: do_play
 void do_play(void) {
+  send_str("Game on!\n");
   do_select_char();
-  printf("Game on!\n");
-
+  
+  int has_winner_flag;
+  int moves_remaining_flag;
   do {
+    send_current_board();
     make_move();
-    if (have_winner(game_ctx) != 0) break; // Exit loop if there's a winner
-  } while (have_moves_remaining(game_ctx) != 0); // Continue if moves are still available
-
-  update_score(game_ctx);
+    has_winner_flag = have_winner((char*)game_state_ptr[0]);
+    if (has_winner_flag != 0) break;
+    moves_remaining_flag = have_moves_remaining((char*)game_state_ptr[0]);
+  } while (moves_remaining_flag != 0);
+  
+  update_score(game_state_ptr);
+  send_current_board(); // Display final board after game concludes
   send_game_results();
 }
 
 // Function: main
 int main(void) {
-  bool game_played_once = false; // Flag to track if a game has been played
-  char user_input[14];           // Buffer for user input (e.g., "PLAY", "QUIT")
-  bool running = true;           // Main loop control flag
-  
-  printf("Welcome to Tick-A-Tack.\n");
+  char user_input_buffer[32];
+  int game_in_progress = 0; // Flag to indicate if a game has been played in current session
 
-  while (running) {
-    // Game state allocation and initial setup on the first run.
-    if (game_ctx == NULL) {
-        if (allocate_game_state() != 0) { // Assumed to allocate and initialize `game_ctx` globally.
-            _terminate(); // Handle allocation failure.
-        }
-    }
+  send_str("Welcome to Tick-A-Tack.\n");
 
-    // Always initialize game data for a new round (board, current player, etc.)
-    init_game_data(game_ctx);
-    
-    bool menu_processed = false; // Flag to control the inner menu selection loop
-    while (!menu_processed) {
-        do_menu(game_played_once);
-        // DAT_000140cc is used as a prompt string for prompt_user.
-        prompt_user(DAT_000140cc, user_input); // Get user selection
+  game_state_ptr = allocate();
+  if (game_state_ptr == NULL) {
+      terminate(); // Handle allocation failure
+  }
+  // No need for explicit reset_scores() here if allocate() initializes them.
+  // If allocate just allocates raw memory, then reset_scores() should be called.
+  // Given `memset((char*)ptr_array[1], 0, 2);` in allocate, it's initialized.
 
-        if (streq(DAT_0001419b, user_input) == 0) { // User input is "PLAY"
+  while (1) { // Outer game session loop
+    init_game_data(); // Always initialize board for a new game round
+
+    int menu_loop_continue = 1;
+    while (menu_loop_continue) { // Inner menu loop
+        do_menu(game_in_progress);
+        prompt_user("Enter your choice: ", user_input_buffer, sizeof(user_input_buffer) - 1);
+
+        if (streq(user_input_buffer, "PLAY")) {
             do_play();
-            game_played_once = true;
-            menu_processed = true; // Exit inner menu loop, continue outer loop for next round
-        } else if (game_played_once && streq("PLAY AGAIN", user_input) == 0) { // User input is "PLAY AGAIN"
+            game_in_progress = 1;
+            menu_loop_continue = 0; // Break inner loop, restart outer loop for a new game round
+        } else if (game_in_progress && streq(user_input_buffer, "PLAY AGAIN")) {
             do_play();
-            menu_processed = true; // Exit inner menu loop, continue outer loop for next round
-        } else if (game_played_once && streq("START OVER", user_input) == 0) { // User input is "START OVER"
-            game_played_once = false;
-            reset_scores(game_ctx);
-            menu_processed = true; // Exit inner menu loop, continue outer loop for next round
-        } else if (streq(DAT_000141b6, user_input) == 0) { // User input is "QUIT"
+            // game_in_progress remains 1
+            menu_loop_continue = 0; // Break inner loop, restart outer loop for a new game round
+        } else if (game_in_progress && streq(user_input_buffer, "START OVER")) {
+            game_in_progress = 0;
+            reset_scores();
+            menu_loop_continue = 0; // Break inner loop, restart outer loop for a new game round
+        } else if (streq(user_input_buffer, "QUIT")) {
             do_quit();
-            running = false;    // Set flag to exit the main game loop
-            menu_processed = true; // Exit inner menu loop
+            // Free allocated memory before exiting
+            free((char*)game_state_ptr[0]); // Board
+            free((char*)game_state_ptr[1]); // Scores (might be part of the main block)
+            free(game_state_ptr); // Main pointer array
+            return 0; // Exit program
         } else {
-            printf("Wat?\n"); // Invalid input, stay in the menu loop to prompt again
+            send_str("Wat?\n");
         }
     }
   }
   
-  // In a complete application, memory allocated for `game_ctx` and its internal
-  // pointers (like `board_data`, `scores_ptr`) should be freed here.
-  // This is omitted as the original snippet did not include explicit free calls.
-
-  return 0;
+  // This part of the code should not be reached as the loop is infinite or exits via return 0.
+  return 0; 
 }

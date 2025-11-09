@@ -1,190 +1,183 @@
+#include <stdint.h> // For uint32_t, uint16_t, uint8_t
 #include <string.h> // For memset, memcpy
-#include <stdint.h> // For uint16_t, uint32_t, int32_t, uint8_t, uintptr_t
-#include <stddef.h> // For size_t
+#include <stdlib.h> // For NULL, exit, malloc, free
 
-// --- Dummy declarations for external functions ---
-// These are placeholders to make the code compilable.
-// Their actual implementation and behavior would depend on the target system.
+// Type aliases for clarity and consistency with original snippet
+typedef uint8_t undefined;
+typedef uint16_t undefined2;
+typedef uint32_t undefined4;
+typedef uint32_t uint;   // Assuming uint maps to 32-bit unsigned int
+typedef uint16_t ushort; // Assuming ushort maps to 16-bit unsigned short
 
-// Represents an allocation function.
-// Returns 0 on success, non-zero on failure.
-// Assumed to internally update a pointer that PMPGenerate then reads from `param_1 + 0x1d`.
-int allocate() {
-    // Placeholder: In a real system, this would allocate memory.
-    // For compilation, we assume success.
-    return 0;
+// --- Mock implementations for external functions ---
+// These functions are assumed to be provided by the environment
+// and are mocked here to make the code compilable on Linux.
+
+// Simple mock for allocate using malloc.
+// In a real system, this would be a specific memory allocation function.
+void* allocate(size_t size) {
+    return malloc(size);
 }
 
-// Represents a termination or error handling function.
+// Simple mock for _terminate.
+// In a real system, this might perform specific cleanup before exiting.
 void _terminate() {
-    // Placeholder: In a real system, this might log an error and exit.
-    // The original code uses this on allocation failure. We've replaced it with a return.
-    // For compilation, it can be an empty function.
+    exit(1);
 }
 
-// Represents a function to get a color value.
-// The original decompiled code implies arguments might be passed via global state
-// or registers, as the signature `undefined4 GetColor()` has no parameters.
-// For compilation, we'll assume it returns a uint32_t color value.
+// Simple mock for GetColor.
+// In a real system, this would return an actual color value.
 uint32_t GetColor() {
-    // Placeholder: Return a dummy color.
-    return 0x00FF00; // Green
+    return 0xFF00FF; // Example color (magenta)
 }
 
-// Represents a function to send data.
-// param_1: likely a base address or handle (interpreted as an int for the call).
-// param_2: size of data to send (interpreted as an int for the call).
-// Returns 0 on success, non-zero on failure.
-int SendAll(int param_1, int param_2) {
-    // Placeholder: Simulate sending data.
-    // For compilation, assume success.
-    (void)param_1; // Suppress unused parameter warning
-    (void)param_2; // Suppress unused parameter warning
-    return 0;
-}
-
-// Represents a deallocation function.
-// ptr: pointer to memory to deallocate.
-// size: size of memory block.
-void deallocate(void *ptr, uint32_t size) {
-    // Placeholder: In a real system, this would free memory.
-    (void)ptr;  // Suppress unused parameter warning
+// Simple mock for SendAll.
+// In a real system, this would send data over a communication channel.
+int SendAll(int fd, size_t size) {
+    (void)fd;   // Suppress unused parameter warning
     (void)size; // Suppress unused parameter warning
+    return 0;   // Assume success
 }
 
-// --- Type Aliases for Clarity ---
-typedef uint32_t PMP_STATUS;
-typedef uint16_t PMP_USHORT;
-typedef uint32_t PMP_UINT;
-typedef int32_t PMP_INT; // Used for `param_1` in PMPTransmit/PMPDeallocate and `local_18` in PMPGenerate
+// Simple mock for deallocate using free.
+// In a real system, this would be a specific memory deallocation function.
+void deallocate(void* ptr, size_t size) {
+    (void)size; // Size might be used for tracking in custom allocators
+    free(ptr);
+}
+
+// --- Original functions with fixes and reductions ---
 
 // Function: PMPGenerate
-PMP_STATUS PMPGenerate(PMP_USHORT *param_1_ushort_ptr, const PMP_USHORT *param_2) {
-    // Use uint8_t* for byte-level addressing as implied by the decompiled code's pointer arithmetic
-    uint8_t *param_1 = (uint8_t *)param_1_ushort_ptr;
+undefined4 PMPGenerate(undefined2 *param_1, ushort *param_2) {
+  // Calculate padding for each row of data
+  uint32_t row_data_payload_size = (uint32_t)param_2[1] * 3;
+  uint32_t row_padding = 0;
+  if (row_data_payload_size % 4 != 0) {
+    row_padding = 4 - (row_data_payload_size % 4);
+  }
 
-    PMP_INT row_padding = 0;
-    PMP_INT total_padding = 0;
-    PMP_UINT num_rows = (PMP_UINT)param_2[0];
-    PMP_UINT num_cols = (PMP_UINT)param_2[1];
+  // Set initial header fields
+  *param_1 = 0x4d50; // Magic number
+  *(uint32_t *)(param_1 + 3) = 0; // Reserved field
+  *(uint32_t *)(param_1 + 5) = 0x36; // Header size (fixed value)
 
-    // Calculate row padding for 4-byte alignment
-    PMP_UINT bytes_per_row_unpadded = num_cols * 3;
-    PMP_UINT alignment_remainder = bytes_per_row_unpadded & 3;
-    if (alignment_remainder != 0) {
-        row_padding = 4 - alignment_remainder;
+  // Calculate total file size and adjust for alignment
+  uint32_t total_size_unaligned = *(uint32_t *)(param_1 + 5) + (row_padding + row_data_payload_size) * (uint32_t)*param_2;
+  *(uint32_t *)(param_1 + 1) = total_size_unaligned;
+
+  uint32_t file_padding = 0;
+  if (total_size_unaligned % 4 != 0) {
+    file_padding = 4 - (total_size_unaligned % 4);
+    *(uint32_t *)(param_1 + 1) += file_padding; // Adjust total size
+  }
+
+  // Calculate the offset to the actual data block
+  uint32_t data_block_size = (uint32_t)*param_2 * (row_padding + row_data_payload_size) + file_padding;
+  *(uint32_t *)(param_1 + 0x1b) = data_block_size;
+
+  // Allocate memory for the data block
+  void *data_ptr = allocate(data_block_size);
+  if (data_ptr == NULL) {
+    _terminate(); // Terminate if allocation fails
+  }
+  *(uint32_t *)(param_1 + 0x1d) = (uint32_t)data_ptr; // Store the data pointer in the header
+
+  // Initialize the allocated data block to zero
+  memset(data_ptr, 0, data_block_size);
+
+  // Set remaining header fields
+  *(uint32_t *)(param_1 + 7) = 0x28;
+  *(uint32_t *)(param_1 + 9) = (uint32_t)param_2[1]; // Number of columns
+  *(uint32_t *)(param_1 + 0xb) = (uint32_t)*param_2; // Number of rows
+  *(uint32_t *)(param_1 + 0xd) = 0x180001;
+  *(uint32_t *)(param_1 + 0xf) = 0; // Reserved
+  *(uint32_t *)(param_1 + 0x11) = (row_padding + row_data_payload_size) * (uint32_t)*param_2; // Raw data size without final padding
+  *(uint32_t *)(param_1 + 0x13) = 0xb13;
+  *(uint32_t *)(param_1 + 0x15) = 0xb13;
+  *(uint32_t *)(param_1 + 0x17) = 0; // Reserved
+  *(uint32_t *)(param_1 + 0x19) = 0; // Reserved
+
+  // Fill the data block with color information
+  uint8_t *current_data_write_ptr = (uint8_t *)data_ptr;
+  uint32_t num_rows = (uint32_t)*param_2;
+  uint32_t num_cols = (uint32_t)param_2[1];
+
+  for (uint32_t row_idx = 0; row_idx < num_rows; ++row_idx) {
+    for (uint32_t col_idx = 0; col_idx < num_cols; ++col_idx) {
+      uint32_t color = GetColor();
+      memcpy(current_data_write_ptr, &color, 3); // Copy 3 bytes (e.g., RGB)
+      current_data_write_ptr += 3;
     }
-    PMP_UINT bytes_per_row_padded = bytes_per_row_unpadded + row_padding;
-
-    // Set initial header fields (using explicit byte offsets and casts)
-    // Offset 0: uint16_t
-    *(uint16_t *)param_1 = 0x4d50;
-    // Offset 6 (param_1 + 3 * sizeof(ushort)): uint32_t
-    *(uint32_t *)(param_1 + 6) = 0;
-    // Offset 10 (param_1 + 5 * sizeof(ushort)): uint32_t
-    *(uint32_t *)(param_1 + 10) = 0x36; // Header size
-
-    // Calculate total data size including row padding
-    PMP_UINT total_data_bytes_unpadded = bytes_per_row_padded * num_rows;
-
-    // Calculate total structure size (header + data) and apply overall alignment
-    uint32_t total_structure_size = *(uint32_t *)(param_1 + 10) + total_data_bytes_unpadded;
-    alignment_remainder = total_structure_size & 3;
-    if (alignment_remainder != 0) {
-        total_padding = 4 - alignment_remainder;
-        total_structure_size += total_padding;
-    }
-    // Offset 2 (param_1 + 1 * sizeof(ushort)): uint32_t - Store calculated total structure size
-    *(uint32_t *)(param_1 + 2) = total_structure_size;
-
-    // Offset 54 (param_1 + 0x1b * sizeof(ushort)): uint32_t - Store size of the data block to be allocated
-    uint32_t allocated_data_size = total_data_bytes_unpadded + total_padding;
-    *(uint32_t *)(param_1 + 54) = allocated_data_size;
-
-    // Call allocate(). If it fails, return error.
-    if (allocate() != 0) {
-        return 0xFFFFFFFF; // Indicate failure
-    }
-
-    // The allocated memory pointer is expected to be stored at param_1 + 0x1d (byte offset 58)
-    void *allocated_memory_ptr = (void*)(uintptr_t)*(uint32_t *)(param_1 + 58);
-    memset(allocated_memory_ptr, 0, allocated_data_size);
-
-    // Set more header fields
-    // Offset 14 (param_1 + 7 * sizeof(ushort)): uint32_t
-    *(uint32_t *)(param_1 + 14) = 0x28;
-    // Offset 22 (param_1 + 0xb * sizeof(ushort)): uint32_t
-    *(uint32_t *)(param_1 + 22) = num_rows;
-    // Offset 18 (param_1 + 9 * sizeof(ushort)): uint32_t
-    *(uint32_t *)(param_1 + 18) = num_cols;
-    // Offset 26 (param_1 + 0xd * sizeof(ushort)): uint32_t
-    *(uint32_t *)(param_1 + 26) = 0x180001;
-    // Offset 30 (param_1 + 0xf * sizeof(ushort)): uint32_t
-    *(uint32_t *)(param_1 + 30) = 0;
-    // Offset 34 (param_1 + 0x11 * sizeof(ushort)): uint32_t
-    *(uint32_t *)(param_1 + 34) = total_data_bytes_unpadded;
-    // Offset 38 (param_1 + 0x13 * sizeof(ushort)): uint32_t
-    *(uint32_t *)(param_1 + 38) = 0xb13;
-    // Offset 42 (param_1 + 0x15 * sizeof(ushort)): uint32_t
-    *(uint32_t *)(param_1 + 42) = 0xb13;
-    // Offset 46 (param_1 + 0x17 * sizeof(ushort)): uint32_t
-    *(uint32_t *)(param_1 + 46) = 0;
-    // Offset 50 (param_1 + 0x19 * sizeof(ushort)): uint32_t
-    *(uint32_t *)(param_1 + 50) = 0;
-
-    // `current_write_ptr` will iterate through the allocated memory block
-    uint8_t *current_write_ptr = (uint8_t *)allocated_memory_ptr;
-
-    for (PMP_UINT r = 0; r < num_rows; r++) {
-        for (PMP_UINT c = 0; c < num_cols; c++) {
-            uint32_t color_value = GetColor();
-            // Copy 3 bytes from color_value into the current position.
-            // This assumes `color_value` is an integer that contains 3 bytes of data.
-            memcpy(current_write_ptr, &color_value, 3);
-            current_write_ptr += 3; // Advance pointer by 3 bytes
-        }
-        current_write_ptr += row_padding; // Add row padding
-    }
-    return 0; // Success
+    current_data_write_ptr += row_padding; // Apply row padding
+  }
+  return 0;
 }
 
 // Function: PMPTransmit
-PMP_STATUS PMPTransmit(PMP_INT param_1) {
-    // Cast the integer address to a byte pointer for byte-level arithmetic
-    uint8_t *base_ptr = (uint8_t *)(uintptr_t)param_1;
-
-    // Send first chunk (14 bytes from base)
-    if (SendAll((PMP_INT)(uintptr_t)base_ptr, 0xe) != 0) {
-        return 0xffffffff;
-    }
-
-    // Send second chunk (28 bytes from base + 0xe)
-    if (SendAll((PMP_INT)(uintptr_t)(base_ptr + 0xe), 0x28) != 0) {
-        return 0xffffffff;
-    }
-
-    // Send third chunk (data pointer from offset 0x3a, size from offset 0x36)
-    uint32_t data_ptr_value = *(uint32_t *)(base_ptr + 0x3a);
-    uint32_t data_size_value = *(uint32_t *)(base_ptr + 0x36);
-    if (SendAll((PMP_INT)data_ptr_value, (PMP_INT)data_size_value) != 0) {
-        return 0xffffffff;
-    }
-
-    return 0; // Success
+undefined4 PMPTransmit(uint16_t *param_1) {
+  // Send the first part of the header (0xe bytes)
+  if (SendAll((int)param_1, 0xe) != 0) {
+    return 0xffffffff;
+  }
+  // Send the second part of the header (0x28 bytes)
+  if (SendAll((int)(param_1 + 0xe), 0x28) != 0) {
+    return 0xffffffff;
+  }
+  // Send the actual data block
+  // param_1 + 0x1d (offset 0x3a bytes) holds the data pointer
+  // param_1 + 0x1b (offset 0x36 bytes) holds the data size
+  if (SendAll(*(uint32_t *)(param_1 + 0x1d), *(uint32_t *)(param_1 + 0x1b)) != 0) {
+    return 0xffffffff;
+  }
+  return 0; // Success
 }
 
 // Function: PMPDeallocate
-void PMPDeallocate(PMP_INT param_1) {
-    // Cast the integer address to a byte pointer for byte-level arithmetic
-    uint8_t *base_ptr = (uint8_t *)(uintptr_t)param_1;
+void PMPDeallocate(uint16_t *param_1) {
+  // Retrieve the data pointer and size from the header
+  void *data_ptr = (void*)*(uint32_t *)(param_1 + 0x1d);
+  uint32_t data_size = *(uint32_t *)(param_1 + 0x1b);
 
-    // Check if the pointer to the allocated data (at offset 0x3a) is non-null
-    uint32_t allocated_ptr_value = *(uint32_t *)(base_ptr + 0x3a);
-    if (allocated_ptr_value != 0) {
-        uint32_t allocated_size_value = *(uint32_t *)(base_ptr + 0x36);
-        deallocate((void*)(uintptr_t)allocated_ptr_value, allocated_size_value);
+  // Deallocate memory if the pointer is valid
+  if (data_ptr != NULL) {
+    deallocate(data_ptr, data_size);
+  }
+  // Clear the data size and pointer fields in the header
+  *(uint32_t *)(param_1 + 0x1b) = 0;
+  *(uint32_t *)(param_1 + 0x1d) = 0;
+  return;
+}
+
+// --- Example main function for compilation and testing ---
+int main() {
+    // Allocate a buffer to simulate the 'param_1' structure
+    // A size of 50 * sizeof(uint16_t) = 100 bytes is typically enough for the header.
+    uint16_t header_buffer[50];
+    
+    // Example input parameters for PMPGenerate:
+    // param_2[0] = number of rows (e.g., 10)
+    // param_2[1] = number of columns (e.g., 20)
+    ushort input_params[] = {10, 20};
+
+    // Call PMPGenerate to fill the header_buffer and allocate data
+    undefined4 generate_status = PMPGenerate((undefined2*)header_buffer, input_params);
+    if (generate_status != 0) {
+        // Handle generation error
+        return 1;
     }
-    // Clear the size field at offset 0x36, regardless of deallocation success
-    *(uint32_t *)(base_ptr + 0x36) = 0;
-    return;
+
+    // Call PMPTransmit to simulate sending the data
+    undefined4 transmit_status = PMPTransmit(header_buffer);
+    if (transmit_status != 0) {
+        // Handle transmission error
+        // It's important to deallocate even on transmit error to prevent memory leaks
+        PMPDeallocate(header_buffer);
+        return 1;
+    }
+
+    // Call PMPDeallocate to free allocated memory
+    PMPDeallocate(header_buffer);
+
+    return 0;
 }

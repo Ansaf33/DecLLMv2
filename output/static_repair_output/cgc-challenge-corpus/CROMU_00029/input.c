@@ -1,217 +1,188 @@
-#include <stdio.h>    // For puts, NULL, perror
-#include <stdlib.h>   // For atof, malloc, free
-#include <string.h>   // For strchr
-#include <unistd.h>   // For read, ssize_t
-#include <sys/select.h> // For select, fd_set, FD_ZERO, FD_SET, FD_ISSET
-#include <sys/time.h>   // For struct timeval
+#include <stdio.h>   // For puts
+#include <string.h>  // For strchr
+#include <stdlib.h>  // For NULL, general utilities
+#include <stddef.h>  // For size_t
 
-// Type definitions to match original snippet's decompiler output
+// --- Type Definitions (assuming common Ghidra decompiler output) ---
 typedef unsigned int uint;
-typedef int undefined4; // Commonly used for 32-bit return values like 0 or -1
-typedef char undefined;  // Used for single bytes
+typedef char undefined;
+typedef int undefined4; // Used for return values, status codes
 
-// Global constants derived from DAT_00016018, DAT_00016020, _DAT_00016028, X, Y, Z, DAT_00016000
-// These are mock values for compilation; in a real scenario, they would be defined elsewhere.
-const double MIN_TEMP = -100.0;     // Corresponds to DAT_00016018
-const double MAX_TEMP = 100.0;      // Corresponds to DAT_00016020
-const double TEMP_OFFSET = 273.15;  // Corresponds to _DAT_00016028 (e.g., Celsius to Kelvin)
-const int X_DIM = 5;                // Corresponds to X
-const int Y_DIM = 5;                // Corresponds to Y
-const int Z_DIM = 2;                // Corresponds to Z
-const char *DELIMITERS = " \t\n\r"; // Corresponds to DAT_00016000 (common whitespace delimiters)
+// --- Mock/External Function Declarations ---
+// These functions are not provided in the snippet, so mock declarations are necessary
+// to allow compilation. Implementations would depend on the target system/library.
 
-// Mock/wrapper for the 'receive' function found in the snippet.
-// Assumes it's a wrapper around `read` from `<unistd.h>`.
-// Returns 0 on success, non-zero on error. Fills `bytes_read_ptr` with actual bytes read.
-static int custom_receive(int fd, char *buf, int count, int *bytes_read_ptr) {
-    ssize_t res = read(fd, buf, count);
-    if (res == -1) {
-        perror("receive: read error");
-        return -1; // Indicate error
-    }
-    *bytes_read_ptr = (int)res;
-    return 0; // Indicate success
+// Mock for a receive function, similar to `recv` but with an `int *` for bytes received.
+int receive(int fd, char *buf, size_t len, int *bytes_received) {
+    // Placeholder: Simulate no data or error for compilation.
+    // In a real system, this would read from a file descriptor.
+    if (bytes_received) *bytes_received = 0;
+    return 0; // Simulate success, no data
 }
 
-// Mock/wrapper for the 'fdwait' function found in the snippet.
-// Assumes it's a wrapper around `select` from `<sys/select.h>`.
-// Returns 0 on success (file descriptors ready or timeout), non-zero on error.
-static int custom_fdwait(int nfds, fd_set *readfds, fd_set *writefds, int *timeout_ms, fd_set *exceptfds) {
-    struct timeval tv;
-    tv.tv_sec = *timeout_ms / 1000;
-    tv.tv_usec = (*timeout_ms % 1000) * 1000;
-
-    int ret = select(nfds, readfds, writefds, exceptfds, &tv);
-    if (ret == -1) {
-        perror("fdwait: select error");
-        return -1; // Indicate error
-    }
-    return 0; // Indicate success
+// Mock for a string-to-long double conversion function.
+long double cgcatof(const char *s) {
+    // Placeholder: Convert string to double.
+    return strtold(s, NULL);
 }
 
-// Function: read_until
-// Reads characters from `param_1` (stdin, fd 0) into `buffer` until a delimiter from `delimiters` is found
-// or `max_len - 1` characters are read. Null-terminates the `buffer`.
-// Returns the number of characters read (excluding null terminator) or 0xffffffff on error/EOF.
+// Mock for a custom select-like function.
+// `readfds`, `writefds`, `exceptfds` are typically `fd_set *` but Ghidra often
+// represents them as `uint *` for an array of bitmasks.
+int fdwait(int nfds, uint *readfds, uint *writefds, int *timeout_ms, uint *exceptfds) {
+    // Placeholder: Simulate no activity for compilation.
+    // In a real system, this would use select/poll.
+    if (readfds) readfds[0] = 0; // Clear stdin bit
+    return 0; // Simulate success
+}
+
+// --- Global Variables/Constants (mocked based on typical Ghidra output) ---
+// Example dimensions for temperature data
+const int X = 10;
+const int Y = 10;
+const int Z = 5;
+
+// Example delimiter string for read_until (e.g., newline, carriage return, space)
+const char DAT_00016000[] = "\n\r ";
+
+// Example temperature range constants (e.g., in Celsius)
+const double DAT_00016018 = -50.0; // Lower bound
+const double DAT_00016020 = 150.0; // Upper bound
+
+// Example offset constant for storing temperature (e.g., converting Celsius to Kelvin)
+const double _DAT_00016028 = 273.15;
+
+// --- Function: read_until ---
+// Reads characters into 'buffer' until a delimiter from 'delimiters' is found
+// or 'max_len' is reached.
+// param_1 (char *buffer): Buffer to store the read characters.
+// param_2 (const char *delimiters): Null-terminated string of delimiter characters.
+// param_3 (int max_len): Maximum number of characters to read (including null terminator).
 uint read_until(char *buffer, const char *delimiters, int max_len) {
     unsigned int bytes_read_count = 0;
-    char current_char;
-    int chars_received;
+    char received_char;
+    int bytes_received_len;
 
-    while (bytes_read_count < (unsigned int)(max_len - 1)) {
-        if (custom_receive(0, &current_char, 1, &chars_received) != 0) {
-            return 0xffffffff; // Error from receive itself
+    while (bytes_read_count < (unsigned int)max_len - 1) {
+        if (receive(0, &received_char, 1, &bytes_received_len) != 0 || bytes_received_len == 0) {
+            return 0xFFFFFFFF; // Error or EOF
         }
-        if (chars_received == 0) {
-            return 0xffffffff; // No bytes received (EOF or no data)
-        }
-        if (strchr(delimiters, current_char) != NULL) {
+        if (strchr(delimiters, received_char) != NULL) {
             break; // Delimiter found
         }
-        buffer[bytes_read_count++] = current_char; // Store char and increment count
+        buffer[bytes_read_count++] = received_char;
     }
     buffer[bytes_read_count] = '\0'; // Null-terminate the string
     return bytes_read_count;
 }
 
-// Function: StoreTemp
-// Converts a string `temp_str` to a double, validates its range, adds an offset,
-// and stores it into a 3D array `temp_array` at the given `x_idx, y_idx, z_idx`.
-// Returns 0 on success, 0xffffffff on error (invalid temperature range).
-undefined4 StoreTemp(double *temp_array, int x_idx, int y_idx, int z_idx, const char *temp_str) {
-    double temp_val = atof(temp_str); // Assuming cgcatof is equivalent to atof or strtod
-    if ((temp_val < MIN_TEMP) || (MAX_TEMP < temp_val)) {
-        return 0xffffffff; // Invalid temperature range
+// --- Function: StoreTemp ---
+// Stores a temperature value into a 3D array of doubles.
+// param_1 (double *temp_data_base): Base pointer to the 3D array (flattened).
+// param_2 (int x_idx): X-coordinate index.
+// param_3 (int y_idx): Y-coordinate index.
+// param_4 (int z_idx): Z-coordinate index.
+// param_5 (const char *temp_str): String representation of the temperature.
+undefined4 StoreTemp(double *temp_data_base, int x_idx, int y_idx, int z_idx, const char *temp_str) {
+    double temp_d = (double)cgcatof(temp_str);
+
+    if (temp_d < DAT_00016018 || DAT_00016020 < temp_d) {
+        return 0xFFFFFFFF; // Invalid temperature range
     }
-    // Calculate 1D index for a 3D array [Z_DIM][Y_DIM][X_DIM]
-    // The original expression (param_2 + X * param_3 + Y * X * param_4) corresponds to:
-    // (x_idx + X_DIM * y_idx + Y_DIM * X_DIM * z_idx)
-    temp_array[z_idx * (Y_DIM * X_DIM) + y_idx * X_DIM + x_idx] = TEMP_OFFSET + temp_val;
-    return 0; // Success
+
+    // Calculate the 1D index for the 3D array (assuming row-major for Y, then X)
+    // Original formula: param_1 + (param_2 + X * param_3 + Y * X * param_4) * 8
+    // This translates to temp_data_base[x_idx + X * y_idx + Y * X * z_idx] if param_1 is double*
+    temp_data_base[x_idx + (long long)X * y_idx + (long long)Y * X * z_idx] = _DAT_00016028 + temp_d;
+    return 0;
 }
 
-// Function: flush_stdin
-// Clears pending input from stdin by repeatedly reading single characters
-// until no more data is available or an error occurs.
-// Returns 0 on success, 0xffffffff on error.
+// --- Function: flush_stdin ---
+// Flushes any pending input from stdin.
 undefined4 flush_stdin(void) {
-    fd_set fds;
-    char buffer_char;
-    int bytes_read_val;
-    int fdwait_timeout_ms = 0; // Non-blocking check for `select`
+    char received_char;
+    int bytes_received_len;
+    uint fd_set_read[32];
+    int timeout_ms;
 
     do {
-        FD_ZERO(&fds);
-        FD_SET(0, &fds); // Set stdin (fd 0) for reading
+        for (uint i = 0; i < 32; ++i) {
+            fd_set_read[i] = 0;
+        }
+        fd_set_read[0] |= 1; // Set bit for stdin (fd 0)
 
-        if (custom_fdwait(1, &fds, NULL, &fdwait_timeout_ms, NULL) != 0) {
-            return 0xffffffff; // Error from fdwait
+        timeout_ms = 0; // Non-blocking check
+        if (fdwait(1, fd_set_read, NULL, &timeout_ms, NULL) != 0) {
+            return 0xFFFFFFFF; // Error in fdwait
         }
-        if (!FD_ISSET(0, &fds)) {
-            break; // Stdin not ready, nothing more to flush
+
+        if (!(fd_set_read[0] & 1)) {
+            return 0; // No data to read on stdin
         }
-        // Stdin is ready, try to read a character
-        if (custom_receive(0, &buffer_char, 1, &bytes_read_val) != 0) {
-            return 0xffffffff; // Error from receive
+        // Data available, attempt to read one byte
+        if (receive(0, &received_char, 1, &bytes_received_len) != 0) {
+            return 0xFFFFFFFF; // Error in receive
         }
-    } while (bytes_read_val > 0); // Continue as long as bytes are being read
-    return 0; // Successfully flushed or no more data
+    } while (bytes_received_len > 0); // Continue flushing until no more data
+
+    return 0; // Successfully flushed or no data initially
 }
 
-// Function: read_temps
-// Reads temperature values from stdin, parses them, and stores them into the `temp_array`.
-// It iterates through Z_DIM, Y_DIM, X_DIM dimensions.
-// Returns 0 on success, 0xffffffff on error (parsing, range validation, or I/O).
-undefined4 read_temps(double *temp_array) {
-    char buffer[100]; // Buffer to hold temperature string read from stdin
-    unsigned int z_idx;
-    unsigned int y_idx;
-    unsigned int x_idx;
+// --- Function: read_temps ---
+// Reads temperature data for all X, Y, Z dimensions.
+// param_1 (double *temp_data_base): Base pointer to the 3D array of doubles.
+undefined4 read_temps(double *temp_data_base) {
+    char temp_buffer[100];
+    unsigned int z_idx = 0;
 
-    for (z_idx = 0; z_idx < Z_DIM; z_idx++) {
-        for (y_idx = 0; y_idx < Y_DIM; y_idx++) {
-            for (x_idx = 0; x_idx < X_DIM; x_idx++) {
-                if (read_until(buffer, DELIMITERS, sizeof(buffer)) == 0xffffffff) {
-                    return 0xffffffff; // Error from read_until
+    do {
+        if (z_idx >= (unsigned int)Z) {
+            flush_stdin();
+            return 0; // All Z layers processed
+        }
+
+        for (unsigned int y_idx = 0; y_idx < (unsigned int)Y; ++y_idx) {
+            for (unsigned int x_idx = 0; x_idx < (unsigned int)X; ++x_idx) {
+                if (read_until(temp_buffer, DAT_00016000, sizeof(temp_buffer)) == 0xFFFFFFFF) {
+                    return 0xFFFFFFFF; // Error in reading temperature string
                 }
-                if (StoreTemp(temp_array, x_idx, y_idx, z_idx, buffer) != 0) {
+                if (StoreTemp(temp_data_base, x_idx, y_idx, z_idx, temp_buffer) != 0) {
                     puts("Invalid temperature");
-                    return 0xffffffff; // Error from StoreTemp
+                    return 0xFFFFFFFF; // Error in storing temperature
                 }
             }
         }
-    }
-    flush_stdin(); // Flush any remaining input after reading all temperatures
-    return 0; // Success
+        ++z_idx;
+    } while (1); // Loop indefinitely until Z condition is met or an error occurs
 }
 
-// Function: kbhit
-// Checks if a key has been pressed on stdin. If a key is pressed, it is consumed.
-// This function polls stdin with a 1ms timeout.
-// Returns 0 if a key was hit and consumed, 0xffffffff on error.
+// --- Function: kbhit ---
+// Checks if a key has been pressed (data available on stdin) and consumes it.
 undefined4 kbhit(void) {
-    fd_set fds;
-    char buffer_char; // Character is consumed by receive
-    int bytes_read_val;
-    int fdwait_timeout_ms;
+    char received_char;
+    int bytes_received_len;
+    uint fd_set_read[32];
+    int timeout_ms;
 
-    while (1) { // Loop indefinitely until a key is hit or an error occurs
-        FD_ZERO(&fds);
-        FD_SET(0, &fds); // Set stdin (fd 0) for reading
+    while (1) {
+        for (uint i = 0; i < 32; ++i) {
+            fd_set_read[i] = 0;
+        }
+        fd_set_read[0] |= 1; // Set bit for stdin (fd 0)
 
-        fdwait_timeout_ms = 1; // Poll with 1ms timeout
-
-        if (custom_fdwait(1, &fds, NULL, &fdwait_timeout_ms, NULL) != 0) {
-            return 0xffffffff; // Error from fdwait
+        timeout_ms = 1; // Short timeout for polling
+        if (fdwait(1, fd_set_read, NULL, &timeout_ms, NULL) != 0) {
+            return 0xFFFFFFFF; // Error in fdwait
         }
 
-        if (FD_ISSET(0, &fds)) { // Stdin is ready, a key was hit
-            // Attempt to read and consume the character
-            if (custom_receive(0, &buffer_char, 1, &bytes_read_val) == 0) {
-                return 0; // Key hit and consumed successfully
+        if (fd_set_read[0] & 1) { // Data available on stdin
+            // Read one byte to consume it and determine if a key was hit
+            if (receive(0, &received_char, 1, &bytes_received_len) == 0) {
+                return 0; // Key hit (and consumed)
             } else {
-                return 0xffffffff; // Error receiving the character
+                return 0xFFFFFFFF; // Error in receive
             }
         }
-        // If stdin not ready, loop again after 1ms timeout
+        // No data available, continue busy-waiting
     }
-}
-
-// Main function to demonstrate the usage of the refactored functions.
-int main() {
-    // Allocate memory for the 3D temperature array: Z_DIM * Y_DIM * X_DIM doubles
-    double *temperatures = (double *)malloc(Z_DIM * Y_DIM * X_DIM * sizeof(double));
-    if (temperatures == NULL) {
-        perror("Failed to allocate memory for temperatures");
-        return 1;
-    }
-
-    printf("Please enter %d temperature values (separated by spaces/tabs/newlines):\n", Z_DIM * Y_DIM * X_DIM);
-    printf("Example: 20.5 21.0 -5.2 ... (ensure values are between %.1f and %.1f)\n", MIN_TEMP, MAX_TEMP);
-
-    if (read_temps(temperatures) == 0) {
-        printf("Successfully read and stored temperatures.\n");
-        // Optional: print some temperatures to verify
-        // for (int z = 0; z < Z_DIM; z++) {
-        //     for (int y = 0; y < Y_DIM; y++) {
-        //         for (int x = 0; x < X_DIM; x++) {
-        //             printf("Temp[%d][%d][%d]: %.2f (%.2f original)\n", z, y, x, 
-        //                    temperatures[z * (Y_DIM * X_DIM) + y * X_DIM + x],
-        //                    temperatures[z * (Y_DIM * X_DIM) + y * X_DIM + x] - TEMP_OFFSET);
-        //         }
-        //     }
-        // }
-    } else {
-        fprintf(stderr, "Failed to read temperatures.\n");
-    }
-
-    printf("\nPress any key to test kbhit()...\n");
-    if (kbhit() == 0) {
-        printf("Key was hit!\n");
-    } else {
-        fprintf(stderr, "kbhit() error or no key hit after polling.\n");
-    }
-
-    free(temperatures); // Free allocated memory
-    return 0;
 }

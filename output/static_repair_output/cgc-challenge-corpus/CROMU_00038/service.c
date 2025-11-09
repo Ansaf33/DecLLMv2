@@ -1,380 +1,339 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
-#include <string.h> // For memset, strcpy
+#include <stdio.h>    // For printf, puts
+#include <stdlib.h>   // For malloc, free, exit
+#include <stdint.h>   // For fixed-width integers like uint16_t, uint32_t
+#include <string.h>   // For memcpy
 
-// Type definitions based on typical disassembler output
-typedef uint32_t undefined4;
+// Custom type definitions based on common decompiler output
 typedef uint16_t ushort;
 typedef uint32_t uint;
-typedef int16_t marker_t; // Using int16_t for markers like -8, -0x10, -0xf
-typedef uint8_t undefined;
+typedef uint32_t undefined4; // Original type, replaced by uint for clarity
+typedef unsigned char undefined; // Single byte, if needed
 
-// Mock declarations for external functions
-int receive_bytes_status(void);
-int receive_bytes_data(void *buf, size_t len); // Reads into buf, returns bytes read or -1
-
-void _terminate(void); // Maps to exit(1)
-
-// Swap functions now take arguments
-uint16_t intel_swap_short(uint16_t val) { return val; }
-uint32_t intel_swap_word(uint32_t val) { return val; }
-uint16_t motorola_swap_short(uint16_t val) { return (val >> 8) | (val << 8); }
-uint32_t motorola_swap_word(uint32_t val) { return ((val >> 24) & 0x000000ff) | ((val >> 8) & 0x0000ff00) | ((val << 8) & 0x00ff0000) | ((val << 24) & 0xff000000); }
+// Function pointer types for byte swapping
+typedef ushort (*swap_short_func)(ushort);
+typedef uint (*swap_word_func)(uint);
 
 // Global function pointers
-uint16_t (*swap_short)(uint16_t);
-uint32_t (*swap_word)(uint32_t);
+swap_short_func swap_short;
+swap_word_func swap_word;
 
-// print_tag_text and print_type should take the value they are printing info about
-void print_tag_text(uint16_t tag) {
-    switch (tag) {
-        case 0x0100: printf("ImageWidth"); break;
-        case 0x8825: printf("GPS IFD"); break;
-        case 0x8769: printf("EXIF IFD"); break;
-        default: printf("Unknown Tag 0x%X", tag); break;
-    }
-}
-void print_type(uint16_t type) {
-    switch (type) {
-        case 1: printf("BYTE"); break;
-        case 2: printf("ASCII"); break;
-        case 3: printf("SHORT"); break;
-        case 4: printf("LONG"); break;
-        default: printf("Unknown Type 0x%X", type); break;
-    }
+// --- Stub Functions (to make the code compilable) ---
+
+// Placeholder for the actual byte receiving mechanism.
+// In a real application, this would interact with a file, network socket, etc.
+// Assumes it reads 'size' bytes into 'buffer' and returns number of bytes read or -1 on error.
+int receive_bytes(void* buffer, size_t size) {
+    // For compilation and basic execution, fill with zeros and return success.
+    // Replace with actual I/O logic as needed.
+    memset(buffer, 0, size);
+    return (int)size;
 }
 
-// process_gps_ifd and process_xif_ifd arguments inferred from usage
-void process_gps_ifd(void *ifd_ptr, int16_t *base_ptr, uint32_t section_size, int section_end) {
-    printf("  (Stub) Processing GPS IFD at offset %p\n", ifd_ptr);
-}
-void process_xif_ifd(void *ifd_ptr, int16_t *base_ptr, uint32_t section_size, int section_end) {
-    printf("  (Stub) Processing XIF IFD at offset %p\n", ifd_ptr);
-}
-
-// --- Mock Implementations ---
+// Placeholder for program termination
 void _terminate(void) {
     printf("Program terminated.\n");
     exit(1);
 }
 
-static int receive_stage = 0;
-static uint32_t mock_sap1_segment_size = 0; // To keep track of the malloc'd buffer size
-static void* mock_sap1_segment_data = NULL; // To keep track of the malloc'd buffer pointer
-
-int receive_bytes_status(void) {
-    return 0; // Always successful status
-}
-
-int receive_bytes_data(void *buf, size_t len) {
-    if (buf == NULL || len == 0) return -1;
-
-    // Simulate different reads based on stage
-    switch (receive_stage) {
-        case 0: // Read SOM marker
-            *(marker_t*)buf = (marker_t)0xfff8; // -8
-            receive_stage++;
-            break;
-        case 1: // Read SAP0 marker (first time)
-            *(marker_t*)buf = (marker_t)0xfff0; // -0x10
-            receive_stage++;
-            break;
-        case 2: // Read SAP0 segment size
-            *(ushort*)buf = 5; // Example size >= 3
-            receive_stage++;
-            break;
-        case 3: // Read SAP0 segment data (no specific content needed for this mock)
-            memset(buf, 0, len);
-            receive_stage++;
-            break;
-        case 4: // Read next marker after SAP0 segment (should be SAP1)
-            *(marker_t*)buf = (marker_t)0xfff1; // -0xf
-            receive_stage++;
-            break;
-        case 5: // Read SAP1 segment size
-            *(ushort*)buf = 100; // Example size >= 0x10
-            mock_sap1_segment_size = *(ushort*)buf;
-            receive_stage++;
-            break;
-        case 6: // Read SAP1 segment data
-            memset(buf, 0, len);
-            mock_sap1_segment_data = buf; // Store pointer to this buffer for easier mock setup
-
-            // Simulate TIFF header and IFD entries
-            if (len >= mock_sap1_segment_size) {
-                uint16_t *ptr_u16 = (uint16_t*)((char*)buf + 6); // Offset 6 for byte order
-                *(ptr_u16) = 0x4949; // Intel 'II'
-                *(ptr_u16 + 1) = 0x002A; // TagMark 0x2A
-                *(uint32_t*)(ptr_u16 + 2) = 0x00000008; // Offset to first IFD (8 bytes from ptr_u16, so 14 from buf start)
-
-                // Now setup the IFD entries starting at (char*)buf + 14
-                uint16_t *ifd_base = (uint16_t*)((char*)buf + 14);
-                *ifd_base = 3; // Number of IFD entries
-
-                // Entry 1: Tag 0x0100 (ImageWidth), Type 3 (SHORT), Count 1, Value 1024
-                *(ifd_base + 1) = 0x0100; // Tag
-                *(ifd_base + 2) = 0x0003; // Type (SHORT)
-                *(uint32_t*)(ifd_base + 3) = 0x00000001; // Count
-                *(uint32_t*)(ifd_base + 5) = 0x00000400; // Value (1024)
-
-                // Entry 2: Tag 0x8825 (GPS IFD), Type 4 (LONG), Count 1, ValueOffset to GPS IFD (e.g., at offset 50 from buf start)
-                *(ifd_base + 1 + 6) = 0x8825; // Tag (GPS IFD)
-                *(ifd_base + 2 + 6) = 0x0004; // Type (LONG)
-                *(uint32_t*)(ifd_base + 3 + 6) = 0x00000001; // Count
-                *(uint32_t*)(ifd_base + 5 + 6) = 0x00000032; // ValueOffset (50, points to GPS IFD)
-
-                // Entry 3: Tag 0x8769 (EXIF IFD), Type 4 (LONG), Count 1, ValueOffset to EXIF IFD (e.g., at offset 70 from buf start)
-                *(ifd_base + 1 + 12) = 0x8769; // Tag (EXIF IFD)
-                *(ifd_base + 2 + 12) = 0x0004; // Type (LONG)
-                *(uint32_t*)(ifd_base + 3 + 12) = 0x00000001; // Count
-                *(uint32_t*)(ifd_base + 5 + 12) = 0x00000046; // ValueOffset (70, points to EXIF IFD)
-
-                // Also, put a sample string for type 2 (ASCII) for testing if such an entry exists
-                // Example string at offset 0x60 (96) from buf start
-                if (len > 0x60 + strlen("SampleString")) {
-                    strcpy((char*)buf + 0x60, "SampleString");
-                }
-            }
-            receive_stage++;
-            break;
-        default:
-            // No more data to read, or handle as needed
-            return 0; // Indicate EOF or no more data
+// Placeholder for tag text printing
+void print_tag_text(uint tag) {
+    // Implement actual tag name lookup here
+    switch (tag) {
+        case 0x0001: printf("SomeTag"); break;
+        case 0x8825: printf("GPS IFD Pointer"); break;
+        case 0x8769: printf("Exif IFD Pointer"); break;
+        default: printf("Unknown Tag"); break;
     }
-    return (int)len;
 }
 
-// main function
+// Placeholder for type printing
+void print_type(uint type) {
+    // Implement actual type name lookup here
+    switch (type) {
+        case 1: printf("BYTE"); break;
+        case 2: printf("ASCII"); break;
+        case 3: printf("SHORT"); break;
+        case 4: printf("LONG"); break;
+        default: printf("Unknown Type"); break;
+    }
+}
+
+// Placeholder for GPS IFD processing
+void process_gps_ifd(void* ifd_ptr, uint segment_size, void* base_ptr, void* end_ptr) {
+    printf("Processing GPS IFD at offset %ld (from segment base + 6)\n", (char*)ifd_ptr - ((char*)base_ptr + 6));
+    // Implement GPS IFD processing logic here
+}
+
+// Placeholder for XIF IFD processing
+void process_xif_ifd(void* ifd_ptr, uint segment_size, void* base_ptr, void* end_ptr) {
+    printf("Processing XIF IFD at offset %ld (from segment base + 6)\n", (char*)ifd_ptr - ((char*)base_ptr + 6));
+    // Implement XIF IFD processing logic here
+}
+
+// Byte swapping functions (assuming Linux is typically little-endian)
+// If the system is little-endian, intel_swap_* are identity functions.
+// If the system is big-endian, these would perform actual byte swapping.
+ushort intel_swap_short(ushort val) {
+    return val; // Little-endian, no swap needed on little-endian system
+}
+
+uint intel_swap_word(uint val) {
+    return val; // Little-endian, no swap needed on little-endian system
+}
+
+ushort motorola_swap_short(ushort val) {
+    return (val >> 8) | (val << 8); // Big-endian, swap bytes
+}
+
+uint motorola_swap_word(uint val) {
+    return ((val >> 24) & 0x000000FF) |
+           ((val >> 8)  & 0x0000FF00) |
+           ((val << 8)  & 0x00FF0000) |
+           ((val << 24) & 0xFF000000); // Big-endian, swap bytes
+}
+
+// Global string literal (DAT_00016ca5)
+const char* DAT_00016ca5 = ")\n";
+
+// Function: main
 int main(void) {
-  marker_t local_46; // SOM marker
-  marker_t local_48; // SAP0/SAP1 marker
-  ushort local_4a; // Segment size
-  int local_28; // Bytes received status or count
-  void *local_2c = NULL; // Allocated memory for segment data
-  int16_t *local_30; // Pointer into local_2c for IFD base
-  uint32_t local_38; // Offset to first IFD
-  intptr_t local_34; // End of section (local_2c + local_4a)
-  ushort *local_3c; // Pointer to IFD entries count
-  int local_24; // Loop counter for IFD entries
-  int local_44; // GPS IFD offset
-  int local_40; // XIF IFD offset
+  short som_marker = 0; // SOM marker, initialized to avoid uninitialized read
+  short sap_marker;     // SAP0/SAP1 marker
+  ushort segment_size;  // Segment size
+  int bytes_received;
+  void *segment_memory = NULL; // Allocated memory for segments
+  char *segment_base_ptr;      // Base of the current segment for processing
+  char *segment_end_ptr;       // End of the current segment for bounds checking
 
-  // Initialize global function pointers
-  swap_short = intel_swap_short; // Default, will be set later
-  swap_word = intel_swap_word;   // Default, will be set later
+  // Initialize swap function pointers to Intel (little-endian) as default
+  swap_short = intel_swap_short;
+  swap_word = intel_swap_word;
 
-  // Initial receive_bytes call (status check)
-  local_28 = receive_bytes_status();
-  if (local_28 == -1) {
-    printf("did not receive bytes\n");
+  // Receive SOM marker
+  bytes_received = receive_bytes(&som_marker, sizeof(som_marker));
+  if (bytes_received == -1) {
+    printf("did not receive SOM marker bytes\n");
     _terminate();
   }
 
-  // Receive SOM marker
-  if (receive_bytes_data(&local_46, sizeof(local_46)) != sizeof(local_46) || local_46 != (marker_t)0xfff8) { // -8 in short
-    printf("Did not find SOM marker\n");
+  if (som_marker != (short)0xFFF8) { // Assuming -8 is 0xFFF8 (SOM marker value)
+    printf("Did not find SOM marker (received 0x%hX)\n", som_marker);
     _terminate();
   }
   printf("SOM marker found\n");
 
-  // Receive SAP0 marker
-  if (receive_bytes_data(&local_48, sizeof(local_48)) != sizeof(local_48)) {
-    printf("did not receive bytes\n");
-    _terminate();
+  // Loop for SAP0 segments until SAP1 marker is found
+  while (1) {
+    // Receive SAP marker (could be SAP0 or SAP1)
+    bytes_received = receive_bytes(&sap_marker, sizeof(sap_marker));
+    if (bytes_received == -1) {
+      printf("did not receive SAP marker bytes\n");
+      _terminate();
+    }
+
+    if (sap_marker == (short)0xFFF0) { // Assuming -0x10 is 0xFFF0 (SAP0 marker value)
+      printf("SAP0 marker found\n");
+
+      // Receive SAP0 segment size
+      bytes_received = receive_bytes(&segment_size, sizeof(segment_size));
+      if (bytes_received == -1) {
+        printf("did not receive SAP0 segment size bytes\n");
+        _terminate();
+      }
+
+      if (segment_size < 3) {
+        printf("Invalid SAP0 segment size (%u)\n", segment_size);
+        _terminate();
+      }
+
+      // Allocate memory for SAP0 segment data (size - 2 for the size itself)
+      size_t sap0_data_size = segment_size - 2;
+      segment_memory = malloc(sap0_data_size);
+      if (segment_memory == NULL) {
+        printf("Unable to allocate memory for SAP0 segment\n");
+        _terminate();
+      }
+
+      // Receive SAP0 segment data
+      bytes_received = receive_bytes(segment_memory, sap0_data_size);
+      if (bytes_received == -1) {
+        printf("unable to read SAP0 segment data\n");
+        free(segment_memory); // Free allocated memory before terminating
+        segment_memory = NULL;
+        _terminate();
+      }
+
+      // Original code just frees SAP0 segment, no further processing indicated.
+      free(segment_memory);
+      segment_memory = NULL; // Clear pointer after freeing
+      // Loop back to check for next SAP marker (could be another SAP0 or SAP1)
+    } else {
+      // Not a SAP0 marker, so it must be SAP1 or an error
+      break; // Exit the loop to process SAP1
+    }
   }
 
-  if (local_48 == (marker_t)0xfff0) { // -0x10 in short
-    printf("SAP0 marker found\n");
-
-    // Receive SAP0 segment size
-    if (receive_bytes_data(&local_4a, sizeof(local_4a)) != sizeof(local_4a)) {
-      printf("did not receive bytes\n");
-      _terminate();
-    }
-
-    if (local_4a < 3) {
-      printf("Invalid segment size (SAP0)\n");
-      _terminate();
-    }
-
-    size_t segment_size_sap0 = local_4a - 2;
-    local_2c = malloc(segment_size_sap0);
-    if (local_2c == NULL) {
-      printf("Unable to allocate memory (SAP0)\n");
-      _terminate();
-    }
-
-    if (receive_bytes_data(local_2c, segment_size_sap0) != segment_size_sap0) {
-      printf("unable to read SAP0 segment\n");
-      _terminate();
-    }
-
-    free(local_2c);
-    local_2c = NULL;
-
-    // Receive next marker after SAP0 segment (expecting SAP1)
-    if (receive_bytes_data(&local_48, sizeof(local_48)) != sizeof(local_48)) {
-      printf("did not receive bytes\n");
-      _terminate();
-    }
-  }
-
-  // Check for SAP1 marker
-  if (local_48 != (marker_t)0xfff1) { // -0xf in short
-    printf("Did not find SAP1 marker\n");
+  // After the loop, sap_marker should contain the SAP1 marker or an error
+  if (sap_marker != (short)0xFFF1) { // Assuming -0xf is 0xFFF1 (SAP1 marker value)
+    printf("Did not find SAP1 marker (received 0x%hX)\n", sap_marker);
     _terminate();
   }
   printf("SAP1 marker found\n");
 
   // Receive SAP1 segment size
-  if (receive_bytes_data(&local_4a, sizeof(local_4a)) != sizeof(local_4a)) {
-    printf("did not receive bytes\n");
+  bytes_received = receive_bytes(&segment_size, sizeof(segment_size));
+  if (bytes_received == -1) {
+    printf("did not receive SAP1 segment size bytes\n");
     _terminate();
   }
 
-  printf("sizeof section is %u\n", local_4a);
-
-  if (local_4a == 0) {
-    printf("Invalid segment size\n");
+  printf("sizeof section is %u\n", segment_size);
+  if (segment_size == 0) {
+    printf("Invalid SAP1 segment size (0)\n");
     _terminate();
   }
 
-  local_2c = malloc(local_4a);
-  if (local_2c == NULL) {
-    printf("Unable to allocate memory\n");
+  // Allocate memory for SAP1 segment
+  segment_memory = malloc(segment_size);
+  if (segment_memory == NULL) {
+    printf("Unable to allocate memory for SAP1 segment\n");
     _terminate();
   }
 
-  if (receive_bytes_data(local_2c, local_4a) != local_4a) {
-    printf("unable to read SAP1 segment\n");
+  // Receive SAP1 segment data
+  bytes_received = receive_bytes(segment_memory, segment_size);
+  if (bytes_received == -1) {
+    printf("unable to read SAP1 segment data\n");
+    free(segment_memory);
+    segment_memory = NULL;
     _terminate();
   }
 
-  if (local_4a < 0x10) {
-    printf("not enough data received\n");
+  if (segment_size < 0x10) { // Minimum size for header + IFD entry (approx.)
+    printf("not enough data received for SAP1 segment (size %u)\n", segment_size);
+    free(segment_memory);
+    segment_memory = NULL;
     _terminate();
   }
 
-  local_30 = (int16_t *)((intptr_t)local_2c + 6); // Pointer to TIFF header (bytes 6-7 of SAP1)
-  local_34 = (intptr_t)local_2c + local_4a; // End of segment memory
+  segment_base_ptr = (char *)segment_memory;
+  segment_end_ptr = segment_base_ptr + segment_size;
 
-  // Check byte order marker
-  uint16_t byte_order_marker = *(uint16_t *)local_30;
-  if (byte_order_marker == 0x4949) { // 'II' for Intel
+  // `endian_marker_ptr` points to the 6th byte (offset 6) within the segment,
+  // where the II/MM endianness marker is located.
+  short *endian_marker_ptr = (short *)(segment_base_ptr + 6);
+
+  // Check endianness marker
+  if (*endian_marker_ptr == (short)0x4949) { // 'II' for Intel (little-endian)
     printf("Intel formatted integers\n");
     swap_short = intel_swap_short;
     swap_word = intel_swap_word;
-  }
-  else if (byte_order_marker == 0x4d4d) { // 'MM' for Motorola
+  } else if (*endian_marker_ptr == (short)0x4d4d) { // 'MM' for Motorola (big-endian)
     printf("Motorola formatted integers\n");
     swap_short = motorola_swap_short;
     swap_word = motorola_swap_word;
   } else {
-    printf("Unknown byte order marker 0x%X, defaulting to Intel\n", byte_order_marker);
-    swap_short = intel_swap_short;
-    swap_word = intel_swap_word;
+    printf("Unknown endianness marker (0x%hX), defaulting to Intel\n", *endian_marker_ptr);
+    // Could _terminate() here if strict, but original code just defaults.
   }
 
-  // Read TagMark (0x2A)
-  uint16_t tag_mark = swap_short(local_30[1]); // local_30[1] is 2 bytes after local_30, which is at offset 6. So this is offset 8.
-  printf("TagMark = %x\n", tag_mark);
+  // TagMark (from endian_marker_ptr[1])
+  ushort tag_mark = swap_short(endian_marker_ptr[1]);
+  printf("TagMark = 0x%hX\n", tag_mark);
 
-  // Read Offset to first IFD
-  local_38 = swap_word(*(uint32_t *)(local_30 + 2)); // local_30 + 2 is 4 bytes after local_30, which is at offset 10.
-  printf("Offset = %x\n", local_38);
+  // Offset to first IFD (from endian_marker_ptr[2], which is a 4-byte uint)
+  uint ifd_offset_from_endian_base;
+  memcpy(&ifd_offset_from_endian_base, &endian_marker_ptr[2], sizeof(uint));
+  ifd_offset_from_endian_base = swap_word(ifd_offset_from_endian_base);
 
-  if (local_4a < local_38) {
-    printf("Invalid offset\n");
+  printf("Offset = 0x%X\n", ifd_offset_from_endian_base);
+
+  // The IFD offset is relative to `endian_marker_ptr` (segment_base_ptr + 6).
+  char *ifd_section_base = (char *)endian_marker_ptr;
+  ushort *num_ifd_entries_ptr = (ushort *)(ifd_section_base + ifd_offset_from_endian_base);
+
+  // Check if IFD offset points out of segment bounds
+  if ((char*)num_ifd_entries_ptr + sizeof(ushort) > segment_end_ptr || ifd_offset_from_endian_base == 0) {
+    printf("Invalid IFD offset (0x%X) or points out of bounds\n", ifd_offset_from_endian_base);
+    free(segment_memory);
+    segment_memory = NULL;
     _terminate();
   }
 
-  // Pointer to the first IFD entry count
-  local_3c = (ushort *)((intptr_t)local_30 + local_38);
-  ushort num_ifd_entries = swap_short(*local_3c);
-  *local_3c = num_ifd_entries; // Original code writes back the swapped value.
+  // Read and swap the number of IFD entries
+  ushort num_ifd_entries = swap_short(*num_ifd_entries_ptr);
+  printf("# of compatibility arrays: %u\n", num_ifd_entries);
 
-  printf("# of compatility arrays: %u\n", num_ifd_entries);
-
-  if ((local_4a - 0x10) < (uint32_t)num_ifd_entries * 0xc) { // 0xc is 12 bytes per IFD entry
-    printf("Invalid number of IFD entries\n");
+  // Check if enough space for IFD entries (each entry is 12 bytes: Tag(2) + Type(2) + Count(4) + Value/Offset(4))
+  if ((char*)(num_ifd_entries_ptr + 1) + (uint)num_ifd_entries * 12 > segment_end_ptr) {
+    printf("Invalid number of IFD entries (not enough space for 12-byte entries)\n");
+    free(segment_memory);
+    segment_memory = NULL;
     _terminate();
   }
 
-  local_24 = 0; // Loop counter
-  while (true) {
-    if (num_ifd_entries <= local_24) {
-      printf("Finished processing\n");
-      break; // Exit loop
+  // `ifd_entries_base` points to the start of the actual IFD entries (immediately after the count ushort)
+  ushort *ifd_entries_base = num_ifd_entries_ptr + 1;
+
+  for (int i = 0; i < num_ifd_entries; ++i) {
+    // Each IFD entry is 6 ushorts (12 bytes)
+    ushort *current_ifd_entry = ifd_entries_base + (i * 6);
+
+    // Tag (ushort, bytes 0-1 of entry)
+    ushort entry_tag = swap_short(current_ifd_entry[0]);
+    printf("Tag: 0x%hX (", entry_tag);
+    print_tag_text(entry_tag);
+    printf("%s", DAT_00016ca5);
+
+    // Type (ushort, bytes 2-3 of entry)
+    ushort entry_type = swap_short(current_ifd_entry[1]);
+    printf("Type: 0x%hX (", entry_type);
+    print_type(entry_type);
+    printf("%s", DAT_00016ca5);
+
+    // Count (uint, bytes 4-7 of entry)
+    uint entry_count;
+    memcpy(&entry_count, &current_ifd_entry[2], sizeof(uint));
+    entry_count = swap_word(entry_count);
+    printf("Count: %u\n", entry_count);
+
+    // Value/Offset (uint, bytes 8-11 of entry)
+    uint entry_value_offset;
+    memcpy(&entry_value_offset, &current_ifd_entry[4], sizeof(uint));
+    entry_value_offset = swap_word(entry_value_offset);
+
+    // Process Value/Offset based on Type
+    if (entry_type == 2) { // Type 2 (ASCII string)
+      // The offset for the string is relative to `ifd_section_base`.
+      // Check if the offset is non-zero and points within the segment.
+      if (entry_value_offset != 0 && (ifd_section_base + entry_value_offset) < segment_end_ptr) {
+        char *string_ptr = ifd_section_base + entry_value_offset;
+        printf("Value: %s\n", string_ptr);
+      } else {
+        printf("Value: 0 (invalid string offset or zero)\n");
+      }
+    } else {
+      printf("Value: %u\n", entry_value_offset); // Print as unsigned integer
     }
 
-    // Process each IFD entry (12 bytes: Tag, Type, Count, Value/Offset)
-    // local_3c[0] is the count. Entries start at local_3c + 1.
-    // Each entry is 6 ushorts (12 bytes).
-    // An entry's Tag is at (local_3c + 1 + local_24 * 6)
-    // An entry's Type is at (local_3c + 1 + local_24 * 6 + 1)
-    // An entry's Count (32-bit) is at (local_3c + 1 + local_24 * 6 + 2)
-    // An entry's Value/Offset (32-bit) is at (local_3c + 1 + local_24 * 6 + 4)
-    // The original code uses `local_3c[local_24 * 6 + 1]` etc.
-    // This implies `local_3c` already points to the start of the *entries* array,
-    // and `*local_3c` (or `local_3c[0]`) was the count read previously.
-    // Let's adjust `local_3c` to point to the first actual entry.
-    // If `local_3c` points to the count, then the entries start at `local_3c + 1`.
-
-    // The snippet uses `local_3c[local_24 * 6 + 1]` for Tag, `local_3c[local_24 * 6 + 2]` for Type.
-    // This means `local_3c` points to the *count*, and `local_3c[0]` is the count.
-    // The first entry's tag is at `local_3c[1]`.
-    // The `+1` in `local_3c[local_24 * 6 + 1]` already accounts for the count field.
-    // So if `local_3c` is the pointer to the count, `local_3c[1]` is the first tag.
-
-    uint16_t current_tag = swap_short(local_3c[local_24 * 6 + 1]);
-    printf("Tag: %x (", current_tag);
-    print_tag_text(current_tag);
-    printf(")\n");
-
-    uint16_t current_type = swap_short(local_3c[local_24 * 6 + 2]);
-    printf("Type: %x (", current_type);
-    print_type(current_type);
-    printf(")\n");
-
-    uint32_t current_count = swap_word(*(uint32_t *)(local_3c + local_24 * 6 + 3));
-    printf("Count: %u\n", current_count);
-
-    // Value/Offset handling (replaces goto)
-    bool value_printed = false;
-    uint32_t value_offset_data = swap_word(*(uint32_t *)(local_3c + local_24 * 6 + 5));
-
-    if (current_type == 2) { // ASCII string type
-        if (value_offset_data < (local_4a - 8)) { // Check if offset is within segment bounds
-            if (value_offset_data != 0) {
-                printf("Value: %s\n", (char *)((intptr_t)local_30 + value_offset_data));
-                value_printed = true;
-            }
-        }
-        if (!value_printed) { // If conditions for string were not met, or offset was 0
-            printf("Value: 0\n");
-            value_printed = true;
-        }
+    // Check for specific tags (GPS IFD, Exif IFD)
+    // Tags 0x8825 (GPS IFD Pointer) and 0x8769 (Exif IFD Pointer)
+    if (entry_tag == 0x8825) { // GPS IFD Pointer
+      // The value is an offset to the GPS IFD, relative to `ifd_section_base`
+      process_gps_ifd(ifd_section_base + entry_value_offset, segment_size, segment_base_ptr, segment_end_ptr);
+    } else if (entry_tag == 0x8769) { // Exif IFD Pointer
+      // The value is an offset to the Exif IFD, relative to `ifd_section_base`
+      process_xif_ifd(ifd_section_base + entry_value_offset, segment_size, segment_base_ptr, segment_end_ptr);
     }
-    // If not an ASCII type, or if ASCII but already handled above (value_printed is true)
-    if (!value_printed) {
-        printf("Value: %u\n", value_offset_data); // Print as unsigned integer
-    }
-
-    // Process specific IFDs (GPS IFD, EXIF IFD)
-    if (current_tag == (uint16_t)0x8825) { // EXIF_GPS_IFD (0x8825 = -0x77db)
-      local_44 = value_offset_data; // This is the offset to the GPS IFD
-      process_gps_ifd((void *)((intptr_t)local_30 + local_44), local_30, local_4a, local_34);
-    } else if (current_tag == (uint16_t)0x8769) { // EXIF_EXIF_IFD (0x8769 = -0x7897)
-      local_40 = value_offset_data; // This is the offset to the EXIF IFD
-      process_xif_ifd((void *)((intptr_t)local_30 + local_40), local_30, local_4a, local_34);
-    }
-
-    local_24 = local_24 + 1;
   }
 
-  free(local_2c); // Free the last allocated memory
+  printf("Finished processing\n");
+
+  // Free allocated memory at the end
+  if (segment_memory != NULL) {
+    free(segment_memory);
+    segment_memory = NULL;
+  }
+
   return 0;
 }

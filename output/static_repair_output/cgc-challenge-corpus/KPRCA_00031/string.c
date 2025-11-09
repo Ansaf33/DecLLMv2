@@ -1,190 +1,181 @@
-#include <stdio.h>    // For fprintf, stderr, printf
-#include <stdlib.h>   // For calloc, realloc, free, exit
-#include <string.h>   // For strlen, strcpy, strncpy, strcat, memset, strncmp
-#include <stdbool.h>  // For bool
-#include <stdint.h>   // For size_t (though included via stdlib.h/stddef.h usually)
+#include <stdio.h>   // For fprintf, stderr, printf
+#include <stdlib.h>  // For calloc, realloc, free, exit
+#include <string.h>  // For strlen, strcpy, strncpy, strcat, strstr
+#include <stdbool.h> // For bool type
 
-// Custom error function to replace _error
-void _error(int status, const char *file, int line) {
-    fprintf(stderr, "ERROR: %s:%d - Exiting with status %d\n", file, line, status);
-    exit(status);
-}
-
-// Define the String structure to represent the string object
-// Based on the original code's usage (capacity then buffer pointer)
+// Define the String struct to replace the ambiguous pointer usage in the original snippet.
+// This structure clearly defines the capacity and the data buffer for a dynamic string.
 typedef struct {
-    size_t capacity;
-    char *buffer;
+    size_t capacity; // Stores the allocated size of the data buffer (including null terminator).
+                     // Corresponds to `*param_1` or `*(int*)param_1` in the original.
+    char *data;      // Pointer to the character array holding the string content.
+                     // Corresponds to `param_1[1]` or `*(char**)(param_1 + 4)` in the original.
 } String;
 
+// Custom error handling function, replacing the undefined `_error` from the snippet.
+// It mimics the observed usage in the original code by printing an error message and exiting.
+void _error(int exit_code, const char *file, int line) {
+    fprintf(stderr, "Error: %s:%d (Exit Code %d)\n", file, line, exit_code);
+    exit(exit_code);
+}
+
 // Function: new_string
-// Creates a new String object with an initial buffer.
-// The original code allocated 8 bytes for the String object and 128 for the buffer.
-// This assumes a 32-bit system where pointers are 4 bytes.
-// For Linux compilable C code, especially on 64-bit, we use a proper struct
-// and allocate memory accordingly.
+// Allocates and initializes a new String object.
+// It takes an optional initial string to populate the new String.
 String *new_string(const char *initial_str) {
     String *s = (String *)calloc(1, sizeof(String));
     if (s == NULL) {
         _error(1, __FILE__, __LINE__);
     }
 
-    s->capacity = 0x80; // Initial default capacity as per original code
-    size_t initial_len = (initial_str != NULL) ? strlen(initial_str) : 0;
-
-    // Ensure initial capacity is sufficient for the initial string
-    if (s->capacity < initial_len + 1) {
-        s->capacity = (initial_len + 1) * 2; // Double the required capacity
-    }
-
-    s->buffer = (char *)calloc(1, s->capacity);
-    if (s->buffer == NULL) {
-        free(s); // Clean up String object if buffer allocation fails
+    s->capacity = 128; // Set initial capacity (0x80 from original snippet)
+    s->data = (char *)calloc(1, s->capacity);
+    if (s->data == NULL) {
         _error(1, __FILE__, __LINE__);
     }
 
     if (initial_str != NULL) {
-        strcpy(s->buffer, initial_str);
+        // Use strncpy for safety to prevent buffer overflows,
+        // and explicitly ensure null termination.
+        strncpy(s->data, initial_str, s->capacity - 1);
+        s->data[s->capacity - 1] = '\0'; // Ensure null termination
     } else {
-        s->buffer[0] = '\0'; // Ensure it's an empty string
+        s->data[0] = '\0'; // Ensure an empty string is properly null-terminated
     }
     return s;
 }
 
 // Function: set_string
-// Sets the content of an existing String object.
-// Returns 0 on success, -1 on invalid input.
-int set_string(String *s, const char *new_value) {
-    if (new_value == NULL || s == NULL || s->buffer == NULL) {
-        return -1;
+// Sets the content of an existing String object to a new string.
+// It handles reallocation if the new string requires more capacity.
+int set_string(String *s, const char *new_str) {
+    if (s == NULL || new_str == NULL) {
+        return -1; // Indicate error for invalid input
     }
 
-    memset(s->buffer, 0, s->capacity); // Clear existing content
+    size_t new_len = strlen(new_str);
+    size_t required_capacity = new_len + 1; // +1 for the null terminator
 
-    size_t new_len = strlen(new_value);
-    if (s->capacity < new_len + 1) { // +1 for null terminator
-        // Reallocate: The original code used (current_len + new_len + 1) * 2.
-        // For a set operation, current_len is irrelevant; we just need to fit new_value.
-        s->capacity = (new_len + 1) * 2;
-        char *new_buffer = (char *)realloc(s->buffer, s->capacity);
-        if (new_buffer == NULL) {
+    if (s->capacity < required_capacity) {
+        // The original capacity growth logic for `set_string` was effectively `(new_len + 1) * 2`
+        // (as `old_len` would be 0 after `memset`). We maintain this growth factor.
+        s->capacity = required_capacity * 2; 
+
+        char *new_data = (char *)realloc(s->data, s->capacity);
+        if (new_data == NULL) {
             _error(1, __FILE__, __LINE__);
         }
-        s->buffer = new_buffer;
+        s->data = new_data;
     }
-    strncpy(s->buffer, new_value, s->capacity - 1); // Copy up to capacity-1 chars
-    s->buffer[s->capacity - 1] = '\0'; // Ensure null termination
-    return 0;
+    
+    // Copy the new string content. strncpy is safer than strcpy.
+    // Ensure null termination by writing up to `capacity-1` and then explicitly nulling the last char.
+    strncpy(s->data, new_str, s->capacity - 1);
+    s->data[s->capacity - 1] = '\0'; // Ensure null termination
+    
+    return 0; // Indicate success
 }
 
 // Function: append_string
 // Appends a string to an existing String object.
-// Returns 0 on success, -1 on invalid input.
+// It reallocates the buffer if necessary to accommodate the appended string.
 int append_string(String *s, const char *to_append) {
-    if (to_append == NULL || s == NULL || s->buffer == NULL) {
-        return -1;
+    if (s == NULL || to_append == NULL) {
+        return -1; // Indicate error for invalid input
     }
 
-    size_t current_len = strlen(s->buffer);
+    size_t current_len = strlen(s->data);
     size_t append_len = strlen(to_append);
     size_t required_capacity = current_len + append_len + 1; // +1 for null terminator
 
     if (s->capacity < required_capacity) {
-        s->capacity = required_capacity * 2; // Double the required capacity
-        char *new_buffer = (char *)realloc(s->buffer, s->capacity);
-        if (new_buffer == NULL) {
+        // Original capacity growth logic: `(current_len + append_len + 1) * 2`
+        s->capacity = required_capacity * 2; 
+        char *new_data = (char *)realloc(s->data, s->capacity);
+        if (new_data == NULL) {
             _error(1, __FILE__, __LINE__);
         }
-        s->buffer = new_buffer;
+        s->data = new_data;
     }
-    strcat(s->buffer, to_append); // Safe now because capacity is checked
-    return 0;
+    strcat(s->data, to_append); // Safe to use strcat now that capacity is guaranteed
+    return 0; // Indicate success
 }
 
 // Function: contains_string
-// Checks if a String object contains a given substring.
+// Checks if a String object contains a given substring (needle).
 // Returns true if found, false otherwise.
-bool contains_string(const String *s, const char *substring) {
-    if (s == NULL || s->buffer == NULL || substring == NULL) {
-        return false;
+bool contains_string(const String *s, const char *needle) {
+    if (s == NULL || s->data == NULL || needle == NULL) {
+        return false; // Invalid input means it cannot contain the needle
     }
-
-    const char *haystack = s->buffer;
-    size_t haystack_len = strlen(haystack);
-    size_t needle_len = strlen(substring);
-
-    if (needle_len == 0) {
-        return true; // An empty string is always considered contained
-    }
-    if (haystack_len < needle_len) {
-        return false; // Haystack is shorter than the substring
-    }
-
-    // The original code implemented a manual search similar to strstr.
-    // We can simplify this by using strncmp within a loop, which is efficient
-    // and reduces the need for many intermediate variables or repeated strlen calls.
-    for (size_t i = 0; i <= haystack_len - needle_len; ++i) {
-        if (strncmp(haystack + i, substring, needle_len) == 0) {
-            return true;
-        }
-    }
-
-    return false;
+    // The standard library function `strstr` provides robust and efficient substring search.
+    // It correctly handles edge cases like empty strings.
+    return strstr(s->data, needle) != NULL;
 }
 
 // Function: free_string
-// Frees the memory associated with a String object.
+// Frees all memory associated with a String object.
 void free_string(String *s) {
     if (s != NULL) {
-        if (s->buffer != NULL) {
-            free(s->buffer);
-            s->buffer = NULL; // Prevent double-free
+        if (s->data != NULL) {
+            free(s->data);
+            s->data = NULL; // Nullify the pointer to prevent double-free issues
         }
         free(s);
-        // It's good practice to set the pointer to NULL after freeing,
-        // but the caller's pointer won't be affected by this assignment
-        // unless passed by reference (e.g., `String **s_ptr`).
-        // For simplicity, we just free the allocated memory.
     }
 }
 
-// Main function to demonstrate usage
+// Main function to demonstrate the usage of the String functions.
 int main() {
-    printf("--- String Management Demonstration ---\n\n");
+    printf("--- String Library Demonstration ---\n");
 
     // Test new_string
-    String *my_string = new_string("Hello");
-    printf("New string created: '%s' (Capacity: %zu)\n", my_string->buffer, my_string->capacity);
+    String *my_string = new_string("Initial String");
+    printf("1. New string: '%s' (Capacity: %zu, Length: %zu)\n", 
+           my_string->data, my_string->capacity, strlen(my_string->data));
 
     // Test append_string
-    append_string(my_string, ", World!");
-    printf("After appending ', World!': '%s' (Capacity: %zu)\n", my_string->buffer, my_string->capacity);
+    append_string(my_string, ", Appended Part.");
+    printf("2. Appended: '%s' (Capacity: %zu, Length: %zu)\n", 
+           my_string->data, my_string->capacity, strlen(my_string->data));
 
-    append_string(my_string, " This is a longer string to test realloc.");
-    printf("After appending more: '%s' (Capacity: %zu)\n", my_string->buffer, my_string->capacity);
+    // Test set_string with a shorter string
+    set_string(my_string, "Short Test");
+    printf("3. Set to 'Short Test': '%s' (Capacity: %zu, Length: %zu)\n", 
+           my_string->data, my_string->capacity, strlen(my_string->data));
 
-    // Test set_string
-    set_string(my_string, "New content.");
-    printf("After setting to 'New content.': '%s' (Capacity: %zu)\n", my_string->buffer, my_string->capacity);
-
-    set_string(my_string, "This is an even longer string to force realloc again with set_string.");
-    printf("After setting to a longer string: '%s' (Capacity: %zu)\n", my_string->buffer, my_string->capacity);
+    // Test set_string with a much longer string to trigger realloc
+    set_string(my_string, "This is a much longer string that should definitely trigger a reallocation of the underlying buffer to accommodate its length.");
+    printf("4. Set to long string: '%s' (Capacity: %zu, Length: %zu)\n", 
+           my_string->data, my_string->capacity, strlen(my_string->data));
 
     // Test contains_string
-    printf("\n--- Contains String Tests ---\n");
-    printf("Does '%s' contain 'New'? %s\n", my_string->buffer, contains_string(my_string, "New") ? "Yes" : "No");
-    printf("Does '%s' contain 'longer'? %s\n", my_string->buffer, contains_string(my_string, "longer") ? "Yes" : "No");
-    printf("Does '%s' contain 'nonexistent'? %s\n", my_string->buffer, contains_string(my_string, "nonexistent") ? "Yes" : "No");
-    printf("Does '%s' contain '' (empty string)? %s\n", my_string->buffer, contains_string(my_string, "") ? "Yes" : "No");
-    
-    String *empty_string = new_string("");
-    printf("Does '%s' contain 'a'? %s\n", empty_string->buffer, contains_string(empty_string, "a") ? "Yes" : "No");
-    printf("Does '%s' contain '%s'? %s\n", my_string->buffer, my_string->buffer, contains_string(my_string, my_string->buffer) ? "Yes" : "No");
-    free_string(empty_string);
+    printf("5. Contains 'longer'? %s\n", contains_string(my_string, "longer") ? "true" : "false");
+    printf("6. Contains 'nonexistent'? %s\n", contains_string(my_string, "nonexistent") ? "true" : "false");
+    printf("7. Contains '' (empty string)? %s\n", contains_string(my_string, "") ? "true" : "false");
+    printf("8. Contains 'This'? %s\n", contains_string(my_string, "This") ? "true" : "false");
 
-    // Test freeing string
+    // Test edge cases for contains_string with an empty string object
+    String *empty_str_obj = new_string("");
+    printf("9. Empty string object ('%s') contains 'a'? %s\n", empty_str_obj->data, contains_string(empty_str_obj, "a") ? "true" : "false");
+    printf("10. Empty string object ('%s') contains ''? %s\n", empty_str_obj->data, contains_string(empty_str_obj, "") ? "true" : "false");
+    free_string(empty_str_obj);
+
+    // Test append_string again to check capacity growth after a large string
+    append_string(my_string, " And now we append even more text to this already long string, pushing the capacity boundaries further!");
+    printf("11. Appended even more: '%s' (Capacity: %zu, Length: %zu)\n", 
+           my_string->data, my_string->capacity, strlen(my_string->data));
+
+    // Test free_string
     free_string(my_string);
-    printf("\nStrings freed. Program finished.\n");
+    printf("12. Original string freed.\n");
+
+    // Test new_string with NULL initial string
+    String *null_init_string = new_string(NULL);
+    printf("13. New string (NULL init): '%s' (Capacity: %zu, Length: %zu)\n", 
+           null_init_string->data, null_init_string->capacity, strlen(null_init_string->data));
+    free_string(null_init_string);
+    printf("14. NULL-initialized string freed.\n");
 
     return 0;
 }

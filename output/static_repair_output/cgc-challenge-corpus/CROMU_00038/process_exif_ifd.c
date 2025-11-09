@@ -1,93 +1,105 @@
-#include <stdio.h>    // For printf, fprintf
-#include <stdlib.h>   // For exit
-#include <stdint.h>   // For uint16_t, uint32_t, uintptr_t
-#include <string.h>   // For memcpy
+#include <stdio.h>  // For printf, fprintf
+#include <stdlib.h> // For exit
 
-// Type definitions from the original snippet (mapped to standard C types)
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef uint32_t undefined4; // Assuming 4-byte undefined
+// Define ushort and uint based on common usage in decompiled code
+typedef unsigned short ushort;
+typedef unsigned int uint;
+typedef unsigned int undefined4; // Map undefined4 to uint
 
-// External function declarations (assuming these are defined elsewhere)
-// These functions are likely for endianness conversion.
-// They are assumed to take a value and return the byte-swapped value.
-extern ushort swap_short(ushort val);
-extern undefined4 swap_word(undefined4 val);
+// Dummy declarations for missing functions
+// In a real scenario, these would be linked from a library or defined elsewhere.
+// For compilation, we need at least a declaration and a simple implementation.
+ushort swap_short(ushort val) {
+    // Placeholder: In a real scenario, this would perform byte swapping.
+    // For now, just return the value as is to allow compilation.
+    return val;
+}
 
-// External functions for printing tag and type descriptions.
-// The original code implies they take their arguments implicitly from stack,
-// but for standard C, explicit arguments are necessary.
-extern void print_xif_tag_text(ushort tag);
-extern void print_type(ushort type);
+uint swap_word(uint val) {
+    // Placeholder: In a real scenario, this would perform byte swapping.
+    // For now, just return the value as is to allow compilation.
+    return val;
+}
+
+void print_xif_tag_text(ushort tag) {
+    // Placeholder: In a real scenario, this would print a descriptive string for the given tag.
+    printf("Tag_0x%04X_Desc", tag);
+}
+
+void print_type(ushort type) {
+    // Placeholder: In a real scenario, this would print a descriptive string for the given type.
+    printf("Type_0x%04X_Desc", type);
+}
 
 // Function: process_xif_ifd
-// param_1: Base pointer to the IFD data (array of ushorts)
-// param_2: Original unused parameter, kept for ABI compatibility if necessary
-// param_3: Allocated size of the buffer pointed to by param_1 (in bytes)
-// param_4: End address of the valid data within the buffer (exclusive end pointer)
-void process_xif_ifd(ushort *param_1, undefined4 param_2, uint param_3, int param_4) {
-    uint data_len = (uint)((uintptr_t)param_4 - (uintptr_t)param_1); // Total length of valid data in bytes
+void process_xif_ifd(ushort *param_1, undefined4 param_2, ushort param_3, int param_4) {
+  // Reduce intermediate variables and simplify pointer arithmetic.
 
-    // Check if the allocated buffer size (param_3) is less than the actual data length (data_len)
-    if (param_3 < data_len) {
-        fprintf(stderr, "Error: Buffer too small for the indicated data length.\n");
-        exit(1);
+  ushort ifd_count;           // Corresponds to local_16
+  ushort tag;                 // Corresponds to local_18
+  ushort type;                // Corresponds to local_1a
+  uint count;                 // Corresponds to local_20 (undefined4 -> uint)
+  int offset_or_value;        // Corresponds to local_24
+  int i;                      // Corresponds to local_10
+
+  // Calculate remaining_bytes (corresponds to local_14)
+  int remaining_bytes = param_4 - (int)param_1;
+
+  // Check if the provided length (param_3) is less than the actual remaining bytes.
+  // This indicates an insufficient buffer or incorrect length.
+  if (param_3 < remaining_bytes) {
+    fprintf(stderr, "Error: Data buffer too small. Provided length (%hu) is less than remaining bytes (%d).\n", param_3, remaining_bytes);
+    exit(1); // Replaced _terminate() with exit(1)
+  }
+
+  // Read the number of IFD entries (ifd_count) from the first ushort in param_1.
+  // The original code implies this value is byte-swapped.
+  ifd_count = swap_short(*param_1);
+
+  // Validate the IFD count against the remaining data size.
+  // Each IFD entry is 12 bytes (6 ushorts). Plus 2 bytes for the count itself.
+  if (remaining_bytes < (uint)ifd_count * 12 + 2) {
+    fprintf(stderr, "Invalid IFD count value: remaining_bytes (%d) < expected minimum (%u).\n", remaining_bytes, (uint)ifd_count * 12 + 2);
+    exit(1); // Replaced _terminate() with exit(1)
+  }
+
+  printf("# of arrays: %d\n", ifd_count);
+
+  // Loop through each IFD entry
+  // Each entry is assumed to be 6 ushorts (12 bytes) long.
+  // The structure seems to be:
+  // param_1[i*6 + 0] : (ushort) - Not explicitly read/used after the initial ifd_count
+  // param_1[i*6 + 1] : Tag (ushort)
+  // param_1[i*6 + 2] : Type (ushort)
+  // param_1[i*6 + 3] : Count (uint, spanning param_1[i*6+3] and param_1[i*6+4])
+  // param_1[i*6 + 5] : Value Offset/Value (uint, spanning param_1[i*6+5] and param_1[i*6+6])
+  // Note: The usage of param_1[i*6+3] and param_1[i*6+5] as starting points for uint reads
+  // implies reading 4 bytes from these ushort-aligned addresses. This might lead to
+  // unaligned memory access on certain architectures if uint requires 4-byte alignment
+  // and the address is not 4-byte aligned. This behavior is preserved from the original.
+  for (i = 0; i < ifd_count; i++) {
+    tag = swap_short(param_1[i * 6 + 1]);
+    type = swap_short(param_1[i * 6 + 2]);
+    count = swap_word(*(uint *)(param_1 + i * 6 + 3));
+    offset_or_value = swap_word(*(uint *)(param_1 + i * 6 + 5));
+
+    printf("Tag: %x (", tag);
+    print_xif_tag_text(tag);
+    printf(") "); // Replaced DAT_00016a54
+
+    printf("Type: %x (", type);
+    print_type(type);
+    printf(") "); // Replaced DAT_00016a54
+
+    printf("Count: %u\n", count);
+
+    // If type is 2 (often ASCII), treat offset_or_value as a byte offset from param_1
+    // to retrieve a string. Otherwise, treat it as a direct unsigned integer value.
+    if (type == 2) {
+      printf("Value: %s\n", (char *)param_1 + offset_or_value);
+    } else {
+      printf("Value: %u\n", offset_or_value);
     }
-
-    // The first ushort at param_1[0] contains the count of IFD entries.
-    ushort ifd_count = swap_short(param_1[0]);
-
-    // Calculate the minimum required data length for the count (2 bytes)
-    // plus all IFD entries (each 12 bytes).
-    uint required_len = (uint)ifd_count * 12 + sizeof(ushort);
-
-    if (data_len < required_len) {
-        fprintf(stderr, "Invalid IFD count value or actual data length is insufficient.\n");
-        exit(1);
-    }
-
-    printf("# of arrays: %d\n", ifd_count);
-
-    // Loop through each IFD entry
-    for (int i = 0; i < ifd_count; i++) {
-        // Each IFD entry is 6 ushorts (12 bytes) long.
-        // Entries start immediately after the initial count ushort (param_1[0]).
-        // So, the i-th entry starts at param_1[1 + i * 6].
-        const ushort *current_entry_ptr = param_1 + 1 + i * 6;
-
-        ushort tag = swap_short(current_entry_ptr[0]);
-        ushort type = swap_short(current_entry_ptr[1]);
-
-        uint32_t raw_count_val;
-        // Safely copy 4 bytes (uint32_t) from the two ushorts representing count
-        // This handles potential unaligned access and strict aliasing rules.
-        memcpy(&raw_count_val, &current_entry_ptr[2], sizeof(uint32_t));
-        uint32_t count_val = swap_word(raw_count_val);
-
-        uint32_t raw_value_offset;
-        // Safely copy 4 bytes (uint32_t) from the two ushorts representing value/offset
-        memcpy(&raw_value_offset, &current_entry_ptr[4], sizeof(uint32_t));
-        uint32_t value_offset = swap_word(raw_value_offset);
-
-        printf("Tag: %x (", tag);
-        print_xif_tag_text(tag);
-        printf(")\n"); // Replaced DAT_00016a54 with literal string ")\n"
-
-        printf("Type: %x (", type);
-        print_type(type);
-        printf(")\n"); // Replaced DAT_00016a54 with literal string ")\n"
-
-        printf("Count: %d\n", count_val);
-
-        // Type 2 typically indicates an ASCII string
-        if (type == 2) {
-            // value_offset is an offset in bytes from the beginning of param_1,
-            // representing a pointer to the string data.
-            printf("Value: %s\n", (char *)((uintptr_t)param_1 + value_offset));
-        } else {
-            // For other types, value_offset contains the actual value.
-            printf("Value: %u\n", value_offset);
-        }
-    }
-    return;
+  }
+  return;
 }

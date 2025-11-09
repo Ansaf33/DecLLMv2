@@ -1,196 +1,180 @@
 #include <stdlib.h> // For calloc, NULL, exit
-#include <stdio.h>  // For fprintf, stderr
-#include <stdint.h> // For uintptr_t, used for robust pointer-to-integer conversions
+#include <stdio.h>  // For fprintf
 
-// Type definitions based on typical reverse engineering output for 32-bit systems
+// Assuming uint is unsigned int and undefined4 is unsigned int (4-byte unsigned)
 typedef unsigned int uint;
-typedef unsigned int undefined4; // Represents a 4-byte unsigned integer
+typedef unsigned int undefined4; // Represents a 4-byte undefined type, often unsigned int
 
-// Forward declarations for mock functions
-void _error(int code, const char* file, int line);
-uint init_list(uint data);
-int append_list(undefined4 *list_head_ptr, undefined4 data, int flag, uint context);
-
-// Tree node structure based on memory allocation (0x14 bytes for 5 uints)
-// Pointers to child nodes are stored as uints. This design is common in
-// binaries from 32-bit environments where sizeof(uint) == sizeof(void*) == 4.
-// For robust compilation on both 32-bit and 64-bit Linux, we explicitly cast
-// between uint and TreeNode* using uintptr_t.
-typedef struct TreeNode {
-    uint val1;              // Corresponds to *puVar1 or param_1[0]
-    uint val2;              // Corresponds to puVar1[1] or param_1[1]
-    uint list_ptr;          // Corresponds to puVar1[2] or param_1[2] (likely a pointer to a list head)
-    uint left_child_ptr;    // Corresponds to puVar1[3] or param_1[3], interpreted as a pointer
-    uint right_child_ptr;   // Corresponds to puVar1[4] or param_1[4], interpreted as a pointer
-} TreeNode;
-
-// Mock implementations for missing external functions
-// In a real scenario, these would be defined elsewhere or linked.
+// Placeholder for _error function
 void _error(int code, const char* file, int line) {
-    fprintf(stderr, "Error %d at %s:%d\n", code, file, line);
+    fprintf(stderr, "ERROR %d: %s:%d\n", code, file, line);
     exit(code);
 }
 
-uint init_list(uint data) {
-    // Mock: Returns a non-zero value as a dummy list head, 0 for error.
-    // In a real implementation, this would allocate and initialize a list structure.
-    (void)data; // Suppress unused parameter warning
-    static uint next_list_id = 1; // Simple counter for unique IDs
-    return next_list_id++;
+// Minimal declarations for other functions used in the snippet
+// These functions are not provided, so their exact behavior is inferred
+// based on their usage in the snippet.
+// In a real scenario, these would be properly defined.
+uint init_list(uint initial_value) {
+    // Placeholder: This function is expected to initialize a list and return its head (as a uint).
+    // For this exercise, it simply returns the initial value.
+    return initial_value;
 }
 
-int append_list(undefined4 *list_head_ptr, undefined4 data, int flag, uint context) {
-    // Mock: Simulates appending to a list, just "succeeds".
-    // In a real implementation, this would modify the list pointed to by list_head_ptr.
-    (void)data; (void)flag; (void)context;
-    if (list_head_ptr == NULL) {
-        return -1; // Indicate error if list_head_ptr is invalid
-    }
-    // For demonstration, we just return success.
-    return 0;
+// param_1 (list_head_ptr) is a pointer to the list head (uint *).
+// param_2 (value_to_append) is the value to append (uint).
+// param_3 (flag) is an integer flag (int).
+void append_list(uint *list_head_ptr, uint value_to_append, int flag) {
+    // Placeholder: This function is expected to append a value to the list
+    // whose head is pointed to by list_head_ptr.
+    // For this exercise, we just simulate the call.
+    (void)list_head_ptr;       // Avoid unused parameter warning
+    (void)value_to_append;     // Avoid unused parameter warning
+    (void)flag;                // Avoid unused parameter warning
 }
+
 
 // Function: init_tree
-TreeNode * init_tree(uint param_1, uint param_2, int param_3) {
-  TreeNode *newNode;
-  
-  // Allocate space for one TreeNode (sizeof(TreeNode) should be 20 bytes on a 32-bit system)
-  newNode = (TreeNode *)calloc(1, sizeof(TreeNode));
+// Allocates and initializes a tree node.
+// A tree node is represented as an array of 5 uints:
+// [key1, key2, list_head, left_child_ptr_as_uint, right_child_ptr_as_uint]
+uint * init_tree(uint param_1, uint param_2, int param_3) {
+  uint *newNode = (uint *)calloc(1, 5 * sizeof(uint)); // Allocate for 5 uints (20 bytes)
   if (newNode == NULL) {
     _error(1,
            "/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/cgc-challenge-corpus/KPRCA_00031/src/tree.c"
            ,0x22);
   }
-  
-  // Initialize node fields only if param_1, param_2, and param_3 are non-zero.
-  // Otherwise, fields remain zero due to calloc.
+  // Initialize only if keys and list_param are non-zero, as per original logic
   if (((param_1 | param_2) != 0) && (param_3 != 0)) {
-    newNode->val1 = param_1;
-    newNode->val2 = param_2;
-    newNode->list_ptr = init_list(param_3); // Directly assign the result of init_list
+    newNode[0] = param_1;       // Key 1
+    newNode[1] = param_2;       // Key 2
+    newNode[2] = init_list(param_3); // List head for this node, initialized with param_3
   }
   return newNode;
 }
 
 // Function: get_tree
-uint get_tree(TreeNode *node, uint param_2, uint param_3) {
-  if (node == NULL) {
-    return 0; // Return 0 for an empty subtree or if the key is not found
+// Navigates the tree to find a node matching param_2 and param_3.
+// Returns the list head (uint) of the found node, or 0 if not found.
+uint get_tree(uint *param_1, uint param_2, uint param_3) {
+  if (param_1 == NULL) {
+    return 0; // Node not found or empty tree
   }
-  
-  // Lexicographical comparison (param_3, param_2) against (node->val2, node->val1)
-  // This determines whether to go left, right, or if a match is found.
-  if (param_3 < node->val2 || (param_3 == node->val2 && param_2 < node->val1)) {
-    // Go left: cast the stored uint pointer to TreeNode* for the recursive call
-    return get_tree((TreeNode *)(uintptr_t)node->left_child_ptr, param_2, param_3);
+
+  // Compare (param_2, param_3) with current node's keys (param_1[0], param_1[1])
+  // Go left if param_3 is less than current_node_key2
+  // OR if param_3 equals current_node_key2 AND param_2 is less than current_node_key1
+  if (param_3 < param_1[1] || (param_3 == param_1[1] && param_2 < param_1[0])) {
+    // Recurse left (param_1[3] holds the left child pointer, cast back to uint *)
+    return get_tree((uint *)param_1[3], param_2, param_3);
   }
-  else if (param_3 > node->val2 || (param_3 == node->val2 && param_2 > node->val1)) {
-    // Go right: cast the stored uint pointer to TreeNode* for the recursive call
-    return get_tree((TreeNode *)(uintptr_t)node->right_child_ptr, param_2, param_3);
+  // Go right if param_3 is greater than current_node_key2
+  // OR if param_3 equals current_node_key2 AND param_2 is greater than current_node_key1
+  else if (param_3 > param_1[1] || (param_3 == param_1[1] && param_2 > param_1[0])) {
+    // Recurse right (param_1[4] holds the right child pointer, cast back to uint *)
+    return get_tree((uint *)param_1[4], param_2, param_3);
   }
-  else { // Keys match: param_3 == node->val2 && param_2 == node->val1
-    return node->list_ptr; // Return the list associated with this node
+  else {
+    // Keys match: param_3 == param_1[1] && param_2 == param_1[0]
+    return param_1[2]; // Node found, return its list head
   }
 }
 
 // Function: ins_tree
-undefined4 ins_tree(TreeNode *node, uint param_2, uint param_3, undefined4 param_4) {
-  if (node == NULL) {
-    // This case usually indicates an attempt to insert into a non-existent tree root,
-    // or an error in tree traversal logic.
-    return 0xffffffff; // Error: Cannot insert into a NULL tree
+// Inserts a new node or appends to an existing node's list.
+// Returns 0 on success, 0xffffffff on error (e.g., param_1 is NULL).
+undefined4 ins_tree(uint *param_1, uint param_2, uint param_3, undefined4 param_4) {
+  if (param_1 == NULL) {
+    return 0xffffffff; // Cannot insert into a NULL tree/subtree
   }
 
-  uint *target_child_ptr_addr; // Pointer to either node->left_child_ptr or node->right_child_ptr
-  
-  // Lexicographical comparison (param_3, param_2) against (node->val2, node->val1)
-  if (param_3 < node->val2 || (param_3 == node->val2 && param_2 < node->val1)) {
-    target_child_ptr_addr = &(node->left_child_ptr);
+  // Pointer to the child link (either param_1[3] or param_1[4]) that we might need to modify
+  uint **target_child_ptr;
+
+  // Compare (param_2, param_3) with current node's keys (param_1[0], param_1[1])
+  // Determine if we need to go left or right
+  if (param_3 < param_1[1] || (param_3 == param_1[1] && param_2 < param_1[0])) {
+    target_child_ptr = (uint **)&param_1[3]; // Point to where the left child pointer is stored
   }
-  else if (param_3 > node->val2 || (param_3 == node->val2 && param_2 > node->val1)) {
-    target_child_ptr_addr = &(node->right_child_ptr);
+  else if (param_3 > param_1[1] || (param_3 == param_1[1] && param_2 > param_1[0])) {
+    target_child_ptr = (uint **)&param_1[4]; // Point to where the right child pointer is stored
   }
-  else { // Keys match: param_3 == node->val2 && param_2 == node->val1
-    // If keys match, append param_4 to the list associated with this node
-    return append_list(&node->list_ptr, param_4, 0, 0x12c19);
+  else {
+    // Keys match: param_3 == param_1[1] && param_2 == param_1[0]
+    // Node found, append param_4 to its list (param_1[2])
+    append_list(&param_1[2], param_4, 0);
+    return 0; // Success
   }
 
-  // If the target child pointer is NULL (0), create a new node
-  if (*target_child_ptr_addr == 0) {
-    TreeNode *new_child = init_tree(param_2, param_3, param_4);
-    *target_child_ptr_addr = (uint)(uintptr_t)new_child; // Store the new child's address as a uint
-    // Return 0 on success, 0xffffffff on error (if init_tree failed to allocate)
-    return (new_child == NULL) ? 0xffffffff : 0;
+  // If we decided to go left or right, check if the target child exists
+  if (*target_child_ptr == NULL) { // If the child pointer is NULL, create a new node
+    // Store the new node's pointer (returned as uint) into the target child slot
+    *target_child_ptr = (uint)init_tree(param_2, param_3, param_4);
+    return 0; // Success
   } else {
-    // Otherwise, recursively call ins_tree on the existing child
-    return ins_tree((TreeNode *)(uintptr_t)*target_child_ptr_addr, param_2, param_3, param_4);
+    // Otherwise, recurse into the existing child subtree
+    return ins_tree((uint *)*target_child_ptr, param_2, param_3, param_4);
   }
 }
 
 // Function: num_nodes
-int num_nodes(TreeNode *node) {
-  if (node == NULL) {
-    return 0; // An empty subtree has 0 nodes
+// Counts the number of nodes in the tree.
+int num_nodes(uint *param_1) { // param_1 is the root of the subtree
+  if (param_1 == NULL) {
+    return 0; // Base case: empty subtree has 0 nodes
   }
-  // Recursively count nodes: 1 for current node + nodes in left subtree + nodes in right subtree
-  return 1 + num_nodes((TreeNode *)(uintptr_t)node->left_child_ptr) + 
-             num_nodes((TreeNode *)(uintptr_t)node->right_child_ptr);
+  // Sum of nodes in left subtree + nodes in right subtree + 1 (for the current node)
+  return num_nodes((uint *)param_1[3]) + num_nodes((uint *)param_1[4]) + 1;
 }
 
-// Function: _tree_to_list (recursive helper)
-undefined4 _tree_to_list(TreeNode *node, undefined4 *list_head_ptr) {
-  if (node == NULL) {
-    return 0; // Success for an empty subtree
-  }
-  
-  // Append current node's list_ptr to the main list being built
-  int ret = append_list(list_head_ptr, node->list_ptr, 1, 0x12d3b);
-  if (ret < 0) {
-    return 0xffffffff; // Propagate error
+// Function: _tree_to_list
+// Helper function to convert a tree (or subtree) into a linear list.
+// Appends the list head of each node to a combined list.
+// Returns 0 on success, 0xffffffff on error.
+undefined4 _tree_to_list(uint *param_1, uint *param_2) { // param_1 is tree node, param_2 is pointer to combined list head
+  if (param_1 == NULL) {
+    return 0; // Base case: empty subtree, no elements to add
   }
 
-  // Recurse left subtree
-  ret = _tree_to_list((TreeNode *)(uintptr_t)node->left_child_ptr, list_head_ptr);
-  if (ret < 0) {
-    return 0xffffffff; // Propagate error
-  }
+  // Append the current node's list head (param_1[2]) to the combined list (pointed to by param_2)
+  append_list(param_2, param_1[2], 1);
 
-  // Recurse right subtree
-  ret = _tree_to_list((TreeNode *)(uintptr_t)node->right_child_ptr, list_head_ptr);
-  if (ret < 0) {
-    return 0xffffffff; // Propagate error
+  undefined4 res;
+  // Recurse for the left child
+  res = _tree_to_list((uint *)param_1[3], param_2);
+  if (res < 0) { // Check for error (0xffffffff interpreted as -1 if undefined4 is signed)
+    return 0xffffffff;
   }
-  
+  // Recurse for the right child
+  res = _tree_to_list((uint *)param_1[4], param_2);
+  if (res < 0) { // Check for error
+    return 0xffffffff;
+  }
   return 0; // Success
 }
 
-// Function: tree_to_list (main entry point)
-undefined4 tree_to_list(TreeNode *node) {
-  if (node == NULL) {
-    return 0; // An empty tree produces an empty list, represented by 0
-  }
-  
-  undefined4 list_head; // This variable will hold the head of the newly created list
-  
-  // Initialize the new list with the list_ptr from the current node
-  list_head = init_list(node->list_ptr);
-  if (list_head == 0) { // Assuming 0 indicates an error or invalid list head from init_list
-    return 0; // Return 0 on error
+// Function: tree_to_list
+// Converts an entire tree into a single linear list.
+// Returns the head of the new combined list (uint), or 0 on error/empty tree.
+undefined4 tree_to_list(uint *param_1) { // param_1 is the root of the tree
+  if (param_1 == NULL) {
+    return 0; // Empty tree, return empty list head (0)
   }
 
-  // Recursively traverse the left subtree and append its elements to the list
-  int ret = _tree_to_list((TreeNode *)(uintptr_t)node->left_child_ptr, &list_head); // Pass address of list_head
-  if (ret < 0) {
-    // In a real application, proper error handling (e.g., freeing partially built list) would be needed
-    return 0; // Return 0 on error
+  uint current_list_head; // This variable will hold the head of the new combined list
+  // Initialize the combined list with the list head from the root node (param_1[2])
+  current_list_head = init_list(param_1[2]);
+
+  // Recursively add nodes from the left subtree to the combined list
+  if (_tree_to_list((uint *)param_1[3], &current_list_head) < 0) {
+    return 0; // Error in left subtree processing, return 0 (empty list on error)
   }
 
-  // Recursively traverse the right subtree and append its elements to the list
-  ret = _tree_to_list((TreeNode *)(uintptr_t)node->right_child_ptr, &list_head); // Pass address of list_head
-  if (ret < 0) {
-    // In a real application, proper error handling would be needed
-    return 0; // Return 0 on error
+  // Recursively add nodes from the right subtree to the combined list
+  if (_tree_to_list((uint *)param_1[4], &current_list_head) < 0) {
+    return 0; // Error in right subtree processing, return 0 (empty list on error)
   }
-  
-  return list_head; // Return the head of the newly created list
+
+  return current_list_head; // Return the final combined list head
 }

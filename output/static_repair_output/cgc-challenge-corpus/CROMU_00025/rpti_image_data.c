@@ -1,458 +1,504 @@
-#include <stdio.h>
-#include <stdlib.h> // For malloc, free
-#include <string.h> // For memset, memcpy
-#include <stdint.h> // For uint32_t
+#include <stdio.h>   // For printf, fprintf, stderr
+#include <stdlib.h>  // For malloc, free
+#include <string.h>  // For memset, memcpy
+#include <stdint.h>  // For uint32_t, size_t
 
-// Define the RPTI_FILE_HANDLE structure
-typedef struct RPTI_FILE_HANDLE_STRUCT {
-    char *data;         // Pointer to the raw RPTI file data in memory
-    size_t size;        // Total size of the data in bytes
-    size_t byte_offset; // Current byte position in the data
-    int bit_offset;     // Current bit position within the current byte (0-7)
-} RPTI_FILE_HANDLE;
+// Structure to hold RPTI context, replacing the generic `int *param_1` array
+typedef struct {
+    char *data_buffer;
+    size_t buffer_size_bytes;
+    size_t current_byte_offset;
+    int current_bit_offset_in_byte; // 0-7
+} RPTIContext;
 
-// Function prototypes
-int rpti_add_pixel(char *image_buffer, int x, int y, int axis_type, int width, int height);
-int rpti_display_img(RPTI_FILE_HANDLE *handle);
-int rpti_read_bits(RPTI_FILE_HANDLE *handle, int num_bits, unsigned int *out_value);
-int rpti_inc_index(RPTI_FILE_HANDLE *handle, int num_bits);
-int rpti_read_check(RPTI_FILE_HANDLE *handle, int num_bits);
-int rpti_read_magic(RPTI_FILE_HANDLE *handle);
-int rpti_read_xaxis(RPTI_FILE_HANDLE *handle);
-int rpti_read_yaxis(RPTI_FILE_HANDLE *handle);
-int rpti_read_initx(RPTI_FILE_HANDLE *handle, int *out_initx);
-int rpti_read_inity(RPTI_FILE_HANDLE *handle, int *out_inity);
-int rpti_read_axist(RPTI_FILE_HANDLE *handle);
-int rpti_read_pixel(RPTI_FILE_HANDLE *handle, unsigned int *out_pixel_data);
+// --- Helper functions (allocate/deallocate) ---
+// Returns 1 on success, 0 on failure. Sets *ptr_out.
+static int allocate(size_t size, int unused_param, void **ptr_out) {
+    void *ptr = malloc(size);
+    if (ptr == NULL) {
+        if (ptr_out != NULL) {
+            *ptr_out = NULL;
+        }
+        return 0; // Failure
+    }
+    if (ptr_out != NULL) {
+        *ptr_out = ptr;
+    }
+    return 1; // Success
+}
+
+static void deallocate(void *ptr, size_t unused_size) {
+    free(ptr);
+}
+
+// --- Function Prototypes ---
+// Declared here to resolve circular dependencies and allow compilation.
+// All `undefined4` return types are mapped to `int` (0 for failure, 1 for success).
+// `uint` is mapped to `unsigned int`.
+int rpti_read_check(RPTIContext *ctx, int num_bits_to_read);
+int rpti_inc_index(RPTIContext *ctx, int bits_to_inc);
+int rpti_read_bits(RPTIContext *ctx, int num_bits, unsigned int *value_out);
+int rpti_read_magic(RPTIContext *ctx);
+int rpti_read_xaxis(RPTIContext *ctx);
+int rpti_read_yaxis(RPTIContext *ctx);
+int rpti_read_initx(RPTIContext *ctx, int *init_x_out);
+int rpti_read_inity(RPTIContext *ctx, int *init_y_out);
+int rpti_read_axist(RPTIContext *ctx);
+int rpti_read_pixel(RPTIContext *ctx, unsigned int *pixel_value_out);
+int rpti_add_pixel(char *image_buffer, int x_coord, int y_coord, int axis_type, int image_width, int image_height);
 
 
 // Function: rpti_add_pixel
-int rpti_add_pixel(char *image_buffer, int x, int y, int axis_type, int width, int height) {
+int rpti_add_pixel(char *image_buffer, int x_coord, int y_coord, int axis_type, int image_width, int image_height) {
     if (image_buffer == NULL) {
         return 0;
     }
 
     int pixel_index;
     switch (axis_type) {
-        default:
-            return 0; // Invalid axis_type
         case 1:
-            pixel_index = x - y * width;
+            pixel_index = x_coord - y_coord * image_width;
             break;
         case 2:
-            pixel_index = -y * width + x + width - 1;
+            pixel_index = -y_coord * image_width + x_coord + image_width - 1;
             break;
         case 3:
-            pixel_index = x + ((height - 1) - y) * width;
+            pixel_index = x_coord + (image_height - 1 - y_coord) * image_width;
             break;
         case 4:
-            pixel_index = ((height - 1) - y) * width + x + width - 1;
+            pixel_index = (image_height - 1 - y_coord) * image_width + x_coord + image_width - 1;
             break;
         case 7:
-            pixel_index = x - y * width + width / 2 + (height / 2) * width;
+            pixel_index = x_coord - y_coord * image_width + image_width / 2 + (image_height / 2) * image_width;
             break;
+        default:
+            return 0; // Invalid axis_type
     }
 
-    if (pixel_index < 0 || pixel_index >= width * height) {
-        printf("[ERROR] Pixel beyond image border\n");
+    if (pixel_index < 0 || (size_t)image_width * image_height <= (size_t)pixel_index) {
+        fprintf(stderr, "[ERROR] Pixel beyond image border (index %d, max %zu)\n", pixel_index, (size_t)image_width * image_height - 1);
         return 0;
     } else {
-        image_buffer[pixel_index] = '.'; // Use '.' instead of 0x2e for clarity
+        image_buffer[pixel_index] = '.'; // 0x2e is '.'
         return 1;
     }
 }
 
 // Function: rpti_display_img
-int rpti_display_img(RPTI_FILE_HANDLE *handle) {
-    if (handle == NULL) {
-        return 0;
-    }
-
-    int width = 0, height = 0, current_x = 0, current_y = 0, axis_type = 0;
+int rpti_display_img(RPTIContext *ctx) {
     char *image_buffer = NULL;
     size_t image_size = 0;
+    int image_width = 0;
+    int image_height = 0;
+    int current_x = 0;
+    int current_y = 0;
+    int axis_type = 0;
 
     // Read header information
-    if (!rpti_read_magic(handle)) {
-        printf("RPTI magic fail\n");
-        return 0;
-    }
-    width = rpti_read_xaxis(handle);
-    if (width == 0) {
-        printf("rpti xlen fail\n");
-        return 0;
-    }
-    height = rpti_read_yaxis(handle);
-    if (height == 0) {
-        printf("rpti ylen fail\n");
-        return 0;
-    }
-    if (!rpti_read_initx(handle, &current_x)) {
-        printf("rpti initx fail\n");
-        return 0;
-    }
-    if (!rpti_read_inity(handle, &current_y)) {
-        printf("rpti inity fail\n");
-        return 0;
-    }
-    axis_type = rpti_read_axist(handle);
-    if (axis_type == 0) {
-        printf("axis type fail\n");
-        return 0;
-    }
-    if (!rpti_inc_index(handle, 3)) { // Skip 3 padding bits as indicated by original
+    if (!rpti_read_magic(ctx)) {
+        fprintf(stderr, "RPTI magic fail\n");
         return 0;
     }
 
-    // Determine image bounds based on axis type
+    image_width = rpti_read_xaxis(ctx);
+    if (image_width == 0) {
+        fprintf(stderr, "rpti xlen fail\n");
+        return 0;
+    }
+
+    image_height = rpti_read_yaxis(ctx);
+    if (image_height == 0) {
+        fprintf(stderr, "rpti ylen fail\n");
+        return 0;
+    }
+
+    if (!rpti_read_initx(ctx, &current_x)) {
+        fprintf(stderr, "rpti initx fail\n");
+        return 0;
+    }
+
+    if (!rpti_read_inity(ctx, &current_y)) {
+        fprintf(stderr, "rpti inity fail\n");
+        return 0;
+    }
+
+    axis_type = rpti_read_axist(ctx);
+    if (axis_type == 0) {
+        fprintf(stderr, "axis type fail\n");
+        return 0;
+    }
+
+    // This 3-bit increment seems to be moving past some reserved bits after axis_type.
+    if (!rpti_inc_index(ctx, 3)) {
+        // No specific error message in original, just returns 0.
+        return 0;
+    }
+
     int min_x, max_x, min_y, max_y;
     switch (axis_type) {
-        default:
-            printf("type switch fail\n");
-            return 0;
         case 1:
             min_x = 0;
-            max_x = width - 1;
-            min_y = 1 - height;
+            max_x = image_width - 1;
+            min_y = 1 - image_height;
             max_y = 0;
             break;
         case 2:
-            min_x = 1 - width;
+            min_x = 1 - image_width;
             max_x = 0;
-            min_y = 1 - height;
+            min_y = 1 - image_height;
             max_y = 0;
             break;
         case 3:
             min_x = 0;
-            max_x = width - 1;
+            max_x = image_width - 1;
             min_y = 0;
-            max_y = height - 1;
+            max_y = image_height - 1;
             break;
         case 4:
-            min_x = 1 - width;
+            min_x = 1 - image_width;
             max_x = 0;
             min_y = 0;
-            max_y = height - 1;
+            max_y = image_height - 1;
             break;
         case 7:
-            min_x = -(width / 2);
-            max_x = width / 2 - (width + 1) % 2;
-            min_y = (height + 1) % 2 - height / 2;
-            max_y = height / 2;
+            max_x = image_width / 2 - (image_width + 1) % 2;
+            min_x = -(image_width / 2);
+            max_y = image_height / 2;
+            min_y = (image_height + 1) % 2 - image_height / 2;
             break;
+        default:
+            fprintf(stderr, "type switch fail\n");
+            return 0;
     }
 
-    image_size = (size_t)width * height;
-    image_buffer = (char *)malloc(image_size + 1); // +1 for null terminator
-    if (image_buffer == NULL) {
-        printf("Memory allocation failed\n");
-        return 0;
+    image_size = (size_t)image_width * image_height;
+    if (!allocate(image_size + 1, 0, (void **)&image_buffer)) {
+        fprintf(stderr, "Failed to allocate image buffer\n");
+        return 0; // allocate failed
     }
-    memset(image_buffer, ' ', image_size); // Fill with spaces
-    image_buffer[image_size] = '\0'; // Null-terminate the string
 
-    // Read pixels and draw them
-    unsigned int pixel_data;
-    while (rpti_read_pixel(handle, &pixel_data)) {
-        int dx_raw = (pixel_data >> 7);
-        int dy_raw = (pixel_data & 0x7f);
+    memset(image_buffer, ' ', image_size);
+    image_buffer[image_size] = '\0'; // Null-terminate for safety when printing as string
 
-        // Apply sign extension for 7-bit signed values
-        if ((dx_raw & 0x40) != 0) { // If 7th bit (0-indexed) is set, it's negative
-            dx_raw = -(dx_raw & 0x3f); // Mask out the sign bit, then negate
+    unsigned int read_pixel_value;
+    while (rpti_read_pixel(ctx, &read_pixel_value)) {
+        int delta_x = (int)(read_pixel_value >> 7);
+        int delta_y = (int)(read_pixel_value & 0x7f);
+
+        // Sign extension for 7-bit values (if the 7th bit is set, it's negative)
+        if ((delta_x & 0x40) != 0) { // Check 7th bit (0-indexed)
+            delta_x |= ~0x7F; // Sign extend to 32-bit (fill higher bits with 1s)
         }
-        if ((dy_raw & 0x40) != 0) { // If 7th bit (0-indexed) is set, it's negative
-            dy_raw = -(dy_raw & 0x3f); // Mask out the sign bit, then negate
+        if ((delta_y & 0x40) != 0) {
+            delta_y |= ~0x7F;
         }
 
-        int new_x = current_x + dx_raw;
-        int new_y = current_y + dy_raw;
+        int new_x = current_x + delta_x;
+        int new_y = current_y + delta_y;
 
-        if ((new_x < min_x) || (max_x < new_x)) {
-            printf("X out of bounds (current_x: %d, dx_raw: %d, new_x: %d, min_x: %d, max_x: %d)\n", current_x, dx_raw, new_x, min_x, max_x);
-            free(image_buffer);
+        if (new_x < min_x || new_x > max_x) {
+            fprintf(stderr, "X out of bounds (X: %d, Range: [%d, %d])\n", new_x, min_x, max_x);
+            deallocate(image_buffer, image_size + 1);
             return 0;
         }
-        if ((new_y < min_y) || (max_y < new_y)) {
-            printf("Y out of bounds (current_y: %d, dy_raw: %d, new_y: %d, min_y: %d, max_y: %d)\n", current_y, dy_raw, new_y, min_y, max_y);
-            free(image_buffer);
+        if (new_y < min_y || new_y > max_y) {
+            fprintf(stderr, "Y out of bounds (Y: %d, Range: [%d, %d])\n", new_y, min_y, max_y);
+            deallocate(image_buffer, image_size + 1);
             return 0;
         }
 
-        if (!rpti_add_pixel(image_buffer, new_x, new_y, axis_type, width, height)) {
-            free(image_buffer);
-            printf("add pixel fail\n");
+        if (!rpti_add_pixel(image_buffer, new_x, new_y, axis_type, image_width, image_height)) {
+            deallocate(image_buffer, image_size + 1);
+            fprintf(stderr, "add pixel fail\n");
             return 0;
         }
+
         current_x = new_x;
         current_y = new_y;
     }
 
-    // Print the image
+    // Display image
     for (size_t i = 0; i < image_size; ++i) {
-        if ((i % width == 0) && (i != 0)) {
+        if (i % image_width == 0 && i != 0) {
             printf("\n");
         }
         printf("%c", image_buffer[i]);
     }
     printf("\n");
 
-    free(image_buffer);
+    deallocate(image_buffer, image_size + 1);
     return 1;
 }
 
 // Function: rpti_read_bits
-int rpti_read_bits(RPTI_FILE_HANDLE *handle, int num_bits, unsigned int *out_value) {
-    if (out_value == NULL || handle == NULL || handle->data == NULL) {
+int rpti_read_bits(RPTIContext *ctx, int num_bits, unsigned int *value_out) {
+    if (value_out == NULL || num_bits <= 0 || num_bits > 32) {
         return 0;
     }
-    if (num_bits <= 0 || num_bits > 32) { // unsigned int is typically 32-bit
-        return 0;
-    }
-
-    if (!rpti_read_check(handle, num_bits)) {
+    if (!rpti_read_check(ctx, num_bits)) {
         return 0;
     }
 
-    unsigned int value = 0;
+    unsigned int bits_read = 0;
+    char *data_buffer = ctx->data_buffer;
+    size_t *byte_offset = &ctx->current_byte_offset;
+    int *bit_offset = &ctx->current_bit_offset_in_byte;
+
     for (int i = 0; i < num_bits; ++i) {
-        char current_byte = handle->data[handle->byte_offset];
-        int bit = (current_byte >> (7 - handle->bit_offset)) & 1;
+        char current_byte_val = data_buffer[*byte_offset];
+        int bit_val = (current_byte_val >> (7 - *bit_offset)) & 1; // Read MSB first
 
-        value = (value << 1) | bit; // Build value MSB first
+        bits_read = (bits_read << 1) | bit_val; // Accumulate bits
 
-        handle->bit_offset++;
-        if (handle->bit_offset == 8) {
-            handle->bit_offset = 0;
-            handle->byte_offset++;
+        (*bit_offset)++;
+        if (*bit_offset == 8) {
+            *bit_offset = 0;
+            (*byte_offset)++;
         }
     }
-    *out_value = value;
+
+    *value_out = bits_read;
     return 1;
 }
 
 // Function: rpti_inc_index
-int rpti_inc_index(RPTI_FILE_HANDLE *handle, int num_bits) {
-    if (handle == NULL || handle->data == NULL) {
+int rpti_inc_index(RPTIContext *ctx, int bits_to_inc) {
+    if (ctx == NULL || ctx->data_buffer == NULL) {
         return 0;
     }
-    if (num_bits < 0) {
-        return 0;
-    }
-
-    if (!rpti_read_check(handle, num_bits)) {
+    if (!rpti_read_check(ctx, bits_to_inc)) {
         return 0;
     }
 
-    int total_bits_to_advance = handle->bit_offset + num_bits;
-    handle->byte_offset += total_bits_to_advance / 8;
-    handle->bit_offset = total_bits_to_advance % 8;
+    int total_bits_offset = ctx->current_bit_offset_in_byte + bits_to_inc;
+    ctx->current_byte_offset += total_bits_offset / 8;
+    ctx->current_bit_offset_in_byte = total_bits_offset % 8;
 
     return 1;
 }
 
 // Function: rpti_read_check
-int rpti_read_check(RPTI_FILE_HANDLE *handle, int num_bits) {
-    if (handle == NULL || handle->data == NULL) {
-        return 0;
-    }
-    if (num_bits < 0) {
+int rpti_read_check(RPTIContext *ctx, int num_bits_to_read) {
+    if (ctx == NULL || ctx->data_buffer == NULL) {
         return 0;
     }
 
-    // Calculate total bits remaining in the buffer
-    size_t bits_remaining = (handle->size * 8) - (handle->byte_offset * 8 + handle->bit_offset);
-    if (bits_remaining < (size_t)num_bits) {
+    long long total_bits_available = (long long)ctx->buffer_size_bytes * 8;
+    long long current_bit_position = (long long)ctx->current_byte_offset * 8 + ctx->current_bit_offset_in_byte;
+
+    if (num_bits_to_read < 0 || total_bits_available - current_bit_position < num_bits_to_read) {
         return 0;
     }
     return 1;
 }
 
 // Function: rpti_read_magic
-int rpti_read_magic(RPTI_FILE_HANDLE *handle) {
-    if (handle == NULL || handle->data == NULL) {
+int rpti_read_magic(RPTIContext *ctx) {
+    if (ctx == NULL || ctx->data_buffer == NULL) {
         return 0;
     }
-    // Original code implies magic must be read from the very beginning.
-    if (handle->byte_offset != 0 || handle->bit_offset != 0) {
+
+    // The original code implies this function should be called at the start of the stream.
+    if (ctx->current_byte_offset != 0 || ctx->current_bit_offset_in_byte != 0) {
+        fprintf(stderr, "rpti_read_magic called at non-zero offset.\n");
+        return 0;
+    }
+
+    if (!rpti_read_check(ctx, 32)) { // Magic is 4 bytes = 32 bits
+        fprintf(stderr, "Not enough bits for magic value.\n");
         return 0;
     }
 
     uint32_t magic_val;
-    if (!rpti_read_check(handle, 32)) { // Magic is 4 bytes = 32 bits
+    // Copy 4 bytes from the start of the data buffer into magic_val
+    memcpy(&magic_val, ctx->data_buffer, 4);
+
+    // The magic value -0x3caef62d is 0xC35109D3 in hex (signed 32-bit).
+    if (magic_val != 0xC35109D3) {
+        fprintf(stderr, "RPTI magic value mismatch: expected 0x%X, got 0x%X\n", 0xC35109D3, magic_val);
         return 0;
     }
 
-    // Directly copy 4 bytes for magic, assuming host endianness matches file format.
-    // Original code used memcpy, so replicating that behavior.
-    memcpy(&magic_val, handle->data + handle->byte_offset, sizeof(uint32_t));
-
-    // The magic value -0x3caef62d is 0xC35109D3.
-    // Assuming little-endian system, the bytes in memory for 0xC35109D3U would be D3 09 51 C3.
-    // If the file stores it as D3 09 51 C3, then `memcpy` will yield 0xC35109D3U.
-    if (magic_val == 0xC35109D3U) {
-        if (!rpti_inc_index(handle, 32)) { // Advance 32 bits (4 bytes)
-            return 0;
-        }
-        return 1;
-    } else {
-        return 0;
+    if (!rpti_inc_index(ctx, 32)) {
+        return 0; // Should not fail after read_check and successful memcpy
     }
+
+    return 1;
 }
 
 // Function: rpti_read_xaxis
-int rpti_read_xaxis(RPTI_FILE_HANDLE *handle) {
-    unsigned int x_axis_len = 0;
-    if (!rpti_read_bits(handle, 6, &x_axis_len)) {
+int rpti_read_xaxis(RPTIContext *ctx) {
+    unsigned int x_axis_val = 0;
+    if (!rpti_read_bits(ctx, 6, &x_axis_val)) {
         return 0;
     }
-    return (int)x_axis_len;
+    return (int)x_axis_val;
 }
 
 // Function: rpti_read_yaxis
-int rpti_read_yaxis(RPTI_FILE_HANDLE *handle) {
-    unsigned int y_axis_len = 0;
-    if (!rpti_read_bits(handle, 6, &y_axis_len)) {
+int rpti_read_yaxis(RPTIContext *ctx) {
+    unsigned int y_axis_val = 0;
+    if (!rpti_read_bits(ctx, 6, &y_axis_val)) {
         return 0;
     }
-    return (int)y_axis_len;
+    return (int)y_axis_val;
 }
 
 // Function: rpti_read_initx
-int rpti_read_initx(RPTI_FILE_HANDLE *handle, int *out_initx) {
-    if (out_initx == NULL) {
+int rpti_read_initx(RPTIContext *ctx, int *init_x_out) {
+    if (init_x_out == NULL) {
         return 0;
     }
 
-    unsigned int sign_bit;
-    if (!rpti_read_bits(handle, 1, &sign_bit)) {
+    unsigned int is_negative_flag = 0;
+    if (!rpti_read_bits(ctx, 1, &is_negative_flag)) {
         return 0;
     }
 
-    unsigned int value;
-    if (!rpti_read_bits(handle, 6, &value)) {
+    unsigned int abs_x_val = 0;
+    if (!rpti_read_bits(ctx, 6, &abs_x_val)) {
         return 0;
     }
 
-    *out_initx = (int)value;
-    if (sign_bit == 1) {
-        *out_initx = -(*out_initx);
+    *init_x_out = (int)abs_x_val;
+    if (is_negative_flag == 1) {
+        *init_x_out = -(*init_x_out);
     }
     return 1;
 }
 
 // Function: rpti_read_inity
-int rpti_read_inity(RPTI_FILE_HANDLE *handle, int *out_inity) {
-    if (out_inity == NULL) {
+int rpti_read_inity(RPTIContext *ctx, int *init_y_out) {
+    if (init_y_out == NULL) {
         return 0;
     }
 
-    unsigned int sign_bit;
-    if (!rpti_read_bits(handle, 1, &sign_bit)) {
+    unsigned int is_negative_flag = 0;
+    if (!rpti_read_bits(ctx, 1, &is_negative_flag)) {
         return 0;
     }
 
-    unsigned int value;
-    if (!rpti_read_bits(handle, 6, &value)) {
+    unsigned int abs_y_val = 0;
+    if (!rpti_read_bits(ctx, 6, &abs_y_val)) {
         return 0;
     }
 
-    *out_inity = (int)value;
-    if (sign_bit == 1) {
-        *out_inity = -(*out_inity);
+    *init_y_out = (int)abs_y_val;
+    if (is_negative_flag == 1) {
+        *init_y_out = -(*init_y_out);
     }
     return 1;
 }
 
 // Function: rpti_read_axist
-int rpti_read_axist(RPTI_FILE_HANDLE *handle) {
-    unsigned int axis_type = 0;
-    if (!rpti_read_bits(handle, 3, &axis_type)) {
+int rpti_read_axist(RPTIContext *ctx) {
+    unsigned int axis_type_val = 0;
+    if (!rpti_read_bits(ctx, 3, &axis_type_val)) {
         return 0;
     }
-    // Original check: (4 < local_10[0]) && (local_10[0] < 7) -> values 5, 6 are invalid
-    if ((axis_type > 4) && (axis_type < 7)) {
-        return 0; // These values are considered invalid
+
+    // Original check: `(4 < local_10[0]) && (local_10[0] < 7)`
+    // This means if axis_type_val is 5 or 6, it's invalid.
+    if (axis_type_val > 4 && axis_type_val < 7) {
+        fprintf(stderr, "Invalid axis type read: %u\n", axis_type_val);
+        return 0;
     }
-    return (int)axis_type;
+    return (int)axis_type_val;
 }
 
 // Function: rpti_read_pixel
-int rpti_read_pixel(RPTI_FILE_HANDLE *handle, unsigned int *out_pixel_data) {
-    if (out_pixel_data == NULL) {
+int rpti_read_pixel(RPTIContext *ctx, unsigned int *pixel_value_out) {
+    if (pixel_value_out == NULL) {
         return 0;
     }
 
-    // Check if enough bits are available for a pixel (7 for dx, 7 for dy = 14 bits)
-    if (!rpti_read_check(handle, 14)) {
-        return 0; // No more pixels to read
-    }
-
-    unsigned int dx_bits;
-    if (!rpti_read_bits(handle, 7, &dx_bits)) {
+    unsigned int delta_x_bits = 0;
+    if (!rpti_read_bits(ctx, 7, &delta_x_bits)) {
         return 0;
     }
 
-    unsigned int dy_bits;
-    if (!rpti_read_bits(handle, 7, &dy_bits)) {
+    unsigned int delta_y_bits = 0;
+    if (!rpti_read_bits(ctx, 7, &delta_y_bits)) {
         return 0;
     }
 
-    *out_pixel_data = (dy_bits | (dx_bits << 7));
+    *pixel_value_out = (delta_x_bits << 7) | delta_y_bits;
     return 1;
 }
 
-// Main function to demonstrate usage
+// --- Main function for demonstration ---
 int main() {
-    // Example RPTI data
-    // Magic: 0xC35109D3 (stored as D3 09 51 C3 in little-endian)
-    // Header values (MSB-first bitstream):
-    // X-len: 10 (0b001010)
-    // Y-len: 10 (0b001010)
-    // InitX_sign: 0, InitX_val: 5 (0b000101) -> InitX = 5
-    // InitY_sign: 0, InitY_val: 5 (0b000101) -> InitY = 5
-    // Axis Type: 3 (0b011)
-    // Padding: 0 (0b000)
-    // Combined 32-bit header stream: 00101000 10000010 10000101 01100000 -> 0x28, 0x82, 0x85, 0x60
+    // Example RPTI data for a 10x5 image, starting at (0,0), axis type 3 (standard cartesian)
+    // and drawing a simple diagonal line.
+    //
+    // Binary structure of the data:
+    // Magic: 0xC35109D3 (4 bytes)
+    // Width: 10 (6 bits: 001010)
+    // Height: 5 (6 bits: 000101)
+    // InitX sign: 0 (1 bit: 0)
+    // InitX value: 0 (6 bits: 000000)
+    // InitY sign: 0 (1 bit: 0)
+    // InitY value: 0 (6 bits: 000000)
+    // Axis Type: 3 (3 bits: 011)
+    // Reserved: (3 bits: 000, incremented by rpti_inc_index)
+    //
+    // Pixel 1: delta_x = 1 (7 bits: 0000001), delta_y = 1 (7 bits: 0000001)
+    // Pixel 2: delta_x = 1 (7 bits: 0000001), delta_y = 0 (7 bits: 0000000)
+    // Pixel 3: delta_x = 0 (7 bits: 0000000), delta_y = 1 (7 bits: 0000001)
+    // Pixel 4: delta_x = -1 (7 bits: 1111111), delta_y = 0 (7 bits: 0000000)
+    // Pixel 5: delta_x = 0 (7 bits: 0000000), delta_y = -1 (7 bits: 1111111)
 
-    // Pixel data (14 bits per pixel, MSB-first bitstream for each pixel)
-    // Initial current_x=5, current_y=5
-    // P1: (dx=0, dy=0) -> (5,5) : 0b0000000_0000000 -> 0x0000
-    // P2: (dx=1, dy=0) -> (6,5) : 0b0000001_0000000 -> 0x0080
-    // P3: (dx=0, dy=1) -> (6,6) : 0b0000000_0000001 -> 0x0001
-    // P4: (dx=-1, dy=0) -> (5,6) : 0b1000001_0000000 -> 0x4080 (7th bit set for negative, value 1)
-    // P5: (dx=0, dy=-1) -> (5,5) : 0b0000000_1000001 -> 0x0041 (7th bit set for negative, value 1)
-
-    unsigned char dummy_rpti_data[] = {
-        // Magic: 0xC35109D3 (Little-endian byte order for memcpy)
-        0xD3, 0x09, 0x51, 0xC3,
-        // Header bytes (MSB-first bitstream as derived above)
-        0x28, 0x82, 0x85, 0x60,
-        // Pixel Data (14 bits per pixel, padded to bytes)
-        // P1: (dx=0, dy=0) -> 0x0000. Bitstream: 00000000 00000000 (14 bits + 2 unused)
-        0x00, 0x00,
-        // P2: (dx=1, dy=0) -> 0x0080. Bitstream: 00000010 00000000 (14 bits + 2 unused)
-        0x02, 0x00,
-        // P3: (dx=0, dy=1) -> 0x0001. Bitstream: 00000000 00000001 (14 bits + 2 unused)
+    unsigned char raw_data[] = {
+        0xC3, 0x51, 0x09, 0xD3, // Magic: 0xC35109D3
+        // Next 4 bytes represent 6+6+7+7+3+3 = 32 bits of header data
+        // Width (10): 001010
+        // Height (5): 000101
+        // InitX_sign (0): 0
+        // InitX_val (0): 000000
+        // InitY_sign (0): 0
+        // InitY_val (0): 000000
+        // Axis_type (3): 011
+        // Reserved (0): 000
+        //
+        // Byte 4: 00101000 (width 10, first 2 bits of height) -> 0x28
+        // Byte 5: 01000000 (last 4 bits of height, first 4 bits of InitX) -> 0x40
+        // Byte 6: 00000000 (last 3 bits of InitX, first 5 bits of InitY) -> 0x00
+        // Byte 7: 00110000 (last 2 bits of InitY, AxisType 3, Reserved 0) -> 0x18
+        0x28, 0x40, 0x00, 0x18, // Header data
+        // Pixel data (7 bits dx, 7 bits dy)
+        // Pixel 1: dx=1, dy=1 -> 0000001 0000001
+        0x01, 0x01,
+        // Pixel 2: dx=1, dy=0 -> 0000001 0000000
+        0x01, 0x00,
+        // Pixel 3: dx=0, dy=1 -> 0000000 0000001
         0x00, 0x01,
-        // P4: (dx=-1, dy=0) -> 0x4080. Bitstream: 10000010 00000000 (14 bits + 2 unused)
-        0x82, 0x00,
-        // P5: (dx=0, dy=-1) -> 0x0041. Bitstream: 00000001 00000010 (14 bits + 2 unused)
-        0x01, 0x02,
+        // Pixel 4: dx=-1, dy=0 -> 1111111 0000000 (7-bit signed -1 is 0x7F)
+        0x7F, 0x00,
+        // Pixel 5: dx=0, dy=-1 -> 0000000 1111111
+        0x00, 0x7F
     };
 
-    RPTI_FILE_HANDLE rpti_handle = {
-        .data = (char *)dummy_rpti_data,
-        .size = sizeof(dummy_rpti_data),
-        .byte_offset = 0,
-        .bit_offset = 0
+    RPTIContext ctx = {
+        .data_buffer = (char *)raw_data,
+        .buffer_size_bytes = sizeof(raw_data),
+        .current_byte_offset = 0,
+        .current_bit_offset_in_byte = 0
     };
 
-    printf("Displaying RPTI image:\n");
-    if (rpti_display_img(&rpti_handle)) {
+    printf("Attempting to display RPTI image...\n");
+    if (rpti_display_img(&ctx)) {
         printf("RPTI image displayed successfully.\n");
     } else {
         printf("Failed to display RPTI image.\n");
+    }
+
+    // Example of an empty (invalid) context
+    RPTIContext empty_ctx = {0};
+    printf("\nAttempting to display with empty context (should fail)...\n");
+    if (!rpti_display_img(&empty_ctx)) {
+        printf("Empty context test: Failed as expected.\n");
+    } else {
+        printf("Empty context test: Unexpected success.\n");
     }
 
     return 0;

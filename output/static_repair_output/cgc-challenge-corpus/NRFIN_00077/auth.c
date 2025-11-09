@@ -1,90 +1,78 @@
-#include <stdio.h>   // For printf
-#include <stdlib.h>  // For malloc, free, rand, srand
-#include <string.h>  // For strlen, strcmp, strcpy, memset, strcat, memcpy
-#include <stdint.h>  // For uint32_t, uint8_t
-#include <time.h>    // For time (to seed rand)
-#include <ctype.h>   // For isalnum, tolower (if needed, or custom char generation)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <ctype.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-// This code assumes a 32-bit system where pointers are 4 bytes,
-// based on the memory access patterns (offsets) in the original snippet.
-// If compiled on a 64-bit system, the struct sizes and offsets would be incorrect,
-// leading to undefined behavior or crashes.
+// Forward declarations for structs
+typedef struct SubscriptionNode SubscriptionNode;
+typedef struct User User;
 
-// Struct for User nodes in a linked list
-typedef struct User {
-    uint32_t field0;    // @0x00 - Original `*__ptr = 0`
-    char *name;         // @0x04 - Original `__ptr[1]`
-    char *password;     // @0x08 - Original `__ptr[2]`
-    uint32_t field3;    // @0x0c - Original `__ptr[3]`
-    uint32_t field4;    // @0x10 - Original `__ptr[4]`
-    struct User *next;  // @0x14 - Original `__ptr[5]`
-} User; // Total size 24 bytes (0x18)
+// Structure for a subscription node in a linked list
+struct SubscriptionNode {
+    char *data; // The actual subscription data (e.g., a string)
+    void *field1; // Placeholder for unknown field at index 1
+    void *field2; // Placeholder for unknown field at index 2
+    SubscriptionNode *next; // Pointer to the next subscription node (at index 3)
+};
 
-// Struct for AuthToken nodes in a linked list
-// This struct's first field is `token_str` and it's used with `char **` pointers.
-typedef struct AuthToken {
-    char *token_str;    // @0x00 - Original `*local_10` in authenticateToken/getUserByToken
-    // The other fields are not explicitly used by name in token functions, but fill the 0x14 gap
-    void *field1;       // @0x04
-    void *field2;       // @0x08
-    void *field3;       // @0x0c
-    void *field4;       // @0x10
-    struct AuthToken *next; // @0x14 - Original `local_10[5]`
-} AuthToken; // Total size 24 bytes (0x18)
+// Structure for a user node in a linked list
+struct User {
+    char *token;             // At logical index 0
+    char *name;              // At logical index 1
+    char *password;          // At logical index 2
+    SubscriptionNode *subscription_list; // At logical index 3
+    void *signing_key;       // At logical index 4 (raw bytes)
+    User *next;              // At logical index 5
+};
 
-// Struct for Signature Data nodes in a linked list
-typedef struct SignatureDataNode {
-    char *data;                 // @0x00 - Original `*local_18`
-    void *field1;               // @0x04
-    void *field2;               // @0x08
-    struct SignatureDataNode *next; // @0x0c - Original `local_18[3]`
-} SignatureDataNode; // Total size 16 bytes (0x10)
+// Global flag to ensure random is seeded only once
+static bool random_seeded = false;
 
-// Struct for Signature Context
-typedef struct SignatureContext {
-    void *field0;                   // @0x00
-    void *field1;                   // @0x04
-    // `param_1 + 8` implies this is the head of the subscription list
-    SignatureDataNode *subscription_list_head; // @0x08
-    char *signature_key;            // @0x0c - Original `*(undefined4 *)(param_1 + 0xc)`
-    SignatureDataNode *data_list_head; // @0x10 - Original `*(char ***)(param_1 + 0x10)`
-} SignatureContext;
-
-
-// Helper function: to_bin (converts hex char to int)
-// Assumes input is a valid hex character.
-static int to_bin(char c) {
-    if (c >= '0' && c <= '9') return c - '0';
-    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
-    return 0; // Should not happen with valid hex input
+// Helper function to convert a nibble (4-bit value) to a hex character
+char to_hex(uint8_t nibble) {
+    if (nibble < 10) {
+        return nibble + '0';
+    }
+    return nibble - 10 + 'A';
 }
 
-// Helper function: to_hex (converts int nibble to hex char)
-// Assumes input is 0-15.
-static char to_hex(uint8_t nibble) {
-    if (nibble < 10) return nibble + '0';
-    return nibble - 10 + 'a'; // Use lowercase hex
+// Helper function to convert a hex character to its nibble (4-bit value)
+uint8_t to_bin(char hex_char) {
+    if (hex_char >= '0' && hex_char <= '9') {
+        return hex_char - '0';
+    }
+    if (hex_char >= 'a' && hex_char <= 'f') {
+        return hex_char - 'a' + 10;
+    }
+    if (hex_char >= 'A' && hex_char <= 'F') {
+        return hex_char - 'A' + 10;
+    }
+    return 0; // Invalid hex character
 }
 
 // Function: authenticateToken
-// head is a pointer to the head of a linked list of AuthToken structs
-// token_to_auth is the token string to authenticate
-uint32_t authenticateToken(AuthToken **head, char *token_to_auth) {
-    AuthToken *current = *head;
+int authenticateToken(User *head, char *token_to_auth) {
+    User *current = head;
     while (current != NULL) {
-        if (current->token_str != NULL && strcmp(current->token_str, token_to_auth) == 0) {
+        if (current->token != NULL && strcmp(current->token, token_to_auth) == 0) {
             return 1; // Token found
         }
-        current = current->next; // Move to the next node
+        current = current->next;
     }
     return 0; // Token not found
 }
 
 // Function: generateRandomToken
-// length is the desired length of the token
-void *generateRandomToken(unsigned int length) {
-    if (length == 0 || length >= 0x401) { // Max length 1024
+char *generateRandomToken(unsigned int length) {
+    if (!random_seeded) {
+        srandom(time(NULL));
+        random_seeded = true;
+    }
+
+    if (length == 0 || length > 1024) { // Max length 0x400 (1024) + 1 null terminator
         return NULL;
     }
 
@@ -95,44 +83,43 @@ void *generateRandomToken(unsigned int length) {
     memset(token, 0, length + 1);
 
     for (unsigned int i = 0; i < length; ++i) {
-        if (i > 0 && (i % 9) == 0) { // Every 9th character (0-indexed) is a dash
+        // Original code implies a hyphen every 9th char (0-indexed 8th, 17th etc.)
+        if ((i % 9) == 8) {
             token[i] = '-';
         } else {
-            uint8_t random_byte = rand(); // Get a random byte
-            if ((random_byte & 1) == 0) { // Even random_byte
-                if ((random_byte & 3) == 0) { // Multiple of 4 (0, 4, 8, ...) -> 'A'-'Z'
-                    token[i] = (random_byte % 26) + 'A';
-                } else { // Multiple of 2 but not 4 (2, 6, 10, ...) -> 'a'-'z'
-                    token[i] = (random_byte % 26) + 'a';
-                }
-            } else { // Odd random_byte -> '0'-'9'
-                token[i] = (random_byte % 10) + '0';
+            // Generate random alphanumeric character
+            long rand_val = random();
+            if ((rand_val % 3) == 0) { // Digits (0-9)
+                token[i] = (rand_val % 10) + '0';
+            } else if ((rand_val % 3) == 1) { // Uppercase letters (A-Z)
+                token[i] = (rand_val % 26) + 'A';
+            } else { // Lowercase letters (a-z)
+                token[i] = (rand_val % 26) + 'a';
             }
         }
     }
-    token[length] = '\0'; // Ensure null termination
     return token;
 }
 
 // Function: newUser
-// head_ptr is a pointer to the head of the User linked list (User**)
-// username is the username string
-// password is the password string
-User *newUser(User **head_ptr, char *username, char *password) {
-    User *new_user = (User *)malloc(sizeof(User)); // Allocate 0x18 (24 bytes)
-    if (new_user == NULL) {
+User *newUser(User **head_ptr, char *name, char *password) {
+    if (head_ptr == NULL || name == NULL || password == NULL) {
         return NULL;
     }
 
-    // Allocate and copy username
-    new_user->name = (char *)malloc(strlen(username) + 1);
+    User *new_user = (User *)malloc(sizeof(User));
+    if (new_user == NULL) {
+        return NULL;
+    }
+    memset(new_user, 0, sizeof(User)); // Initialize all fields to 0/NULL
+
+    new_user->name = (char *)malloc(strlen(name) + 1);
     if (new_user->name == NULL) {
         free(new_user);
         return NULL;
     }
-    strcpy(new_user->name, username);
+    strcpy(new_user->name, name);
 
-    // Allocate and copy password
     new_user->password = (char *)malloc(strlen(password) + 1);
     if (new_user->password == NULL) {
         free(new_user->name);
@@ -141,388 +128,329 @@ User *newUser(User **head_ptr, char *username, char *password) {
     }
     strcpy(new_user->password, password);
 
-    // Initialize other fields and link to list
-    new_user->field0 = 0;
-    new_user->field3 = 0;
-    new_user->field4 = 0;
-    new_user->next = *head_ptr; // Link new user to the current head
-    *head_ptr = new_user;       // Update head to be the new user
+    // Other fields are initialized to NULL by memset
+    // new_user->token = NULL;
+    // new_user->subscription_list = NULL;
+    // new_user->signing_key = NULL;
+
+    // Prepend new user to the list
+    new_user->next = *head_ptr;
+    *head_ptr = new_user;
 
     return new_user;
 }
 
 // Function: getUserByToken
-// head is a pointer to the head of a linked list of AuthToken structs
-// token_to_find is the token string to search for
-AuthToken *getUserByToken(AuthToken **head, char *token_to_find) {
-    AuthToken *current = *head;
+User *getUserByToken(User *head, char *token) {
+    User *current = head;
     while (current != NULL) {
-        if (current->token_str != NULL && strcmp(current->token_str, token_to_find) == 0) {
-            return current; // Token node found
+        if (current->token != NULL && strcmp(current->token, token) == 0) {
+            return current;
         }
-        current = current->next; // Move to the next node
+        current = current->next;
     }
-    return NULL; // Token node not found
+    return NULL;
 }
 
 // Function: getUserByName
-// head is the head of the User linked list
-// username_to_find is the username string to search for
-User *getUserByName(User *head, char *username_to_find) {
+User *getUserByName(User *head, char *name) {
     User *current = head;
     while (current != NULL) {
-        if (strcmp(current->name, username_to_find) == 0) {
-            return current; // User found
+        if (current->name != NULL && strcmp(current->name, name) == 0) {
+            return current;
         }
-        current = current->next; // Move to the next user
+        current = current->next;
     }
-    return NULL; // User not found
+    return NULL;
 }
 
 // Function: newToken
-// token_ptr_location is a pointer to a location where the new token string should be stored (char**)
-// The function generates a random token and stores its pointer in *token_ptr_location
-void *newToken(char **token_ptr_location) {
-    *token_ptr_location = (char *)generateRandomToken(0x28); // 0x28 = 40 characters
-    return token_ptr_location; // Return the address where the token pointer is stored
+char **newToken(char **token_ptr) {
+    if (token_ptr == NULL) {
+        return NULL;
+    }
+    
+    // Free existing token if any
+    if (*token_ptr != NULL) {
+        free(*token_ptr);
+        *token_ptr = NULL;
+    }
+
+    *token_ptr = generateRandomToken(40); // 0x28 = 40
+    return token_ptr;
 }
 
 // Function: generateSigningKey
-// length is the desired length of the signing key
 void *generateSigningKey(unsigned int length) {
-    char *key = (char *)malloc(length + 1);
+    if (!random_seeded) {
+        srandom(time(NULL));
+        random_seeded = true;
+    }
+
+    if (length == 0) {
+        return NULL;
+    }
+
+    uint8_t *key = (uint8_t *)malloc(length + 1); // +1 for null terminator, though it's raw bytes
     if (key == NULL) {
         return NULL;
     }
     memset(key, 0, length + 1);
 
-    // Fill the key with random bytes
     for (unsigned int i = 0; i < length; ++i) {
-        key[i] = rand() % 256; // Generate a random byte
+        key[i] = random() % 256; // Fill with random bytes
     }
-    key[length] = '\0'; // Ensure null termination (though it's a binary key)
     return key;
 }
 
 // Function: reverseSubscriptionList
-// head_ptr is a pointer to the head of a SignatureDataNode linked list (SignatureDataNode**)
-void reverseSubscriptionList(SignatureDataNode **head_ptr) {
-    SignatureDataNode *prev = NULL;
-    SignatureDataNode *current = *head_ptr;
-    SignatureDataNode *next_node = NULL;
+void reverseSubscriptionList(SubscriptionNode **head_ptr) {
+    if (head_ptr == NULL || *head_ptr == NULL) {
+        return;
+    }
+
+    SubscriptionNode *prev = NULL;
+    SubscriptionNode *current = *head_ptr;
+    SubscriptionNode *next_node = NULL;
 
     while (current != NULL) {
         next_node = current->next; // Store next node
         current->next = prev;      // Reverse current node's pointer
-        prev = current;            // Move pointers one position ahead
-        current = next_node;
+        prev = current;            // Move prev to current
+        current = next_node;       // Move current to next
     }
-    *head_ptr = prev; // Update head pointer to the new first node
-}
-
-// Function: verifySignature
-// context is a pointer to a SignatureContext struct
-// signature_to_verify is the hex-encoded signature string to verify against
-uint32_t verifySignature(SignatureContext *context, char *signature_to_verify) {
-    // Original code: reverseSubscriptionList(param_1 + 8);
-    // This implies context->subscription_list_head is passed by address.
-    reverseSubscriptionList(&(context->subscription_list_head));
-
-    SignatureDataNode *current_data = context->subscription_list_head;
-    unsigned int signature_idx = 0; // Index for the signature_to_verify string
-
-    while (current_data != NULL) {
-        if (current_data->data == NULL) {
-            current_data = current_data->next;
-            continue;
-        }
-        size_t data_len = strlen(current_data->data);
-
-        for (unsigned int i = 0; i < data_len; ++i) {
-            // Check if signature_to_verify has enough characters (2 hex chars per byte)
-            if (signature_to_verify[signature_idx] == '\0' || signature_to_verify[signature_idx + 1] == '\0') {
-                return 0; // Signature string too short
-            }
-
-            // Decode two hex characters from signature_to_verify into a single byte
-            int nibble1 = to_bin(signature_to_verify[signature_idx]);
-            int nibble2 = to_bin(signature_to_verify[signature_idx + 1]);
-            uint8_t received_signed_byte = (uint8_t)((nibble1 << 4) | nibble2);
-
-            // Ensure key is long enough for the current byte index
-            if (context->signature_key == NULL || (signature_idx / 2) >= strlen(context->signature_key)) {
-                 return 0; // Key too short or missing
-            }
-
-            // Calculate the expected signed byte: original_data_byte XOR key_byte
-            uint8_t expected_signed_byte = (uint8_t)current_data->data[i] ^ (uint8_t)context->signature_key[signature_idx / 2];
-
-            if (received_signed_byte != expected_signed_byte) {
-                return 0; // Mismatch
-            }
-            signature_idx += 2; // Advance by 2 for the next hex byte in the signature string
-        }
-        current_data = current_data->next;
-    }
-    // If we reach here, all data segments matched the signature.
-    // Check if the entire signature_to_verify string was consumed.
-    if (signature_to_verify[signature_idx] != '\0') {
-        return 0; // Signature has extra characters
-    }
-    return 1; // Signature verified
+    *head_ptr = prev; // Update head of the list
 }
 
 // Function: computeSignature
-// context is a pointer to a SignatureContext struct
-void *computeSignature(SignatureContext *context) {
-    size_t total_data_len = 0;
-    SignatureDataNode *current_data_node = context->data_list_head;
+char *computeSignature(User *user) {
+    if (user == NULL || user->subscription_list == NULL) {
+        return NULL;
+    }
 
-    // Calculate total length of concatenated data
-    while (current_data_node != NULL) {
-        if (current_data_node->data != NULL) {
-            total_data_len += strlen(current_data_node->data);
+    unsigned int total_data_len = 0;
+    for (SubscriptionNode *current_sub = user->subscription_list; current_sub != NULL; current_sub = current_sub->next) {
+        if (current_sub->data != NULL) {
+            total_data_len += strlen(current_sub->data);
         }
-        current_data_node = current_data_node->next;
     }
 
     if (total_data_len == 0) {
         return NULL; // No data to sign
     }
 
-    // Generate signing key (if not already done, or regenerate for this signature)
-    // The original code assigns to context->signature_key (offset 0xc)
-    context->signature_key = (char *)generateSigningKey(total_data_len);
-    if (context->signature_key == NULL) {
+    // Re-generate signing key (original code logic)
+    if (user->signing_key != NULL) {
+        free(user->signing_key);
+        user->signing_key = NULL;
+    }
+    user->signing_key = generateSigningKey(total_data_len);
+    if (user->signing_key == NULL) {
         return NULL;
     }
 
-    // Allocate buffer for concatenated data (raw bytes)
-    uint8_t *concatenated_data = (uint8_t *)malloc(total_data_len + 1);
-    if (concatenated_data == NULL) {
-        free(context->signature_key);
-        context->signature_key = NULL;
+    uint8_t *payload_buffer = (uint8_t *)malloc(total_data_len + 1);
+    if (payload_buffer == NULL) {
+        free(user->signing_key);
+        user->signing_key = NULL;
         return NULL;
     }
-    memset(concatenated_data, 0, total_data_len + 1);
+    memset(payload_buffer, 0, total_data_len + 1);
 
-    // Concatenate all data strings
-    size_t current_offset = 0;
-    current_data_node = context->data_list_head;
-    while (current_data_node != NULL) {
-        if (current_data_node->data != NULL) {
-            size_t len = strlen(current_data_node->data);
-            memcpy(concatenated_data + current_offset, current_data_node->data, len);
-            current_offset += len;
+    // Concatenate all subscription data into payload_buffer
+    char *current_payload_pos = (char *)payload_buffer;
+    for (SubscriptionNode *current_sub = user->subscription_list; current_sub != NULL; current_sub = current_sub->next) {
+        if (current_sub->data != NULL) {
+            size_t len = strlen(current_sub->data);
+            memcpy(current_payload_pos, current_sub->data, len);
+            current_payload_pos += len;
         }
-        current_data_node = current_data_node->next;
     }
 
-    // Apply XOR with signing key
+    // XOR payload with signing key
     for (unsigned int i = 0; i < total_data_len; ++i) {
-        concatenated_data[i] ^= (uint8_t)context->signature_key[i];
+        payload_buffer[i] ^= ((uint8_t *)user->signing_key)[i];
     }
 
-    // Allocate buffer for hex-encoded signature (2 chars per byte + null terminator)
-    char *hex_signature = (char *)malloc(total_data_len * 2 + 1);
+    // Convert XORed payload to hex string
+    char *hex_signature = (char *)malloc(total_data_len * 2 + 1); // Each byte -> 2 hex chars + null terminator
     if (hex_signature == NULL) {
-        free(concatenated_data);
-        free(context->signature_key);
-        context->signature_key = NULL;
+        free(payload_buffer);
+        free(user->signing_key);
+        user->signing_key = NULL;
         return NULL;
     }
     memset(hex_signature, 0, total_data_len * 2 + 1);
 
-    // Convert raw signature bytes to hex string
     for (unsigned int i = 0; i < total_data_len; ++i) {
-        hex_signature[i * 2] = to_hex(concatenated_data[i] >> 4);
-        hex_signature[i * 2 + 1] = to_hex(concatenated_data[i] & 0xF);
+        hex_signature[i * 2] = to_hex(payload_buffer[i] >> 4);
+        hex_signature[i * 2 + 1] = to_hex(payload_buffer[i] & 0xF);
     }
-    hex_signature[total_data_len * 2] = '\0'; // Null-terminate
 
-    free(concatenated_data); // Free intermediate concatenated data buffer
-
+    free(payload_buffer);
     return hex_signature;
 }
 
+// Function: verifySignature
+int verifySignature(User *user, char *signature) {
+    if (user == NULL || user->subscription_list == NULL || user->signing_key == NULL || signature == NULL) {
+        return 0; // Invalid input
+    }
 
-// --- Main function for demonstration ---
+    unsigned int total_data_len = 0;
+    for (SubscriptionNode *current_sub = user->subscription_list; current_sub != NULL; current_sub = current_sub->next) {
+        if (current_sub->data != NULL) {
+            total_data_len += strlen(current_sub->data);
+        }
+    }
+
+    if (total_data_len == 0) {
+        // If there's no data to sign, and the signature is empty, it's considered valid
+        return (strlen(signature) == 0);
+    }
+
+    // Check signature length (2 hex chars per byte)
+    if (strlen(signature) != total_data_len * 2) {
+        return 0; // Signature length mismatch
+    }
+
+    uint8_t *payload_buffer = (uint8_t *)malloc(total_data_len + 1);
+    if (payload_buffer == NULL) {
+        return 0;
+    }
+    memset(payload_buffer, 0, total_data_len + 1);
+
+    // Concatenate all subscription data into payload_buffer
+    char *current_payload_pos = (char *)payload_buffer;
+    for (SubscriptionNode *current_sub = user->subscription_list; current_sub != NULL; current_sub = current_sub->next) {
+        if (current_sub->data != NULL) {
+            size_t len = strlen(current_sub->data);
+            memcpy(current_payload_pos, current_sub->data, len);
+            current_payload_pos += len;
+        }
+    }
+
+    // Decode signature hex string into bytes
+    uint8_t *decoded_signature = (uint8_t *)malloc(total_data_len + 1);
+    if (decoded_signature == NULL) {
+        free(payload_buffer);
+        return 0;
+    }
+    memset(decoded_signature, 0, total_data_len + 1);
+
+    for (unsigned int i = 0; i < total_data_len; ++i) {
+        uint8_t high_nibble = to_bin(signature[i * 2]);
+        uint8_t low_nibble = to_bin(signature[i * 2 + 1]);
+        decoded_signature[i] = (high_nibble << 4) | low_nibble;
+    }
+
+    // Compare original data XORed with key, to decoded signature
+    int result = 1; // Assume valid
+    for (unsigned int i = 0; i < total_data_len; ++i) {
+        if ((payload_buffer[i] ^ ((uint8_t *)user->signing_key)[i]) != decoded_signature[i]) {
+            result = 0; // Mismatch
+            break;
+        }
+    }
+
+    free(payload_buffer);
+    free(decoded_signature);
+    return result;
+}
+
+// Main function for demonstration and compilation
 int main() {
-    srand(time(NULL)); // Seed the random number generator once
+    // Seed random only once
+    srandom(time(NULL));
+    random_seeded = true;
 
-    printf("--- User Management ---\n");
     User *user_list_head = NULL;
-    User *u1 = newUser(&user_list_head, "alice", "pass123");
-    User *u2 = newUser(&user_list_head, "bob", "securepwd");
-    User *u3 = newUser(&user_list_head, "charlie", "secret");
+    
+    // Test newUser
+    User *user1 = newUser(&user_list_head, "alice", "pass123");
+    if (user1) {
+        printf("User 1 created: %s\n", user1->name);
+    }
 
-    if (u1) printf("User 'alice' created.\n");
-    if (u2) printf("User 'bob' created.\n");
-    if (u3) printf("User 'charlie' created.\n");
+    User *user2 = newUser(&user_list_head, "bob", "securepwd");
+    if (user2) {
+        printf("User 2 created: %s\n", user2->name);
+    }
 
-    User *found_user = getUserByName(user_list_head, "bob");
-    if (found_user) {
-        printf("Found user by name: %s (password: %s)\n", found_user->name, found_user->password);
+    // Test newToken
+    newToken(&user1->token);
+    if (user1->token) {
+        printf("User 1 token: %s\n", user1->token);
+    }
+
+    // Test authenticateToken
+    if (authenticateToken(user_list_head, user1->token)) {
+        printf("Token authenticated for %s\n", user1->name);
     } else {
-        printf("User 'bob' not found.\n");
+        printf("Token authentication failed for %s\n", user1->name);
     }
 
-    found_user = getUserByName(user_list_head, "david");
-    if (found_user) {
-        printf("Found user by name: %s\n", found_user->name);
-    } else {
-        printf("User 'david' not found.\n");
-    }
+    // Add subscriptions to user1
+    SubscriptionNode *sub1 = (SubscriptionNode *)malloc(sizeof(SubscriptionNode));
+    sub1->data = strdup("premium");
+    sub1->field1 = NULL;
+    sub1->field2 = NULL;
+    sub1->next = NULL;
 
-    printf("\n--- Token Management ---\n");
-    AuthToken *token_list_head = NULL;
-    char *token1_str = NULL;
-    newToken(&token1_str); // token1_str now points to a malloc'd string
-    if (token1_str) {
-        printf("Generated token 1: %s\n", token1_str);
-        AuthToken *new_token_node = (AuthToken *)malloc(sizeof(AuthToken));
-        if (new_token_node) {
-            new_token_node->token_str = token1_str;
-            new_token_node->field1 = NULL; new_token_node->field2 = NULL;
-            new_token_node->field3 = NULL; new_token_node->field4 = NULL;
-            new_token_node->next = token_list_head;
-            token_list_head = new_token_node;
-        } else {
-            free(token1_str); // If node allocation fails, free token string
-            token1_str = NULL;
-        }
-    }
+    SubscriptionNode *sub2 = (SubscriptionNode *)malloc(sizeof(SubscriptionNode));
+    sub2->data = strdup("newsletter");
+    sub2->field1 = NULL;
+    sub2->field2 = NULL;
+    sub2->next = sub1; // Prepend to list
 
-    char *token2_str = NULL;
-    newToken(&token2_str); // token2_str now points to a malloc'd string
-    if (token2_str) {
-        printf("Generated token 2: %s\n", token2_str);
-        AuthToken *new_token_node = (AuthToken *)malloc(sizeof(AuthToken));
-        if (new_token_node) {
-            new_token_node->token_str = token2_str;
-            new_token_node->field1 = NULL; new_token_node->field2 = NULL;
-            new_token_node->field3 = NULL; new_token_node->field4 = NULL;
-            new_token_node->next = token_list_head;
-            token_list_head = new_token_node;
-        } else {
-            free(token2_str); // If node allocation fails, free token string
-            token2_str = NULL;
-        }
-    }
+    user1->subscription_list = sub2;
 
-    uint32_t auth_result = authenticateToken(&token_list_head, token1_str);
-    printf("Authenticating token 1 (%s): %s\n", token1_str, auth_result ? "Success" : "Failed");
+    printf("User 1 subscriptions before reverse: %s, %s\n", user1->subscription_list->data, user1->subscription_list->next->data);
+    reverseSubscriptionList(&user1->subscription_list);
+    printf("User 1 subscriptions after reverse: %s, %s\n", user1->subscription_list->data, user1->subscription_list->next->data);
 
-    auth_result = authenticateToken(&token_list_head, "INVALIDTOKEN");
-    printf("Authenticating 'INVALIDTOKEN': %s\n", auth_result ? "Success" : "Failed");
-
-    AuthToken *found_token_node = getUserByToken(&token_list_head, token2_str);
-    if (found_token_node) {
-        printf("Found token node for token 2: %s\n", found_token_node->token_str);
-    } else {
-        printf("Token 2 node not found.\n");
-    }
-
-    printf("\n--- Signature Management ---\n");
-    SignatureContext sig_ctx = {0}; // Initialize all fields to 0/NULL
-
-    // Add some data to be signed. Note: data is added to the head, so order will be reversed in list.
-    SignatureDataNode *data1 = (SignatureDataNode *)malloc(sizeof(SignatureDataNode));
-    if (data1) {
-        data1->data = strdup("Hello"); // strdup allocates memory
-        data1->field1 = NULL; data1->field2 = NULL;
-        data1->next = sig_ctx.data_list_head;
-        sig_ctx.data_list_head = data1;
-    }
-    SignatureDataNode *data2 = (SignatureDataNode *)malloc(sizeof(SignatureDataNode));
-    if (data2) {
-        data2->data = strdup("World"); // strdup allocates memory
-        data2->field1 = NULL; data2->field2 = NULL;
-        data2->next = sig_ctx.data_list_head;
-        sig_ctx.data_list_head = data2;
-    }
-
-    printf("Original data list order (for signature, from head): ");
-    SignatureDataNode *current_sig_data = sig_ctx.data_list_head;
-    while(current_sig_data) {
-        printf("%s ", current_sig_data->data);
-        current_sig_data = current_sig_data->next;
-    }
-    printf("\n");
-
-    char *signature = (char *)computeSignature(&sig_ctx);
+    // Test computeSignature
+    char *signature = computeSignature(user1);
     if (signature) {
-        printf("Computed signature: %s\n", signature);
-        printf("Signing key (hex): ");
-        if (sig_ctx.signature_key) {
-            for(size_t i = 0; i < strlen(sig_ctx.signature_key); ++i) {
-                printf("%02x", (uint8_t)sig_ctx.signature_key[i]);
-            }
-        }
-        printf("\n");
+        printf("Computed signature for %s: %s\n", user1->name, signature);
+    }
 
-        // For verification, the context's subscription_list_head is used, which is then reversed.
-        // Let's copy the data_list_head to subscription_list_head for this example.
-        // In a real scenario, these lists would be managed separately or the context would be pre-populated.
-        // For demonstration, we'll manually set it up, assuming data_list_head is the "input" for signature calculation
-        // and subscription_list_head is the "input" for verification (which gets reversed).
-        // To simplify, we'll just use data_list_head for both and `reverseSubscriptionList` will operate on it.
-        // The original code passed `param_1 + 8` (context->subscription_list_head) to reverseSubscriptionList,
-        // so we populate it similarly for a valid test.
-        // Let's assume the signature is computed on `data_list_head` and `verifySignature` checks against `subscription_list_head`.
-        // To make the example work, let's copy `data_list_head` to `subscription_list_head`.
-        // This is a simplification for the main function, not part of the original logic.
-        sig_ctx.subscription_list_head = sig_ctx.data_list_head;
-
-        uint32_t verify_result = verifySignature(&sig_ctx, signature);
-        printf("Verifying signature: %s\n", verify_result ? "Success" : "Failed");
-
-        // Test with a tampered signature
-        char *tampered_signature = strdup(signature);
-        if (tampered_signature && strlen(tampered_signature) > 0) {
-            tampered_signature[0] = (tampered_signature[0] == 'a') ? 'b' : 'a'; // Tamper first hex char
-            printf("Verifying tampered signature (%s): %s\n", tampered_signature, verifySignature(&sig_ctx, tampered_signature) ? "Success" : "Failed");
-            free(tampered_signature);
-        }
-        
-        free(signature);
+    // Test verifySignature
+    if (signature && verifySignature(user1, signature)) {
+        printf("Signature verified for %s\n", user1->name);
     } else {
-        printf("Failed to compute signature.\n");
+        printf("Signature verification FAILED for %s\n", user1->name);
     }
 
-    printf("\n--- Cleanup ---\n");
-    // Free User list
-    User *current_user = user_list_head;
-    while (current_user != NULL) {
-        User *temp = current_user;
-        current_user = current_user->next;
-        free(temp->name);
-        free(temp->password);
-        free(temp);
-    }
-
-    // Free AuthToken list
-    AuthToken *current_token = token_list_head;
-    while (current_token != NULL) {
-        AuthToken *temp = current_token;
-        current_token = current_token->next;
-        free(temp->token_str); // Token string was malloc'd by generateRandomToken
-        free(temp); // The AuthToken node itself
-    }
-
-    // Free SignatureContext data
-    // Note: sig_ctx.subscription_list_head and sig_ctx.data_list_head might point to the same list if setup that way for demo.
-    // Ensure we only free nodes once.
-    SignatureDataNode *current_sig_node = sig_ctx.data_list_head; // Assume data_list_head is the canonical list
-    while (current_sig_node != NULL) {
-        SignatureDataNode *temp = current_sig_node;
-        current_sig_node = current_sig_node->next;
+    // --- Cleanup (simplified for example) ---
+    // Free subscription list
+    SubscriptionNode *current_sub = user1->subscription_list;
+    while (current_sub != NULL) {
+        SubscriptionNode *temp = current_sub;
+        current_sub = current_sub->next;
         free(temp->data);
         free(temp);
     }
-    if (sig_ctx.signature_key) {
-        free(sig_ctx.signature_key);
-    }
+    user1->subscription_list = NULL;
+
+    // Free user1
+    if (user1->token) free(user1->token);
+    if (user1->name) free(user1->name);
+    if (user1->password) free(user1->password);
+    if (user1->signing_key) free(user1->signing_key);
+    free(user1);
+    user1 = NULL; // Prevent double free issues in example if user_list_head was used
+
+    // Free user2
+    if (user2->name) free(user2->name);
+    if (user2->password) free(user2->password);
+    free(user2);
+    user2 = NULL;
+
+    if (signature) free(signature);
+    signature = NULL;
+
+    user_list_head = NULL; // All users freed
 
     return 0;
 }

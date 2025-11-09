@@ -1,126 +1,112 @@
-#include <stdio.h>   // For FILE, stdout, setvbuf, fread, fwrite, fflush, feof, ferror
-#include <stdlib.h>  // For exit
-#include <string.h>  // For strlen
-#include <stdint.h>  // For uint32_t
+#include <stdio.h>  // For FILE, stdout, fflush, setvbuf, fread
+#include <stdlib.h> // For exit
+#include <string.h> // For strlen
 
-// --- External function and data declarations ---
-// These are placeholders for functions that would be defined elsewhere.
+// Placeholder function declarations
+// 'undefined4' typically translates to 'int' or 'unsigned int' for 4-byte integers.
+// 'undefined *' typically translates to 'void *' or 'char *'.
+static int read_n(int *buffer);
+static void otp_handshake(int *session_id);
+static void otp_generate_otp(int session_id);
+static void otp_extend_session(int session_id);
+static void otp_set_seeds(int session_id);
+static void otp_verify_otp(int session_id);
 
-// Assuming read_n reads 4 bytes into the provided uint32_t pointer
-// and returns the number of bytes successfully read.
-extern int read_n(uint32_t *buffer);
-
-// OTP related functions
-extern void otp_handshake(uint32_t *session_id_ptr);
-extern void otp_generate_otp(uint32_t session_id);
-extern void otp_extend_session(uint32_t session_id);
-extern void otp_set_seeds(uint32_t session_id);
-extern void otp_verify_otp(uint32_t session_id);
-
-// _terminate function
-extern void _terminate(void);
-
-// Global string data
-// These are assumed to be null-terminated strings based on their usage with fwrite.
+// Global data from the original snippet, likely string literals.
+// Assuming they are null-terminated for use with strlen.
 const char DAT_00015000[] = "Quitting...\n";
 const char DAT_00015002[] = "Unknown command.\n";
 
-// --- Main function ---
+// Function: main
 int main(void) {
-    uint32_t command_id = 0;
-    uint32_t session_id = 0;
-    int bytes_read;
+  int bytes_read;
+  int command_code = 0; // Corresponds to local_18 in the original snippet
+  int session_id = 0;   // Corresponds to local_14 in the original snippet
 
-    // Set stdout to line buffered. The original 'fbuffered(stdout, 1)' suggests
-    // some form of buffering, and line buffering is common for interactive programs.
-    setvbuf(stdout, NULL, _IOLBF, 0);
+  // Replaces 'fbuffered(stdout, 1);'
+  // Sets stdout to line-buffered mode. A common interpretation for '1' in such a context.
+  setvbuf(stdout, NULL, _IOLBF, 0);
 
-    while (1) { // Infinite loop
-        bytes_read = read_n(&command_id);
+  while (1) { // Infinite loop
+    bytes_read = read_n(&command_code);
 
-        if (bytes_read != sizeof(uint32_t)) {
-            // If not exactly 4 bytes were read, exit the loop.
-            // This handles EOF or read errors.
-            break;
-        }
-
-        // Handle commands using a switch statement for clarity.
-        // The hex values correspond to 4-byte ASCII codes, assuming little-endian storage
-        // (e.g., 'SHAK' is 0x53 0x48 0x41 0x4B, stored as 0x4B414853 in little-endian).
-        switch (command_id) {
-            case 0x4b414853: // "SHAK"
-                otp_handshake(&session_id);
-                break;
-            case 0x4f4e4547: // "GENO"
-                otp_generate_otp(session_id);
-                break;
-            case 0x444e5458: // "XTND"
-                otp_extend_session(session_id);
-                break;
-            case 0x44454553: // "SEED"
-                otp_set_seeds(session_id);
-                break;
-            case 0x49524556: // "VERI"
-                otp_verify_otp(session_id);
-                break;
-            case 0x54495551: // "QUIT"
-                fwrite(DAT_00015000, 1, strlen(DAT_00015000), stdout);
-                fflush(stdout);
-                _terminate(); // This function is expected to terminate the program
-                // No break needed here as _terminate should exit.
-            default: // Unknown command
-                fwrite(DAT_00015002, 1, strlen(DAT_00015002), stdout);
-                fflush(stdout);
-                break;
-        }
+    if (bytes_read != 4) {
+      break; // Exit loop if 'read_n' did not read exactly 4 bytes
     }
 
-    return 0; // Program exits gracefully if the loop breaks
+    // Command codes (reversed ASCII from hex values):
+    // 0x4b414853 -> SHAK
+    // 0x4f4e4547 -> GENO
+    // 0x444e5458 -> XTND
+    // 0x44454553 -> SEED
+    // 0x49524556 -> VERI
+    // 0x54495551 -> QUIT
+
+    if (command_code == 0x4b414853) { // SHAK (Handshake)
+      otp_handshake(&session_id);
+    } else if (command_code == 0x4f4e4547) { // GENO (Generate OTP)
+      otp_generate_otp(session_id);
+    } else if (command_code == 0x444e5458) { // XTND (Extend session)
+      otp_extend_session(session_id);
+    } else if (command_code == 0x44454553) { // SEED (Set seeds)
+      otp_set_seeds(session_id);
+    } else if (command_code == 0x49524556) { // VERI (Verify OTP)
+      otp_verify_otp(session_id);
+    } else if (command_code == 0x54495551) { // QUIT
+      fwrite(DAT_00015000, 1, strlen(DAT_00015000), stdout);
+      fflush(stdout);
+      exit(0); // Replaces '_terminate();'
+    } else { // Unknown command
+      fwrite(DAT_00015002, 1, strlen(DAT_00015002), stdout);
+    }
+  }
+  return 0; // Main function returns 0 on successful exit from the loop
 }
 
-// --- Dummy implementations for compilation ---
-// These functions are provided to make the code self-contained and compilable.
-// In a real application, these would be implemented in their respective modules.
+// --- Minimal placeholder implementations for compilation ---
+// These functions would contain actual logic in a complete program.
+// For this task, they are stubs to satisfy compilation requirements.
 
-// Reads 4 bytes into the provided buffer from stdin.
-// Returns the number of bytes read.
-int read_n(uint32_t *buffer) {
-    if (!buffer) {
-        return -1; // Indicate error
+// Reads 'n' bytes (assumed 4 for an int) from stdin into the buffer.
+// Returns the number of bytes successfully read.
+static int read_n(int *buffer) {
+    // In a real application, this would read from a source like stdin or a network socket.
+    // For demonstration, we simulate input for a couple of cycles.
+    static int call_count = 0;
+    if (call_count == 0) {
+        *buffer = 0x4b414853; // Simulate "SHAK" command
+        call_count++;
+        return 4;
+    } else if (call_count == 1) {
+        *buffer = 0x54495551; // Simulate "QUIT" command
+        call_count++;
+        return 4;
     }
-    size_t bytes_read_count = fread(buffer, 1, sizeof(uint32_t), stdin);
-
-    if (bytes_read_count != sizeof(uint32_t)) {
-        // If EOF or error occurred, the loop in main will break.
-        // No explicit error message is printed here to mimic minimal behavior.
-        // (void)feof(stdin); // Suppress unused result warning if not used
-        // (void)ferror(stdin); // Suppress unused result warning if not used
-    }
-    return bytes_read_count;
+    // After two calls, simulate EOF or error to break the main loop.
+    return 0;
 }
 
-void otp_handshake(uint32_t *session_id_ptr) {
-    if (session_id_ptr) {
-        *session_id_ptr = 0xDEADBEEF; // Simulate setting a session ID
-    }
+static void otp_handshake(int *session_id) {
+    // Placeholder: set a default session ID
+    *session_id = 1;
 }
 
-void otp_generate_otp(uint32_t session_id) {
+static void otp_generate_otp(int session_id) {
+    // Placeholder: use session_id
     (void)session_id; // Suppress unused parameter warning
 }
 
-void otp_extend_session(uint32_t session_id) {
+static void otp_extend_session(int session_id) {
+    // Placeholder: use session_id
     (void)session_id; // Suppress unused parameter warning
 }
 
-void otp_set_seeds(uint32_t session_id) {
+static void otp_set_seeds(int session_id) {
+    // Placeholder: use session_id
     (void)session_id; // Suppress unused parameter warning
 }
 
-void otp_verify_otp(uint32_t session_id) {
+static void otp_verify_otp(int session_id) {
+    // Placeholder: use session_id
     (void)session_id; // Suppress unused parameter warning
-}
-
-void _terminate(void) {
-    exit(0); // Exit the program
 }

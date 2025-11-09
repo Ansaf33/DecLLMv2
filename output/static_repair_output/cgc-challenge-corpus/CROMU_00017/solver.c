@@ -1,373 +1,317 @@
-#include <stdio.h>    // For printf, fprintf
-#include <stdlib.h>   // For general utilities (not strictly used, but good practice)
-#include <string.h>   // For strcpy, strlen
-#include <stdbool.h>  // For bool type
-#include <limits.h>   // For INT_MAX, INT_MIN (used in evaluate for overflow checks)
+#include <stdio.h>   // For printf, sprintf
+#include <stdlib.h>  // For rand, srand
+#include <time.h>    // For time
+#include <string.h>  // For strlen
+#include <ctype.h>   // For isdigit, isspace
+#include <limits.h>  // For INT_MAX, INT_MIN
 
-// --- Global Stacks and Pointers ---
+// --- Stack implementation ---
 #define MAX_STACK_SIZE 100
-
 int num_stack[MAX_STACK_SIZE];
-int curr_num_stack = -1; // Top of number stack, -1 means empty
-
+int curr_num_stack = -1; // -1 indicates empty
 char op_stack[MAX_STACK_SIZE];
-int curr_op_stack = -1; // Top of operator stack, -1 means empty
+int curr_op_stack = -1; // -1 indicates empty
 
-// --- Stack Helper Functions ---
-
-// Pushes an integer value onto the number stack. Returns true on success, false on overflow.
-bool push_num(int val) {
-    if (curr_num_stack >= MAX_STACK_SIZE - 1) {
-        fprintf(stderr, "Error: Number stack overflow\n");
-        return false;
-    }
+int push_num(int val) {
+    if (curr_num_stack >= MAX_STACK_SIZE - 1) return 0; // Stack full
     num_stack[++curr_num_stack] = val;
-    return true;
+    return 1;
 }
 
-// Pops an integer value from the number stack into *val. Returns true on success, false on underflow.
-bool pop_num(int *val) {
-    if (curr_num_stack < 0) {
-        // fprintf(stderr, "Error: Number stack underflow\n"); // Can be normal for checking emptiness
-        return false;
-    }
+int pop_num(int* val) {
+    if (curr_num_stack < 0) return 0; // Stack empty
     *val = num_stack[curr_num_stack--];
-    return true;
+    return 1;
 }
 
-// Peeks at the top integer value on the number stack into *val without removing it. Returns true on success, false if empty.
-bool peek_num(int *val) {
-    if (curr_num_stack < 0) {
-        return false;
-    }
-    *val = num_stack[curr_num_stack];
-    return true;
-}
-
-// Pushes a character operator onto the operator stack. Returns true on success, false on overflow.
-bool push_op(char op) {
-    if (curr_op_stack >= MAX_STACK_SIZE - 1) {
-        fprintf(stderr, "Error: Operator stack overflow\n");
-        return false;
-    }
+int push_op(char op) {
+    if (curr_op_stack >= MAX_STACK_SIZE - 1) return 0; // Stack full
     op_stack[++curr_op_stack] = op;
-    return true;
+    return 1;
 }
 
-// Pops a character operator from the operator stack into *op. Returns true on success, false on underflow.
-bool pop_op(char *op) {
-    if (curr_op_stack < 0) {
-        // fprintf(stderr, "Error: Operator stack underflow\n"); // Can be normal
-        return false;
-    }
+int pop_op(char* op) {
+    if (curr_op_stack < 0) return 0; // Stack empty
     *op = op_stack[curr_op_stack--];
-    return true;
+    return 1;
 }
 
-// Peeks at the top character operator on the operator stack into *op without removing it. Returns true on success, false if empty.
-bool peek_op(char *op) {
-    if (curr_op_stack < 0) {
-        return false;
-    }
+int peek_op(char* op) {
+    if (curr_op_stack < 0) return 0; // Stack empty
     *op = op_stack[curr_op_stack];
-    return true;
+    return 1;
 }
 
-// --- Other Helper Functions ---
-
-// Converts a string of digits starting at `s` to an integer.
-// `*chars_read` will be updated with the number of characters consumed (digits).
-// Returns the parsed integer value.
-int stoi(const char *s, int *chars_read) {
+// --- stoi implementation ---
+// Converts string to integer, updates length_parsed with number of digits consumed.
+int stoi(const char* str, int* length_parsed) {
     int val = 0;
-    int i = 0;
-    while (s[i] >= '0' && s[i] <= '9') {
-        val = val * 10 + (s[i] - '0');
-        i++;
+    int len = 0;
+    while (isdigit(str[len])) {
+        val = val * 10 + (str[len] - '0');
+        len++;
     }
-    *chars_read = i;
+    *length_parsed = len;
     return val;
 }
 
-// Returns the precedence of an operator. Higher value means higher precedence.
-// Returns 0 for non-operators or parentheses.
-int get_precedence(char op) {
-    if (op == '+' || op == '-') return 1;
-    if (op == '*' || op == '/') return 2;
-    return 0; // For '(' or other non-operators (like stack bottom)
-}
+// --- generate_one_equation implementation ---
+// Generates a simple equation string and returns its result.
+int generate_one_equation(char* buffer) {
+    int a = rand() % 100 + 1; // Avoid zero for division often
+    int b = rand() % 100 + 1;
+    char op_char;
+    int op_type = rand() % 4; // 0:+, 1:-, 2:*, 3:/
+    int result;
 
-// Dummy function: generate_one_equation
-// Generates a simple equation string into `buffer` and returns its expected integer result.
-int generate_one_equation(char *buffer) {
-    static int eq_count = 0;
-    eq_count++;
-    // Simple dummy equations for testing
-    if (eq_count % 3 == 0) {
-        strcpy(buffer, "10+5*2"); // Expected: 20
-        return 20;
-    } else if (eq_count % 3 == 1) {
-        strcpy(buffer, "(15-3)/2"); // Expected: 6
-        return 6;
-    } else {
-        strcpy(buffer, "7*8-4"); // Expected: 52
-        return 52;
+    switch (op_type) {
+        case 0: op_char = '+'; result = a + b; break;
+        case 1: op_char = '-'; result = a - b; break;
+        case 2: op_char = '*'; result = a * b; break;
+        case 3: op_char = '/'; result = a / b; break; // b is guaranteed > 0
+        default: op_char = '+'; result = a + b; break;
     }
-}
 
-// Dummy arrays for predefined tests and their answers
-const char *tests[] = {
-    "10+5*2",    // 20
-    "(15-3)/2",  // 6
-    "7*8-4",     // 52
-    "20/4+1",    // 6
-    "3*(4+5)",   // 27
-    "10-2*3",    // 4
-    "100/10+5",  // 15
-    "2+2*2",     // 6
-    "10-(2+3)",  // 5
-    "5*5",       // 25
-    "10/0",      // Error case, division by zero
-    "5+2-3"      // 4
-};
-int answers[] = {
-    20,
-    6,
-    52,
-    6,
-    27,
-    4,
-    15,
-    6,
-    5,
-    25,
-    0, // Expected result for 10/0, assuming 0 on error
-    4
-};
-#define NUM_TESTS (sizeof(tests) / sizeof(tests[0]))
-
-// Function: get_pow
-// Calculates `exponent_or_count * (base * base)`.
-// This is not a standard power function (e.g., base^exponent), but preserves the original logic.
-int get_pow(int base, int exponent_or_count) {
-    int result = 0;
-    if (exponent_or_count == 0) {
-        return 0; // As per original logic
-    } else {
-        for (int i = 1; i <= exponent_or_count; ++i) {
-            result += base * base;
-        }
-    }
+    sprintf(buffer, "%d %c %d", a, op_char, b);
     return result;
 }
 
-// Function: evaluate
-// Performs an arithmetic operation (operand1 `operator_char` operand2) and stores the result in `*result_ptr`.
-// Returns true on success, false on overflow, underflow, or division by zero.
-bool evaluate(int operand1, char operator_char, int operand2, int *result_ptr) {
-    long long res; // Use long long for intermediate calculations to check for overflow
+// --- Global test data ---
+const char *tests[] = {
+    "1+2",
+    "10-5",
+    "2*3",
+    "8/4",
+    "(1+2)*3",
+    "10-(2+3)",
+    "2+3*4",
+    "12/3-1",
+    "5*(2+3)",
+    "20/(4-2)",
+    "-5+10",
+    "10--5" // This is "10 minus negative 5", which is 10 + 5 = 15
+};
 
-    switch (operator_char) {
-        case '+':
-            res = (long long)operand1 + operand2;
-            if (res > INT_MAX || res < INT_MIN) {
-                fprintf(stderr, "Error: Addition overflow/underflow detected for %d %c %d\n", operand1, operator_char, operand2);
-                return false;
-            }
-            *result_ptr = (int)res;
-            break;
-        case '-':
-            res = (long long)operand1 - operand2;
-            if (res > INT_MAX || res < INT_MIN) {
-                fprintf(stderr, "Error: Subtraction overflow/underflow detected for %d %c %d\n", operand1, operator_char, operand2);
-                return false;
-            }
-            *result_ptr = (int)res;
-            break;
-        case '*':
-            res = (long long)operand1 * operand2;
-            if (res > INT_MAX || res < INT_MIN) {
-                fprintf(stderr, "Error: Multiplication overflow/underflow detected for %d %c %d\n", operand1, operator_char, operand2);
-                return false;
-            }
-            *result_ptr = (int)res;
-            break;
-        case '/':
-            if (operand2 == 0) {
-                fprintf(stderr, "Error: Division by zero detected for %d %c %d\n", operand1, operator_char, operand2);
-                return false;
-            }
-            *result_ptr = operand1 / operand2; // Integer division truncates towards zero
-            break;
-        default:
-            fprintf(stderr, "Error: Unknown operator '%c'\n", operator_char);
-            return false;
+// Expected answers for the tests
+const int answers[] = {
+    3,
+    5,
+    6,
+    2,
+    9,
+    5,
+    14, // 2 + (3*4) = 2 + 12 = 14
+    3,  // (12/3) - 1 = 4 - 1 = 3
+    25,
+    10,
+    5,  // -5 + 10 = 5
+    15  // 10 - (-5) = 10 + 5 = 15
+};
+
+// Function: get_pow
+// Implements the original logic: param_2 * (param_1 * param_1)
+int get_pow(int base, int exponent) {
+  int result = 0;
+  if (exponent == 0) {
+    result = 0;
+  }
+  else {
+    for (int i = 1; i <= exponent; ++i) {
+      result += base * base;
     }
-    return true;
+  }
+  return result;
 }
 
-// Function: satisfy_paren
-// Processes operators on the stack until an opening parenthesis is found or the stack is empty.
-// If an opening parenthesis is found, it is popped.
-// Returns true on success, false on error (e.g., stack underflow during evaluation).
-bool satisfy_paren(void) {
-    char op_char;
-    int operand1, operand2, result;
+// Function: evaluate
+// Evaluates a binary operation with overflow checks.
+// Returns 1 on success, 0 on failure (overflow/div by zero).
+int evaluate(int param_1, char param_2, int param_3, int *param_4) {
+    long long temp_result; // For overflow checks
 
-    // Process operators until an opening parenthesis is found or the operator stack is empty
-    while (peek_op(&op_char) && op_char != '(') {
-        if (!pop_op(&op_char)) return false; // Pop current operator
-
-        if (!pop_num(&operand2)) return false; // Pop second operand
-        if (!pop_num(&operand1)) return false; // Pop first operand
-
-        if (!evaluate(operand1, op_char, operand2, &result)) return false;
-        if (!push_num(result)) return false;
+    switch (param_2) {
+        case '+':
+            temp_result = (long long)param_1 + param_3;
+            if (temp_result > INT_MAX || temp_result < INT_MIN) {
+                return 0; // Overflow
+            }
+            *param_4 = (int)temp_result;
+            return 1;
+        case '-':
+            temp_result = (long long)param_1 - param_3;
+            if (temp_result > INT_MAX || temp_result < INT_MIN) {
+                return 0; // Overflow
+            }
+            *param_4 = (int)temp_result;
+            return 1;
+        case '*':
+            temp_result = (long long)param_1 * param_3;
+            if (temp_result > INT_MAX || temp_result < INT_MIN) {
+                return 0; // Overflow
+            }
+            *param_4 = (int)temp_result;
+            return 1;
+        case '/':
+            if (param_3 == 0) {
+                return 0; // Division by zero
+            }
+            // Division overflow can occur with INT_MIN / -1.
+            // E.g., if INT_MIN is -2147483648, -INT_MIN is 2147483648, which exceeds INT_MAX.
+            if (param_1 == INT_MIN && param_3 == -1) {
+                return 0; // Overflow
+            }
+            *param_4 = param_1 / param_3;
+            return 1;
+        default:
+            return 0; // Unknown operator
     }
+}
 
-    // If an opening parenthesis is at the top of the stack, pop it (matching the closing parenthesis)
-    if (peek_op(&op_char) && op_char == '(') {
-        if (!pop_op(&op_char)) return false;
+// Returns operator precedence. Higher number means higher precedence.
+// Unary minus ('_') has highest precedence.
+int get_precedence(char op) {
+    if (op == '+' || op == '-') return 1;
+    if (op == '*' || op == '/') return 2;
+    if (op == '_') return 3; // Special symbol for unary minus
+    return 0; // For '(' or other non-operators
+}
+
+// Applies an operator from the op_stack to numbers from the num_stack.
+// Returns 1 on success, 0 on failure.
+int apply_operator(char op, int* result_val) {
+    int num1, num2;
+
+    if (op == '_') { // Unary minus
+        if (!pop_num(&num1)) return 0;
+        *result_val = -num1;
+        return 1;
+    } else { // Binary operator
+        if (!pop_num(&num2)) return 0; // Right operand
+        if (!pop_num(&num1)) return 0; // Left operand
+        return evaluate(num1, op, num2, result_val);
     }
-    // If the stack is empty here, it means no matching '(' was found, which is an error in a balanced expression.
-    // However, the original code's logic implies this might be a normal exit if no '(' was there to begin with.
-    // The `solve_equation` calling context will handle unmatched `(` at the end.
-    return true;
 }
 
 // Function: solve_equation
-// Parses and solves an arithmetic equation string using a shunting-yard-like algorithm.
-// Stores the final integer result in `*result_ptr`.
-// Returns true on successful evaluation, false on any error (e.g., syntax, stack issues, arithmetic errors).
-bool solve_equation(const char *equation_str, int *result_ptr) {
+// Solves an arithmetic expression using a shunting-yard like algorithm.
+// Returns 1 on success, 0 on failure (syntax error, div by zero, overflow).
+int solve_equation(const char *equation_str, int *result_ptr) {
     int current_pos = 0;
-    char current_char;
-    char op_char;
-    int operand1, operand2, result;
-
-    // Reset stacks for each equation evaluation
-    curr_num_stack = -1;
+    curr_num_stack = -1; // Reset stacks for new equation
     curr_op_stack = -1;
 
-    while ((current_char = equation_str[current_pos]) != '\0') {
-        if (current_char == ' ') { // Skip whitespace
+    char current_char;
+    int result_val;
+
+    // Flag to help distinguish unary minus: true if last token was a number or ')'
+    int last_token_was_operand = 0;
+
+    while (current_pos < strlen(equation_str)) {
+        current_char = equation_str[current_pos];
+
+        if (isspace(current_char)) {
             current_pos++;
             continue;
         }
 
-        if (current_char >= '0' && current_char <= '9') {
-            int num_len;
-            int num_val = stoi(equation_str + current_pos, &num_len);
-
-            // Replicated original decompiler's specific "unary minus" handling:
-            // If '-' is on top of the operator stack when a number is parsed,
-            // it's treated as a unary minus for that number by converting the '-' to '+'
-            // and negating the number. This effectively changes `A - B` to `A + (-B)`.
-            char top_op_peek;
-            if (peek_op(&top_op_peek) && top_op_peek == '-') {
-                if (!pop_op(&top_op_peek)) return false; // Pop the '-'
-                if (!push_op('+')) return false;         // Push '+'
-                num_val = -num_val;                      // Negate the parsed number
-            }
-            
-            if (!push_num(num_val)) return false;
-            current_pos += num_len;
-        } else if (current_char == '(') {
-            if (!push_op(current_char)) return false;
-            current_pos++;
-        } else if (current_char == ')') {
-            if (!satisfy_paren()) return false; // Process ops inside parentheses
-            current_pos++;
-        } else if (current_char == '+' || current_char == '-' || current_char == '*' || current_char == '/') {
-            // Operator precedence handling:
-            // While there's an operator on the stack with higher or equal precedence (and not an opening paren),
-            // pop it, pop two numbers, evaluate, and push the result.
-            while (peek_op(&op_char) && op_char != '(' &&
-                   get_precedence(op_char) >= get_precedence(current_char)) {
-                if (!pop_op(&op_char)) return false;
-                if (!pop_num(&operand2)) return false;
-                if (!pop_num(&operand1)) return false;
-                if (!evaluate(operand1, op_char, operand2, &result)) return false;
-                if (!push_num(result)) return false;
-            }
-            if (!push_op(current_char)) return false; // Push the current operator
-            current_pos++;
-        } else {
-            fprintf(stderr, "Error: Invalid character in equation: '%c' at position %d\n", current_char, current_pos);
-            return false; // Invalid character found
+        if (isdigit(current_char)) {
+            int num_val;
+            int parsed_len;
+            num_val = stoi(equation_str + current_pos, &parsed_len);
+            if (!push_num(num_val)) return 0;
+            last_token_was_operand = 1;
+            current_pos += parsed_len;
+            continue;
         }
+
+        if (current_char == '(') {
+            if (!push_op(current_char)) return 0;
+            last_token_was_operand = 0; // An opening parenthesis means the next operator could be unary
+            current_pos++;
+            continue;
+        }
+
+        if (current_char == ')') {
+            // Evaluate everything inside the parentheses
+            while (curr_op_stack != -1 && op_stack[curr_op_stack] != '(') {
+                if (!apply_operator(op_stack[curr_op_stack], &result_val)) return 0;
+                pop_op(&current_char); // Pop the applied operator
+                if (!push_num(result_val)) return 0;
+            }
+            if (curr_op_stack == -1 || op_stack[curr_op_stack] != '(') return 0; // Mismatched parentheses
+            pop_op(&current_char); // Pop the '('
+            last_token_was_operand = 1; // A closing parenthesis means the next operator is binary
+            current_pos++;
+            continue;
+        }
+
+        // Handle operators (+, -, *, /)
+        if (current_char == '+' || current_char == '-' || current_char == '*' || current_char == '/') {
+            char op_to_push = current_char;
+
+            // Determine if it's a unary minus: if current_char is '-' and previous token was not an operand
+            if (current_char == '-' && !last_token_was_operand) {
+                op_to_push = '_'; // Use special unary minus operator
+            }
+
+            // Apply shunting-yard logic for operator precedence
+            while (curr_op_stack != -1 && op_stack[curr_op_stack] != '(' && get_precedence(op_stack[curr_op_stack]) >= get_precedence(op_to_push)) {
+                if (!apply_operator(op_stack[curr_op_stack], &result_val)) return 0;
+                pop_op(&current_char);
+                if (!push_num(result_val)) return 0;
+            }
+            if (!push_op(op_to_push)) return 0;
+            last_token_was_operand = 0; // An operator means the next could be unary (if it's '-')
+            current_pos++;
+            continue;
+        }
+
+        return 0; // Unrecognized character
     }
 
-    // After processing the entire string, evaluate any remaining operators on the stack
+    // After parsing the entire string, evaluate any remaining operators
     while (curr_op_stack != -1) {
-        if (!pop_op(&op_char)) return false;
-        if (op_char == '(') { // Unmatched opening parenthesis indicates a syntax error
-            fprintf(stderr, "Error: Unmatched opening parenthesis in expression\n");
-            return false;
-        }
-        if (!pop_num(&operand2)) return false;
-        if (!pop_num(&operand1)) return false;
-        if (!evaluate(operand1, op_char, operand2, &result)) return false;
-        if (!push_num(result)) return false;
+        if (!apply_operator(op_stack[curr_op_stack], &result_val)) return 0;
+        pop_op(&current_char);
+        if (!push_num(result_val)) return 0;
     }
 
     // The final result should be the only number left on the number stack
-    if (curr_num_stack != 0 || !pop_num(result_ptr)) {
-        fprintf(stderr, "Error: Malformed expression or unexpected stack state (number stack count: %d)\n", curr_num_stack + 1);
-        return false;
+    if (pop_num(result_ptr) && curr_num_stack == -1) {
+        return 1; // Success
     }
-
-    return true; // Equation solved successfully
+    return 0; // Failed (e.g., stack not empty or empty)
 }
 
 // Function: run_tests
 void run_tests(void) {
     char equation_buffer[256];
-    int solved_result;    // To hold results from solve_equation
-    int expected_result;  // To hold results from generate_one_equation
+    int solved_value; // Result of solve_equation
 
-    printf("--- Generating and solving random equations ---\n");
+    srand(time(NULL)); // Seed for random equation generation
+
+    // Loop for generating and printing equations
     for (int i = 0; i < 1000; ++i) {
-        expected_result = generate_one_equation(equation_buffer);
-        bool success = solve_equation(equation_buffer, &solved_result);
-
-        printf("r: %d %s = %d ", i, equation_buffer, solved_result);
-        if (success) {
-            if (solved_result == expected_result) {
-                printf("(Correct)\n");
-            } else {
-                printf("(Wrong! Expected: %d)\n", expected_result);
-            }
-        } else {
-            printf("(Error during evaluation)\n");
-        }
+        int generated_result = generate_one_equation(equation_buffer);
+        printf("r: %d %s = %d\n", i, equation_buffer, generated_result);
     }
 
-    printf("\n--- Running predefined tests ---\n");
-    for (int i = 0; i < NUM_TESTS; ++i) {
-        bool success = solve_equation(tests[i], &solved_result);
-        const char *status_message;
+    // Loop for solving predefined test equations (0xc is 12 in decimal)
+    for (int i = 0; i < 12; ++i) {
+        int success = solve_equation(tests[i], &solved_value);
+        printf("equation: %s = %d ", tests[i], solved_value);
 
-        printf("equation: %s = %d ", tests[i], solved_result);
-        if (success) {
-            if (solved_result == answers[i]) {
-                status_message = "correct\n";
-            } else {
-                status_message = "wrong (Expected: %d)\n";
-                printf(status_message, answers[i]); // Print expected answer for wrong case
-                printf("-----------------\n");
-                continue; // Skip the generic status message print below
-            }
+        if (success && answers[i] == solved_value) {
+            printf("correct\n");
         } else {
-            status_message = "error\n";
+            printf("wrong (expected %d, got %d)\n", answers[i], solved_value);
         }
-        printf("%s", status_message); // Use %s for string
         printf("-----------------\n");
     }
     return;
 }
 
-// Main function to run the tests
+// main function
 int main() {
     run_tests();
     return 0;

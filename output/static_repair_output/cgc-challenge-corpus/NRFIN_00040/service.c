@@ -1,525 +1,573 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h> // For malloc/free and strtoul
-#include <stddef.h> // For size_t
+#include <stdint.h> // For uint8_t, uint16_t, uint32_t
+#include <string.h> // For memset, memcpy, strncpy, memcmp, strlen, snprintf
+#include <stdlib.h> // For malloc, free, strtoul
+#include <unistd.h> // For read, write (stubs for receive_all, transmit_all)
+#include <stdio.h>  // For snprintf (stub for uint2str32)
 
-// --- Dummy Declarations for External Functions ---
-// These are minimal implementations to allow compilation.
-// In a real application, these would be provided by a specific library or system.
+// --- Global Constants and Declarations ---
+#define NS_SIZE 256 // Size of the global object pointer array
+#define JSON_BUFFER_SIZE 1024 // Example buffer size for JSON input
+#define OBJECT_ALLOC_SIZE 0x1000 // 4096 bytes allocated per object
+#define MAX_OBJECT_STRING_STORAGE_LEN 236 // Max length of string value stored within an object
+#define MAX_STRING_BUF_LEN (MAX_OBJECT_STRING_STORAGE_LEN + 1) // Buffer size for local string copies (includes null terminator)
+#define MAX_ID_VAL 0xff // Max ID value (0-255)
 
-// Simulates receiving 'len' bytes into 'buf'. Returns 0 on success, non-zero on error.
-// For testing purposes, it defaults to simulating a 'deserialize' command (0x01)
-// for the first byte read in main, and then simulates success for subsequent calls.
-int receive_all(int fd, void *buf, size_t len, size_t *received_len) {
-    static int first_byte_read = 0;
-    if (received_len) *received_len = len;
-    if (buf == NULL) return 0x20; // Invalid buffer
+// Error codes (guessed from original snippet's return values)
+#define ERR_NONE 0x00
+#define ERR_RECEIVE_FAILED 0x20
+#define ERR_TRANSMIT_FAILED 0x21
+#define ERR_MALFORMED_INPUT 0x24
+#define ERR_CONVERSION_FAILED 0x25
+#define ERR_MEMORY_ALLOC_FAILED 0x26
 
-    if (fd == 0 && len == 1 && !first_byte_read) {
-        *(unsigned char*)buf = 0x01; // Simulate deserialize command
-        first_byte_read = 1;
-    } else {
-        memset(buf, 0, len); // Clear buffer for predictability
-    }
-    return 0;
-}
+void* ns[NS_SIZE]; // Global array to store pointers to objects
 
-// Simulates transmitting 'len' bytes from 'buf'. Returns 0 on success, non-zero on error.
-int transmit_all(int fd, const void *buf, size_t len, size_t *sent_len) {
-    if (sent_len) *sent_len = len;
-    // For demonstration, you might print to stderr/stdout:
-    // fprintf(stderr, "Transmit (fd %d, len %zu): '%.*s'\n", fd, (int)len, (int)len, (char*)buf);
-    return 0;
-}
+char json[JSON_BUFFER_SIZE]; // Global buffer for JSON input
 
-// Allocates 'size' bytes and stores the pointer in 'out_ptr'. Returns 0 on success.
-int allocate(size_t size, int flags, unsigned char **out_ptr) {
-    *out_ptr = (unsigned char *)malloc(size);
-    return (*out_ptr != NULL) ? 0 : 0x20; // 0x20 for allocation error
-}
+// Global string literals from the original snippet's DAT_ addresses
+const char DAT_0001300e[] = "NEW";
+const char DAT_00013012[] = "SET";
+const char DAT_00013016[] = "DEL";
 
-// Frees memory pointed to by 'ptr'. Returns 0 on success.
-int deallocate(void *ptr, size_t size) {
-    free(ptr);
-    return 0;
-}
+// --- Stub Implementations for Missing Functions ---
 
-// Finds the first occurrence of character 'c' in the first 'n' bytes of string 's'.
-// Returns a pointer to the found character, or NULL if not found.
-char* strnchr(const char *s, int c, size_t n) {
+// Simplified strnchr, returns char* or NULL
+char* strnchr(const char* s, int c, size_t n) {
     for (size_t i = 0; i < n; ++i) {
         if (s[i] == (char)c) {
-            return (char *)(s + i);
+            return (char*)(s + i);
         }
     }
     return NULL;
 }
 
-// Converts a string of 'len' characters to an unsigned 32-bit integer.
-// 'base' is the numerical base (e.g., 10 for decimal).
-// 'result' stores the converted value. Returns 0 on success, non-zero on error.
-int str2unt32n(const char *str, size_t len, unsigned int base, int flags, unsigned int *result) {
-    char *temp_str = (char *)malloc(len + 1);
-    if (!temp_str) return 0x20; // Allocation error
-    strncpy(temp_str, str, len);
-    temp_str[len] = '\0';
+// Simplified str2unt32n, converts a string segment to uint32_t
+// Assumes base 10 if base is 0, otherwise specified base.
+// The original uses 0xff as max_val for ID and 0xffffffff for number, and 0 as base.
+int str2unt32n(const char* s, size_t n, uint32_t max_val, int base, uint32_t* out) {
+    if (n == 0) return ERR_CONVERSION_FAILED;
 
-    char *endptr;
-    // The original code used 0xff or 0xffffffff for base, which is likely intended as 10 (decimal).
-    unsigned long val = strtoul(temp_str, &endptr, (base == 0 || base > 36) ? 10 : base);
-    free(temp_str);
+    char* temp_buf = (char*)malloc(n + 1);
+    if (!temp_buf) return ERR_MEMORY_ALLOC_FAILED;
+    strncpy(temp_buf, s, n);
+    temp_buf[n] = '\0';
 
-    if (endptr == temp_str || *endptr != '\0' || val > 0xFFFFFFFFU) {
-        return 0x25; // Conversion error / not a valid number or out of range
+    char* endptr;
+    unsigned long val = strtoul(temp_buf, &endptr, base == 0 ? 10 : base);
+    free(temp_buf);
+
+    if (endptr != temp_buf + n || val > max_val) {
+        return ERR_CONVERSION_FAILED;
     }
-    *result = (unsigned int)val;
-    return 0; // Success
+    *out = (uint32_t)val;
+    return ERR_NONE;
 }
 
-// Converts an unsigned 32-bit integer to a string in 'buf'.
-// 'buf_len' is the maximum size of the buffer. Returns the number of characters written (excluding null terminator).
-size_t uint2str32(char *buf, size_t buf_len, unsigned int value) {
-    int written = snprintf(buf, buf_len, "%u", value);
-    if (written < 0 || (size_t)written >= buf_len) {
-        if (buf_len > 0) buf[buf_len - 1] = '\0'; // Ensure null termination if truncated
-        return buf_len > 0 ? buf_len - 1 : 0; // Return max possible written length
+// Simplified uint2str32, converts uint32_t to string
+int uint2str32(char* buf, size_t buf_len, uint32_t val) {
+    int chars_written = snprintf(buf, buf_len, "%u", val);
+    if (chars_written < 0 || (size_t)chars_written >= buf_len) {
+        return 0; // Error or buffer too small, return 0 length
     }
-    return (size_t)written;
+    return chars_written;
 }
 
-// --- Global Variables ---
-void *ns[256]; // Namespace: Array of pointers to objects (max 256 objects)
-char json[4096]; // Buffer for incoming JSON data
+// Simplified allocate, returns ERR_NONE on success, non-zero on failure
+int allocate(size_t size, int flags, void** ptr) {
+    (void)flags; // Unused
+    *ptr = malloc(size);
+    return (*ptr != NULL) ? ERR_NONE : ERR_MEMORY_ALLOC_FAILED;
+}
 
-// Inferred string literals from memcmp calls
-const char DAT_0001300e[] = "NEW"; // Corresponds to "NEW" command
-const char DAT_00013012[] = "SET"; // Corresponds to "SET" command
-const char DAT_00013016[] = "DEL"; // Corresponds to "DEL" command
+// Simplified deallocate, returns ERR_NONE on success
+int deallocate(void* ptr, size_t size) {
+    (void)size; // Unused
+    free(ptr);
+    return ERR_NONE;
+}
 
-// --- Function Implementations ---
+// Simplified receive_all, returns ERR_NONE on success
+int receive_all(int fd, void* buf, size_t len, size_t* actual_len) {
+    ssize_t bytes_read = read(fd, buf, len);
+    if (bytes_read < 0) {
+        *actual_len = 0;
+        return ERR_RECEIVE_FAILED;
+    }
+    *actual_len = (size_t)bytes_read;
+    return ERR_NONE;
+}
 
-// Finds an object by its ID character in the global namespace.
+// Simplified transmit_all, returns ERR_NONE on success
+int transmit_all(int fd, const void* buf, size_t len, size_t* actual_len) {
+    ssize_t bytes_written = write(fd, buf, len);
+    if (bytes_written < 0) {
+        *actual_len = 0;
+        return ERR_TRANSMIT_FAILED;
+    }
+    *actual_len = (size_t)bytes_written;
+    return ERR_NONE;
+}
+
+
+// Function: object_find
+// Searches for an object by its ID in the global 'ns' array.
+// Returns a pointer to the object if found, otherwise NULL.
 void* object_find(char id_char) {
-  for (unsigned int i = 0; i < 256; ++i) {
-    if (ns[i] != NULL && *(char*)ns[i] == id_char) {
-      return ns[i];
+    for (uint32_t i = 0; i < NS_SIZE; ++i) {
+        char* obj_ptr = (char*)ns[i];
+        if (obj_ptr != NULL && *obj_ptr == id_char) {
+            return obj_ptr;
+        }
     }
-  }
-  return NULL; // Not found
+    return NULL;
 }
 
-// Parses an ID from the input string.
-int parse_id(char **current_ptr_ref, unsigned short *remaining_len_ref, unsigned char *id_char_ref) {
-  char *start_ptr = *current_ptr_ref;
-  unsigned short current_len = *remaining_len_ref;
+// Function: parse_id
+// Parses an object ID from the input stream.
+// stream (char**): Pointer to the current position in the input string.
+// len (int16_t*): Pointer to the remaining length of the input string.
+// id_char (uint8_t*): Pointer to store the parsed object ID.
+// Returns ERR_NONE on success, non-zero on error.
+int parse_id(char **stream, int16_t *len, uint8_t *id_char) {
+    char *space_pos = strnchr(*stream, ' ', *len);
+    if (!space_pos) {
+        return ERR_MALFORMED_INPUT; // Error: No space found, malformed ID
+    }
 
-  char *end_ptr = strnchr(start_ptr, ' ', current_len);
-  if (end_ptr == NULL) {
-    return 0x24; // Error: space delimiter not found
-  }
-
-  unsigned short id_len = end_ptr - start_ptr;
-  unsigned int id_val;
-  int ret = str2unt32n(start_ptr, id_len, 10, 0, &id_val); // Assume base 10 for ID
-  if (ret != 0) {
-    return ret;
-  }
-
-  *id_char_ref = (unsigned char)id_val;
-  *current_ptr_ref += id_len + 1; // Move past ID and space
-  *remaining_len_ref -= (id_len + 1);
-  return 0; // Success
+    int16_t id_len = space_pos - *stream;
+    uint32_t temp_id_val;
+    int result = str2unt32n(*stream, id_len, MAX_ID_VAL, 0, &temp_id_val);
+    if (result == ERR_NONE) {
+        *id_char = (uint8_t)temp_id_val;
+        *stream += id_len + 1; // Advance stream past ID and space
+        *len -= (id_len + 1);  // Reduce remaining length
+    }
+    return result;
 }
 
-// Parses an object type (NUMBER or STRING) from the input string.
-int parse_type(char **current_ptr_ref, unsigned short *remaining_len_ref, unsigned int *type_ref) {
-  char *start_ptr = *current_ptr_ref;
-  unsigned short current_len = *remaining_len_ref;
+// Function: parse_type
+// Parses an object type (NUMBER or STRING) from the input stream.
+// stream (char**): Pointer to the current position in the input string.
+// len (int16_t*): Pointer to the remaining length of the input string.
+// type_val (uint32_t*): Pointer to store the parsed type (1 for NUMBER, 2 for STRING).
+// Returns ERR_NONE on success, non-zero on error.
+int parse_type(char **stream, int16_t *len, uint32_t *type_val) {
+    char *space_pos = strnchr(*stream, ' ', *len);
+    if (!space_pos) {
+        return ERR_MALFORMED_INPUT; // Error: No space found, malformed type
+    }
 
-  char *end_ptr = strnchr(start_ptr, ' ', current_len);
-  if (end_ptr == NULL) {
-    return 0x24; // Error: space delimiter not found
-  }
-
-  unsigned short type_str_len = end_ptr - start_ptr;
-
-  if (type_str_len == 6 && memcmp("NUMBER", start_ptr, 6) == 0) {
-    *type_ref = 1; // NUMBER type
-  } else if (type_str_len == 6 && memcmp("STRING", start_ptr, 6) == 0) {
-    *type_ref = 2; // STRING type
-  } else {
-    return 0x24; // Error: Unknown type
-  }
-
-  *current_ptr_ref += type_str_len + 1; // Move past type string and space
-  *remaining_len_ref -= (type_str_len + 1);
-  return 0; // Success
-}
-
-// Parses a number value from the input string.
-int parse_number(char **current_ptr_ref, unsigned short *remaining_len_ref, unsigned int *number_val_ptr) {
-  char *start_ptr = *current_ptr_ref;
-  unsigned short current_len = *remaining_len_ref;
-
-  char *end_ptr = strnchr(start_ptr, ' ', current_len);
-  if (end_ptr == NULL) {
-    return 0x24; // Error: space delimiter not found
-  }
-
-  unsigned short num_str_len = end_ptr - start_ptr;
-  int ret = str2unt32n(start_ptr, num_str_len, 10, 0, number_val_ptr); // Base 10 for number value
-  if (ret != 0) {
-    return ret;
-  }
-
-  *current_ptr_ref += num_str_len + 1; // Move past number and space
-  *remaining_len_ref -= (num_str_len + 1);
-  return 0; // Success
-}
-
-// Parses a string value from the input string.
-int parse_string(char **current_ptr_ref, unsigned short *remaining_len_ref, char *string_buffer) {
-  char *start_ptr = *current_ptr_ref;
-  unsigned short current_len = *remaining_len_ref;
-
-  char *end_ptr = strnchr(start_ptr, ' ', current_len);
-  if (end_ptr == NULL) {
-    return 0x24; // Error: space delimiter not found
-  }
-
-  unsigned short str_val_len = end_ptr - start_ptr;
-  size_t copy_len = str_val_len;
-  if (copy_len > 235) { // Max string length is 235 for a 236-byte buffer (0xec)
-    copy_len = 235;
-  }
-  strncpy(string_buffer, start_ptr, copy_len);
-  string_buffer[copy_len] = '\0'; // Ensure null termination
-
-  *current_ptr_ref += str_val_len + 1; // Move past string and space
-  *remaining_len_ref -= (str_val_len + 1);
-  return 0; // Success
-}
-
-// Creates a new object and adds it to the namespace.
-int object_new(unsigned char id, int type, unsigned int number_val, char *string_val) {
-  unsigned char *obj_ptr = NULL;
-  int ret = allocate(0x1000, 0, &obj_ptr); // Allocate 4096 bytes for the object
-
-  if (ret != 0) {
-    return ret; // Allocation failed
-  }
-
-  if (object_find(id) != NULL) {
-    deallocate(obj_ptr, 0x1000); // ID already exists, deallocate and return error
-    return 0x24;
-  }
-
-  *obj_ptr = id; // Object ID
-  *((unsigned int *)(obj_ptr + 4)) = 0; // Object Type (offset 4), initialized to 0
-  *((void **)(obj_ptr + 8)) = NULL; // Pointer to number value (offset 8), initialized to NULL
-  *((void **)(obj_ptr + 0xc)) = NULL; // Pointer to string value (offset 0xc), initialized to NULL
-
-  if (type == 1) { // NUMBER type
-    *((unsigned int *)(obj_ptr + 4)) = 1;
-    *((unsigned int **)(obj_ptr + 8)) = (unsigned int *)(obj_ptr + 0x40); // Number value stored at offset 0x40
-    **((unsigned int **)(obj_ptr + 8)) = number_val; // Store number value
-  } else if (type == 2) { // STRING type
-    *((unsigned int *)(obj_ptr + 4)) = 2;
-    *((char **)(obj_ptr + 0xc)) = (char *)(obj_ptr + 0x80); // String value stored at offset 0x80
-    if (string_val != NULL) {
-      strncpy(*((char **)(obj_ptr + 0xc)), string_val, 235); // Copy max 235 chars
-      (*((char **)(obj_ptr + 0xc)))[235] = '\0'; // Ensure null termination
+    int16_t type_len = space_pos - *stream;
+    if (memcmp("NUMBER", *stream, 6) == 0) {
+        *type_val = 1;
+    } else if (memcmp("STRING", *stream, 6) == 0) {
+        *type_val = 2;
     } else {
-      (*((char **)(obj_ptr + 0xc)))[0] = '\0'; // Empty string
+        return ERR_MALFORMED_INPUT; // Unknown type
     }
-  } else {
-    deallocate(obj_ptr, 0x1000); // Invalid type, deallocate
-    return 0x24;
-  }
-  ns[id] = obj_ptr; // Store object pointer in global namespace array
-  return 0; // Success
+
+    *stream += type_len + 1; // Advance stream past type and space
+    *len -= (type_len + 1);  // Reduce remaining length
+    return ERR_NONE;
 }
 
-// Deletes an object from the namespace.
-int op_del(char **current_ptr_ref, unsigned short *remaining_len_ref) {
-  unsigned char id;
-  int ret = parse_id(current_ptr_ref, remaining_len_ref, &id);
-  if (ret != 0) {
-    return ret;
-  }
-
-  for (unsigned int i = 0; i < 256; ++i) {
-    if (ns[i] != NULL && *(char*)ns[i] == id) {
-      ret = deallocate(ns[i], 0x1000);
-      ns[i] = NULL;
-      return ret;
+// Function: parse_number
+// Parses a number value from the input stream.
+// stream (char**): Pointer to the current position in the input string.
+// len (int16_t*): Pointer to the remaining length of the input string.
+// num_val (uint32_t*): Pointer to store the parsed number.
+// Returns ERR_NONE on success, non-zero on error.
+int parse_number(char **stream, int16_t *len, uint32_t *num_val) {
+    char *space_pos = strnchr(*stream, ' ', *len);
+    if (!space_pos) {
+        return ERR_MALFORMED_INPUT; // Error: No space found, malformed number
     }
-  }
-  return 0x24; // Object not found for deletion
+
+    int16_t num_len = space_pos - *stream;
+    int result = str2unt32n(*stream, num_len, 0xffffffff, 0, num_val);
+    if (result == ERR_NONE) {
+        *stream += num_len + 1; // Advance stream past number and space
+        *len -= (num_len + 1);  // Reduce remaining length
+    }
+    return result;
 }
 
+// Function: parse_string
+// Parses a string value from the input stream.
+// stream (char**): Pointer to the current position in the input string.
+// len (int16_t*): Pointer to the remaining length of the input string.
+// str_buf (char*): Buffer to store the parsed string.
+// Returns ERR_NONE on success, non-zero on error.
+int parse_string(char **stream, int16_t *len, char *str_buf) {
+    char *space_pos = strnchr(*stream, ' ', *len);
+    if (!space_pos) {
+        return ERR_MALFORMED_INPUT; // Error: No space found, malformed string
+    }
+
+    int16_t str_len = space_pos - *stream;
+    size_t copy_len = (size_t)str_len;
+    if (copy_len > MAX_OBJECT_STRING_STORAGE_LEN) {
+        copy_len = MAX_OBJECT_STRING_STORAGE_LEN;
+    }
+    strncpy(str_buf, *stream, copy_len);
+    str_buf[copy_len] = '\0'; // Ensure null termination
+
+    *stream += str_len + 1; // Advance stream past string and space
+    *len -= (str_len + 1);  // Reduce remaining length
+    return ERR_NONE;
+}
+
+// Function: object_new
+// Creates a new object and stores it in the global 'ns' array.
+// id_char (uint8_t): The ID of the new object.
+// type (int): The type of the object (1 for NUMBER, 2 for STRING).
+// number_val (uint32_t): The initial number value if type is NUMBER.
+// string_val (char*): The initial string value if type is STRING.
+// Returns ERR_NONE on success, non-zero on error.
+int object_new(uint8_t id_char, int type, uint32_t number_val, char *string_val) {
+    if (object_find(id_char) != NULL) {
+        return ERR_MALFORMED_INPUT; // Object with this ID already exists (guessed error)
+    }
+
+    char* new_obj_ptr;
+    int result = allocate(OBJECT_ALLOC_SIZE, 0, (void**)&new_obj_ptr);
+    if (result != ERR_NONE) {
+        return result; // Allocation failed
+    }
+
+    // Initialize object fields using pointer arithmetic
+    *new_obj_ptr = id_char; // ID at offset 0
+    *(uint32_t*)(new_obj_ptr + 4) = type; // Type at offset 4
+
+    // Initialize value pointers and values
+    *(uint32_t**)(new_obj_ptr + 8) = NULL;  // Number value pointer (initially null)
+    *(char**)(new_obj_ptr + 0xC) = NULL; // String value pointer (initially null)
+
+    if (type == 1) { // NUMBER type
+        *(uint32_t**)(new_obj_ptr + 8) = (uint32_t*)(new_obj_ptr + 0x40); // Pointer to number storage
+        **(uint32_t**)(new_obj_ptr + 8) = number_val; // Store number value
+    } else if (type == 2) { // STRING type
+        *(char**)(new_obj_ptr + 0xC) = (char*)(new_obj_ptr + 0x80); // Pointer to string storage
+        if (string_val != NULL) {
+            strncpy(*(char**)(new_obj_ptr + 0xC), string_val, MAX_OBJECT_STRING_STORAGE_LEN);
+            (*(char**)(new_obj_ptr + 0xC))[MAX_OBJECT_STRING_STORAGE_LEN] = '\0'; // Ensure null termination
+        } else {
+            (*(char**)(new_obj_ptr + 0xC))[0] = '\0'; // Empty string
+        }
+    } else {
+        deallocate(new_obj_ptr, OBJECT_ALLOC_SIZE); // Deallocate if unknown type
+        return ERR_MALFORMED_INPUT; // Unknown type, error
+    }
+
+    // Store object pointer in global ns array
+    ns[id_char] = new_obj_ptr;
+
+    return ERR_NONE;
+}
+
+// Function: op_del
+// Deletes an object by its ID.
+// stream (char**): Pointer to the current position in the input string.
+// len (int16_t*): Pointer to the remaining length of the input string.
+// Returns ERR_NONE on success, non-zero on error.
+int op_del(char **stream, int16_t *len) {
+    uint8_t id_char;
+    int result = parse_id(stream, len, &id_char);
+    if (result != ERR_NONE) {
+        return result;
+    }
+
+    for (uint32_t i = 0; i < NS_SIZE; ++i) {
+        char* obj_ptr = (char*)ns[i];
+        if (obj_ptr != NULL && *obj_ptr == id_char) {
+            result = deallocate(obj_ptr, OBJECT_ALLOC_SIZE);
+            ns[i] = NULL; // Clear pointer in global array
+            return result;
+        }
+    }
+    return ERR_MALFORMED_INPUT; // Object not found (guessed error)
+}
+
+// Function: op_set
 // Sets the value of an existing object.
-int op_set(char **current_ptr_ref, unsigned short *remaining_len_ref) {
-  unsigned char id;
-  int ret = parse_id(current_ptr_ref, remaining_len_ref, &id);
-  if (ret != 0) {
-    return ret;
-  }
-
-  void *obj_ptr = object_find(id);
-  if (obj_ptr == NULL) {
-    // If object not found, consume remaining input but report no error
-    *current_ptr_ref += *remaining_len_ref;
-    *remaining_len_ref = 0;
-    return 0;
-  }
-
-  unsigned int obj_type = *((unsigned int*)((char*)obj_ptr + 4));
-
-  if (obj_type == 1) { // NUMBER type
-    // Pass pointer to the number value storage
-    ret = parse_number(current_ptr_ref, remaining_len_ref, *((unsigned int**)((char*)obj_ptr + 8)));
-  } else if (obj_type == 2) { // STRING type
-    // Pass pointer to the string buffer
-    ret = parse_string(current_ptr_ref, remaining_len_ref, *((char**)((char*)obj_ptr + 0xc)));
-  } else {
-    ret = 0x24; // Unknown object type
-  }
-  return ret;
-}
-
-// Handles the "NEW" command to create objects.
-int op_new(char **current_ptr_ref, unsigned short *remaining_len_ref) {
-  unsigned char id;
-  int ret = parse_id(current_ptr_ref, remaining_len_ref, &id);
-  if (ret != 0) {
-    return ret;
-  }
-
-  unsigned int obj_type;
-  ret = parse_type(current_ptr_ref, remaining_len_ref, &obj_type);
-  if (ret != 0) {
-    return ret;
-  }
-
-  char *end_ptr = strnchr(*current_ptr_ref, ' ', *remaining_len_ref); // Check for optional value
-
-  if (end_ptr == NULL) { // No value supplied
-    ret = object_new(id, obj_type, 0, NULL);
-  } else if (obj_type == 1) { // Number type
-    unsigned int number_value;
-    char *original_ptr = *current_ptr_ref;
-    unsigned short original_len = *remaining_len_ref;
-
-    ret = parse_number(current_ptr_ref, remaining_len_ref, &number_value);
-    if (ret == 0) { // Successfully parsed a number
-      ret = object_new(id, 1, number_value, NULL);
-    } else if (ret == 0x25) { // parse_number failed with specific error (e.g., format mismatch)
-      // Original code's logic: if number parsing fails, try to parse as string and create a STRING type object.
-      ret = 0; // Reset error to proceed
-      *current_ptr_ref = original_ptr; // Rewind input stream
-      *remaining_len_ref = original_len;
-
-      char string_buffer[236]; // Max 0xec bytes (235 chars + null)
-      memset(string_buffer, 0, sizeof(string_buffer));
-      ret = parse_string(current_ptr_ref, remaining_len_ref, string_buffer);
-      if (ret == 0) { // If string parse is successful, create as STRING type
-        ret = object_new(id, 2, 0, string_buffer);
-      }
-    } else {
-      ret = 0x24; // Other error from parse_number
-    }
-  } else if (obj_type == 2) { // String type
-    char string_buffer[236]; // Max 0xec bytes
-    memset(string_buffer, 0, sizeof(string_buffer));
-    ret = parse_string(current_ptr_ref, remaining_len_ref, string_buffer);
-    if (ret == 0) {
-      ret = object_new(id, 2, 0, string_buffer);
-    }
-  } else {
-    ret = 0x24; // Invalid object type
-  }
-  return ret;
-}
-
-// Parses JSON input to execute commands.
-int parse_json(unsigned short total_len) {
-  char *current_pos = json;
-  unsigned short remaining_len = total_len;
-  int ret = 0;
-
-  while (remaining_len > 0) {
-    char *first_nl = strnchr(current_pos, '\n', remaining_len);
-    if (first_nl == NULL) { // No more newlines, processing ends
-      return ret;
+// stream (char**): Pointer to the current position in the input string.
+// len (int16_t*): Pointer to the remaining length of the input string.
+// Returns ERR_NONE on success, non-zero on error.
+int op_set(char **stream, int16_t *len) {
+    uint8_t id_char;
+    int result = parse_id(stream, len, &id_char);
+    if (result != ERR_NONE) {
+        return result;
     }
 
-    char *line_content_start = first_nl + 1;
-    // Adjust remaining_len to exclude content before first_nl and first_nl itself
-    remaining_len -= (first_nl - current_pos + 1);
-
-    if (remaining_len == 0) { // If it was the last char, nothing more to process
-        return ret;
-    }
-
-    char *second_nl = strnchr(line_content_start, '\n', remaining_len);
-    if (second_nl == NULL) { // Expected a second newline, malformed input
-      return 0x24;
-    }
-
-    unsigned short line_len = second_nl - line_content_start;
-    char *cmd_line_ptr = line_content_start; // This is the line containing CMD ARGS
-
-    char *space_ptr = strnchr(cmd_line_ptr, ' ', line_len);
-    if (space_ptr == NULL) {
-      return 0x24; // Malformed command line: no space
-    }
-
-    unsigned short cmd_len = space_ptr - cmd_line_ptr;
-    if (cmd_len != 3) { // Commands "NEW", "SET", "DEL" are 3 chars
-      return 0x24;
-    }
-
-    char *args_start_ptr = space_ptr + 1;
-    unsigned short args_len = line_len - (cmd_len + 1);
-
-    if (memcmp(DAT_0001300e, cmd_line_ptr, 3) == 0) { // "NEW"
-      ret = op_new(&args_start_ptr, &args_len);
-    } else if (memcmp(DAT_00013012, cmd_line_ptr, 3) == 0) { // "SET"
-      ret = op_set(&args_start_ptr, &args_len);
-    } else if (memcmp(DAT_00013016, cmd_line_ptr, 3) == 0) { // "DEL"
-      ret = op_del(&args_start_ptr, &args_len);
-    } else {
-      return 0x24; // Unknown command
-    }
-
-    if (ret != 0) {
-      return ret;
-    }
-
-    current_pos = second_nl + 1; // Move to the start of the next block
-    // Adjust remaining_len to exclude the processed line and its newline
-    remaining_len -= (line_len + 1);
-  }
-  return ret;
-}
-
-// Deserializes data from input.
-int deserialize(void) {
-  unsigned short json_len;
-  size_t bytes_received;
-  int ret;
-
-  ret = receive_all(0, &json_len, sizeof(json_len), &bytes_received);
-  if (ret != 0 || bytes_received != sizeof(json_len)) {
-    return 0x20; // Error: failed to receive length or received wrong amount
-  }
-
-  ret = receive_all(0, json, json_len, &bytes_received);
-  if (ret != 0 || json_len != bytes_received) {
-    return 0x20; // Error: failed to receive JSON data or received wrong amount
-  }
-
-  return parse_json(json_len);
-}
-
-// Serializes objects from the namespace to output.
-int serialize(void) {
-  char line_buffer[256]; // Buffer for serializing a single object's line
-  int ret = 0;
-
-  for (unsigned int i = 0; i < 256; ++i) { // Iterate through ns array
-    void *obj_ptr = ns[i];
+    char* obj_ptr = (char*)object_find(id_char);
     if (obj_ptr == NULL) {
-      continue; // Skip empty slots
+        // Object not found, consume remaining input for this line as per original logic
+        *stream += *len;
+        *len = 0;
+        return ERR_NONE;
     }
 
-    memset(line_buffer, 0, sizeof(line_buffer));
-    char *current_write_pos = line_buffer;
-    size_t space_left = sizeof(line_buffer); // Total buffer size
-
-    // Append object ID
-    int chars_written = snprintf(current_write_pos, space_left, "%u", *(unsigned char*)obj_ptr);
-    if (chars_written < 0 || (size_t)chars_written >= space_left) { /* Handle error / truncation */ }
-    current_write_pos += chars_written;
-    space_left -= chars_written;
-
-    unsigned int obj_type = *((unsigned int*)((char*)obj_ptr + 4));
+    uint32_t obj_type = *(uint32_t*)(obj_ptr + 4); // Type at offset 4
 
     if (obj_type == 1) { // NUMBER type
-      chars_written = snprintf(current_write_pos, space_left, " NUMBER ");
-      if (chars_written < 0 || (size_t)chars_written >= space_left) { /* Handle error / truncation */ }
-      current_write_pos += chars_written;
-      space_left -= chars_written;
+        char* temp_stream_ptr = *stream;
+        int16_t temp_len = *len;
+        uint32_t number_val;
+        result = parse_number(stream, len, &number_val);
 
-      chars_written = snprintf(current_write_pos, space_left, "%u", **((unsigned int**)((char*)obj_ptr + 8)));
-      if (chars_written < 0 || (size_t)chars_written >= space_left) { /* Handle error / truncation */ }
-      current_write_pos += chars_written;
-      space_left -= chars_written;
+        if (result == ERR_NONE) {
+            **(uint32_t**)(obj_ptr + 8) = number_val; // Set number value
+        } else if (result == ERR_CONVERSION_FAILED) {
+            // Original code attempted to parse as string and write to 0xc offset.
+            // This is a type mismatch for a NUMBER object. Assuming this should be an error.
+            return ERR_MALFORMED_INPUT; // Expected number, got something else
+        } else {
+            return result; // Other number parsing error
+        }
     } else if (obj_type == 2) { // STRING type
-      chars_written = snprintf(current_write_pos, space_left, " STRING ");
-      if (chars_written < 0 || (size_t)chars_written >= space_left) { /* Handle error / truncation */ }
-      current_write_pos += chars_written;
-      space_left -= chars_written;
-
-      const char *obj_string = *((char**)((char*)obj_ptr + 0xc));
-      if (obj_string != NULL) {
-        chars_written = snprintf(current_write_pos, space_left, "%s", obj_string);
-        if (chars_written < 0 || (size_t)chars_written >= space_left) { /* Handle error / truncation */ }
-        current_write_pos += chars_written;
-        space_left -= chars_written;
-      }
-    }
-
-    // Add newline terminator
-    if (space_left > 0) {
-        *current_write_pos = '\n';
-        current_write_pos++;
+        result = parse_string(stream, len, *(char**)(obj_ptr + 0xC)); // Set string value
     } else {
-        // Buffer overflow, consider error handling or truncation message
+        return ERR_MALFORMED_INPUT; // Unknown object type (should not happen for valid objects)
     }
-
-    // Transmit actual length of data written to buffer
-    ret = transmit_all(1, line_buffer, current_write_pos - line_buffer, NULL);
-    if (ret != 0) {
-      return 0x21; // Error during transmission
-    }
-  }
-  return 0; // Success
+    return result;
 }
 
-// Main function to handle commands.
-int main(void) {
-  int ret = 0;
-  memset(ns, 0, sizeof(ns)); // Initialize all object pointers in namespace to NULL
-
-  while (1) { // Infinite loop for command processing
-    unsigned char command_byte = 0;
-    size_t bytes_read = 0;
-
-    int receive_ret = receive_all(0, &command_byte, 1, &bytes_read);
-    if (receive_ret != 0) {
-      return 0x20; // Error in receive_all
-    }
-    if (bytes_read == 0) {
-      // No byte was read, indicating EOF or connection closed. Exit.
-      return ret;
+// Function: op_new
+// Handles the "NEW" command, creating a new object.
+// stream (char**): Pointer to the current position in the input string.
+// len (int16_t*): Pointer to the remaining length of the input string.
+// Returns ERR_NONE on success, non-zero on error.
+int op_new(char **stream, int16_t *len) {
+    uint8_t id_char;
+    int result = parse_id(stream, len, &id_char);
+    if (result != ERR_NONE) {
+        return result;
     }
 
-    if (command_byte == 0x01) { // Deserialize command
-      ret = deserialize();
-    } else if (command_byte == 0x02) { // Serialize command
-      ret = serialize();
-    } else if (command_byte == 0x03) { // Exit command
-      return ret; // Exit with current status
+    uint32_t type_val;
+    result = parse_type(stream, len, &type_val);
+    if (result != ERR_NONE) {
+        return result;
+    }
+
+    // Check for optional value part
+    char *space_pos = strnchr(*stream, ' ', *len);
+    if (!space_pos) {
+        // No value specified, create with default value
+        return object_new(id_char, (int)type_val, 0, NULL);
+    }
+
+    // Value is specified, parse it
+    if (type_val == 1) { // NUMBER type
+        char* temp_stream_ptr = *stream;
+        int16_t temp_len = *len;
+        uint32_t number_val;
+        result = parse_number(stream, len, &number_val);
+
+        if (result == ERR_NONE) {
+            return object_new(id_char, 1, number_val, NULL);
+        } else if (result == ERR_CONVERSION_FAILED) {
+            // Revert stream position to try parsing as string (original logic)
+            *stream = temp_stream_ptr;
+            *len = temp_len;
+
+            char string_buf[MAX_STRING_BUF_LEN] = {0}; // Buffer for string value
+            result = parse_string(stream, len, string_buf);
+            if (result == ERR_NONE) {
+                return object_new(id_char, 2, 0, string_buf); // Create as STRING type
+            } else {
+                return ERR_MALFORMED_INPUT; // Neither number nor string, error
+            }
+        } else {
+            return result; // Other number parsing error
+        }
+    } else if (type_val == 2) { // STRING type
+        char string_buf[MAX_STRING_BUF_LEN] = {0}; // Buffer for string value
+        result = parse_string(stream, len, string_buf);
+        if (result == ERR_NONE) {
+            return object_new(id_char, 2, 0, string_buf);
+        }
+        return result;
     } else {
-      ret = 0x24; // Unknown command byte
+        return ERR_MALFORMED_INPUT; // Unknown object type
+    }
+}
+
+// Function: parse_json
+// Parses the entire JSON input buffer, line by line.
+// total_len (int16_t): The total length of the JSON input.
+// Returns ERR_NONE on success, non-zero on error.
+int parse_json(int16_t total_len) {
+    char* current_line_start = json;
+    int16_t remaining_len = total_len;
+    int result = ERR_NONE;
+
+    while (remaining_len > 0) {
+        char* line_end_ptr = strnchr(current_line_start, '\n', remaining_len);
+        if (!line_end_ptr) {
+            // No more full lines. Return current result.
+            break;
+        }
+
+        int16_t line_length = line_end_ptr - current_line_start;
+
+        // Find the first space to separate command from data
+        char* command_end_ptr = strnchr(current_line_start, ' ', line_length);
+        if (!command_end_ptr) {
+            return ERR_MALFORMED_INPUT; // Malformed line: no space after command
+        }
+
+        int16_t command_len = command_end_ptr - current_line_start;
+        if (command_len != 3) {
+            return ERR_MALFORMED_INPUT; // Command must be 3 characters
+        }
+
+        // Set up pointers/lengths for the data part of the line
+        char* data_stream_ptr = command_end_ptr + 1;
+        int16_t data_stream_len = line_length - (command_len + 1);
+
+        // Compare command and call appropriate function
+        if (memcmp(DAT_0001300e, current_line_start, 3) == 0) { // "NEW"
+            result = op_new(&data_stream_ptr, &data_stream_len);
+        } else if (memcmp(DAT_00013012, current_line_start, 3) == 0) { // "SET"
+            result = op_set(&data_stream_ptr, &data_stream_len);
+        } else if (memcmp(DAT_00013016, current_line_start, 3) == 0) { // "DEL"
+            result = op_del(&data_stream_ptr, &data_stream_len);
+        } else {
+            return ERR_MALFORMED_INPUT; // Unknown command
+        }
+
+        if (result != ERR_NONE) {
+            return result; // Error occurred during command processing
+        }
+
+        // Move to the next line
+        remaining_len -= (line_length + 1); // +1 for the newline character
+        current_line_start = line_end_ptr + 1;
+    }
+    return result;
+}
+
+// Function: deserialize
+// Receives JSON data from an input source and parses it.
+// Returns ERR_NONE on success, non-zero on error.
+uint32_t deserialize(void) {
+    uint16_t json_len = 0;
+    size_t actual_len = 0;
+    int result = receive_all(0, &json_len, sizeof(json_len), &actual_len);
+
+    if (result != ERR_NONE || actual_len != sizeof(json_len)) {
+        return ERR_RECEIVE_FAILED; // Error receiving length or incorrect length received
     }
 
-    if (ret != 0) {
-      return ret; // If any operation failed, return error
+    // Convert network byte order if necessary (assuming host byte order for simplicity here)
+    // json_len = ntohs(json_len); // If json_len comes from network
+
+    result = receive_all(0, json, json_len, &actual_len);
+
+    if (result != ERR_NONE || json_len != actual_len) {
+        return ERR_RECEIVE_FAILED; // Error receiving JSON data or incomplete data
     }
-  }
-  // This part of the code should ideally not be reached if the loop handles all exit conditions.
-  return ret;
+
+    return parse_json(json_len);
+}
+
+// Function: serialize
+// Serializes objects from the global 'ns' array into a string format and transmits them.
+// Returns ERR_NONE on success, non-zero on error.
+int serialize(void) {
+    char line_buf[256]; // Buffer for each line of serialized output
+    int result = ERR_NONE;
+
+    for (uint32_t i = 0; i < NS_SIZE; ++i) {
+        memset(line_buf, 0, sizeof(line_buf));
+        char* current_buf_pos = line_buf;
+        char* obj_ptr = (char*)ns[i];
+
+        if (obj_ptr != NULL) {
+            // ID
+            int chars_written = uint2str32(current_buf_pos, sizeof(line_buf) - (current_buf_pos - line_buf), *obj_ptr);
+            if (chars_written == 0) return ERR_TRANSMIT_FAILED;
+            current_buf_pos += chars_written;
+
+            uint32_t obj_type = *(uint32_t*)(obj_ptr + 4); // Type at offset 4
+
+            if (obj_type == 1) { // NUMBER type
+                // " NUMBER "
+                chars_written = snprintf(current_buf_pos, sizeof(line_buf) - (current_buf_pos - line_buf), " NUMBER ");
+                if (chars_written < 0 || (size_t)chars_written >= sizeof(line_buf) - (current_buf_pos - line_buf)) return ERR_TRANSMIT_FAILED;
+                current_buf_pos += chars_written;
+
+                // Number value
+                chars_written = uint2str32(current_buf_pos, sizeof(line_buf) - (current_buf_pos - line_buf), **(uint32_t**)(obj_ptr + 8));
+                if (chars_written == 0) return ERR_TRANSMIT_FAILED;
+                current_buf_pos += chars_written;
+            } else if (obj_type == 2) { // STRING type
+                // " STRING "
+                chars_written = snprintf(current_buf_pos, sizeof(line_buf) - (current_buf_pos - line_buf), " STRING ");
+                if (chars_written < 0 || (size_t)chars_written >= sizeof(line_buf) - (current_buf_pos - line_buf)) return ERR_TRANSMIT_FAILED;
+                current_buf_pos += chars_written;
+
+                // String value
+                chars_written = snprintf(current_buf_pos, sizeof(line_buf) - (current_buf_pos - line_buf), "%s", *(char**)(obj_ptr + 0xC));
+                if (chars_written < 0 || (size_t)chars_written >= sizeof(line_buf) - (current_buf_pos - line_buf)) return ERR_TRANSMIT_FAILED;
+                current_buf_pos += chars_written;
+            } else {
+                // Unknown type, skip this object
+                continue;
+            }
+
+            *current_buf_pos = '\n'; // Add newline
+            current_buf_pos++;
+
+            size_t line_len = current_buf_pos - line_buf;
+            size_t actual_len;
+            result = transmit_all(1, line_buf, line_len, &actual_len);
+            if (result != ERR_NONE || actual_len != line_len) {
+                return ERR_TRANSMIT_FAILED; // Error transmitting or incomplete transmission
+            }
+        }
+    }
+    return result;
+}
+
+// Function: main
+int main(void) {
+    int result = ERR_NONE;
+    char command_byte;
+    size_t actual_len;
+
+    memset(ns, 0, sizeof(ns)); // Initialize global object array to NULL pointers
+
+    while (1) {
+        command_byte = '\0'; // Reset command byte
+        actual_len = 0;      // Reset actual_len
+
+        // Receive a single byte command
+        int receive_result = receive_all(0, &command_byte, 1, &actual_len);
+        if (receive_result != ERR_NONE) {
+            return ERR_RECEIVE_FAILED; // Error receiving command
+        }
+        if (actual_len == 0) {
+            return ERR_NONE; // Exit cleanly if no more input
+        }
+
+        if (command_byte == '\x01') { // Deserialize command
+            result = deserialize();
+            if (result != ERR_NONE) {
+                return result;
+            }
+        } else if (command_byte == '\x02') { // Serialize command
+            result = serialize();
+            if (result != ERR_NONE) {
+                return result;
+            }
+        } else if (command_byte == '\x03') { // Exit command
+            return result; // Exit with current result (ERR_NONE if no errors)
+        } else {
+            return ERR_MALFORMED_INPUT; // Unknown command
+        }
+    }
+    return result; // Should not be reached
 }

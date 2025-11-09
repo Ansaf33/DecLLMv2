@@ -1,217 +1,230 @@
-#include <stdlib.h> // For malloc, calloc, free, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h> // For strlen, strncpy, memset
-#include <stdio.h>  // For printf, fprintf, NULL, getchar, fflush, snprintf, perror
-#include <unistd.h> // For STDIN_FILENO, STDOUT_FILENO, ssize_t
-#include <sys/socket.h> // For send (if it's a socket send, otherwise use write from unistd.h)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h> // For socketpair, send, recv
+#include <errno.h>      // For errno
 
-// Placeholder for sentence_struct. Adjust size and fields as per actual system.
-// Assuming a maximum sentence length of 64 characters (0x40) for input.
-// The raw data buffer is 63 chars + null terminator.
+// Define the sentence structure based on its usage
+// local_3c was an array of 16 bytes.
+// local_2c was used as a char, likely a member of this struct.
 typedef struct {
-    char message_type; // Example: '\x03' for AIS message, '\x00' for unknown
-    char data[63];     // Placeholder for message data
+    char message_type; // This corresponds to local_2c
+    char data[15];     // Example, fills the remaining 15 bytes to make it 16 total
 } sentence_struct;
 
-// --- Placeholder Function Implementations ---
-// These are minimal implementations to make the main function compilable and runnable.
-// In a real application, these would interact with hardware, network, or complex parsing logic.
+// Placeholder function definitions
 
 /**
- * @brief Reads from a file descriptor until a delimiter is found or buffer is full.
- *
- * @param fd The file descriptor to read from (e.g., STDIN_FILENO, socket FD).
- * @param buf The buffer to store the received data.
- * @param buf_size The maximum size of the buffer.
- * @param delimiter The character that marks the end of a message.
- * @return The number of bytes read (including delimiter), or -1 on error.
- */
-int recv_until_delim(int fd, char *buf, size_t buf_size, char delimiter) {
-    if (fd == STDIN_FILENO) {
-        printf("Enter message (max %zu chars, end with '\\a' for delimiter): ", buf_size - 1);
-        fflush(stdout); // Ensure prompt is displayed before reading input
-
-        size_t i = 0;
-        int c; // Use int to correctly handle EOF
-        while (i < buf_size - 1 && (c = getchar()) != EOF) {
-            buf[i++] = (char)c;
-            if ((char)c == delimiter) {
-                return i; // Return total bytes read including delimiter
-            }
-        }
-        // If loop exits without delimiter or EOF, it means buffer full or EOF reached
-        return i; // Return bytes read
-    }
-    // For actual socket FDs, you'd use a loop with `recv` here.
-    fprintf(stderr, "recv_until_delim: Only STDIN_FILENO is supported in this dummy implementation.\n");
-    return -1; // Error or unsupported FD
-}
-
-/**
- * @brief Parses a sentence string into a sentence_struct.
- *
- * @param sentence_buffer The raw sentence string.
- * @param s A pointer to the sentence_struct to populate.
- * @return 0 on success, non-zero on failure.
- */
-int parse_sentence(const char *sentence_buffer, sentence_struct *s) {
-    if (sentence_buffer == NULL || s == NULL) {
-        return 1; // Failure
-    }
-
-    // Example parsing logic: Check for "AIS:" prefix to determine message type
-    if (strncmp(sentence_buffer, "AIS:", 4) == 0) {
-        s->message_type = '\x03'; // Set message type
-        // Copy the data part, ensuring null termination
-        strncpy(s->data, sentence_buffer + 4, sizeof(s->data) - 1);
-        s->data[sizeof(s->data) - 1] = '\0';
-        return 0; // Success
-    } else if (strlen(sentence_buffer) > 0) {
-        // If it's not "AIS:", but there's some data, treat as unknown
-        s->message_type = '\x00'; // Unknown type
-        strncpy(s->data, sentence_buffer, sizeof(s->data) - 1);
-        s->data[sizeof(s->data) - 1] = '\0';
-        return 0; // Parsed, but type is unknown
-    }
-    return 1; // Failure (e.g., empty buffer)
-}
-
-/**
- * @brief Converts the data in sentence_struct to an English string.
- *
- * @param output_buffer The buffer to store the English string.
- * @param s A pointer to the sentence_struct containing data.
- * @return 0 on success, non-zero on failure.
- */
-int to_english(char *output_buffer, const sentence_struct *s) {
-    if (output_buffer == NULL || s == NULL) {
-        return 1; // Failure
-    }
-
-    // Example conversion logic based on message_type
-    if (s->message_type == '\x03') {
-        // Format an AIS message
-        snprintf(output_buffer, 0x8c, "AIS Message Detected: '%s' (Translated to English)", s->data);
-        return 0; // Success
-    } else if (s->message_type == '\x00') {
-        snprintf(output_buffer, 0x8c, "Unknown Message Type: '%s'", s->data);
-        return 0; // Success (translated unknown)
-    }
-    // Default case for unhandled message types
-    snprintf(output_buffer, 0x8c, "Untranslatable Message.");
-    return 1; // Failure or no specific translation
-}
-
-/**
- * @brief Resets all fields of a sentence_struct to zero.
- *
+ * @brief Resets the sentence_struct to its initial state.
  * @param s A pointer to the sentence_struct to reset.
  */
 void reset_sentence_struct(sentence_struct *s) {
-    if (s != NULL) {
+    if (s) {
         memset(s, 0, sizeof(sentence_struct));
+        s->message_type = '\0'; // Default initial type
     }
 }
 
 /**
- * @brief Main function for processing messages.
- *
- * Continuously receives delimited messages, parses them, converts to English,
- * and sends the result.
- *
- * @return EXIT_SUCCESS (0) on clean exit, EXIT_FAILURE (non-zero) on error.
+ * @brief Receives data from a file descriptor until a delimiter or max_len is reached.
+ *        The delimiter is the ASCII BELL character ('\a').
+ * @param fd The file descriptor to read from.
+ * @param buffer The buffer to store the received data.
+ * @param max_len The maximum number of bytes to read into the buffer (including null terminator).
+ * @return The number of bytes received (including delimiter), 0 if no data, or -1 on error.
  */
+int recv_until_delim(int fd, char *buffer, size_t max_len) {
+    size_t bytes_read_total = 0;
+    char current_char;
+
+    if (!buffer || max_len == 0) {
+        errno = EINVAL; // Invalid argument
+        return -1;
+    }
+
+    // Leave space for the null terminator
+    while (bytes_read_total < max_len - 1) {
+        ssize_t result = recv(fd, &current_char, 1, 0); // Use recv for socket operations
+
+        if (result <= 0) {
+            // Error or EOF. If no bytes were read at all, return result directly.
+            // Otherwise, return the bytes read so far.
+            if (bytes_read_total == 0) return (int)result;
+            break;
+        }
+
+        buffer[bytes_read_total++] = current_char;
+
+        if (current_char == '\a') {
+            break; // Delimiter found
+        }
+    }
+    buffer[bytes_read_total] = '\0'; // Null-terminate the received string
+    return (int)bytes_read_total;
+}
+
+/**
+ * @brief Parses a raw sentence string into a sentence_struct.
+ *        This is a simplified parsing logic for demonstration.
+ * @param raw_sentence The raw sentence string to parse.
+ * @param s A pointer to the sentence_struct to populate.
+ * @return 0 on success, non-zero on error.
+ */
+int parse_sentence(const char *raw_sentence, sentence_struct *s) {
+    if (!raw_sentence || !s || strlen(raw_sentence) < 1) {
+        return -1; // Invalid input
+    }
+
+    // Assume the first character of the raw sentence determines the message_type
+    s->message_type = raw_sentence[0];
+
+    // Copy the rest of the string into the data field
+    strncpy(s->data, raw_sentence + 1, sizeof(s->data) - 1);
+    s->data[sizeof(s->data) - 1] = '\0'; // Ensure null-termination
+
+    // Simulate the logic from the original snippet: if local_2c == '\x03'
+    // For this example, let's map 'A' as the raw sentence type to '\x03'
+    if (s->message_type == 'A') {
+        s->message_type = '\x03';
+    } else if (s->message_type == 'B') {
+        s->message_type = '\x01'; // Another example type
+    }
+    // Other types would remain as they are from raw_sentence[0] or be handled differently
+
+    return 0; // Success
+}
+
+/**
+ * @brief Converts the data in sentence_struct to an English message string.
+ * @param output_buffer The buffer to store the English message.
+ * @param s A pointer to the sentence_struct containing the data.
+ * @return 0 on success, non-zero on error.
+ */
+int to_english(char *output_buffer, const sentence_struct *s) {
+    if (!output_buffer || !s) {
+        return -1; // Invalid input
+    }
+
+    if (s->message_type == '\x03') {
+        snprintf(output_buffer, 0x8c, "ENGLISH MESSAGE (TYPE 3): %s", s->data);
+    } else {
+        snprintf(output_buffer, 0x8c, "ENGLISH MESSAGE (TYPE %d): %s", (int)s->message_type, s->data);
+    }
+
+    return 0; // Success
+}
+
 int main(void) {
-    sentence_struct s;
-    char *input_buffer = NULL;
-    char *output_buffer = NULL;
-    int bytes_received;
-    const char *message_to_send;
-    char reset_flag; // Corresponds to local_15
+    // Create a socket pair to simulate client-server communication
+    // sv[0] will be used for receiving, sv[1] for sending (to simulate an external source)
+    int sv[2];
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1) {
+        perror("socketpair");
+        return EXIT_FAILURE;
+    }
 
-    // Define buffer sizes based on original hex values
-    size_t max_input_buffer_size = 0x41; // 65 bytes (for input_buffer)
-    size_t max_output_buffer_size = 0x8c; // 140 bytes (for output_buffer)
-    int output_fd = STDOUT_FILENO; // Assuming output to stdout
-    int send_flags = 0;             // No special flags for send (MSG_NOSIGNAL, etc.)
+    // For demonstration, send some test data into the pipe (sv[1])
+    // The main loop will read from the other end (sv[0])
+    const char *test_messages[] = {
+        "Atest_data_for_type_3\a",       // Should be parsed as type '\x03'
+        "Bsome_other_data\a",           // Should be parsed as type '\x01'
+        "Cshort_msg\a",                 // Another type
+        "Dlong_message_that_is_very_long_to_test_buffer_limits_and_truncation\a",
+        "Invalid sentence without delimiter" // This should cause the loop to break
+    };
 
-    reset_sentence_struct(&s); // Initialize the sentence struct
+    for (int i = 0; i < sizeof(test_messages) / sizeof(test_messages[0]); ++i) {
+        send(sv[1], test_messages[i], strlen(test_messages[i]), 0);
+    }
+    // Close the sending end (sv[1]) to signal EOF after all test messages are sent
+    // or keep it open if more data might come later. For this specific loop break condition,
+    // it's better to let the "Invalid sentence without delimiter" cause the break.
+    // close(sv[1]); // Do not close yet, as it's used for the main loop's output as well
+
+    int parse_status;
+    char *recv_buf;
+    char *send_buf;
+    char *message_to_send;
+    char should_reset_struct_flag;
+    int bytes_received_count;
+    sentence_struct sentence_data; // Replaces local_3c
+
+    reset_sentence_struct(&sentence_data);
 
     while (1) {
-        // Allocate buffers for each iteration
-        input_buffer = (char *)calloc(1, max_input_buffer_size);
-        output_buffer = (char *)calloc(1, max_output_buffer_size);
+        // Allocate buffers for receiving and sending messages
+        // 0x41 = 65 bytes for recv_buf (e.g., max NMEA sentence size + null)
+        // 0x8c = 140 bytes for send_buf
+        recv_buf = (char *)calloc(0x41, 1);
+        send_buf = (char *)calloc(0x8c, 1);
 
-        if (input_buffer == NULL || output_buffer == NULL) {
-            fprintf(stderr, "Error: Memory allocation failed.\n");
-            // Free any allocated memory before exiting
-            free(input_buffer);
-            free(output_buffer);
+        if (!recv_buf || !send_buf) {
+            perror("Failed to allocate memory");
+            free(recv_buf);
+            free(send_buf);
+            close(sv[0]);
+            close(sv[1]);
             return EXIT_FAILURE;
         }
 
-        reset_flag = 1; // Corresponds to local_15 = '\x01' (true)
-        message_to_send = NULL; // Reset message pointer for each loop
+        message_to_send = NULL;
+        should_reset_struct_flag = 1; // Corresponds to local_15 = '\x01', default to resetting
 
-        // Receive data until delimiter '\a' or buffer full
-        bytes_received = recv_until_delim(STDIN_FILENO, input_buffer, max_input_buffer_size, '\a');
+        // Receive data until delimiter '\a' (BELL character) or buffer full
+        bytes_received_count = recv_until_delim(sv[0], recv_buf, 0x41); // Read from sv[0]
 
-        // Check for read errors or incomplete messages (no delimiter)
-        // Original: if ((local_1c < 1) || (*(char *)((int)local_20 + local_1c + -1) != '\a')) break;
-        if (bytes_received < 1 || (bytes_received > 0 && input_buffer[bytes_received - 1] != '\a')) {
-            fprintf(stderr, "Info: Received %d bytes. Expected at least 1 byte ending with '\\a'. Exiting loop.\n", bytes_received);
-            free(input_buffer);
-            free(output_buffer);
-            break; // Exit main loop
+        // Check if receive was successful and ended with the delimiter
+        if (bytes_received_count < 1 || (bytes_received_count > 0 && recv_buf[bytes_received_count - 1] != '\a')) {
+            // Original code returned 0xfffffff7 (-9) on break, indicating an error/failure condition.
+            fprintf(stderr, "Exiting loop: Failed to receive complete delimited message (bytes_received: %d, last_char: %d)\n",
+                    bytes_received_count, bytes_received_count > 0 ? recv_buf[bytes_received_count - 1] : -1);
+            free(recv_buf);
+            free(send_buf);
+            break; // Exit the main processing loop
         }
 
-        // Original: *(undefined *)((int)local_20 + local_1c + -1) = 0;
-        // Null-terminate the input buffer, replacing the delimiter.
-        // This ensures the buffer contains only the message content for parsing.
-        if (bytes_received > 0) { // Safety check
-            input_buffer[bytes_received - 1] = '\0';
-        }
+        // Null-terminate the received string by replacing the delimiter
+        // The `recv_until_delim` already null-terminates, but the delimiter is still there.
+        // This ensures the delimiter is removed from the string content.
+        recv_buf[bytes_received_count - 1] = '\0';
 
-        // Parse the received sentence
-        if (parse_sentence(input_buffer, &s) == 0) { // If parsing successful
-            // Original: if (local_2c == '\x03')
-            if (s.message_type == '\x03') { // Check message type (e.g., AIS)
-                if (to_english(output_buffer, &s) == 0) { // Convert to English
-                    message_to_send = output_buffer;
+        parse_status = parse_sentence(recv_buf, &sentence_data);
+
+        if (parse_status == 0) { // parse_sentence success
+            if (sentence_data.message_type == '\x03') { // Corresponds to local_2c == '\x03'
+                if (to_english(send_buf, &sentence_data) == 0) {
+                    message_to_send = send_buf;
                 } else {
-                    message_to_send = "INVALID MESSAGE."; // Conversion failed
+                    message_to_send = "ERROR CONVERTING TO ENGLISH."; // More descriptive error
                 }
             } else {
-                message_to_send = "PARTIAL AIS MESSAGE."; // Not an AIS message or incomplete
-                reset_flag = 0; // Corresponds to local_15 = '\0'
+                message_to_send = "PARTIAL AIS MESSAGE."; // As per original snippet's logic
+                should_reset_struct_flag = 0; // Don't reset if partial
             }
         } else {
-            message_to_send = "INVALID SENTENCE."; // Parsing failed
+            message_to_send = "INVALID SENTENCE."; // As per original snippet's logic
         }
 
         // Send the generated message
         size_t len_to_send = strlen(message_to_send);
-        // The original `send` call was highly ambiguous in the decompiler output.
-        // This interpretation assumes standard `send` to STDOUT_FILENO.
-        if (send(output_fd, message_to_send, len_to_send, send_flags) == -1) {
-            perror("Error sending message");
-            // Decide if this is a critical error or if the loop should continue
-            // For now, let's just log and continue.
-        }
-        // For readability on stdout, add a newline after each message
-        if (output_fd == STDOUT_FILENO) {
-            send(output_fd, "\n", 1, send_flags);
+        // Original code used `send((int)local_14, in_stack_ffffffb4, __n, __flags);`
+        // which was malformed. Correct usage for `send` is `send(sockfd, buffer, length, flags)`.
+        // `__flags` was 7 in the original, which is MSG_OOB | MSG_EOR | MSG_WAITALL.
+        // For a general message, 0 flags are typically used for standard behavior.
+        send(sv[1], message_to_send, len_to_send, 0); // Send to the other end of the socketpair
+        send(sv[1], "\n", 1, 0); // Add a newline for readability in output
+
+        if (should_reset_struct_flag == 1) {
+            reset_sentence_struct(&sentence_data);
         }
 
-        // Original: if (local_15 == '\x01') { reset_sentence_struct(local_3c); }
-        if (reset_flag == 1) {
-            reset_sentence_struct(&s);
-        }
-
-        free(output_buffer);
-        free(input_buffer);
+        free(send_buf);
+        free(recv_buf);
     }
 
-    // Original returns 0xfffffff7, which is -9 in two's complement,
-    // often indicating an error condition.
-    return EXIT_FAILURE;
+    close(sv[0]); // Close the receiving end of the socketpair
+    close(sv[1]); // Close the sending end of the socketpair
+
+    return EXIT_FAILURE; // Return EXIT_FAILURE as the original snippet returned -9 on loop break.
 }

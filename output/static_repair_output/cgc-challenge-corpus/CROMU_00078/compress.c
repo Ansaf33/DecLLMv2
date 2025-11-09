@@ -1,151 +1,160 @@
 #include <stdlib.h> // For abs
 #include <string.h> // For memcpy
+#include <stdint.h> // For intptr_t
 
-// Define custom types based on common decompiler output
+// Define custom types
 typedef unsigned char byte;
 typedef unsigned short ushort;
 typedef unsigned int uint;
+typedef unsigned char undefined; // Used for 0xff assignment
 
-// Declare global arrays.
-// The original code implies they are arrays of int, accessed with `*(int *)(array + index * 4)`.
-// ClosestMatch uses '8' or '4' as limit.
-// For param_1=0 or 2, limit is 8, so red_blue needs at least 8 elements.
-// For param_1=1, limit is 4, so green needs at least 4 elements.
-// Declaring them as int[8] to be safe and cover all accesses.
-int red_blue[8];
-int green[8];
+// Assume these are global arrays of int, defined elsewhere
+extern int red_blue[];
+extern int green[];
 
 // Function: ClosestMatch
 byte ClosestMatch(char param_1, short param_2) {
-    unsigned char min_diff = 0xFF;
-    unsigned char best_match_idx = 0;
+    byte best_diff = 0xff;
+    byte best_index = 0;
+    byte count_limit;
 
-    // Determine the array limit and the array to use based on param_1
-    unsigned char limit = (param_1 == 0 || param_1 == 2) ? 8 : 4;
-    const int* current_array = (param_1 == 0 || param_1 == 2) ? red_blue : green;
+    if (param_1 == '\0' || param_1 == '\x02') {
+        count_limit = 8;
+    } else {
+        count_limit = 4;
+    }
 
-    for (int i = 0; i < limit; ++i) {
-        int diff = param_2 - current_array[i];
-        unsigned char current_diff = (unsigned char)abs(diff);
+    for (int i = 0; i < count_limit; ++i) {
+        int diff_val;
+        if (param_1 == '\0' || param_1 == '\x02') {
+            diff_val = abs((int)param_2 - red_blue[i]);
+        } else {
+            diff_val = abs((int)param_2 - green[i]);
+        }
 
-        if (current_diff < min_diff) {
-            min_diff = current_diff;
-            best_match_idx = (unsigned char)i;
+        if ((byte)diff_val < best_diff) {
+            best_diff = (byte)diff_val;
+            best_index = (byte)i;
         }
     }
-    return best_match_idx;
+    return best_index;
 }
 
 // Function: Compress
-void Compress(int param_1, int param_2, void *param_3) {
-    if (param_1 != 0) {
-        // 0xB2F (2863) is likely the number of items to process
-        unsigned short item_count = 0xB2F;
-        unsigned short dest_offset = 0; // Current offset in the destination buffer (param_2)
-
-        // param_1 is an array of pointers (int* or void**), each pointing to a source item.
-        void** source_item_pointers = (void**)param_1;
-        // param_2 is the destination buffer (unsigned char*)
-        unsigned char* dest_buffer = (unsigned char*)param_2;
-
-        for (int i = 0; i < item_count; ++i) {
-            void* source_item_ptr = source_item_pointers[i];
-            unsigned char* source_item_byte_ptr = (unsigned char*)source_item_ptr;
-
-            unsigned char compressed_byte = 0;
-
-            // Call ClosestMatch for bytes at offsets 6, 7, 8 from source_item_ptr
-            // and combine results into a single compressed byte.
-            // Each ClosestMatch result (0-7 or 0-3) is masked to fit the allocated bits.
-            compressed_byte |= (ClosestMatch(0, source_item_byte_ptr[6]) & 0x7) << 5; // 3 bits for val 0-7
-            compressed_byte |= (ClosestMatch(1, source_item_byte_ptr[7]) & 0x3) << 3; // 2 bits for val 0-3
-            compressed_byte |= (ClosestMatch(2, source_item_byte_ptr[8]) & 0x7);      // 3 bits for val 0-7
-
-            // Copy first 2 bytes from source item to destination
-            memcpy(dest_buffer + dest_offset, source_item_ptr, 2);
-            dest_offset += 2;
-            // Copy next 2 bytes from source item (offset 2)
-            memcpy(dest_buffer + dest_offset, source_item_byte_ptr + 2, 2);
-            dest_offset += 2;
-            // Copy next 2 bytes from source item (offset 4)
-            memcpy(dest_buffer + dest_offset, source_item_byte_ptr + 4, 2);
-            dest_offset += 2;
-            // Write the compressed byte
-            memcpy(dest_buffer + dest_offset, &compressed_byte, 1);
-            dest_offset += 1; // Total 7 bytes written per item (6 data + 1 compressed)
-        }
-        // Store the final destination offset (total compressed size) in param_3
-        memcpy(param_3, &dest_offset, sizeof(ushort));
+// input_ptrs: array of pointers to SourceStruct-like data (original param_1)
+// output_buf: buffer to write compressed data (original param_2)
+// output_len_ptr: pointer to ushort to store the total compressed length (original param_3)
+void Compress(void **input_ptrs, void *output_buf, ushort *output_len_ptr) {
+    if (input_ptrs == NULL) {
+        return;
     }
+
+    ushort output_offset = 0;
+    const ushort num_items = 0xb2f; // Original local_1a
+
+    for (int item_idx = 0; item_idx < num_items; ++item_idx) {
+        // current_source_item points to a structure with data and color bytes
+        void *current_source_item = input_ptrs[item_idx];
+
+        byte compressed_byte = 0;
+        // ClosestMatch takes short, so cast the byte at offset 6, 7, 8 to short
+        compressed_byte |= (ClosestMatch(0, *(byte *)((byte *)current_source_item + 6)) & 0x7) << 5;
+        compressed_byte |= (ClosestMatch(1, *(byte *)((byte *)current_source_item + 7)) & 0x3) << 3;
+        compressed_byte |= (ClosestMatch(2, *(byte *)((byte *)current_source_item + 8)) & 0x7);
+
+        // Copy 3 ushorts (6 bytes) from current_source_item
+        memcpy((byte *)output_buf + output_offset, current_source_item, 2);
+        output_offset += 2;
+        memcpy((byte *)output_buf + output_offset, (byte *)current_source_item + 2, 2);
+        output_offset += 2;
+        memcpy((byte *)output_buf + output_offset, (byte *)current_source_item + 4, 2);
+        output_offset += 2;
+
+        // Copy the compressed byte
+        memcpy((byte *)output_buf + output_offset, &compressed_byte, 1);
+        output_offset += 1;
+    }
+
+    *output_len_ptr = output_offset;
 }
 
 // Function: Decompress
-void Decompress(int param_1, int param_2, ushort *param_3) {
-    unsigned int current_src_offset = 0;  // Current offset in the source buffer (param_1)
-    unsigned int current_dest_offset = 0; // Current offset in the destination buffer (param_2)
+// input_buf: buffer containing compressed data (original param_1)
+// output_buf: buffer to write decompressed data (original param_2)
+// total_compressed_len_ptr: pointer to ushort holding total compressed length from Compress,
+//                           updated with total decompressed length (original param_3)
+void Decompress(void *input_buf, void *output_buf, ushort *total_compressed_len_ptr) {
+    uint input_offset = 0;
+    int output_offset = 0;
 
-    unsigned char* src_byte_ptr = (unsigned char*)param_1;
-    unsigned char* dest_byte_ptr = (unsigned char*)param_2;
+    while (input_offset < *total_compressed_len_ptr) {
+        // Copy first 2 bytes (ushort)
+        memcpy((byte *)output_buf + output_offset, (byte *)input_buf + input_offset, 2);
+        output_offset += 2;
+        input_offset += 2;
 
-    // *param_3 holds the total compressed size (from Compress function)
-    while (current_src_offset < *param_3) {
-        // Copy 3 blocks of 2 bytes from source to destination
-        memcpy(dest_byte_ptr + current_dest_offset, src_byte_ptr + current_src_offset, 2);
-        current_src_offset += 2;
-        memcpy(dest_byte_ptr + current_dest_offset + 2, src_byte_ptr + current_src_offset, 2);
-        current_src_offset += 2;
-        memcpy(dest_byte_ptr + current_dest_offset + 4, src_byte_ptr + current_src_offset, 2);
-        current_src_offset += 2; // current_src_offset now advanced by 6 bytes
+        // Copy second 2 bytes (ushort)
+        memcpy((byte *)output_buf + output_offset, (byte *)input_buf + input_offset, 2);
+        output_offset += 2;
+        input_offset += 2;
 
-        // Read the single compressed byte
-        unsigned char compressed_byte = src_byte_ptr[current_src_offset];
-        current_src_offset += 1; // current_src_offset now advanced by 7 bytes (6 data + 1 compressed)
+        // Copy third 2 bytes (ushort)
+        memcpy((byte *)output_buf + output_offset, (byte *)input_buf + input_offset, 2);
+        
+        // compressed_byte_input_pos points to the byte immediately after the third ushort
+        int compressed_byte_input_pos = input_offset + 2;
+        input_offset += 3; // Advance input_offset past the 3rd ushort (2 bytes) and the compressed byte (1 byte)
 
-        // Extract color indices from the compressed byte
-        unsigned char val_rb_1 = compressed_byte >> 5;         // 3 bits
-        unsigned char val_g = (compressed_byte >> 3) & 0x3;    // 2 bits
-        unsigned char val_rb_2 = compressed_byte & 0x7;        // 3 bits
+        // At this point, output_offset is 6 (after 3 ushorts)
+        
+        byte compressed_val = *(byte *)((byte *)input_buf + compressed_byte_input_pos);
+        byte b6_idx = compressed_val >> 5;
+        byte b7_idx = (compressed_val >> 3) & 3;
+        byte b8_idx = compressed_val & 7;
 
-        // Write the decompressed color values and 0xff byte
-        // These are written to offsets +6, +7, +8, +9 relative to the start of the current 10-byte item.
-        // The original code implies only the least significant byte of the int from red_blue/green is used.
-        dest_byte_ptr[current_dest_offset + 6] = (unsigned char)((unsigned int)red_blue[val_rb_1]);
-        dest_byte_ptr[current_dest_offset + 7] = (unsigned char)((unsigned int)green[val_g]);
-        dest_byte_ptr[current_dest_offset + 8] = (unsigned char)((unsigned int)red_blue[val_rb_2]);
-        dest_byte_ptr[current_dest_offset + 9] = 0xff;
+        // Write derived bytes to output_buf + output_offset + 2, +3, +4
+        // These write to output_buf + 8, +9, +10
+        *((char *)output_buf + output_offset + 2) = (char)red_blue[(uint)b6_idx];
+        *((char *)output_buf + output_offset + 3) = (char)green[(uint)b7_idx];
+        *((char *)output_buf + output_offset + 4) = (char)red_blue[(uint)b8_idx];
+        
+        // Advance output_offset by 6 bytes (to account for the 3 ushorts and the following 3 derived chars, plus a 3-byte gap)
+        output_offset += 6; // output_offset becomes 12 (6 + 6)
 
-        current_dest_offset += 10; // Each decompressed item is 10 bytes in the destination
+        // Write 0xff to output_buf + output_offset + 5 (12 + 5 = 17)
+        *((byte *)output_buf + output_offset + 5) = 0xff;
+        
+        // Advance output_offset by 6 bytes to prepare for next item (total 18 bytes per item)
+        output_offset += 6;
     }
-    // Store the final destination offset (total decompressed size) back into param_3
-    memcpy(param_3, &current_dest_offset, sizeof(ushort));
+    // Update total_compressed_len_ptr with the actual total decompressed length
+    *total_compressed_len_ptr = output_offset;
 }
 
 // Function: WriteOut
-void WriteOut(int param_1, int param_2, ushort param_3) {
-    if (param_1 != 0) {
-        // param_1 is an array of pointers to original items (void**)
-        void** original_item_ptrs = (void**)param_1;
-        // param_2 is the buffer containing decompressed data (unsigned char*)
-        unsigned char* decompressed_data_ptr = (unsigned char*)param_2;
+// output_ptr_array: array of int (pointers to destination structures) (original param_1)
+// decompressed_buf: buffer containing decompressed data (10 bytes per item expected by WriteOut) (original param_2)
+// decompressed_total_len: total length of decompressed_buf (original param_3)
+//                         (Note: Decompress produces 18 bytes per item, WriteOut consumes 10 bytes per item.
+//                         This implies a potential mismatch or specific data interpretation in the original logic.)
+void WriteOut(int *output_ptr_array, void *decompressed_buf, ushort decompressed_total_len) {
+    if (output_ptr_array == NULL) {
+        return;
+    }
 
-        unsigned short source_array_index = 0;
-        // param_3 is the total size of decompressed data in param_2
-        // Loop iterates through decompressed items, each 10 bytes long
-        for (unsigned short current_param_2_offset = 0; current_param_2_offset < param_3; current_param_2_offset += 10) {
-            // Get the pointer to the current original item from the array
-            void* item_ptr = original_item_ptrs[source_array_index];
-            unsigned char* item_byte_ptr = (unsigned char*)item_ptr;
+    // The loop iterates based on decompressed_total_len but increments by 10.
+    // This behavior from the original code is preserved.
+    for (ushort data_offset = 0, item_idx = 0; data_offset < decompressed_total_len; data_offset += 10, ++item_idx) {
+        // output_ptr_array contains int values that are treated as destination addresses
+        void *current_dest_ptr = (void *)(intptr_t)output_ptr_array[item_idx];
 
-            // Copy the 3 color bytes from decompressed data (offsets +6, +7, +8 relative to item start)
-            // into the original item's structure (same offsets)
-            memcpy(item_byte_ptr + 6, decompressed_data_ptr + current_param_2_offset + 6, 1);
-            memcpy(item_byte_ptr + 7, decompressed_data_ptr + current_param_2_offset + 7, 1);
-            memcpy(item_byte_ptr + 8, decompressed_data_ptr + current_param_2_offset + 8, 1);
-            
-            // Set the byte at offset +9 in the original item to 0xff
-            item_byte_ptr[9] = 0xff;
-
-            source_array_index += 1; // Move to the next pointer in the original array
-        }
+        // Read 3 bytes from decompressed_buf + data_offset + 6, +7, +8
+        // Write to current_dest_ptr + 6, +7, +8
+        memcpy((byte *)current_dest_ptr + 6, (byte *)decompressed_buf + data_offset + 6, 1);
+        memcpy((byte *)current_dest_ptr + 7, (byte *)decompressed_buf + data_offset + 7, 1);
+        memcpy((byte *)current_dest_ptr + 8, (byte *)decompressed_buf + data_offset + 8, 1);
+        
+        // Write 0xff to current_dest_ptr + 9
+        *((byte *)current_dest_ptr + 9) = 0xff;
     }
 }

@@ -1,452 +1,443 @@
-#include <stdio.h>   // For printf (in main)
-#include <stdlib.h>  // For calloc, free
-#include <string.h>  // For strncpy, strlen
 #include <stdbool.h> // For bool
+#include <stdlib.h>  // For calloc, free
+#include <string.h>  // For strncpy
+#include <stdio.h>   // For printf (in main for testing)
+#include <stdint.h>  // For uint8_t, uint32_t
 
-// Define common error codes
-#define PARSE_ERROR_GENERIC -62 // 0xffffffc2
-#define PARSE_ERROR_CARD_CREATE_FAIL -42 // 0xffffffd6
-#define PARSE_ERROR_INVALID_RANK -44 // 0xffffffd4 (original was -0x2c)
-
-// --- Dummy functions for compilation ---
-// Assumes card_id encodes suit in lower 8 bits, rank in next 8 bits.
-// For example, 0x5448 could be 'H' (suit) and 'T' (rank)
-int create_card(char suit, char rank) {
-    if (suit == '\0' || rank == '\0') {
+// --- Dummy helper functions for compilation ---
+// In a real application, these would be implemented elsewhere.
+// Assuming card_id = (suit_char << 8) | rank_char for simple encoding
+int create_card(char rank, char suit) {
+    if (rank == '\0' || suit == '\0') {
         return 0; // Invalid card
     }
-    // Store rank in higher byte, suit in lower byte
-    return ((int)rank << 8) | (unsigned char)suit;
+    // Encodes suit in the higher byte and rank in the lower byte
+    return (int)((uint8_t)suit << 8 | (uint8_t)rank);
 }
 
-// Dummy function for is_valid_rank
 int is_valid_rank(char rank) {
-    // Example valid ranks: '2'-'9', 'T', 'J', 'Q', 'K', 'A'
-    if ((rank >= '2' && rank <= '9') || rank == 'T' || rank == 'J' ||
-        rank == 'Q' || rank == 'K' || rank == 'A') {
-        return 1; // Valid
-    }
-    return 0; // Invalid
+    return (rank >= '2' && rank <= '9') ||
+           (rank == 'T' || rank == 'J' || rank == 'Q' || rank == 'K' || rank == 'A');
 }
-// --- End Dummy functions ---
 
+// --- Fixed functions ---
 
 // Function: parse_xml_card
-// Parses a card XML snippet like "EGX'F Y''" or "EFX'G Y''".
-// Returns: length of parsed XML snippet (8) on success, or a negative error code.
-int parse_xml_card(const char *param_1, int *param_2) {
-    char rank_char = '\0';
-    char suit_char = '\0';
-    const char *current_ptr = param_1;
+// Parses an XML card string (e.g., "EGQ'FA''") into a card ID.
+// param_1: Input string
+// param_2: Pointer to store the parsed card ID
+// Returns: Length of the parsed card string (8) on success, or a negative error code on failure.
+int parse_xml_card(char *param_1, int *param_2) {
+    char rank = '\0';
+    char suit = '\0';
 
-    if (*current_ptr != 'E') {
-        return PARSE_ERROR_GENERIC;
+    // Check fixed characters and overall format.
+    // Expected format: E<Ind1><Val1>'<Ind2><Val2>''
+    // Length must be at least 8 characters.
+    if (param_1[0] != 'E' ||
+        param_1[3] != '\'' ||
+        param_1[6] != '\'' ||
+        param_1[7] != '\'') {
+        return -62; // 0xffffffc2 (Error: Malformed card string)
     }
-    current_ptr++;
 
-    // First part: E[G|F][char]'
-    if (*current_ptr == 'G') { // Expecting Rank
-        rank_char = current_ptr[1];
-        if (current_ptr[2] != '\'') {
-            return PARSE_ERROR_GENERIC;
-        }
-        current_ptr += 3; // Advance past G[char]'
-    } else if (*current_ptr == 'F') { // Expecting Suit
-        suit_char = current_ptr[1];
-        if (current_ptr[2] != '\'') {
-            return PARSE_ERROR_GENERIC;
-        }
-        current_ptr += 3; // Advance past F[char]'
+    // Determine which character is rank and which is suit based on indicators
+    if (param_1[1] == 'G' && param_1[4] == 'F') {
+        // Format: EG<suit>'F<rank>''
+        suit = param_1[2];
+        rank = param_1[5];
+    } else if (param_1[1] == 'F' && param_1[4] == 'G') {
+        // Format: EF<rank>'G<suit>''
+        rank = param_1[2];
+        suit = param_1[5];
     } else {
-        return PARSE_ERROR_GENERIC;
+        // Invalid indicators or unexpected combination
+        return -62; // 0xffffffc2 (Error: Invalid card indicators)
     }
 
-    // Second part: [G|F][char]'
-    if (rank_char != '\0') { // If rank was set, expect Suit
-        if (*current_ptr != 'F') {
-            return PARSE_ERROR_GENERIC;
-        }
-        suit_char = current_ptr[1];
-    } else { // If suit was set, expect Rank
-        if (*current_ptr != 'G') {
-            return PARSE_ERROR_GENERIC;
-        }
-        rank_char = current_ptr[1];
-    }
-    if (current_ptr[2] != '\'') {
-        return PARSE_ERROR_GENERIC;
-    }
-    current_ptr += 3; // Advance past [G|F][char]'
+    int card_id = create_card(rank, suit);
+    *param_2 = card_id;
 
-    // Check for final quote
-    if (*current_ptr == '\'') {
-        int card_id = create_card(suit_char, rank_char);
-        *param_2 = card_id;
-        if (card_id == 0) {
-            return PARSE_ERROR_CARD_CREATE_FAIL; // Card creation failed
-        }
-        return 8; // Length of "E[X][Y]'[Z][W]''" is 8 characters.
+    if (*param_2 == 0) {
+        return -42; // 0xffffffd6 (Error: Invalid card created)
     }
-    return PARSE_ERROR_GENERIC; // Missing final quote
+    return 8; // Length of the parsed card string
 }
 
 // Function: gen_xml_card
-// Generates a card XML snippet from a card ID.
-// Assumes card_id encodes suit in lower 8 bits, rank in next 8 bits.
-// Returns: length of generated XML snippet (8).
-int gen_xml_card(char *buffer, int card_id) {
-    char suit_char = (char)(card_id & 0xFF);
-    char rank_char = (char)((card_id >> 8) & 0xFF);
+// Generates an XML card string from a card ID.
+// param_1: Output buffer to write the XML string
+// param_2: The card ID (int where (suit_char << 8) | rank_char)
+// Returns: Length of the generated XML string (8).
+int gen_xml_card(uint8_t *param_1, int param_2) {
+    uint8_t rank = (uint8_t)(param_2 & 0xFF);
+    uint8_t suit = (uint8_t)((param_2 >> 8) & 0xFF);
 
-    buffer[0] = 'E'; // 0x45
-    buffer[1] = 'F'; // 0x46 (Suit first)
-    buffer[2] = suit_char;
-    buffer[3] = '\''; // 0x27
-    buffer[4] = 'G'; // 0x47 (Rank second)
-    buffer[5] = rank_char;
-    buffer[6] = '\''; // 0x27
-    buffer[7] = '\''; // 0x27
-    return 8; // Total length
+    param_1[0] = 'E';
+    param_1[1] = 'G'; // Indicator for suit
+    param_1[2] = suit;
+    param_1[3] = '\'';
+    param_1[4] = 'F'; // Indicator for rank
+    param_1[5] = rank;
+    param_1[6] = '\'';
+    param_1[7] = '\'';
+    return 8;
 }
 
 // Function: parse_xml_player_name
-// Parses a player name XML snippet like "(BCVPLAYER1''')".
-// Returns: 0 on success, or a negative error code.
-int parse_xml_player_name(const char *param_1, char **param_2, unsigned char param_3) {
-    if (param_3 < 9) { // Minimum length for "(BCVname''')" is 9
-        return PARSE_ERROR_GENERIC;
+// Parses an XML player name string (e.g., "(BCVAlice'''')").
+// param_1: Input string
+// param_2: Pointer to store a dynamically allocated string with the player's name
+// param_3: Total length of the input string
+// Returns: 0 on success, or a negative error code on failure.
+int parse_xml_player_name(char *param_1, char **param_2, uint8_t param_3) {
+    // Minimum length for "(BCVname'''')" is 9 chars (4 prefix + 1 name + 4 suffix)
+    if (param_3 < 9) {
+        return -62; // 0xffffffc2
     }
-    if (!((*param_1 == '(') && (param_1[1] == 'B') && (param_1[2] == 'C') && (param_1[3] == 'V'))) {
-        return PARSE_ERROR_GENERIC;
-    }
+    
+    if (param_1[0] == '(' && param_1[1] == 'B' && param_1[2] == 'C' && param_1[3] == 'V') {
+        size_t name_len = param_3 - 8; // (BCV (4) + '''' (4))
+        char *name_dest = (char *)calloc(name_len + 1, sizeof(char)); // +1 for null terminator
+        if (name_dest == NULL) {
+            return -1; // Allocation failure
+        }
+        strncpy(name_dest, param_1 + 4, name_len);
+        name_dest[name_len] = '\0'; // Ensure null termination
+        *param_2 = name_dest;
 
-    // Allocate memory for the player name (param_3 - 8 characters + null terminator)
-    // param_3 is total length, 4 for "(BCV", 4 for "''')" = 8 chars to remove
-    char *name_dest = (char *)calloc(param_3 - 8 + 1, sizeof(char)); // +1 for null terminator
-    if (name_dest == NULL) {
-        return -1; // Allocation failed
+        if (param_1[param_3 - 4] == '\'' && param_1[param_3 - 3] == '\'' &&
+            param_1[param_3 - 2] == '\'' && param_1[param_3 - 1] == ')') {
+            return 0; // Success
+        } else {
+            free(name_dest); // Free allocated memory on parse error
+            *param_2 = NULL;
+            return -62; // 0xffffffc2
+        }
+    } else {
+        return -62; // 0xffffffc2
     }
-
-    strncpy(name_dest, param_1 + 4, param_3 - 8);
-    name_dest[param_3 - 8] = '\0'; // Ensure null termination
-    *param_2 = name_dest;
-
-    if (!((param_1[param_3 - 4] == '\'') && (param_1[param_3 - 3] == '\'') &&
-          (param_1[param_3 - 2] == '\'') && (param_1[param_3 - 1] == ')'))) {
-        free(name_dest); // Free memory on error
-        *param_2 = NULL;
-        return PARSE_ERROR_GENERIC;
-    }
-    return 0; // Success
 }
 
 // Function: parse_xml_cards
-// Parses a list of card XML snippets like "(DCARD1CARD2')".
-// Returns: number of cards parsed on success, or a negative error code.
-int parse_xml_cards(const char *param_1, int *card_ids_array) {
-    int num_cards_parsed = 0;
-    const char *current_ptr = param_1;
+// Parses an XML string containing multiple cards (e.g., "(DEGA'F2''EGS'F3''')").
+// param_1: Input string
+// param_2: Pointer to an array of integers to store the parsed card IDs
+// Returns: Number of cards parsed on success, or a negative error code on failure.
+int parse_xml_cards(char *param_1, int *param_2) {
+    int card_id = 0;
+    int parse_result;
+    int card_count = 0;
+    char *current_pos = param_1;
 
-    if (*current_ptr != '(') return PARSE_ERROR_GENERIC;
-    current_ptr++; // Consume '('
-
-    if (*current_ptr != 'D') return PARSE_ERROR_GENERIC;
-    current_ptr++; // Consume 'D'
-
-    while (*current_ptr != '\'') {
-        int card_id;
-        int parse_result = parse_xml_card(current_ptr, &card_id);
-        if (parse_result < 0) {
-            return parse_result;
+    if (*current_pos == '(') {
+        if (current_pos[1] == 'D') {
+            current_pos += 2; // Advance past "(D"
+            while (*current_pos != '\'') { // Loop until the closing single quote for cards
+                parse_result = parse_xml_card(current_pos, &card_id);
+                if (parse_result < 0) {
+                    return parse_result; // Error from parse_xml_card
+                }
+                current_pos += parse_result; // Advance by the length of the parsed card
+                param_2[card_count] = card_id;
+                card_count++;
+            }
+            // After loop, current_pos points to the first '\''
+            if (*current_pos == '\'') {
+                if (current_pos[1] != ')') {
+                    return -62; // 0xffffffc2 - Expecting ')' after cards
+                }
+            } else {
+                return -62; // 0xffffffc2 - Missing closing '\''
+            }
+        } else {
+            return -62; // 0xffffffc2 - Expected 'D'
         }
-        current_ptr += parse_result; // Advance by the length of the parsed card XML
-        card_ids_array[num_cards_parsed] = card_id;
-        num_cards_parsed++;
+    } else {
+        return -62; // 0xffffffc2 - Expected '('
     }
-
-    // After the loop, current_ptr points to the first quote.
-    if (*current_ptr == '\'') {
-        if (current_ptr[1] != ')') {
-            return PARSE_ERROR_GENERIC;
-        }
-    } else { // Should not happen if loop condition is *current_ptr != '\''
-        return PARSE_ERROR_GENERIC;
-    }
-    return num_cards_parsed;
+    return card_count; // Return number of cards parsed
 }
 
 // Function: gen_xml_cards
-// Generates an XML snippet for a list of cards.
-// Returns: total length of generated XML snippet.
-char gen_xml_cards(char *buffer, const int *card_ids, unsigned char num_cards_to_gen) {
-    unsigned char current_length = 0;
+// Generates an XML string representing multiple cards.
+// param_1: Output buffer to write the XML string
+// param_2: Array of card IDs (int where (suit_char << 8) | rank_char)
+// param_3: Number of cards in the array
+// Returns: Total length of the generated XML string.
+int gen_xml_cards(uint8_t *param_1, int *param_2, uint8_t param_3) {
+    int current_offset = 2; // Start after "(D"
+    param_1[0] = '(';
+    param_1[1] = 'D';
 
-    buffer[current_length++] = '('; // 0x28
-    buffer[current_length++] = 'D'; // 0x44
-
-    for (unsigned char i = 0; i < num_cards_to_gen; ++i) {
-        current_length += gen_xml_card(buffer + current_length, card_ids[i]);
+    for (uint8_t i = 0; i < param_3; ++i) {
+        int card_len = gen_xml_card(param_1 + current_offset, param_2[i]);
+        current_offset += card_len;
     }
-
-    buffer[current_length++] = '\''; // 0x27
-    buffer[current_length++] = ')'; // 0x29
-    return current_length; // Total length
+    param_1[current_offset] = '\'';
+    param_1[current_offset + 1] = ')';
+    return current_offset + 2; // Total length
 }
 
 // Function: parse_xml_draw
-// Parses a draw action XML snippet like "(P')".
-// Returns: 0 on success, or a negative error code.
-int parse_xml_draw(const char *param_1) {
-    if (!((*param_1 == '(') && (param_1[1] == 'P') && (param_1[2] == '\'') && (param_1[3] == ')'))) {
-        return PARSE_ERROR_GENERIC;
+// Parses an XML "draw" message (e.g., "(P'')").
+// param_1: Input string
+// Returns: 0 on success, or a negative error code on failure.
+int parse_xml_draw(char *param_1) {
+    if (param_1[0] == '(' && param_1[1] == 'P' && param_1[2] == '\'' && param_1[3] == ')') {
+        return 0; // Success
     }
-    return 0;
+    return -62; // 0xffffffc2
 }
 
 // Function: parse_xml_go_fish
-// Parses a Go Fish action XML snippet like "(QX')".
-// Returns: integer value of char at param_1[2] on success, or a negative error code.
-int parse_xml_go_fish(const char *param_1) {
-    if (!((*param_1 == '(') && (param_1[1] == 'Q') && (param_1[3] == '\'') && (param_1[4] == ')'))) {
-        return PARSE_ERROR_GENERIC;
+// Parses an XML "go fish" message (e.g., "(Q<rank>'')").
+// param_1: Input string
+// Returns: The rank character on success, or a negative error code on failure.
+int parse_xml_go_fish(char *param_1) {
+    if (param_1[0] == '(' && param_1[1] == 'Q' && param_1[3] == '\'' && param_1[4] == ')') {
+        return (int)param_1[2]; // Return the rank character
     }
-    return (int)param_1[2];
+    return -62; // 0xffffffc2
 }
 
 // Function: gen_xml_go_fish
-// Generates a Go Fish action XML snippet.
-// Returns: length of generated XML snippet (5).
-int gen_xml_go_fish(char *buffer, char value) {
-    buffer[0] = '('; // 0x28
-    buffer[1] = 'Q'; // 0x51
-    buffer[2] = value;
-    buffer[3] = '\''; // 0x27
-    buffer[4] = ')'; // 0x29
+// Generates an XML "go fish" message.
+// param_1: Output buffer to write the XML string
+// param_2: The rank character for the go fish request
+// Returns: Length of the generated XML string (5).
+int gen_xml_go_fish(uint8_t *param_1, uint8_t param_2) {
+    param_1[0] = '(';
+    param_1[1] = 'Q';
+    param_1[2] = param_2; // Rank
+    param_1[3] = '\'';
+    param_1[4] = ')';
     return 5;
 }
 
 // Function: parse_xml_ask
-// Parses an Ask action XML snippet like "(SGK''')".
-// Returns: integer value of char at param_1[3] (rank) on success, or a negative error code.
-int parse_xml_ask(const char *param_1) {
-    if (!((*param_1 == '(') && (param_1[1] == 'S') && (param_1[2] == 'G'))) {
-        return PARSE_ERROR_GENERIC;
+// Parses an XML "ask" message (e.g., "(SG<rank>'''')").
+// param_1: Input string
+// Returns: The rank character on success, or a negative error code on failure.
+int parse_xml_ask(char *param_1) {
+    if (param_1[0] == '(' && param_1[1] == 'S' && param_1[2] == 'G') {
+        char rank_char = param_1[3];
+        if (is_valid_rank(rank_char) == 0) {
+            return -44; // 0xffffffd4 (Error: Invalid rank)
+        }
+        if (param_1[4] == '\'' && param_1[5] == '\'' && param_1[6] == ')') {
+            return (int)rank_char;
+        }
     }
-    char rank_char = param_1[3];
-    if (is_valid_rank(rank_char) == 0) {
-        return PARSE_ERROR_INVALID_RANK;
-    }
-    if (!((param_1[4] == '\'') && (param_1[5] == '\'') && (param_1[6] == ')'))) {
-        return PARSE_ERROR_GENERIC;
-    }
-    return (int)rank_char;
+    return -62; // 0xffffffc2
 }
 
 // Function: gen_xml_ask
-// Generates an Ask action XML snippet.
-// Returns: length of generated XML snippet (7).
-int gen_xml_ask(char *buffer, char rank_char) {
-    buffer[0] = '('; // 0x28
-    buffer[1] = 'S'; // 0x53
-    buffer[2] = 'G'; // 0x47
-    buffer[3] = rank_char;
-    buffer[4] = '\''; // 0x27
-    buffer[5] = '\''; // 0x27
-    buffer[6] = ')'; // 0x29
+// Generates an XML "ask" message.
+// param_1: Output buffer to write the XML string
+// param_2: The rank character being asked for
+// Returns: Length of the generated XML string (7).
+int gen_xml_ask(uint8_t *param_1, uint8_t param_2) {
+    param_1[0] = '(';
+    param_1[1] = 'S';
+    param_1[2] = 'G';
+    param_1[3] = param_2; // Rank
+    param_1[4] = '\'';
+    param_1[5] = '\'';
+    param_1[6] = ')';
     return 7;
 }
 
 // Function: parse_xml_fishing
-// Parses a Fishing action XML snippet like "(R')".
-// Returns: 0 on success, or a negative error code.
-int parse_xml_fishing(const char *param_1) {
-    if (!((*param_1 == '(') && (param_1[1] == 'R') && (param_1[2] == '\'') && (param_1[3] == ')'))) {
-        return PARSE_ERROR_GENERIC;
+// Parses an XML "fishing" message (e.g., "(R'')").
+// param_1: Input string
+// Returns: 0 on success, or a negative error code on failure.
+int parse_xml_fishing(char *param_1) {
+    if (param_1[0] == '(' && param_1[1] == 'R' && param_1[2] == '\'' && param_1[3] == ')') {
+        return 0; // Success
     }
-    return 0;
+    return -62; // 0xffffffc2
 }
 
 // Function: parse_xml_books
-// Parses a books count XML snippet like "(TX')".
-// Returns: integer value of char at param_1[2] on success, or a negative error code.
-unsigned int parse_xml_books(const char *param_1) {
-    if (!((*param_1 == '(') && (param_1[1] == 'T'))) {
-        return PARSE_ERROR_GENERIC;
+// Parses an XML "books" message (e.g., "(T<count>'')").
+// param_1: Input string
+// Returns: The book count character on success, or a negative error code on failure.
+int parse_xml_books(char *param_1) {
+    if (param_1[0] == '(' && param_1[1] == 'T') {
+        if (param_1[3] == '\'' && param_1[4] == ')') {
+            return (int)param_1[2]; // Return the book count character
+        }
     }
-    if (!((param_1[3] == '\'') && (param_1[4] == ')'))) {
-        return PARSE_ERROR_GENERIC;
-    }
-    return (unsigned int)(unsigned char)param_1[2];
+    return -62; // 0xffffffc2
 }
 
 // Function: gen_xml_books
-// Generates a books count XML snippet.
-// Returns: length of generated XML snippet (5).
-int gen_xml_books(char *buffer, char value) {
-    buffer[0] = '('; // 0x28
-    buffer[1] = 'T'; // 0x54
-    buffer[2] = value;
-    buffer[3] = '\''; // 0x27
-    buffer[4] = ')'; // 0x29
+// Generates an XML "books" message.
+// param_1: Output buffer to write the XML string
+// param_2: The book count character
+// Returns: Length of the generated XML string (5).
+int gen_xml_books(uint8_t *param_1, uint8_t param_2) {
+    param_1[0] = '(';
+    param_1[1] = 'T';
+    param_1[2] = param_2; // Book count or rank
+    param_1[3] = '\'';
+    param_1[4] = ')';
     return 5;
 }
 
 // Function: gen_xml_turn
-// Generates a turn indicator XML snippet.
-// Returns: length of generated XML snippet (9).
-int gen_xml_turn(char *buffer, char player_id) {
-    buffer[0] = '('; // 0x28
-    buffer[1] = 'U'; // 0x55
-    buffer[2] = 'C'; // 0x43
-    buffer[3] = 'I'; // 0x49
-    buffer[4] = player_id;
-    buffer[5] = '\''; // 0x27
-    buffer[6] = '\''; // 0x27
-    buffer[7] = '\''; // 0x27
-    buffer[8] = ')'; // 0x29
+// Generates an XML "turn" message.
+// param_1: Output buffer to write the XML string
+// param_2: Player ID character whose turn it is
+// Returns: Length of the generated XML string (9).
+int gen_xml_turn(uint8_t *param_1, uint8_t param_2) {
+    param_1[0] = '(';
+    param_1[1] = 'U'; // 'U' as an indicator for Turn
+    param_1[2] = 'C';
+    param_1[3] = 'I';
+    param_1[4] = param_2; // Player ID
+    param_1[5] = '\'';
+    param_1[6] = '\'';
+    param_1[7] = '\'';
+    param_1[8] = ')';
     return 9;
 }
 
 // Function: gen_xml_final_results
-// Generates final results XML snippet.
-// Returns: length of generated XML snippet (20).
-int gen_xml_final_results(char *buffer, char player0_books, char player1_books) {
-    buffer[0] = '('; // 0x28
-    buffer[1] = 'B'; // 0x42
-    buffer[2] = 'C'; // 0x43
-    buffer[3] = 'I'; // 0x49
-    buffer[4] = '0'; // Player 0 ID
-    buffer[5] = '\''; // 0x27
-    buffer[6] = 'T'; // 0x54
-    buffer[7] = player0_books;
-    buffer[8] = '\''; // 0x27
-    buffer[9] = '\''; // 0x27
-    buffer[10] = 'C'; // 0x43
-    buffer[11] = 'I'; // 0x49
-    buffer[12] = '1'; // Player 1 ID
-    buffer[13] = '\''; // 0x27
-    buffer[14] = 'T'; // 0x54
-    buffer[15] = player1_books;
-    buffer[16] = '\''; // 0x27
-    buffer[17] = '\''; // 0x27
-    buffer[18] = '\''; // 0x27
-    buffer[19] = ')'; // 0x29
-    return 20;
+// Generates an XML "final results" message for two players.
+// param_1: Output buffer to write the XML string
+// param_2: Books for player 0
+// param_3: Books for player 1
+// Returns: Length of the generated XML string (20).
+int gen_xml_final_results(uint8_t *param_1, uint8_t param_2, uint8_t param_3) {
+    param_1[0] = '(';
+    param_1[1] = 'B';
+    param_1[2] = 'C';
+    param_1[3] = 'I';
+    param_1[4] = '0'; // Player 0 ID
+    param_1[5] = '\'';
+    param_1[6] = 'T';
+    param_1[7] = param_2; // Player 0 books
+    param_1[8] = '\'';
+    param_1[9] = '\'';
+    param_1[10] = 'C';
+    param_1[11] = 'I';
+    param_1[12] = '1'; // Player 1 ID
+    param_1[13] = '\'';
+    param_1[14] = 'T';
+    param_1[15] = param_3; // Player 1 books
+    param_1[16] = '\'';
+    param_1[17] = '\'';
+    param_1[18] = '\'';
+    param_1[19] = ')';
+    return 20; // 0x14
 }
 
 // Function: gen_xml_error
-// Generates an error XML snippet.
-// Returns: length of generated XML snippet (5).
-int gen_xml_error(char *buffer, char error_code) {
-    buffer[0] = '('; // 0x28
-    buffer[1] = 'H'; // 0x48
-    buffer[2] = error_code;
-    buffer[3] = '\''; // 0x27
-    buffer[4] = ')'; // 0x29
+// Generates an XML "error" message.
+// param_1: Output buffer to write the XML string
+// param_2: Error code character
+// Returns: Length of the generated XML string (5).
+int gen_xml_error(uint8_t *param_1, uint8_t param_2) {
+    param_1[0] = '(';
+    param_1[1] = 'H';
+    param_1[2] = param_2; // Error code
+    param_1[3] = '\'';
+    param_1[4] = ')';
     return 5;
 }
 
-// --- Main function for testing and compilation ---
+// --- Main function for testing ---
 int main() {
-    char test_buffer[256];
-    int card_ids[5];
+    printf("--- XML Parser/Generator Test ---\n\n");
+
+    // Test parse_xml_card
+    char card_str_1[] = "EGQ'FA''"; // Suit Q, Rank A
+    char card_str_2[] = "EF2'GT''"; // Rank 2, Suit T (Ten)
+    int card_id;
+    int parse_len;
+
+    printf("Testing parse_xml_card:\n");
+    parse_len = parse_xml_card(card_str_1, &card_id);
+    if (parse_len > 0) {
+        printf("Parsed '%s': Card ID = 0x%X (Rank: %c, Suit: %c), Length = %d\n", card_str_1, card_id, (char)(card_id & 0xFF), (char)((card_id >> 8) & 0xFF), parse_len);
+    } else {
+        printf("Failed to parse '%s', Error: %d\n", card_str_1, parse_len);
+    }
+
+    parse_len = parse_xml_card(card_str_2, &card_id);
+    if (parse_len > 0) {
+        printf("Parsed '%s': Card ID = 0x%X (Rank: %c, Suit: %c), Length = %d\n", card_str_2, (char)(card_id & 0xFF), (char)((card_id >> 8) & 0xFF), card_id, parse_len);
+    } else {
+        printf("Failed to parse '%s', Error: %d\n", card_str_2, parse_len);
+    }
+
+    // Test gen_xml_card
+    uint8_t buffer_gen_card[9];
+    int generated_len;
+    int card_id_to_gen_1 = create_card('A', 'Q'); // Rank A, Suit Q
+    int card_id_to_gen_2 = create_card('2', 'T'); // Rank 2, Suit T
+
+    printf("\nTesting gen_xml_card:\n");
+    generated_len = gen_xml_card(buffer_gen_card, card_id_to_gen_1);
+    buffer_gen_card[generated_len] = '\0';
+    printf("Generated card from ID 0x%X: '%s', Length = %d\n", card_id_to_gen_1, buffer_gen_card, generated_len);
+
+    generated_len = gen_xml_card(buffer_gen_card, card_id_to_gen_2);
+    buffer_gen_card[generated_len] = '\0';
+    printf("Generated card from ID 0x%X: '%s', Length = %d\n", card_id_to_gen_2, buffer_gen_card, generated_len);
+
+    // Test parse_xml_player_name
+    char name_xml[] = "(BCVAlice''''"; // Length 13, name_len = 5
     char *player_name = NULL;
-    int result;
-    int i;
-
-    printf("--- Testing parse_xml_card ---\n");
-    // Valid card: EGX'F Y'' (Rank X, Suit Y)
-    result = parse_xml_card("EGX'F Y''", &card_ids[0]);
-    if (result == 8) {
-        printf("parse_xml_card(\"EGX'F Y''\"): SUCCESS, card_id = 0x%x (Suit: %c, Rank: %c)\n",
-               card_ids[0], (char)(card_ids[0] & 0xFF), (char)((card_ids[0] >> 8) & 0xFF));
-    } else {
-        printf("parse_xml_card(\"EGX'F Y''\"): FAILED, result = %d\n", result);
-    }
-    // Valid card: EFX'G Y'' (Suit X, Rank Y)
-    result = parse_xml_card("EFX'G Y''", &card_ids[1]);
-    if (result == 8) {
-        printf("parse_xml_card(\"EFX'G Y''\"): SUCCESS, card_id = 0x%x (Suit: %c, Rank: %c)\n",
-               card_ids[1], (char)(card_ids[1] & 0xFF), (char)((card_ids[1] >> 8) & 0xFF));
-    } else {
-        printf("parse_xml_card(\"EFX'G Y''\"): FAILED, result = %d\n", result);
-    }
-    // Invalid card
-    result = parse_xml_card("EGXF Y''", &card_ids[0]);
-    printf("parse_xml_card(\"EGXF Y''\"): %s, result = %d\n", result < 0 ? "FAILED" : "SUCCESS", result);
-
-    printf("\n--- Testing gen_xml_card ---\n");
-    int card_to_gen = create_card('S', 'K'); // Suit 'S', Rank 'K'
-    result = gen_xml_card(test_buffer, card_to_gen);
-    test_buffer[result] = '\0';
-    printf("gen_xml_card(0x%x): '%s' (Length: %d)\n", card_to_gen, test_buffer, result);
-
-    printf("\n--- Testing parse_xml_player_name ---\n");
-    result = parse_xml_player_name("(BCVPLAYER1''')", &player_name, strlen("(BCVPLAYER1''')"));
-    if (result == 0) {
-        printf("parse_xml_player_name(\"(BCVPLAYER1''')\"): SUCCESS, name = '%s'\n", player_name);
+    printf("\nTesting parse_xml_player_name:\n");
+    int name_parse_result = parse_xml_player_name(name_xml, &player_name, sizeof(name_xml) - 1);
+    if (name_parse_result == 0) {
+        printf("Parsed player name: '%s'\n", player_name);
         free(player_name);
-        player_name = NULL;
     } else {
-        printf("parse_xml_player_name(\"(BCVPLAYER1''')\"): FAILED, result = %d\n", result);
+        printf("Failed to parse player name, Error: %d\n", name_parse_result);
     }
-    result = parse_xml_player_name("(BCVSHORT''", &player_name, strlen("(BCVSHORT''"));
-    printf("parse_xml_player_name(\"(BCVSHORT''\"): %s, result = %d\n", result < 0 ? "FAILED" : "SUCCESS", result);
 
-    printf("\n--- Testing parse_xml_cards & gen_xml_cards ---\n");
-    int cards_to_parse[2];
-    char card_xml_string[] = "(DEGX'F S''EHA'G 2'')"; // 2 cards: (X,S) and (A,2)
-    result = parse_xml_cards(card_xml_string, cards_to_parse);
-    if (result > 0) {
-        printf("parse_xml_cards(\"%s\"): SUCCESS, parsed %d cards.\n", card_xml_string, result);
-        for (i = 0; i < result; ++i) {
-            printf("  Card %d: 0x%x (Suit: %c, Rank: %c)\n", i, cards_to_parse[i],
-                   (char)(cards_to_parse[i] & 0xFF), (char)((cards_to_parse[i] >> 8) & 0xFF));
+    // Test gen_xml_cards and parse_xml_cards
+    printf("\nTesting gen_xml_cards and parse_xml_cards:\n");
+    int cards_to_gen[] = {create_card('K', 'H'), create_card('Q', 'D'), create_card('J', 'C')};
+    uint8_t num_cards = sizeof(cards_to_gen) / sizeof(cards_to_gen[0]);
+    uint8_t cards_buffer[100]; // Sufficiently large buffer
+
+    generated_len = gen_xml_cards(cards_buffer, cards_to_gen, num_cards);
+    cards_buffer[generated_len] = '\0';
+    printf("Generated cards XML: '%s', Length = %d\n", cards_buffer, generated_len);
+
+    int parsed_card_ids[10];
+    int parsed_count = parse_xml_cards((char*)cards_buffer, parsed_card_ids);
+    if (parsed_count > 0) {
+        printf("Parsed %d cards:\n", parsed_count);
+        for (int i = 0; i < parsed_count; ++i) {
+            printf("  Card %d: ID = 0x%X (Rank: %c, Suit: %c)\n", i, parsed_card_ids[i], (char)(parsed_card_ids[i] & 0xFF), (char)((parsed_card_ids[i] >> 8) & 0xFF));
         }
     } else {
-        printf("parse_xml_cards(\"%s\"): FAILED, result = %d\n", card_xml_string, result);
+        printf("Failed to parse cards, Error: %d\n", parsed_count);
     }
 
-    int cards_to_generate[] = {
-        create_card('D', 'Q'), // Queen of Diamonds
-        create_card('C', 'A')  // Ace of Clubs
-    };
-    result = gen_xml_cards(test_buffer, cards_to_generate, 2);
-    test_buffer[result] = '\0';
-    printf("gen_xml_cards(2 cards): '%s' (Length: %d)\n", test_buffer, result);
+    // Test gen_xml_error
+    uint8_t error_buffer[10];
+    generated_len = gen_xml_error(error_buffer, 'E'); // Using 'E' as an example error code
+    error_buffer[generated_len] = '\0';
+    printf("\nGenerated error XML for code 'E': '%s', Length = %d\n", error_buffer, generated_len);
 
+    // Test gen_xml_turn
+    uint8_t turn_buffer[10];
+    generated_len = gen_xml_turn(turn_buffer, '0'); // Player 0's turn
+    turn_buffer[generated_len] = '\0';
+    printf("Generated turn XML for player '0': '%s', Length = %d\n", turn_buffer, generated_len);
 
-    printf("\n--- Testing parse_xml_draw ---\n");
-    result = parse_xml_draw("(P')");
-    printf("parse_xml_draw(\"(P')\"): %s, result = %d\n", result == 0 ? "SUCCESS" : "FAILED", result);
-    result = parse_xml_draw("(P)");
-    printf("parse_xml_draw(\"(P)\"): %s, result = %d\n", result == 0 ? "SUCCESS" : "FAILED", result);
-
-    printf("\n--- Testing gen_xml_go_fish ---\n");
-    result = gen_xml_go_fish(test_buffer, '5');
-    test_buffer[result] = '\0';
-    printf("gen_xml_go_fish('5'): '%s' (Length: %d)\n", test_buffer, result);
-
-    printf("\n--- Testing parse_xml_ask ---\n");
-    result = parse_xml_ask("(SGK''')");
-    printf("parse_xml_ask(\"(SGK''')\"): %s, result = %d\n", result > 0 ? "SUCCESS" : "FAILED", result);
-    result = parse_xml_ask("(SGX''')"); // X is not a valid rank in dummy is_valid_rank
-    printf("parse_xml_ask(\"(SGX''')\"): %s, result = %d\n", result > 0 ? "SUCCESS" : "FAILED", result);
-
-    printf("\n--- Testing gen_xml_turn ---\n");
-    result = gen_xml_turn(test_buffer, '0');
-    test_buffer[result] = '\0';
-    printf("gen_xml_turn('0'): '%s' (Length: %d)\n", test_buffer, result);
-
-    printf("\n--- Testing gen_xml_final_results ---\n");
-    result = gen_xml_final_results(test_buffer, '3', '2'); // Player 0 has 3 books, Player 1 has 2 books
-    test_buffer[result] = '\0';
-    printf("gen_xml_final_results(3, 2): '%s' (Length: %d)\n", test_buffer, result);
-
-    printf("\n--- Testing gen_xml_error ---\n");
-    result = gen_xml_error(test_buffer, '1');
-    test_buffer[result] = '\0';
-    printf("gen_xml_error('1'): '%s' (Length: %d)\n", test_buffer, result);
+    // Test gen_xml_final_results
+    uint8_t final_results_buffer[30];
+    generated_len = gen_xml_final_results(final_results_buffer, '5', '3'); // Player 0 has 5 books, Player 1 has 3 books
+    final_results_buffer[generated_len] = '\0';
+    printf("Generated final results XML (P0:5, P1:3): '%s', Length = %d\n", final_results_buffer, generated_len);
 
     return 0;
 }

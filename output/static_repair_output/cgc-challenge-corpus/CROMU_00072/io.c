@@ -1,373 +1,337 @@
-#include <stdio.h>   // For NULL
-#include <stdlib.h>  // For calloc, free, exit
-#include <stddef.h>  // For size_t
+#include <stdlib.h> // For calloc, free
+#include <string.h> // For memcpy
+#include <stdint.h> // For uintptr_t
 
-// Custom type definitions based on original snippet
-typedef unsigned int uint;
-typedef unsigned char byte;
-typedef unsigned char undefined;
-typedef unsigned int undefined4; // Represents a 4-byte unsigned integer
+// External function declarations (assuming custom I/O and graph operations)
+// These functions' actual implementations are not provided, so their signatures are inferred.
 
-// External function and variable declarations
-// These functions are assumed to be defined elsewhere in the system.
-// Their signatures are inferred from the usage in the provided snippet.
-extern int receive(int fd, void *buf, size_t len, int *bytes_received);
-extern int transmit(int fd, const void *buf, size_t len, int *bytes_sent);
+// Custom receive function:
+//   sockfd: Socket descriptor (or a custom identifier, here '0' is used).
+//   buf: Pointer to the buffer to read data into.
+//   len: Maximum number of bytes to read.
+//   bytes_read_out: Pointer to an int where the number of bytes actually read will be stored.
+// Returns 0 on success, non-zero on error.
+extern int receive_custom(int sockfd, void *buf, unsigned int len, int *bytes_read_out);
 
-// Graph-related functions
+// Custom transmit function:
+//   sockfd: Socket descriptor (or a custom identifier, here '1' is used).
+//   buf: Pointer to the buffer containing data to send.
+//   len: Number of bytes to send.
+//   bytes_sent_out: Pointer to an int where the number of bytes actually sent will be stored.
+// Returns 0 on success, non-zero on error.
+extern int transmit_custom(int sockfd, const void *buf, unsigned int len, int *bytes_sent_out);
+
+// Terminates the program, usually called on critical errors like memory allocation failure.
+extern void _terminate(void);
+
+// Graph management functions
 extern void DestroyNodes(void);
 extern void DestroyEdges(void);
 
-// Node related functions
-// FindNode: Returns a node identifier (e.g., node_id or handle) if found, 0 if not.
-extern unsigned int FindNode(unsigned int node_id);
-// AddNode: Returns non-zero on success, 0 on failure. Takes a pointer to a node structure.
-extern int AddNode(void *node_struct);
+// Find a node by its ID. Returns a pointer to the node structure if found, NULL otherwise.
+// The actual structure of the node is opaque here, referred to by `void*`.
+extern void *FindNode(unsigned int node_id);
 
-// Edge related functions
-// FindEdge: Returns a pointer to the existing edge structure if found, NULL (0) if not.
-// The arguments are node identifiers/handles previously returned by FindNode.
-extern void *FindEdge(unsigned int source_node_id, unsigned int dest_node_id);
-// AddEdge: Returns non-zero on success, 0 on failure. Takes a pointer to an edge structure.
-extern int AddEdge(void *edge_struct);
+// Add a new node to the graph. Returns 1 on success, 0 on failure.
+// `node` is a pointer to the pre-allocated node structure.
+extern int AddNode(void *node);
 
-// Shortest Path Tree (SPT) related function
-// FindSpt: Returns a pointer to the SPT result data (e.g., a buffer or a struct containing data and length), or NULL on error.
-extern void *FindSpt(void);
+// Find an edge between two node pointers. Returns a pointer to the edge structure if found, NULL otherwise.
+// The actual structure of the edge is opaque here, referred to by `void*`.
+extern void *FindEdge(void *src_node_ptr, void *dest_node_ptr);
 
-// Global variables (inferred from usage)
-extern int NumEdges;
-extern int NumNodes;
-extern char *rand_page; // Assuming this is a pointer to a char array/page used for random values.
+// Add a new edge to the graph. Returns 1 on success, 0 on failure.
+// `edge` is a pointer to the pre-allocated edge structure.
+extern int AddEdge(void *edge);
 
-// Structure definitions inferred from usage:
-// Node structure (assuming 20 bytes total, with ID at offset 0xc and distance at 0x10)
-// The fields are guessed based on memory accesses like `((int)local_28 + 0xc)`
-struct Node {
-    char unknown_fields_0_11[12]; // Placeholder for unknown fields
-    unsigned int id;              // Access at offset 0xc
-    unsigned int distance;        // Access at offset 0x10
-    // ... possibly more fields up to 20 bytes total
-};
-
-// Edge structure (assuming 20 bytes total, with source at 0x8, dest at 0xc, weight at 0x10)
-// The fields are guessed based on memory accesses like `((int)local_1c + 8)`
-struct Edge {
-    char unknown_fields_0_7[8];   // Placeholder for unknown fields
-    unsigned int source_node_id;  // Access at offset 0x8
-    unsigned int dest_node_id;    // Access at offset 0xc
-    unsigned int weight;          // Access at offset 0x10
-    // ... possibly more fields up to 20 bytes total
-};
-
-// SPT Result structure (guessed for FindSpt return type)
-// Assumes FindSpt returns a dynamically allocated struct containing length and data.
+// Structure to hold Shortest Path Tree (SPT) results.
+// Assuming FindSpt returns a pointer to such a structure.
 struct SptResult {
-    unsigned int length_in_uints; // The number of unsigned int elements in the data array
-    unsigned int data[];          // Flexible array member for the actual SPT data
+    unsigned char length_in_4byte_units; // Length of data in 4-byte units
+    void *data;                          // Pointer to SPT data
 };
+extern struct SptResult *FindSpt(void);
 
+// Global variables (inferred from original snippet)
+extern unsigned int NumEdges;
+extern unsigned int NumNodes_count; // Renamed from NumNodes to avoid ambiguity
+extern char *rand_page_ptr;         // Renamed from rand_page, assuming it's a pointer
 
 // Function: ReadBytes
-unsigned int ReadBytes(void *buffer, unsigned int bytes_to_read) {
+// Reads a specified number of bytes into a buffer from a custom input source (socket 0).
+// buf: Pointer to the buffer to fill.
+// len: Total number of bytes to read.
+// Returns the number of bytes read on success (which should be 'len'), or 0 on failure.
+unsigned int ReadBytes(char *buf, unsigned int len) {
     unsigned int total_read = 0;
-    int bytes_received_this_call;
-    int receive_status;
+    int current_read_count;
+    int ret_val;
 
-    while (total_read < bytes_to_read) {
-        receive_status = receive(0, (char*)buffer + total_read, bytes_to_read - total_read, &bytes_received_this_call);
-
-        if (receive_status != 0) { // Error from receive function
-            break;
-        }
-
-        if (bytes_received_this_call == 0) { // No bytes received, possibly EOF or error
+    while (total_read < len) {
+        ret_val = receive_custom(0, buf + total_read, len - total_read, &current_read_count);
+        if (ret_val != 0) { // Custom receive function failed
             return 0;
         }
-        total_read += bytes_received_this_call;
+        if (current_read_count == 0) { // Read 0 bytes (connection closed or EOF)
+            return 0;
+        }
+        total_read += current_read_count;
     }
-
-    if (total_read != bytes_to_read) {
-        return 0; // Did not read all requested bytes
-    }
-    return total_read;
+    return total_read; // On success, total_read should be equal to len
 }
 
 // Function: ReadNull
-unsigned int ReadNull(size_t bytes_to_read) {
-    if (bytes_to_read == 0) {
+// Reads a specified number of bytes into a temporary buffer and discards them.
+// size_to_read: Total number of bytes to read and discard.
+// Returns the number of bytes read (which should be 'size_to_read') on success, or 0 on failure.
+unsigned int ReadNull(unsigned int size_to_read) {
+    if (size_to_read == 0) {
         return 0;
     }
 
-    void *buffer = calloc(bytes_to_read, 1);
+    void *buffer = calloc(size_to_read, 1);
     if (buffer == NULL) {
-        exit(1); // Replaced _terminate() with exit for Linux compilation
+        _terminate(); // Critical error: memory allocation failed
     }
 
     unsigned int total_read = 0;
-    int bytes_received_this_call;
-    int receive_status;
+    int current_read_count;
+    int ret_val;
 
-    while (total_read < bytes_to_read) {
-        receive_status = receive(0, (char*)buffer + total_read, bytes_to_read - total_read, &bytes_received_this_call);
-
-        if (receive_status != 0) { // Error from receive
-            break;
-        }
-
-        if (bytes_received_this_call == 0) { // No bytes received, possibly EOF
+    while (total_read < size_to_read) {
+        ret_val = receive_custom(0, (char *)buffer + total_read, size_to_read - total_read, &current_read_count);
+        if (ret_val != 0 || current_read_count == 0) {
             free(buffer);
             return 0;
         }
-        total_read += bytes_received_this_call;
+        total_read += current_read_count;
     }
 
-    free(buffer); // Free the buffer after consuming bytes
-
-    if (total_read == bytes_to_read) {
-        return total_read; // Successfully read all bytes
-    } else {
-        return 0; // Did not read all requested bytes
-    }
+    free(buffer); // Discard the buffer
+    return size_to_read; // On success, total_read should be equal to size_to_read
 }
 
 // Function: SendBytes
-unsigned int SendBytes(const void *buffer, unsigned int bytes_to_send) {
+// Sends a specified number of bytes from a buffer using a custom output source (socket 1).
+// buf: Pointer to the buffer containing data to send.
+// len: Total number of bytes to send.
+// Returns the number of bytes sent on success (which should be 'len'), or 0 on failure.
+unsigned int SendBytes(const char *buf, unsigned int len) {
     unsigned int total_sent = 0;
-    int bytes_sent_this_call;
-    int transmit_status;
+    int current_sent_count;
+    int ret_val;
 
-    while (total_sent < bytes_to_send) {
-        transmit_status = transmit(1, (const char*)buffer + total_sent, bytes_to_send - total_sent, &bytes_sent_this_call);
-
-        if (transmit_status != 0) { // Error from transmit function
-            break;
-        }
-
-        if (bytes_sent_this_call == 0) { // No bytes sent, possibly error
+    while (total_sent < len) {
+        ret_val = transmit_custom(1, buf + total_sent, len - total_sent, &current_sent_count);
+        if (ret_val != 0) { // Custom transmit function failed
             return 0;
         }
-        total_sent += bytes_sent_this_call;
+        if (current_sent_count == 0) { // Sent 0 bytes (connection closed or error)
+            return 0;
+        }
+        total_sent += current_sent_count;
     }
-
-    if (total_sent != bytes_to_send) {
-        return 0; // Did not send all requested bytes
-    }
-    return total_sent;
+    return total_sent; // On success, total_sent should be equal to len
 }
 
 // Function: SendResponse
-// status_byte: status/command byte for the response
-// data_length_in_uints: number of 4-byte units in the data_buffer
-// data_buffer: pointer to the data to be sent (can be NULL if data_length_in_uints is 0)
-unsigned int SendResponse(unsigned char status_byte, unsigned char data_length_in_uints, const void *data_buffer) {
-    struct {
-        unsigned char status;
-        unsigned char length_units;
-    } header;
-    header.status = status_byte;
-    header.length_units = data_length_in_uints;
+// Sends a 2-byte header (type and length) followed by optional data.
+// type: Response type.
+// length: Length of the data in 4-byte units (actual bytes = length * 4).
+// data_ptr: Pointer to the data to send.
+// Returns 1 on success, 0 on failure.
+unsigned int SendResponse(char type, char length, uintptr_t data_ptr) {
+    char header[2];
+    header[0] = type;
+    header[1] = length;
 
-    // Send the 2-byte header
-    if (SendBytes(&header, sizeof(header)) != sizeof(header)) {
+    if (SendBytes(header, 2) != 2) {
         return 0; // Failed to send header
     }
 
-    // If there's data, send it
-    if (data_length_in_uints != 0) {
-        unsigned int data_bytes_to_send = (unsigned int)data_length_in_uints * sizeof(unsigned int);
-        if (SendBytes(data_buffer, data_bytes_to_send) != data_bytes_to_send) {
+    if (length != 0) {
+        // Send the data block
+        if (SendBytes((const char *)data_ptr, (unsigned int)length << 2) == 0) {
             return 0; // Failed to send data
         }
     }
-
     return 1; // Success
 }
 
 // Function: SendErrorResponse
-// error_code: The specific error code to send
-void SendErrorResponse(unsigned char error_code) {
-    SendResponse(error_code, 0, NULL);
+// Sends an error response with a specific error code.
+// error_code: The error type to send.
+void SendErrorResponse(char error_code) {
+    SendResponse(error_code, 0, 0); // Error responses typically have no data
 }
 
 // Function: ReadCmd
+// Reads and processes a command from the input stream.
+// Returns 1 on successful command processing, 0 on failure.
 unsigned int ReadCmd(void) {
-    // Structure for the 13-byte command header, inferred from local_35 and local_34 usage
-    struct CommandHeader {
-        char unknown_field_0_6[7];         // Placeholder for unknown bytes
-        unsigned char command_type;        // Corresponds to local_35 at offset 7
-        unsigned int data_length;          // Corresponds to local_34 at offset 8
-        char unknown_field_12;             // Placeholder for the last byte to make it 13 bytes
-    } cmd_header;
+    char header_buf[13]; // Buffer for the 13-byte command header
+    char cmd_type;
+    unsigned int cmd_len_or_count; // Renamed from local_34
 
     // Read the 13-byte command header
-    if (ReadBytes(&cmd_header, sizeof(cmd_header)) != sizeof(cmd_header)) {
+    if (ReadBytes(header_buf, 13) != 13) {
         return 0; // Failed to read full header
     }
 
-    unsigned char command_type = cmd_header.command_type;
-    unsigned int data_length = cmd_header.data_length; // Number of nodes/edges or other data units
+    cmd_type = header_buf[0];
+    // Assuming cmd_len_or_count is a 4-byte unsigned int starting at offset 1 in the header.
+    memcpy(&cmd_len_or_count, header_buf + 1, sizeof(unsigned int));
 
-    // Command Type 1: Add Nodes
-    if (command_type == 0x01) {
-        // Check for maximum nodes (0xff implies 255 nodes based on original code's check)
-        if (0xff < data_length) {
-            ReadNull(data_length * sizeof(unsigned int)); // Consume remaining input for too large request
-            SendErrorResponse(1); // Assuming error code 1 for invalid length
+    if (cmd_type == 0x01) { // Command type 1: Add Nodes
+        if (cmd_len_or_count > 0xff) { // Check for max nodes (255)
+            ReadNull(cmd_len_or_count * sizeof(unsigned int)); // Consume remaining data for oversized request
+            SendErrorResponse(cmd_type); // Placeholder error code
             return 0;
         }
 
-        // Allocate buffer for node IDs (each ID is 4 bytes)
-        unsigned int *node_ids_buffer = (unsigned int *)calloc(data_length, sizeof(unsigned int));
-        if (node_ids_buffer == NULL) {
+        unsigned int *node_ids = (unsigned int *)calloc(cmd_len_or_count, sizeof(unsigned int));
+        if (node_ids == NULL) {
             DestroyNodes();
             DestroyEdges();
-            exit(1); // Fatal error: memory allocation failed
+            _terminate(); // Critical error: memory allocation failed
         }
 
         // Read node IDs into the buffer
-        if (ReadBytes(node_ids_buffer, data_length * sizeof(unsigned int)) != data_length * sizeof(unsigned int)) {
-            free(node_ids_buffer);
-            return 0; // Failed to read all node IDs
+        if (ReadBytes((char *)node_ids, cmd_len_or_count * sizeof(unsigned int)) != cmd_len_or_count * sizeof(unsigned int)) {
+            free(node_ids);
+            return 0;
         }
 
-        // Check if any node already exists
-        for (unsigned int i = 0; i < data_length; ++i) {
-            if (FindNode(node_ids_buffer[i]) != 0) { // If node found (non-zero return)
-                free(node_ids_buffer);
-                SendErrorResponse(2); // Assuming error code 2 for node already exists
+        // Check for duplicate node IDs
+        for (unsigned int i = 0; i < cmd_len_or_count; ++i) {
+            if (FindNode(node_ids[i]) != NULL) { // Assuming FindNode returns non-NULL if found
+                free(node_ids);
+                SendErrorResponse(cmd_type); // Placeholder error code for duplicate node
                 return 0;
             }
         }
 
-        // Add new nodes
-        for (unsigned int i = 0; i < data_length; ++i) {
-            struct Node *new_node = (struct Node *)calloc(1, 20); // Allocate 20 bytes for a new node
+        // Add new nodes to the graph
+        for (unsigned int i = 0; i < cmd_len_or_count; ++i) {
+            void *new_node = calloc(1, 20); // Allocate space for a new node structure (20 bytes)
             if (new_node == NULL) {
-                free(node_ids_buffer);
+                free(node_ids);
                 DestroyNodes();
                 DestroyEdges();
-                exit(1); // Fatal error: memory allocation failed
+                _terminate(); // Critical error: memory allocation failed
             }
-            new_node->id = node_ids_buffer[i];
-            new_node->distance = 0xffffffff; // Initialize distance to infinity
+            // Assuming node ID is stored at offset 0xc and another field at 0x10
+            *(unsigned int *)((char *)new_node + 0xc) = node_ids[i];
+            *(unsigned int *)((char *)new_node + 0x10) = 0xffffffff;
 
-            if (AddNode(new_node) == 0) { // If AddNode fails (returns 0)
-                free(new_node); // AddNode failed, so we free the allocated node structure
-                free(node_ids_buffer);
+            if (AddNode(new_node) == 0) { // Assuming AddNode returns 0 on failure
+                free(node_ids);
+                free(new_node); // Free the failed node structure
                 DestroyNodes();
                 DestroyEdges();
-                exit(1); // Fatal error: AddNode failed
+                _terminate(); // Critical error: AddNode failed
             }
         }
-        free(node_ids_buffer); // Free the buffer of node IDs
-    }
-    // Command Type 2: Add Edges
-    else if (command_type == 0x02) {
-        // Check for total edges limit (2000)
-        if (2000 < NumEdges + data_length) {
-            ReadNull(data_length * 12); // Consume remaining input for too many edges
-            SendErrorResponse(3); // Assuming error code 3 for too many edges
+        free(node_ids); // Free the temporary node ID buffer
+    } else if (cmd_type == 0x02) { // Command type 2: Add Edges
+        if (2000 < NumEdges + cmd_len_or_count) { // Check for max edges
+            ReadNull(cmd_len_or_count * 3 * sizeof(unsigned int)); // Consume remaining data for oversized request
+            SendErrorResponse(cmd_type); // Placeholder error code
             return 0;
         }
 
-        // Allocate buffer for edge data (each edge entry is 12 bytes: src_id, dest_id, weight)
-        unsigned int *edge_data_buffer = (unsigned int *)calloc(data_length, 12); // 3 unsigned ints per edge
-        if (edge_data_buffer == NULL) {
+        // Allocate buffer for edge data (source ID, destination ID, weight)
+        unsigned int *edge_data = (unsigned int *)calloc(cmd_len_or_count, 3 * sizeof(unsigned int));
+        if (edge_data == NULL) {
             DestroyNodes();
             DestroyEdges();
-            exit(1); // Fatal error: memory allocation failed
+            _terminate(); // Critical error: memory allocation failed
         }
 
         // Read edge data into the buffer
-        if (ReadBytes(edge_data_buffer, data_length * 12) != data_length * 12) {
-            free(edge_data_buffer);
-            return 0; // Failed to read all edge data
-        }
-
-        for (unsigned int i = 0; i < data_length; ++i) {
-            struct Edge *new_edge = (struct Edge *)calloc(1, 20); // Allocate 20 bytes for a new edge
-            if (new_edge == NULL) {
-                free(edge_data_buffer);
-                DestroyNodes();
-                DestroyEdges();
-                exit(1); // Fatal error: memory allocation failed
-            }
-
-            // Extract source node ID from buffer and find node handle
-            unsigned int source_id_from_buffer = edge_data_buffer[i * 3]; // Assuming 3 unsigned ints per edge
-            unsigned int source_node_handle = FindNode(source_id_from_buffer);
-            new_edge->source_node_id = source_node_handle;
-
-            if (source_node_handle == 0) { // If source node not found
-                SendErrorResponse(4); // Error code 4 for node not found
-                free(new_edge);
-                free(edge_data_buffer);
-                DestroyNodes();
-                DestroyEdges();
-                exit(1); // Fatal error: source node not found
-            }
-
-            // Extract destination node ID from buffer and find node handle
-            unsigned int dest_id_from_buffer = edge_data_buffer[i * 3 + 1];
-            unsigned int dest_node_handle = FindNode(dest_id_from_buffer);
-            new_edge->dest_node_id = dest_node_handle;
-
-            if (dest_node_handle == 0) { // If destination node not found
-                SendErrorResponse(4); // Error code 4 for node not found
-                free(new_edge);
-                free(edge_data_buffer);
-                DestroyNodes();
-                DestroyEdges();
-                exit(1); // Fatal error: destination node not found
-            }
-
-            // Calculate edge weight
-            unsigned int weight_from_buffer = edge_data_buffer[i * 3 + 2];
-            // Interpretation of `(uint)*(byte *)(NumNodes + rand_page)`:
-            // Assumed `rand_page` is a char array/pointer and `NumNodes` is an index into it.
-            new_edge->weight = weight_from_buffer + (unsigned int)(unsigned char)rand_page[NumNodes];
-
-            // Check if edge already exists
-            // FindEdge returns a pointer to the existing edge struct if found, NULL otherwise.
-            struct Edge *existing_edge = (struct Edge *)FindEdge(new_edge->source_node_id, new_edge->dest_node_id);
-
-            if (existing_edge == NULL) { // Edge not found, add new one
-                if (AddEdge(new_edge) == 0) { // If AddEdge fails
-                    free(new_edge); // AddEdge failed, so we free it
-                    free(edge_data_buffer);
-                    DestroyNodes();
-                    DestroyEdges();
-                    exit(1); // Fatal error: AddEdge failed
-                }
-            } else { // Edge found, update weight if new one is smaller
-                if (new_edge->weight < existing_edge->weight) {
-                    existing_edge->weight = new_edge->weight;
-                }
-                free(new_edge); // Free the newly created edge struct as we updated the existing one
-            }
-        }
-        free(edge_data_buffer); // Free the buffer of edge data
-    }
-    // Command Type 3: Find Shortest Path Tree (SPT)
-    else if (command_type == 0x03) {
-        struct SptResult *spt_result = (struct SptResult *)FindSpt();
-        if (spt_result == NULL) {
-            SendErrorResponse(5); // Assuming error code 5 for SPT calculation failure
+        if (ReadBytes((char *)edge_data, cmd_len_or_count * 3 * sizeof(unsigned int)) != cmd_len_or_count * 3 * sizeof(unsigned int)) {
+            free(edge_data);
             return 0;
         }
-        // Send the SPT result. Assuming 0 for success status.
-        if (SendResponse(0, spt_result->length_in_uints, spt_result->data) == 0) {
-            free(spt_result); // Free result even if sending failed
-            return 0; // Failed to send response
+
+        for (unsigned int i = 0; i < cmd_len_or_count; ++i) {
+            unsigned int src_node_id = edge_data[i * 3];
+            unsigned int dest_node_id = edge_data[i * 3 + 1];
+            unsigned int initial_edge_weight = edge_data[i * 3 + 2];
+
+            void *new_edge = calloc(1, 20); // Allocate space for a new edge structure (20 bytes)
+            if (new_edge == NULL) {
+                free(edge_data);
+                DestroyNodes();
+                DestroyEdges();
+                _terminate(); // Critical error: memory allocation failed
+            }
+
+            void *src_node_ptr = FindNode(src_node_id);
+            if (src_node_ptr == NULL) {
+                SendErrorResponse(4); // Error code 4 for node not found
+                free(new_edge);
+                free(edge_data);
+                DestroyNodes();
+                DestroyEdges();
+                _terminate(); // Critical error: source node not found
+            }
+            // Assuming source node pointer is stored at offset 8
+            *(void **)((char *)new_edge + 8) = src_node_ptr;
+
+            void *dest_node_ptr = FindNode(dest_node_id);
+            if (dest_node_ptr == NULL) {
+                SendErrorResponse(4); // Error code 4 for node not found
+                free(new_edge);
+                free(edge_data);
+                DestroyNodes();
+                DestroyEdges();
+                _terminate(); // Critical error: destination node not found
+            }
+            // Assuming destination node pointer is stored at offset 0xc
+            *(void **)((char *)new_edge + 0xc) = dest_node_ptr;
+
+            // Calculate final edge weight, adding a value from a memory location
+            // Assuming rand_page_ptr points to a char array/page, and NumNodes_count is an offset.
+            *(unsigned int *)((char *)new_edge + 0x10) = initial_edge_weight + (unsigned int)*(rand_page_ptr + NumNodes_count);
+
+            void *existing_edge = FindEdge(src_node_ptr, dest_node_ptr);
+            if (existing_edge == NULL) {
+                if (AddEdge(new_edge) == 0) { // Assuming AddEdge returns 0 on failure
+                    free(new_edge);
+                    free(edge_data);
+                    DestroyNodes();
+                    DestroyEdges();
+                    _terminate(); // Critical error: AddEdge failed
+                }
+            } else {
+                // Edge already exists, update weight if new one is smaller
+                // Assuming edge weight is stored at offset 0x10
+                if (*(unsigned int *)((char *)new_edge + 0x10) < *(unsigned int *)((char *)existing_edge + 0x10)) {
+                    *(unsigned int *)((char *)existing_edge + 0x10) = *(unsigned int *)((char *)new_edge + 0x10);
+                }
+                free(new_edge); // Free the temporary new_edge structure as it's not added
+            }
         }
-        free(spt_result); // Free the SPT result buffer
-    }
-    // Unknown Command Type
-    else {
-        SendErrorResponse(6); // Assuming error code 6 for unknown command
+        free(edge_data); // Free the temporary edge data buffer
+    } else if (cmd_type == 0x03) { // Command type 3: Find Shortest Path Tree (SPT)
+        struct SptResult *spt_info = FindSpt();
+        if (spt_info == NULL) {
+            SendErrorResponse(cmd_type); // Placeholder error code
+            return 0;
+        }
+
+        if (SendResponse(cmd_type, spt_info->length_in_4byte_units, (uintptr_t)spt_info->data) == 0) {
+            free(spt_info->data); // Assuming data is separately allocated
+            free(spt_info);       // Free the SptResult structure itself
+            return 0;
+        }
+        free(spt_info->data); // Free SPT data
+        free(spt_info);       // Free SptResult structure
+    } else { // Unknown command type
+        // No specific data to read for unknown command, just send error
+        SendErrorResponse(cmd_type);
         return 0;
     }
-
     return 1; // Command processed successfully
 }

@@ -1,65 +1,49 @@
-#include <stdio.h>   // For printf, puts, fgets, fprintf
-#include <stdlib.h>  // For exit
-#include <string.h>  // For strcmp, strchr, strlen, memset
+#include <stdio.h>   // For printf, puts, fprintf, stdin, fgets
+#include <string.h>  // For strcmp, strchr, strlen, memset, strcpy
+#include <stdlib.h>  // For abs, exit
 
-// --- Global Variables and External Functions for Compilation ---
-// In a real application, these would be defined in appropriate header/source files.
+// --- Global variables and dummy functions (for compilation) ---
+// In a real application, these would be defined elsewhere or linked.
+// Assuming CURR_PLAYER is a string buffer for player turn.
+char CURR_PLAYER[10] = "WHITE"; // Example initial value for testing
 
-// Chess board representation: 8x8 array of chars. '\0' for empty.
-// This is a global variable, accessible by all functions.
-char board[8][8];
+// String literals inferred from original snippet's usage
+const char *DAT_00014050 = "Enter move: ";
+const char *DAT_00014055 = "quit";
+const char *DAT_00014057 = "exit";
 
-// Current player (e.g., "WHITE" or "BLACK")
-char CURR_PLAYER[10] = "WHITE"; // Default to WHITE for demonstration
+// Global buffer for receive_until (as implied by original snippet's lack of args and usage)
+static char input_buffer_global[16]; // Max 15 chars + null terminator
 
-// Prompt message for user input
-const char * const PROMPT_MSG = "Enter your move (e.g., 0,0 0,1): ";
+// Dummy implementation for receive_until
+// Original code implies it reads into `local_34` (now `input_buffer_global`)
+// and returns 0 on failure. It seems to read up to 10 chars, but `bzero` was 15,
+// and `0x10` (16) was a value before the call, suggesting a buffer size of 16.
+int receive_until() {
+    // Simulate reading input. In a real application, this would be network or file I/O.
+    // For compilation, we'll use fgets.
+    if (fgets(input_buffer_global, sizeof(input_buffer_global), stdin) == NULL) {
+        return 0; // Indicate failure
+    }
+    return 1; // Indicate success
+}
 
-// Quit command
-const char * const QUIT_CMD = "quit";
+// Dummy implementation for _terminate
+void _terminate() {
+    fprintf(stderr, "Program terminated due to critical error.\n");
+    exit(1);
+}
 
-// Invalid format message
-const char * const INVALID_FORMAT_MSG = "Not a legal move format";
-
-// Dummy PrintBoard function (uses the global 'board' variable)
+// Dummy implementation for PrintBoard
 void PrintBoard() {
-    printf("  0 1 2 3 4 5 6 7\n");
-    for (int i = 0; i < 8; ++i) {
-        printf("%d ", i);
-        for (int j = 0; j < 8; ++j) {
-            printf("%c ", board[i][j] == '\0' ? '.' : board[i][j]); // Use '.' for empty squares
-        }
-        printf("\n");
-    }
-    printf("Current player: %s\n", CURR_PLAYER);
+    printf("--- Board state (printing not implemented in snippet) ---\n");
+    // In a real chess game, this would print the current board state.
 }
 
-// Dummy receive_until function (simulates reading from network or stdin)
-// Reads up to max_len-1 characters from stdin or until stop_char is found.
-// Removes trailing newline if present.
-int receive_until(char *buffer, int stop_char, size_t max_len) {
-    if (fgets(buffer, max_len, stdin) != NULL) {
-        // Remove trailing newline if present, as fgets keeps it
-        size_t len = strlen(buffer);
-        if (len > 0 && buffer[len-1] == '\n') {
-            buffer[len-1] = '\0';
-        }
-        // For simplicity, we assume fgets already handled reading up to a newline.
-        return 1; // Success
-    }
-    return 0; // Failure (e.g., EOF)
-}
+// --- Original functions, refactored ---
 
-// Dummy _terminate function (replaces original _terminate)
-void _terminate(int status) {
-    fprintf(stderr, "Program terminated with status %d\n", status);
-    exit(status);
-}
-
-// --- Provided and Fixed Functions ---
-
-// Function: custom_abs (renamed to avoid conflict with stdlib.h's abs)
-int custom_abs(int __x) {
+// Function: abs (keeping custom implementation as provided)
+int abs(int __x) {
   if (__x < 0) {
     __x = -__x;
   }
@@ -67,86 +51,88 @@ int custom_abs(int __x) {
 }
 
 // Function: IsDiagClear
-// param_1 is now char (*board_ptr)[8] to correctly represent a 2D array
-int IsDiagClear(char (*board_ptr)[8], char start_row, char start_col, char end_row, char end_col) {
+// param_1 is assumed to be a pointer to the start of an 8x8 char board.
+int IsDiagClear(char *board, char param_2, char param_3, char param_4, char param_5) {
   char current_row;
   char current_col;
   
-  if (start_row < end_row) { // Moving down (increasing row index)
-    if (start_col < end_col) { // Moving right (increasing column index)
-      current_row = start_row + 1;
-      for (current_col = start_col + 1; (current_row < end_row && (current_col < end_col));
+  if (param_2 < param_4) { // Moving down rows
+    if (param_3 < param_5) { // Moving right columns
+      current_row = param_2 + 1;
+      for (current_col = param_3 + 1; (current_row < param_4 && (current_col < param_5));
           current_col = current_col + 1) {
-        if (board_ptr[current_row][current_col] != '\0') {
-          return 0; // Path blocked
+        if (board[current_row * 8 + current_col] != '\0') {
+          return 0; // Obstruction found
         }
         current_row = current_row + 1;
       }
     }
-    else { // Moving left (decreasing column index)
-      current_row = start_row + 1;
-      for (current_col = start_col - 1; (current_row < end_row && (end_col < current_col));
+    else { // Moving left columns (param_3 > param_5)
+      current_row = param_2 + 1;
+      for (current_col = param_3 - 1; (current_row < param_4 && (param_5 < current_col));
           current_col = current_col - 1) {
-        if (board_ptr[current_row][current_col] != '\0') {
-          return 0; // Path blocked
+        if (board[current_row * 8 + current_col] != '\0') {
+          return 0; // Obstruction found
         }
         current_row = current_row + 1;
       }
     }
   }
-  else if (start_col < end_col) { // Moving up (decreasing row index), then right (increasing column index)
-    current_row = start_row - 1;
-    for (current_col = start_col + 1; (end_row < current_row && (current_col < end_col));
-        current_col = current_col + 1) {
-      if (board_ptr[current_row][current_col] != '\0') {
-        return 0; // Path blocked
+  else { // Moving up rows (param_2 > param_4)
+    if (param_3 < param_5) { // Moving right columns
+      current_row = param_2 - 1;
+      for (current_col = param_3 + 1; (param_4 < current_row && (current_col < param_5));
+          current_col = current_col + 1) {
+        if (board[current_row * 8 + current_col] != '\0') {
+          return 0; // Obstruction found
+        }
+        current_row = current_row - 1;
       }
-      current_row = current_row - 1;
     }
-  }
-  else { // Moving up (decreasing row index), then left (decreasing column index)
-    current_row = start_row - 1;
-    for (current_col = start_col - 1; (end_row < current_row && (end_col < current_col)); current_col = current_col - 1)
-    {
-      if (board_ptr[current_row][current_col] != '\0') {
-        return 0; // Path blocked
+    else { // Moving left columns (param_3 > param_5)
+      current_row = param_2 - 1;
+      for (current_col = param_3 - 1; (param_4 < current_row && (param_5 < current_col)); current_col = current_col - 1)
+      {
+        if (board[current_row * 8 + current_col] != '\0') {
+          return 0; // Obstruction found
+        }
+        current_row = current_row - 1;
       }
-      current_row = current_row - 1;
     }
   }
   return 1; // Path is clear
 }
 
 // Function: IsLateralClear
-// param_1 is now char (*board_ptr)[8]
-int IsLateralClear(char (*board_ptr)[8], char start_row, char start_col, char end_row, char end_col) {
-  char iter;
+// param_1 is assumed to be a pointer to the start of an 8x8 char board.
+int IsLateralClear(char *board, char param_2, char param_3, char param_4, char param_5) {
+  char current_coord; // Used for either row or column iteration
   
-  if (start_row < end_row) { // Moving down (increasing row)
-    for (iter = start_row + 1; iter < end_row; iter = iter + 1) {
-      if (board_ptr[iter][start_col] != '\0') {
-        return 0; // Path blocked
+  if (param_2 < param_4) { // Moving down rows (fixed column param_3)
+    for (current_coord = param_2 + 1; current_coord < param_4; current_coord = current_coord + 1) {
+      if (board[current_coord * 8 + param_3] != '\0') {
+        return 0; // Obstruction found
       }
     }
   }
-  else if (end_row < start_row) { // Moving up (decreasing row)
-    for (iter = end_row + 1; iter < start_row; iter = iter + 1) {
-      if (board_ptr[iter][start_col] != '\0') {
-        return 0; // Path blocked
+  else if (param_4 < param_2) { // Moving up rows (fixed column param_3)
+    for (current_coord = param_4 + 1; current_coord < param_2; current_coord = current_coord + 1) {
+      if (board[current_coord * 8 + param_3] != '\0') {
+        return 0; // Obstruction found
       }
     }
   }
-  else if (start_col < end_col) { // Moving right (increasing column)
-    for (iter = start_col + 1; iter < end_col; iter = iter + 1) {
-      if (board_ptr[start_row][iter] != '\0') {
-        return 0; // Path blocked
+  else if (param_3 < param_5) { // Moving right columns (fixed row param_2)
+    for (current_coord = param_3 + 1; current_coord < param_5; current_coord = current_coord + 1) {
+      if (board[param_2 * 8 + current_coord] != '\0') {
+        return 0; // Obstruction found
       }
     }
   }
-  else if (end_col < start_col) { // Moving left (decreasing column)
-    for (iter = end_col + 1; iter < start_col; iter = iter + 1) {
-      if (board_ptr[start_row][iter] != '\0') {
-        return 0; // Path blocked
+  else if (param_5 < param_3) { // Moving left columns (fixed row param_2)
+    for (current_coord = param_5 + 1; current_coord < param_3; current_coord = current_coord + 1) {
+      if (board[param_2 * 8 + current_coord] != '\0') {
+        return 0; // Obstruction found
       }
     }
   }
@@ -154,269 +140,302 @@ int IsLateralClear(char (*board_ptr)[8], char start_row, char start_col, char en
 }
 
 // Function: IsMemberPiece
-int IsMemberPiece(const char *piece_set, char piece) {
-  char *found_char = strchr(piece_set, (int)piece);
-  // Returns 1 if 'piece' is found in 'piece_set', 0 otherwise.
-  // Assuming 'piece' will not be the null terminator itself in this context.
-  return found_char != NULL;
+// Checks if `param_2` (a piece character) is present in the string `param_1`.
+// The original logic accounted for `param_2` being '\0', but piece chars are not '\0'.
+int IsMemberPiece(char *param_1, char param_2) {
+  // `strchr` returns NULL if the character is not found.
+  // Since `param_2` represents a piece character (e.g., 'a', 'b'), it will not be '\0'.
+  // Thus, checking for `NULL` is sufficient to determine if it's a member.
+  return strchr(param_1, param_2) != NULL;
 }
 
 // Function: IsValidMove
-// param_1 is now char (*board_ptr)[8]
-int IsValidMove(char (*board_ptr)[8], char start_row, char start_col, char end_row, char end_col) {
-  int diff_row, diff_col;
-  int piece_char_at_src;
+// param_1 is assumed to be a pointer to the start of an 8x8 char board.
+int IsValidMove(char *board, char param_2, char param_3, char param_4, char param_5) {
   
-  if ((start_row == end_row) && (start_col == end_col)) {
-    return 0; // Cannot move to the same square
+  // 1. Check for no move (source and destination are the same)
+  if ((param_2 == param_4) && (param_3 == param_5)) {
+    return 0;
   }
 
-  // Check if current player owns the piece at source
+  // 2. Determine current player's piece set
+  const char *player_pieces;
+  // const char *opponent_pieces; // Not directly used in this function's simplified logic
   if (strcmp(CURR_PLAYER, "WHITE") == 0) {
-    if (!IsMemberPiece("dbcfea", board_ptr[start_row][start_col])) {
-      return 0; // White player must move a white piece
-    }
+      player_pieces = "dbcfea"; // White pieces
+      // opponent_pieces = "jhilkg"; // Black pieces
   } else if (strcmp(CURR_PLAYER, "BLACK") == 0) {
-    if (!IsMemberPiece("jhilkg", board_ptr[start_row][start_col])) {
-      return 0; // Black player must move a black piece
-    }
-  }
-
-  // Check if destination square contains a piece of the same color
-  if (strcmp(CURR_PLAYER, "WHITE") == 0) {
-    if (IsMemberPiece("dbcfea", board_ptr[end_row][end_col])) {
-      return 0; // White player cannot capture own piece
-    }
-  } else if (strcmp(CURR_PLAYER, "BLACK") == 0) {
-    if (IsMemberPiece("jhilkg", board_ptr[end_row][end_col])) {
-      return 0; // Black player cannot capture own piece
-    }
-  }
-
-  piece_char_at_src = board_ptr[start_row][start_col];
-  if (piece_char_at_src == '\0') {
-    return 0; // No piece at source to move
-  }
-
-  // Check if the piece character is within valid range ('a' to 'l')
-  if (piece_char_at_src < 'a' || piece_char_at_src > 'l') {
-      return 0; // Invalid piece character
-  }
-
-  switch(piece_char_at_src) {
-    case 'a': // White Pawn (moves forward 1, assuming increasing column is forward for pawn 'a')
-      if ((start_row == end_row) && (start_col + 1 == end_col)) {
-        return 1;
-      }
+      player_pieces = "jhilkg"; // Black pieces
+      // opponent_pieces = "dbcfea"; // White pieces
+  } else {
+      // Unknown player, or error. Assume invalid move.
       return 0;
-    case 'g': // Black Pawn (moves backward 1, assuming decreasing column is backward for pawn 'g')
-      if ((start_row == end_row) && (start_col - 1 == end_col)) {
-        return 1;
+  }
+
+  char source_piece = board[param_2 * 8 + param_3];
+  char dest_piece = board[param_4 * 8 + param_5];
+
+  // 3. Check if source piece is empty
+  if (source_piece == '\0') {
+    return 0;
+  }
+
+  // 4. Check if source piece belongs to current player
+  if (!IsMemberPiece((char *)player_pieces, source_piece)) {
+    return 0;
+  }
+  
+  // 5. Check if destination square contains a piece of the current player (cannot capture own piece)
+  if (IsMemberPiece((char *)player_pieces, dest_piece)) {
+    return 0;
+  }
+
+  // 6. Check if piece is within expected ASCII range ('a' to 'l')
+  // This filters out any unknown or invalid piece characters.
+  if (source_piece < 'a' || source_piece > 'l') {
+    return 0;
+  }
+
+  int move_is_valid = 0; // Initialize return value to 0 (invalid)
+
+  // 7. Evaluate move based on piece type
+  switch(source_piece) {
+    case 'a': // White Pawn
+      // Simplified pawn move: only forward one square
+      if ((param_2 == param_4) && (param_3 + 1 == param_5)) {
+        move_is_valid = 1;
       }
-      return 0;
+      // Additional pawn rules (captures, initial two-square move, en passant, promotion)
+      // would go here if implemented.
+      break;
+    case 'g': // Black Pawn
+      // Simplified pawn move: only forward one square
+      if ((param_2 == param_4) && (param_3 - 1 == param_5)) {
+        move_is_valid = 1;
+      }
+      // Additional pawn rules would go here.
+      break;
     case 'b': // White Knight
     case 'h': // Black Knight
-      diff_row = custom_abs(start_row - end_row);
-      diff_col = custom_abs(start_col - end_col);
-      if ((diff_row == 2 && diff_col == 1) || (diff_row == 1 && diff_col == 2)) {
-        return 1; // L-shaped move
+      // Knight moves in an L-shape (2 squares in one direction, 1 in perpendicular)
+      if (((abs((int)param_2 - (int)param_4) == 2) && (abs((int)param_3 - (int)param_5) == 1)) ||
+          ((abs((int)param_2 - (int)param_4) == 1) && (abs((int)param_3 - (int)param_5) == 2))) {
+        move_is_valid = 1;
       }
-      return 0;
+      break;
     case 'c': // White Bishop
     case 'i': // Black Bishop
-      diff_row = custom_abs(end_row - start_row);
-      diff_col = custom_abs(end_col - start_col);
-      if (diff_row == diff_col) { // Diagonal move
-        return IsDiagClear(board_ptr, start_row, start_col, end_row, end_col);
+      // Bishop moves diagonally
+      if (abs((int)param_4 - (int)param_2) == abs((int)param_5 - (int)param_3)) {
+        move_is_valid = IsDiagClear(board, param_2, param_3, param_4, param_5);
       }
-      return 0;
+      break;
     case 'd': // White Rook
     case 'j': // Black Rook
-      if ((start_row == end_row) || (start_col == end_col)) { // Lateral move
-        return IsLateralClear(board_ptr, start_row, start_col, end_row, end_col);
+      // Rook moves laterally (horizontally or vertically)
+      if ((param_2 == param_4) || (param_3 == param_5)) {
+        move_is_valid = IsLateralClear(board, param_2, param_3, param_4, param_5);
       }
-      return 0;
+      break;
     case 'e': // White King
     case 'k': // Black King
-      diff_row = custom_abs(start_row - end_row);
-      diff_col = custom_abs(start_col - end_col);
-      if ((diff_row < 2) && (diff_col < 2)) { // Moves one square in any direction
-        return 1;
+      // King moves one square in any direction
+      if ((abs((int)param_2 - (int)param_4) < 2) && (abs((int)param_3 - (int)param_5) < 2)) {
+        move_is_valid = 1;
       }
-      return 0;
+      break;
     case 'f': // White Queen
     case 'l': // Black Queen
-      if ((start_row == end_row) || (start_col == end_col)) { // Lateral move
-        return IsLateralClear(board_ptr, start_row, start_col, end_row, end_col);
-      } else { // Diagonal move
-        diff_row = custom_abs(end_row - start_row);
-        diff_col = custom_abs(end_col - start_col);
-        if (diff_row == diff_col) {
-          return IsDiagClear(board_ptr, start_row, start_col, end_row, end_col);
-        }
+      // Queen moves laterally or diagonally
+      if ((param_2 == param_4) || (param_3 == param_5)) { // Lateral move
+        move_is_valid = IsLateralClear(board, param_2, param_3, param_4, param_5);
       }
-      return 0;
-    default:
-      return 0; // Should not be reached due to initial range check, but safe fallback.
+      else if (abs((int)param_4 - (int)param_2) == abs((int)param_5 - (int)param_3)) { // Diagonal move
+        move_is_valid = IsDiagClear(board, param_2, param_3, param_4, param_5);
+      }
+      break;
+    // No 'default' case is strictly needed here because the initial `source_piece < 'a' || source_piece > 'l'`
+    // check ensures `source_piece` is one of the handled characters.
   }
+  return move_is_valid;
 }
 
 // Function: AcceptMove
-// param_1 is now char (*board_ptr)[8]
-int AcceptMove(char (*board_ptr)[8], char *out_src_row, char *out_src_col, char *out_dest_row, char *out_dest_col) {
-  char input_buffer[16]; // Buffer for user input: max 15 chars + null terminator
-  char *move_part1 = NULL;
-  char *move_part2 = NULL;
-  unsigned int i;
-  const char *valid_digits = "01234567"; // String of valid digit characters for board coordinates
+// Parses user input for a chess move (e.g., "1,2 3,4").
+// Returns 1 on successful parsing, 0 if user wants to exit.
+// Output parameters param_2, param_3, param_4, param_5 will contain the parsed coordinates.
+// The first parameter (int param_1 in original) was unused and has been removed.
+int AcceptMove(char *param_2, char *param_3, char *param_4, char *param_5) {
+  char *dest_coords_ptr;    // Pointer to the destination part of the input string (e.g., "3,4")
+  char *source_coords_ptr;  // Pointer to the source part of the input string (e.g., "1,2")
+  unsigned int i;           // Loop counter for parsing input string
+  const char *valid_coords = "01234567"; // String containing valid coordinate characters
 
-  while (1) { // Loop until a valid move is accepted or "quit" command is entered
-    printf("%s", PROMPT_MSG);
+  while (1) { // Loop indefinitely until a valid move or exit command is received
+    printf("%s", DAT_00014050); // Prompt user: "Enter move: "
     
-    // Clear buffer before receiving input
-    memset(input_buffer, 0, sizeof(input_buffer));
-
-    // Receive input from the user
-    if (receive_until(input_buffer, '\n', sizeof(input_buffer)) == 0) {
-      _terminate(1); // Terminate if input reception fails
+    memset(input_buffer_global, 0, sizeof(input_buffer_global)); // Clear input buffer
+    
+    if (receive_until() == 0) { // Read input into `input_buffer_global`
+      _terminate(); // If `receive_until` fails, terminate the program
+    }
+    
+    // Remove trailing newline character if present (from fgets)
+    size_t input_len = strlen(input_buffer_global);
+    if (input_len > 0 && input_buffer_global[input_len - 1] == '\n') {
+      input_buffer_global[input_len - 1] = '\0';
+      input_len--; // Adjust length after removing newline
     }
 
     // Check for "quit" command
-    if (strcmp(input_buffer, QUIT_CMD) == 0) {
-      return 0; // Signal to the caller that the user wants to quit
-    }
-    
-    // Check for "print" command
-    if (strcmp(input_buffer, "print") == 0) {
-        PrintBoard(); // Display the current board state
-        continue; // Ask for input again
+    if (strcmp(input_buffer_global, DAT_00014055) == 0) {
+      PrintBoard(); // Print board state and then continue to ask for a new move
+      continue;
     }
 
-    // Validate input length: Expecting "R,C R,C" format, which is 7 characters long
-    if (strlen(input_buffer) != 7) {
+    // Check for "exit" command
+    if (strcmp(input_buffer_global, DAT_00014057) == 0) {
+      return 0; // Indicate program exit
+    }
+
+    // Validate minimum input length (e.g., "1,2 3,4" is 7 characters)
+    if (input_len < 7) {
       puts("incorrect input");
-      puts(INVALID_FORMAT_MSG);
-      continue; // Ask for input again
+      puts("Not a legal move format (too short)");
+      continue;
     }
 
-    // Find the space separator to split the input into two parts (source and destination)
-    move_part1 = input_buffer; // First part starts at the beginning of the buffer
-    move_part2 = NULL;         // Initialize second part pointer to NULL
-    for (i = 0; i < strlen(input_buffer); ++i) {
-      if (input_buffer[i] == ' ') {
-        input_buffer[i] = '\0'; // Null-terminate the first part at the space
-        move_part2 = &input_buffer[i + 1]; // Second part starts after the space
-        break; // Found the space, exit loop
+    // Parse input string to find the space separator between source and destination coordinates
+    dest_coords_ptr = NULL; 
+    source_coords_ptr = NULL;
+    i = 0; 
+    
+    while (i < input_len) {
+      if (input_buffer_global[i] == ' ') {
+        input_buffer_global[i] = '\0'; // Null-terminate the source part
+        source_coords_ptr = input_buffer_global; // Source is the beginning of the buffer
+        dest_coords_ptr = &input_buffer_global[i + 1]; // Destination starts after the space
+        break;
+      }
+      i++;
+    }
+
+    // If no space was found or parsing error, it's an invalid format
+    if (source_coords_ptr == NULL || dest_coords_ptr == NULL) {
+      puts("incorrect input");
+      puts("Not a legal move format (missing space)");
+      continue;
+    }
+
+    // Validate source coordinates format (e.g., "1,2")
+    // Checks: first char is a digit, second is ',', third is a digit, total length is 3.
+    if (strchr(valid_coords, source_coords_ptr[0]) != NULL &&
+        source_coords_ptr[1] == ',' &&
+        strchr(valid_coords, source_coords_ptr[2]) != NULL &&
+        strlen(source_coords_ptr) == 3)
+    {
+      *param_2 = source_coords_ptr[0] - '0'; // Convert char digit to int row
+      *param_3 = source_coords_ptr[2] - '0'; // Convert char digit to int col
+
+      // Validate destination coordinates format (e.g., "3,4")
+      // Same checks as for source coordinates.
+      if (strchr(valid_coords, dest_coords_ptr[0]) != NULL &&
+          dest_coords_ptr[1] == ',' &&
+          strchr(valid_coords, dest_coords_ptr[2]) != NULL &&
+          strlen(dest_coords_ptr) == 3)
+      {
+        *param_4 = dest_coords_ptr[0] - '0'; // Convert char digit to int dest row
+        *param_5 = dest_coords_ptr[2] - '0'; // Convert char digit to int dest col
+        return 1; // Valid move successfully parsed
       }
     }
 
-    if (move_part2 == NULL) { // No space found, input is malformed
-      puts("incorrect input");
-      puts(INVALID_FORMAT_MSG);
-      continue; // Ask for input again
-    }
-
-    // Validate and parse the first part (source coordinates)
-    // Expected format: "R,C" where R and C are single digits '0'-'7'
-    if (strchr(valid_digits, move_part1[0]) == NULL || // Row char must be a digit
-        move_part1[1] != ',' ||                        // Second char must be a comma
-        strchr(valid_digits, move_part1[2]) == NULL || // Column char must be a digit
-        strlen(move_part1) != 3) {                     // Part length must be exactly 3
-      puts("incorrect input");
-      puts(INVALID_FORMAT_MSG);
-      continue; // Ask for input again
-    }
-    
-    // Convert character digits to integer values and store in output parameters
-    *out_src_row = move_part1[0] - '0';
-    *out_src_col = move_part1[2] - '0';
-
-    // Validate and parse the second part (destination coordinates)
-    // Expected format: "R,C" where R and C are single digits '0'-'7'
-    if (strchr(valid_digits, move_part2[0]) == NULL || // Row char must be a digit
-        move_part2[1] != ',' ||                        // Second char must be a comma
-        strchr(valid_digits, move_part2[2]) == NULL || // Column char must be a digit
-        strlen(move_part2) != 3) {                     // Part length must be exactly 3
-      puts("incorrect input");
-      puts(INVALID_FORMAT_MSG);
-      continue; // Ask for input again
-    }
-
-    // Convert character digits to integer values and store in output parameters
-    *out_dest_row = move_part2[0] - '0';
-    *out_dest_col = move_part2[2] - '0';
-
-    return 1; // Valid move parsed successfully
+    // If any validation fails, print error messages and loop again
+    puts("incorrect input");
+    puts("Not a legal move format");
   }
 }
 
 // Function: MakeMove
-// param_1 is now char (*board_ptr)[8]
-void MakeMove(char (*board_ptr)[8], char start_row, char start_col, char end_row, char end_col) {
+// param_1 is assumed to be a pointer to the start of an 8x8 char board.
+void MakeMove(char *board, char param_2, char param_3, char param_4, char param_5) {
   char temp_piece;
   
-  if (board_ptr[end_row][end_col] == '\0') { // Destination square is empty, simply move the piece
-    board_ptr[end_row][end_col] = board_ptr[start_row][start_col];
-    board_ptr[start_row][start_col] = '\0'; // Clear the source square
+  // Get pointers to the source and destination squares on the board
+  char *source_square = &board[param_2 * 8 + param_3];
+  char *dest_square = &board[param_4 * 8 + param_5];
+
+  if (*dest_square == '\0') { // Destination square is empty (standard move)
+    *dest_square = *source_square; // Move piece to destination
+    *source_square = '\0';        // Clear source square
   }
-  else { // Destination square has a piece, perform a swap (as per original logic)
-         // Note: In typical chess, this would be a capture where the source piece replaces the
-         // destination piece, and the source square is cleared. The original code performs a swap.
-    temp_piece = board_ptr[end_row][end_col];
-    board_ptr[end_row][end_col] = board_ptr[start_row][start_col];
-    board_ptr[start_row][start_col] = temp_piece; // Swap the pieces
+  else { // Destination square has a piece (original logic performs a swap)
+    // Note: In standard chess, this would be a capture, meaning the destination piece
+    // is removed. The original snippet performs a swap. Keeping original behavior.
+    temp_piece = *dest_square;      // Store destination piece
+    *dest_square = *source_square; // Move source piece to destination
+    *source_square = temp_piece;   // Put destination piece back on source square (swap)
   }
-  return;
 }
 
-// --- Main function to demonstrate usage ---
+// --- Main function to demonstrate usage and make code compilable ---
 int main() {
-    // Initialize board with empty squares
-    memset(board, '\0', sizeof(board));
+    char board[8][8]; // Example 8x8 chess board
     
-    // Setup initial chess pieces for demonstration
-    // White pieces (using 'a' through 'f' characters)
-    board[0][0] = 'd'; board[0][1] = 'b'; board[0][2] = 'c'; board[0][3] = 'f'; // Rook, Knight, Bishop, Queen
-    board[0][4] = 'e'; board[0][5] = 'c'; board[0][6] = 'b'; board[0][7] = 'd'; // King, Bishop, Knight, Rook
-    for (int j = 0; j < 8; ++j) {
-        board[1][j] = 'a'; // White Pawns
+    // Initialize board with empty squares
+    for (int i = 0; i < 8; ++i) {
+        for (int j = 0; j < 8; ++j) {
+            board[i][j] = '\0';
+        }
     }
 
-    // Black pieces (using 'g' through 'l' characters)
-    board[7][0] = 'j'; board[7][1] = 'h'; board[7][2] = 'i'; board[7][3] = 'l'; // Rook, Knight, Bishop, Queen
-    board[7][4] = 'k'; board[7][5] = 'i'; board[7][6] = 'h'; board[7][7] = 'j'; // King, Bishop, Knight, Rook
-    for (int j = 0; j < 8; ++j) {
-        board[6][j] = 'g'; // Black Pawns
-    }
+    // Place some example pieces for demonstration
+    board[1][1] = 'a'; // White pawn at (1,1)
+    board[6][6] = 'g'; // Black pawn at (6,6)
+    board[0][0] = 'd'; // White rook at (0,0)
+    board[7][7] = 'j'; // Black rook at (7,7)
+    board[0][2] = 'c'; // White bishop at (0,2)
+    board[7][5] = 'i'; // Black bishop at (7,5)
+    board[0][1] = 'b'; // White knight at (0,1)
+    board[7][6] = 'h'; // Black knight at (7,6)
+    board[0][3] = 'f'; // White queen at (0,3)
+    board[7][4] = 'l'; // Black queen at (7,4)
+    board[0][4] = 'e'; // White king at (0,4)
+    board[7][3] = 'k'; // Black king at (7,3)
 
+    char from_row, from_col, to_row, to_col;
+    int move_accepted;
+
+    printf("Welcome to Simple Chess!\n");
+    printf("Current player: %s\n", CURR_PLAYER);
     PrintBoard(); // Display initial board state
 
-    char src_row, src_col, dest_row, dest_col;
-    int move_status;
-
-    // Main game loop
     while (1) {
-        move_status = AcceptMove(board, &src_row, &src_col, &dest_row, &dest_col);
-        if (move_status == 0) { // User entered "quit"
-            printf("Quitting game.\n");
+        // Accept user input for a move
+        move_accepted = AcceptMove(&from_row, &from_col, &to_row, &to_col);
+
+        if (move_accepted == 0) { // User entered "exit"
+            printf("Exiting game.\n");
             break;
         }
 
-        printf("Attempting move from (%d,%d) to (%d,%d)\n", src_row, src_col, dest_row, dest_col);
+        printf("Attempting move from (%d,%d) to (%d,%d)\n", from_row, from_col, to_row, to_col);
 
-        if (IsValidMove(board, src_row, src_col, dest_row, dest_col)) {
-            printf("Move is valid. Making move.\n");
-            MakeMove(board, src_row, src_col, dest_row, dest_col);
-            PrintBoard(); // Display board after valid move
-
-            // Switch current player for the next turn
+        // Validate the move
+        if (IsValidMove((char *)board, from_row, from_col, to_row, to_col)) {
+            MakeMove((char *)board, from_row, from_col, to_row, to_col);
+            printf("Move successful!\n");
+            PrintBoard(); // Display board after successful move
+            
+            // Switch current player for next turn
             if (strcmp(CURR_PLAYER, "WHITE") == 0) {
                 strcpy(CURR_PLAYER, "BLACK");
             } else {
                 strcpy(CURR_PLAYER, "WHITE");
             }
+            printf("Current player: %s\n", CURR_PLAYER);
         } else {
-            printf("Invalid move. Try again.\n");
+            printf("Invalid move. Please try again.\n");
         }
     }
 

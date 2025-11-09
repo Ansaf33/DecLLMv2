@@ -1,190 +1,236 @@
-#include <stdint.h> // For uint32_t
-#include <stdio.h>  // For NULL, EOF, printf (used in receive_all for error)
-#include <unistd.h> // For write, read
-#include <string.h> // For memset (to clear gBoard if needed)
+#include <stdio.h>   // For printf (in mock transmit/receive)
+#include <stdlib.h>  // For exit
+#include <unistd.h>  // For write, read (in mock transmit/receive)
 
-// Type redefinitions based on common decompiled types
-typedef uint32_t uint;
-typedef uint32_t undefined4;
-typedef char     undefined;
+// Type definitions based on typical decompiler output
+typedef unsigned int uint;
+typedef unsigned int undefined4; // Assuming 4-byte unsigned integer
+typedef char undefined;          // Assuming 1-byte character/byte
 
-// Global variables (assuming these are global based on the snippet)
-uint32_t gBoard[32];
-uint32_t DAT_0001417c; // Global variable
-uint32_t DAT_00014178; // Global variable
-uint32_t mask[32];     // Global array for bit masks
-uint32_t neg_mask[32]; // Global array for negative bit masks
+// Global variables
+uint gBoard[32]; // Assuming gBoard is an array of 32 unsigned integers
+static uint DAT_0001417c;
+static uint DAT_00014178;
+static uint mask[32];
+static uint neg_mask[32];
 
-// Function to initialize global masks
-void initialize_global_masks() {
+// Helper function to initialize masks
+static void initialize_masks(void) {
     for (int i = 0; i < 32; ++i) {
         mask[i] = 1U << i;
         neg_mask[i] = ~(1U << i);
     }
 }
 
-// Function: transmit_all
-// param_1: stream_id (e.g., 1 for stdout)
-// param_2: buffer (const char*)
-// param_3: size (uint32_t)
-uint32_t transmit_all(uint32_t stream_id, const char* buffer, uint32_t size) {
-  if (buffer == NULL || size == 0) {
-    return 0; // No data to transmit or invalid buffer
-  }
-
-  uint32_t total_transmitted = 0;
-  while (total_transmitted < size) {
-    ssize_t transmitted = write(stream_id, buffer + total_transmitted, size - total_transmitted);
-    if (transmitted <= 0) { // Error or nothing written
-      // If some bytes were already transmitted, return them. Otherwise, return 0.
-      if (total_transmitted > 0) return total_transmitted;
-      return 0;
+// Mock function for transmit. Implement actual I/O or desired behavior.
+// handle: file descriptor or custom handle (e.g., 1 for stdout)
+// buffer: pointer to data to send
+// max_bytes_to_send: maximum number of bytes to attempt to send
+// actual_sent_bytes: pointer to an integer to store the actual number of bytes sent
+// Returns 0 on success, non-zero on error.
+int transmit(uint handle, char* buffer, uint max_bytes_to_send, int* actual_sent_bytes) {
+    if (handle == 1) { // Assuming handle 1 corresponds to stdout
+        ssize_t sent = write(STDOUT_FILENO, buffer, max_bytes_to_send);
+        if (sent == -1) {
+            *actual_sent_bytes = 0;
+            return -1; // Error
+        }
+        *actual_sent_bytes = (int)sent;
+        return 0; // Success
     }
-    total_transmitted += transmitted;
-  }
-  return total_transmitted; // Return total bytes transmitted (should be 'size' if successful)
+    // For other handles, provide mock behavior or actual implementation
+    *actual_sent_bytes = (int)max_bytes_to_send; // Assume full send for simplicity
+    return 0;
+}
+
+// Mock function for receive. Implement actual I/O or desired behavior.
+// handle: file descriptor or custom handle (e.g., 0 for stdin)
+// buffer: pointer to buffer to store received data
+// max_bytes_to_receive: maximum number of bytes to attempt to receive
+// actual_received_bytes: pointer to an integer to store the actual number of bytes received
+// Returns 0 on success, non-zero on error.
+int receive(uint handle, char* buffer, uint max_bytes_to_receive, int* actual_received_bytes) {
+    if (handle == 0) { // Assuming handle 0 corresponds to stdin
+        ssize_t received = read(STDIN_FILENO, buffer, max_bytes_to_receive);
+        if (received == -1) {
+            *actual_received_bytes = 0;
+            return -1; // Error
+        }
+        *actual_received_bytes = (int)received;
+        return 0; // Success
+    }
+    // For other handles, provide mock behavior or actual implementation
+    if (max_bytes_to_receive > 0) {
+        buffer[0] = '\n'; // Default mock input, change as needed for testing
+        *actual_received_bytes = 1;
+    } else {
+        *actual_received_bytes = 0;
+    }
+    return 0;
+}
+
+// Function: transmit_all
+uint transmit_all(uint handle, char* buffer, uint total_bytes_to_send) {
+    int current_transmitted_bytes;
+    uint total_transmitted_bytes = 0;
+
+    if (buffer == NULL || total_bytes_to_send == 0) {
+        return 0;
+    }
+
+    do {
+        int ret_code = transmit(handle, buffer + total_transmitted_bytes, total_bytes_to_send - total_transmitted_bytes, &current_transmitted_bytes);
+        if (ret_code != 0 || current_transmitted_bytes == 0) {
+            return 0; // Error or no bytes transmitted in this call
+        }
+        total_transmitted_bytes += current_transmitted_bytes;
+    } while (total_transmitted_bytes < total_bytes_to_send);
+
+    return total_bytes_to_send; // Returns the initially requested amount if successful
 }
 
 // Function: receive_all
-// param_1: stream_id (e.g., 0 for stdin)
-// param_2: buffer (char*)
-// param_3: size (uint32_t)
-uint32_t receive_all(uint32_t stream_id, char* buffer, uint32_t size) {
-  if (buffer == NULL || size == 0) {
-    return 0; // No buffer or nothing to receive
-  }
+uint receive_all(uint handle, char* buffer, uint total_bytes_to_receive) {
+    int current_received_bytes;
+    uint total_received_bytes = 0;
 
-  uint32_t total_received = 0;
-  while (total_received < size) {
-    ssize_t received = read(stream_id, buffer + total_received, size - total_received);
-    if (received <= 0) { // Error or EOF
-      // If EOF and some bytes were already read, return what was read.
-      // If EOF immediately, or error, return 0.
-      if (total_received > 0) return total_received;
-      return 0;
+    if (buffer == NULL || total_bytes_to_receive == 0) {
+        return 0;
     }
-    total_received += received;
-  }
-  return total_received; // Return total bytes received (should be 'size' if successful)
+
+    do {
+        int ret_code = receive(handle, buffer + total_received_bytes, total_bytes_to_receive - total_received_bytes, &current_received_bytes);
+        if (ret_code != 0 || current_received_bytes == 0) {
+            return 0; // Error or no bytes received in this call
+        }
+        total_received_bytes += current_received_bytes;
+    } while (total_received_bytes < total_bytes_to_receive);
+
+    return total_bytes_to_receive; // Returns the initially requested amount if successful
 }
 
 // Function: rotate_right
-void rotate_right(int param_1) {
-  // Reduces intermediate variables by directly using bitwise operations
-  if ((param_1 >= 0) && (param_1 < 32)) { // 0x20 is 32
-    gBoard[param_1] = (gBoard[param_1] << 1) | (gBoard[param_1] >> 31); // Rotate 32-bit left
-  }
+void rotate_right(int column_idx) { // Renamed param_1 to column_idx for clarity
+    if (column_idx >= 0 && column_idx < 32) { // 0x20 is 32
+        // This operation performs a left rotate by 1 bit: (val << 1) | (val >> 31)
+        gBoard[column_idx] = (gBoard[column_idx] << 1) | (gBoard[column_idx] >> 31);
+    }
 }
 
 // Function: rotate_down
-void rotate_down(int param_1) {
-  uint32_t uVar1; // Kept as it holds DAT_0001417c for the loop's initial state
-  int row_idx; // Renamed from local_c for clarity
-  
-  uVar1 = DAT_0001417c;
-  if ((param_1 >= 0) && (param_1 < 32)) { // 0x20 is 32
-    for (row_idx = 31; row_idx > 0; row_idx--) { // 0x1f is 31
-      gBoard[row_idx] = (gBoard[row_idx] & neg_mask[param_1]) | (mask[param_1] & gBoard[row_idx - 1]);
+void rotate_down(int column_idx) { // Renamed param_1 to column_idx for clarity
+    uint first_row_bit_for_column = DAT_0001417c;
+
+    if (column_idx >= 0 && column_idx < 32) {
+        // Iterate from the second to last row (31) up to the first row (1)
+        for (int row = 31; row > 0; --row) {
+            // Update the bit at column_idx in the current row (row)
+            // It takes the bit from the row above (row - 1)
+            gBoard[row] = (gBoard[row] & neg_mask[column_idx]) | (mask[column_idx] & gBoard[row - 1]);
+        }
+        // Update the bit at column_idx in the top row (gBoard[0])
+        // It takes the bit from 'first_row_bit_for_column' (DAT_0001417c)
+        gBoard[0] = (mask[column_idx] & first_row_bit_for_column) | (gBoard[0] & neg_mask[column_idx]);
     }
-    // The original `gBoard` here refers to `gBoard[0]` due to array decay/decompiler interpretation
-    gBoard[0] = (mask[param_1] & uVar1) | (gBoard[0] & neg_mask[param_1]);
-  }
 }
 
 // Function: printBoard
 void printBoard(void) {
-  char board_buffer[1088]; // Buffer for board representation, local_458
-  int buffer_idx = 0; // Renamed from local_18
-  int col_idx; // Renamed from local_14
-  int row_idx; // Renamed from local_10
-  
-  for (row_idx = 0; row_idx < 32; row_idx++) { // 0x20 is 32
-    for (col_idx = 0; col_idx < 32; col_idx++) { // 0x20 is 32
-      // Reduced puVar1 intermediate variable by direct array access
-      if ((mask[col_idx] & gBoard[row_idx]) == 0) {
-        board_buffer[buffer_idx++] = '.'; // 0x2e is '.'
-      } else {
-        board_buffer[buffer_idx++] = '1'; // 0x31 is '1'
-      }
+    char buffer[1088]; // 32 rows * 32 cols + 32 newlines + 1 null terminator = 1057. 1088 is safe.
+    int buffer_idx = 0;
+
+    for (int row = 0; row < 32; ++row) {
+        for (int col = 0; col < 32; ++col) {
+            if ((mask[col] & gBoard[row]) == 0) {
+                buffer[buffer_idx++] = '.';
+            } else {
+                buffer[buffer_idx++] = '1';
+            }
+        }
+        buffer[buffer_idx++] = '\n';
     }
-    board_buffer[buffer_idx++] = '\n'; // 10 is '\n'
-  }
-  board_buffer[buffer_idx] = '\0'; // Null-terminate the string
-  transmit_all(1, board_buffer, buffer_idx); // Transmit to stdout (fd 1)
+    buffer[buffer_idx] = '\0'; // Null-terminate the string
+
+    // Transmit the board representation (handle 1 typically means stdout)
+    transmit_all(1, buffer, buffer_idx);
 }
 
 // Function: initBoard
 void initBoard(void) {
-  DAT_0001417c = 0xffffffff;
-  DAT_00014178 = 0xffffffff;
-  // gBoard is implicitly zero-initialized as a global.
-  // If the game requires a non-empty starting board, gBoard must be explicitly
-  // initialized here or in main. Assuming current logic is intended.
+    // Initialize DAT_0001417c and DAT_00014178 to all bits set
+    DAT_0001417c = 0xffffffff;
+    DAT_00014178 = 0xffffffff;
+
+    // Initialize the gBoard array (optional, but good practice)
+    for (int i = 0; i < 32; ++i) {
+        gBoard[i] = 0; // Or some other default value
+    }
+    // Example: set a specific bit for testing
+    gBoard[0] = 1; // Set the LSB of the first row
+    gBoard[1] = 2; // Set the second bit of the second row
 }
 
 // Function: remove_bits
 void remove_bits(void) {
-  if (((DAT_0001417c & 3) == 3) && ((DAT_00014178 & 3) == 3)) {
-    DAT_0001417c &= ~3; // 0xfffffffc is ~3
-    DAT_00014178 &= ~3;
-  }
+    // If the last two bits of both DAT_0001417c and DAT_00014178 are set (i.e., value 3)
+    if ((DAT_0001417c & 0x3) == 0x3 && (DAT_00014178 & 0x3) == 0x3) {
+        // Clear the last two bits of both variables
+        DAT_0001417c &= ~0x3; // Equivalent to DAT_0001417c & 0xfffffffc
+        DAT_00014178 &= ~0x3; // Equivalent to DAT_00014178 & 0xfffffffc
+    }
 }
 
 // Function: makeMove
-void makeMove(uint32_t param_1) { // Changed param_1 to uint32_t to match usage
-  if ((param_1 & 32) == 0) { // 0x20 is 32
-    rotate_down(param_1 & 31); // 0x1f is 31
-  } else {
-    rotate_right(param_1 & 31); // 0x1f is 31
-  }
-  remove_bits();
+void makeMove(uint move_param) { // Renamed param_1 to move_param for clarity
+    if ((move_param & 32) == 0) { // If the 6th bit (0x20) is not set
+        rotate_down(move_param & 31); // Use lower 5 bits (0x1f) as index for rotate_down
+    } else { // If the 6th bit (0x20) is set
+        rotate_right(move_param & 31); // Use lower 5 bits (0x1f) as index for rotate_right
+    }
+    remove_bits();
 }
 
 // Function: isWinner
-uint32_t isWinner(void) { // Changed return type to uint32_t
-  int row_idx = 0; // Renamed from local_8
-  
-  while( row_idx < 32 ) { // 0x1f < local_8 means local_8 >= 0x20 (32)
-    if (gBoard[row_idx] != 0) {
-        return 0; // Not a winner if any row is non-zero
+undefined4 isWinner(void) {
+    // Iterate through all rows of the board
+    for (int row = 0; row < 32; ++row) {
+        if (gBoard[row] != 0) {
+            return 0; // Found a non-zero row, so not a winner
+        }
     }
-    row_idx++;
-  }
-  return 1; // All rows are zero, so it's a winner
+    return 1; // All rows are zero, so it's a winner
 }
 
 // Function: main
-int main(void) { // Changed return type to int
-  int status_code; // Renamed from iVar1
-  char move_char; // Renamed from local_11
-  // local_10 = &stack0x00000004; -- Removed assembly-like statement
-  
-  initialize_global_masks(); // Initialize mask arrays
-  initBoard();
+int main(void) {
+    char input_char;
 
-  while(1) { // Loop indefinitely until a break condition
-    status_code = isWinner();
-    if (status_code != 0) {
-      // (*(code *)0x0)(); -- Removed call to address 0 (causes segmentation fault)
-      transmit_all(1, "You Win\n", 8); // Transmit "You Win\n"
-      return 0; // Exit on win
+    initialize_masks(); // Initialize global mask arrays
+    initBoard();
+
+    while (1) {
+        if (isWinner()) {
+            transmit_all(1, "You Win\n", 8); // Send "You Win\n" to stdout
+            exit(0); // Exit successfully
+        }
+
+        // Receive one byte of input (handle 0 typically means stdin)
+        if (receive_all(0, &input_char, 1) != 1) {
+            // If receive fails or doesn't receive 1 byte, break loop
+            break;
+        }
+
+        // Check for a special quit character (e.g., -1 or 0xFF if char is unsigned)
+        // Assuming -1 is a sentinel value for quitting, perhaps from an EOF or error state.
+        // For interactive input, '\n' or 'q' might be more practical.
+        if (input_char == -1 || input_char == 'q') {
+            printBoard();
+            return 0; // Exit successfully
+        }
+
+        makeMove((uint)input_char); // Cast input char to uint for makeMove
     }
-    
-    // Read one character (move) from stdin (fd 0)
-    status_code = receive_all(0, &move_char, 1);
-    if (status_code != 1) { // If receive_all did not read exactly 1 byte (e.g., EOF or error)
-      break; // Exit loop
-    }
-    
-    // Check for special quit character (-1, usually 0xFF if char is signed)
-    if (move_char == (char)-1) {
-      printBoard();
-      return 0; // Exit on quit character
-    }
-    
-    makeMove((uint32_t)move_char); // Cast char to uint32_t for makeMove
-  }
-  
-  printBoard(); // Print final board state
-  return 0; // Exit cleanly
+
+    printBoard(); // Print board before exiting if loop breaks due to receive error
+    return 0; // Exit successfully
 }

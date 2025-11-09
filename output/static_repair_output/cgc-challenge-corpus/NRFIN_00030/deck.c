@@ -1,140 +1,125 @@
-#include <stdlib.h> // For calloc, rand
-#include <stdint.h> // For uint32_t
+#include <stdlib.h> // For calloc, rand, srand
+#include <stdint.h> // For uint32_t, uint8_t
+#include <stdbool.h> // For bool
+#include <time.h>   // For time (to seed PRNG, though not strictly part of snippet fix)
 
-// Define custom types to match the decompiled output's likely intent
-typedef unsigned char byte;
-typedef uint32_t undefined4;
-
-// --- Helper/Stub Functions (not part of the original snippet, but needed for compilation) ---
-
-// Function: create_card
-// Assumed to encode suit and rank into a single 4-byte value (uint32_t)
-static inline undefined4 create_card(byte suit, byte rank) {
-    // Simple encoding: (suit << 8) | rank
-    // Assuming suit is 1-4 and rank is 1-13
-    return (undefined4)((suit << 8) | rank);
+// --- Placeholder functions (not provided in original snippet, assuming their signatures and purpose) ---
+// Assuming a card is represented as a 32-bit unsigned integer
+// For example, higher bits for suit, lower bits for rank
+uint32_t create_card(int suit, int rank) {
+    // Example implementation: (suit << 8) | rank
+    // Assuming suit is 1-4, rank is 1-13
+    return (uint32_t)((suit << 8) | rank);
 }
 
-// Function: prng_get_next
-// Assumed to return a pseudo-random integer
-static inline int prng_get_next(void) {
-    return rand(); // Using rand() from stdlib.h
+// Assuming a Pseudo-Random Number Generator function
+// Returns an integer, likely used for modulo operations to get an index
+int prng_get_next(void) {
+    // For compilability and basic functionality, use rand().
+    // In a real application, srand() should be called once, e.g., in main.
+    return rand();
 }
+// --- End of placeholder functions ---
 
-// --- Fixed Functions from the Snippet ---
+// Define the total number of cards in a standard deck
+#define DECK_SIZE 52
 
 // Function: create_deck
-char * create_deck(void) {
-  char *deck; // Renamed pcVar1 to deck
-  
-  // Allocate memory for the deck.
-  // The original calloc(0xd4, in_stack_ffffffd8) with uninitialized size is a bug.
-  // 0xd4 (212 decimal) is likely the total size in bytes.
-  // Structure: 1 byte for card count (deck[0]), followed by 52 uint32_t card values.
-  // This implies 3 bytes of padding after the count before cards start,
-  // to align card values on a 4-byte boundary, as indicated by `+ 4`.
-  deck = (char *)calloc(1, 0xd4); // Allocate 212 bytes
-  if (deck == NULL) {
-      return NULL;
-  }
-
-  // Card count is implicitly 0 due to calloc, but explicit assignment for clarity.
-  // deck[0] = 0; 
-  
-  unsigned char card_idx = 0; // Renamed local_d
-  // Outer loop for suits (1 to 4)
-  for (unsigned char suit = 1; suit < 5; suit++) { // Renamed local_e
-    // Inner loop for ranks (1 to 13)
-    for (unsigned char rank = 1; rank < 14; rank++) { // Renamed local_f
-      undefined4 card_value = create_card(suit, rank); // Renamed uVar2
-      
-      // Store the card value at the correct offset.
-      // Offset 4 bytes for the card count and padding, then card_idx * sizeof(undefined4).
-      *((undefined4 *)(deck + 4 + card_idx * sizeof(undefined4))) = card_value;
-      
-      deck[0]++; // Increment card count stored at the first byte
-      card_idx++; // Increment the index for the next card
+// Allocates memory for a deck of cards and initializes it.
+// The first element (index 0) stores the current card count.
+// Cards are stored from index 1 to DECK_SIZE.
+uint32_t *create_deck(void) {
+    // Allocate space for DECK_SIZE cards + 1 element for the card count
+    uint32_t *deck = (uint32_t *)calloc(DECK_SIZE + 1, sizeof(uint32_t));
+    if (deck == NULL) {
+        return NULL; // Handle allocation failure
     }
-  }
-  return deck;
+
+    int card_index = 0; // Index for storing cards in the deck array (0 to DECK_SIZE - 1 for array access)
+    for (int suit = 1; suit <= 4; ++suit) { // Suits (e.g., 1-4)
+        for (int rank = 1; rank <= 13; ++rank) { // Ranks (e.g., 1-13)
+            deck[1 + card_index] = create_card(suit, rank); // Store cards from deck[1] onwards
+            card_index++;
+        }
+    }
+    // Set the initial count of cards in the deck
+    deck[0] = card_index; // Should be DECK_SIZE (52)
+
+    return deck;
 }
 
 // Function: shuffle_deck
-// param_1 is char* deck, param_2 is unsigned char seed_val
-undefined4 shuffle_deck(char *deck, byte seed_val) { // Renamed param_1, param_2 and types
-  if (deck == NULL) {
-    return 0xffffffe0; // Error: NULL deck pointer
-  }
-  
-  const int NUM_CARDS = 52; // 0x34 is 52 decimal
-
-  unsigned char idx1 = seed_val % NUM_CARDS; // Renamed local_d
-  unsigned char idx2 = 0; // Renamed local_e, initialized to 0
-
-  for (int i = 0; i < NUM_CARDS; i++) { // Renamed local_14 to i
-    // Original complex modulo expression simplified to (idx1 + i) % NUM_CARDS
-    idx1 = (idx1 + i) % NUM_CARDS;
-
-    int rand_val = prng_get_next(); // Renamed iVar2
-    
-    // Original complex modulo expression simplified to (idx2 + rand_val) % NUM_CARDS
-    idx2 = (idx2 + rand_val) % NUM_CARDS;
-    
-    if (idx1 != idx2) {
-      // Perform the card swap
-      // Cards start at offset 4, each card is sizeof(undefined4) bytes
-      undefined4 *card_ptr1 = (undefined4 *)(deck + 4 + idx1 * sizeof(undefined4));
-      undefined4 *card_ptr2 = (undefined4 *)(deck + 4 + idx2 * sizeof(undefined4));
-      
-      undefined4 temp_card = *card_ptr1; // Renamed uVar1
-      *card_ptr1 = *card_ptr2;
-      *card_ptr2 = temp_card;
+// Shuffles the cards in the deck using a simple swap method.
+// deck[0] is assumed to be the card count. Cards are from deck[1] to deck[deck[0]].
+// Returns 0 on success, -1 on error (e.g., null deck).
+int shuffle_deck(uint32_t *deck, uint8_t seed_offset) {
+    if (deck == NULL) {
+        return -1; // Original 0xffffffe0 likely indicated an error
     }
-  }
-  return 0; // Success
+
+    int current_card_count = deck[0];
+    if (current_card_count == 0) {
+        return 0; // Nothing to shuffle
+    }
+
+    int idx1 = seed_offset % current_card_count; // Initial index based on seed
+    int idx2; // Second index for swapping
+
+    for (int i = 0; i < current_card_count; ++i) {
+        // Calculate the first index for swapping (0 to current_card_count - 1)
+        idx1 = (idx1 + i) % current_card_count;
+
+        // Get a random number and calculate the second index for swapping
+        idx2 = (prng_get_next() + i) % current_card_count; // Use 'i' to introduce more variation
+
+        // Ensure indices are different before swapping
+        if (idx1 != idx2) {
+            // Swap cards at deck[1 + idx1] and deck[1 + idx2]
+            uint32_t temp_card = deck[1 + idx1];
+            deck[1 + idx1] = deck[1 + idx2];
+            deck[1 + idx2] = temp_card;
+        }
+    }
+    return 0; // Success
 }
 
 // Function: get_shuffled_deck
-// param_1 is unsigned char seed_val
-char * get_shuffled_deck(byte seed_val) { // Return type changed to char*, param_1 type changed
-  char *deck = create_deck(); // Renamed uVar1
-  if (deck != NULL) { // Ensure deck was created successfully before shuffling
-    shuffle_deck(deck, seed_val);
-  }
-  return deck;
+// Creates a new deck and then shuffles it.
+// Returns a pointer to the shuffled deck, or NULL if creation fails.
+uint32_t *get_shuffled_deck(uint8_t seed_offset) {
+    uint32_t *deck = create_deck();
+    if (deck != NULL) {
+        shuffle_deck(deck, seed_offset);
+    }
+    return deck;
 }
 
 // Function: pop
-// param_1 is char* deck
-undefined4 pop(char *deck) { // param_1 type changed to char*
-  if (deck == NULL) {
-    return 0; // Error: NULL deck pointer
-  }
-  else if (deck[0] == 0) { // Check if deck is empty (card count is 0)
-    return 0; // Deck is empty, no card to pop
-  }
-  else {
-    deck[0]--; // Decrement card count
-    
-    // Get the value of the card that was at the top (now at the new count index)
-    undefined4 card_value = *((undefined4 *)(deck + 4 + deck[0] * sizeof(undefined4)));
-    
-    // Mark the popped card's slot as empty (set to 0)
-    *((undefined4 *)(deck + 4 + deck[0] * sizeof(undefined4))) = 0;
-    
-    return card_value;
-  }
+// Removes and returns the top card from the deck.
+// deck[0] is assumed to be the current card count.
+// Returns the card value, or 0 if the deck is null or empty.
+uint32_t pop(uint32_t *deck) {
+    if (deck == NULL || deck[0] == 0) {
+        return 0; // Return 0 for null or empty deck
+    }
+
+    // Decrement the card count
+    deck[0]--;
+    // Get the card from the new top of the deck (which was the previous top)
+    uint32_t card = deck[deck[0] + 1];
+    // Zero out the slot where the card was
+    deck[deck[0] + 1] = 0; // Mark the slot as empty (optional, but consistent with original)
+
+    return card;
 }
 
 // Function: is_deck_empty
-undefined4 is_deck_empty(char *deck) { // param_1 type changed to char*
-  if (deck == NULL) {
-    return 0xffffffe0; // Error: NULL deck pointer
-  }
-  else if (deck[0] == 0) { // Check if card count is 0
-    return 1; // Deck is empty
-  }
-  else {
-    return 0; // Deck is not empty
-  }
+// Checks if the deck is empty.
+// deck[0] is assumed to be the current card count.
+// Returns true if empty or deck is NULL, false otherwise.
+bool is_deck_empty(uint32_t *deck) {
+    if (deck == NULL) {
+        return true; // A null deck can be considered empty
+    }
+    return deck[0] == 0;
 }

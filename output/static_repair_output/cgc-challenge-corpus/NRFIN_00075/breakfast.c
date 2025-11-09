@@ -1,115 +1,115 @@
-#include <stdint.h>  // For uint32_t, uint8_t, uint16_t
-#include <stddef.h>  // For size_t, NULL
-#include <stdbool.h> // For bool (optional, but good practice)
+#include <stdint.h>   // For uint32_t, intptr_t, etc.
+#include <stddef.h>   // For size_t
+#include <stdbool.h>  // For bool (though not explicitly used, good practice)
+#include <stdio.h>    // For NULL if not already defined
 
-// --- Type Definitions ---
-// Original snippet used 'uint' for unsigned 32-bit integers.
-typedef uint32_t uint; 
-// Original snippet used 'undefined4' for unsigned 32-bit values.
-typedef uint32_t undefined4; 
-// Original snippet used 'byte' for unsigned 8-bit values.
-typedef uint8_t byte; 
+// Define specific types used in the snippet
+typedef uint32_t uint;        // `uint` is used for loop counters and `uVar4`.
+typedef uint32_t undefined4;  // `undefined4` is used for `param_1` and return values.
+typedef uint8_t byte;         // `byte` is used for `bVar2`.
 
-// Generic object pointer type for the "objects" managed by the system.
-// This is used for objects in liquids_ptrs, cereals_ptrs, toppings_ptrs.
-typedef void* ObjectPtr;
+// Function pointer types for object methods
+// For liquids/cereals:
+// Method at offset 0x10: takes object pointer, type, index. Returns int.
+typedef int (*LiquidCerealConstructMethod)(void* obj, undefined4 type, byte index);
+// Method at offset 0x14: takes object pointer. Returns void.
+typedef void (*LiquidCerealDestroyMethod)(void* obj);
 
-// Function pointer types for object methods (destructors and initializers).
-// These are inferred from the raw pointer arithmetic and calls in the original code.
-typedef void (*ObjectDestructor)(ObjectPtr);
-typedef int (*ObjectInitializer)(ObjectPtr, uint, byte); // Initializer for liquids/cereals/toppings
+// For toppings:
+// Method at offset 0x14: takes object pointer, type, index. Returns int.
+typedef int (*ToppingConstructMethod)(void* obj, undefined4 type, byte index);
+// Method at offset 0x18: takes object pointer. Returns void.
+typedef void (*ToppingDestroyMethod)(void* obj);
 
-// --- Global Variables (External Declarations) ---
-// These arrays are used to store pointers to the dynamically managed objects.
-// Their actual memory allocation would be external to this snippet.
-ObjectPtr liquids_ptrs[5];
-ObjectPtr cereals_ptrs[7];
-ObjectPtr toppings_ptrs[5];
+// Global arrays to store object pointers.
+// Using void* to store generic object pointers, assuming 32-bit architecture
+// where intptr_t and void* are interchangeable in size for address calculations.
+#define LIQUIDS_COUNT 5
+#define CEREALS_COUNT 7
+#define TOPPINGS_COUNT 5
 
-// --- External Function Declarations (Dummy implementations for compilation) ---
-// These functions are called in the snippet but are not defined within it.
-// They are assumed to be defined elsewhere and are declared here to allow compilation.
-void init_dispenser(void) { /* Dummy implementation */ }
-// The 'send' function's third argument 'in_stack_ffffffdc' appears to be a stack variable
-// used as a dummy argument. We'll use size_t and assume 0 for safety.
-void send(uint32_t arg1, void* arg2, size_t arg3, int arg4) { /* Dummy implementation */ }
-void dispense_bowl(void) { /* Dummy implementation */ }
-void completion_buzzer(void) { /* Dummy implementation */ }
+void* liquids_ptrs[LIQUIDS_COUNT] = {NULL};
+void* cereals_ptrs[CEREALS_COUNT] = {NULL};
+void* toppings_ptrs[TOPPINGS_COUNT] = {NULL};
 
-// Dispense liquid functions (specific implementations for each liquid type)
-void dispense_dairy_milk(void) { /* Dummy implementation */ }
-void dispense_dairy_cream(void) { /* Dummy implementation */ }
-void dispense_water(void) { /* Dummy implementation */ }
-void dispense_soy_milk(void) { /* Dummy implementation */ }
-void dispense_almond_milk(void) { /* Dummy implementation */ }
+// Placeholder function declarations (externs)
+// These functions are external to the provided snippet and must be defined elsewhere.
+// Their signatures are inferred from usage in the snippet.
+extern void init_dispenser(void);
+extern void send(uint32_t param1, void* param2, size_t param3, int param4);
+extern void dispense_bowl(void);
+extern void completion_buzzer(void);
 
-// Dispense cereal functions (specific implementations for each cereal type)
-void dispense_sugar_loops(void) { /* Dummy implementation */ }
-void dispense_maize_flakes(void) { /* Dummy implementation */ }
-void dispense_marshmallow_figuringes(void) { /* Dummy implementation */ }
-void dispense_chocolate_rice_pellets(void) { /* Dummy implementation */ }
-void dispense_oohs_of_oats(void) { /* Dummy implementation */ }
-void dispense_crunchy_puffs(void) { /* Dummy implementation */ }
-void dispense_frutiz_n_nuts(void) { /* Dummy implementation */ }
+extern void dispense_dairy_milk(void);
+extern void dispense_dairy_cream(void);
+extern void dispense_water(void);
+extern void dispense_soy_milk(void);
+extern void dispense_almond_milk(void);
 
-// Dispense topping functions (specific implementations for each topping type)
-void dispense_chocolate_drops(void) { /* Dummy implementation */ }
-void dispense_blueberries(void) { /* Dummy implementation */ }
-void dispense_berry_medley(void) { /* Dummy implementation */ }
-void dispense_sugar_cube(void) { /* Dummy implementation */ }
-void dispense_strawberries(void) { /* Dummy implementation */ }
+extern void dispense_sugar_loops(void);
+extern void dispense_maize_flakes(void);
+extern void dispense_marshmallow_figuringes(void);
+extern void dispense_chocolate_rice_pellets(void);
+extern void dispense_oohs_of_oats(void);
+extern void dispense_crunchy_puffs(void);
+extern void dispense_frutiz_n_nuts(void);
 
-// Constructor/Deserializer functions for objects.
-// These are assumed to allocate and initialize objects, returning a pointer to them.
-ObjectPtr constructor_liquids(void) { /* Dummy implementation */ return NULL; }
-ObjectPtr constructor_cereals(void) { /* Dummy implementation */ return NULL; }
-// Note: constructor_toppings has specific arguments in its call site.
-ObjectPtr constructor_toppings(uint type_param, int init_val) { /* Dummy implementation */ return NULL; } 
-// Deserialization functions are expected to read from the input buffer and advance the pointer.
-ObjectPtr deserialize_toppings(uint** input_ptr_ref) { /* Dummy implementation */ return NULL; }
-ObjectPtr deserialize_liquids(uint** input_ptr_ref) { /* Dummy implementation */ return NULL; }
-ObjectPtr deserialize_cereals(uint** input_ptr_ref) { /* Dummy implementation */ return NULL; }
-// Function to check inherited types, also expected to advance the input pointer.
-int check_inherited_types(uint type_param, uint** input_ptr_ref) { /* Dummy implementation */ return 0; }
+extern void dispense_chocolate_drops(void);
+extern void dispense_blueberries(void);
+extern void dispense_berry_medley(void);
+extern void dispense_sugar_cube(void);
+extern void dispense_strawberries(void);
+
+// Constructor functions return object pointers.
+extern void* constructor_liquids(void);
+extern void* constructor_cereals(void);
+extern void* constructor_toppings(undefined4 type, int initial_value);
+
+// Deserializer functions take `uint**` (pointer to a pointer to data buffer) and return object pointers.
+extern void* deserialize_liquids(uint** pp_data);
+extern void* deserialize_cereals(uint** pp_data);
+extern void* deserialize_toppings(uint** pp_data);
+
+extern int check_inherited_types(undefined4 type, uint** pp_data);
 
 
 // Function: reset_buffers
-// Clears all stored liquid, cereal, and topping pointers, calling their destructors.
 void reset_buffers(void) {
-  // Reset liquids
-  for (unsigned int i = 0; i < 5; ++i) {
+  uint i;
+  
+  // Liquids
+  for (i = 0; i < LIQUIDS_COUNT; ++i) {
     if (liquids_ptrs[i] != NULL) {
-      ObjectPtr obj = liquids_ptrs[i];
-      // Call destructor method, assumed to be at offset 0x14 from object base.
-      ((ObjectDestructor)((char*)obj + 0x14))(obj);
-      liquids_ptrs[i] = NULL; // Clear the pointer after destruction
+      // Call destructor method at offset 0x14 for liquid object
+      LiquidCerealDestroyMethod destroy_fn = (LiquidCerealDestroyMethod)((intptr_t)liquids_ptrs[i] + 0x14);
+      destroy_fn(liquids_ptrs[i]);
+      liquids_ptrs[i] = NULL;
     }
   }
-  // Reset cereals
-  for (unsigned int i = 0; i < 7; ++i) {
+  // Cereals
+  for (i = 0; i < CEREALS_COUNT; ++i) {
     if (cereals_ptrs[i] != NULL) {
-      ObjectPtr obj = cereals_ptrs[i];
-      // Call destructor method, assumed to be at offset 0x14 from object base.
-      ((ObjectDestructor)((char*)obj + 0x14))(obj);
-      cereals_ptrs[i] = NULL; // Clear the pointer after destruction
+      // Call destructor method at offset 0x14 for cereal object
+      LiquidCerealDestroyMethod destroy_fn = (LiquidCerealDestroyMethod)((intptr_t)cereals_ptrs[i] + 0x14);
+      destroy_fn(cereals_ptrs[i]);
+      cereals_ptrs[i] = NULL;
     }
   }
-  // Reset toppings
-  for (unsigned int i = 0; i < 5; ++i) {
+  // Toppings
+  for (i = 0; i < TOPPINGS_COUNT; ++i) {
     if (toppings_ptrs[i] != NULL) {
-      ObjectPtr obj = toppings_ptrs[i];
-      // Call destructor method, assumed to be at offset 0x18 from object base.
-      ((ObjectDestructor)((char*)obj + 0x18))(obj);
-      toppings_ptrs[i] = NULL; // Clear the pointer after destruction
+      // Call destructor method at offset 0x18 for topping object
+      ToppingDestroyMethod destroy_fn = (ToppingDestroyMethod)((intptr_t)toppings_ptrs[i] + 0x18);
+      destroy_fn(toppings_ptrs[i]);
+      toppings_ptrs[i] = NULL;
     }
   }
 }
 
 // Function: units_of_liquids
-// Counts the number of active liquid units.
 int units_of_liquids(void) {
   int count = 0;
-  for (unsigned int i = 0; i < 5; ++i) {
+  for (uint i = 0; i < LIQUIDS_COUNT; ++i) {
     if (liquids_ptrs[i] != NULL) {
       count++;
     }
@@ -118,10 +118,9 @@ int units_of_liquids(void) {
 }
 
 // Function: units_of_cereals
-// Counts the number of active cereal units.
 int units_of_cereals(void) {
   int count = 0;
-  for (unsigned int i = 0; i < 7; ++i) {
+  for (uint i = 0; i < CEREALS_COUNT; ++i) {
     if (cereals_ptrs[i] != NULL) {
       count++;
     }
@@ -130,10 +129,9 @@ int units_of_cereals(void) {
 }
 
 // Function: units_of_toppings
-// Counts the number of active topping units.
 int units_of_toppings(void) {
   int count = 0;
-  for (unsigned int i = 0; i < 5; ++i) {
+  for (uint i = 0; i < TOPPINGS_COUNT; ++i) {
     if (toppings_ptrs[i] != NULL) {
       count++;
     }
@@ -142,255 +140,248 @@ int units_of_toppings(void) {
 }
 
 // Function: dispense_liquid
-// Dispenses a liquid based on the provided ID.
-void dispense_liquid(uint param_1) {
+void dispense_liquid(undefined4 param_1) {
   switch(param_1) {
-  case 0:
-    dispense_dairy_milk();
-    break;
-  case 1:
-    dispense_dairy_cream();
-    break;
-  case 2:
-    dispense_water();
-    break;
-  case 3:
-    dispense_soy_milk();
-    break;
-  case 4:
-    dispense_almond_milk();
-    break; // Added missing break statement
+  case 0: dispense_dairy_milk(); break;
+  case 1: dispense_dairy_cream(); break;
+  case 2: dispense_water(); break;
+  case 3: dispense_soy_milk(); break;
+  case 4: dispense_almond_milk(); break;
   }
 }
 
 // Function: dispense_cereal
-// Dispenses a cereal based on the provided ID.
-void dispense_cereal(uint param_1) {
+void dispense_cereal(undefined4 param_1) {
   switch(param_1) {
-  case 0:
-    dispense_sugar_loops();
-    break;
-  case 1:
-    dispense_maize_flakes();
-    break;
-  case 2:
-    dispense_marshmallow_figuringes();
-    break;
-  case 3:
-    dispense_chocolate_rice_pellets();
-    break;
-  case 4:
-    dispense_oohs_of_oats();
-    break;
-  case 5:
-    dispense_crunchy_puffs();
-    break;
-  case 6:
-    dispense_frutiz_n_nuts();
-    break; // Added missing break statement
+  case 0: dispense_sugar_loops(); break;
+  case 1: dispense_maize_flakes(); break;
+  case 2: dispense_marshmallow_figuringes(); break;
+  case 3: dispense_chocolate_rice_pellets(); break;
+  case 4: dispense_oohs_of_oats(); break;
+  case 5: dispense_crunchy_puffs(); break;
+  case 6: dispense_frutiz_n_nuts(); break;
   }
 }
 
 // Function: dispense_toppings
-// Dispenses a topping based on the provided ID.
-void dispense_toppings(uint param_1) {
+void dispense_toppings(undefined4 param_1) {
   switch(param_1) {
-  case 0:
-    dispense_chocolate_drops();
-    break;
-  case 1:
-    dispense_blueberries();
-    break;
-  case 2:
-    dispense_berry_medley();
-    break;
-  case 3:
-    dispense_sugar_cube();
-    break;
-  case 4:
-    dispense_strawberries();
-    break; // Added missing break statement
+  case 0: dispense_chocolate_drops(); break;
+  case 1: dispense_blueberries(); break;
+  case 2: dispense_berry_medley(); break;
+  case 3: dispense_sugar_cube(); break;
+  case 4: dispense_strawberries(); break;
   }
 }
 
 // Function: dispense_breakfast
-// Orchestrates the dispensing process for a complete breakfast.
 void dispense_breakfast(void) {
-  // 'in_stack_ffffffdc' from original snippet, appears to be an unused or dummy size_t argument.
-  size_t dummy_send_arg = 0; 
+  size_t in_stack_ffffffdc = 0; // Placeholder, as its value is not provided
+  int units_count;
+  uint i;
   
   init_dispenser();
-  send(0x14000, (void *)0x4, dummy_send_arg, 0x11894);
+  send(0x14000, (void *)0x4, in_stack_ffffffdc, 0x11894);
   dispense_bowl();
-
-  if (units_of_cereals() != 0) {
-    send(0x14004, (void *)0x4, dummy_send_arg, 0x118b2);
-    for (unsigned int i = 0; i < 7; ++i) {
+  
+  units_count = units_of_cereals();
+  if (units_count != 0) {
+    send(0x14004, (void *)0x4, in_stack_ffffffdc, 0x118b2);
+    for (i = 0; i < CEREALS_COUNT; ++i) {
       if (cereals_ptrs[i] != NULL) {
-        dispense_cereal(i); // Assuming 'i' is the cereal ID
+        dispense_cereal(i);
       }
     }
   }
   
-  if (units_of_liquids() != 0) {
-    send(0x14008, (void *)0x4, dummy_send_arg, 0x118fe);
-    for (unsigned int i = 0; i < 5; ++i) {
+  units_count = units_of_liquids();
+  if (units_count != 0) {
+    send(0x14008, (void *)0x4, in_stack_ffffffdc, 0x118fe);
+    for (i = 0; i < LIQUIDS_COUNT; ++i) {
       if (liquids_ptrs[i] != NULL) {
-        dispense_liquid(i); // Assuming 'i' is the liquid ID
+        dispense_liquid(i);
       }
     }
   }
   
-  if (units_of_toppings() != 0) {
-    send(0x1400c, (void *)0x4, dummy_send_arg, 0x1194a);
-    for (unsigned int i = 0; i < 5; ++i) {
+  units_count = units_of_toppings();
+  if (units_count != 0) {
+    send(0x1400c, (void *)0x4, in_stack_ffffffdc, 0x1194a);
+    for (i = 0; i < TOPPINGS_COUNT; ++i) {
       if (toppings_ptrs[i] != NULL) {
-        dispense_toppings(i); // Assuming 'i' is the topping ID
+        dispense_toppings(i);
       }
     }
   }
-  send(0x14010, (void *)0x4, dummy_send_arg, 0x1194a); // Uses the last 'iVar2' value
+  
+  send(0x14010, (void *)0x4, in_stack_ffffffdc, 0x1194a);
   completion_buzzer();
 }
 
 // Function: process_plain_input
-// Processes a plain (non-serialized) input buffer to configure breakfast items.
-// param_1 is assumed to be a pointer to an input structure:
-// [arbitrary_data (4 bytes)] [data_length (uint16_t at offset 4)] [actual_data_start (at offset 6)]
-int process_plain_input(const char* param_1) { 
-  ObjectPtr new_obj = NULL;
-  int init_result = 0; // Corresponds to 'iVar5' in original, used for constructor return and constructor_toppings arg
-
-  // Calculate start and end pointers for the input data.
-  // Input format: [uint16_t header_val_ignored_offset_0_4] [uint16_t data_length_at_offset_4] [data_start_at_offset_6]
-  uint* current_input_ptr = (uint*)((char*)param_1 + 6);
-  uint* end_input_ptr = (uint*)((char*)current_input_ptr + *(uint16_t*)((char*)param_1 + 4));
+undefined4 process_plain_input(const void* param_1) {
+  char* current_data_byte_ptr;
+  char* end_data_byte_ptr;
+  void* obj_ptr;
+  int result = 0;
+  byte item_index;
+  uint item_type;
+  
+  // param_1 + 6 is the start of the data buffer
+  current_data_byte_ptr = (char*)((intptr_t)param_1 + 6);
+  // param_1 + 4 contains the length (ushort) of the data buffer
+  end_data_byte_ptr = (char*)((intptr_t)current_data_byte_ptr + *(uint16_t*)((intptr_t)param_1 + 4));
   
   reset_buffers();
-
-  while (current_input_ptr < end_input_ptr) {
-    uint type = *current_input_ptr;
-    // The byte after the type (4 bytes) is the index.
-    byte index = *(byte*)((char*)current_input_ptr + sizeof(uint)); 
-    // Advance the pointer by 4 bytes for 'type' and 1 byte for 'index'.
-    current_input_ptr = (uint*)((char*)current_input_ptr + 5); 
-
-    if (type == 0) { // Liquid item
-      if (index > 4) { return -1; } // Index out of bounds
-      if (liquids_ptrs[index] != NULL) { return -1; } // Item already exists at this index
-      
-      new_obj = constructor_liquids();
-      if (new_obj == NULL) { return -1; } // Check for allocation failure
-      // Call initializer method, assumed to be at offset 0x10.
-      init_result = ((ObjectInitializer)((char*)new_obj + 0x10))(new_obj, type, index);
-      if (init_result < 0) { // Initialization failed
-        ((ObjectDestructor)((char*)new_obj + 0x14))(new_obj); // Call destructor
-        new_obj = NULL;
+  
+  while (true) {
+    if (end_data_byte_ptr <= current_data_byte_ptr) {
+      dispense_breakfast();
+      return 0;
+    }
+    
+    // Read item_type (4 bytes)
+    item_type = *(uint*)current_data_byte_ptr;
+    // Read item_index (1 byte) immediately following the item_type
+    item_index = *(byte*)(current_data_byte_ptr + sizeof(uint));
+    
+    // Advance pointer by 5 bytes (4 for uint type + 1 for byte index)
+    current_data_byte_ptr += 5; 
+    
+    if (item_type == 2) { // Toppings
+      if (item_index >= TOPPINGS_COUNT) {
+        return 0xffffffff;
       }
-      liquids_ptrs[index] = new_obj;
-    } else if (type == 1) { // Cereal item
-      if (index > 6) { return -1; } // Index out of bounds
-      if (cereals_ptrs[index] != NULL) { return -1; } // Item already exists at this index
-      
-      new_obj = constructor_cereals();
-      if (new_obj == NULL) { return -1; } // Check for allocation failure
-      // Call initializer method, assumed to be at offset 0x10.
-      init_result = ((ObjectInitializer)((char*)new_obj + 0x10))(new_obj, type, index);
-      if (init_result < 0) { // Initialization failed
-        ((ObjectDestructor)((char*)new_obj + 0x14))(new_obj); // Call destructor
-        new_obj = NULL;
-      }
-      cereals_ptrs[index] = new_obj;
-    } else if (type == 2) { // Topping item
-      if (index > 4) { return -1; } // Index out of bounds
-      if (toppings_ptrs[index] != NULL) { 
-        // Original code breaks the outer loop and returns -1 if topping exists.
-        return -1; 
+      if (toppings_ptrs[item_index] != NULL) {
+        return 0xffffffff;
       }
       
-      // constructor_toppings takes additional parameters: '2' and the last 'init_result'.
-      new_obj = constructor_toppings(2, init_result); 
-      if (new_obj == NULL) { return -1; } // Check for allocation failure
-      // Call initializer method, assumed to be at offset 0x14.
-      init_result = ((ObjectInitializer)((char*)new_obj + 0x14))(new_obj, type, index);
-      if (init_result < 0) { // Initialization failed
-        ((ObjectDestructor)((char*)new_obj + 0x18))(new_obj); // Call destructor
-        new_obj = NULL;
+      obj_ptr = constructor_toppings(2, result);
+      ToppingConstructMethod construct_fn = (ToppingConstructMethod)((intptr_t)obj_ptr + 0x14);
+      result = construct_fn(obj_ptr, item_type, item_index);
+      
+      if (result < 0) {
+        ToppingDestroyMethod destroy_fn = (ToppingDestroyMethod)((intptr_t)obj_ptr + 0x18);
+        destroy_fn(obj_ptr);
+        obj_ptr = NULL;
       }
-      toppings_ptrs[index] = new_obj;
-    } else { // Unknown type encountered
-      return -1;
+      toppings_ptrs[item_index] = obj_ptr;
+    } else if (item_type < 2) { // Liquids (0) or Cereals (1)
+      if (item_type == 0) { // Liquids
+        if (item_index >= LIQUIDS_COUNT) {
+          return 0xffffffff;
+        }
+        if (liquids_ptrs[item_index] != NULL) {
+          return 0xffffffff;
+        }
+        
+        obj_ptr = constructor_liquids();
+        LiquidCerealConstructMethod construct_fn = (LiquidCerealConstructMethod)((intptr_t)obj_ptr + 0x10);
+        result = construct_fn(obj_ptr, item_type, item_index);
+        
+        if (result < 0) {
+          LiquidCerealDestroyMethod destroy_fn = (LiquidCerealDestroyMethod)((intptr_t)obj_ptr + 0x14);
+          destroy_fn(obj_ptr);
+          obj_ptr = NULL;
+        }
+        liquids_ptrs[item_index] = obj_ptr;
+      } else { // item_type == 1, Cereals
+        if (item_index >= CEREALS_COUNT) {
+          return 0xffffffff;
+        }
+        if (cereals_ptrs[item_index] != NULL) {
+          return 0xffffffff;
+        }
+        
+        obj_ptr = constructor_cereals();
+        LiquidCerealConstructMethod construct_fn = (LiquidCerealConstructMethod)((intptr_t)obj_ptr + 0x10);
+        result = construct_fn(obj_ptr, item_type, item_index);
+        
+        if (result < 0) {
+          LiquidCerealDestroyMethod destroy_fn = (LiquidCerealDestroyMethod)((intptr_t)obj_ptr + 0x14);
+          destroy_fn(obj_ptr);
+          obj_ptr = NULL;
+        }
+        cereals_ptrs[item_index] = obj_ptr;
+      }
+    } else { // 2 < item_type -> Invalid type
+      return 0xffffffff;
     }
   }
-  
-  dispense_breakfast(); // All items processed, now dispense.
-  return 0; // Success
 }
 
 // Function: process_serialized_input
-// Processes a serialized input buffer to configure breakfast items.
-// param_1 is assumed to be a pointer to an input structure, similar to process_plain_input.
-int process_serialized_input(const char* param_1) {
-  uint* current_input_ptr = (uint*)((char*)param_1 + 6);
-  uint* end_input_ptr = (uint*)((char*)current_input_ptr + *(uint16_t*)((char*)param_1 + 4));
+undefined4 process_serialized_input(const void* param_1) {
+  uint* current_data_ptr;
+  uint* end_data_ptr;
+  void* obj_ptr;
+  uint item_type;
+  int check_result;
+  
+  // param_1 + 6 is the start of the data buffer
+  current_data_ptr = (uint*)((intptr_t)param_1 + 6);
+  // Calculate end_data_ptr by adding byte offset to the base address (param_1)
+  end_data_ptr = (uint*)((char*)((intptr_t)param_1 + 6) + *(uint16_t*)((intptr_t)param_1 + 4));
   
   reset_buffers();
-
-  while (current_input_ptr < end_input_ptr) { // Loop until all input is processed
-    uint type = *current_input_ptr;
-    ObjectPtr new_obj = NULL;
-
-    if (type == 2) { // Topping item
-      // deserialize_toppings is expected to read from *current_input_ptr and advance it.
-      new_obj = deserialize_toppings(&current_input_ptr); 
-      if (new_obj == NULL) { return -1; } // Deserialization failed
-
-      // The index for toppings is assumed to be at offset 0x10 within the deserialized object.
-      int index = *(int*)((char*)new_obj + 0x10); 
-      if (index < 0 || index >= 5 || toppings_ptrs[index] != NULL) { // Index out of bounds or slot taken
-        if (new_obj != NULL) { // Clean up if object was allocated but cannot be stored
-            ((ObjectDestructor)((char*)new_obj + 0x18))(new_obj);
-        }
-        return -1;
+  
+  while (true) {
+    if (end_data_ptr <= current_data_ptr) {
+      dispense_breakfast();
+      return 0;
+    }
+    
+    item_type = *current_data_ptr;
+    
+    if (item_type == 2) { // Toppings
+      obj_ptr = deserialize_toppings(&current_data_ptr); 
+      if (obj_ptr == NULL) {
+        return 0xffffffff;
       }
-      toppings_ptrs[index] = new_obj;
-    } else if (type == 0) { // Liquid item
-      // deserialize_liquids is expected to read from *current_input_ptr and advance it.
-      new_obj = deserialize_liquids(&current_input_ptr); 
-      if (new_obj == NULL) { return -1; } // Deserialization failed
       
-      // The index for liquids is assumed to be at offset 0xC within the deserialized object.
-      int index = *(int*)((char*)new_obj + 0xC);
-      if (index < 0 || index >= 5 || liquids_ptrs[index] != NULL) { // Index out of bounds or slot taken
-        if (new_obj != NULL) {
-            ((ObjectDestructor)((char*)new_obj + 0x14))(new_obj);
-        }
-        return -1;
+      // The index is at offset 0x10 within the topping object
+      byte topping_idx = *(byte*)((intptr_t)obj_ptr + 0x10);
+      if (topping_idx >= TOPPINGS_COUNT || toppings_ptrs[topping_idx] != NULL) {
+        ToppingDestroyMethod destroy_fn = (ToppingDestroyMethod)((intptr_t)obj_ptr + 0x18);
+        destroy_fn(obj_ptr);
+        return 0xffffffff;
       }
-      liquids_ptrs[index] = new_obj;
-    } else if (type == 1) { // Cereal item
-      // deserialize_cereals is expected to read from *current_input_ptr and advance it.
-      new_obj = deserialize_cereals(&current_input_ptr); 
-      if (new_obj == NULL) { return -1; } // Deserialization failed
-      
-      // The index for cereals is assumed to be at offset 0xC within the deserialized object.
-      int index = *(int*)((char*)new_obj + 0xC);
-      if (index < 0 || index >= 7 || cereals_ptrs[index] != NULL) { // Index out of bounds or slot taken
-        if (new_obj != NULL) {
-            ((ObjectDestructor)((char*)new_obj + 0x14))(new_obj);
+      toppings_ptrs[topping_idx] = obj_ptr;
+    } else if (item_type < 3) { // Liquids (0) or Cereals (1)
+      if (item_type == 0) { // Liquids
+        obj_ptr = deserialize_liquids(&current_data_ptr);
+        if (obj_ptr == NULL) {
+          return 0xffffffff;
         }
-        return -1;
+        
+        // The index is at offset 0x0c within the liquid object
+        byte liquid_idx = *(byte*)((intptr_t)obj_ptr + 0x0c);
+        if (liquid_idx >= LIQUIDS_COUNT || liquids_ptrs[liquid_idx] != NULL) {
+          LiquidCerealDestroyMethod destroy_fn = (LiquidCerealDestroyMethod)((intptr_t)obj_ptr + 0x14);
+          destroy_fn(obj_ptr);
+          return 0xffffffff;
+        }
+        liquids_ptrs[liquid_idx] = obj_ptr;
+      } else { // item_type == 1, Cereals
+        obj_ptr = deserialize_cereals(&current_data_ptr);
+        if (obj_ptr == NULL) {
+          return 0xffffffff;
+        }
+        
+        // The index is at offset 0x0c within the cereal object
+        byte cereal_idx = *(byte*)((intptr_t)obj_ptr + 0x0c);
+        if (cereal_idx >= CEREALS_COUNT || cereals_ptrs[cereal_idx] != NULL) {
+          LiquidCerealDestroyMethod destroy_fn = (LiquidCerealDestroyMethod)((intptr_t)obj_ptr + 0x14);
+          destroy_fn(obj_ptr);
+          return 0xffffffff;
+        }
+        cereals_ptrs[cereal_idx] = obj_ptr;
       }
-      cereals_ptrs[index] = new_obj;
-    } else { // Handle inherited types or unknown types
-      // check_inherited_types is expected to read from *current_input_ptr and advance it.
-      int result = check_inherited_types(type, &current_input_ptr); 
-      if (result == -1) {
-        return -1; // Error in processing inherited types
+    } else { // item_type >= 3
+      check_result = check_inherited_types(item_type, &current_data_ptr);
+      if (check_result == -1) {
+        return 0xffffffff;
       }
     }
   }
-  
-  dispense_breakfast(); // All items processed, now dispense.
-  return 0; // Success
 }

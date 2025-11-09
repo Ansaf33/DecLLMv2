@@ -1,252 +1,218 @@
-#include <stdio.h>    // For snprintf, printf (for dummies)
-#include <stdlib.h>   // For random, srand, malloc, free
-#include <string.h>   // For strlen, strncat, strncpy, strcmp, strstr, memset
-#include <time.h>     // For time (for srand)
-#include <stdbool.h>  // For bool type
+#include <stdio.h>  // For main, potential debugging (not strictly needed for snippet)
+#include <stdlib.h> // For rand(), srand(), malloc, free
+#include <string.h> // For strlen, strcmp, strncpy, strstr, strncat
+#include <stddef.h> // For size_t
+#include <time.h>   // For time()
 
-// --- Custom Type Aliases (replacing decompiler's 'undefined' types) ---
-typedef char byte;
-typedef unsigned int uint;
-typedef int undefined4; // Assuming 4-byte integer
+// --- External Function Declarations ---
+// These functions are assumed to be defined elsewhere and are essential for the code to link.
+// Signatures are inferred from usage in the provided snippet.
+extern int transmit_with_term(int fd, const char *buffer, size_t length, int flags);
+extern int receive_all(int fd, void *buffer, size_t length, int flags);
+extern int recv_until_delim(int fd, char *buffer, size_t max_len);
+extern int allocate(size_t size, int flags, int *out_ptr); // out_ptr receives allocated address
+extern void deallocate(int ptr, size_t size);
+extern int receive_with_term(int fd, char *buffer, size_t length, unsigned int *out_received_bytes);
 
-// --- Global Data (replacing DAT_00012000, etc.) ---
-// These are assumed string literals based on their usage in strpos/strstr.
-// The specific values are educated guesses based on common path/document patterns
-// and the fixed offsets (e.g., pcVar1 + 2 implies a 2-char delimiter).
-static const char PATH_DELIMITER_0[] = "/."; // Used in canonicalize_path, 'pcVar1 + 2' implies skipping 2 chars
-static const char SRC_MARKER_0[] = "$SRC$\x06"; // Used in request_document
-static const char PATH_DELIMITER_2[] = "</>"; // Used in request_document as a segment end marker
+// --- Global Data Declarations ---
+// These are likely constant string literals identified by the decompiler.
+const char DAT_00012000[] = "//";         // Assumed for path canonicalization (e.g., removing double slashes)
+const char DAT_00012004[] = "$SRC$\x06"; // Marker for source code block start
+const char DAT_0001200b[] = "$END$\x06"; // Marker for source code block end
 
-// Global buffer for receive operations, sized to accommodate 0xffff from recv_until_delim
-#define BUF_RECV_TMP_SIZE 0x10000
-char buf_recv_tmp[BUF_RECV_TMP_SIZE];
+// Global buffer for received data, sized based on 0xFFFF usage in recv_until_delim.
+// Max_len 0xFFFF means buffer must be at least 0xFFFF + 1 for null termination.
+char buf_recv_tmp[0xFFFF + 1];
 
-// --- Dummy Implementations for Missing Functions ---
-// These functions are placeholders to allow the code to compile.
-// Their actual behavior would depend on the specific system/protocol.
-
-// Mimics strstr, returning a pointer to the first occurrence of needle in haystack.
+// --- Helper Function for strpos (Decompiler Artifact) ---
+// The original code used 'strpos', which is not a standard C function.
+// It's likely a wrapper for strstr.
 char *strpos(const char *haystack, const char *needle) {
     return (char *)strstr(haystack, needle);
 }
 
-// Dummy transmit function
-int transmit_with_term(int fd, const char *buf, size_t len, int term_char) {
-    (void)fd; (void)term_char; // Unused parameters
-    // In a real scenario, this would send data over a socket/file descriptor.
-    // For compilation, we just print a message.
-    printf("DUMMY: Transmitting %zu bytes: '%.*s'\n", len, (int)len, buf);
-    return 0; // Success
-}
-
-// Dummy receive all function
-int receive_all(int fd, void *buf, size_t len, int flags) {
-    (void)fd; (void)flags; // Unused parameters
-    // In a real scenario, this would receive data into buf.
-    // For compilation, we simulate receiving some data.
-    if (len >= 2) {
-        *(unsigned short*)buf = 0x100; // Simulate receiving a length of 256
-        printf("DUMMY: Receiving %zu bytes into buffer. Simulated length: %u\n", len, *(unsigned short*)buf);
-    } else {
-        memset(buf, 0, len);
-        printf("DUMMY: Receiving %zu bytes into buffer.\n", len);
-    }
-    return 0; // Success
-}
-
-// Dummy receive until delimiter function
-int recv_until_delim(int fd, char *buf, size_t max_len) {
-    (void)fd; // Unused parameter
-    // Simulate receiving a document name, e.g., "test_doc"
-    const char *simulated_recv_data = "dummy_document_name";
-    size_t data_len = strlen(simulated_recv_data);
-    if (data_len >= max_len) {
-        data_len = max_len - 1; // Ensure null termination fits
-    }
-    strncpy(buf, simulated_recv_data, data_len);
-    buf[data_len] = '\0';
-    printf("DUMMY: Received until delimiter: '%s'\n", buf);
-    return (int)data_len; // Return length of received data
-}
-
-// Dummy allocate function (mimics malloc)
-int allocate(size_t size, int flags, int *out_ptr) {
-    (void)flags; // Unused parameter
-    void *ptr = malloc(size);
-    if (ptr == NULL) {
-        *out_ptr = 0;
-        return 1; // Error
-    }
-    *out_ptr = (int)(long)ptr; // Store the allocated address (casting to long for 64-bit safety)
-    printf("DUMMY: Allocated %zu bytes at address %p\n", size, ptr);
-    return 0; // Success
-}
-
-// Dummy deallocate function (mimics free)
-void deallocate(int ptr, size_t size) {
-    (void)size; // Unused parameter
-    void *actual_ptr = (void*)(long)ptr;
-    if (actual_ptr != NULL) {
-        free(actual_ptr);
-        printf("DUMMY: Deallocated memory at address %p\n", actual_ptr);
-    }
-}
-
 // Function: random_alpha_lower
-// Fills 'buffer' with 'length' random lowercase alphabetic characters.
-void random_alpha_lower(char *buffer, uint length) {
-    for (uint i = 0; i < length; ++i) {
-        buffer[i] = (char)(random() % 26 + 'a');
+// Fills a buffer with 'length' random lowercase alphabetic characters.
+// The buffer should be able to hold 'length' characters.
+void random_alpha_lower(char *buffer, unsigned int length) {
+    for (unsigned int i = 0; i < length; ++i) {
+        buffer[i] = (char)(rand() % 26 + 'a');
     }
 }
 
 // Function: canonicalize_path
-// Processes a path segment, appending it to 'dest_path', checking for length limits.
-// Returns 0 on success, 0xf (15) on error (segment too long).
-undefined4 canonicalize_path(char *dest_path, char *src_segment, int src_len) {
-    char *segment_end = src_segment + src_len;
-    char *current_pos = src_segment;
-    char *next_delimiter;
-    undefined4 result = 0;
+// param_1: destination buffer (char *) - must be large enough.
+// param_2: source path (const char *)
+// param_3: length of source path (size_t)
+// Canonicalizes a path by removing segments identified by DAT_00012000 (e.g., "//").
+// Returns 0 on success, 0xf on error (e.g., segment too long).
+int canonicalize_path(char *dest, const char *src, size_t src_len) {
+    const char *current_segment_start = src;
+    char *separator_pos;
+    const size_t MAX_SEGMENT_LEN = 256; // Based on 0x101 (257) checks in original code.
 
-    // Process the first part of the segment up to the first delimiter
-    next_delimiter = strpos(current_pos, PATH_DELIMITER_0); // e.g., "/."
-    if (next_delimiter == NULL) {
-        next_delimiter = segment_end; // No delimiter found, process till end of segment
+    dest[0] = '\0'; // Initialize destination string
+
+    separator_pos = strpos(current_segment_start, DAT_00012000);
+
+    size_t segment_len;
+    if (separator_pos == NULL) {
+        segment_len = src_len;
+    } else {
+        segment_len = separator_pos - current_segment_start;
     }
 
-    if ((uint)(next_delimiter - current_pos) >= 0x101) { // Check length limit (256 chars)
-        return 0xf; // Error: segment too long
+    if (segment_len >= MAX_SEGMENT_LEN) {
+        return 0xf; // Error: initial segment too long
     }
-    strncat(dest_path, current_pos, next_delimiter - current_pos);
+    strncat(dest, current_segment_start, segment_len);
 
-    // Process subsequent parts if delimiters are found
-    if (next_delimiter != segment_end) {
-        current_pos = next_delimiter + strlen(PATH_DELIMITER_0); // Skip the delimiter
-        while (true) {
-            next_delimiter = strpos(current_pos, PATH_DELIMITER_0);
-            if (next_delimiter == NULL) {
-                break; // No more delimiters in this segment
+    if (separator_pos != NULL) {
+        // Loop through subsequent segments
+        while (1) {
+            current_segment_start = separator_pos + strlen(DAT_00012000); // Skip the separator
+            separator_pos = strpos(current_segment_start, DAT_00012000);
+
+            if (separator_pos == NULL) {
+                // No more separators, copy the rest of the string
+                segment_len = (src + src_len) - current_segment_start;
+                if (segment_len >= MAX_SEGMENT_LEN) { // Check length of final segment
+                    return 0xf;
+                }
+                strncat(dest, current_segment_start, segment_len);
+                break; // Exit loop
             }
 
-            if ((uint)(next_delimiter - current_pos) >= 0x101) { // Check length limit
-                return 0xf; // Error: segment too long
+            // Separator found, copy segment up to next separator
+            segment_len = separator_pos - current_segment_start;
+            if (segment_len >= MAX_SEGMENT_LEN) { // Check segment length
+                return 0xf;
             }
-            strncat(dest_path, current_pos, next_delimiter - current_pos);
-            current_pos = next_delimiter + strlen(PATH_DELIMITER_0); // Skip the delimiter
+            strncat(dest, current_segment_start, segment_len);
         }
     }
-
-    // Append any remaining part of the segment after the last delimiter
-    if (current_pos < segment_end) {
-        size_t remaining_len = (size_t)(segment_end - current_pos);
-        if (remaining_len >= 0x101) { // Check length limit
-            return 0xf; // Error: segment too long
-        }
-        strncat(dest_path, current_pos, remaining_len);
-    }
-    
-    // Ensure dest_path is null-terminated after all concatenations
-    dest_path[strlen(dest_path)] = '\0';
-
-    return result;
+    return 0; // Success
 }
 
 // Function: request_document
-// Handles a document request, parsing it for embedded paths and making recursive calls.
-int request_document(char *doc_name, uint recursion_depth) {
-    int result = 0;
-    unsigned short doc_size = 0; // Renamed local_3a
-    uint received_len = 0; // Renamed local_38
-    int allocated_ptr = 0; // Renamed local_40
-
-    // Buffer for canonicalized path (local_13c in original, 63 * 4 = 252 bytes)
-    // Assuming a max path length of 256 for safety, +1 for null terminator
-    char canonical_path_buf[257]; // Renamed local_13c
-
-    if (recursion_depth >= 0x3e9) { // Max recursion depth check (1001)
+// param_1: document_name (char *) - The name of the document to request.
+// param_2: recursion_depth (unsigned int) - Current recursion level.
+// Requests a document, processes its content for embedded source blocks,
+// and recursively requests those.
+// Returns 0 on success, or an error code.
+int request_document(char *document_name, unsigned int recursion_depth) {
+    // Max recursion_depth check (0x3e9 = 999 + 1 = 1000)
+    if (recursion_depth >= 0x3e9) {
         return 0x10; // Error: recursion depth exceeded
     }
 
-    size_t name_len = strlen(doc_name);
-    result = transmit_with_term(1, doc_name, name_len, 0);
+    size_t name_len = strlen(document_name);
+    int ret_code = transmit_with_term(1, document_name, name_len, 0);
 
-    if (result == 0) {
-        result = receive_all(0, &doc_size, 2, 0); // Receive document size
-        if (result == 0) {
-            int recv_doc_name_len = recv_until_delim(0, buf_recv_tmp, BUF_RECV_TMP_SIZE - 1); // Receive document name
-            if (recv_doc_name_len >= 0) {
-                if (strcmp(doc_name, buf_recv_tmp) == 0) { // Verify document name
-                    result = allocate(doc_size + 1, 0, &allocated_ptr); // Allocate memory for document content
-                    if (result == 0) {
-                        result = receive_with_term(0, allocated_ptr, doc_size, &received_len); // Receive document content
-                        if (result == 0 && doc_size == received_len) {
-                            char *current_doc_ptr = (char*)(long)allocated_ptr;
-                            bool processing_segments = true;
-
-                            while (result == 0 && processing_segments) {
-                                char *src_start_marker = strpos(current_doc_ptr, SRC_MARKER_0);
-                                if (src_start_marker == NULL) {
-                                    processing_segments = false; // No more "$SRC$" markers found
-                                    break;
-                                }
-
-                                char *segment_data_start = src_start_marker + strlen(SRC_MARKER_0);
-                                char *segment_end_marker = strpos(segment_data_start, PATH_DELIMITER_2);
-
-                                if (segment_end_marker == NULL) {
-                                    // Malformed segment, continue searching from after this $SRC$ block
-                                    current_doc_ptr = segment_data_start;
-                                    continue;
-                                }
-
-                                int segment_len = segment_end_marker - segment_data_start;
-                                if (segment_len < 0) { // Should not happen with valid pointers
-                                    result = 1; // Error
-                                    break;
-                                }
-
-                                // VLA for the segment content
-                                char segment_buf[segment_len + 1];
-                                strncpy(segment_buf, segment_data_start, segment_len);
-                                segment_buf[segment_len] = '\0'; // Null-terminate the segment
-
-                                // Clear the destination buffer for canonicalized path and ensure null-terminated
-                                memset(canonical_path_buf, 0, sizeof(canonical_path_buf));
-                                canonical_path_buf[0] = '\0';
-
-                                // Call canonicalize_path to process the extracted segment
-                                result = canonicalize_path(canonical_path_buf, segment_buf, segment_len);
-                                if (result != 0) break; // Error during canonicalization
-
-                                // Recursive call with the canonicalized path
-                                result = request_document(canonical_path_buf, recursion_depth + 1);
-                                if (result != 0) break; // Error from recursive call
-
-                                // Advance the document pointer past the current processed segment and its end marker
-                                current_doc_ptr = segment_end_marker + strlen(PATH_DELIMITER_2);
-                            }
-                        }
-                        deallocate(allocated_ptr, doc_size + 1); // Deallocate document memory
-                    }
-                }
-            }
-        }
+    if (ret_code != 0) {
+        return ret_code;
     }
-    return result;
+
+    unsigned short doc_size = 0;
+    ret_code = receive_all(0, &doc_size, sizeof(doc_size), 0);
+    if (ret_code != 0) {
+        return ret_code;
+    }
+
+    // Check if received name matches requested name
+    int recv_name_len = recv_until_delim(0, buf_recv_tmp, 0xFFFF);
+    if (recv_name_len < 0 || strcmp(document_name, buf_recv_tmp) != 0) {
+        return -1; // Error or name mismatch
+    }
+
+    int allocated_doc_ptr_val = 0;
+    // Allocate buffer for the document content + 1 for null terminator
+    ret_code = allocate(doc_size + 1, 0, &allocated_doc_ptr_val);
+    if (ret_code != 0) {
+        return ret_code;
+    }
+    char *allocated_doc_ptr = (char*)allocated_doc_ptr_val;
+
+    unsigned int received_bytes = 0;
+    ret_code = receive_with_term(0, allocated_doc_ptr, doc_size, &received_bytes);
+    if (ret_code != 0 || doc_size != received_bytes) {
+        deallocate(allocated_doc_ptr_val, doc_size + 1);
+        return ret_code != 0 ? ret_code : -1; // Error or size mismatch
+    }
+
+    // Ensure the received document is null-terminated for string operations
+    allocated_doc_ptr[doc_size] = '\0';
+
+    char *current_scan_ptr = allocated_doc_ptr;
+    char *src_start_marker;
+    char *src_end_marker;
+
+    // Buffer for canonicalized path (original `local_13c` was 63*4 = 252 bytes)
+    // MAX_SEGMENT_LEN is 256, so a buffer of 257 (256+1) for null terminator is appropriate.
+    char canonical_path_buffer[257];
+
+    // Loop to find and process "$SRC$\x06" ... "$END$\x06" blocks
+    while (1) {
+        src_start_marker = strpos(current_scan_ptr, DAT_00012004); // Find "$SRC$\x06"
+
+        if (src_start_marker == NULL) {
+            break; // No more source blocks found, exit loop
+        }
+
+        current_scan_ptr = src_start_marker + strlen(DAT_00012004); // Move past "$SRC$\x06"
+        src_end_marker = strpos(current_scan_ptr, DAT_0001200b); // Find "$END$\x06"
+
+        if (src_end_marker == NULL) {
+            // Malformed document: found start but no end marker. Stop processing.
+            break;
+        }
+
+        size_t segment_content_len = src_end_marker - current_scan_ptr;
+        // Temporary buffer for the extracted segment.
+        // MAX_SEGMENT_LEN is 256, so a 257-byte buffer is safe.
+        char temp_segment_buffer[257];
+
+        if (segment_content_len >= sizeof(temp_segment_buffer)) {
+             // Segment too large for temp buffer or canonicalization; treat as error.
+             ret_code = 0xf; // Error code for path too long
+             break;
+        }
+        strncpy(temp_segment_buffer, current_scan_ptr, segment_content_len);
+        temp_segment_buffer[segment_content_len] = '\0'; // Null-terminate the segment
+
+        // Call canonicalize_path with the extracted segment
+        ret_code = canonicalize_path(canonical_path_buffer, temp_segment_buffer, segment_content_len);
+        if (ret_code != 0) {
+            break; // Error in canonicalization
+        }
+
+        // Recursive call to request_document with the canonicalized path and incremented depth
+        ret_code = request_document(canonical_path_buffer, recursion_depth + 1);
+        if (ret_code != 0) {
+            break; // Error in recursive call
+        }
+
+        current_scan_ptr = src_end_marker + strlen(DAT_0001200b); // Move past "$END$\x06"
+    }
+
+    deallocate(allocated_doc_ptr_val, doc_size + 1);
+    return ret_code;
 }
 
 // Function: main
-void main(void) {
-    // Seed the random number generator once
+// Entry point of the program.
+int main(void) {
+    // Seed the random number generator once at program start.
     srand(time(NULL));
 
-    char document_name[17]; // 0x10 length + null terminator
-    document_name[16] = '\0'; // Ensure null-termination
+    char initial_document_name[16]; // Buffer for a 15-character name + null terminator.
+    
+    // Generate 15 random lowercase alphabetic characters.
+    random_alpha_lower(initial_document_name, 15);
+    initial_document_name[15] = '\0'; // Null-terminate the string.
 
-    random_alpha_lower(document_name, 0x10); // Fill with 16 random chars
-    printf("Generated document name: '%s'\n", document_name);
-
-    request_document(document_name, 0); // Start the request process
-    printf("Request document finished.\n");
+    // Request the initial document with recursion depth 0.
+    request_document(initial_document_name, 0);
+    
+    return 0; // Indicate successful execution.
 }

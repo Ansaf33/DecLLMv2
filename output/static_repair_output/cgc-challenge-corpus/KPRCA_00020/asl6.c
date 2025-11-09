@@ -1,120 +1,110 @@
-#include <stdio.h>    // For fprintf, stdout, stderr
-#include <stdlib.h>   // For malloc, realloc, calloc, free, EXIT_SUCCESS, EXIT_FAILURE
-#include <stdint.h>   // For uint8_t, uint32_t
-#include <stdbool.h>  // For bool
-#include <ctype.h>    // For isdigit, isalnum
-#include <string.h>   // For strlen
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h> // For memset, though not explicitly used, good practice
+#include <ctype.h>  // For isdigit, isalnum
+#include <stddef.h> // For size_t
 
-// Define Element structure based on pointer arithmetic analysis for a 32-bit system
-typedef struct Element {
-    uint8_t tag_class;      // Offset 0
-    uint8_t tag;            // Offset 1
-    bool is_primitive;      // Offset 2
-    uint8_t _padding1;      // Offset 3 (1 byte padding to align data_ptr to 4-byte boundary)
-    uint8_t *data_ptr;      // Offset 4 (4 bytes on 32-bit)
-    uint32_t length;        // Offset 8 (4 bytes)
-    int depth;              // Offset 12 (4 bytes)
-    uint32_t capacity;      // Offset 16 (4 bytes)
-    uint32_t count;         // Offset 20 (4 bytes)
-    struct Element **sub_elements; // Offset 24 (4 bytes on 32-bit)
-} Element; // Total size: 28 bytes (0x1C)
-
-// Constants for ASN.1 Universal Tags
-#define ASN1_TAG_BOOLEAN           0x01
-#define ASN1_TAG_INTEGER           0x02
-#define ASN1_TAG_BIT_STRING        0x03
-#define ASN1_TAG_OCTET_STRING      0x04
-#define ASN1_TAG_NULL              0x05
-#define ASN1_TAG_OBJECT_IDENTIFIER 0x06
-#define ASN1_TAG_UTF8_STRING       0x0C
-#define ASN1_TAG_NUMERIC_STRING    0x12
-#define ASN1_TAG_PRINTABLE_STRING  0x13
-#define ASN1_TAG_T61_STRING        0x14
-#define ASN1_TAG_VIDEOTEX_STRING   0x15
-#define ASN1_TAG_IA5_STRING        0x16
-#define ASN1_TAG_VISIBLE_STRING    0x1A
-#define ASN1_TAG_UTC_TIME          0x17
-#define ASN1_TAG_GENERALIZED_TIME  0x18
-#define ASN1_TAG_SEQUENCE          0x10 // 16
-#define ASN1_TAG_SET               0x11 // 17
+// Structure definition for an ASN.1 element
+typedef struct Element Element;
+struct Element {
+    unsigned char tag_class;      // bits 7-6 of first octet
+    unsigned char tag;            // bits 4-0 of first octet (if < 0x1f)
+    unsigned char is_primitive;   // 1 if primitive, 0 if constructed (bit 5 of first octet)
+    unsigned char reserved;       // Padding to align data_ptr on 4-byte boundary
+    const unsigned char *data_ptr; // Pointer to the raw data value
+    unsigned int length;          // Length of the raw data value in bytes
+    int depth;                    // Recursion depth in the ASN.1 structure
+    unsigned int capacity;        // Capacity of the sub_elements array
+    unsigned int num_sub_elements; // Current number of sub_elements
+    Element **sub_elements;       // Array of pointers to sub_elements
+};
 
 // Global array for universal tag names
 const char *utag_names[] = {
-    "EOC", "BOOLEAN", "INTEGER", "BIT STRING", "OCTET STRING", "NULL", "OBJECT IDENTIFIER",
-    "ObjectDescriptor", "EXTERNAL", "REAL", "ENUMERATED", "EMBEDDED PDV", "UTF8String",
-    "RELATIVE-OID", "TIME", "RESERVED", "SEQUENCE", "SET", "NumericString", "PrintableString",
-    "T61String", "VideotexString", "IA5String", "UTCTime", "GeneralizedTime", "GraphicString",
-    "VisibleString", "GeneralString", "UniversalString", "CHARACTER STRING", "BMPString"
+    "EOC", "BOOLEAN", "INTEGER", "BIT STRING", "OCTET STRING", "NULL",
+    "OBJECT IDENTIFIER", "ObjectDescriptor", "EXTERNAL", "REAL", "ENUMERATED",
+    "EMBEDDED PDV", "UTF8String", "RELATIVE OID", NULL, NULL, // 14, 15 are reserved
+    "SEQUENCE", "SET", "NumericString", "PrintableString", "T61String",
+    "VideotexString", "IA5String", "UTCTime", "GeneralizedTime", "GraphicString",
+    "VisibleString", "GeneralString", "UniversalString", "CHARACTER STRING", "BMPString" // 16-30
 };
+#define MAX_UNIVERSAL_TAG_INDEX 30
 
-// Function prototypes to resolve dependencies
-void free_element(Element *elem);
-void print_indent(uint32_t depth);
-void print_tag(const Element *elem);
-void print_hex(const Element *elem);
-void print_oid(const Element *elem);
-void print_string(const Element *elem);
-void print_time(const Element *elem, int is_utc_time);
-void print_primitive(const Element *elem);
-int parse_tag_class(const uint8_t *data_byte, Element *elem);
-int parse_tag(const uint8_t *data_byte, Element *elem);
-int parse_length(const uint8_t *data_byte, Element *elem);
-int append_sub(Element *parent, Element *child);
-int within(const uint8_t *check_ptr, uint32_t check_len, const uint8_t *buffer_start, uint32_t buffer_len);
-Element * _decode(const uint8_t *data_ptr, int depth, const uint8_t *buffer_start, uint32_t buffer_len);
-void pprint(Element *elem);
-void decode(const uint8_t *data, uint32_t data_len);
+// Helper function to check if a memory region is within the buffer bounds
+// Returns 0 on success, -1 on error (out of bounds)
+int within(const unsigned char *ptr, unsigned int len, const unsigned char *buffer_start, size_t buffer_size) {
+    if (ptr < buffer_start) {
+        return -1; // Pointer starts before the buffer
+    }
+    // Check if the region [ptr, ptr + len) is within [buffer_start, buffer_start + buffer_size)
+    // Avoid overflow by checking relative offset: (ptr - buffer_start) + len <= buffer_size
+    if ((size_t)(ptr - buffer_start) + len > buffer_size) {
+        return -1; // Region extends beyond buffer end
+    }
+    return 0;
+}
 
 // Function: parse_tag_class
-int parse_tag_class(const uint8_t *data_byte, Element *elem) {
-    if ((*data_byte >> 6) < 4) {
-        elem->tag_class = *data_byte >> 6;
-        return 0; // Success
+// Sets elem->tag_class based on the first octet of input.
+// Returns 0 on success, -1 on error.
+int parse_tag_class(const unsigned char *input, Element *elem) {
+    unsigned char tag_class_val = input[0] >> 6;
+    if (tag_class_val < 4) {
+        elem->tag_class = tag_class_val;
+        return 0;
     }
-    return -1; // Error
+    return -1;
 }
 
 // Function: parse_tag
-int parse_tag(const uint8_t *data_byte, Element *elem) {
-    if ((*data_byte & 0x1f) < 0x1f) {
-        elem->tag = *data_byte & 0x1f;
-        return 0; // Success
+// Sets elem->tag based on the first octet of input.
+// Returns 0 on success, -1 on error.
+int parse_tag(const unsigned char *input, Element *elem) {
+    unsigned char tag_val = input[0] & 0x1f;
+    if (tag_val < 0x1f) { // Short form tag
+        elem->tag = tag_val;
+        return 0;
     }
-    return -1; // Error
+    // Long form tags (tag_val == 0x1f) are not supported by the original code's `parse_tag` logic.
+    // The original code implicitly returns -1 for long form tags.
+    return -1;
 }
 
 // Function: parse_length
-int parse_length(const uint8_t *data_byte, Element *elem) {
-    if ((char)*data_byte < '\0') { // Check if MSB is set, indicating multi-byte length
-        uint32_t num_length_bytes = (uint32_t)(*data_byte & 0x7f);
-        if (num_length_bytes == 0) { // Indefinite length (0x80)
-            fprintf(stdout, "ERROR: indefinite length not supported\n");
-            return -1; // Indicate error
-        } else if (num_length_bytes < 5) { // Max 4 bytes for length value
-            uint32_t length_value = 0;
-            for (uint32_t i = 0; i < num_length_bytes; i++) {
-                length_value = (length_value << 8) | data_byte[i + 1];
-            }
-            elem->length = length_value;
-            return num_length_bytes + 1; // Number of bytes consumed for length field (indicator byte + length bytes)
-        } else {
-            fprintf(stdout, "ERROR: length too large (more than 4 bytes)\n");
+// Parses the length field from input and stores it in elem->length.
+// Returns the number of bytes consumed by the length field, or -1 on error.
+int parse_length(const unsigned char *input, Element *elem) {
+    if ((input[0] & 0x80) != 0) { // Long form length (MSB is set)
+        unsigned int num_length_bytes = input[0] & 0x7f;
+        if (num_length_bytes == 0) { // Indefinite length (not supported by this parser)
+            fprintf(stderr, "ERROR: indefinite length not supported\n");
             return -1;
         }
-    } else { // Single-byte length
-        elem->length = (uint32_t)*data_byte;
-        return 1; // Number of bytes consumed for length field (the length byte itself)
+        if (num_length_bytes > sizeof(unsigned int)) { // Max 4 bytes for unsigned int
+            fprintf(stderr, "ERROR: length too large (more than %zu bytes)\n", sizeof(unsigned int));
+            return -1;
+        }
+        unsigned int length_value = 0;
+        for (unsigned int i = 0; i < num_length_bytes; ++i) {
+            length_value = (length_value << 8) | input[i + 1];
+        }
+        elem->length = length_value;
+        return num_length_bytes + 1; // Total bytes consumed: 1 byte for initial length + num_length_bytes
+    } else { // Short form length (MSB is not set)
+        elem->length = input[0];
+        return 1; // 1 byte consumed
     }
 }
 
 // Function: free_element
+// Recursively frees an Element and its sub-elements.
 void free_element(Element *elem) {
     if (elem == NULL) {
         return;
     }
 
     if (elem->sub_elements != NULL) {
-        for (uint32_t i = 0; i < elem->count; i++) {
+        for (unsigned int i = 0; i < elem->num_sub_elements; ++i) {
             if (elem->sub_elements[i] != NULL) {
                 free_element(elem->sub_elements[i]);
             }
@@ -125,221 +115,177 @@ void free_element(Element *elem) {
 }
 
 // Function: append_sub
+// Appends a child element to a parent element's sub_elements array.
+// Dynamically resizes the array if needed.
+// Returns 0 on success, -1 on error.
 int append_sub(Element *parent, Element *child) {
-    if (parent->count == parent->capacity) {
-        uint32_t new_capacity = parent->capacity * 2;
-        if (new_capacity / 2 != parent->capacity) { // Overflow check for new_capacity
-            return -1; // Error
+    if (parent->num_sub_elements == parent->capacity) {
+        unsigned int new_capacity = parent->capacity * 2;
+        if (new_capacity == 0) { // Handle initial capacity of 0
+            new_capacity = 2; // Start with a small capacity
         }
-        Element **new_sub_elements = (Element **)realloc(parent->sub_elements, new_capacity * sizeof(Element *));
+        // Check for overflow (e.g., if parent->capacity was already MAX_UINT / 2 + 1)
+        if (new_capacity / 2 != parent->capacity) {
+            return -1; // Capacity overflowed
+        }
+
+        Element **new_sub_elements = realloc(parent->sub_elements, new_capacity * sizeof(Element *));
         if (new_sub_elements == NULL) {
-            return -1; // Error
+            return -1; // Reallocation failed
         }
         parent->sub_elements = new_sub_elements;
         parent->capacity = new_capacity;
     }
-    parent->sub_elements[parent->count] = child;
-    parent->count++;
-    return 0; // Success
-}
 
-// Function: within
-int within(const uint8_t *check_ptr, uint32_t check_len, const uint8_t *buffer_start, uint32_t buffer_len) {
-    const uint8_t *buffer_end = buffer_start + buffer_len;
-    // Check if check_ptr is within buffer_start and buffer_end,
-    // and if check_ptr + check_len is also within buffer_end.
-    if (check_ptr < buffer_start || (check_ptr + check_len) > buffer_end) {
-        return -1; // Bounds exceeded
-    }
-    return 0; // Within bounds
+    parent->sub_elements[parent->num_sub_elements] = child;
+    parent->num_sub_elements++;
+    return 0;
 }
 
 // Function: _decode
-Element * _decode(const uint8_t *data_ptr, int depth, const uint8_t *buffer_start, uint32_t buffer_len) {
-    // Check if at least 1 byte is available for the tag byte
-    if (within(data_ptr, 1, buffer_start, buffer_len) < 0) {
-        fprintf(stdout, "ERROR: bounds exceeded (initial tag byte check)\n");
+// Recursively decodes an ASN.1 element from the buffer.
+// Returns a pointer to the decoded Element on success, or NULL on error.
+Element *_decode(const unsigned char *current_ptr, int depth, const unsigned char *buffer_base, size_t buffer_len) {
+    // 1. Check if current_ptr is within the overall buffer bounds
+    if (within(current_ptr, 0, buffer_base, buffer_len) != 0) {
+        fprintf(stderr, "ERROR: bounds exceeded for element start\n");
         return NULL;
     }
 
-    Element *elem = (Element *)malloc(sizeof(Element));
+    // 2. Allocate memory for the new element
+    Element *elem = calloc(1, sizeof(Element)); // Use calloc to zero-initialize
     if (elem == NULL) {
-        return NULL;
+        return NULL; // Memory allocation failed
     }
-    // Initialize fields to safe defaults
-    elem->tag_class = 0;
-    elem->tag = 0;
-    elem->is_primitive = false;
-    elem->data_ptr = NULL;
-    elem->length = 0;
-    elem->depth = 0;
-    elem->capacity = 0;
-    elem->count = 0;
-    elem->sub_elements = NULL;
 
-    elem->capacity = 2; // Initial capacity for sub-elements
-    elem->sub_elements = (Element **)calloc(elem->capacity, sizeof(Element *));
-    if (elem->sub_elements == NULL) {
-        free(elem); // Free the element itself if sub_elements allocation fails
-        return NULL;
-    }
-    elem->count = 0;
+    // Initialize fields
     elem->depth = depth;
-    elem->is_primitive = !(*data_ptr & 0x20); // Bit 5 (0x20) is constructed/primitive flag
+    elem->capacity = 2; // Initial capacity for sub-elements
+    elem->sub_elements = calloc(elem->capacity, sizeof(Element *));
+    if (elem->sub_elements == NULL) {
+        free(elem);
+        return NULL; // Memory allocation for sub_elements failed
+    }
 
-    if (parse_tag_class(data_ptr, elem) < 0) {
-        fprintf(stdout, "ERROR: unknown class\n");
+    // 3. Parse tag class, constructed flag, and tag number
+    // `is_primitive` is 1 if constructed bit (0x20) is NOT set, 0 if set.
+    elem->is_primitive = ((*current_ptr & 0x20) == 0);
+
+    if (parse_tag_class(current_ptr, elem) != 0) {
+        fprintf(stderr, "ERROR: unknown class\n");
         free_element(elem);
         return NULL;
     }
 
-    if (parse_tag(data_ptr, elem) < 0) {
-        fprintf(stdout, "ERROR: unknown tag\n");
+    if (parse_tag(current_ptr, elem) != 0) {
+        fprintf(stderr, "ERROR: unknown tag (long form tags not supported)\n");
         free_element(elem);
         return NULL;
     }
 
-    // Check for constructed/primitive type consistency
-    if (!elem->is_primitive && elem->tag != ASN1_TAG_SEQUENCE && elem->tag != ASN1_TAG_SET) {
-        fprintf(stdout, "ERROR: bad constructed type (tag %u)\n", elem->tag);
-        free_element(elem);
-        return NULL;
-    }
-    if (elem->is_primitive && (elem->tag == ASN1_TAG_SEQUENCE || elem->tag == ASN1_TAG_SET)) {
-        fprintf(stdout, "ERROR: bad primitive type (tag %u)\n", elem->tag);
-        free_element(elem);
-        return NULL;
-    }
-
-    // Determine how many bytes the length field itself will consume
-    uint32_t length_field_bytes_needed = 0;
-    if (within(data_ptr + 1, 1, buffer_start, buffer_len) < 0) { // Check if the first length byte exists
-        fprintf(stdout, "ERROR: bounds exceeded (first length byte check)\n");
-        free_element(elem);
-        return NULL;
-    }
-
-    uint8_t first_length_byte = data_ptr[1]; // The byte immediately after the tag byte
-    if ((char)first_length_byte < '\0') { // Multi-byte length (MSB set)
-        uint32_t num_length_bytes_indicator = first_length_byte & 0x7f;
-        if (num_length_bytes_indicator == 0) { // Indefinite length (0x80)
-            fprintf(stdout, "ERROR: indefinite length not supported\n");
+    // Special checks for constructed/primitive types for Universal class
+    if (elem->tag_class == 0) {
+        // Universal primitive types 0x10 (SEQUENCE) and 0x11 (SET) are invalid.
+        // Universal constructed types 0x01 (BOOLEAN) and 0x05 (NULL) are invalid.
+        if ((elem->is_primitive && (elem->tag == 0x10 || elem->tag == 0x11)) || // Primitive SEQUENCE/SET
+            (!elem->is_primitive && (elem->tag == 0x01 || elem->tag == 0x05))) { // Constructed BOOLEAN/NULL
+            fprintf(stderr, "ERROR: bad constructed/primitive type for universal tag 0x%02X\n", elem->tag);
             free_element(elem);
             return NULL;
         }
-        if (num_length_bytes_indicator >= 5) { // Length value takes more than 4 bytes
-            fprintf(stdout, "ERROR: length too large (more than 4 bytes)\n");
-            free_element(elem);
-            return NULL;
-        }
-        length_field_bytes_needed = 1 + num_length_bytes_indicator; // 1 for indicator byte + N for length value bytes
-    } else { // Single-byte length
-        length_field_bytes_needed = 1; // 1 for the length byte itself
     }
 
-    // Check if there are enough bytes in the buffer for the entire length field
-    if (within(data_ptr + 1, length_field_bytes_needed, buffer_start, buffer_len) < 0) {
-        fprintf(stdout, "ERROR: bounds exceeded (entire length field)\n");
+    // 4. Parse length
+    // current_ptr + 1 is the start of the length field
+    int len_bytes_consumed = parse_length(current_ptr + 1, elem);
+    if (len_bytes_consumed < 0) {
+        // Error already printed by parse_length
         free_element(elem);
         return NULL;
     }
 
-    // Now it's safe to call parse_length
-    int length_bytes_consumed = parse_length(data_ptr + 1, elem);
-    if (length_bytes_consumed < 0) { // parse_length returns -1 for error
-        // Error message already printed by parse_length
+    // 5. Calculate data_ptr and check data bounds
+    elem->data_ptr = current_ptr + 1 + len_bytes_consumed;
+
+    // Check if the data region [data_ptr, data_ptr + length) is within the overall buffer
+    if (within(elem->data_ptr, elem->length, buffer_base, buffer_len) != 0) {
+        fprintf(stderr, "ERROR: data bounds exceeded for element data\n");
         free_element(elem);
         return NULL;
     }
 
-    // Check for specific primitive type length constraints
-    if (elem->tag == ASN1_TAG_BOOLEAN && elem->length != 1) {
-        fprintf(stdout, "ERROR: invalid length for BOOLEAN (expected 1, got %u)\n", elem->length);
-        free_element(elem);
-        return NULL;
-    }
-    if (elem->tag == ASN1_TAG_NULL && elem->length != 0) {
-        fprintf(stdout, "ERROR: invalid length for NULL (expected 0, got %u)\n", elem->length);
-        free_element(elem);
-        return NULL;
-    }
-
-    elem->data_ptr = (uint8_t *)data_ptr + 1 + length_bytes_consumed;
-
-    // Check if the data portion of the element is within overall buffer bounds
-    if (within(elem->data_ptr, elem->length, buffer_start, buffer_len) < 0) {
-        fprintf(stdout, "ERROR: bounds exceeded (element data field)\n");
-        free_element(elem);
-        return NULL;
-    }
-
+    // 6. Specific length checks for some primitive types
     if (elem->is_primitive) {
-        return elem; // Primitive type, no sub-elements to decode
+        if (elem->tag_class == 0) { // Universal primitive types
+            if (elem->tag == 0x01 && elem->length != 1) { // BOOLEAN must have length 1
+                fprintf(stderr, "ERROR: invalid length for BOOLEAN (expected 1, got %u)\n", elem->length);
+                free_element(elem);
+                return NULL;
+            }
+            if (elem->tag == 0x05 && elem->length != 0) { // NULL must have length 0
+                fprintf(stderr, "ERROR: invalid length for NULL (expected 0, got %u)\n", elem->length);
+                free_element(elem);
+                return NULL;
+            }
+        }
+        return elem; // Primitive types don't have sub-elements
     }
 
-    // Constructed type, decode sub-elements
-    const uint8_t *current_sub_data_ptr = elem->data_ptr;
-    const uint8_t *parent_data_end = elem->data_ptr + elem->length;
+    // 7. For constructed types, recursively decode sub-elements
+    const unsigned char *sub_element_ptr = elem->data_ptr;
+    const unsigned char *elem_data_end = elem->data_ptr + elem->length;
 
-    while (current_sub_data_ptr < parent_data_end) {
-        Element *sub_elem = _decode(current_sub_data_ptr, elem->depth + 1, buffer_start, buffer_len);
+    while (sub_element_ptr < elem_data_end) {
+        Element *sub_elem = _decode(sub_element_ptr, depth + 1, buffer_base, buffer_len);
         if (sub_elem == NULL) {
-            // Error decoding sub-element, return parent (partially decoded).
-            // This matches the original logic of returning the partially constructed element.
-            return elem;
+            // Error during sub-element decoding, free current element and return NULL
+            free_element(elem);
+            return NULL;
         }
-
-        if (append_sub(elem, sub_elem) < 0) {
-            fprintf(stdout, "ERROR: failed to append sub-element\n");
-            free_element(sub_elem); // Free the sub-element that couldn't be appended
-            return elem; // Return partially constructed parent
+        if (append_sub(elem, sub_elem) != 0) {
+            // Error appending sub-element, free current element and return NULL
+            fprintf(stderr, "ERROR: failed to append sub-element\n");
+            free_element(elem);
+            return NULL;
         }
+        // Update pointer for next sub-element
+        sub_element_ptr = sub_elem->data_ptr + sub_elem->length;
 
-        current_sub_data_ptr = sub_elem->data_ptr + sub_elem->length;
-
-        if (current_sub_data_ptr < buffer_start) { // Should not happen if within is correct for sub_elem
-             fprintf(stdout, "ERROR: sub-element end pointer before buffer start\n");
-             return elem;
-        }
-        // If the next sub-element would start at or beyond the parent's data end, stop.
-        // This handles both normal termination and sub-element extending beyond parent's declared length.
-        if (current_sub_data_ptr > parent_data_end) {
-            fprintf(stdout, "ERROR: sub-element extends beyond parent's data boundary\n");
-            return elem;
+        // Check if the next sub_element_ptr is within the parent's declared data length
+        if (sub_element_ptr > elem_data_end) {
+            fprintf(stderr, "ERROR: Sub-element extends beyond parent's declared length\n");
+            free_element(elem);
+            return NULL;
         }
     }
-    return elem; // Successfully decoded all sub-elements (or reached end of parent's data)
+    return elem; // Successfully parsed all sub-elements
 }
 
-// Function: decode
-void decode(const uint8_t *data, uint32_t data_len) {
-    // The return value of _decode is ignored here, matching the original function signature.
-    // A typical design would return the root Element* or an error code.
-    Element *root_element = _decode(data, 0, data, data_len);
-    // If root_element is NULL, an error occurred during decoding.
-    // Otherwise, print the structure. pprint also handles freeing the element tree.
-    if (root_element != NULL) {
-        pprint(root_element);
-    } else {
-        fprintf(stdout, "ERROR: Failed to decode root element.\n");
-    }
+// Function: decode (main entry point for decoding)
+// Decodes an ASN.1 structure from the given buffer.
+// Returns a pointer to the root Element on success, or NULL on error.
+Element *decode(const unsigned char *buffer, size_t buffer_len) {
+    return _decode(buffer, 0, buffer, buffer_len);
 }
 
 // Function: print_indent
-void print_indent(uint32_t depth) {
-    for (uint32_t i = 0; i < depth; i++) {
+// Prints indentation spaces based on the given depth.
+void print_indent(unsigned int depth) {
+    for (unsigned int i = 0; i < depth; ++i) {
         fprintf(stdout, "  ");
     }
 }
 
 // Function: print_time
+// Prints a formatted time string from an Element's data.
+// is_utc_time: 1 for UTCTime (YYMMDDHHMMSS), 0 for GeneralizedTime (YYYYMMDDHHMMSS).
 void print_time(const Element *elem, int is_utc_time) {
-    uint32_t expected_len;
-    const uint8_t *time_str_ptr = elem->data_ptr;
+    const unsigned char *time_str = elem->data_ptr;
+    unsigned int expected_len;
 
-    if (is_utc_time == 0) { // GeneralizedTime (YYYYMMDDHHMMSS)
+    if (is_utc_time == 0) { // GeneralizedTime: YYYYMMDDHHMMSS
         expected_len = 14;
-    } else { // UTCTime (YYMMDDHHMMSS)
+    } else { // UTCTime: YYMMDDHHMMSS
         expected_len = 12;
     }
 
@@ -348,253 +294,227 @@ void print_time(const Element *elem, int is_utc_time) {
         return;
     }
 
-    for (uint32_t i = 0; i < expected_len; i++) {
-        if (!isdigit(time_str_ptr[i])) {
+    // Validate characters are digits
+    for (unsigned int i = 0; i < expected_len; ++i) {
+        if (!isdigit(time_str[i])) {
             fprintf(stdout, "INVALID TIME");
             return;
         }
     }
 
     if (is_utc_time == 0) { // GeneralizedTime
-        // Format: DD/MM/YYYY
-        fprintf(stdout, "%c%c/%c%c/%c%c%c%c",
-                time_str_ptr[6], time_str_ptr[7],   // DD
-                time_str_ptr[4], time_str_ptr[5],   // MM
-                time_str_ptr[0], time_str_ptr[1],   // YYYY
-                time_str_ptr[2], time_str_ptr[3]);
-        time_str_ptr += 2; // Adjust pointer for HH:MM:SS part
+        fprintf(stdout, "%c%c%c%c/%c%c/%c%c",
+                time_str[0], time_str[1], time_str[2], time_str[3], // YYYY
+                time_str[4], time_str[5], // MM
+                time_str[6], time_str[7]); // DD
+        fprintf(stdout, " %c%c:%c%c:%c%c GMT",
+                time_str[8], time_str[9],   // HH
+                time_str[10], time_str[11], // MM
+                time_str[12], time_str[13]);// SS
     } else { // UTCTime
-        // Format: MM/DD/YYYY
         fprintf(stdout, "%c%c/%c%c/",
-                time_str_ptr[4], time_str_ptr[5],   // MM
-                time_str_ptr[2], time_str_ptr[3]);   // DD
-
-        // Determine century for YY
-        if (time_str_ptr[0] < '5') { // Years 00-49 are 20YY, 50-99 are 19YY
+                time_str[2], time_str[3], // MM
+                time_str[4], time_str[5]); // DD
+        if (time_str[0] < '6') { // Year 20YY (e.g., 50-99 -> 19YY; 00-49 -> 20YY)
             fprintf(stdout, "20");
         } else {
             fprintf(stdout, "19");
         }
-        fprintf(stdout, "%c%c", time_str_ptr[0], time_str_ptr[1]); // YY
+        fprintf(stdout, "%c%c", time_str[0], time_str[1]); // YY
+        fprintf(stdout, " %c%c:%c%c:%c%c GMT",
+                time_str[6], time_str[7],   // HH
+                time_str[8], time_str[9],   // MM
+                time_str[10], time_str[11]);// SS
     }
-    // Print HH:MM:SS GMT (common for both after adjustments/initial prints)
-    fprintf(stdout, " %c%c:%c%c:%c%c GMT",
-            time_str_ptr[6], time_str_ptr[7],   // HH
-            time_str_ptr[8], time_str_ptr[9],   // MM
-            time_str_ptr[10], time_str_ptr[11]); // SS
 }
 
 // Function: print_hex
+// Prints an Element's data in hexadecimal format.
 void print_hex(const Element *elem) {
-    if (elem->length < 17) { // Print on one line if short
-        for (uint32_t i = 0; i < elem->length; i++) {
-            fprintf(stdout, "%02X ", elem->data_ptr[i]);
+    const unsigned char *data = elem->data_ptr;
+    unsigned int len = elem->length;
+
+    if (len < 17) { // Print on one line if short
+        for (unsigned int i = 0; i < len; ++i) {
+            fprintf(stdout, "%02X ", data[i]);
         }
-    } else { // Print with indentation and line breaks
+    } else { // Print on multiple lines with indentation if long
         fprintf(stdout, "\n");
         print_indent(elem->depth + 1);
-        for (uint32_t i = 0; i < elem->length; i++) {
-            fprintf(stdout, "%02X", elem->data_ptr[i]);
-            if ((i & 0x1f) == 0x1f) { // Every 32 bytes (0x1f index)
-                fprintf(stdout, "\n"); // Newline
+        for (unsigned int i = 0; i < len; ++i) {
+            fprintf(stdout, "%02X", data[i]);
+            if ((i & 0x1f) == 0x1f && (i + 1) < len) { // Every 32 bytes (0-indexed, so after 31st byte), if not the very last byte
+                fprintf(stdout, "\n");
                 print_indent(elem->depth + 1);
-            } else {
-                fprintf(stdout, " "); // Space separator
+            } else if ((i + 1) < len) { // Not the last byte, print space
+                fprintf(stdout, " ");
             }
         }
     }
 }
 
 // Function: read_octet_int
-int read_octet_int(const uint8_t *data, uint32_t max_len, uint32_t *out_value) {
-    *out_value = 0;
-    for (uint32_t i = 0; i < 4 && i < max_len; i++) {
-        *out_value = (*out_value << 7) | (data[i] & 0x7f);
-        if (!(data[i] & 0x80)) { // If MSB is 0, it's the last octet
-            return i + 1; // Number of bytes consumed
+// Reads a variable-length integer encoded in octets (MSB indicates continuation).
+// Stores the result in *value.
+// Returns the number of bytes consumed, or -1 on error.
+int read_octet_int(const unsigned char *data, unsigned int max_len, unsigned int *value) {
+    *value = 0;
+    for (unsigned int i = 0; i < sizeof(unsigned int) && i < max_len; ++i) {
+        *value <<= 7;
+        *value |= (data[i] & 0x7f);
+        if (!((data[i] & 0x80) != 0)) { // If MSB is 0, it's the last byte
+            return i + 1; // Number of bytes read
         }
     }
-    return -1; // Error: more than 4 octets or end of buffer without a terminating octet
+    return -1; // Error: value too long for unsigned int or max_len exceeded without finding end
 }
 
 // Function: print_oid
+// Prints an Object Identifier (OID) from an Element's data.
 void print_oid(const Element *elem) {
-    uint32_t oid_sub_identifier;
-    int bytes_read;
-    uint32_t current_offset = 0;
+    const unsigned char *data = elem->data_ptr;
+    unsigned int len = elem->length;
+    unsigned int bytes_read = 0;
+    unsigned int current_oid_value;
+    int bytes_consumed;
 
-    // First sub-identifier (special rule: X*40 + Y)
-    bytes_read = read_octet_int(elem->data_ptr + current_offset, elem->length - current_offset, &oid_sub_identifier);
-    if (bytes_read < 0 || current_offset + bytes_read > elem->length) {
+    // First octet group (special encoding for first two arcs)
+    bytes_consumed = read_octet_int(data + bytes_read, len - bytes_read, &current_oid_value);
+    if (bytes_consumed < 0 || bytes_read + bytes_consumed > len) {
         fprintf(stdout, "INVALID OID");
         return;
     }
-    current_offset += bytes_read;
+    bytes_read += bytes_consumed;
 
-    // Print first two arcs
-    if (oid_sub_identifier < 80) { // 0.x, 1.x (0.0 to 1.39)
-        fprintf(stdout, "%u.%u", oid_sub_identifier / 40, oid_sub_identifier % 40);
-    } else { // 2.x (2.0 and up)
-        fprintf(stdout, "2.%u", oid_sub_identifier - 80);
+    if (current_oid_value < 40) { // 0.* or 1.*
+        fprintf(stdout, " %u.%u", current_oid_value / 40, current_oid_value % 40);
+    } else { // 2.*
+        fprintf(stdout, " 2.%u", current_oid_value - 80); // 80 (0x50) is (2*40 + 0)
     }
 
-    // Subsequent sub-identifiers
-    while (current_offset < elem->length) {
-        bytes_read = read_octet_int(elem->data_ptr + current_offset, elem->length - current_offset, &oid_sub_identifier);
-        if (bytes_read < 0 || current_offset + bytes_read > elem->length) {
-            fprintf(stdout, ".INVALID_OID_SUFFIX"); // Indicate error but print what was parsed
+    // Subsequent octet groups
+    while (bytes_read < len) {
+        bytes_consumed = read_octet_int(data + bytes_read, len - bytes_read, &current_oid_value);
+        if (bytes_consumed < 0 || bytes_read + bytes_consumed > len) {
+            fprintf(stdout, "INVALID OID");
             return;
         }
-        current_offset += bytes_read;
-        fprintf(stdout, ".%u", oid_sub_identifier);
-    }
-}
-
-// Function: print_tag
-void print_tag(const Element *elem) {
-    switch (elem->tag_class) {
-        case 0: // Universal
-            if (elem->tag > 30) { // Check against size of utag_names array
-                fprintf(stdout, "UNIVERSAL_%u ", elem->tag);
-            } else {
-                fprintf(stdout, "UNIVERSAL %s ", utag_names[elem->tag]);
-            }
-            break;
-        case 1: // Application
-            fprintf(stdout, "APPLICATION_%u ", elem->tag);
-            break;
-        case 2: // Context-specific
-            fprintf(stdout, "[%u] ", elem->tag);
-            break;
-        case 3: // Private
-            fprintf(stdout, "PRIVATE_%u ", elem->tag);
-            break;
-        default:
-            fprintf(stdout, "UNKNOWN_CLASS_%u TAG_%u ", elem->tag_class, elem->tag);
-            break;
+        bytes_read += bytes_consumed;
+        fprintf(stdout, ".%u", current_oid_value);
     }
 }
 
 // Function: print_string
+// Prints an Element's data as a string, escaping non-alphanumeric characters.
 void print_string(const Element *elem) {
-    for (uint32_t i = 0; i < elem->length; i++) {
-        fprintf(stdout, "%c", elem->data_ptr[i]);
+    const unsigned char *data = elem->data_ptr;
+    unsigned int len = elem->length;
+
+    for (unsigned int i = 0; i < len; ++i) {
+        if (isalnum(data[i])) {
+            fprintf(stdout, "%c", data[i]);
+        } else {
+            fprintf(stdout, "\\%02X", data[i]);
+        }
     }
+}
+
+// Function: print_tag
+// Prints the tag class and tag number of an Element.
+void print_tag(const Element *elem) {
+    unsigned char tag_class = elem->tag_class;
+    unsigned char tag = elem->tag;
+
+    if (tag_class == 3) { // Private
+        fprintf(stdout, "PRIVATE_%u ", tag);
+        return;
+    }
+    if (tag_class == 2) { // Context-specific
+        fprintf(stdout, "[%u] ", tag);
+        return;
+    }
+    if (tag_class == 1) { // Application
+        fprintf(stdout, "APPLICATION_%u ", tag);
+        return;
+    }
+    if (tag_class == 0) { // Universal
+        if (tag > MAX_UNIVERSAL_TAG_INDEX || utag_names[tag] == NULL) {
+            fprintf(stdout, "UNIVERSAL_%u ", tag);
+            return;
+        }
+        fprintf(stdout, "UNIVERSAL %s ", utag_names[tag]);
+        return;
+    }
+    fprintf(stdout, "UNKNOWN_CLASS_%u_TAG_%u ", tag_class, tag); // Fallback for unknown class
+    return;
 }
 
 // Function: print_primitive
+// Prints the value of a primitive ASN.1 element based on its tag.
 void print_primitive(const Element *elem) {
-    // The original code used a goto to handle default/non-universal cases.
-    // Refactored to use standard switch-case and if-else logic.
-    if (elem->tag_class == 0) { // Universal class
-        switch (elem->tag) {
-            case ASN1_TAG_BOOLEAN:
-                fprintf(stdout, "%s", (elem->data_ptr[0] == 0) ? "False" : "True");
-                break;
-            case ASN1_TAG_INTEGER:
-            case ASN1_TAG_BIT_STRING:
-            case ASN1_TAG_OCTET_STRING:
-                print_hex(elem);
-                break;
-            case ASN1_TAG_OBJECT_IDENTIFIER:
-                print_oid(elem);
-                break;
-            case ASN1_TAG_UTF8_STRING:
-            case ASN1_TAG_NUMERIC_STRING:
-            case ASN1_TAG_PRINTABLE_STRING:
-            case ASN1_TAG_T61_STRING:
-            case ASN1_TAG_VIDEOTEX_STRING:
-            case ASN1_TAG_IA5_STRING:
-            case ASN1_TAG_VISIBLE_STRING:
-                print_string(elem);
-                break;
-            case ASN1_TAG_UTC_TIME:
-                print_time(elem, 1); // 1 for UTCTime
-                break;
-            case ASN1_TAG_GENERALIZED_TIME:
-                print_time(elem, 0); // 0 for GeneralizedTime
-                break;
-            default:
-                fprintf(stdout, "UNPRINTABLE");
-                break;
-        }
-    } else { // Non-universal class or other unprintable types
+    if (elem->tag_class != 0) { // Only Universal class tags have predefined primitive printing
         fprintf(stdout, "UNPRINTABLE");
+        return;
+    }
+
+    switch (elem->tag) {
+        case 0x01: // BOOLEAN
+            fprintf(stdout, "%s", (elem->data_ptr[0] == 0) ? "False" : "True");
+            break;
+        case 0x02: // INTEGER
+        case 0x03: // BIT STRING
+        case 0x04: // OCTET STRING
+            print_hex(elem);
+            break;
+        case 0x05: // NULL (length must be 0)
+            // Nothing extra to print for NULL, its presence is enough.
+            break;
+        case 0x06: // OBJECT IDENTIFIER
+            print_oid(elem);
+            break;
+        case 0x0C: // UTF8String
+        case 0x12: // NumericString
+        case 0x13: // PrintableString
+        case 0x14: // T61String
+        case 0x15: // VideotexString
+        case 0x16: // IA5String
+        case 0x1A: // VisibleString / ISO646String
+            print_string(elem);
+            break;
+        case 0x17: // UTCTime
+            print_time(elem, 1);
+            break;
+        case 0x18: // GeneralizedTime
+            print_time(elem, 0);
+            break;
+        default:
+            fprintf(stdout, "UNPRINTABLE");
+            break;
     }
 }
 
-// Function: pprint
-void pprint(Element *elem) {
+// Function: pprint (pretty print)
+// Recursively prints the ASN.1 structure.
+void pprint(const Element *elem) {
     if (elem == NULL) {
         return;
     }
 
     print_indent(elem->depth);
     print_tag(elem);
+    fprintf(stdout, "\n"); // Always print newline after tag info
 
-    if (!elem->is_primitive) { // Constructed type
-        fprintf(stdout, "\n");
-        for (uint32_t i = 0; i < elem->count; i++) {
+    if (elem->is_primitive) { // If it's a primitive type
+        print_indent(elem->depth + 1); // Indent for primitive value
+        print_primitive(elem);
+        fprintf(stdout, "\n"); // Newline after primitive value
+    } else { // If it's a constructed type
+        for (unsigned int i = 0; i < elem->num_sub_elements; ++i) {
             pprint(elem->sub_elements[i]);
         }
-    } else { // Primitive type
-        print_primitive(elem);
-        fprintf(stdout, "\n");
     }
 
-    // Free the element tree when the root element (depth 0) has been processed.
-    // This is an unusual place for memory management, but matches the original logic.
-    if (elem->depth == 0) {
-        free_element(elem);
+    if (elem->depth == 0) { // Only free the root element when done printing
+        free_element((Element *)elem); // Cast away const for free_element
     }
-}
-
-// Utility to convert hex character to byte value
-static uint8_t hex_to_byte(char c) {
-    if (c >= '0' && c <= '9') return c - '0';
-    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
-    return 0; // Should not happen with valid hex input
-}
-
-// Utility to parse a hex string into a byte array
-static uint8_t *parse_hex_string(const char *hex_str, uint32_t *out_len) {
-    size_t len = strlen(hex_str);
-    if (len % 2 != 0) {
-        fprintf(stderr, "Error: Hex string length must be even.\n");
-        return NULL;
-    }
-    *out_len = len / 2;
-    uint8_t *data = (uint8_t *)malloc(*out_len);
-    if (data == NULL) {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
-        return NULL;
-    }
-
-    for (size_t i = 0; i < *out_len; i++) {
-        data[i] = (hex_to_byte(hex_str[i * 2]) << 4) | hex_to_byte(hex_str[i * 2 + 1]);
-    }
-    return data;
-}
-
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <hex_encoded_asn1_data>\n", argv[0]);
-        return EXIT_FAILURE;
-    }
-
-    uint32_t data_len;
-    uint8_t *asn1_data = parse_hex_string(argv[1], &data_len);
-
-    if (asn1_data == NULL) {
-        return EXIT_FAILURE;
-    }
-
-    decode(asn1_data, data_len);
-
-    // The asn1_data buffer allocated by parse_hex_string needs to be freed.
-    // The decode function eventually frees the Element structure, but not the raw input data buffer.
-    free(asn1_data);
-
-    return EXIT_SUCCESS;
 }

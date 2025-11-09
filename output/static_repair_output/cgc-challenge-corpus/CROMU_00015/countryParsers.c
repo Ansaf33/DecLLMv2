@@ -1,139 +1,16 @@
-#include <stdio.h>   // For printf, fgets, stdin
-#include <stdlib.h>  // For atoi, atof, malloc, free
-#include <string.h>  // For memset, strlen, strcspn, strncpy, strcmp
-#include <ctype.h>   // For isalpha, isalnum, isspace
-#include <stdbool.h> // For bool type
+#include <stdio.h>    // For printf, stdin, fgets
+#include <stdlib.h>   // For atoi, atof, malloc, free
+#include <string.h>   // For memset, strlen, strncpy, strcmp, strcspn
+#include <ctype.h>    // For isalpha, isalnum, isspace
+#include <math.h>     // For atof (though it's in stdlib.h, it's often associated with math operations)
 
-// --- Mock/Placeholder definitions for external functions and types ---
-// These are necessary for the code to compile. Their actual implementations are assumed to exist elsewhere.
+// Dummy declarations for external functions and types
+// In a real scenario, these would be defined elsewhere or in included headers.
 
-// Forward declaration for Territory, as it's used in Country
-typedef struct Territory Territory;
-
-// Assuming a structure for Country based on offsets from the original code
-typedef struct Country {
-    char name[20];           // 0x0 - 0x13 (0x14 bytes)
-    char capitol[20];        // 0x14 - 0x27 (0x14 bytes)
-    int population;          // 0x28
-    int language_count;      // 0x2c
-    char *languages[10];     // 0x30 (10 * sizeof(char*))
-    int border_count;        // 0x58
-    double *borders[100];    // 0x5c (100 * sizeof(double*))
-    int territory_count;     // 0x1ec
-    Territory *territories[10]; // 0x1f0 (10 * sizeof(Territory*))
-    // Total size 0x218 (536 bytes)
-} Country;
-
-// Simplified Territory structure (actual size 0x1fc from allocate in countryMenu)
-struct Territory {
-    char name[20]; // Example, based on usage in countryMenu
-    // ... other fields for territory, if any, to reach size 0x1fc
-};
-
-// Mock functions for input/output
-void receive_until(char *buffer, int delimiter, int max_len) {
-    if (fgets(buffer, max_len + 1, stdin) != NULL) {
-        // Remove newline character if present
-        buffer[strcspn(buffer, "\n")] = 0;
-    }
-}
-
-void receive(int fd, char *buffer, int max_len, int *bytes_read) {
-    // fd parameter is ignored in this mock as we use stdin
-    if (fgets(buffer, max_len + 1, stdin) != NULL) {
-        // Remove newline character if present
-        buffer[strcspn(buffer, "\n")] = 0;
-        if (bytes_read) *bytes_read = strlen(buffer);
-    } else {
-        if (bytes_read) *bytes_read = 0;
-    }
-}
-
-// Mock memory allocation functions
-// Returns 0 on success, non-zero on failure (mimics original 'allocate' behavior)
-int allocate(size_t size, int flags, void **ptr_out) {
-    *ptr_out = malloc(size);
-    return (*ptr_out == NULL);
-}
-
-void deallocate(void *ptr, size_t size) {
-    free(ptr);
-}
-
-// Mock parsing state structure (param_1 in parsing functions)
-typedef struct ParserState {
-    char *buffer;
-    int current_index;
-    int prev_index; // Used by getIndex in original code
-} ParserState;
-
-void skipWhiteSpace(ParserState *state) {
-    while (state->buffer[state->current_index] != '\0' && isspace((unsigned char)state->buffer[state->current_index])) {
-        state->current_index++;
-    }
-}
-
-int getIndex(ParserState *state, int *index_out) {
-    if (index_out) *index_out = state->current_index;
-    state->prev_index = state->current_index; // Store for potential use by other functions
-    return state->current_index;
-}
-
-int atChar(ParserState *state, char c) {
-    return state->buffer[state->current_index] == c;
-}
-
-// Returns new current_index on success, -1 on failure
-int skipLength(ParserState *state, int length) {
-    if (state->current_index + length <= strlen(state->buffer)) {
-        state->current_index += length;
-        return state->current_index;
-    }
-    return -1;
-}
-
-// Returns new current_index after skipping alpha chars
-int skipAlpha(ParserState *state) {
-    int start_index = state->current_index;
-    while (state->buffer[state->current_index] != '\0' && isalpha((unsigned char)state->buffer[state->current_index])) {
-        state->current_index++;
-    }
-    return state->current_index;
-}
-
-// Returns new current_index after skipping alphanumeric chars
-int skipToNonAlphaNum(ParserState *state) {
-    int start_index = state->current_index;
-    while (state->buffer[state->current_index] != '\0' && isalnum((unsigned char)state->buffer[state->current_index])) {
-        state->current_index++;
-    }
-    return state->current_index;
-}
-
-char *copyData(ParserState *state, int start, int end) {
-    if (start < 0 || end < start || (size_t)end > strlen(state->buffer)) return NULL;
-    size_t length = end - start;
-    char *data = malloc(length + 1);
-    if (data) {
-        strncpy(data, state->buffer + start, length);
-        data[length] = '\0';
-    }
-    return data;
-}
-
-// Increments current_index by 1, returns new index or -1 on error
-int incChar(ParserState *state) {
-    if (state->buffer[state->current_index] != '\0') {
-        state->current_index++;
-        return state->current_index;
-    }
-    return -1;
-}
-
-// Element enum for countryTopLevel parsing
+// Enum for element types, inferred from usage in countryTopLevel
 typedef enum {
-    ELEMENT_UNKNOWN = 0,
-    ELEMENT_NAME = 1,
+    ELEMENT_UNKNOWN = -1,
+    ELEMENT_COUNTRY_NAME = 1,
     ELEMENT_POPULATION = 10,
     ELEMENT_CAPITOL = 12,
     ELEMENT_LANGUAGE = 13,
@@ -141,8 +18,183 @@ typedef enum {
     ELEMENT_TERRITORY = 15
 } ElementType;
 
-ElementType elementNameToEnum(const char *name) {
-    if (strcmp(name, "Name") == 0) return ELEMENT_NAME;
+// Structure for parsing context, inferred from usage in countryTopLevel, extractLanguage, extractCapitol
+typedef struct ParseContext {
+    char* buffer;        // The string being parsed
+    int current_index;   // Current position in the buffer
+    // Add other fields as needed for parsing context
+} ParseContext;
+
+// Dummy memory management wrappers
+// Returns 0 on success, non-zero on failure
+int allocate(size_t size, int type_unused, void** ptr_out) {
+    *ptr_out = malloc(size);
+    if (*ptr_out == NULL) {
+        fprintf(stderr, "Memory allocation failed for size %zu\n", size);
+        return 1; // Failure
+    }
+    memset(*ptr_out, 0, size); // Initialize allocated memory to zero
+    return 0; // Success
+}
+
+// Dummy deallocation wrapper
+void deallocate(void* ptr, size_t size_unused) {
+    free(ptr);
+}
+
+// Dummy external functions (replace with actual implementations if available)
+// These are simplified for compilation purposes.
+void receive_until(char* buffer, int max_len, int type_unused) {
+    if (fgets(buffer, max_len, stdin) == NULL) {
+        // Handle error or EOF, e.g., clear buffer
+        buffer[0] = '\0';
+    }
+    // Remove trailing newline if present
+    buffer[strcspn(buffer, "\n")] = '\0';
+}
+
+void receive(int fd_unused, char* buffer, int max_len, int* bytes_read) {
+    // Dummy implementation: read from stdin
+    if (fgets(buffer, max_len, stdin) == NULL) {
+        *bytes_read = -1; // Indicate error
+        buffer[0] = '\0';
+    } else {
+        *bytes_read = strlen(buffer);
+        // Remove trailing newline if present
+        buffer[strcspn(buffer, "\n")] = '\0';
+    }
+}
+
+// Skips whitespace characters and returns the new current_index
+int skipWhiteSpace(ParseContext* ctx) {
+    while (ctx->buffer[ctx->current_index] != '\0' && isspace((unsigned char)ctx->buffer[ctx->current_index])) {
+        ctx->current_index++;
+    }
+    return ctx->current_index;
+}
+
+// Gets the current index and optionally stores it in a pointer
+int getIndex(ParseContext* ctx, int* index) {
+    if (index) {
+        *index = ctx->current_index;
+    }
+    return ctx->current_index;
+}
+
+// Checks if the character at current_index matches 'c'
+int atChar(ParseContext* ctx, char c) {
+    return (ctx->buffer[ctx->current_index] == c);
+}
+
+// Skips 'length' characters forward. Returns 0 on success, -1 on failure (e.g., out of bounds).
+int skipLength(ParseContext* ctx, int length) {
+    // Basic bounds check, actual implementation would be more robust
+    if (ctx->current_index + length > strlen(ctx->buffer)) {
+        return -1;
+    }
+    ctx->current_index += length;
+    return 0;
+}
+
+// Skips alphabetic characters and returns the new current_index
+int skipAlpha(ParseContext* ctx) {
+    while (ctx->buffer[ctx->current_index] != '\0' && isalpha((unsigned char)ctx->buffer[ctx->current_index])) {
+        ctx->current_index++;
+    }
+    return ctx->current_index;
+}
+
+// Skips alphanumeric characters and returns the new current_index
+int skipToNonAlphaNum(ParseContext* ctx) {
+    while (ctx->buffer[ctx->current_index] != '\0' && isalnum((unsigned char)ctx->buffer[ctx->current_index])) {
+        ctx->current_index++;
+    }
+    return ctx->current_index;
+}
+
+// Copies data from start_idx to end_idx (exclusive) from the buffer
+void* copyData(ParseContext* ctx, int start_idx, int end_idx) {
+    int len = end_idx - start_idx;
+    if (len <= 0) return NULL;
+    char* data = (char*)malloc(len + 1);
+    if (data) {
+        strncpy(data, ctx->buffer + start_idx, len);
+        data[len] = '\0';
+    }
+    return data;
+}
+
+// Increments current_index by one. Returns 0 on success, -1 on failure.
+int incChar(ParseContext* ctx) {
+    if (ctx->buffer[ctx->current_index] == '\0') {
+        return -1; // Cannot increment past null terminator
+    }
+    ctx->current_index++;
+    return 0;
+}
+
+// Dummy territory functions
+void initTerritory(void* territory_ptr) {
+    printf("Initializing territory at %p\n", territory_ptr);
+    // In a real implementation, this would initialize a Territory struct
+}
+int territoryMenu(void* territory_ptr) {
+    printf("Territory menu entered for %p\n", territory_ptr);
+    // Dummy: returns 1 (exit menu) or 0 (deleted)
+    // For simplicity, always exit without deleting.
+    return 1;
+}
+void printTerritoryInfo(void* territory_ptr) {
+    printf("\t\tTerritory Info for %p (assuming name at start: %s)\n", territory_ptr, (char*)territory_ptr); // Dummy
+}
+void freeTerritory(void* territory_ptr) {
+    printf("Freeing territory at %p\n", territory_ptr);
+    deallocate(territory_ptr, 0); // Size 0 is dummy for deallocate
+}
+void* territoryTopLevel(ParseContext* ctx) {
+    printf("Parsing territory from context at index %d\n", ctx->current_index);
+    // Dummy: always allocate a dummy territory
+    void* territory_ptr = NULL;
+    if (allocate(0x1fc, 0, &territory_ptr) == 0) {
+        // Assume territory name is just "DummyTerritory" for now
+        strncpy((char*)territory_ptr, "DummyTerritory", 0x1fc - 1);
+    }
+    return territory_ptr;
+}
+
+// Dummy country parsing helper functions
+char* extractName(ParseContext* ctx) {
+    printf("Extracting country name from context at index %d\n", ctx->current_index);
+    // Dummy: simulate extracting "TestCountryName"
+    char* name = (char*)malloc(20);
+    if (name) strncpy(name, "TestCountryName", 19);
+    skipLength(ctx, 10); // Simulate parsing some data
+    return name;
+}
+int extractPopulation(ParseContext* ctx) {
+    printf("Extracting population from context at index %d\n", ctx->current_index);
+    // Dummy: simulate extracting 1000000
+    skipLength(ctx, 5); // Simulate parsing some data
+    return 1000000;
+}
+double* extractBorder(ParseContext* ctx) {
+    printf("Extracting border from context at index %d\n", ctx->current_index);
+    // Dummy: simulate extracting 4 doubles
+    double* border_coords = NULL;
+    if (allocate(4 * sizeof(double), 0, (void**)&border_coords) == 0) {
+        border_coords[0] = 1.0; border_coords[1] = 2.0;
+        border_coords[2] = 3.0; border_coords[3] = 4.0;
+    }
+    skipLength(ctx, 20); // Simulate parsing some data
+    return border_coords;
+}
+char* extractLanguage(ParseContext* ctx); // Forward declare
+char* extractCapitol(ParseContext* ctx);  // Forward declare
+
+// Function to convert element name string to enum, inferred from usage
+ElementType elementNameToEnum(char* name) {
+    if (name == NULL) return ELEMENT_UNKNOWN;
+    if (strcmp(name, "Name") == 0) return ELEMENT_COUNTRY_NAME;
     if (strcmp(name, "Population") == 0) return ELEMENT_POPULATION;
     if (strcmp(name, "Capitol") == 0) return ELEMENT_CAPITOL;
     if (strcmp(name, "Language") == 0) return ELEMENT_LANGUAGE;
@@ -151,936 +203,651 @@ ElementType elementNameToEnum(const char *name) {
     return ELEMENT_UNKNOWN;
 }
 
-char *pullNextElementName(ParserState *state) {
-    skipWhiteSpace(state);
-    if (!atChar(state, '{')) return NULL;
-    if (skipLength(state, 1) == -1) return NULL;
-    skipWhiteSpace(state);
-    int start = state->current_index;
-    int end = skipToNonAlphaNum(state);
-    if (end == -1 || start == end) {
-        // Rewind state for cleaner error handling if no element name found
-        state->current_index = start - 1; // Back to '{'
-        return NULL;
+char* pullNextElementName(ParseContext* ctx) {
+    printf("Pulling next element name from context at index %d\n", ctx->current_index);
+    // Dummy: For countryTopLevel, this would parse the next element like "{Name}..."
+    // Simulate finding "Name" once, then "Population", then "Capitol", etc.
+    static int call_count = 0;
+    char* name = NULL;
+    switch (call_count++) {
+        case 0: name = (char*)copyData(ctx, 0, 5); strcpy(name, "Name"); break;
+        case 1: name = (char*)copyData(ctx, 0, 9); strcpy(name, "Population"); break;
+        case 2: name = (char*)copyData(ctx, 0, 7); strcpy(name, "Capitol"); break;
+        case 3: name = (char*)copyData(ctx, 0, 8); strcpy(name, "Language"); break;
+        case 4: name = (char*)copyData(ctx, 0, 6); strcpy(name, "Border"); break;
+        case 5: name = (char*)copyData(ctx, 0, 9); strcpy(name, "Territory"); break;
+        default: return NULL; // No more elements
     }
-    char *name = copyData(state, start, end);
-    skipWhiteSpace(state);
-    if (!atChar(state, '}')) {
-        deallocate(name, strlen(name) + 1);
-        state->current_index = start - 1; // Back to '{'
-        return NULL;
-    }
-    if (skipLength(state, 1) == -1) {
-        deallocate(name, strlen(name) + 1);
-        state->current_index = start - 1; // Back to '{'
-        return NULL;
-    }
+    // Simulate consuming some input for the element name
+    ctx->current_index += (strlen(name) + 2); // e.g. {Name}
     return name;
 }
 
-// Forward declarations for actual functions
-void initTerritory(Territory *t);
-int territoryMenu(Territory *t);
-void freeTerritory(Territory *t);
-void printTerritoryInfo();
-char *extractLanguage(ParserState *state);
-char *extractCapitol(ParserState *state);
-Country *countryTopLevel(ParserState *state);
-void printCountryInfo(Country *country_ptr);
-void freeCountry(Country *country_ptr);
-void initCountry(Country *country_ptr);
 
+// Structure definition for Country, inferred from memory offsets
+#define MAX_COUNTRY_NAME_LEN 20
+#define MAX_CAPITOL_NAME_LEN 20
+#define MAX_LANGUAGES 10
+#define MAX_BORDERS 100
+#define MAX_TERRITORIES 10
 
-// Mock extractName (simplified)
-char *extractName(ParserState *state) {
-    char *name_val = NULL;
-    char *closing_tag = NULL;
-    bool success = false;
-    int original_idx = state->current_index;
+typedef struct Country {
+    char name[MAX_COUNTRY_NAME_LEN];          // Offset 0x0
+    char capitol[MAX_CAPITOL_NAME_LEN];    // Offset 0x14
+    int population;                         // Offset 0x28
+    int num_languages;                      // Offset 0x2c
+    char* languages[MAX_LANGUAGES];         // Offset 0x30 (array of char pointers)
+    int num_borders;                        // Offset 0x58
+    double* borders[MAX_BORDERS];           // Offset 0x5c (array of double pointers, each pointing to 4 doubles)
+    int num_territories;                    // Offset 0x1ec
+    void* territories[MAX_TERRITORIES];     // Offset 0x1f0 (array of void pointers to Territory structs)
+} Country; // Total size 0x218 (536 bytes)
 
-    do {
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip initial closing brace for Name\n"); break; }
-        skipWhiteSpace(state);
-        int start = state->current_index;
-        int end = skipAlpha(state);
-        if (start == end) { printf("!!Failed to find name data\n"); break; }
-        name_val = copyData(state, start, end);
-        if (!name_val) { printf("!!Failed to copy name data\n"); break; }
-        skipWhiteSpace(state);
-        if (!atChar(state, '{') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip final opening brace for Name\n"); break; }
-        skipWhiteSpace(state);
-        if (!atChar(state, '#') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip closing mark for Name\n"); break; }
-        start = state->current_index;
-        end = skipToNonAlphaNum(state);
-        if (start == end) { printf("!!Failed to identify closing tag for Name\n"); break; }
-        closing_tag = copyData(state, start, end);
-        if (!closing_tag || strcmp(closing_tag, "Name") != 0) { printf("!!Invalid closing tag for Name\n"); break; }
-        deallocate(closing_tag, strlen(closing_tag)+1); closing_tag = NULL;
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip final closing brace for Name\n"); break; }
-        success = true;
-    } while(false);
-
-    if (!success) {
-        if (name_val) deallocate(name_val, strlen(name_val)+1);
-        if (closing_tag) deallocate(closing_tag, strlen(closing_tag)+1);
-        state->current_index = original_idx;
-        return NULL;
-    }
-    return name_val;
-}
-
-// Mock extractPopulation (simplified)
-int extractPopulation(ParserState *state) {
-    int population = -1;
-    char *pop_str = NULL;
-    char *closing_tag = NULL;
-    bool success = false;
-    int original_idx = state->current_index;
-
-    do {
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip initial closing brace for Population\n"); break; }
-        skipWhiteSpace(state);
-        int start = state->current_index;
-        while (state->buffer[state->current_index] != '\0' && isdigit((unsigned char)state->buffer[state->current_index])) {
-            state->current_index++;
-        }
-        int end = state->current_index;
-        if (start == end) { printf("!!Failed to find population data\n"); break; }
-        pop_str = copyData(state, start, end);
-        if (!pop_str) { printf("!!Failed to copy population data\n"); break; }
-        population = atoi(pop_str);
-        deallocate(pop_str, strlen(pop_str)+1); pop_str = NULL;
-        skipWhiteSpace(state);
-        if (!atChar(state, '{') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip final opening brace for Population\n"); break; }
-        skipWhiteSpace(state);
-        if (!atChar(state, '#') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip closing mark for Population\n"); break; }
-        start = state->current_index;
-        end = skipToNonAlphaNum(state);
-        if (start == end) { printf("!!Failed to identify closing tag for Population\n"); break; }
-        closing_tag = copyData(state, start, end);
-        if (!closing_tag || strcmp(closing_tag, "Population") != 0) { printf("!!Invalid closing tag for Population\n"); break; }
-        deallocate(closing_tag, strlen(closing_tag)+1); closing_tag = NULL;
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip final closing brace for Population\n"); break; }
-        success = true;
-    } while(false);
-
-    if (!success) {
-        if (pop_str) deallocate(pop_str, strlen(pop_str)+1);
-        if (closing_tag) deallocate(closing_tag, strlen(closing_tag)+1);
-        state->current_index = original_idx;
-        return -1;
-    }
-    return population;
-}
-
-void initTerritory(Territory *t) {
-    if (t) {
-        memset(t, 0, sizeof(Territory));
-    }
-}
-
-int territoryMenu(Territory *t) {
-    if (!t) return 1; // Indicate exit if null territory
-
-    printf("Territory menu for %s (mock)\n", t->name);
-    printf("1) Delete Territory\n");
-    printf("2) Exit Territory Menu\n");
-    char input[10];
-    receive_until(input, 10, sizeof(input) - 1);
-    int choice = atoi(input);
-    if (choice == 1) {
-        return 0; // Indicate deletion
-    }
-    return 1; // Indicate not deleted (or exit)
-}
-
-void freeTerritory(Territory *t) {
-    if (t) {
-        deallocate(t, sizeof(Territory));
-    }
-}
-
-void printTerritoryInfo() {
-    printf("\t\tTerritory: (mock info)\n");
-}
-
-double *extractBorder(ParserState *state) {
-    double *border_coords = NULL;
-    char *closing_tag = NULL;
-    bool success = false;
-    int original_idx = state->current_index;
-
-    do {
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip initial closing brace for Border\n"); break; }
-
-        if (allocate(sizeof(double) * 4, 0, (void**)&border_coords) != 0) {
-            printf("!!Failed to allocate memory for border coordinates\n");
-            break;
-        }
-
-        // Read 4 doubles
-        for (int i = 0; i < 4; ++i) {
-            skipWhiteSpace(state);
-            int start = state->current_index;
-            while (state->buffer[state->current_index] != '\0' && (isdigit((unsigned char)state->buffer[state->current_index]) || state->buffer[state->current_index] == '.' || state->buffer[state->current_index] == '-')) {
-                state->current_index++;
-            }
-            int end = state->current_index;
-            if (start == end) { printf("!!Failed to find border coordinate %d\n", i); break; }
-            char *num_str = copyData(state, start, end);
-            if (!num_str) { printf("!!Failed to copy border coordinate %d string\n", i); break; }
-            border_coords[i] = atof(num_str);
-            deallocate(num_str, strlen(num_str) + 1);
-        }
-        if (border_coords == NULL) break; // If an error occurred in the loop
-
-        skipWhiteSpace(state);
-        if (!atChar(state, '{') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip final opening brace for Border\n"); break; }
-        skipWhiteSpace(state);
-        if (!atChar(state, '#') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip closing mark for Border\n"); break; }
-        int start = state->current_index;
-        int end = skipToNonAlphaNum(state);
-        if (start == end) { printf("!!Failed to identify closing tag for Border\n"); break; }
-        closing_tag = copyData(state, start, end);
-        if (!closing_tag || strcmp(closing_tag, "Border") != 0) { printf("!!Invalid closing tag for Border\n"); break; }
-        deallocate(closing_tag, strlen(closing_tag)+1); closing_tag = NULL;
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip final closing brace for Border\n"); break; }
-        success = true;
-    } while(false);
-
-    if (!success) {
-        if (border_coords) deallocate(border_coords, sizeof(double) * 4);
-        if (closing_tag) deallocate(closing_tag, strlen(closing_tag)+1);
-        state->current_index = original_idx;
-        return NULL;
-    }
-    return border_coords;
-}
-
-Territory *territoryTopLevel(ParserState *state) {
-    Territory *new_territory = NULL;
-    char *territory_name = NULL;
-    char *closing_tag = NULL;
-    bool success = false;
-    int original_idx = state->current_index;
-
-    do {
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip initial closing brace for Territory\n"); break; }
-        skipWhiteSpace(state);
-        int start = state->current_index;
-        int end = skipAlpha(state);
-        if (start == end) { printf("!!Failed to find territory name data\n"); break; }
-        territory_name = copyData(state, start, end);
-        if (!territory_name) { printf("!!Failed to copy territory name data\n"); break; }
-
-        if (allocate(sizeof(Territory), 0, (void**)&new_territory) != 0) {
-            printf("!!Failed to allocate memory for new territory\n");
-            break;
-        }
-        initTerritory(new_territory);
-        strncpy(new_territory->name, territory_name, sizeof(new_territory->name) - 1);
-        new_territory->name[sizeof(new_territory->name) - 1] = '\0';
-        deallocate(territory_name, strlen(territory_name)+1); territory_name = NULL;
-
-        skipWhiteSpace(state);
-        if (!atChar(state, '{') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip final opening brace for Territory\n"); break; }
-        skipWhiteSpace(state);
-        if (!atChar(state, '#') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip closing mark for Territory\n"); break; }
-        start = state->current_index;
-        end = skipToNonAlphaNum(state);
-        if (start == end) { printf("!!Failed to identify closing tag for Territory\n"); break; }
-        closing_tag = copyData(state, start, end);
-        if (!closing_tag || strcmp(closing_tag, "Territory") != 0) { printf("!!Invalid closing tag for Territory\n"); break; }
-        deallocate(closing_tag, strlen(closing_tag)+1); closing_tag = NULL;
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || skipLength(state, 1) == -1) { printf("!!Failed to locate or skip final closing brace for Territory\n"); break; }
-        success = true;
-    } while(false);
-
-    if (!success) {
-        if (new_territory) deallocate(new_territory, sizeof(Territory));
-        if (territory_name) deallocate(territory_name, strlen(territory_name)+1);
-        if (closing_tag) deallocate(closing_tag, strlen(closing_tag)+1);
-        state->current_index = original_idx;
-        return NULL;
-    }
-    return new_territory;
-}
-
-// --- End of Mock/Placeholder definitions ---
-
-
-// Function: countryMenu
-int countryMenu(Country *country_ptr) {
-    char input_buffer[40];
-    int selection;
-    int char_idx; // Used for various character index operations, like string copying/bytes read
-
-    if (!country_ptr) {
-        return 0; // Return 0 (failure/exit) if country is null
-    }
-
-    while (true) { // Main menu loop
-        printf("\nCountry: %s\n", country_ptr->name);
-        printf("1) Display CountryInfo\n");
-        printf("2) Set Capitol\n");
-        printf("3) Set Population\n");
-        printf("4) Add Language\n");
-        printf("5) Add border\n");
-        printf("6) Add Territory\n");
-        printf("7) Select Territory\n");
-        printf("8) Delete Country and Exit Menu\n");
-        printf("9) Exit menu\n");
-
-        memset(input_buffer, 0, sizeof(input_buffer));
-        printf("Selection: ");
-        receive_until(input_buffer, '\n', sizeof(input_buffer) - 1);
-        selection = atoi(input_buffer);
-
-        if (selection < 1 || selection > 9) {
-            printf("Invalid...\n");
-            continue; // Re-display menu
-        }
-
-        switch (selection) {
-            case 1:
-                printCountryInfo(country_ptr);
-                break;
-            case 2: {
-                printf("\n-> ");
-                memset(input_buffer, 0, sizeof(input_buffer));
-                receive_until(input_buffer, '\n', sizeof(country_ptr->capitol) - 1);
-                // Copy only alpha characters to capitol
-                char_idx = 0;
-                while (input_buffer[char_idx] != '\0' && isalpha((unsigned char)input_buffer[char_idx]) && char_idx < sizeof(country_ptr->capitol) - 1) {
-                    country_ptr->capitol[char_idx] = input_buffer[char_idx];
-                    char_idx++;
-                }
-                country_ptr->capitol[char_idx] = '\0'; // Null-terminate
-                break;
-            }
-            case 3: {
-                printf("\n-> ");
-                memset(input_buffer, 0, sizeof(input_buffer));
-                receive_until(input_buffer, '\n', sizeof(input_buffer) - 1);
-                country_ptr->population = atoi(input_buffer);
-                break;
-            }
-            case 4: {
-                if (country_ptr->language_count < 10) {
-                    printf("\n-> ");
-                    memset(input_buffer, 0, sizeof(input_buffer));
-                    receive(0, input_buffer, 19, &char_idx); // 0x13 (19) max length from original
-
-                    size_t lang_len = strlen(input_buffer);
-                    char *new_language = NULL;
-                    if (allocate(lang_len + 1, 0, (void **)&new_language) == 0) { // Success
-                        memset(new_language, 0, lang_len + 1);
-                        char_idx = 0;
-                        while (input_buffer[char_idx] != '\0' && isalpha((unsigned char)input_buffer[char_idx]) && char_idx < lang_len) {
-                            new_language[char_idx] = input_buffer[char_idx];
-                            char_idx++;
-                        }
-                        new_language[char_idx] = '\0'; // Null-terminate
-                        country_ptr->languages[country_ptr->language_count] = new_language;
-                        country_ptr->language_count++;
-                    } else {
-                        printf("!!Failed to allocate memory for language\n");
-                    }
-                } else {
-                    printf("!!Max languages reached\n");
-                }
-                break;
-            }
-            case 5: {
-                if (country_ptr->border_count < 100) {
-                    double *new_border_coords = NULL;
-                    // Allocate 4 doubles for Lat Start, Long Start, Lat End, Long End
-                    if (allocate(sizeof(double) * 4, 0, (void **)&new_border_coords) == 0) { // Success
-                        printf("Lat Start: ");
-                        memset(input_buffer, 0, sizeof(input_buffer));
-                        receive(0, input_buffer, 19, &char_idx);
-                        new_border_coords[0] = atof(input_buffer);
-
-                        printf("Long Start: ");
-                        memset(input_buffer, 0, sizeof(input_buffer));
-                        receive(0, input_buffer, 19, &char_idx);
-                        new_border_coords[1] = atof(input_buffer);
-
-                        printf("Lat End: ");
-                        memset(input_buffer, 0, sizeof(input_buffer));
-                        receive(0, input_buffer, 19, &char_idx);
-                        new_border_coords[2] = atof(input_buffer);
-
-                        printf("Long End: ");
-                        memset(input_buffer, 0, sizeof(input_buffer));
-                        receive(0, input_buffer, 19, &char_idx);
-                        new_border_coords[3] = atof(input_buffer);
-
-                        country_ptr->borders[country_ptr->border_count] = new_border_coords;
-                        country_ptr->border_count++;
-                    } else {
-                        printf("!!Failed to allocate memory for border\n");
-                    }
-                } else {
-                    printf("!!Max borders reached\n");
-                }
-                break;
-            }
-            case 6: {
-                if (country_ptr->territory_count < 10) {
-                    int territory_idx = 0;
-                    // Find the first empty slot for a new territory
-                    while (territory_idx < 10 && country_ptr->territories[territory_idx] != NULL) {
-                        territory_idx++;
-                    }
-
-                    if (territory_idx == 10) {
-                        printf("!!Max Territories reached (no empty slots)\n");
-                    } else {
-                        Territory *new_territory = NULL;
-                        // 0x1fc is the size of Territory struct, based on allocation in original code
-                        if (allocate(0x1fc, 0, (void **)&new_territory) == 0) { // Success
-                            initTerritory(new_territory);
-                            printf("\nNew Territory: ");
-                            memset(input_buffer, 0, sizeof(input_buffer));
-                            receive_until(input_buffer, '\n', sizeof(input_buffer) - 1); // Max 19 chars for name based on original
-
-                            char_idx = 0;
-                            while (input_buffer[char_idx] != '\0' && isalnum((unsigned char)input_buffer[char_idx]) && char_idx < sizeof(new_territory->name) - 1) {
-                                new_territory->name[char_idx] = input_buffer[char_idx];
-                                char_idx++;
-                            }
-                            new_territory->name[char_idx] = '\0'; // Null-terminate
-
-                            country_ptr->territories[territory_idx] = new_territory;
-                            country_ptr->territory_count++;
-                        } else {
-                            printf("!!Failed to allocate structure\n");
-                            country_ptr->territories[territory_idx] = NULL; // Ensure slot is null on failure
-                        }
-                    }
-                } else {
-                    printf("!!Max Territories reached\n");
-                }
-                break;
-            }
-            case 7: {
-                printf("\nTerritories:\n");
-                for (int i = 0; i < 10; i++) {
-                    if (country_ptr->territories[i] != NULL) {
-                        printf("%d) %s\n", i + 1, country_ptr->territories[i]->name);
-                    }
-                }
-                memset(input_buffer, 0, sizeof(input_buffer));
-                printf("\n-> ");
-                receive(0, input_buffer, 3, &char_idx); // Max 3 chars for selection (1-10)
-                int territory_selection = atoi(input_buffer);
-
-                if (territory_selection < 1 || territory_selection > 10 || country_ptr->territories[territory_selection - 1] == NULL) {
-                    printf("Invalid choice...\n");
-                } else {
-                    // territoryMenu returns 0 if territory was deleted
-                    if (territoryMenu(country_ptr->territories[territory_selection - 1]) == 0) {
-                        freeTerritory(country_ptr->territories[territory_selection - 1]); // Free the memory
-                        country_ptr->territories[territory_selection - 1] = NULL; // Clear pointer in array
-                        country_ptr->territory_count--;
-                    }
-                }
-                break;
-            }
-            case 8:
-                freeCountry(country_ptr);
-                return 0; // Exit menu and indicate country was deleted
-            case 9:
-                return 1; // Exit menu
-        }
-    }
-}
-
-// Function: printCountryInfo
-void printCountryInfo(Country *country_ptr) {
-    if (!country_ptr) {
-        return;
-    }
-
-    printf("\tCountry: ");
-    if (country_ptr->name[0] == '\0') {
-        printf("Unknown\n");
-    } else {
-        printf("%s\n", country_ptr->name);
-    }
-
-    printf("\t\tCapitol: ");
-    if (country_ptr->capitol[0] == '\0') {
-        printf("Unknown\n");
-    } else {
-        printf("%s\n", country_ptr->capitol);
-    }
-
-    if (country_ptr->population >= 0) { // Original used -1 < population, meaning >= 0
-        printf("\t\tPopulation: %d\n", country_ptr->population);
-    }
-
-    for (int i = 0; i < country_ptr->language_count; i++) {
-        if (country_ptr->languages[i] != NULL) {
-            printf("\t\tLanguage: %s\n", country_ptr->languages[i]);
-        }
-    }
-
-    for (int i = 0; i < country_ptr->border_count; i++) {
-        double *border_coords = country_ptr->borders[i];
-        if (border_coords != NULL) {
-            printf("\t\tBorder: %f %f %f %f\n", border_coords[0], border_coords[1], border_coords[2], border_coords[3]);
-        }
-    }
-
-    for (int i = 0; i < 10; i++) { // Iterate through all potential territory slots
-        if (country_ptr->territories[i] != NULL) {
-            printTerritoryInfo(); // This mock doesn't take args, original also didn't.
-        }
-    }
+// Function: initCountry
+void initCountry(Country* country) {
+  if (country != NULL) {
+    memset(country->name, 0, sizeof(country->name));
+    memset(country->capitol, 0, sizeof(country->capitol));
+    country->population = -1; // Default to unknown/unset
+    country->num_languages = 0;
+    country->num_borders = 0;
+    country->num_territories = 0;
+    // Clear language pointers, border pointers, and territory pointers
+    memset(country->languages, 0, sizeof(country->languages));
+    memset(country->borders, 0, sizeof(country->borders));
+    memset(country->territories, 0, sizeof(country->territories));
+  }
 }
 
 // Function: freeCountry
-void freeCountry(Country *country_ptr) {
-    if (!country_ptr) {
-        return;
+void freeCountry(Country* country) {
+  if (country != NULL) {
+    for (int i = 0; i < country->num_borders; i++) {
+      if (country->borders[i] != NULL) {
+        deallocate(country->borders[i], 4 * sizeof(double)); // 4 doubles per border
+        country->borders[i] = NULL;
+      }
     }
-
-    // Free borders
-    for (int i = 0; i < country_ptr->border_count; i++) {
-        if (country_ptr->borders[i] != NULL) {
-            deallocate(country_ptr->borders[i], sizeof(double) * 4); // Each border is 4 doubles
-            country_ptr->borders[i] = NULL;
-        }
+    for (int i = 0; i < country->num_languages; i++) {
+      if (country->languages[i] != NULL) {
+        deallocate(country->languages[i], strlen(country->languages[i]) + 1);
+        country->languages[i] = NULL;
+      }
     }
-
-    // Free languages
-    for (int i = 0; i < country_ptr->language_count; i++) {
-        if (country_ptr->languages[i] != NULL) {
-            deallocate(country_ptr->languages[i], strlen(country_ptr->languages[i]) + 1);
-            country_ptr->languages[i] = NULL;
-        }
+    for (int i = 0; i < MAX_TERRITORIES; i++) { // Iterate up to MAX_TERRITORIES, not num_territories, to ensure all slots are checked
+      if (country->territories[i] != NULL) {
+        freeTerritory(country->territories[i]);
+        country->territories[i] = NULL;
+      }
     }
-
-    // Free territories
-    for (int i = 0; i < 10; i++) { // Iterate through all potential territory slots
-        if (country_ptr->territories[i] != NULL) {
-            freeTerritory(country_ptr->territories[i]); // Calls mock freeTerritory
-            country_ptr->territories[i] = NULL;
-        }
-    }
-
-    // Finally, free the country structure itself
-    deallocate(country_ptr, sizeof(Country));
+    deallocate(country, sizeof(Country));
+  }
 }
 
-// Function: initCountry
-void initCountry(Country *country_ptr) {
-    if (!country_ptr) {
-        return;
+// Function: printCountryInfo
+void printCountryInfo(Country* country) {
+  if (country != NULL) {
+    printf("\tCountry: ");
+    if (country->name[0] == '\0') {
+      printf("Unknown\n");
+    } else {
+      printf("%s\n", country->name);
     }
-    // Initialize all members to a known state
-    memset(country_ptr->name, 0, sizeof(country_ptr->name));
-    memset(country_ptr->capitol, 0, sizeof(country_ptr->capitol));
+    printf("\t\tCapitol: ");
+    if (country->capitol[0] == '\0') {
+      printf("Unknown\n");
+    } else {
+      printf("%s\n", country->capitol);
+    }
+    if (country->population >= 0) { // -1 indicates unset
+      printf("\t\tPopulation: %d\n", country->population);
+    }
+    for (int i = 0; i < country->num_languages; i++) {
+      if (country->languages[i] != NULL) {
+        printf("\t\tLanguage: %s\n", country->languages[i]);
+      }
+    }
+    for (int i = 0; i < country->num_borders; i++) {
+      double* border_coords = country->borders[i];
+      if (border_coords != NULL) {
+        printf("\t\tBorder: %f %f %f %f\n", border_coords[0], border_coords[1], border_coords[2], border_coords[3]);
+      }
+    }
+    for (int i = 0; i < MAX_TERRITORIES; i++) { // Iterate up to MAX_TERRITORIES
+      if (country->territories[i] != NULL) {
+        printTerritoryInfo(country->territories[i]);
+      }
+    }
+  }
+}
 
-    country_ptr->population = -1; // Matches 0xffffffff from original
-    country_ptr->language_count = 0;
-    country_ptr->border_count = 0;
-    country_ptr->territory_count = 0;
+// Function: countryMenu
+int countryMenu(Country* country) {
+  char input_buffer[40]; // Sufficient for 0x28 (40) and 0x13 (19)
+  int selection = 0;
+  int char_idx_or_bytes_read = 0; // Reused for various char index operations or bytes_read
 
-    memset(country_ptr->languages, 0, sizeof(country_ptr->languages));
-    memset(country_ptr->borders, 0, sizeof(country_ptr->borders));
-    memset(country_ptr->territories, 0, sizeof(country_ptr->territories));
+  if (country == NULL) {
+    return 0; // Error or invalid country pointer
+  }
+
+  do {
+    printf("\nCountry: %s\n", country->name);
+    printf("1) Display CountryInfo\n");
+    printf("2) Set Capitol\n");
+    printf("3) Set Population\n");
+    printf("4) Add Language\n");
+    printf("5) Add Border\n");
+    printf("6) Add Territory\n");
+    printf("7) Select Territory\n");
+    printf("8) Delete Country and Exit Menu\n");
+    printf("9) Exit menu\n");
+    
+    memset(input_buffer, 0, sizeof(input_buffer));
+    printf("Selection: ");
+    receive_until(input_buffer, sizeof(input_buffer) - 1, 3);
+    selection = atoi(input_buffer);
+
+    if (selection < 1 || selection > 9) {
+      printf("Invalid...\n");
+      continue;
+    }
+
+    switch (selection) {
+      case 1: // Display CountryInfo
+        printCountryInfo(country);
+        break;
+      case 2: { // Set Capitol
+        printf("\n-> ");
+        memset(input_buffer, 0, sizeof(input_buffer));
+        receive_until(input_buffer, sizeof(input_buffer) - 1, 0x27); // 0x27 is 39, so max 39 chars + null
+        
+        char_idx_or_bytes_read = 0;
+        while (char_idx_or_bytes_read < MAX_CAPITOL_NAME_LEN - 1 && isalpha((unsigned char)input_buffer[char_idx_or_bytes_read])) {
+          country->capitol[char_idx_or_bytes_read] = input_buffer[char_idx_or_bytes_read];
+          char_idx_or_bytes_read++;
+        }
+        country->capitol[char_idx_or_bytes_read] = '\0';
+        break;
+      }
+      case 3: { // Set Population
+        printf("\n-> ");
+        memset(input_buffer, 0, sizeof(input_buffer));
+        receive_until(input_buffer, sizeof(input_buffer) - 1, 0x13); // 0x13 is 19
+        country->population = atoi(input_buffer);
+        break;
+      }
+      case 4: { // Add Language
+        if (country->num_languages < MAX_LANGUAGES) {
+          printf("\n-> ");
+          memset(input_buffer, 0, sizeof(input_buffer));
+          receive(0, input_buffer, sizeof(input_buffer) - 1, &char_idx_or_bytes_read); // 0x13 is 19
+
+          size_t len = strlen(input_buffer);
+          char* new_lang_ptr = NULL;
+          if (allocate(len + 1, 0, (void**)&new_lang_ptr) == 0) { // 0 on success
+            char_idx_or_bytes_read = 0;
+            while (char_idx_or_bytes_read < len && isalpha((unsigned char)input_buffer[char_idx_or_bytes_read])) {
+              new_lang_ptr[char_idx_or_bytes_read] = input_buffer[char_idx_or_bytes_read];
+              char_idx_or_bytes_read++;
+            }
+            new_lang_ptr[char_idx_or_bytes_read] = '\0';
+            country->languages[country->num_languages] = new_lang_ptr;
+            country->num_languages++;
+          } else {
+            printf("!!Failed to allocate memory for language\n");
+          }
+        } else {
+          printf("!!Max languages reached\n");
+        }
+        break;
+      }
+      case 5: { // Add Border
+        if (country->num_borders < MAX_BORDERS) {
+          double* new_border_coords = NULL;
+          if (allocate(4 * sizeof(double), 0, (void**)&new_border_coords) == 0) { // 0x20 bytes for 4 doubles
+            printf("Lat Start: ");
+            memset(input_buffer, 0, sizeof(input_buffer));
+            receive(0, input_buffer, sizeof(input_buffer) - 1, &char_idx_or_bytes_read);
+            new_border_coords[0] = atof(input_buffer);
+
+            printf("Long Start: ");
+            memset(input_buffer, 0, sizeof(input_buffer));
+            receive(0, input_buffer, sizeof(input_buffer) - 1, &char_idx_or_bytes_read);
+            new_border_coords[1] = atof(input_buffer);
+
+            printf("Lat End: ");
+            memset(input_buffer, 0, sizeof(input_buffer));
+            receive(0, input_buffer, sizeof(input_buffer) - 1, &char_idx_or_bytes_read);
+            new_border_coords[2] = atof(input_buffer);
+
+            printf("Long End: ");
+            memset(input_buffer, 0, sizeof(input_buffer));
+            receive(0, input_buffer, sizeof(input_buffer) - 1, &char_idx_or_bytes_read);
+            new_border_coords[3] = atof(input_buffer);
+
+            country->borders[country->num_borders] = new_border_coords;
+            country->num_borders++;
+          } else {
+            printf("!!Failed to allocate memory for border\n");
+          }
+        } else {
+          printf("!!Max borders reached\n");
+        }
+        break;
+      }
+      case 6: { // Add Territory
+        if (country->num_territories < MAX_TERRITORIES) {
+          int territory_idx = -1;
+          // Find the first available slot
+          for (int i = 0; i < MAX_TERRITORIES; ++i) {
+            if (country->territories[i] == NULL) {
+              territory_idx = i;
+              break;
+            }
+          }
+
+          if (territory_idx == -1) { // Should not happen if num_territories < MAX_TERRITORIES
+            printf("!!Max Territories reached\n");
+          } else {
+            void* new_territory_ptr = NULL;
+            // 0x1fc is 508 bytes, for a territory struct
+            if (allocate(0x1fc, 0, &new_territory_ptr) == 0) {
+              initTerritory(new_territory_ptr);
+              printf("\nNew Territory: ");
+              memset(input_buffer, 0, sizeof(input_buffer));
+              receive_until(input_buffer, sizeof(input_buffer) - 1, 0x13);
+              
+              char_idx_or_bytes_read = 0;
+              // Assuming territory struct starts with a name field
+              char* territory_name_ptr = (char*)new_territory_ptr; // Simplified assumption
+              while (isalnum((unsigned char)input_buffer[char_idx_or_bytes_read])) {
+                territory_name_ptr[char_idx_or_bytes_read] = input_buffer[char_idx_or_bytes_read];
+                char_idx_or_bytes_read++;
+              }
+              territory_name_ptr[char_idx_or_bytes_read] = '\0';
+              
+              country->territories[territory_idx] = new_territory_ptr;
+              country->num_territories++;
+            } else {
+              printf("!!Failed to allocate structure\n");
+              country->territories[territory_idx] = NULL; // Ensure it's null on failure
+            }
+          }
+        } else {
+          printf("!!Max Territories reached\n");
+        }
+        break;
+      }
+      case 7: { // Select Territory
+        printf("\nTerritories:\n");
+        int count_displayed = 0;
+        for (int i = 0; i < MAX_TERRITORIES; i++) {
+          if (country->territories[i] != NULL) {
+            // Assuming territory struct starts with a name field for display
+            printf("%d) %s\n", i + 1, (char*)country->territories[i]);
+            count_displayed++;
+          }
+        }
+        if (count_displayed == 0) {
+            printf("No territories to display.\n");
+            break;
+        }
+
+        memset(input_buffer, 0, sizeof(input_buffer));
+        printf("\n-> ");
+        receive(0, input_buffer, 3, &char_idx_or_bytes_read); // 3 chars + null, e.g., "10"
+        int territory_selection = atoi(input_buffer);
+
+        if (territory_selection < 1 || territory_selection > MAX_TERRITORIES || country->territories[territory_selection - 1] == NULL) {
+          printf("Invalid choice...\n");
+        } else {
+          // territoryMenu returns 0 if territory was deleted, 1 on exit
+          if (territoryMenu(country->territories[territory_selection - 1]) == 0) {
+            country->territories[territory_selection - 1] = NULL; // Slot is now free
+            country->num_territories--;
+          }
+        }
+        break;
+      }
+      case 8: // Delete Country and Exit Menu
+        freeCountry(country);
+        return 0; // Indicate deletion and exit
+    }
+  } while (selection != 9);
+
+  return 1; // Indicate successful exit (not deleted)
 }
 
 // Function: countryTopLevel
-Country *countryTopLevel(ParserState *state) {
-    Country *new_country = NULL;
-    char *element_id_str = NULL;
-    char *extracted_data = NULL;
-    int original_state_index = state->current_index; // To revert parser state on error
-    bool success = false; // Flag to track overall success
+Country* countryTopLevel(ParseContext* parse_ctx) {
+  Country* new_country = NULL;
+  char* element_name = NULL;
+  char* temp_str_data = NULL;
+  int initial_context_idx = parse_ctx->current_index; // To revert on error
+  int current_idx, end_idx;
+  int cmp_result;
+  
+  if (allocate(sizeof(Country), 0, (void**)&new_country) != 0) { // Allocation failed
+    return NULL;
+  }
 
-    if (!state) {
-        return NULL;
+  initCountry(new_country);
+  
+  int parsing_success = 0; // 0 for failure, 1 for success
+
+  do { // This loop replaces the goto for error handling
+    skipWhiteSpace(parse_ctx);
+    getIndex(parse_ctx, &current_idx);
+    
+    // Expect '{'
+    if (!atChar(parse_ctx, '{')) {
+        printf("!!Country: Expected opening brace\n");
+        break; // Exit do-while on failure
+    }
+    skipLength(parse_ctx, 1);
+
+    skipWhiteSpace(parse_ctx);
+    current_idx = parse_ctx->current_index;
+    end_idx = skipAlpha(parse_ctx);
+
+    if (end_idx == -1 || current_idx == end_idx) {
+        printf("!!Country: Failed to find element name\n");
+        break;
+    }
+    temp_str_data = (char*)copyData(parse_ctx, current_idx, end_idx);
+    if (temp_str_data == NULL) {
+        printf("!!Country: Failed to copy element name\n");
+        break;
     }
 
-    if (allocate(sizeof(Country), 0, (void **)&new_country) != 0) { // Allocation failed
-        return NULL;
+    cmp_result = strcmp(temp_str_data, "Country");
+    deallocate(temp_str_data, strlen(temp_str_data) + 1); // Free temp_str_data immediately
+    temp_str_data = NULL;
+
+    if (cmp_result != 0) {
+      printf("!!Country: Invalid opening element id\n");
+      break;
     }
-    initCountry(new_country);
 
-    do { // Using a do-while(false) loop to simulate a single-exit point without goto
-        skipWhiteSpace(state);
-        getIndex(state, NULL); // Store initial index
-
-        if (!atChar(state, '{') || skipLength(state, 1) == -1) {
-            printf("!!Country: Failed to locate or skip opening brace\n");
-            break; // Exit do-while
-        }
-
-        skipWhiteSpace(state);
-        int start_idx = state->current_index;
-        int end_idx = skipToNonAlphaNum(state);
-
-        if (end_idx == -1 || start_idx == end_idx) {
-            printf("!!Country: Failed to identify element ID\n");
-            break;
-        }
-
-        element_id_str = copyData(state, start_idx, end_idx);
-        if (!element_id_str) {
-            printf("!!Country: Failed to copy element ID\n");
-            break;
-        }
-
-        if (strcmp(element_id_str, "Country") != 0) {
-            printf("!!Country: Invalid opening element id: %s\n", element_id_str);
-            break;
-        }
-        deallocate(element_id_str, strlen(element_id_str) + 1);
-        element_id_str = NULL;
-
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || incChar(state) == -1) {
-            printf("!!Country: Failed to locate or skip initial closing brace\n");
-            break;
-        }
-
-        // Process sub-elements
-        while ((extracted_data = pullNextElementName(state)) != NULL) {
-            ElementType element_type = elementNameToEnum(extracted_data);
-            deallocate(extracted_data, strlen(extracted_data) + 1);
-            extracted_data = NULL; // Reset extracted_data for next iteration or error check
-
-            switch (element_type) {
-                case ELEMENT_NAME:
-                    extracted_data = extractName(state);
-                    if (!extracted_data) { success = false; break; }
-                    strncpy(new_country->name, extracted_data, sizeof(new_country->name) - 1);
-                    new_country->name[sizeof(new_country->name) - 1] = '\0';
-                    deallocate(extracted_data, strlen(extracted_data) + 1);
-                    extracted_data = NULL;
-                    break;
-                case ELEMENT_POPULATION:
-                    new_country->population = extractPopulation(state);
-                    if (new_country->population < 0) { success = false; break; }
-                    break;
-                case ELEMENT_CAPITOL:
-                    extracted_data = extractCapitol(state);
-                    if (!extracted_data) { success = false; break; }
-                    strncpy(new_country->capitol, extracted_data, sizeof(new_country->capitol) - 1);
-                    new_country->capitol[sizeof(new_country->capitol) - 1] = '\0';
-                    deallocate(extracted_data, strlen(extracted_data) + 1);
-                    extracted_data = NULL;
-                    break;
-                case ELEMENT_LANGUAGE:
-                    if (new_country->language_count >= 10) {
-                        printf("!!Max country language count is %d\n", 10);
-                        success = false; break;
-                    }
-                    char *new_language = extractLanguage(state);
-                    if (!new_language) { success = false; break; }
-                    new_country->languages[new_country->language_count++] = new_language;
-                    break;
-                case ELEMENT_BORDER:
-                    if (new_country->border_count >= 100) {
-                        printf("!!Max country border count is %d\n", 100);
-                        success = false; break;
-                    }
-                    double *border_coords = extractBorder(state);
-                    if (!border_coords) { success = false; break; }
-                    new_country->borders[new_country->border_count++] = border_coords;
-                    break;
-                case ELEMENT_TERRITORY:
-                    if (new_country->territory_count >= 10) {
-                        printf("!!Max territories is %d\n", 10);
-                        success = false; break;
-                    }
-                    Territory *new_territory = territoryTopLevel(state);
-                    if (!new_territory) { success = false; break; }
-                    new_country->territories[new_country->territory_count++] = new_territory;
-                    break;
-                default:
-                    printf("Invalid element for country: %s\n", extracted_data ? extracted_data : "Unknown");
-                    success = false; break;
-            }
-            if (!success) break; // If an error occurred in switch, exit parsing loop
-        }
-        if (!success && extracted_data == NULL) break; // If loop exited due to error in switch, or pullNextElementName failed
-
-        // Check closing tag
-        skipWhiteSpace(state);
-        if (!atChar(state, '{') || skipLength(state, 1) == -1) {
-            printf("!!Country: Failed to locate or skip final opening brace\n");
-            break;
-        }
-        skipWhiteSpace(state);
-        if (!atChar(state, '#') || skipLength(state, 1) == -1) {
-            printf("!!Country: Failed to locate or skip closing mark\n");
-            break;
-        }
-
-        start_idx = state->current_index;
-        end_idx = skipAlpha(state);
-        if (end_idx == -1 || start_idx == end_idx) {
-            printf("!!Country: Failed to identify closing element ID\n");
-            break;
-        }
-        element_id_str = copyData(state, start_idx, end_idx);
-        if (!element_id_str) {
-            printf("!!Country: Failed to copy closing element ID\n");
-            break;
-        }
-
-        if (strcmp(element_id_str, "Country") != 0) {
-            printf("!!Country: Invalid closing element id: %s\n", element_id_str);
-            break;
-        }
-        deallocate(element_id_str, strlen(element_id_str) + 1);
-        element_id_str = NULL;
-
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || incChar(state) == -1) {
-            printf("!!Country: Failed to locate or skip final closing brace\n");
-            break;
-        }
-
-        success = true; // All checks passed
-    } while (false); // Execute loop once
-
-    if (!success) {
-        if (new_country) {
-            freeCountry(new_country);
-            new_country = NULL;
-        }
-        if (element_id_str) {
-            deallocate(element_id_str, strlen(element_id_str) + 1);
-        }
-        if (extracted_data) {
-            deallocate(extracted_data, strlen(extracted_data) + 1);
-        }
-        state->current_index = original_state_index; // Revert parser state
-        printf("Error at: %s\n", state->buffer + state->current_index);
+    skipWhiteSpace(parse_ctx);
+    // Expect '}' after "Country" element id
+    if (!atChar(parse_ctx, '}')) {
+        printf("!!Country: Expected closing brace after 'Country' id\n");
+        break;
     }
-    return new_country;
+    incChar(parse_ctx);
+
+    // Loop through country elements
+    element_name = pullNextElementName(parse_ctx);
+    while (element_name != NULL) {
+      ElementType element_type = elementNameToEnum(element_name);
+      deallocate(element_name, strlen(element_name) + 1); // Free element_name after use
+      element_name = NULL; // Clear for next iteration
+
+      parsing_success = 1; // Assume success for this element, set to 0 on failure
+      switch (element_type) {
+        case ELEMENT_COUNTRY_NAME:
+          temp_str_data = extractName(parse_ctx);
+          if (temp_str_data == NULL) { parsing_success = 0; break; }
+          memset(new_country->name, 0, sizeof(new_country->name));
+          strncpy(new_country->name, temp_str_data, sizeof(new_country->name) - 1);
+          deallocate(temp_str_data, strlen(temp_str_data) + 1);
+          temp_str_data = NULL;
+          break;
+        case ELEMENT_POPULATION:
+          new_country->population = extractPopulation(parse_ctx);
+          if (new_country->population < 0) { parsing_success = 0; break; }
+          break;
+        case ELEMENT_CAPITOL:
+          temp_str_data = extractCapitol(parse_ctx);
+          if (temp_str_data == NULL) { parsing_success = 0; break; }
+          memset(new_country->capitol, 0, sizeof(new_country->capitol));
+          strncpy(new_country->capitol, temp_str_data, sizeof(new_country->capitol) - 1);
+          deallocate(temp_str_data, strlen(temp_str_data) + 1);
+          temp_str_data = NULL;
+          break;
+        case ELEMENT_LANGUAGE:
+          if (new_country->num_languages >= MAX_LANGUAGES) {
+            printf("!!Max country language count is %d\n", MAX_LANGUAGES);
+            parsing_success = 0; break;
+          }
+          new_country->languages[new_country->num_languages] = extractLanguage(parse_ctx);
+          if (new_country->languages[new_country->num_languages] == NULL) { parsing_success = 0; break; }
+          new_country->num_languages++;
+          break;
+        case ELEMENT_BORDER:
+          if (new_country->num_borders >= MAX_BORDERS) {
+            printf("!!Max country border count is %d\n", MAX_BORDERS);
+            parsing_success = 0; break;
+          }
+          new_country->borders[new_country->num_borders] = extractBorder(parse_ctx);
+          if (new_country->borders[new_country->num_borders] == NULL) { parsing_success = 0; break; }
+          new_country->num_borders++;
+          break;
+        case ELEMENT_TERRITORY:
+          if (new_country->num_territories >= MAX_TERRITORIES) {
+            printf("!!Max territories is %d\n", MAX_TERRITORIES);
+            parsing_success = 0; break;
+          }
+          new_country->territories[new_country->num_territories] = territoryTopLevel(parse_ctx);
+          if (new_country->territories[new_country->num_territories] == NULL) { parsing_success = 0; break; }
+          new_country->num_territories++;
+          break;
+        default:
+          printf("Invalid element for country\n");
+          parsing_success = 0; break;
+      }
+      if (!parsing_success) { // If any element parsing failed
+          break; // Exit while (element_name != NULL) loop
+      }
+      element_name = pullNextElementName(parse_ctx);
+    }
+
+    if (!parsing_success) { // If break was from parsing_success = 0
+        if (element_name != NULL) {
+            deallocate(element_name, strlen(element_name) + 1); // Free remaining element_name
+        }
+        break; // Exit do-while if parsing failed in the loop
+    }
+
+    // After parsing all elements, expect closing #Country}
+    skipWhiteSpace(parse_ctx);
+    if (!atChar(parse_ctx, '{')) { printf("!!Country: Expected final opening brace\n"); break; }
+    skipLength(parse_ctx, 1);
+    skipWhiteSpace(parse_ctx);
+    if (!atChar(parse_ctx, '#')) { printf("!!Country: Expected closing mark '#'\n"); break; }
+    skipLength(parse_ctx, 1);
+
+    current_idx = parse_ctx->current_index;
+    end_idx = skipAlpha(parse_ctx);
+    if (end_idx == -1 || current_idx == end_idx) {
+        printf("!!Country: Failed to find closing element name\n");
+        break;
+    }
+    temp_str_data = (char*)copyData(parse_ctx, current_idx, end_idx);
+    if (temp_str_data == NULL) {
+        printf("!!Country: Failed to copy closing element name\n");
+        break;
+    }
+
+    cmp_result = strcmp(temp_str_data, "Country");
+    deallocate(temp_str_data, strlen(temp_str_data) + 1);
+    temp_str_data = NULL;
+
+    if (cmp_result != 0) {
+      printf("!!Country: Invalid closing element id\n");
+      break;
+    }
+
+    skipWhiteSpace(parse_ctx);
+    if (!atChar(parse_ctx, '}')) {
+        printf("!!Country: Expected final closing brace\n");
+        break;
+    }
+    incChar(parse_ctx);
+    parsing_success = 1; // All checks passed
+  } while (0); // Execute once, use break for early exit on error
+
+  if (!parsing_success) {
+    if (new_country != NULL) {
+      freeCountry(new_country);
+      new_country = NULL;
+    }
+    parse_ctx->current_index = initial_context_idx; // Revert context on error
+    printf("Error at: %s\n", parse_ctx->buffer + parse_ctx->current_index);
+  }
+
+  return new_country;
 }
 
 // Function: extractLanguage
-char *extractLanguage(ParserState *state) {
-    char *language_data = NULL;
-    char *element_id = NULL;
-    int start_idx, end_idx;
-    bool success = false;
+char* extractLanguage(ParseContext* ctx) {
+  char* extracted_language = NULL;
+  char* temp_element_id = NULL;
+  int initial_context_idx = ctx->current_index;
+  int current_idx, end_idx;
+  int success = 0; // 0 for failure, 1 for success
 
-    if (!state) return NULL;
+  do {
+    skipWhiteSpace(ctx);
+    if (!atChar(ctx, '{')) { printf("!!Failed to locate opening brace\n"); break; }
+    if (skipLength(ctx, 1) == -1) { printf("!!Failed to skip opening brace\n"); break; }
 
-    int original_idx = state->current_index; // For error recovery
+    skipWhiteSpace(ctx);
+    current_idx = ctx->current_index;
+    end_idx = skipToNonAlphaNum(ctx);
+    if (end_idx == -1) { printf("!!Failed to locate the end of the element id\n"); break; }
 
-    do { // Single-pass loop to replace goto
-        skipWhiteSpace(state);
-        if (!atChar(state, '{') || skipLength(state, 1) == -1) {
-            printf("!!Failed to locate or skip opening brace for Language\n");
-            break;
-        }
-
-        skipWhiteSpace(state);
-        start_idx = state->current_index;
-        end_idx = skipToNonAlphaNum(state);
-        if (end_idx == -1 || start_idx == end_idx) {
-            printf("!!Failed to locate the end of the element id for Language\n");
-            break;
-        }
-        element_id = copyData(state, start_idx, end_idx);
-        if (!element_id) {
-            printf("!!Failed to copy element id for Language\n");
-            break;
-        }
-
-        if (strcmp(element_id, "Language") != 0) {
-            printf("!!Element id is not \"Language\": %s\n", element_id);
-            break;
-        }
-        deallocate(element_id, strlen(element_id) + 1);
-        element_id = NULL;
-
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || skipLength(state, 1) == -1) {
-            printf("!!Failed to locate or skip initial closing brace for Language\n");
-            break;
-        }
-
-        skipWhiteSpace(state);
-        start_idx = state->current_index;
-        end_idx = skipAlpha(state);
-        if (start_idx == end_idx) {
-            printf("!!Failed to find language data\n");
-            break;
-        }
-        language_data = copyData(state, start_idx, end_idx);
-        if (!language_data) {
-            printf("!!Failed to copy language data\n");
-            break;
-        }
-
-        skipWhiteSpace(state);
-        if (!atChar(state, '{') || skipLength(state, 1) == -1) {
-            printf("!!Failed to locate or skip the final opening brace for Language\n");
-            break;
-        }
-
-        skipWhiteSpace(state);
-        if (!atChar(state, '#') || skipLength(state, 1) == -1) {
-            printf("!!Failed to locate or skip the closing mark for Language\n");
-            break;
-        }
-
-        start_idx = state->current_index;
-        end_idx = skipToNonAlphaNum(state);
-        if (end_idx == -1 || start_idx == end_idx) {
-            printf("!!Failed to locate the end of the closing element id for Language\n");
-            break;
-        }
-        element_id = copyData(state, start_idx, end_idx);
-        if (!element_id) {
-            printf("!!Failed to copy closing element id for Language\n");
-            break;
-        }
-
-        if (strcmp(element_id, "Language") != 0) {
-            printf("!!Invalid closing element id: %s\n", element_id);
-            break;
-        }
-        deallocate(element_id, strlen(element_id) + 1);
-        element_id = NULL;
-
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || skipLength(state, 1) == -1) {
-            printf("!!Failed to locate or skip final closing brace for Language\n");
-            break;
-        }
-        success = true;
-    } while (false);
-
-    if (!success) {
-        if (element_id) deallocate(element_id, strlen(element_id) + 1);
-        if (language_data) deallocate(language_data, strlen(language_data) + 1);
-        state->current_index = original_idx; // Revert parser state
-        return NULL;
+    temp_element_id = (char*)copyData(ctx, current_idx, end_idx);
+    if (temp_element_id == NULL) { printf("!!Copy from %d to %d failed\n", current_idx, end_idx); break; }
+    
+    if (strcmp(temp_element_id, "Language") != 0) {
+      printf("!!Element id is not \"Language\"\n");
+      break;
     }
-    return language_data;
+    deallocate(temp_element_id, strlen(temp_element_id) + 1); temp_element_id = NULL;
+
+    skipWhiteSpace(ctx);
+    if (!atChar(ctx, '}')) { printf("!!Failed to locate initial closing brace\n"); break; }
+    if (skipLength(ctx, 1) == -1) { printf("!!Failed to skip initial closing brace\n"); break; }
+
+    current_idx = skipWhiteSpace(ctx);
+    end_idx = skipAlpha(ctx);
+    if (current_idx == end_idx) { printf("!!Failed to find language data\n"); break; }
+
+    extracted_language = (char*)copyData(ctx, current_idx, end_idx);
+    if (extracted_language == NULL) { printf("!!Failed to copy language data\n"); break; }
+
+    skipWhiteSpace(ctx);
+    if (!atChar(ctx, '{')) { printf("!!Failed to locate the final opening brace\n"); break; }
+    if (incChar(ctx) == -1) { printf("!!Failed to skip the final opening brace\n"); break; }
+
+    skipWhiteSpace(ctx);
+    if (!atChar(ctx, '#')) { printf("!!Failed to locate the closing mark\n"); break; }
+    current_idx = skipLength(ctx, 1);
+    if (current_idx == -1) { printf("!!Failed to skip closing mark\n"); break; }
+
+    end_idx = skipToNonAlphaNum(ctx);
+    if (end_idx == -1) { printf("!!Failed to locate the end of the closing element id\n"); break; }
+
+    temp_element_id = (char*)copyData(ctx, current_idx, end_idx);
+    if (strcmp(temp_element_id, "Language") != 0) {
+      printf("!!Invalid closing element id: %s\n", temp_element_id);
+      break;
+    }
+    deallocate(temp_element_id, strlen(temp_element_id) + 1); temp_element_id = NULL;
+
+    skipWhiteSpace(ctx);
+    if (!atChar(ctx, '}')) { printf("!!Failed to locate final closing brace\n"); break; }
+    skipLength(ctx, 1);
+    success = 1;
+  } while(0);
+
+  if (!success) {
+    if (extracted_language != NULL) {
+      deallocate(extracted_language, strlen(extracted_language) + 1);
+      extracted_language = NULL;
+    }
+    if (temp_element_id != NULL) { // In case it was allocated but failed validation
+      deallocate(temp_element_id, strlen(temp_element_id) + 1);
+    }
+    ctx->current_index = initial_context_idx; // Revert context on error
+  }
+  return extracted_language;
 }
 
 // Function: extractCapitol
-char *extractCapitol(ParserState *state) {
-    char *capitol_data = NULL;
-    char *element_id = NULL;
-    int start_idx, end_idx;
-    bool success = false;
+char* extractCapitol(ParseContext* ctx) {
+  char* extracted_capitol = NULL;
+  char* temp_element_id = NULL;
+  int initial_context_idx = ctx->current_index;
+  int current_idx, end_idx;
+  int success = 0; // 0 for failure, 1 for success
 
-    if (!state) return NULL;
+  do {
+    skipWhiteSpace(ctx);
+    if (!atChar(ctx, '{')) { printf("!!Failed to locate opening brace\n"); break; }
+    if (skipLength(ctx, 1) == -1) { printf("!!Failed to skip opening brace\n"); break; }
 
-    int original_idx = state->current_index; // For error recovery
+    current_idx = skipWhiteSpace(ctx);
+    end_idx = skipToNonAlphaNum(ctx);
+    if (end_idx == -1) { printf("!!Failed to locate the end of the element id\n"); break; }
 
-    do { // Single-pass loop to replace goto
-        skipWhiteSpace(state);
-        if (!atChar(state, '{') || skipLength(state, 1) == -1) {
-            printf("!!Failed to locate or skip opening brace for Capitol\n");
-            break;
-        }
+    temp_element_id = (char*)copyData(ctx, current_idx, end_idx);
+    if (temp_element_id == NULL) { printf("!!Failed to copy element id\n"); break; }
 
-        skipWhiteSpace(state);
-        start_idx = state->current_index;
-        end_idx = skipToNonAlphaNum(state);
-        if (end_idx == -1 || start_idx == end_idx) {
-            printf("!!Failed to locate the end of the element id for Capitol\n");
-            break;
-        }
-        element_id = copyData(state, start_idx, end_idx);
-        if (!element_id) {
-            printf("!!Failed to copy element id for Capitol\n");
-            break;
-        }
-
-        if (strcmp(element_id, "Capitol") != 0) {
-            printf("!!Element id is not \"Capitol\": %s\n", element_id);
-            break;
-        }
-        deallocate(element_id, strlen(element_id) + 1);
-        element_id = NULL;
-
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || skipLength(state, 1) == -1) {
-            printf("!!Failed to locate or skip initial closing brace for Capitol\n");
-            break;
-        }
-
-        skipWhiteSpace(state);
-        start_idx = state->current_index;
-        end_idx = skipAlpha(state);
-        if (start_idx == end_idx) {
-            printf("!!Failed to find capitol data\n");
-            break;
-        }
-        capitol_data = copyData(state, start_idx, end_idx);
-        if (!capitol_data) {
-            printf("!!Failed to copy capitol data\n");
-            break;
-        }
-
-        skipWhiteSpace(state);
-        if (!atChar(state, '{') || skipLength(state, 1) == -1) {
-            printf("!!Failed to locate or skip the final opening brace for Capitol\n");
-            break;
-        }
-
-        skipWhiteSpace(state);
-        if (!atChar(state, '#') || skipLength(state, 1) == -1) {
-            printf("!!Failed to locate or skip the closing mark for Capitol\n");
-            break;
-        }
-
-        start_idx = state->current_index;
-        end_idx = skipToNonAlphaNum(state);
-        if (end_idx == -1 || start_idx == end_idx) {
-            printf("!!Failed to locate the end of the closing element id for Capitol\n");
-            break;
-        }
-        element_id = copyData(state, start_idx, end_idx);
-        if (!element_id) {
-            printf("!!Failed to copy closing element id for Capitol\n");
-            break;
-        }
-
-        if (strcmp(element_id, "Capitol") != 0) {
-            printf("!!Invalid closing element id: %s\n", element_id);
-            break;
-        }
-        deallocate(element_id, strlen(element_id) + 1);
-        element_id = NULL;
-
-        skipWhiteSpace(state);
-        if (!atChar(state, '}') || skipLength(state, 1) == -1) {
-            printf("!!Failed to locate or skip final closing brace for Capitol\n");
-            break;
-        }
-        success = true;
-    } while (false);
-
-    if (!success) {
-        if (element_id) deallocate(element_id, strlen(element_id) + 1);
-        if (capitol_data) deallocate(capitol_data, strlen(capitol_data) + 1);
-        state->current_index = original_idx; // Revert parser state
-        return NULL;
+    if (strcmp(temp_element_id, "Capitol") != 0) {
+      printf("!!Element id is not \"Capitol\"\n");
+      break;
     }
-    return capitol_data;
+    deallocate(temp_element_id, strlen(temp_element_id) + 1); temp_element_id = NULL;
+
+    skipWhiteSpace(ctx);
+    if (!atChar(ctx, '}')) { printf("!!Failed to locate initial closing brace\n"); break; }
+    if (incChar(ctx) == -1) { printf("!!Failed to skip initial closing brace\n"); break; }
+
+    getIndex(ctx, &current_idx);
+    end_idx = skipAlpha(ctx);
+    if (current_idx == end_idx) { printf("!!Failed to find capitol data\n"); break; }
+
+    extracted_capitol = (char*)copyData(ctx, current_idx, end_idx);
+    if (extracted_capitol == NULL) { printf("!!Failed to copy capitol data\n"); break; }
+
+    skipWhiteSpace(ctx);
+    if (!atChar(ctx, '{')) { printf("!!Failed to locate the final opening brace\n"); break; }
+    if (incChar(ctx) == -1) { printf("!!Failed to skip the final opening brace\n"); break; }
+
+    skipWhiteSpace(ctx);
+    if (!atChar(ctx, '#')) { printf("!!Failed to locate the closing mark\n"); break; }
+    current_idx = skipLength(ctx, 1);
+    if (current_idx == -1) { printf("!!Failed to skip closing mark\n"); break; }
+
+    end_idx = skipToNonAlphaNum(ctx);
+    if (end_idx == -1) { printf("!!Failed to locate the end of the closing element id\n"); break; }
+
+    temp_element_id = (char*)copyData(ctx, current_idx, end_idx);
+    if (strcmp(temp_element_id, "Capitol") != 0) {
+      printf("!!Invalid closing element id: %s\n", temp_element_id);
+      break;
+    }
+    deallocate(temp_element_id, strlen(temp_element_id) + 1); temp_element_id = NULL;
+
+    skipWhiteSpace(ctx);
+    if (!atChar(ctx, '}')) { printf("!!Failed to locate final closing brace\n"); break; }
+    skipLength(ctx, 1);
+    success = 1;
+  } while(0);
+
+  if (!success) {
+    if (extracted_capitol != NULL) {
+      deallocate(extracted_capitol, strlen(extracted_capitol) + 1);
+      extracted_capitol = NULL;
+    }
+    if (temp_element_id != NULL) { // In case it was allocated but failed validation
+      deallocate(temp_element_id, strlen(temp_element_id) + 1);
+    }
+    ctx->current_index = initial_context_idx; // Revert context on error
+  }
+  return extracted_capitol;
 }

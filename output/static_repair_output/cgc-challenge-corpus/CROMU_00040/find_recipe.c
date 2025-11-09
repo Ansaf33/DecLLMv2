@@ -1,147 +1,153 @@
-#include <stdio.h>   // For printf, getline, FILE, stdin
-#include <stdlib.h>  // For getline, free, size_t, ssize_t, NULL
-#include <string.h>  // For strstr (used in match_str stub), NULL
+#include <stdio.h>   // For printf, stdin, fgets, getchar, EOF
+#include <stdlib.h>  // For size_t, ssize_t
+#include <string.h>  // For strlen
+#include <stdint.h>  // For uint32_t
+#include <stdbool.h> // For bool type
 
-// --- STUB DEFINITIONS (to make the code compilable) ---
-// Assuming these structures based on the offsets observed in the original snippet.
-// The actual sizes and content of other fields would depend on the full program.
-typedef struct Ingredient {
-    char name[64]; // Example size for ingredient name, offset 0x14 from Ingredient start
-    // ... other fields for Ingredient ...
-    struct Ingredient *next_ingredient; // Offset 0x78 from Ingredient start
-} Ingredient;
+// Dummy declarations for external functions.
+// In a real scenario, these would be provided by other modules or headers.
+// Assuming match_str returns 0 for a match, non-zero for no match.
+int match_str(const char *search_term, const void *target_ptr);
+void print_recipe(const void *recipe_ptr);
 
-typedef struct Recipe {
-    char name[100]; // Example size for recipe name (main field to match against)
-    // ... other fields for Recipe ...
-    int is_tagged;           // At offset 200 (0xC8)
-    Ingredient *ingredients; // At offset 204 (0xCC)
-    struct Recipe *next;     // At offset 212 (0xD4)
-} Recipe;
+// Placeholder structs to allow pointer arithmetic based on decompiled offsets.
+// These are minimal definitions; a real program would have complete struct definitions.
+// The sizes and member types are inferred from the pointer arithmetic.
+typedef struct {
+    char _padding_0_199[200];  // Padding to reach offset 200 (0xc8)
+    uint32_t tagged_flag;      // At offset 200 (0xc8)
+    char _padding_204_207[0xcc - 200 - sizeof(uint32_t)]; // Padding to reach offset 0xcc
+    void *sub_items_ptr;       // At offset 0xcc
+    char _padding_216_219[0xd4 - 0xcc - sizeof(void*)]; // Padding to reach offset 0xd4
+    void *next_recipe_ptr;     // At offset 0xd4
+} RecipePlaceholder; // Total size will be at least 0xd4 + sizeof(void*)
 
-// Stub for match_str: returns 0 on a successful match, non-zero otherwise.
-// This implements a simple case-sensitive substring search.
-int match_str(char *search_term, const char *text) {
-    if (search_term == NULL || text == NULL) {
-        return 1; // No match if either is null
-    }
-    return (strstr(text, search_term) != NULL) ? 0 : 1;
-}
+typedef struct {
+    char _padding_0_19[0x14]; // Padding to reach offset 0x14
+    void *name_field_ptr;     // At offset 0x14, assumed to be part of the name for matching
+    char _padding_24_119[0x78 - 0x14 - sizeof(void*)]; // Padding to reach offset 0x78
+    void *next_sub_item_ptr;  // At offset 0x78
+} SubItemPlaceholder; // Total size will be at least 0x78 + sizeof(void*)
 
-// Stub for print_recipe
-void print_recipe(Recipe *recipe) {
-    if (recipe) {
-        printf("  Recipe found: %s (Currently Tagged: %s)\n", recipe->name, recipe->is_tagged ? "Yes" : "No");
-    } else {
-        printf("  (NULL Recipe)\n");
-    }
-}
-
-// --- END STUB DEFINITIONS ---
 
 // Function: find_recipe
-void find_recipe(Recipe *head_recipe) { // Changed param_1 type to Recipe* for clarity
-  char *search_term_buffer = NULL;
-  size_t search_term_len = 0;
-  ssize_t read_bytes;
+// param_1 is assumed to be a pointer to the head of a linked list of recipes.
+void find_recipe(void *param_1) {
+  char search_term_buffer[1024]; // Buffer for the user's search term
+  char tag_char;                  // Character for 'y'/'n' input
+  ssize_t chars_read;             // Number of characters read by fgets/strlen
 
   printf("Enter search term: ");
-  read_bytes = getline(&search_term_buffer, &search_term_len, stdin);
-
-  if (read_bytes > 1) { // If something meaningful was read (more than just a newline)
-    // Remove trailing newline character if present
-    if (search_term_buffer[read_bytes - 1] == '\n') {
-        search_term_buffer[read_bytes - 1] = '\0';
-    }
-
-    printf("\nSearching for '%s'...\n", search_term_buffer);
-    Recipe *current_recipe = head_recipe; // Use a more descriptive variable name
-    while (current_recipe != NULL) {
-      int recipe_matched = 0;
-
-      // First, check if the recipe's main name/field matches the search term
-      if (match_str(search_term_buffer, current_recipe->name) == 0) {
-        recipe_matched = 1;
-      } else {
-        // If no direct recipe match, iterate through its ingredients
-        Ingredient *current_ingredient = current_recipe->ingredients;
-        while (current_ingredient != NULL) {
-          if (match_str(search_term_buffer, current_ingredient->name) == 0) {
-            recipe_matched = 1;
-            break; // Found an ingredient match, no need to check further ingredients for this recipe
-          }
-          current_ingredient = current_ingredient->next_ingredient;
-        }
-      }
-
-      if (recipe_matched) {
-        print_recipe(current_recipe);
-        printf("  Would you like to tag this recipe? (y/N): ");
-
-        char *tag_input_buffer = NULL;
-        size_t tag_input_len = 0;
-        ssize_t tag_read_bytes = getline(&tag_input_buffer, &tag_input_len, stdin);
-
-        if (tag_read_bytes > 0) { // If input was provided
-          // Check the first character for 'y' or 'Y'
-          if (tag_input_buffer[0] == 'y' || tag_input_buffer[0] == 'Y') {
-            current_recipe->is_tagged = 1; // Directly access struct member
-            printf("  Recipe '%s' tagged.\n", current_recipe->name);
-          }
-        }
-        free(tag_input_buffer); // Free memory allocated by getline for tag input
-      }
-      current_recipe = current_recipe->next; // Always advance to the next recipe
-    }
-  } else if (read_bytes == -1) {
-      perror("Failed to read search term");
-  } else {
-      printf("No search term entered.\n");
+  // Read the search term from stdin using fgets for safety with fixed-size buffer
+  if (fgets(search_term_buffer, sizeof(search_term_buffer), stdin) == NULL) {
+      // Handle error or EOF for initial input
+      return;
   }
 
-  free(search_term_buffer); // Free memory allocated by getline for search term
+  chars_read = strlen(search_term_buffer);
+  // Remove trailing newline character if present
+  if (chars_read > 0 && search_term_buffer[chars_read - 1] == '\n') {
+      search_term_buffer[--chars_read] = '\0';
+  }
+
+  // Original condition: `if (1 < local_14)`
+  // This means the search term must be at least 2 characters long after trimming newline.
+  if (chars_read > 1) {
+    printf("\n");
+    void *current_recipe = param_1; // Use a more descriptive name for the recipe pointer
+
+    // Loop through the linked list of recipes
+    while (current_recipe != NULL) {
+      bool advance_outer_loop_early = false; // Flag to indicate if we should skip to next recipe
+
+      // Check if the search term matches the current recipe's name (or primary field)
+      if (match_str(search_term_buffer, current_recipe) == 0) { // Match found for recipe name
+        void *current_sub_item = *(void **)((char *)current_recipe + 0xcc); // Get sub-items list head
+
+        // Loop through the current recipe's sub-items
+        while (current_sub_item != NULL) {
+          // Check if the search term matches the current sub-item's name (or primary field)
+          if (match_str(search_term_buffer, (char *)current_sub_item + 0x14) == 0) { // Match found for sub-item
+            print_recipe(current_recipe);
+            printf("Would you like to tag this recipe? ");
+
+            char tag_input_buffer[10]; // Buffer for tag input ('y', 'n', etc.)
+            ssize_t tag_chars_read = 0;
+
+            // Read tag input
+            if (fgets(tag_input_buffer, sizeof(tag_input_buffer), stdin) != NULL) {
+                tag_chars_read = strlen(tag_input_buffer);
+                // Remove trailing newline
+                if (tag_chars_read > 0 && tag_input_buffer[tag_chars_read - 1] == '\n') {
+                    tag_input_buffer[--tag_chars_read] = '\0';
+                } else if (tag_chars_read > 0 && tag_chars_read == sizeof(tag_input_buffer) - 1) {
+                    // Buffer was full, clear remaining input from stdin
+                    int c;
+                    while ((c = getchar()) != '\n' && c != EOF);
+                }
+            }
+            tag_char = tag_input_buffer[0]; // Get the first character of input
+
+            // Original logic: if (local_14 != 0) { ... break; } else { param_1 = next_recipe; }
+            // This implies that if tag input is received, it breaks inner loop.
+            // If no tag input, it moves to next recipe and implicitly breaks inner loop.
+            if (tag_chars_read > 0) { // If something was read for tagging
+              if ((tag_char == 'y') || (tag_char == 'Y')) {
+                // Set the 'tagged' flag for the current recipe
+                *(uint32_t *)((char *)current_recipe + 200) = 1;
+              }
+            }
+            // In either case (tag input or not, after a sub-item match),
+            // the original code implies moving to the next recipe.
+            // This requires breaking from the inner loop and then advancing the outer loop.
+            advance_outer_loop_early = true; // Set flag to advance outer loop
+            break; // Break from inner sub-item loop
+          }
+          // If sub-item name does NOT match, move to the next sub-item
+          current_sub_item = *(void **)((char *)current_sub_item + 0x78);
+        } // End of while (current_sub_item != NULL)
+      }
+      else { // Search term NOT FOUND in recipe name
+        print_recipe(current_recipe);
+        printf("Would you like to tag this recipe? ");
+
+        char tag_input_buffer[10];
+        ssize_t tag_chars_read = 0;
+
+        if (fgets(tag_input_buffer, sizeof(tag_input_buffer), stdin) != NULL) {
+            tag_chars_read = strlen(tag_input_buffer);
+            if (tag_chars_read > 0 && tag_input_buffer[tag_chars_read - 1] == '\n') {
+                tag_input_buffer[--tag_chars_read] = '\0';
+            } else if (tag_chars_read > 0 && tag_chars_read == sizeof(tag_input_buffer) - 1) {
+                int c;
+                while ((c = getchar()) != '\n' && c != EOF);
+            }
+        }
+        tag_char = tag_input_buffer[0];
+
+        // Original logic: if (local_14 == 0) { param_1 = next_recipe; } else { tag; param_1 = next_recipe; }
+        // Both branches lead to advancing to the next recipe.
+        if (tag_chars_read > 0) {
+          if ((tag_char == 'y') || (tag_char == 'Y')) {
+            *(uint32_t *)((char *)current_recipe + 200) = 1;
+          }
+        }
+      }
+
+      // Advance to the next recipe for the outer loop
+      void *next_recipe_ptr = *(void **)((char *)current_recipe + 0xd4);
+      current_recipe = next_recipe_ptr;
+
+      // If `advance_outer_loop_early` was set, it means we broke from the inner loop
+      // and have already processed the current recipe for this search term.
+      // We want to immediately proceed to the *next* iteration of the outer loop,
+      // which `current_recipe = next_recipe_ptr;` handles.
+      // So, we `continue` the outer loop.
+      if (advance_outer_loop_early) {
+          continue; // Go to the next iteration of `while (current_recipe != NULL)`
+      }
+
+    } // End of while (current_recipe != NULL)
+  }
   return;
-}
-
-// --- Minimal main function for compilation and testing ---
-int main() {
-    // Create some dummy data for recipes and ingredients
-    Ingredient ing1 = {"Flour", NULL};
-    Ingredient ing2 = {"Sugar", NULL};
-    Ingredient ing3 = {"Eggs", NULL};
-    Ingredient ing4 = {"Butter", NULL};
-    Ingredient ing5 = {"Milk", NULL};
-    Ingredient ing6 = {"Chocolate", NULL};
-
-    // Recipe 1: Pancakes
-    Recipe recipe1 = {"Pancakes", 0, &ing1, NULL};
-    ing1.next_ingredient = &ing2;
-    ing2.next_ingredient = &ing5; // Flour, Sugar, Milk
-
-    // Recipe 2: Chocolate Cake
-    Recipe recipe2 = {"Chocolate Cake", 0, &ing1, NULL};
-    ing1.next_ingredient = &ing2;
-    ing2.next_ingredient = &ing3;
-    ing3.next_ingredient = &ing4;
-    ing4.next_ingredient = &ing6; // Flour, Sugar, Eggs, Butter, Chocolate
-
-    // Recipe 3: Omelette
-    Recipe recipe3 = {"Omelette", 0, &ing3, NULL}; // Eggs
-
-    // Link recipes into a list
-    recipe1.next = &recipe2;
-    recipe2.next = &recipe3;
-    recipe3.next = NULL; // End of list
-
-    printf("--- Starting recipe search ---\n");
-    find_recipe(&recipe1); // Pass the head of the recipe list
-    printf("--- Search complete ---\n");
-
-    // Print tagged status to verify changes
-    printf("\nRecipe status after search:\n");
-    printf("  Pancakes tagged: %s\n", recipe1.is_tagged ? "Yes" : "No");
-    printf("  Chocolate Cake tagged: %s\n", recipe2.is_tagged ? "Yes" : "No");
-    printf("  Omelette tagged: %s\n", recipe3.is_tagged ? "Yes" : "No");
-
-    return 0;
 }

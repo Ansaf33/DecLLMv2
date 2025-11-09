@@ -1,380 +1,377 @@
-#include <stdio.h>    // For printf, fgets, fprintf
-#include <stdlib.h>   // For malloc, free, calloc, strtold
-#include <string.h>   // For strcspn
-#include <math.h>     // For round
-#include <stdbool.h>  // For bool type
+#include <stdio.h>   // For printf, fgets (used by read_until stub)
+#include <stdlib.h>  // For calloc, free, EXIT_SUCCESS, EXIT_FAILURE
+#include <math.h>    // For round, strtold (used by cgcatof stub)
+#include <string.h>  // For strcspn (used by read_until stub)
+#include <stdbool.h> // For bool if needed, though 0/1 is used
 
 // --- Global Constants and Variables ---
-// Define grid dimensions (arbitrary values for compilation)
-const int X = 10;
-const int Y = 10;
-const int Z = 10;
+// Define grid dimensions. Adjust these values as required for your simulation.
+#define X 10
+#define Y 10
+#define Z 10
 
-// Grid pointers
+// Global grid pointers
 double* TGrid = NULL; // Temperature Grid
-double* HGrid = NULL; // Heat Grid (optional, can be NULL if not used)
+double* HGrid = NULL; // Heat Source/Sink Grid (optional, can be NULL)
 
 // Simulation parameters
-double SIM_TIME = 0.0;
-double TimeStep = 0.0;
+double SIM_TIME = 0.0;   // Total simulation time requested by user
+double TimeStep = 0.0;   // Calculated stable time step
 
-// Placeholder constants from original code, assigned arbitrary values
-const double DAT_00016680 = 1.0; // Scaling factor for TC/HC array indexing
-const double DAT_00016688 = 50.0; // Threshold for HGrid in Tnew
-const double DAT_00016690 = 100.0; // Initial max_timestep in CalcTimeStep
+// Placeholder for external data/constants from the original binary.
+// These are given reasonable default values for compilation.
+const char* DAT_00016669 = "%99s"; // Example format string for input
+double DAT_00016680 = 100.0;       // Divisor for indexing TC/HC arrays
+double DAT_00016688 = 500.0;       // Threshold value for HGrid in Tnew
+double DAT_00016690 = 1e9;         // Initial large value for CalcTimeStep (representing infinity)
 
-// Placeholder arrays for TC and HC
-// Assuming a reasonable max index based on possible values of *pdVar1 / DAT_00016680
-#define MAX_TC_HC_INDEX 200
-double TC[MAX_TC_HC_INDEX];
-double HC[MAX_TC_HC_INDEX];
+// Placeholder arrays for material properties (example sizes, adjust as needed)
+// These would typically be loaded from configuration files or calculated.
+double TC[100]; // Thermal Conductivity values
+double HC[100]; // Heat Capacity values
 
-// --- Helper Functions (replacements for original undefined ones) ---
+// --- Function Prototypes for Stubs ---
 
-// Replacement for read_until. Simplified to read a line from stdin.
-// Returns -1 on EOF or error, 0 on success.
-int read_until(char* buffer, const char* delimiter_ignored, size_t max_len) {
-    if (fgets(buffer, max_len, stdin) == NULL) {
-        return -1; // EOF or error
+// Dummy function for reading input until a delimiter or max length.
+// In a real application, this would be a robust input parsing function.
+// Returns 0 on success, -1 on error (e.g., EOF).
+int read_until(char* buffer, const char* format_str, int max_len) {
+    if (fgets(buffer, max_len + 1, stdin) != NULL) {
+        // Remove trailing newline if present
+        buffer[strcspn(buffer, "\n")] = 0;
+        return 0;
     }
-    // Remove trailing newline character if present
-    buffer[strcspn(buffer, "\n")] = 0;
-    return 0; // Success
+    return -1; // Indicate error
 }
 
-// Replacement for cgcatof
+// Dummy function to convert string to long double.
+// In a real application, this would typically be strtold from <stdlib.h>.
 long double cgcatof(const char* str) {
     return strtold(str, NULL);
 }
 
-// Replacement for ROUND
-// Using standard C99 round function
-#define ROUND round
-
-// Dummy function for GraphTemps
+// Dummy function for visualizing temperature data.
+// In a real application, this would render the grid using a graphics library.
 void GraphTemps(double* grid) {
-    // In a real application, this would visualize the temperature grid.
-    // For now, it's a placeholder.
-    // printf("Graphing temperatures...\n");
+    // Example: Print average temperature for demonstration
+    /*
+    double sum = 0.0;
+    for (int i = 0; i < X * Y * Z; ++i) {
+        sum += grid[i];
+    }
+    printf("Average Temp: %.2f\n", sum / (X * Y * Z));
+    */
 }
 
-// Dummy function for kbhit
+// Dummy kbhit for non-blocking input check.
+// A real implementation on Linux would involve termios.
+// For simple compilation, it just returns 0 (no key pressed).
 int kbhit(void) {
-    // In a real application, this would check for keyboard input.
-    // For now, it's a placeholder.
-    return 0;
+    return 0; // No key pressed
 }
 
-// --- Original Functions (fixed and refactored) ---
+// Initializes placeholder material property arrays with example values.
+void initialize_material_properties() {
+    for (int i = 0; i < 100; ++i) {
+        TC[i] = 10.0 + (double)i * 0.1; // Example: increasing thermal conductivity
+        HC[i] = 50.0 + (double)i * 0.5; // Example: increasing heat capacity
+    }
+}
 
 // Function: pGRID
-// param_1 is now expected to be a pointer to the base of the grid (e.g., TGrid, HGrid)
-// The `* 8` factor in the original code implies `sizeof(double)`.
-// By making `base_grid` a `double*`, pointer arithmetic handles scaling by `sizeof(double)`.
-double* pGRID(double* base_grid, int x, int y, int z) {
-  // Assuming a row-major order: index = x + X*y + X*Y*z
-  // Cast to long long for intermediate products to prevent overflow for large X, Y, Z
-  return base_grid + (x + (long long)X * y + (long long)X * Y * z);
+// Calculates the pointer to a double in a 3D grid given its base pointer and coordinates.
+// Assumes a row-major order: base_ptr[z][y][x]
+// Using long long for intermediate index calculation to prevent overflow for large grids.
+double* pGRID(double* base_ptr, int x, int y, int z) {
+  return base_ptr + (x + (long long)X * y + (long long)X * Y * z);
 }
 
 // Function: GetSimLength
+// Prompts the user for the simulation duration and stores it in SIM_TIME.
+// Returns 0 on success, -1 on error.
 int GetSimLength(void) {
-  char input_buffer[104]; // Buffer for user input
-  
-  SIM_TIME = 0.0;
-  while(true) {
-    // The original logic returns 0 immediately if SIM_TIME > 0.
-    // Given SIM_TIME is initialized to 0.0, this condition is only met
-    // if a previous iteration successfully set SIM_TIME to a positive value.
-    if (SIM_TIME > 0.0) {
-      return 0; // Simulation length successfully set
-    }
-    
+  char input_buffer[104];
+  int read_status;
+
+  SIM_TIME = 0.0; // Initialize simulation time to zero
+  do {
     printf("For how long would you like to run the simulation? (s): ");
-    if (read_until(input_buffer, NULL, sizeof(input_buffer) - 1) == -1) {
-        // Error or EOF during read
-        return 0xffffffff; // Original error return value
+    read_status = read_until(input_buffer, DAT_00016669, 99);
+    if (read_status == -1) {
+        fprintf(stderr, "Error reading simulation length input.\n");
+        return -1;
     }
-    
     SIM_TIME = (double)cgcatof(input_buffer);
-  }
+    if (SIM_TIME <= 0.0) {
+        printf("Simulation time must be a positive value. Please try again.\n");
+    }
+  } while (SIM_TIME <= 0.0); // Loop until a positive simulation time is entered
+
+  return 0;
 }
 
-// Function: L
+// Function: L (Thermal Conductivity)
+// Returns the thermal conductivity value for a cell at (x, y, z).
+// Returns -1.0L if coordinates are out of bounds.
 long double L(unsigned int x, unsigned int y, unsigned int z) {
   if (x < X && y < Y && z < Z) {
-    double grid_value = *pGRID(TGrid, x, y, z);
-    // Assuming TC is an array and DAT_00016680 is a divisor for indexing.
-    // &TC in original was likely a typo for just TC.
-    int index = (int)ROUND(grid_value / DAT_00016680);
-    // Basic bounds checking for the array index
-    if (index < 0 || index >= MAX_TC_HC_INDEX) {
-        fprintf(stderr, "L: TC index out of bounds: %d at (%u, %u, %u)\n", index, x, y, z);
-        return -(long double)1;
-    }
-    return (long double)TC[index];
+    // Access TC array based on temperature at (x,y,z) scaled by DAT_00016680
+    return (long double)TC[(int)round(*pGRID(TGrid, x, y, z) / DAT_00016680)];
   }
-  return -(long double)1;
+  return -1.0L;
 }
 
-// Function: C
+// Function: C (Heat Capacity)
+// Returns the heat capacity value for a cell at (x, y, z).
+// Returns -1.0L if coordinates are out of bounds.
 long double C(unsigned int x, unsigned int y, unsigned int z) {
   if (x < X && y < Y && z < Z) {
-    double grid_value = *pGRID(TGrid, x, y, z);
-    // Assuming HC is an array and DAT_00016680 is a divisor for indexing.
-    // &HC in original was likely a typo for just HC.
-    int index = (int)ROUND(grid_value / DAT_00016680);
-    // Basic bounds checking for the array index
-    if (index < 0 || index >= MAX_TC_HC_INDEX) {
-        fprintf(stderr, "C: HC index out of bounds: %d at (%u, %u, %u)\n", index, x, y, z);
-        return -(long double)1;
-    }
-    return (long double)HC[index];
+    // Access HC array based on temperature at (x,y,z) scaled by DAT_00016680
+    return (long double)HC[(int)round(*pGRID(TGrid, x, y, z) / DAT_00016680)];
   }
-  return -(long double)1;
+  return -1.0L;
 }
 
-// Function: K
+// Function: K (Effective Thermal Conductivity between cells)
+// Calculates the effective thermal conductivity between cell (x, y, z)
+// and its neighbor in direction (dx, dy, dz).
 long double K(int x, int y, int z, int dx, int dy, int dz) {
-  long double L1, L2;
-  
-  // Check for boundary conditions (dx, dy, dz are direction vectors)
-  bool is_boundary = 
-      ((dx == -1 && x == 0) || (dx == 1 && x == X - 1)) ||
+  // Check if the current cell is at a boundary and the flux direction is outwards.
+  if (((dx == -1 && x == 0) || (dx == 1 && x == X - 1)) ||
       ((dy == -1 && y == 0) || (dy == 1 && y == Y - 1)) ||
-      ((dz == -1 && z == 0) || (dz == 1 && z == Z - 1));
-
-  if (is_boundary) {
-    L1 = L(x, y, z);
-    // The original expression `1 / ((longdouble)1 / (L1 + L1))` literally means `L1 + L1`.
-    return L1 + L1;
+      ((dz == -1 && z == 0) || (dz == 1 && z == Z - 1))) {
+    // At a boundary, use half of the cell's thermal conductivity (simplified boundary condition).
+    return L(x, y, z) / 2.0L;
   } else {
-    L1 = L(x, y, z);
-    L2 = L(x + dx, y + dy, z + dz);
-    // Original: 1 / (1 / (L2 + L2) + 1 / (L1 + L1))
-    return (long double)1 / ((long double)1 / (L2 + L2) + (long double)1 / (L1 + L1));
+    // Calculate harmonic mean of thermal conductivities for internal cells.
+    // K_eff = 1 / ( (1 / (2*L_neighbor)) + (1 / (2*L_current)) )
+    long double L_current = L(x, y, z);
+    long double L_neighbor = L(x + dx, y + dy, z + dz);
+
+    // Ensure L_current and L_neighbor are valid (positive) before division.
+    // If L() returns -1.0L, it indicates an error or out-of-bounds access.
+    if (L_current <= 0.0L || L_neighbor <= 0.0L) {
+        // Handle error: return 0 or a very small value to indicate no heat transfer.
+        return 0.0L;
+    }
+    return 1.0L / (1.0L / (2.0L * L_neighbor) + 1.0L / (2.0L * L_current));
   }
 }
 
-// Function: H
+// Function: H (Total Heat Flux into a cell)
+// Calculates the net heat flux into cell (x, y, z) from all its neighbors.
 long double H(int x, int y, int z) {
-  long double accumulated_flux = 0.0L;
-  double current_temp = *pGRID(TGrid, x, y, z);
-  long double K_val;
+  long double sum_flux = 0.0L;
+  double current_cell_temp = *pGRID(TGrid, x, y, z);
   double neighbor_temp;
+  long double k_val;
 
-  // Check neighbors and sum heat flux
-  // -X direction
-  if (x != 0) {
-    K_val = K(x, y, z, -1, 0, 0);
+  // Contributions from X-direction neighbors
+  if (x != 0) { // Check left neighbor
+    k_val = K(x, y, z, -1, 0, 0); // Effective conductivity with left neighbor
     neighbor_temp = *pGRID(TGrid, x - 1, y, z);
-    accumulated_flux += (neighbor_temp - current_temp) * (double)K_val;
+    sum_flux += (neighbor_temp - current_cell_temp) * (double)k_val;
   }
-  // +X direction
-  if (x != X - 1) {
-    K_val = K(x, y, z, 1, 0, 0);
+  if (x != X - 1) { // Check right neighbor
+    k_val = K(x, y, z, 1, 0, 0); // Effective conductivity with right neighbor
     neighbor_temp = *pGRID(TGrid, x + 1, y, z);
-    accumulated_flux += (neighbor_temp - current_temp) * (double)K_val;
+    sum_flux += (neighbor_temp - current_cell_temp) * (double)k_val;
   }
-  // -Y direction
-  if (y != 0) {
-    K_val = K(x, y, z, 0, -1, 0);
+
+  // Contributions from Y-direction neighbors
+  if (y != 0) { // Check bottom neighbor
+    k_val = K(x, y, z, 0, -1, 0); // Effective conductivity with bottom neighbor
     neighbor_temp = *pGRID(TGrid, x, y - 1, z);
-    accumulated_flux += (neighbor_temp - current_temp) * (double)K_val;
+    sum_flux += (neighbor_temp - current_cell_temp) * (double)k_val;
   }
-  // +Y direction
-  if (y != Y - 1) {
-    K_val = K(x, y, z, 0, 1, 0);
+  if (y != Y - 1) { // Check top neighbor
+    k_val = K(x, y, z, 0, 1, 0); // Effective conductivity with top neighbor
     neighbor_temp = *pGRID(TGrid, x, y + 1, z);
-    accumulated_flux += (neighbor_temp - current_temp) * (double)K_val;
+    sum_flux += (neighbor_temp - current_cell_temp) * (double)k_val;
   }
-  // -Z direction
-  if (z != 0) {
-    K_val = K(x, y, z, 0, 0, -1);
+
+  // Contributions from Z-direction neighbors
+  if (z != 0) { // Check front neighbor
+    k_val = K(x, y, z, 0, 0, -1); // Effective conductivity with front neighbor
     neighbor_temp = *pGRID(TGrid, x, y, z - 1);
-    accumulated_flux += (neighbor_temp - current_temp) * (double)K_val;
+    sum_flux += (neighbor_temp - current_cell_temp) * (double)k_val;
   }
-  // +Z direction
-  if (z != Z - 1) {
-    K_val = K(x, y, z, 0, 0, 1);
+  if (z != Z - 1) { // Check back neighbor
+    k_val = K(x, y, z, 0, 0, 1); // Effective conductivity with back neighbor
     neighbor_temp = *pGRID(TGrid, x, y, z + 1);
-    accumulated_flux += (neighbor_temp - current_temp) * (double)K_val;
+    sum_flux += (neighbor_temp - current_cell_temp) * (double)k_val;
   }
-  return accumulated_flux;
+  return sum_flux;
 }
 
-// Function: Tnew
+// Function: Tnew (Calculate new temperature for a cell)
+// Calculates the new temperature for a cell (x, y, z) using the explicit Euler method.
+// Returns a fixed temperature if HGrid indicates a fixed boundary condition.
 long double Tnew(unsigned int x, unsigned int y, unsigned int z) {
-  long double new_temp_val;
-
-  // Refactored to remove goto
-  if (HGrid != NULL) { // Check if HGrid is initialized (assuming NULL means 0)
-    double h_grid_val = *pGRID(HGrid, x, y, z);
-    if (DAT_00016688 < h_grid_val) {
-      new_temp_val = (long double)h_grid_val;
-      return new_temp_val;
+  // Check for fixed temperature boundary condition if HGrid is enabled
+  if (HGrid != NULL) {
+    double fixed_temp_val = *pGRID(HGrid, x, y, z);
+    if (DAT_00016688 < fixed_temp_val) {
+      return (long double)fixed_temp_val; // Return the fixed temperature
     }
   }
-  
-  double current_t_val = *pGRID(TGrid, x, y, z);
-  long double C_val = C(x, y, z);
-  long double H_val = H(x, y, z);
-  
-  // Calculate new temperature based on heat flow and time step
-  // Reduced intermediate variables by direct calculation
-  new_temp_val = H_val * ((long double)TimeStep / C_val) + (long double)current_t_val;
-  
-  return new_temp_val;
+
+  // Explicit Euler method for transient heat conduction
+  // T_new = T_old + (H * TimeStep) / C
+  double current_temp = *pGRID(TGrid, x, y, z);
+  long double capacitance = C(x, y, z);
+  long double heat_flux = H(x, y, z);
+
+  // Avoid division by zero if capacitance is non-positive
+  if (capacitance <= 0.0L) {
+      // Handle error or assume no change if capacitance is zero/negative
+      return (long double)current_temp;
+  }
+
+  return heat_flux * (TimeStep / capacitance) + current_temp;
 }
 
-// Function: CalcTimeStep
+// Function: CalcTimeStep (Calculates the maximum stable timestep)
+// Determines the maximum stable timestep (Courant-Friedrichs-Lewy condition)
+// for the explicit Euler method to prevent numerical instability.
 void CalcTimeStep(void) {
-  long double min_tau = (long double)DAT_00016690; // Initialize with a large value
-  unsigned int x_idx, y_idx, z_idx;
+  long double min_stable_timestep = (long double)DAT_00016690; // Initialize with a very large value
 
-  for (z_idx = 0; z_idx < Z; ++z_idx) {
-    for (y_idx = 0; y_idx < Y; ++y_idx) {
-      for (x_idx = 0; x_idx < X; ++x_idx) {
-        // Accumulate sum of K values to reduce intermediate variables
-        long double sum_K = 0.0L;
-        sum_K += K(x_idx, y_idx, z_idx, -1, 0, 0);
-        sum_K += K(x_idx, y_idx, z_idx, 1, 0, 0);
-        sum_K += K(x_idx, y_idx, z_idx, 0, -1, 0);
-        sum_K += K(x_idx, y_idx, z_idx, 0, 1, 0);
-        sum_K += K(x_idx, y_idx, z_idx, 0, 0, -1);
-        sum_K += K(x_idx, y_idx, z_idx, 0, 0, 1);
-        
-        long double C_val = C(x_idx, y_idx, z_idx);
-        
-        long double current_tau = 0.0L;
-        if (sum_K != 0.0L) { // Avoid division by zero
-            current_tau = C_val / sum_K;
-        }
+  for (unsigned int z = 0; z < Z; ++z) {
+    for (unsigned int y = 0; y < Y; ++y) {
+      for (unsigned int x = 0; x < X; ++x) {
+        // Sum of effective thermal conductivities from all neighbors
+        long double k_sum = K(x, y, z, -1, 0, 0) +
+                            K(x, y, z, 1, 0, 0) +
+                            K(x, y, z, 0, -1, 0) +
+                            K(x, y, z, 0, 1, 0) +
+                            K(x, y, z, 0, 0, -1) +
+                            K(x, y, z, 0, 0, 1);
+        long double capacitance = C(x, y, z);
 
-        if (current_tau < min_tau && current_tau > 0.0L) {
-          min_tau = current_tau;
+        // Calculate local stable timestep for the current cell
+        if (k_sum > 0.0L && capacitance > 0.0L) { // Avoid division by zero or non-physical values
+            long double current_cell_timestep = capacitance / k_sum;
+            // Update minimum stable timestep if current cell's is smaller and positive
+            if (current_cell_timestep < min_stable_timestep) {
+                min_stable_timestep = current_cell_timestep;
+            }
         }
       }
     }
   }
-  TimeStep = (double)min_tau;
+  TimeStep = (double)min_stable_timestep;
+  // Apply a safety factor (e.g., 0.9) to the calculated timestep for robustness
+  TimeStep *= 0.9;
 }
 
-// Function: SimStep
+// Function: SimStep (Performs one simulation step)
+// Calculates new temperatures for all cells and updates the grid.
+// Returns 0 on success, -1 on memory allocation failure.
 int SimStep(void) {
-  // Use a more descriptive name for the new grid pointer
-  double* new_TGrid_ptr = (double*)calloc((long long)X * Y * Z, sizeof(double));
-  
-  if (new_TGrid_ptr == NULL) {
-    fprintf(stderr, "Error: Failed to allocate memory for new_TGrid.\n");
-    return 0xffffffff; // Error code
+  // Allocate memory for the new temperature grid
+  double* new_TGrid_data = (double*)calloc(Z * Y * X, sizeof(double));
+  if (new_TGrid_data == NULL) {
+    perror("Failed to allocate memory for new_TGrid");
+    return -1;
   }
 
-  unsigned int x_idx, y_idx, z_idx;
-  for (z_idx = 0; z_idx < Z; ++z_idx) {
-    for (y_idx = 0; y_idx < Y; ++y_idx) {
-      for (x_idx = 0; x_idx < X; ++x_idx) {
-        // Calculate new temperature and store it in the temporary grid
-        *pGRID(new_TGrid_ptr, x_idx, y_idx, z_idx) = (double)Tnew(x_idx, y_idx, z_idx);
+  // Calculate new temperature for each cell
+  for (unsigned int z = 0; z < Z; ++z) {
+    for (unsigned int y = 0; y < Y; ++y) {
+      for (unsigned int x = 0; x < X; ++x) {
+        *pGRID(new_TGrid_data, x, y, z) = (double)Tnew(x, y, z);
       }
     }
   }
-  
-  // Free the old grid and update TGrid to the new one
-  free(TGrid);
-  TGrid = new_TGrid_ptr;
-  
+
+  free(TGrid); // Free the memory of the old temperature grid
+  TGrid = new_TGrid_data; // Update the global TGrid pointer to the new data
   return 0; // Success
 }
 
 // Function: IncrementTimestep
-void IncrementTimestep(double* current_sim_time) {
-  *current_sim_time += TimeStep;
+// Updates the total elapsed simulation time.
+void IncrementTimestep(double *current_elapsed_time) {
+  *current_elapsed_time += TimeStep;
 }
 
-// Function: RunSim
+// Function: RunSim (Main simulation loop)
+// Executes the simulation for the requested duration.
+// Returns 0 on successful completion, -1 on error.
 int RunSim(void) {
-  double current_sim_time = 0.0;
-  
-  CalcTimeStep(); // Determine the appropriate time step for the simulation
-  
-  while(true) {
-    if (SIM_TIME <= current_sim_time) {
-      return 0; // Simulation finished
+  double current_elapsed_time = 0.0;
+
+  // Calculate the initial stable timestep
+  CalcTimeStep();
+  printf("Initial TimeStep: %.6f seconds\n", TimeStep);
+
+  // Main simulation loop
+  while (current_elapsed_time < SIM_TIME) {
+    int status = SimStep();
+    if (status != 0) {
+      fprintf(stderr, "Simulation step failed at %.2f seconds.\n", current_elapsed_time);
+      return -1;
     }
-    
-    int sim_step_result = SimStep();
-    if (sim_step_result != 0) {
-      fprintf(stderr, "Error: SimStep failed.\n");
-      break; // Exit loop on error
-    }
-    
-    IncrementTimestep(&current_sim_time);
-    GraphTemps(TGrid); // Visualize temperatures (dummy for now)
-    printf("At %.2f seconds\n", current_sim_time); // Fixed format specifier
-    kbhit(); // Check for user input (dummy for now)
+    IncrementTimestep(&current_elapsed_time);
+    GraphTemps(TGrid); // Visualize current temperatures
+    printf("Simulation at %.2f seconds (out of %.2f)\n", current_elapsed_time, SIM_TIME);
+
+    // Optional: Check for user input to pause/exit (if kbhit is implemented)
+    // if (kbhit()) { /* handle pause/exit logic */ }
   }
-  return 0xffffffff; // Error return
+  return 0; // Simulation finished successfully
 }
 
-// --- Main Function ---
+// Main function (entry point of the program)
 int main() {
-    // Initialize TC and HC arrays with some dummy values
-    for (int i = 0; i < MAX_TC_HC_INDEX; ++i) {
-        TC[i] = 10.0 + (double)i * 0.1; // Example values
-        HC[i] = 5.0 + (double)i * 0.05; // Example values
-    }
+    initialize_material_properties(); // Initialize material property arrays
 
-    // Initialize TGrid with some initial temperatures (e.g., all 20.0)
-    // Allocate memory for TGrid
-    TGrid = (double*)calloc((long long)X * Y * Z, sizeof(double));
+    // Allocate and initialize the initial temperature grid (e.g., all 20 degrees Celsius)
+    TGrid = (double*)calloc(Z * Y * X, sizeof(double));
     if (TGrid == NULL) {
-        fprintf(stderr, "Failed to allocate initial TGrid.\n");
-        return 1;
+        perror("Failed to allocate initial TGrid");
+        return EXIT_FAILURE;
     }
-    // Set initial temperatures
     for (int i = 0; i < X * Y * Z; ++i) {
-        TGrid[i] = 20.0; // Initial uniform temperature
+        TGrid[i] = 20.0; // Set initial uniform temperature
     }
 
-    // Optional: Initialize HGrid if used. For now, keep it NULL as per original code's check.
-    // If HGrid were to be used, it would be allocated here similarly to TGrid.
-    // HGrid = (double*)calloc((long long)X * Y * Z, sizeof(double));
-    // if (HGrid != NULL) {
-    //     for (int i = 0; i < X * Y * Z; ++i) {
-    //         HGrid[i] = 0.0; // Example initial HGrid values
-    //     }
+    // Optional: Allocate and initialize HGrid if fixed heat sources/sinks are used.
+    // If HGrid is not used, keep it NULL.
+    // HGrid = (double*)calloc(Z * Y * X, sizeof(double));
+    // if (HGrid == NULL) {
+    //     perror("Failed to allocate HGrid");
+    //     free(TGrid); // Clean up TGrid before exiting
+    //     return EXIT_FAILURE;
+    // }
+    // Example: Set a fixed temperature point (e.g., a hot spot)
+    // if (HGrid) {
+    //     *pGRID(HGrid, X / 2, Y / 2, Z / 2) = 100.0; // Fixed 100 degrees at center
     // }
 
-    printf("Starting simulation...\n");
-    
-    // Get simulation length from user
+    // Get the desired simulation length from the user
     if (GetSimLength() != 0) {
-        fprintf(stderr, "Failed to get simulation length or invalid input.\n");
+        fprintf(stderr, "Program terminated due to invalid simulation length input.\n");
         free(TGrid);
-        // if (HGrid != NULL) free(HGrid); // Free HGrid if it was allocated
-        return 1;
+        if (HGrid) free(HGrid);
+        return EXIT_FAILURE;
     }
 
-    if (SIM_TIME <= 0.0) {
-        printf("Simulation time is zero or negative. Exiting.\n");
+    printf("Starting simulation for %.2f seconds...\n", SIM_TIME);
+    // Run the main simulation loop
+    if (RunSim() != 0) {
+        fprintf(stderr, "Simulation failed during execution.\n");
         free(TGrid);
-        // if (HGrid != NULL) free(HGrid); // Free HGrid if it was allocated
-        return 0;
+        if (HGrid) free(HGrid);
+        return EXIT_FAILURE;
     }
 
-    // Run the simulation
-    int result = RunSim();
+    printf("Simulation finished successfully.\n");
 
-    if (result == 0) {
-        printf("Simulation completed successfully.\n");
-    } else {
-        printf("Simulation ended with an error.\n");
-    }
-
-    // Cleanup
+    // Clean up allocated memory
     free(TGrid);
-    // if (HGrid != NULL) free(HGrid); // Free HGrid if it was allocated
+    if (HGrid) free(HGrid);
 
-    return 0;
+    return EXIT_SUCCESS;
 }

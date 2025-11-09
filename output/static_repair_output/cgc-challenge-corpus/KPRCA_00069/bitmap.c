@@ -1,304 +1,343 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-#include <stdbool.h>
+#include <stdio.h>    // For NULL, potentially for debugging printf
+#include <stdlib.h>   // For malloc, calloc, free, abs
+#include <string.h>   // For strlen, memcpy, memcmp, memset
+#include <stdint.h>   // For uint8_t, uint16_t, uint32_t, int32_t
 
-// --- Dummy external functions (replace with actual implementations if available) ---
-// Assumed to return a dynamically allocated string, which should be freed by the caller.
-char *create_barcode_ascii(int barcode_id) {
-    // Example implementation:
-    // For barcode_id = 1, return "|| | | ||";
-    // For barcode_id = 2, return "| | || | |";
-    // For other, return NULL;
-    if (barcode_id == 1) {
-        return strdup("|| | | ||");
-    } else if (barcode_id == 2) {
-        return strdup("| | || | |");
-    }
-    return NULL; // Return NULL on failure
-}
+// Placeholder for external functions
+// Assuming create_barcode_ascii takes an int and returns a dynamically allocated char*
+extern char *create_barcode_ascii(int barcode_id);
+// Assuming create_barcode_from_encoded_data takes a char* and returns an int/uint32_t
+extern uint32_t create_barcode_from_encoded_data(char *encoded_data);
 
-// Assumed to process the decoded barcode string and return an integer status.
-// 0 for success, non-zero for failure.
-int create_barcode_from_encoded_data(char *encoded_data) {
-    // Example implementation: just print and return success
-    if (encoded_data) {
-        printf("Decoded barcode data: %s\n", encoded_data);
-        return 0; // Success
-    }
-    return -1; // Failure
-}
+// --- Constants ---
+// Barcode representation: black bars on white background for 24-bit BGR BMP
+static const uint8_t BAR_COLOR[] = {0x00, 0x00, 0x00};   // Black
+static const uint8_t SPACE_COLOR[] = {0xFF, 0xFF, 0xFF}; // White
 
-// --- Static data definitions from decompiled code ---
-// DAT_00017049: BMP file signature "BM"
-const char BMP_SIGNATURE[2] = {'B', 'M'};
+// BMP File Header (bfType) magic number "BM"
+static const uint8_t BMP_MAGIC[] = {'B', 'M'};
 
-// DAT_00017041: 3 bytes for '|' (black pixel in BGR format)
-const uint8_t BARCODE_BLACK_PIXEL[3] = {0x00, 0x00, 0x00};
+// --- Struct definitions for BMP headers (packed to ensure correct byte layout) ---
+#pragma pack(push, 1) // Ensure no padding for BMP structures
 
-// DAT_00017045: 3 bytes for other (space, white pixel in BGR format)
-const uint8_t BARCODE_WHITE_PIXEL[3] = {0xFF, 0xFF, 0xFF};
-
-// --- BMP Header Structures ---
-#pragma pack(push, 1) // Ensure no padding between struct members
 typedef struct {
-    uint16_t bfType;      // Signature "BM"
-    uint32_t bfSize;      // File size in bytes
-    uint16_t bfReserved1; // Reserved, must be 0
-    uint16_t bfReserved2; // Reserved, must be 0
-    uint32_t bfOffBits;   // Offset to start of image data
+    uint16_t bfType;
+    uint32_t bfSize;
+    uint16_t bfReserved1;
+    uint16_t bfReserved2;
+    uint32_t bfOffBits;
 } BITMAPFILEHEADER;
 
 typedef struct {
-    uint32_t biSize;          // Size of this header (40 bytes)
-    int32_t  biWidth;         // Image width in pixels
-    int32_t  biHeight;        // Image height in pixels
-    uint16_t biPlanes;        // Number of color planes (must be 1)
-    uint16_t biBitCount;      // Bits per pixel (e.g., 24)
-    uint32_t biCompression;   // Compression method (0 = BI_RGB)
-    uint32_t biSizeImage;     // Size of raw image data (including padding)
-    int32_t  biXPelsPerMeter; // Horizontal resolution
-    int32_t  biYPelsPerMeter; // Vertical resolution
-    uint32_t biClrUsed;       // Number of colors in palette
-    uint32_t biClrImportant;  // Number of important colors
+    uint32_t biSize;
+    int32_t biWidth;
+    int32_t biHeight;
+    uint16_t biPlanes;
+    uint16_t biBitCount;
+    uint32_t biCompression;
+    uint32_t biSizeImage;
+    int32_t biXPelsPerMeter;
+    int32_t biYPelsPerMeter;
+    uint32_t biClrUsed;
+    uint32_t biClrImportant;
 } BITMAPINFOHEADER;
+
 #pragma pack(pop)
 
 // Function: create_barcode_bmp_data
-// Generates the raw pixel data for a barcode BMP image.
-// barcode_id: Identifier for the barcode content.
-// out_bmp_data_size: Output parameter for the total size of the generated pixel data.
-// out_barcode_line_length_bytes: Output parameter for the byte length of a single barcode line.
-// Returns a pointer to the allocated raw pixel data, or NULL on failure.
-void *create_barcode_bmp_data(int barcode_id, size_t *out_bmp_data_size, size_t *out_barcode_line_length_bytes) {
-    *out_bmp_data_size = 0;
-    *out_barcode_line_length_bytes = 0;
+// Creates the raw pixel data for a barcode BMP.
+// param_1: barcode_id (int) - The identifier for the barcode.
+// param_2: out_data_size (size_t*) - Output: total size of the allocated pixel data.
+// param_3: out_barcode_width_bytes (size_t*) - Output: width of one row of pixel data in bytes.
+// Returns: A pointer to the allocated pixel data (uint8_t*), or NULL on failure.
+void *create_barcode_bmp_data(int barcode_id, size_t *out_data_size, size_t *out_barcode_width_bytes) {
+    *out_data_size = 0;
+    *out_barcode_width_bytes = 0;
 
-    char *barcode_ascii_data = create_barcode_ascii(barcode_id);
-    if (!barcode_ascii_data) {
+    char *barcode_ascii = create_barcode_ascii(barcode_id);
+    if (!barcode_ascii) {
         return NULL;
     }
 
-    size_t ascii_len = strlen(barcode_ascii_data);
-
-    // The original code had a check `sVar1 < 0xfb` (251).
-    // If the ASCII string length is 251 or more, it's considered too long.
-    if (ascii_len >= 0xfb) {
-        free(barcode_ascii_data);
+    size_t ascii_len = strlen(barcode_ascii);
+    // Original condition: sVar1 < 0xfb (251). Restricting barcode length.
+    if (ascii_len >= 251) {
+        free(barcode_ascii);
         return NULL;
     }
 
-    // A barcode character expands to 4 pixels. Each pixel is 3 bytes (24-bit BGR).
-    // So, one line of barcode data (in bytes) = ascii_len * 4 pixels * 3 bytes/pixel.
-    *out_barcode_line_length_bytes = ascii_len * 12; // 0xc = 12
-    const int IMAGE_HEIGHT_PIXELS = 0x78; // 120 pixels
+    // Each barcode character ('|' or ' ') is expanded into 4 "pixels" horizontally.
+    // Each pixel is 3 bytes (BGR for 24-bit BMP).
+    // So, 4 * 3 = 12 bytes per barcode character horizontally.
+    size_t barcode_width_pixels = ascii_len * 4; // Total pixels wide
+    size_t barcode_width_bytes = barcode_width_pixels * 3; // Total bytes for one row
+    *out_barcode_width_bytes = barcode_width_bytes;
 
-    // Total raw BMP data size = barcode_line_length_bytes * image_height.
-    *out_bmp_data_size = *out_barcode_line_length_bytes * IMAGE_HEIGHT_PIXELS; // 0x5a0 = 1440 = 12 * 120
+    // The barcode BMP has a fixed height of 120 rows (0x78).
+    size_t barcode_height = 120;
+    *out_data_size = barcode_width_bytes * barcode_height; // Total size for all pixel data
 
-    uint8_t *bmp_data = (uint8_t *)calloc(1, *out_bmp_data_size);
+    uint8_t *bmp_data = (uint8_t *)calloc(1, *out_data_size);
     if (!bmp_data) {
-        free(barcode_ascii_data);
+        free(barcode_ascii);
         return NULL;
     }
 
-    uint8_t *current_write_ptr = bmp_data;
-    const uint8_t *pixel_pattern;
-
-    // Generate the first barcode line's pixel data
-    for (char *c = barcode_ascii_data; *c != '\0'; ++c) {
-        pixel_pattern = (*c == '|') ? BARCODE_BLACK_PIXEL : BARCODE_WHITE_PIXEL;
-
-        // Each character expands to 4 pixels
+    // Fill the first row of pixel data based on the ASCII barcode string.
+    uint8_t *current_pixel_ptr = bmp_data;
+    for (char *p = barcode_ascii; *p != '\0'; ++p) {
+        const uint8_t *color_data = (*p == '|') ? BAR_COLOR : SPACE_COLOR;
+        // Expand each character into 4 horizontal pixels.
         for (int i = 0; i < 4; ++i) {
-            memcpy(current_write_ptr, pixel_pattern, 3); // 3 bytes per pixel (BGR)
-            current_write_ptr += 3;
+            memcpy(current_pixel_ptr, color_data, 3);
+            current_pixel_ptr += 3;
         }
     }
 
-    // Duplicate the first barcode line to fill the remaining 119 lines (total 120)
-    for (int i = 1; i < IMAGE_HEIGHT_PIXELS; ++i) {
-        memcpy(bmp_data + (i * (*out_barcode_line_length_bytes)), bmp_data, *out_barcode_line_length_bytes);
+    // Replicate the first row (which is at `bmp_data`) to fill the remaining height.
+    for (size_t row = 1; row < barcode_height; ++row) {
+        memcpy(bmp_data + row * barcode_width_bytes, bmp_data, barcode_width_bytes);
     }
 
-    free(barcode_ascii_data);
+    free(barcode_ascii);
     return bmp_data;
 }
 
 // Function: validate_bmp_headers
 // Validates the headers of a given BMP file data.
-// bmp_file_data: Pointer to the start of the BMP file in memory.
-// Returns 0 on success, -1 on failure.
-int validate_bmp_headers(const void *bmp_file_data) {
-    if (!bmp_file_data) {
+// param_1: bmp_data (const void*) - Pointer to the start of the BMP data.
+// param_2: dib_header_ptr (const int*) - Original parameter, not directly used due to struct access.
+// Returns: 0 for valid headers, -1 for invalid headers.
+int validate_bmp_headers(const void *bmp_data, const int *dib_header_ptr) {
+    const BITMAPFILEHEADER *file_header = (const BITMAPFILEHEADER *)bmp_data;
+    const BITMAPINFOHEADER *info_header = (const BITMAPINFOHEADER *)((const uint8_t *)bmp_data + sizeof(BITMAPFILEHEADER));
+
+    // 1. Check BMP magic number "BM"
+    if (memcmp(&file_header->bfType, BMP_MAGIC, sizeof(BMP_MAGIC)) != 0) {
         return -1;
     }
 
-    const BITMAPFILEHEADER *bfh = (const BITMAPFILEHEADER *)bmp_file_data;
-    const BITMAPINFOHEADER *bih = (const BITMAPINFOHEADER *)((const char *)bmp_file_data + sizeof(BITMAPFILEHEADER));
+    // 2. Check reserved fields (must be 0)
+    if (file_header->bfReserved1 != 0 || file_header->bfReserved2 != 0) {
+        return -1;
+    }
 
-    // --- Validate BITMAPFILEHEADER ---
-    if (memcmp(&bfh->bfType, BMP_SIGNATURE, 2) != 0) return -1; // "BM" signature
-    if (bfh->bfReserved1 != 0 || bfh->bfReserved2 != 0) return -1;
-    if (bfh->bfOffBits != sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER)) return -1; // Expected offset to pixel data (0x36)
+    // 3. Check BITMAPINFOHEADER size (must be 40 bytes)
+    if (info_header->biSize != sizeof(BITMAPINFOHEADER)) { // 0x28
+        return -1;
+    }
 
-    // --- Validate BITMAPINFOHEADER ---
-    if (bih->biSize != sizeof(BITMAPINFOHEADER)) return -1; // Expected DIB header size (0x28)
-    if (bih->biWidth <= 0 || bih->biWidth >= 0x2b31) return -1; // Width check (< 11057)
-    if (bih->biHeight != 0x78) return -1; // Height check (== 120)
-    if (bih->biPlanes != 1) return -1;
-    if (bih->biBitCount != 0x18) return -1; // 24 bits per pixel
-    if (bih->biCompression != 0) return -1; // BI_RGB (no compression)
+    // 4. Validate biWidth (must be positive and within a reasonable range, e.g., < 11057)
+    if (info_header->biWidth <= 0 || info_header->biWidth >= 11057) { // 0x2b31
+        return -1;
+    }
 
-    // Calculate expected biSizeImage, considering 4-byte scanline padding
-    uint32_t bytes_per_pixel = bih->biBitCount / 8;
-    uint32_t scanline_width_bytes_padded = (bih->biWidth * bytes_per_pixel + 3) & ~3;
-    uint32_t expected_biSizeImage = scanline_width_bytes_padded * bih->biHeight;
+    // 5. Validate biHeight (must be 120 for this barcode type)
+    if (info_header->biHeight != 120) { // 0x78
+        return -1;
+    }
 
-    if (bih->biSizeImage != expected_biSizeImage) return -1;
+    // 6. Validate biPlanes (must be 1)
+    if (info_header->biPlanes != 1) {
+        return -1;
+    }
 
-    // Check total file size consistency
-    if (bfh->bfSize != sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + bih->biSizeImage) return -1;
+    // 7. Validate biBitCount (must be 24 for 24-bit RGB)
+    if (info_header->biBitCount != 24) { // 0x18
+        return -1;
+    }
 
-    // Specific resolution checks (0xb13 = 2835)
-    if (bih->biXPelsPerMeter != 0xb13 || bih->biYPelsPerMeter != 0xb13) return -1;
+    // 8. Validate biCompression (must be 0 for BI_RGB, no compression)
+    if (info_header->biCompression != 0) {
+        return -1;
+    }
 
-    // Color palette checks (should be 0 for 24-bit BMP)
-    if (bih->biClrUsed != 0 || bih->biClrImportant != 0) return -1;
+    // 9. Validate biSizeImage calculation (padded row size * absolute height)
+    uint32_t bytes_per_pixel = info_header->biBitCount / 8;
+    uint32_t row_size_unpadded = info_header->biWidth * bytes_per_pixel;
+    uint32_t row_size_padded = (row_size_unpadded + 3) & ~3; // Rows padded to 4-byte boundary
+    uint32_t expected_bi_size_image = row_size_padded * (uint32_t)abs(info_header->biHeight);
 
-    return 0; // Success
+    if (info_header->biSizeImage != expected_bi_size_image) {
+        return -1;
+    }
+
+    // 10. Validate biXPelsPerMeter and biYPelsPerMeter (must be 2835)
+    if (info_header->biXPelsPerMeter != 2835 || info_header->biYPelsPerMeter != 2835) { // 0xb13
+        return -1;
+    }
+
+    // 11. Validate biClrUsed and biClrImportant (must be 0 for 24-bit BMP)
+    if (info_header->biClrUsed != 0 || info_header->biClrImportant != 0) {
+        return -1;
+    }
+
+    // 12. Validate bfSize (total file size == header size + image data size)
+    uint32_t total_header_size = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+    if (file_header->bfSize != (total_header_size + info_header->biSizeImage)) {
+        return -1;
+    }
+
+    return 0; // All checks passed
 }
 
 // Function: create_barcode_bmp
-// Creates a complete BMP file in memory for a given barcode ID.
-// barcode_id: Identifier for the barcode content.
-// Returns a pointer to the allocated BMP file data, or NULL on failure.
+// Generates a complete BMP file containing the barcode.
+// param_1: barcode_id (int) - The identifier for the barcode.
+// Returns: A pointer to the allocated BMP file data (uint8_t*), or NULL on failure.
 void *create_barcode_bmp(int barcode_id) {
-    size_t barcode_bmp_data_size = 0;
-    size_t barcode_line_length_bytes = 0;
+    size_t barcode_data_size = 0;       // Total size of raw pixel data (unpadded)
+    size_t barcode_width_bytes = 0;     // Width of one row of pixel data in bytes (unpadded)
 
-    // Get the raw pixel data for the barcode image
-    uint8_t *raw_bmp_data = (uint8_t *)create_barcode_bmp_data(barcode_id, &barcode_bmp_data_size, &barcode_line_length_bytes);
-
-    if (!raw_bmp_data || barcode_bmp_data_size == 0) {
+    uint8_t *barcode_pixel_data = (uint8_t *)create_barcode_bmp_data(barcode_id, &barcode_data_size, &barcode_width_bytes);
+    if (!barcode_pixel_data || barcode_data_size == 0) {
         return NULL;
     }
 
-    // Calculate total BMP file size
-    const size_t TOTAL_HEADER_SIZE = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER); // 0x36
-    size_t total_bmp_file_size = TOTAL_HEADER_SIZE + barcode_bmp_data_size;
+    // Calculate dimensions based on create_barcode_bmp_data logic
+    int32_t biWidth = barcode_width_bytes / 3; // Number of pixels wide
+    int32_t biHeight = 120;                    // Fixed height for this barcode type
 
-    uint8_t *bmp_file = (uint8_t *)malloc(total_bmp_file_size);
-    if (!bmp_file) {
-        free(raw_bmp_data);
+    // Calculate padded row size for BMP image data
+    uint32_t bytes_per_pixel = 3; // 24-bit BGR BMP
+    uint32_t row_size_unpadded = biWidth * bytes_per_pixel;
+    uint32_t row_size_padded = (row_size_unpadded + 3) & ~3; // Each row padded to 4-byte boundary
+
+    // Total image data size including padding
+    uint32_t biSizeImage = row_size_padded * biHeight;
+
+    // BMP header sizes
+    uint32_t file_header_size = sizeof(BITMAPFILEHEADER); // 14 bytes
+    uint32_t info_header_size = sizeof(BITMAPINFOHEADER); // 40 bytes
+    uint32_t total_header_size = file_header_size + info_header_size; // 54 bytes (0x36)
+
+    // Total BMP file size
+    uint32_t total_bmp_size = total_header_size + biSizeImage;
+
+    uint8_t *full_bmp_file = (uint8_t *)malloc(total_bmp_size);
+    if (!full_bmp_file) {
+        free(barcode_pixel_data);
         return NULL;
     }
 
-    BITMAPFILEHEADER *bfh = (BITMAPFILEHEADER *)bmp_file;
-    BITMAPINFOHEADER *bih = (BITMAPINFOHEADER *)(bmp_file + sizeof(BITMAPFILEHEADER));
+    // --- Construct BITMAPFILEHEADER ---
+    BITMAPFILEHEADER file_header = {0};
+    file_header.bfType = (BMP_MAGIC[1] << 8) | BMP_MAGIC[0]; // 'B' 'M' in little-endian
+    file_header.bfSize = total_bmp_size;
+    file_header.bfOffBits = total_header_size; // Offset to pixel data (54 bytes)
 
-    // --- Fill BITMAPFILEHEADER ---
-    memcpy(&bfh->bfType, BMP_SIGNATURE, 2);
-    bfh->bfSize = (uint32_t)total_bmp_file_size;
-    bfh->bfReserved1 = 0;
-    bfh->bfReserved2 = 0;
-    bfh->bfOffBits = (uint32_t)TOTAL_HEADER_SIZE;
+    // --- Construct BITMAPINFOHEADER ---
+    BITMAPINFOHEADER info_header = {0};
+    info_header.biSize = info_header_size; // 40 bytes (0x28)
+    info_header.biWidth = biWidth;         // Calculated barcode width in pixels
+    info_header.biHeight = biHeight;       // 120 (0x78)
+    info_header.biPlanes = 1;              // Must be 1
+    info_header.biBitCount = 24;           // 24-bit BGR
+    info_header.biCompression = 0;         // BI_RGB (no compression)
+    info_header.biSizeImage = biSizeImage; // Calculated padded image data size
+    info_header.biXPelsPerMeter = 2835;    // 2835 (0xb13)
+    info_header.biYPelsPerMeter = 2835;    // 2835 (0xb13)
+    info_header.biClrUsed = 0;             // No color table for 24-bit
+    info_header.biClrImportant = 0;        // All colors important
 
-    // --- Fill BITMAPINFOHEADER ---
-    bih->biSize = sizeof(BITMAPINFOHEADER); // 0x28
-    bih->biWidth = (int32_t)(barcode_line_length_bytes / 3); // Width in pixels
-    bih->biHeight = 0x78; // Height in pixels (120)
-    bih->biPlanes = 1;
-    bih->biBitCount = 0x18; // 24 bits per pixel
-    bih->biCompression = 0; // BI_RGB (no compression)
-    bih->biSizeImage = (uint32_t)barcode_bmp_data_size; // Raw image data size
-    bih->biXPelsPerMeter = 0xb13; // 2835
-    bih->biYPelsPerMeter = 0xb13; // 2835
-    bih->biClrUsed = 0;
-    bih->biClrImportant = 0;
+    // Copy headers into the allocated memory
+    memcpy(full_bmp_file, &file_header, file_header_size);
+    memcpy(full_bmp_file + file_header_size, &info_header, info_header_size);
 
-    // Copy the raw pixel data after the headers
-    memcpy(bmp_file + bfh->bfOffBits, raw_bmp_data, barcode_bmp_data_size);
+    // Copy pixel data, handling row padding
+    uint8_t *dest_pixel_ptr = full_bmp_file + total_header_size;
+    uint8_t *src_pixel_ptr = barcode_pixel_data;
 
-    free(raw_bmp_data);
-    return bmp_file;
+    for (int y = 0; y < biHeight; ++y) {
+        memcpy(dest_pixel_ptr, src_pixel_ptr, row_size_unpadded);
+        // Fill padding bytes with 0 if necessary
+        if (row_size_padded > row_size_unpadded) {
+            memset(dest_pixel_ptr + row_size_unpadded, 0, row_size_padded - row_size_unpadded);
+        }
+        dest_pixel_ptr += row_size_padded;
+        src_pixel_ptr += row_size_unpadded; // Advance source pointer by unpadded row size
+    }
+
+    free(barcode_pixel_data);
+    return full_bmp_file;
 }
 
 // Function: create_barcode_from_bmp
-// Decodes a barcode from BMP file data.
-// bmp_file_data: Pointer to the start of the BMP file in memory.
-// Returns 0 on success (barcode processed), or non-zero on failure.
-int create_barcode_from_bmp(const void *bmp_file_data) {
-    if (validate_bmp_headers(bmp_file_data) != 0) {
-        return 0; // Validation failed, return 0 as per original (meaning no barcode created)
+// Decodes a barcode from BMP image data.
+// param_1: bmp_file_data (const void*) - Pointer to the BMP file data.
+// Returns: A uint32_t value (likely an ID or status from create_barcode_from_encoded_data), or 0 on failure.
+uint32_t create_barcode_from_bmp(const void *bmp_file_data) {
+    uint32_t result = 0; // Default to failure
+
+    if (validate_bmp_headers(bmp_file_data, NULL) != 0) {
+        return 0; // Header validation failed
     }
 
-    const BITMAPINFOHEADER *bih = (const BITMAPINFOHEADER *)((const char *)bmp_file_data + sizeof(BITMAPFILEHEADER));
-    const uint8_t *image_data_start = (const uint8_t *)bmp_file_data + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+    const BITMAPFILEHEADER *file_header = (const BITMAPFILEHEADER *)bmp_file_data;
+    const BITMAPINFOHEADER *info_header = (const BITMAPINFOHEADER *)((const uint8_t *)bmp_file_data + sizeof(BITMAPFILEHEADER));
 
-    uint32_t bytes_per_pixel = bih->biBitCount / 8; // Should be 3 for 24-bit
-    uint32_t scanline_width_pixels = bih->biWidth;
-    uint32_t scanline_width_bytes_padded = (scanline_width_pixels * bytes_per_pixel + 3) & ~3; // Padded to 4-byte boundary
+    int32_t bmp_width = info_header->biWidth;
+    int32_t bmp_height = info_header->biHeight;
+    uint32_t bytes_per_pixel = info_header->biBitCount / 8; // Should be 3 for 24-bit
+    uint32_t row_size_unpadded = bmp_width * bytes_per_pixel;
+    uint32_t row_size_padded = (row_size_unpadded + 3) & ~3;
 
-    // Each character in the original ASCII barcode expanded to 4 pixels.
-    // So, the length of the original ASCII barcode is `scanline_width_pixels / 4`.
-    size_t barcode_ascii_len = scanline_width_pixels / 4;
-    char *decoded_barcode = (char *)calloc(barcode_ascii_len + 1, sizeof(char)); // +1 for null terminator
-    if (!decoded_barcode) {
+    // Pixel data starts after headers (bfOffBits)
+    const uint8_t *pixel_data_start = (const uint8_t *)bmp_file_data + file_header->bfOffBits;
+
+    // Allocate memory for the decoded barcode string (width characters + null terminator)
+    char *decoded_barcode_data = (char *)calloc(1, bmp_width + 1);
+    if (!decoded_barcode_data) {
         return 0;
     }
 
-    bool decode_success = true;
-    const uint32_t char_block_bytes = 4 * bytes_per_pixel; // Size of a 4-pixel barcode character block (12 bytes)
+    int failure_flag = 0;
 
-    // Iterate through the first scanline to decode the barcode
-    for (size_t block_idx = 0; block_idx < barcode_ascii_len; ++block_idx) {
-        const uint8_t *current_block_start = image_data_start + (block_idx * char_block_bytes);
-        uint8_t first_byte_of_block = current_block_start[0];
+    // 1. Decode the first row of pixels into barcode characters.
+    // Each group of 3 bytes (a pixel) represents a color.
+    for (int x = 0; x < bmp_width; ++x) {
+        const uint8_t *pixel_ptr = pixel_data_start + x * bytes_per_pixel;
 
-        // Verify that all bytes within this 12-byte block are identical
-        for (uint32_t i = 0; i < char_block_bytes; ++i) {
-            if (current_block_start[i] != first_byte_of_block) {
-                decode_success = false;
-                break;
-            }
+        // Check if the pixel is either pure black (0,0,0) or pure white (255,255,255).
+        // This assumes BGR format.
+        if (!((pixel_ptr[0] == 0x00 && pixel_ptr[1] == 0x00 && pixel_ptr[2] == 0x00) ||
+              (pixel_ptr[0] == 0xFF && pixel_ptr[1] == 0xFF && pixel_ptr[2] == 0xFF))) {
+            failure_flag = 1;
+            break;
         }
-        if (!decode_success) break;
 
-        // Determine if the block represents a black '|' or white ' ' character
-        if (first_byte_of_block == BARCODE_BLACK_PIXEL[0]) {
-            decoded_barcode[block_idx] = '|';
-        } else if (first_byte_of_block == BARCODE_WHITE_PIXEL[0]) {
-            decoded_barcode[block_idx] = ' ';
-        } else {
-            // Block is neither pure black nor pure white
-            decode_success = false;
+        // Assign barcode character based on pixel color (first byte is sufficient if valid)
+        if (pixel_ptr[0] == 0x00) { // Black pixel
+            decoded_barcode_data[x] = '|';
+        } else { // White pixel
+            decoded_barcode_data[x] = ' ';
+        }
+    }
+
+    if (failure_flag) {
+        free(decoded_barcode_data);
+        return 0;
+    }
+
+    // 2. Validate that all other rows are identical to the first row (for vertical consistency).
+    const uint8_t *first_row_data = pixel_data_start;
+    for (int y = 1; y < bmp_height; ++y) {
+        const uint8_t *current_row_data = pixel_data_start + y * row_size_padded;
+        // Compare only the unpadded pixel data segment of each row.
+        if (memcmp(first_row_data, current_row_data, row_size_unpadded) != 0) {
+            failure_flag = 1;
             break;
         }
     }
 
-    if (!decode_success) {
-        free(decoded_barcode);
+    if (failure_flag) {
+        free(decoded_barcode_data);
         return 0;
     }
 
-    // Verify that all image rows are identical to the first row (as expected for this barcode type)
-    for (int row = 1; row < bih->biHeight; ++row) {
-        const uint8_t *current_row_data = image_data_start + (row * scanline_width_bytes_padded);
-        if (memcmp(current_row_data, image_data_start, scanline_width_bytes_padded) != 0) {
-            decode_success = false;
-            break;
-        }
-    }
+    // If all checks pass, call the external function to process the decoded barcode string.
+    result = create_barcode_from_encoded_data(decoded_barcode_data);
+    free(decoded_barcode_data);
 
-    if (!decode_success) {
-        free(decoded_barcode);
-        return 0;
-    }
-
-    // Call the external function to process the decoded barcode data
-    int result = create_barcode_from_encoded_data(decoded_barcode);
-    free(decoded_barcode);
     return result;
 }

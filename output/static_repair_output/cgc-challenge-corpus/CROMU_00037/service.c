@@ -1,93 +1,99 @@
-#include <stdio.h>    // For printf, NULL, stdin, fgets
-#include <stdlib.h>   // For exit, size_t
-#include <string.h>   // For strlen, memcpy, memset, strcspn
-#include <stdbool.h>  // For bool type
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
-// --- Global Data / Constants ---
-// DAT_000131fb is likely a prompt string, e.g., "> "
-const char *DAT_000131fb = "> ";
-
-// String constants identified from original code's offsets
-const char *MSG_EXITING = "Exiting...\n";
+const char *DAT_000131fb = "Enter your choice: ";
 const char *MSG_INVALID_OPTION = "Invalid option.\n";
+const char *MSG_EXITING = "Exiting...\n";
 
-// --- Placeholder Functions (Original functions not provided, so mock them) ---
+int g_isAdmin = 0;
+int g_isLoggedIn = -1;
 
-// Assuming 'print' is printf
-#define print printf
+void print(const char *s) {
+    printf("%s", s);
+}
 
-// Ghidra's 'code' type mapped to a standard C function pointer type
-typedef void (*code_ptr)(void);
+void memcopy(void *dest, const void *src, size_t n) {
+    memcpy(dest, src, n);
+}
 
-// Function declarations for functions used before their definitions
-void PrintAdminMenu(void);
-void SendBroadcastMessage(void);
-void PrintNewMessages(void);
-void CreateUser(void);
-void Login(void);
-void ReadMessage(void);
-void ListMessages(void);
-void DeleteMessage(void);
-void Logout(void);
+void sort_n_sum(void *data, size_t size) {
+}
 
-// Placeholder for sort_n_sum
-// Assumed to take a buffer and its size, and perform some operation
-void sort_n_sum(char *buffer, size_t size) {
-    // Mock implementation: do nothing or a simple sum to simulate busy work
-    volatile int sum = 0;
-    for (size_t i = 0; i < size; ++i) {
-        sum += buffer[i];
+void zero() {
+}
+
+int read_until(char *buffer, int size, char delimiter) {
+    if (fgets(buffer, size, stdin) != NULL) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        return 0;
     }
+    return -1;
 }
 
-// Placeholder for zero (likely memset to zero)
-void zero(char *buffer, size_t size) {
-    memset(buffer, 0, size);
+void _terminate() {
+    exit(0);
 }
 
-// Placeholder for read_until
-// Reads up to 'max_len' characters into 'buffer' until a newline or EOF.
-// Returns 0 on success, -1 on EOF/error.
-int read_until(char *buffer, size_t max_len, char terminator) {
-    if (fgets(buffer, max_len, stdin) == NULL) {
-        return -1; // EOF or error
-    }
-    // Remove trailing newline if present
-    buffer[strcspn(buffer, "\n")] = 0;
-    return 0; // Success
+void PrintAdminMenu(void); // Forward declaration for BusyWork
+
+void SendBroadcastMessage(void) {
+  print("Sending broadcast message...\n");
 }
 
-// Placeholder for _terminate
-void _terminate(void) {
-    print("Terminating due to error or EOF...\n");
-    exit(1);
+void PrintNewMessages(void) {
+  print("--- New Messages ---\n");
+  print("You have no new messages.\n");
+  return;
 }
 
-// --- Application State Management ---
-// Original code used offsets into a base address (iVar6) for state.
-// We model this with a global struct.
-struct AppState {
-    bool is_logged_in;
-    bool is_admin; // Corresponds to *(int *)(iVar6 + 0x2e8f) != -1
-    bool exit_program;
-};
+void CreateUser(void) {
+  print("Creating user...\n");
+  print("User created successfully!\n");
+}
 
-// Global application state, initialized to logged out and not admin.
-struct AppState app_state = {
-    .is_logged_in = false,
-    .is_admin = false,
-    .exit_program = false
-};
+void Login(void) {
+  print("Logging in...\n");
+  g_isLoggedIn = 0;
+  static bool first_login_as_admin = true;
+  if (first_login_as_admin) {
+      g_isAdmin = 1;
+      first_login_as_admin = false;
+      print("Logged in successfully as admin!\n");
+  } else {
+      print("Logged in successfully!\n");
+  }
+}
 
-// --- Function: PrintLoggedOutMenu ---
+void Logout(void) {
+  print("Logging out...\n");
+  g_isLoggedIn = -1;
+  g_isAdmin = 0;
+}
+
+void ReadMessage(void) {
+  print("Reading message...\n");
+}
+
+void ListMessages(void) {
+  print("Listing messages...\n");
+}
+
+void DeleteMessage(void) {
+  print("Deleting message...\n");
+}
+
+// Function: PrintLoggedOutMenu
 void PrintLoggedOutMenu(void) {
   print("1) Create User\n");
   print("2) Login\n");
   print("3) Exit\n");
   print(DAT_000131fb);
+  return;
 }
 
-// --- Function: PrintLoggedInMenu ---
+// Function: PrintLoggedInMenu
 void PrintLoggedInMenu(void) {
   print("1) Send Message\n");
   print("2) Read Message\n");
@@ -96,185 +102,129 @@ void PrintLoggedInMenu(void) {
   print("5) Logout\n");
   print("6) Exit\n");
   print(DAT_000131fb);
+  return;
 }
 
-// --- Function: BusyWork ---
-void BusyWork(void) {
-  char local_buffer[4096]; // Renamed from local_1014 for clarity
-  code_ptr func_ptr_to_admin_menu = PrintAdminMenu; // Renamed from local_14
-  int counter = 20; // Renamed from local_10 (0x14 in hex)
-  
-  while (counter > 0) {
-    counter--;
-    // The original code copies 0x1000 (4096) bytes from the address of PrintAdminMenu.
-    // This is unusual and platform-dependent, potentially copying function code or data near it.
-    // We replicate this behavior as specified by the original snippet.
-    memcpy(local_buffer, (const void *)func_ptr_to_admin_menu, 0x1000);
-    sort_n_sum(local_buffer, 0x1000);
-  }
-}
-
-// --- Function: main ---
-int main(void) {
-  char input_buffer[100]; // Buffer for user input
-  size_t input_len;
-
-  // The original low-level stack setup and variable assignments
-  // (`local_10 = &stack0x00000004; ppuVar2 = &local_10; do { ... } while (...)`)
-  // are replaced by standard C variable declarations and initialization of `app_state`.
-
-  while (!app_state.exit_program) {
-    zero(input_buffer, sizeof(input_buffer)); // Clear input buffer before each read
-
-    if (app_state.is_logged_in && app_state.is_admin) {
-      // Admin state
-      PrintAdminMenu();
-      if (read_until(input_buffer, sizeof(input_buffer), '\n') == -1) {
-        _terminate();
-      }
-      input_len = strlen(input_buffer);
-
-      if (input_len < 2) {
-        switch (input_buffer[0]) {
-          case '1':
-            SendBroadcastMessage();
-            break;
-          case '2': // Logout Admin
-            app_state.is_admin = false; // Admin logs out to become a regular logged-in user
-            print("Admin privileges removed. You are now a regular logged-in user.\n");
-            break;
-          case '3': // Exit
-            print(MSG_EXITING);
-            app_state.exit_program = true;
-            break;
-          default:
-            print(MSG_INVALID_OPTION);
-            break;
-        }
-      } else {
-        print(MSG_INVALID_OPTION);
-      }
-    } else if (app_state.is_logged_in) {
-      // Logged-in state (not admin)
-      PrintNewMessages(); // Appears before menu in original logged-in state logic
-      PrintLoggedInMenu();
-      if (read_until(input_buffer, sizeof(input_buffer), '\n') == -1) {
-        _terminate();
-      }
-      input_len = strlen(input_buffer);
-
-      if (input_len < 2) {
-        // The original code had a jump table based on input_buffer[0] - '1'.
-        // This is replaced with a clear switch statement.
-        switch (input_buffer[0]) {
-          case '1':
-            SendBroadcastMessage(); // This might be "Send Message" rather than "Broadcast"
-            break;
-          case '2':
-            ReadMessage();
-            break;
-          case '3':
-            ListMessages();
-            break;
-          case '4':
-            DeleteMessage();
-            break;
-          case '5': // Logout
-            Logout();
-            app_state.is_logged_in = false;
-            print("Logged out successfully.\n");
-            break;
-          case '6': // Exit
-            print(MSG_EXITING);
-            app_state.exit_program = true;
-            break;
-          default:
-            print(MSG_INVALID_OPTION);
-            break;
-        }
-      } else {
-        print(MSG_INVALID_OPTION);
-      }
-    } else {
-      // Logged-out state
-      PrintLoggedOutMenu();
-      if (read_until(input_buffer, sizeof(input_buffer), '\n') == -1) {
-        _terminate();
-      }
-      input_len = strlen(input_buffer);
-
-      if (input_len < 2) {
-        switch (input_buffer[0]) {
-          case '1':
-            CreateUser();
-            break;
-          case '2': // Login
-            Login();
-            // Simulate successful login. The original snippet doesn't provide
-            // logic for distinguishing regular vs. admin login.
-            // For now, assume a regular login.
-            app_state.is_logged_in = true;
-            print("Logged in successfully.\n");
-            break;
-          case '3': // Exit
-            print(MSG_EXITING);
-            app_state.exit_program = true;
-            break;
-          default:
-            print(MSG_INVALID_OPTION);
-            break;
-        }
-      } else {
-        print(MSG_INVALID_OPTION);
-      }
-    }
-  }
-
-  return 0; // Successful exit
-}
-
-// --- Placeholder function definitions ---
-
+// Function: PrintAdminMenu
 void PrintAdminMenu(void) {
-    print("Admin Menu:\n");
-    print("1) Send Broadcast Message\n");
-    print("2) Logout Admin\n");
-    print("3) Exit\n");
-    print(DAT_000131fb);
+  print("--- Admin Menu ---\n");
+  print("1) Send Broadcast Message\n");
+  print("2) Revoke Admin Status\n");
+  print("3) Exit Program\n");
+  print(DAT_000131fb);
+  return;
 }
 
-void SendBroadcastMessage(void) {
-    print("Sending broadcast message...\n");
+typedef void (*menu_action_func)(void);
+menu_action_func logged_in_menu_actions[] = {
+    SendBroadcastMessage,
+    ReadMessage,
+    ListMessages,
+    DeleteMessage,
+    Logout,
+    _terminate
+};
+const int LOGGED_IN_MENU_OPTIONS_COUNT = sizeof(logged_in_menu_actions) / sizeof(logged_in_menu_actions[0]);
+
+// Function: BusyWork
+void BusyWork(void) {
+  unsigned char local_1014[4096];
+  void (*local_14)(void);
+  int local_10;
+  
+  local_14 = PrintAdminMenu;
+  local_10 = 20;
+  while (local_10 != 0) {
+    local_10 = local_10 - 1;
+    memcpy(local_1014, (void*)local_14, 0x1000);
+    sort_n_sum(local_1014, 0x1000);
+  }
+  return;
 }
 
-void PrintNewMessages(void) {
-    print("No new messages.\n");
-}
+// Function: main
+int main(void) {
+    bool running = true;
+    char input_buffer[100];
+    int read_status;
 
-void CreateUser(void) {
-    print("Creating user...\n");
-    // Add logic for user creation here.
-}
+    BusyWork();
 
-void Login(void) {
-    print("Attempting login...\n");
-    // Add logic for user authentication here.
-    // This function could set `app_state.is_admin = true;` if admin credentials are provided.
-    // For this refactor, it just prepares for `app_state.is_logged_in = true;` in main.
-}
+    while (running) {
+        zero();
 
-void ReadMessage(void) {
-    print("Reading message...\n");
-}
+        if (g_isAdmin != 0) {
+            PrintAdminMenu();
+            read_status = read_until(input_buffer, sizeof(input_buffer), '\n');
+            if (read_status == -1) {
+                _terminate();
+            }
 
-void ListMessages(void) {
-    print("Listing messages...\n");
-}
+            if (strlen(input_buffer) < 2) {
+                char choice = input_buffer[0];
+                if (choice == '1') {
+                    SendBroadcastMessage();
+                } else if (choice == '2') {
+                    g_isAdmin = 0;
+                    print("Admin status revoked.\n");
+                } else if (choice == '3') {
+                    print(MSG_EXITING);
+                    running = false;
+                } else {
+                    print(MSG_INVALID_OPTION);
+                }
+            } else {
+                print(MSG_INVALID_OPTION);
+            }
+        } else if (g_isLoggedIn != -1) {
+            PrintNewMessages();
+            PrintLoggedInMenu();
+            read_status = read_until(input_buffer, sizeof(input_buffer), '\n');
+            if (read_status == -1) {
+                _terminate();
+            }
 
-void DeleteMessage(void) {
-    print("Deleting message...\n");
-}
+            if (strlen(input_buffer) < 2) {
+                char choice = input_buffer[0];
+                int choice_idx = choice - '1';
 
-void Logout(void) {
-    print("User logging out...\n");
+                if (choice_idx >= 0 && choice_idx < LOGGED_IN_MENU_OPTIONS_COUNT) {
+                    logged_in_menu_actions[choice_idx]();
+                    if (choice == '5') {
+                        g_isLoggedIn = -1;
+                        g_isAdmin = 0;
+                    } else if (choice == '6') {
+                        running = false;
+                    }
+                } else {
+                    print(MSG_INVALID_OPTION);
+                }
+            } else {
+                print(MSG_INVALID_OPTION);
+            }
+        } else {
+            PrintLoggedOutMenu();
+            read_status = read_until(input_buffer, sizeof(input_buffer), '\n');
+            if (read_status == -1) {
+                _terminate();
+            }
+
+            if (strlen(input_buffer) < 2) {
+                char choice = input_buffer[0];
+                if (choice == '1') {
+                    CreateUser();
+                } else if (choice == '2') {
+                    Login();
+                } else if (choice == '3') {
+                    print(MSG_EXITING);
+                    running = false;
+                } else {
+                    print(MSG_INVALID_OPTION);
+                }
+            } else {
+                print(MSG_INVALID_OPTION);
+            }
+        }
+    }
+    return 0;
 }

@@ -1,76 +1,106 @@
 #include <stdlib.h> // For calloc, free
 #include <string.h> // For strncpy
-#include <stddef.h> // For size_t (though often included by stdlib.h)
+#include <stdint.h> // For fixed-width integer types if needed
 
-// Type definitions for clarity, mimicking the decompiler's `undefined` and `byte`
-typedef unsigned char byte;
-
-// Define the Game struct based on memory access patterns observed in the original code
-struct Game {
-    byte current_turn_player; // Offset 0x00, used by is_player_turn, turn_complete
-    char _padding0[3];        // Padding to align next int to 4 bytes
-    int deck_id;              // Offset 0x04, used by get_shuffled_deck, take_top_card, is_deck_empty
-    int player1_id;           // Offset 0x08, used by create_player, take_top_card, is_player_hand_empty
-    int player2_id;           // Offset 0x0c, used by create_player, take_top_card, is_player_hand_empty
-}; // Total size 16 bytes (1 + 3 + 4 + 4 + 4 = 16)
-
-// External function declarations (assumed signatures based on usage)
-// These functions are called but not defined in the provided snippet.
-// They would typically be found in a separate header file.
+// --- Placeholder declarations for external functions ---
+// These functions are assumed to be defined elsewhere and are necessary
+// for the provided snippets to compile and link. Their signatures are
+// inferred from their usage in the given code.
+//
+// get_shuffled_deck: Takes a character representing a game type, returns
+//                    an integer handle to a shuffled deck.
 int get_shuffled_deck(char game_type);
-int create_player(int player_id, char *name_or_null);
-int take_top_card(int player_id, int deck_id);
-int is_deck_empty(int deck_id);
-int is_player_hand_empty(int player_id);
 
+// create_player: Takes a player ID (e.g., 0 for human),
+//                returns an integer handle to the player.
+int create_player(int player_id);
+
+// create_player_with_name: An alternative create_player that takes a name.
+//                          Used for the bot player.
+int create_player_with_name(int player_id, const char* name);
+
+// take_top_card: Deals a card from the deck to a player.
+//                Returns 0 on success, or a negative error code.
+int take_top_card(int player_handle, int deck_handle);
+
+// is_deck_empty: Checks if the deck has no more cards.
+//                Returns 1 if empty, 0 otherwise.
+int is_deck_empty(int deck_handle);
+
+// is_player_hand_empty: Checks if a player's hand has no cards.
+//                       Returns 1 if empty, 0 otherwise.
+int is_player_hand_empty(int player_handle);
+
+// get_hand_size: Returns the number of cards to deal initially.
+//                Defined below in the snippet, but declared here for order.
+int get_hand_size(void);
+
+// --- Error codes inferred from the original snippet ---
+#define ERROR_INVALID_GAME_POINTER -54 // Corresponds to -0x36 and 0xffffffca
+
+// --- Game Structure Definition ---
+// Based on the memory access patterns (offsets 0, 4, 8, 12 from base pointer)
+// and the size (0x10 = 16 bytes) in calloc, this structure is inferred.
+// Assuming 'int' is 4 bytes on the target system.
+typedef struct Game {
+    int current_player_turn; // Offset 0: Indicates whose turn it is (e.g., 0 for player, 1 for bot)
+    int deck_handle;         // Offset 4: Handle to the game deck
+    int player_human_handle; // Offset 8: Handle to the human player
+    int player_bot_handle;   // Offset 12: Handle to the bot player
+} Game;
 
 // Function: create_game
-struct Game *create_game(char *param_1) {
-    struct Game *game = (struct Game *)calloc(1, sizeof(struct Game));
+Game *create_game(char *game_type_param) {
+    // Allocate memory for one Game structure. The original calloc(0x10, ...) implies 16 bytes total.
+    Game *game = (Game *)calloc(1, sizeof(Game));
     if (!game) {
-        return NULL; // Handle allocation failure
+        return NULL; // Handle memory allocation failure
     }
 
-    // The first byte (current_turn_player) is already 0 due to calloc.
+    // Initialize current player turn to 0 (e.g., human player's turn)
+    game->current_player_turn = 0;
 
-    char game_type = '\0';
-    if (param_1 && *param_1 != '\0') {
-        game_type = *param_1;
+    // Determine the game type character. If game_type_param is NULL or empty, use '\0'.
+    char game_type_char = (game_type_param && *game_type_param != '\0') ? *game_type_param : '\0';
+    game->deck_handle = get_shuffled_deck(game_type_char);
+    game->player_human_handle = create_player(0); // Player 0 (human)
+
+    // Create a temporary string for the bot's name.
+    char *bot_name_str = (char *)calloc(1, 4); // Allocate space for "Bot\0"
+    if (!bot_name_str) {
+        free(game); // Clean up previously allocated game structure
+        return NULL; // Handle memory allocation failure
     }
+    strncpy(bot_name_str, "Bot", 3);
+    bot_name_str[3] = '\0'; // Ensure null-termination
 
-    game->deck_id = get_shuffled_deck(game_type);
-    game->player1_id = create_player(0, NULL); // Player 0, no specific name
-
-    char *bot_name = (char *)calloc(1, 4); // Allocate 4 bytes for "Bot\0"
-    if (!bot_name) {
-        free(game); // Clean up previously allocated memory
-        return NULL; // Handle allocation failure
-    }
-    strncpy(bot_name, "Bot", 3); // Copies "Bot", calloc ensures null termination
-
-    game->player2_id = create_player(1, bot_name);
-    free(bot_name); // Free the temporary buffer for "Bot"
+    game->player_bot_handle = create_player_with_name(1, bot_name_str); // Player 1 (bot)
+    free(bot_name_str); // Free the temporary string, as create_player_with_name likely copies it
 
     return game;
 }
 
 // Function: deal
-int deal(struct Game *game) {
-    if (game == NULL) {
-        return -54; // 0xffffffca in signed 32-bit int is -54
+int deal(Game *game) {
+    if (!game) {
+        return ERROR_INVALID_GAME_POINTER; // Return error for NULL game pointer
     }
 
-    for (byte i = 0; i < get_hand_size(); i++) {
-        int result = take_top_card(game->player1_id, game->deck_id);
+    int hand_size = get_hand_size(); // Get hand size once before the loop
+    for (int i = 0; i < hand_size; ++i) {
+        // Deal a card to the human player
+        int result = take_top_card(game->player_human_handle, game->deck_handle);
         if (result < 0) {
-            return result;
+            return result; // Propagate error if dealing fails
         }
-        result = take_top_card(game->player2_id, game->deck_id);
+
+        // Deal a card to the bot player
+        result = take_top_card(game->player_bot_handle, game->deck_handle);
         if (result < 0) {
-            return result;
+            return result; // Propagate error if dealing fails
         }
     }
-    return 0;
+    return 0; // Success
 }
 
 // Function: get_hand_size
@@ -79,34 +109,35 @@ int get_hand_size(void) {
 }
 
 // Function: turn_complete
-int turn_complete(byte *current_player_turn_ptr) {
-    if (current_player_turn_ptr == NULL) {
-        return -54; // 0xffffffca in signed 32-bit int is -54
+int turn_complete(int *current_player_turn_ptr) {
+    if (!current_player_turn_ptr) {
+        return ERROR_INVALID_GAME_POINTER; // Return error for NULL pointer
     }
+    // Toggle the turn between 0 and 1 using bitwise AND
     *current_player_turn_ptr = (*current_player_turn_ptr + 1) & 1;
-    return 0;
+    return 0; // Success
 }
 
 // Function: is_player_turn
-int is_player_turn(byte *current_player_turn_ptr) {
-    if (current_player_turn_ptr == NULL) {
-        return -54; // 0xffffffca in signed 32-bit int is -54
+int is_player_turn(int *current_player_turn_ptr) {
+    if (!current_player_turn_ptr) {
+        return ERROR_INVALID_GAME_POINTER; // Return error for NULL pointer
     }
-    // If *current_player_turn_ptr is 0, it means player 0's turn. Return 1.
-    // If *current_player_turn_ptr is 1, it means player 1's turn. Return 0.
-    return !(*current_player_turn_ptr);
+    // Returns 1 if it's player 0's turn, 0 otherwise.
+    // Assuming '0' means player's turn (e.g., human) and '1' means bot's turn.
+    return (*current_player_turn_ptr == 0) ? 1 : 0;
 }
 
 // Function: is_game_over
-int is_game_over(struct Game *game) {
-    if (game == NULL) {
-        return -54; // 0xffffffca in signed 32-bit int is -54
+int is_game_over(Game *game) {
+    if (!game) {
+        return ERROR_INVALID_GAME_POINTER; // Return error for NULL game pointer
     }
 
-    // Check if deck is empty AND player1's hand is empty AND player2's hand is empty
-    if (is_deck_empty(game->deck_id) == 1 &&
-        is_player_hand_empty(game->player1_id) == 1 &&
-        is_player_hand_empty(game->player2_id) == 1) {
+    // The game is over if the deck is empty AND both players' hands are empty.
+    if (is_deck_empty(game->deck_handle) == 1 &&
+        is_player_hand_empty(game->player_human_handle) == 1 &&
+        is_player_hand_empty(game->player_bot_handle) == 1) {
         return 1; // Game is over
     }
     return 0; // Game is not over

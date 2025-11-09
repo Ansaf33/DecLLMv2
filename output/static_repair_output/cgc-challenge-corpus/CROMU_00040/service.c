@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/types.h> // For ssize_t
+#include <string.h> // For strlen if needed, though direct indexing is used for newline
 
-// Forward declarations for functions used in main
+// Placeholder declarations for other functions and global variable
+// In a real application, these would be in a header file or defined elsewhere.
 void print_main_menu(void);
 void new_recipe(void);
 void find_recipe(void);
@@ -11,34 +11,41 @@ void print_all_tagged(void);
 void print_shopping_list(void);
 void _terminate(void);
 
-// Global variable recipe_book - assuming it's a pointer to a structure
-// For compilation, we'll declare it as a void pointer.
-void *recipe_book = NULL;
-
 int main(void) {
-    char input_buffer[10]; // Corresponds to local_22 in the snippet
-    int choice;            // Corresponds to local_18
-    ssize_t bytes_read;    // Corresponds to local_14
+    char *input_buffer = NULL;
+    size_t input_buffer_size = 0;
+    ssize_t chars_read;
+    int choice;
 
-    while (1) { // Infinite loop, equivalent to do { ... } while(true);
-        do {
-            print_main_menu();
+    while (1) {
+        print_main_menu();
 
-            // Read input into the fixed-size buffer
-            if (fgets(input_buffer, sizeof(input_buffer), stdin) == NULL) {
-                fprintf(stderr, "Error reading input or EOF reached.\n");
-                _terminate(); // Handle termination on input error
+        chars_read = getline(&input_buffer, &input_buffer_size, stdin);
+
+        if (chars_read == -1) {
+            if (feof(stdin)) {
+                fprintf(stderr, "Exiting program due to EOF.\n");
+                break; // Exit loop on Ctrl+D (EOF)
+            } else {
+                perror("Error reading input");
+                free(input_buffer);
+                return 1; // Exit with error
             }
+        }
 
-            // Remove trailing newline character if present
-            input_buffer[strcspn(input_buffer, "\n")] = '\0';
+        // Remove trailing newline character if present
+        if (chars_read > 0 && input_buffer[chars_read - 1] == '\n') {
+            input_buffer[chars_read - 1] = '\0';
+            chars_read--; // Adjust count of actual characters
+        }
 
-            // Get the length of the string read (after removing newline)
-            bytes_read = strlen(input_buffer);
+        // Handle empty input after trimming newline
+        if (chars_read == 0) {
+            printf("Empty input, please try again.\n");
+            continue; // Re-prompt for input
+        }
 
-        } while (bytes_read == 0); // Loop until a non-empty line is entered
-
-        choice = atoi(input_buffer); // Convert input string to integer
+        choice = atoi(input_buffer);
 
         switch (choice) {
             case 1:
@@ -54,15 +61,18 @@ int main(void) {
                 print_shopping_list();
                 break;
             case 5:
-                _terminate(); // Terminate the program
-                return 0;     // main should return after termination
+                _terminate(); // Assuming this function handles program exit
+                // If _terminate() does not call exit(), the loop would continue.
+                // Adding a break here ensures loop termination if _terminate() returns.
+                break;
             default:
                 printf("Invalid command\n");
                 break;
         }
     }
 
-    return 0; // Should not be reached, but good practice for non-void main
+    free(input_buffer); // Free the buffer allocated by getline
+    return 0; // Standard successful exit
 }
 
 // Dummy implementations for compilation
@@ -70,33 +80,30 @@ void print_main_menu(void) {
     printf("\n--- Recipe Book Menu ---\n");
     printf("1. New Recipe\n");
     printf("2. Find Recipe\n");
-    printf("3. Print All Tagged\n");
+    printf("3. Print All Tagged Recipes\n");
     printf("4. Print Shopping List\n");
     printf("5. Exit\n");
     printf("Enter your choice: ");
+    fflush(stdout); // Ensure prompt is displayed before input
 }
 
 void new_recipe(void) {
-    printf("Function: Creating a new recipe...\n");
-    // Implementation for creating a new recipe
+    printf("Function: New Recipe (not implemented)\n");
 }
 
 void find_recipe(void) {
-    printf("Function: Finding a recipe...\n");
-    // Implementation for finding a recipe
+    printf("Function: Find Recipe (not implemented)\n");
 }
 
 void print_all_tagged(void) {
-    printf("Function: Printing all tagged recipes...\n");
-    // Implementation for printing all tagged recipes
+    printf("Function: Print All Tagged (not implemented)\n");
 }
 
 void print_shopping_list(void) {
-    printf("Function: Printing shopping list...\n");
-    // Implementation for printing the shopping list
+    printf("Function: Print Shopping List (not implemented)\n");
 }
 
 void _terminate(void) {
-    printf("Function: Exiting program.\n");
-    exit(EXIT_SUCCESS); // Exit the program successfully
+    printf("Exiting program via _terminate().\n");
+    exit(0); // Exit the program
 }

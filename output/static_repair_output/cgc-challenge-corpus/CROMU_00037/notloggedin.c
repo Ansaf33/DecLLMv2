@@ -1,162 +1,130 @@
-#include <stdio.h>   // For printf, fgets, stdin
-#include <string.h>  // For strlen, strcmp, strcpy, strncpy, strcspn, memset
-#include <stdlib.h>  // For exit
+#include <stdio.h>    // For printf, fgets, perror
+#include <string.h>   // For strlen, memset, strcmp, strcpy
+#include <stdlib.h>   // For exit, EXIT_FAILURE
 
-// Global constants and variables
-#define MAX_USERS 100
-#define USER_BUFFER_SIZE 0x32e4 // 13028 bytes per user, as observed from 0x32e4 offset
+// Global variables as inferred from the snippet
+#define MAX_TOTAL_USERS 100
+// USER_RECORD_SIZE is 0x32e4 (13028 bytes), inferred from the original code.
+// This is an unusually large size for a username string, but we maintain it as per the snippet.
+#define USER_RECORD_SIZE 0x32e4
 
-char USERS[MAX_USERS][USER_BUFFER_SIZE];
-int NUM_USERS = 0;
-int CURRENT_USER = -1; // -1 indicates no user logged in
-
-// Helper function to replace _terminate
-void _terminate(void) {
-    fprintf(stderr, "Fatal error, terminating.\n");
-    exit(1);
-}
+char USERS[MAX_TOTAL_USERS][USER_RECORD_SIZE];
+int NUM_USERS = 0;      // Current number of active users
+int CURRENT_USER = -1;  // Index of the currently logged-in user, -1 if no user is logged in
 
 // Function: CreateUser
 void CreateUser(void) {
-    char username_buffer[16];
-    int found_empty_slot = -1;
+    char username_buffer[16]; // Buffer for user input (original local_24)
+    int available_slot = -1;  // Index of an empty user slot, if found (original local_14)
+    int i;                    // Loop counter (original local_10)
+    size_t len;               // Length of the entered username (original sVar2)
 
-    // Initialize the buffer to ensure it's clean before input
+    // Clear the username buffer before reading input
     memset(username_buffer, 0, sizeof(username_buffer));
 
     printf("username: ");
 
-    // Read user input. fgets is safer than read_until, handling buffer overflow.
+    // Read username from stdin.
+    // The original `read_until()` with `uStack_38 = 10` implies reading up to 9 chars + null terminator.
+    // `fgets` reads up to `sizeof(username_buffer) - 1` characters or until a newline.
     if (fgets(username_buffer, sizeof(username_buffer), stdin) == NULL) {
-        _terminate(); // Error reading input
+        perror("Error reading username");
+        exit(EXIT_FAILURE); // Equivalent to original `_terminate()`
     }
 
     // Remove trailing newline character if present
-    username_buffer[strcspn(username_buffer, "\n")] = 0;
-
-    // Check if the username is empty
-    if (strlen(username_buffer) == 0) {
-        printf("[-] Username cannot be empty.\n");
-        return;
+    len = strlen(username_buffer);
+    if (len > 0 && username_buffer[len - 1] == '\n') {
+        username_buffer[len - 1] = '\0';
+        len--; // Adjust length after stripping newline
     }
 
-    // Loop through existing users to find an empty slot or check for existing username
-    for (int i = 0; i < NUM_USERS; i++) {
-        // Check if this slot is empty (first character is null).
-        // This implies a user can be "deleted" by clearing their username.
-        if (USERS[i][0] == '\0') {
-            found_empty_slot = i; // Found a re-usable slot
+    // Proceed only if a non-empty username was entered (original `sVar2 != 0`)
+    if (len != 0) {
+        // Iterate through existing users to find an empty slot or check for duplicates
+        for (i = 0; i < NUM_USERS; i++) {
+            // Check if the current user slot is empty (indicated by the first character being null)
+            // This assumes that a deleted or available slot is zeroed out.
+            if (USERS[i][0] == '\0') {
+                available_slot = i;
+            }
+
+            // Check if the entered username already exists
+            // Original `strmatch()` returns non-zero for match, 0 for no match.
+            // `strcmp()` returns 0 for match, non-zero otherwise.
+            if (strcmp(username_buffer, USERS[i]) == 0) {
+                printf("[-] Error user exists\n");
+                return; // Exit if user already exists
+            }
         }
 
-        // Check if username already exists
-        if (strcmp(USERS[i], username_buffer) == 0) {
-            printf("[-] Error: User already exists\n");
-            return;
+        // If no available slot was found, try to append a new user
+        if (available_slot == -1) {
+            if (NUM_USERS < MAX_TOTAL_USERS) {
+                // Clear the new user's record area
+                memset(USERS[NUM_USERS], 0, USER_RECORD_SIZE);
+                // Copy the username into the new slot
+                strcpy(USERS[NUM_USERS], username_buffer);
+                NUM_USERS++; // Increment the total number of users
+            } else {
+                printf("[-] Max users already created\n");
+            }
+        } else { // An available slot was found, reuse it
+            // Clear the existing slot
+            memset(USERS[available_slot], 0, USER_RECORD_SIZE);
+            // Copy the username into the reused slot
+            strcpy(USERS[available_slot], username_buffer);
+            // NUM_USERS does not increment as we are reusing an existing slot
         }
     }
-
-    // If an empty slot was found, use it
-    if (found_empty_slot != -1) {
-        // Clear the old content and copy the new username
-        memset(USERS[found_empty_slot], 0, USER_BUFFER_SIZE);
-        // Use strncpy for safety to prevent buffer overflows
-        strncpy(USERS[found_empty_slot], username_buffer, USER_BUFFER_SIZE - 1);
-        USERS[found_empty_slot][USER_BUFFER_SIZE - 1] = '\0'; // Ensure null termination
-        printf("[+] User '%s' created in slot %d\n", username_buffer, found_empty_slot);
-    } else { // No empty slot found, try to create a new user at the end
-        if (NUM_USERS < MAX_USERS) {
-            // Clear the new slot and copy the username
-            memset(USERS[NUM_USERS], 0, USER_BUFFER_SIZE);
-            strncpy(USERS[NUM_USERS], username_buffer, USER_BUFFER_SIZE - 1);
-            USERS[NUM_USERS][USER_BUFFER_SIZE - 1] = '\0';
-            printf("[+] User '%s' created in new slot %d\n", username_buffer, NUM_USERS);
-            NUM_USERS++;
-        } else {
-            printf("[-] Max users already created\n");
-        }
-    }
+    return;
 }
 
 // Function: Login
 void Login(void) {
-    char username_buffer[16];
+    char username_buffer[16]; // Buffer for user input (original local_20)
+    int i;                    // Loop counter (original local_10)
+    size_t len;               // Length of the entered username (original sVar2)
 
-    // Initialize the buffer
+    // Clear the username buffer before reading input
     memset(username_buffer, 0, sizeof(username_buffer));
 
     printf("username: ");
 
-    // Read user input
+    // Read username from stdin
     if (fgets(username_buffer, sizeof(username_buffer), stdin) == NULL) {
-        _terminate(); // Error reading input
+        perror("Error reading username");
+        exit(EXIT_FAILURE); // Equivalent to original `_terminate()`
     }
 
     // Remove trailing newline character if present
-    username_buffer[strcspn(username_buffer, "\n")] = 0;
-
-    // Check if the username is empty
-    if (strlen(username_buffer) == 0) {
-        printf("[-] Username cannot be empty.\n");
-        return;
+    len = strlen(username_buffer);
+    if (len > 0 && username_buffer[len - 1] == '\n') {
+        username_buffer[len - 1] = '\0';
+        len--; // Adjust length after stripping newline
     }
 
-    int user_idx;
-    for (user_idx = 0; user_idx < NUM_USERS; user_idx++) {
-        if (strcmp(USERS[user_idx], username_buffer) == 0) {
-            break; // User found
+    // Proceed only if a non-empty username was entered (original `sVar2 != 0`)
+    if (len != 0) {
+        // Iterate through existing users to find a match
+        for (i = 0; i < NUM_USERS; i++) {
+            // Check if the entered username matches an existing user
+            // Original `strmatch()` returns non-zero for match, 0 for no match.
+            // `strcmp()` returns 0 for match, non-zero otherwise.
+            if (strcmp(username_buffer, USERS[i]) == 0) {
+                break; // Match found, exit loop
+            }
         }
+
+        // If loop finished without finding a match (i.e., i equals NUM_USERS)
+        if (i == NUM_USERS) {
+            printf("Login Failed\n");
+        } else { // Match found at index `i`
+            CURRENT_USER = i; // Set the current logged-in user
+            printf("Login Success\n");
+        }
+    } else {
+        printf("Login Failed\n"); // Explicitly fail for empty input
     }
-
-    if (user_idx == NUM_USERS) { // Loop completed without finding user
-        printf("Login Failed\n");
-    } else { // User found at index user_idx
-        CURRENT_USER = user_idx;
-        printf("Login Success\n");
-    }
-}
-
-// Minimal main function to demonstrate functionality
-int main() {
-    printf("Welcome to the User Management System!\n");
-    printf("1. Create User\n");
-    printf("2. Login\n");
-    printf("3. Exit\n");
-
-    int choice;
-    while (1) {
-        printf("\nEnter choice: ");
-        if (scanf("%d", &choice) != 1) {
-            printf("Invalid input. Please enter a number.\n");
-            // Clear stdin buffer after invalid scanf input
-            while (getchar() != '\n');
-            continue;
-        }
-        // Consume the newline character left by scanf before subsequent fgets calls
-        while (getchar() != '\n');
-
-        switch (choice) {
-            case 1:
-                CreateUser();
-                break;
-            case 2:
-                Login();
-                if (CURRENT_USER != -1) {
-                    printf("Currently logged in as user %d: %s\n", CURRENT_USER, USERS[CURRENT_USER]);
-                }
-                break;
-            case 3:
-                printf("Exiting...\n");
-                return 0;
-            default:
-                printf("Invalid choice. Please try again.\n");
-        }
-        printf("Current users in system: %d\n", NUM_USERS);
-        if (CURRENT_USER != -1) {
-            printf("Current logged in user: %s (index %d)\n", USERS[CURRENT_USER], CURRENT_USER);
-        } else {
-            printf("No user logged in.\n");
-        }
-    }
-
-    return 0;
+    return;
 }

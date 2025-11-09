@@ -1,99 +1,138 @@
-#include <stdio.h>   // For printf, stdin
-#include <stdlib.h>  // For malloc, free, exit, strtoul, srandom, random
-#include <string.h>  // For strlen, strcmp, strcpy, strdup, strncpy
+#include <stdio.h>   // For printf, getchar, NULL
+#include <stdlib.h>  // For malloc, free, exit, srandom, random, strtoul
+#include <string.h>  // For strlen, strcpy, strcmp, memset
 #include <time.h>    // For time (used with srandom)
-#include <unistd.h>  // For read (used as receive), STDIN_FILENO
+#include <ctype.h>   // For isprint (not explicitly used but good for char handling)
 
-// Type definitions for clarity and compatibility
-typedef unsigned char byte;
+// Forward declarations for types
+typedef struct Movie Movie;
+typedef struct MovieNode MovieNode;
 
-// Movie struct definition
-typedef struct Movie {
+// Function pointer type for print_func
+typedef void (*PrintMovieDetailFunc)(int, Movie*);
+
+// Movie structure definition (runtime)
+struct Movie {
     char *title;
     char *description;
     int year;
     int review_score;
     int genre; // 1:Action, 2:Romance, 3:Comedy, 4:Horror, 5:Other
-    int rating; // 1:G, 2:PG, 3:PG-13, 4:R, 5:Unknown
-    void (*print_func)(int, struct Movie*); // Function pointer for printing detail
-} Movie;
+    int rating; // 1:G, 2:PG, 3:PG13, 4:R, 5:Unknown
+    PrintMovieDetailFunc print_func; // Function pointer for printing
+};
 
-// Linked list node for movies
-typedef struct MovieNode {
+// MovieNode for linked lists
+struct MovieNode {
     Movie *movie;
-    struct MovieNode *next;
-} MovieNode;
+    MovieNode *next;
+};
 
 // Global variables
-char g_password[22]; // 0x16 (22) characters + null terminator
+char g_password[23]; // 0x16 + null terminator
 MovieNode *movies_full = NULL;
 MovieNode *movies_rented = NULL;
-int g_num_movies = 0; // Tracks total number of movies in full list
+int g_num_movies = 0; // Tracks number of movies in movies_full
 
-// Forward declarations for functions
-void quit(void);
-int receive(int fd, char *buf, int len, int *bytes_read_ptr);
-void print_movie_detail(int id, Movie *movie);
+// Default movie data for initialization
+// This structure holds the initial data that will be copied into dynamically allocated Movie structs.
+typedef struct {
+    const char *title;
+    const char *description;
+    int year;
+    int review_score;
+    int genre;
+    int rating;
+} DefaultMovieData;
 
-// Default movie data (mocked based on usage in initialize)
-Movie default_movie_data[] = {
-    {"The Shawshank Redemption", "Two imprisoned men bond over a number of years...", 1994, 93, 1, 4, NULL},
-    {"The Godfather", "The aging patriarch of an organized crime dynasty...", 1972, 92, 1, 4, NULL},
-    {"The Dark Knight", "When the menace known as The Joker emerges...", 2008, 90, 1, 3, NULL},
-    {"Pulp Fiction", "The lives of two mob hitmen, a boxer, a gangster and his wife...", 1994, 89, 2, 4, NULL},
-    {"Forrest Gump", "The presidencies of Kennedy and Johnson, the Vietnam War...", 1994, 88, 3, 3, NULL},
-    {"Inception", "A thief who steals corporate secrets through use of dream-sharing technology...", 2010, 87, 1, 3, NULL},
-    {"The Matrix", "A computer hacker learns from mysterious rebels about the true nature of his reality...", 1999, 87, 1, 4, NULL},
-    {"Interstellar", "A team of explorers travel through a wormhole in space...", 2014, 86, 1, 3, NULL},
-    {"Gladiator", "A Roman General is betrayed and his family murdered by an emperor's corrupt son...", 2000, 86, 1, 4, NULL},
-    {"The Lion King", "Lion cub and future king Simba searches for his identity.", 1994, 85, 5, 2, NULL}
+#define NUM_DEFAULT_MOVIES 10
+const DefaultMovieData DEFAULT_MOVIES_ARRAY[NUM_DEFAULT_MOVIES] = {
+    {"The Shawshank Redemption", "Two imprisoned men bond over a number of years...", 1994, 93, 1, 4}, // Action, R
+    {"The Godfather", "The aging patriarch of an organized crime dynasty...", 1972, 92, 5, 4}, // Other, R
+    {"The Dark Knight", "When the menace known as the Joker emerges...", 2008, 90, 1, 3}, // Action, PG-13
+    {"Pulp Fiction", "The lives of two mob hitmen, a boxer, a gangster and his wife...", 1994, 89, 5, 4}, // Other, R
+    {"Forrest Gump", "The presidencies of Kennedy and Johnson...", 1994, 88, 3, 3}, // Comedy, PG-13
+    {"Inception", "A thief who steals corporate secrets through use of dream-sharing technology...", 2010, 87, 1, 3}, // Action, PG-13
+    {"The Matrix", "A computer hacker learns from mysterious rebels...", 1999, 87, 1, 4}, // Action, R
+    {"Spirited Away", "During her family's move to the suburbs, a sullen 10-year-old girl...", 2001, 86, 5, 2}, // Other, PG
+    {"Interstellar", "A team of explorers travel through a wormhole in space...", 2014, 86, 5, 3}, // Other, PG-13
+    {"Parasite", "Greed and class discrimination threaten the newly formed symbiotic relationship...", 2019, 85, 5, 4} // Other, R
 };
-#define NUM_DEFAULT_MOVIES (sizeof(default_movie_data) / sizeof(Movie))
 
-// Helper function to free a Movie struct's allocated strings and the struct itself
-void free_movie(Movie *movie) {
-    if (movie) {
-        free(movie->title);
-        free(movie->description);
-        free(movie);
-    }
+// Function declarations (from snippet or stubs)
+void quit(void);
+int receive(int fd, char *buf, size_t count, int *bytes_read);
+void free_movie_data(Movie *movie);
+int movie_add(MovieNode **head, Movie *new_movie);
+MovieNode *movie_find_by_id(MovieNode *head, unsigned int id);
+MovieNode *movie_find(MovieNode *head, Movie *target_movie);
+int movie_remove_node(MovieNode **head, unsigned int id, Movie **out_movie);
+int movie_delete_full(MovieNode **head, unsigned int id);
+const char *movie_g2s(int genre_code);
+const char *movie_r2s(int rating_code);
+void print_movie_detail(int id, Movie *movie); // Declaration for use in Movie struct
+
+// Stubs for functions not fully provided in the snippet
+void quit(void) {
+    printf("Bye!\n");
+    exit(0);
 }
 
-// Helper function to add a movie to a linked list
-// Returns 0 on success, -1 on failure
-int movie_add(MovieNode **head, Movie *new_movie) {
-    if (!new_movie) return -1;
-
-    MovieNode *new_node = (MovieNode *)malloc(sizeof(MovieNode));
-    if (!new_node) {
-        free_movie(new_movie); // Free movie if node allocation fails
-        return -1;
+int receive(int fd, char *buf, size_t count, int *bytes_read) {
+    if (fd == 0) { // stdin
+        int c = getchar();
+        if (c == EOF) {
+            *bytes_read = 0;
+            return -1; // Indicate error or EOF
+        }
+        *buf = (char)c;
+        *bytes_read = 1;
+        return 0; // Success
     }
-    new_node->movie = new_movie;
-    new_node->next = NULL;
+    // For other FDs, simulate failure or return 0
+    *bytes_read = 0;
+    return -1; // Error
+}
+
+// Helper to free a Movie struct's dynamically allocated strings and the struct itself
+void free_movie_data(Movie *movie) {
+    if (movie == NULL) return;
+    free(movie->title);
+    free(movie->description);
+    free(movie);
+}
+
+// Adds a movie to a linked list, returns 0 on success, -1 on failure
+int movie_add(MovieNode **head, Movie *new_movie) {
+    if (new_movie == NULL) return -1;
+    MovieNode *newNode = (MovieNode *)malloc(sizeof(MovieNode));
+    if (newNode == NULL) return -1;
+    newNode->movie = new_movie;
+    newNode->next = NULL;
 
     if (*head == NULL) {
-        *head = new_node;
+        *head = newNode;
     } else {
         MovieNode *current = *head;
         while (current->next != NULL) {
             current = current->next;
         }
-        current->next = new_node;
+        current->next = newNode;
     }
-    g_num_movies++; // Increment global movie count
+    if (head == &movies_full) { // Only increment for movies_full
+        g_num_movies++;
+    }
     return 0;
 }
 
-// Helper function to find a movie by its ID (1-based index) in a linked list
-// Returns the Movie* pointer on success, NULL on failure
-Movie *movie_find_by_id(MovieNode *head, unsigned long id) {
+// Finds a movie by its 1-based ID (index in the list)
+MovieNode *movie_find_by_id(MovieNode *head, unsigned int id) {
     if (id == 0) return NULL;
     MovieNode *current = head;
-    unsigned long count = 1;
+    unsigned int count = 1;
     while (current != NULL) {
         if (count == id) {
-            return current->movie;
+            return current;
         }
         current = current->next;
         count++;
@@ -101,27 +140,26 @@ Movie *movie_find_by_id(MovieNode *head, unsigned long id) {
     return NULL;
 }
 
-// Helper function to find a movie by its title in a linked list
-// Returns the Movie* pointer on success, NULL on failure
-Movie *movie_find(MovieNode *head, const char *title) {
+// Finds a movie by comparing its Movie* pointer (used for checking if already rented)
+MovieNode *movie_find(MovieNode *head, Movie *target_movie) {
     MovieNode *current = head;
     while (current != NULL) {
-        if (current->movie && current->movie->title && strcmp(current->movie->title, title) == 0) {
-            return current->movie;
+        if (current->movie == target_movie) {
+            return current;
         }
         current = current->next;
     }
     return NULL;
 }
 
-// Helper function to delete a movie node by ID (1-based index) from a linked list
-// Returns 0 on success, -1 on failure
-int movie_delete(MovieNode **head, unsigned long id) {
+// Removes a movie node from the linked list by its 1-based ID, and returns the Movie*
+// Does NOT free the Movie* data itself. Does NOT affect g_num_movies.
+int movie_remove_node(MovieNode **head, unsigned int id, Movie **out_movie) {
     if (id == 0 || *head == NULL) return -1;
 
     MovieNode *current = *head;
     MovieNode *prev = NULL;
-    unsigned long count = 1;
+    unsigned int count = 1;
 
     while (current != NULL && count != id) {
         prev = current;
@@ -129,22 +167,37 @@ int movie_delete(MovieNode **head, unsigned long id) {
         count++;
     }
 
-    if (current == NULL) { // Not found
+    if (current == NULL) { // Movie not found
         return -1;
     }
 
-    if (prev == NULL) { // First node
+    if (prev == NULL) { // Deleting head
         *head = current->next;
     } else {
         prev->next = current->next;
     }
-    free_movie(current->movie); // Free the movie data
-    free(current); // Free the node itself
-    g_num_movies--; // Decrement global movie count
+    
+    *out_movie = current->movie; // Return the Movie*
+    free(current); // Free the node
     return 0;
 }
 
-// Helper functions for genre and rating to string conversion
+// Deletes a movie from the linked list by its 1-based ID, and frees the Movie* data
+int movie_delete_full(MovieNode **head, unsigned int id) {
+    Movie *movie_to_free = NULL;
+    int result = movie_remove_node(head, id, &movie_to_free); // Use the generic remove node
+    if (result == 0) {
+        if (movie_to_free != NULL) {
+            free_movie_data(movie_to_free);
+        }
+        if (head == &movies_full) { // Only decrement for movies_full
+            g_num_movies--;
+        }
+    }
+    return result;
+}
+
+// Converts genre code to string
 const char *movie_g2s(int genre_code) {
     switch (genre_code) {
         case 1: return "Action";
@@ -156,6 +209,7 @@ const char *movie_g2s(int genre_code) {
     }
 }
 
+// Converts rating code to string
 const char *movie_r2s(int rating_code) {
     switch (rating_code) {
         case 1: return "G";
@@ -167,6 +221,93 @@ const char *movie_r2s(int rating_code) {
     }
 }
 
+
+// Function: initialize
+void initialize(void) {
+    printf("\n   . . . Initializing the inventory . . .\n         (movie info from IMDb.com)\n");
+
+    for (size_t i = 0; i < sizeof(g_password) - 1; ++i) {
+        g_password[i] = (char)(random() % 26) + ( (random() % 2 == 0) ? 'a' : 'A' );
+    }
+    g_password[sizeof(g_password) - 1] = '\0';
+
+    for (size_t i = 0; i < NUM_DEFAULT_MOVIES; ++i) {
+        Movie *new_movie = (Movie *)malloc(sizeof(Movie));
+        if (new_movie == NULL) {
+            printf("[ERROR] Initialization failed: Out of memory. Exit.\n");
+            quit();
+        }
+        memset(new_movie, 0, sizeof(Movie)); // Initialize to zeros
+
+        // Allocate and copy title
+        size_t title_len = strlen(DEFAULT_MOVIES_ARRAY[i].title);
+        new_movie->title = (char *)malloc(title_len + 1);
+        if (new_movie->title == NULL) {
+            printf("[ERROR] Initialization failed: Out of memory. Exit.\n");
+            free(new_movie);
+            quit();
+        }
+        strcpy(new_movie->title, DEFAULT_MOVIES_ARRAY[i].title);
+
+        // Allocate and copy description
+        size_t desc_len = strlen(DEFAULT_MOVIES_ARRAY[i].description);
+        new_movie->description = (char *)malloc(desc_len + 1);
+        if (new_movie->description == NULL) {
+            printf("[ERROR] Initialization failed: Out of memory. Exit.\n");
+            free(new_movie->title);
+            free(new_movie);
+            quit();
+        }
+        strcpy(new_movie->description, DEFAULT_MOVIES_ARRAY[i].description);
+
+        // Assign integer fields directly
+        new_movie->year = DEFAULT_MOVIES_ARRAY[i].year;
+        new_movie->review_score = DEFAULT_MOVIES_ARRAY[i].review_score;
+        new_movie->genre = DEFAULT_MOVIES_ARRAY[i].genre;
+        new_movie->rating = DEFAULT_MOVIES_ARRAY[i].rating;
+        new_movie->print_func = print_movie_detail; // Assign function pointer
+
+        if (movie_add(&movies_full, new_movie) != 0) {
+            printf("[ERROR] Initialization failed: Could not add movie. Exit.\n");
+            free(new_movie->title);
+            free(new_movie->description);
+            free(new_movie);
+            quit();
+        }
+    }
+    return;
+}
+
+// Function: readuntil
+int readuntil(int fd, char *buffer, unsigned int max_len, char delimiter) {
+    char *ptr = buffer;
+    unsigned int chars_read = 0; // Number of characters successfully read into buffer (excluding delimiter)
+
+    while (chars_read < max_len) {
+        int bytes_read_single;
+        int ret = receive(fd, ptr, 1, &bytes_read_single);
+
+        if (ret != 0) { // Error from receive
+            *ptr = '\0';
+            return -1; // Propagate error
+        }
+        if (bytes_read_single == 0) { // EOF
+            *ptr = '\0';
+            return chars_read; // Return current length, EOF reached
+        }
+
+        if (*ptr == delimiter) {
+            *ptr = '\0'; // Replace delimiter with null terminator
+            return chars_read; // Return number of chars before delimiter
+        }
+        
+        ptr++;
+        chars_read++;
+    }
+    *ptr = '\0'; // Null-terminate if max_len reached
+    return chars_read; // Return number of chars read
+}
+
 // Function: print_movie_detail
 void print_movie_detail(int id, Movie *movie) {
     if (movie == NULL) {
@@ -175,121 +316,37 @@ void print_movie_detail(int id, Movie *movie) {
 
     const char *rating_str = movie_r2s(movie->rating);
     const char *genre_str = movie_g2s(movie->genre);
-
-    // Reconstructed format string based on original fragments and printf arguments
-    printf("[ %d] %s (%d, %s) - %s [ %d/100] %s\n",
+    
+    // The original `printf` arguments: param_1,*param_2,param_2[2],local_10,local_14,param_2[3],param_2[1]
+    // which map to: id, movie->title, movie->year, rating_str, genre_str, movie->review_score, movie->description
+    printf("[ %d ] %s (%d) [%s] - %s [%d/100] %s\n",
            id, movie->title, movie->year, rating_str, genre_str, movie->review_score, movie->description);
-}
-
-// Function: receive (mocked with read from stdin)
-int receive(int fd, char *buf, int len, int *bytes_read_ptr) {
-    ssize_t bytes_read = read(fd, buf, len);
-    if (bytes_read == -1) {
-        perror("read"); // Print error message for debugging
-        *bytes_read_ptr = 0;
-        return -1; // Error
-    }
-    *bytes_read_ptr = (int)bytes_read;
-    return 0; // Success
-}
-
-// Function: readuntil
-int readuntil(int fd, char *buffer, unsigned int max_len, char delimiter) {
-    char *current_pos = buffer;
-    unsigned int bytes_read_total = 0;
-    int single_byte_read_count;
-
-    while (bytes_read_total < max_len) {
-        if (receive(fd, current_pos, 1, &single_byte_read_count) == -1 || single_byte_read_count == 0) {
-            // Error or EOF
-            break;
-        }
-
-        if (*current_pos == delimiter) {
-            break;
-        }
-
-        current_pos++;
-        bytes_read_total++;
-    }
-
-    // Null-terminate the string.
-    *current_pos = '\0';
-    return (int)(current_pos - buffer); // Return number of characters read, excluding delimiter
-}
-
-// Function: initialize
-void initialize(void) {
-    printf("\n   . . . Initializing the inventory . . .\n         (movie info from IMDb.com)\n");
-
-    srandom(time(NULL)); // Seed the random number generator
-
-    for (int i = 0; i < 21; ++i) { // 0x16 is 22. Loop 0 to 20 for 21 characters.
-        long rand_val = random();
-        if ((rand_val % 2) == 0) { // Randomly choose lowercase or uppercase
-            g_password[i] = (char)(rand_val % 26) + 'a';
-        } else {
-            g_password[i] = (char)(rand_val % 26) + 'A';
-        }
-    }
-    g_password[21] = '\0'; // Null-terminate g_password
-
-    for (unsigned int i = 0; i < NUM_DEFAULT_MOVIES; ++i) {
-        Movie *current_movie = (Movie *)malloc(sizeof(Movie));
-        if (current_movie == NULL) {
-            printf("[ERROR] Initialization failed: malloc Movie. Exit.\n");
-            quit();
-        }
-
-        current_movie->title = strdup(default_movie_data[i].title);
-        current_movie->description = strdup(default_movie_data[i].description);
-
-        if (current_movie->title == NULL || current_movie->description == NULL) {
-            printf("[ERROR] Initialization failed: strdup. Exit.\n");
-            free_movie(current_movie); // Free what was allocated
-            quit();
-        }
-
-        current_movie->year = default_movie_data[i].year;
-        current_movie->review_score = default_movie_data[i].review_score;
-        current_movie->genre = default_movie_data[i].genre;
-        current_movie->rating = default_movie_data[i].rating;
-        current_movie->print_func = print_movie_detail;
-
-        if (movie_add(&movies_full, current_movie) != 0) {
-            printf("[ERROR] Initialization failed: movie_add. Exit.\n");
-            free_movie(current_movie); // Ensure movie is freed if adding to list fails
-            quit();
-        }
-    }
+    return;
 }
 
 // Function: list_movies
 void list_movies(void) {
-    int movie_id_counter;
-
-    movie_id_counter = 0;
+    int movie_id = 0;
     printf("\nMovies (Full)\n--------------\n");
     for (MovieNode *current_node = movies_full; current_node != NULL; current_node = current_node->next) {
-        movie_id_counter++;
-        current_node->movie->print_func(movie_id_counter, current_node->movie);
+        movie_id++;
+        current_node->movie->print_func(movie_id, current_node->movie);
     }
-    printf("--------------\n%d movie(s)\n", movie_id_counter);
+    printf("--------------\n%d movie(s)\n", movie_id);
 
-    movie_id_counter = 0; // Reset counter for rented movies
+    movie_id = 0;
     printf("\nMovies (Rented)\n--------------\n");
     for (MovieNode *current_node = movies_rented; current_node != NULL; current_node = current_node->next) {
-        movie_id_counter++;
-        current_node->movie->print_func(movie_id_counter, current_node->movie);
+        movie_id++;
+        current_node->movie->print_func(movie_id, current_node->movie);
     }
-    printf("--------------\n%d movie(s)\n", movie_id_counter);
+    printf("--------------\n%d movie(s)\n", movie_id);
+    return;
 }
 
 // Function: rent_movie
 void rent_movie(void) {
-    char input_buffer[256];
     unsigned int num_full_movies = 0;
-
     printf("\nMovies (Full)\n--------------\n");
     for (MovieNode *current_node = movies_full; current_node != NULL; current_node = current_node->next) {
         num_full_movies++;
@@ -302,63 +359,47 @@ void rent_movie(void) {
         return;
     }
 
-    while (1) {
+    char input_buffer[256];
+    unsigned long movie_id_to_rent;
+    while (1) { // Loop for valid movie ID input
         printf("Enter movie id: ");
-        if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
-            return; // Error or EOF
+        if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
+            return; // Error reading input
+        }
+        
+        movie_id_to_rent = strtoul(input_buffer, NULL, 10);
+
+        if (movie_id_to_rent == 0 || movie_id_to_rent > num_full_movies) {
+            printf("[ERROR] Invalid movie id. Try again.\n");
+            continue; // Ask for ID again
         }
 
-        unsigned long movie_id = strtoul(input_buffer, NULL, 10);
-
-        if (movie_id != 0 && movie_id <= num_full_movies) {
-            Movie *movie_to_rent = movie_find_by_id(movies_full, movie_id);
-            if (movie_to_rent == NULL) {
-                printf("Sorry, we have some issues here. Please try again later.\n");
-                return;
-            }
-
-            if (movie_find(movies_rented, movie_to_rent->title) != NULL) {
-                printf("Sorry, [%s] is already rented at this time. Please try again later.\n", movie_to_rent->title);
-                return;
-            }
-            
-            // Create a deep copy of the movie to add to the rented list
-            Movie *rented_movie_copy = (Movie *)malloc(sizeof(Movie));
-            if (rented_movie_copy == NULL) {
-                printf("[ERROR] Failed to rent: malloc. Please try again later.\n");
-                return;
-            }
-            rented_movie_copy->title = strdup(movie_to_rent->title);
-            rented_movie_copy->description = strdup(movie_to_rent->description);
-            if (rented_movie_copy->title == NULL || rented_movie_copy->description == NULL) {
-                printf("[ERROR] Failed to rent: strdup. Please try again later.\n");
-                free_movie(rented_movie_copy);
-                return;
-            }
-            rented_movie_copy->year = movie_to_rent->year;
-            rented_movie_copy->review_score = movie_to_rent->review_score;
-            rented_movie_copy->genre = movie_to_rent->genre;
-            rented_movie_copy->rating = movie_to_rent->rating;
-            rented_movie_copy->print_func = movie_to_rent->print_func;
-
-
-            if (movie_add(&movies_rented, rented_movie_copy) != 0) {
-                printf("[ERROR] Failed to rent. Please try again later.\n");
-                free_movie(rented_movie_copy); // Free the copy if adding fails
-                return;
-            }
-            printf("Successfully rented [%s]! Enjoy!\n", rented_movie_copy->title);
+        MovieNode *node_to_rent_from_full = movie_find_by_id(movies_full, movie_id_to_rent);
+        if (node_to_rent_from_full == NULL) {
+            printf("Sorry, we have some issues here. Please try again later.\n");
             return;
         }
-        printf("[ERROR] Invalid movie id. Try again.\n");
+
+        // Check if already rented
+        if (movie_find(movies_rented, node_to_rent_from_full->movie) != NULL) {
+            printf("Sorry, [%s] is already rented at this time. Please try again later.\n",
+                   node_to_rent_from_full->movie->title);
+            return;
+        }
+
+        // Add the existing movie pointer to the rented list
+        if (movie_add(&movies_rented, node_to_rent_from_full->movie) != 0) {
+            printf("[ERROR] Failed to rent. Please try again later.\n");
+            return;
+        }
+        printf("Successfully rented [%s]! Enjoy!\n", node_to_rent_from_full->movie->title);
+        return;
     }
 }
 
 // Function: return_movie
 void return_movie(void) {
-    char input_buffer[256];
     unsigned int num_rented_movies = 0;
-
     printf("\nMovies (Rented)\n--------------\n");
     for (MovieNode *current_node = movies_rented; current_node != NULL; current_node = current_node->next) {
         num_rented_movies++;
@@ -371,175 +412,184 @@ void return_movie(void) {
         return;
     }
 
-    while (1) {
+    char input_buffer[256];
+    unsigned long movie_id_to_return;
+    while (1) { // Loop for valid movie ID input
         printf("Enter movie id: ");
-        if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
-            return; // Error or EOF
+        if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
+            return; // Error reading input
+        }
+        
+        movie_id_to_return = strtoul(input_buffer, NULL, 10);
+
+        if (movie_id_to_return == 0 || movie_id_to_return > num_rented_movies) {
+            printf("[ERROR] Invalid movie id. Try again.\n");
+            continue; // Ask for ID again
         }
 
-        unsigned long movie_id = strtoul(input_buffer, NULL, 10);
-
-        if (movie_id != 0 && movie_id <= num_rented_movies) {
-            // Get the movie title *before* deleting, as deletion frees the movie struct.
-            Movie *movie_to_return = movie_find_by_id(movies_rented, movie_id);
-            if (movie_to_return == NULL) {
-                printf("Sorry, we have some issues here. Please try again later.\n");
-                return;
-            }
-            char movie_title_copy[256]; // Temporary buffer for title
-            strncpy(movie_title_copy, movie_to_return->title, sizeof(movie_title_copy) - 1);
-            movie_title_copy[sizeof(movie_title_copy) - 1] = '\0';
-
-            if (movie_delete(&movies_rented, movie_id) != 0) {
-                printf("[ERROR] Failed to return the movie. Please try again.\n");
-                return;
-            }
-            printf("Successfully returned [%s]! Thank you!\n", movie_title_copy);
+        Movie *returned_movie_ptr = NULL;
+        if (movie_remove_node(&movies_rented, movie_id_to_return, &returned_movie_ptr) != 0) {
+            printf("Sorry, we have some issues here. Please try again later.\n");
             return;
         }
-        printf("[ERROR] Invalid movie id. Try again.\n");
+        
+        if (returned_movie_ptr == NULL) { // Should not happen if movie_remove_node returned 0
+            printf("Error: Movie pointer was NULL after removal. Please try again.\n");
+            return;
+        }
+
+        printf("Successfully returned [%s]! Thank you!\n", returned_movie_ptr->title);
+        return;
     }
 }
 
 // Function: login
 int login(void) {
     char username_input[64];
-    char password_input[68]; // 0x44 = 68
-    const char admin_user[] = "admin";
+    char password_input[68]; // 0x44 -> 68 bytes
 
     printf("username: ");
-    readuntil(STDIN_FILENO, username_input, sizeof(username_input) - 1, '\n');
-
-    if (strcmp(admin_user, username_input) == 0) {
+    if (readuntil(0, username_input, sizeof(username_input) - 1, '\n') < 0) {
+        return 0; // Error reading input
+    }
+    
+    if (strcmp("admin", username_input) == 0) {
         printf("password: ");
-        readuntil(STDIN_FILENO, password_input, sizeof(password_input) - 1, '\n');
+        if (readuntil(0, password_input, sizeof(password_input) - 1, '\n') < 0) {
+            return 0; // Error reading input
+        }
         if (strcmp(g_password, password_input) == 0) {
             printf("\nWelcome, admin!\n");
-            return 1; // Logged in
+            return 1; // Success
         } else {
             printf("[ERROR] Permission Denied: Wrong credentials\n");
         }
     } else {
         printf("[ERROR] Permission Denied: Wrong credentials\n");
     }
-    return 0; // Not logged in
+    return 0; // Failure
 }
 
 // Function: add_movie
 void add_movie(void) {
+    Movie *new_movie = NULL;
     char input_buffer[1024];
-    Movie *new_movie = (Movie *)malloc(sizeof(Movie));
-    if (new_movie == NULL) {
-        printf("[ERROR] Failed to add a movie: malloc Movie.\n");
-        return;
-    }
-    // Initialize pointers to NULL to safely free later if strdup fails
-    new_movie->title = NULL;
-    new_movie->description = NULL;
+    int success = 0; // Flag to indicate overall success
 
     printf("Add a movie\n--------------\n");
 
-    printf("Enter Title: ");
-    if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
-        printf("[ERROR] Failed to read title.\n");
-        free_movie(new_movie);
-        return;
-    }
-    new_movie->title = strdup(input_buffer);
-    if (new_movie->title == NULL) {
-        printf("[ERROR] Failed to add a movie: strdup title.\n");
-        free_movie(new_movie);
-        return;
-    }
-
-    printf("Enter Description: ");
-    if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
-        printf("[ERROR] Failed to read description.\n");
-        free_movie(new_movie);
-        return;
-    }
-    new_movie->description = strdup(input_buffer);
-    if (new_movie->description == NULL) {
-        printf("[ERROR] Failed to add a movie: strdup description.\n");
-        free_movie(new_movie);
-        return;
-    }
-
-    while (1) {
-        printf("Enter Year (1800-2015): ");
-        if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
-            printf("[ERROR] Failed to read year.\n");
-            free_movie(new_movie);
-            return;
-        }
-        unsigned long year_val = strtoul(input_buffer, NULL, 10);
-        if (year_val >= 1800 && year_val <= 2015) {
-            new_movie->year = (int)year_val;
+    do { // Overall block for add_movie logic, breaks on first error
+        new_movie = (Movie *)malloc(sizeof(Movie));
+        if (new_movie == NULL) {
+            printf("[ERROR] Failed to add a movie: Out of memory.\n");
             break;
         }
-        printf("[ERROR] Invalid year. Try again.\n");
-    }
+        memset(new_movie, 0, sizeof(Movie));
 
-    while (1) {
-        printf("Enter Review score (0-100): ");
-        if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
-            printf("[ERROR] Failed to read review score.\n");
-            free_movie(new_movie);
-            return;
-        }
-        unsigned long score_val = strtoul(input_buffer, NULL, 10);
-        if (score_val <= 100) { // Score must be 0-100
-            new_movie->review_score = (int)score_val;
-            break;
-        }
-        printf("[ERROR] Invalid rating. Try again.\n");
-    }
+        // Title
+        printf("Enter Title: ");
+        if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) break;
+        new_movie->title = (char *)malloc(strlen(input_buffer) + 1);
+        if (new_movie->title == NULL) break;
+        strcpy(new_movie->title, input_buffer);
 
-    while (1) {
-        printf("Select a genre\n 1. Action\n 2. Romance\n 3. Comedy\n 4. Horror\n 5. Other\nChoice: ");
-        if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
-            printf("[ERROR] Failed to read genre.\n");
-            free_movie(new_movie);
-            return;
-        }
-        unsigned long genre_val = strtoul(input_buffer, NULL, 10);
-        if (genre_val >= 1 && genre_val <= 5) {
-            new_movie->genre = (int)genre_val;
-            break;
-        }
-        printf("[ERROR] Invalid genre. Try again.\n");
-    }
+        // Description
+        printf("Enter Description: ");
+        if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) break;
+        new_movie->description = (char *)malloc(strlen(input_buffer) + 1);
+        if (new_movie->description == NULL) break;
+        strcpy(new_movie->description, input_buffer);
 
-    while (1) {
-        printf("Select a film rating\n 1. G\n 2. PG\n 3. PG-13\n 4. R\n 5. Unknown\nChoice: ");
-        if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
-            printf("[ERROR] Failed to read film rating.\n");
-            free_movie(new_movie);
-            return;
+        // Year
+        int year_input_status = 0; // 0: needs input, 1: valid, -1: error
+        while (year_input_status == 0) {
+            printf("Enter Year (1800-2015): ");
+            if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
+                year_input_status = -1;
+                break;
+            }
+            long year_val = strtoul(input_buffer, NULL, 10);
+            if (year_val >= 1800 && year_val <= 2015) {
+                new_movie->year = (int)year_val;
+                year_input_status = 1;
+            } else {
+                printf("[ERROR] Invalid year. Try again.\n");
+            }
         }
-        unsigned long rating_val = strtoul(input_buffer, NULL, 10);
-        if (rating_val >= 1 && rating_val <= 5) {
-            new_movie->rating = (int)rating_val;
-            break;
+        if (year_input_status == -1) break;
+
+        // Review Score
+        int score_input_status = 0;
+        while (score_input_status == 0) {
+            printf("Enter Review score (0-100): ");
+            if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
+                score_input_status = -1;
+                break;
+            }
+            long score_val = strtoul(input_buffer, NULL, 10);
+            if (score_val >= 0 && score_val <= 100) {
+                new_movie->review_score = (int)score_val;
+                score_input_status = 1;
+            } else {
+                printf("[ERROR] Invalid rating. Try again.\n");
+            }
         }
-        printf("[ERROR] Invalid film rating. Try again.\n");
-    }
+        if (score_input_status == -1) break;
 
-    new_movie->print_func = print_movie_detail;
+        // Genre
+        int genre_input_status = 0;
+        while (genre_input_status == 0) {
+            printf("Select a genre\n 1. Action\n 2. Romance\n 3. Comedy\n 4. Horror\n 5. Other\nChoice: ");
+            if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
+                genre_input_status = -1;
+                break;
+            }
+            long genre_val = strtoul(input_buffer, NULL, 10);
+            if (genre_val >= 1 && genre_val <= 5) {
+                new_movie->genre = (int)genre_val;
+                genre_input_status = 1;
+            } else {
+                printf("[ERROR] Invalid genre. Try again.\n");
+            }
+        }
+        if (genre_input_status == -1) break;
 
-    if (movie_add(&movies_full, new_movie) != 0) {
-        printf("[ERROR] Failed to add a movie to the list.\n");
-        free_movie(new_movie); // Free movie if adding to list fails
-        return;
+        // Film Rating
+        int rating_input_status = 0;
+        while (rating_input_status == 0) {
+            printf("Select a film rating\n 1. G\n 2. PG\n 3. PG-13\n 4. R\n 5. Unknown\nChoice: ");
+            if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
+                rating_input_status = -1;
+                break;
+            }
+            long rating_val = strtoul(input_buffer, NULL, 10);
+            if (rating_val >= 1 && rating_val <= 5) {
+                new_movie->rating = (int)rating_val;
+                rating_input_status = 1;
+            } else {
+                printf("[ERROR] Invalid film rating. Try again.\n");
+            }
+        }
+        if (rating_input_status == -1) break;
+
+        new_movie->print_func = print_movie_detail;
+
+        if (movie_add(&movies_full, new_movie) == 0) {
+            printf("Successfully added the movie!\n");
+            success = 1;
+        } else {
+            printf("[ERROR] Failed to add a movie.\n");
+        }
+    } while (0); // This do-while loop executes once for the main logic
+
+    if (!success && new_movie != NULL) {
+        free_movie_data(new_movie); // Free allocated memory on failure
     }
-    printf("Successfully added [%s]!\n", new_movie->title);
 }
 
 // Function: remove_movie
 void remove_movie(void) {
-    char input_buffer[256];
     unsigned int num_full_movies = 0;
-
     printf("\nMovies (Full)\n--------------\n");
     for (MovieNode *current_node = movies_full; current_node != NULL; current_node = current_node->next) {
         num_full_movies++;
@@ -552,41 +602,41 @@ void remove_movie(void) {
         return;
     }
 
-    while (1) {
+    char input_buffer[256];
+    unsigned long movie_id_to_remove;
+    while (1) { // Loop for valid movie ID input
         printf("Enter movie id: ");
-        if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
-            return; // Error or EOF
+        if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
+            return; // Error reading input
+        }
+        
+        movie_id_to_remove = strtoul(input_buffer, NULL, 10);
+
+        if (movie_id_to_remove == 0 || movie_id_to_remove > num_full_movies) {
+            printf("[ERROR] Invalid movie id. Try again.\n");
+            continue; // Ask for ID again
         }
 
-        unsigned long movie_id = strtoul(input_buffer, NULL, 10);
-
-        if (movie_id != 0 && movie_id <= num_full_movies) {
-            // Get the movie title *before* deleting, as deletion frees the movie struct.
-            Movie *movie_to_remove = movie_find_by_id(movies_full, movie_id);
-            if (movie_to_remove == NULL) {
-                printf("Sorry, we have some issues here. Please try again later.\n");
-                return;
-            }
-            char movie_title_copy[256]; // Temporary buffer for title
-            strncpy(movie_title_copy, movie_to_remove->title, sizeof(movie_title_copy) - 1);
-            movie_title_copy[sizeof(movie_title_copy) - 1] = '\0';
-
-            if (movie_delete(&movies_full, movie_id) != 0) {
-                printf("[ERROR] Failed to remove. Please try again.\n");
-                return;
-            }
-            printf("Successfully removed [%s]!\n", movie_title_copy);
+        MovieNode *node_to_remove_from_full = movie_find_by_id(movies_full, movie_id_to_remove);
+        if (node_to_remove_from_full == NULL) { // Should not happen if id is valid
+            printf("Sorry, we have some issues here. Please try again later.\n");
             return;
         }
-        printf("[ERROR] Invalid movie id. Try again.\n");
+        
+        Movie *removed_movie_title_ptr = node_to_remove_from_full->movie; // Get title before delete for print
+
+        if (movie_delete_full(&movies_full, movie_id_to_remove) != 0) {
+            printf("[ERROR] Failed to remove. Please try again.\n");
+            return;
+        }
+        printf("Successfully removed [%s]!\n", removed_movie_title_ptr->title);
+        return;
     }
 }
 
 // Function: update_movie
 void update_movie(void) {
-    char input_buffer[1024];
     unsigned int num_full_movies = 0;
-
     printf("\nMovies (Full)\n--------------\n");
     for (MovieNode *current_node = movies_full; current_node != NULL; current_node = current_node->next) {
         num_full_movies++;
@@ -599,211 +649,196 @@ void update_movie(void) {
         return;
     }
 
+    char input_buffer[1024];
+    unsigned long movie_id_to_update;
     Movie *movie_to_update = NULL;
-    while (1) {
+
+    while (1) { // Outer loop for movie ID selection
         printf("Enter movie id: ");
-        if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
-            return; // Error or EOF
+        if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
+            return; // Error reading input, exit function
         }
-
-        unsigned long movie_id = strtoul(input_buffer, NULL, 10);
-
-        if (movie_id != 0 && movie_id <= num_full_movies) {
-            movie_to_update = movie_find_by_id(movies_full, movie_id);
-            if (movie_to_update == NULL) {
-                printf("Sorry, we have some issues here. Please try again later.\n");
-                return;
-            }
-            break;
+        movie_id_to_update = strtoul(input_buffer, NULL, 10);
+        if (movie_id_to_update != 0 && movie_id_to_update <= num_full_movies) {
+            break; // Valid ID entered, proceed to update fields
         }
         printf("[ERROR] Invalid movie id. Try again.\n");
     }
 
+    MovieNode *node = movie_find_by_id(movies_full, movie_id_to_update);
+    if (node == NULL) { // Should not happen if ID was validated
+        printf("Error: Movie not found. Please retry.\n");
+        return;
+    }
+    movie_to_update = node->movie;
+
     printf("\nUpdate a movie\n--------------\nJust leave it empty to keep the old value.\n");
 
-    // Update Title
-    printf("Enter new title (current: [%s]): ", movie_to_update->title);
-    if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) return;
-    if (strlen(input_buffer) != 0) {
-        char *new_title = strdup(input_buffer);
-        if (new_title == NULL) {
-            printf("[ERROR] Failed to update title: strdup.\n");
-            return;
+    char *temp_new_title = NULL;       // Temporarily hold new string allocations
+    char *temp_new_description = NULL; // before they are assigned to movie_to_update
+    int update_failed = 0;             // Flag for errors during the update process
+
+    do { // Inner loop for updating fields, breaks on error
+        // Title
+        printf("Enter new title (current: [%s]): ", movie_to_update->title);
+        if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) { update_failed = 1; break; }
+        if (strlen(input_buffer) > 0) {
+            temp_new_title = (char *)malloc(strlen(input_buffer) + 1);
+            if (temp_new_title == NULL) { update_failed = 1; break; }
+            strcpy(temp_new_title, input_buffer);
+            free(movie_to_update->title);
+            movie_to_update->title = temp_new_title;
+            temp_new_title = NULL; // Ownership transferred
         }
-        free(movie_to_update->title);
-        movie_to_update->title = new_title;
-    }
 
-    // Update Description
-    printf("Enter new description (current: [%s]): ", movie_to_update->description);
-    if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) return;
-    if (strlen(input_buffer) != 0) {
-        char *new_description = strdup(input_buffer);
-        if (new_description == NULL) {
-            printf("[ERROR] Failed to update description: strdup.\n");
-            return;
+        // Description
+        printf("Enter new description (current: [%s]): ", movie_to_update->description);
+        if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) { update_failed = 1; break; }
+        if (strlen(input_buffer) > 0) {
+            temp_new_description = (char *)malloc(strlen(input_buffer) + 1);
+            if (temp_new_description == NULL) { update_failed = 1; break; }
+            strcpy(temp_new_description, input_buffer);
+            free(movie_to_update->description);
+            movie_to_update->description = temp_new_description;
+            temp_new_description = NULL; // Ownership transferred
         }
-        free(movie_to_update->description);
-        movie_to_update->description = new_description;
-    }
 
-    // Update Year
-    while (1) {
-        printf("Enter new year (1800-2015) (current: [%d]): ", movie_to_update->year);
-        if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) return;
-        if (strlen(input_buffer) == 0) break; // Keep old value
-        
-        unsigned long year_val = strtoul(input_buffer, NULL, 10);
-        if (year_val >= 1800 && year_val <= 2015) {
-            movie_to_update->year = (int)year_val;
-            break;
+        // Year
+        int year_input_status = 0; // 0: needs input, 1: valid/skipped, -1: error
+        while (year_input_status == 0) {
+            printf("Enter new year (1800-2015) (current: [%d]): ", movie_to_update->year);
+            if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) { year_input_status = -1; break; }
+            if (strlen(input_buffer) == 0) { year_input_status = 1; continue; } // Keep old value
+            long year_val = strtoul(input_buffer, NULL, 10);
+            if (year_val >= 1800 && year_val <= 2015) {
+                movie_to_update->year = (int)year_val;
+                year_input_status = 1;
+            } else {
+                printf("[ERROR] Invalid year. Try again.\n");
+            }
         }
-        printf("[ERROR] Invalid year. Try again.\n");
-    }
+        if (year_input_status == -1) { update_failed = 1; break; }
 
-    // Update Review Score
-    while (1) {
-        printf("Enter new review score (0-100) (current: [%d/100]): ", movie_to_update->review_score);
-        if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) return;
-        if (strlen(input_buffer) == 0) break; // Keep old value
-
-        unsigned long score_val = strtoul(input_buffer, NULL, 10);
-        if (score_val <= 100) {
-            movie_to_update->review_score = (int)score_val;
-            break;
+        // Review Score
+        int score_input_status = 0;
+        while (score_input_status == 0) {
+            printf("Enter new review score (0-100) (current: [%d/100]): ", movie_to_update->review_score);
+            if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) { score_input_status = -1; break; }
+            if (strlen(input_buffer) == 0) { score_input_status = 1; continue; } // Keep old value
+            long score_val = strtoul(input_buffer, NULL, 10);
+            if (score_val >= 0 && score_val <= 100) {
+                movie_to_update->review_score = (int)score_val;
+                score_input_status = 1;
+            } else {
+                printf("[ERROR] Invalid rating. Try again.\n");
+            }
         }
-        printf("[ERROR] Invalid rating. Try again.\n");
-    }
+        if (score_input_status == -1) { update_failed = 1; break; }
 
-    // Update Genre
-    while (1) {
-        printf("Select a genre (current: [%s])\n 1. Action\n 2. Romance\n 3. Comedy\n 4. Horror\n 5. Other\nChoice: ",
-               movie_g2s(movie_to_update->genre));
-        if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) return;
-        if (strlen(input_buffer) == 0) break; // Keep old value
-        
-        unsigned long genre_val = strtoul(input_buffer, NULL, 10);
-        if (genre_val >= 1 && genre_val <= 5) {
-            movie_to_update->genre = (int)genre_val;
-            break;
+        // Genre
+        int genre_input_status = 0;
+        while (genre_input_status == 0) {
+            printf("Select a genre (current: [%s])\n 1. Action\n 2. Romance\n 3. Comedy\n 4. Horror\n 5. Other\nChoice: ",
+                   movie_g2s(movie_to_update->genre));
+            if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) { genre_input_status = -1; break; }
+            if (strlen(input_buffer) == 0) { genre_input_status = 1; continue; } // Keep old value
+            long genre_val = strtoul(input_buffer, NULL, 10);
+            if (genre_val >= 1 && genre_val <= 5) {
+                movie_to_update->genre = (int)genre_val;
+                genre_input_status = 1;
+            } else {
+                printf("[ERROR] Invalid genre. Try again.\n");
+            }
         }
-        printf("[ERROR] Invalid genre. Try again.\n");
-    }
+        if (genre_input_status == -1) { update_failed = 1; break; }
 
-    // Update Film Rating
-    while (1) {
-        printf("Select a film rating (current: [%s])\n 1. G\n 2. PG\n 3. PG-13\n 4. R\n 5. Unknown\nChoice: ",
-               movie_r2s(movie_to_update->rating));
-        if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) return;
-        if (strlen(input_buffer) == 0) break; // Keep old value
-        
-        unsigned long rating_val = strtoul(input_buffer, NULL, 10);
-        if (rating_val >= 1 && rating_val <= 5) {
-            movie_to_update->rating = (int)rating_val;
-            break;
+        // Film Rating
+        int rating_input_status = 0;
+        while (rating_input_status == 0) {
+            printf("Select a film rating (current: [%s])\n 1. G\n 2. PG\n 3. PG-13\n 4. R\n 5. Unknown\nChoice: ",
+                   movie_r2s(movie_to_update->rating));
+            if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) { rating_input_status = -1; break; }
+            if (strlen(input_buffer) == 0) { rating_input_status = 1; continue; } // Keep old value
+            long rating_val = strtoul(input_buffer, NULL, 10);
+            if (rating_val >= 1 && rating_val <= 5) {
+                movie_to_update->rating = (int)rating_val;
+                rating_input_status = 1;
+            } else {
+                printf("[ERROR] Invalid film rating. Try again.\n");
+            }
         }
-        printf("[ERROR] Invalid film rating. Try again.\n");
+        if (rating_input_status == -1) { update_failed = 1; break; }
+
+        printf("Successfully updated the movie information!\n");
+    } while(0); // This inner do-while loop executes once for the fields update
+
+    if (update_failed) {
+        printf("[ERROR] Update failed due to memory allocation or input error.\n");
+        // Free any temporarily allocated strings that might not have been assigned
+        if (temp_new_title) free(temp_new_title);
+        if (temp_new_description) free(temp_new_description);
     }
-
-    printf("Successfully updated the movie information!\n");
-}
-
-// Function: quit
-void quit(void) {
-    printf("Bye!\n");
-    // Free all allocated movie data before exiting
-    MovieNode *current;
-    MovieNode *next_node;
-
-    current = movies_full;
-    while (current != NULL) {
-        next_node = current->next;
-        free_movie(current->movie); // Free the Movie struct and its strings
-        free(current); // Free the MovieNode
-        current = next_node;
-    }
-    movies_full = NULL;
-
-    current = movies_rented;
-    while (current != NULL) {
-        next_node = current->next;
-        free_movie(current->movie);
-        free(current);
-        current = next_node;
-    }
-    movies_rented = NULL;
-
-    exit(0);
+    return; // Exit update_movie
 }
 
 // Function: main
-int main(void) { // main should return int
-    // Menu strings
+int main(void) {
+    srandom(time(NULL)); // Seed random number generator
+
+    const char *main_banner =
+        "\n=============================================\n"
+        "Movie Rental Service v1.0\n"
+        "=============================================\n";
+
     const char *main_menu_str =
-        "\n=============================================Movie Rental Service v1.0=============================================\n"
-        "\n1. List movies\n2. Rent movie\n3. Return movie\n4. Admin mode\n5. Exit\n\nChoice: ";
+        "\n1. List movies\n"
+        "2. Rent movie\n"
+        "3. Return movie\n"
+        "4. Admin mode\n"
+        "5. Exit\n\n"
+        "Choice: ";
+
     const char *admin_menu_str =
-        "\n1. Add movie\n2. Remove movie\n3. Update movie\n4. Quit admin mode\n\nChoice: ";
+        "\n1. Add movie\n"
+        "2. Remove movie\n"
+        "3. Update movie\n"
+        "4. Quit admin mode\n\n"
+        "Choice: ";
 
     char input_buffer[4096];
-    int admin_mode = 0; // 0 for user mode, 1 for admin mode
+    int admin_mode = 0; // 0 for normal user, 1 for admin
 
-    printf("%s", main_menu_str); // Print banner + initial menu
+    printf("%s", main_banner);
     initialize();
-    printf("=============================================\n");
-
-    while (1) {
-        if (admin_mode == 0) {
+    
+    while (1) { // Main application loop
+        if (admin_mode == 0) { // Normal user mode
             printf("%s", main_menu_str);
-            if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
-                quit();
+            if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
+                quit(); // Input error, exit
             }
-
             switch (input_buffer[0]) {
-                case '1':
-                    list_movies();
-                    break;
-                case '2':
-                    rent_movie();
-                    break;
-                case '3':
-                    return_movie();
-                    break;
-                case '4':
-                    admin_mode = login();
-                    break;
-                case '5':
-                    quit();
-                    break;
-                default:
-                    printf("[ERROR] Invalid menu. Please select again.\n");
-                    break;
+                case '1': list_movies(); break;
+                case '2': rent_movie(); break;
+                case '3': return_movie(); break;
+                case '4': admin_mode = login(); break;
+                case '5': quit(); break;
+                default: printf("[ERROR] Invalid menu. Please select again.\n"); break;
             }
-        } else { // admin_mode == 1
+        } else { // Admin mode
             printf("%s", admin_menu_str);
-            if (readuntil(STDIN_FILENO, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
-                quit();
+            if (readuntil(0, input_buffer, sizeof(input_buffer) - 1, '\n') < 0) {
+                quit(); // Input error, exit
             }
-
             switch (input_buffer[0]) {
-                case '1':
-                    add_movie();
-                    break;
-                case '2':
-                    remove_movie();
-                    break;
-                case '3':
-                    update_movie();
-                    break;
-                case '4':
-                    admin_mode = 0; // Quit admin mode
-                    printf("Exiting admin mode.\n");
-                    break;
-                default:
-                    printf("[ERROR] Invalid menu. Please select again.\n");
-                    break;
+                case '1': add_movie(); break;
+                case '2': remove_movie(); break;
+                case '3': update_movie(); break;
+                case '4': admin_mode = 0; break; // Quit admin mode
+                default: printf("[ERROR] Invalid menu. Please select again.\n"); break;
             }
         }
     }
-    return 0; // Should not be reached due to quit()
+
+    return 0; // Should ideally not be reached due to quit()
 }

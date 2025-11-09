@@ -1,120 +1,106 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdio.h>    // For printf
 #include <string.h>   // For strlen, strncpy, memset, memcpy
+#include <stdlib.h>   // For atoi
 #include <ctype.h>    // For isdigit
 #include <unistd.h>   // For read, STDIN_FILENO
-#include <time.h>     // For time (to seed rand)
+#include <strings.h>  // For bzero (though memset is used)
 
-// --- Global variables as inferred from usage ---
-// `acceptable_char` used in `isValidChar` and implicitly by `parse_input`.
-// It should include digits, operators, and parentheses.
-// `isValidChar` checks `acceptable_char[i]` where `i` goes from 0 up to `sizeof(acceptable_char) - 2`.
-const char acceptable_char[] = "0123456789+-*/()"; // 16 characters + null terminator
-// `operator_list` used in `generate_one_equation` and `prompt_for_equation`.
-const char operator_list[] = "+-*/"; // 4 characters + null terminator
+// Type definitions from original context (assuming 4-byte int and char)
+typedef int undefined4;
+typedef unsigned int uint;
+typedef char undefined;
 
-// --- Mock/Helper functions to replace custom ones ---
+// Forward declarations for custom/external functions
+extern int random_in_range(int min, int max);
+extern void itos(int num, char *buffer); // Converts int to string
+extern int get_str_end(const char *str); // Assumed to be equivalent to strlen, returning int
+extern int solve_equation(const char *equation, int *result);
+extern void sprng(unsigned int seed1, unsigned int seed2);
+extern int stoi(const char *str, int *length_parsed); // Converts string to int, returns int value and parsed length
+extern char acceptable_char[]; // Array of acceptable characters for equations
+extern char operator_list[];   // Array of operators
 
-// Mimics random_in_range(min, max)
-int random_in_range(int min, int max) {
-    if (min > max) return min; // Handle invalid range gracefully
-    return min + rand() % (max - min + 1);
-}
-
-// Mimics itos(num, buffer)
-void itos(int num, char* buffer) {
-    sprintf(buffer, "%d", num);
-}
-
-// Mimics get_str_end(s)
-size_t get_str_end(const char* s) {
-    return strlen(s);
-}
-
-// Mimics solve_equation(equation, result_ptr)
-// A dummy implementation for compilation. In a real scenario, this would parse and evaluate.
-// It needs to return 1 (success) and a non-zero *result for generate_one_equation's loop.
-int solve_equation(const char* equation, int* result) {
-    // Simple heuristic for a non-zero dummy result
-    *result = (int)(strlen(equation) % 10) + 1;
-    return 1; // Always successful for mock
-}
-
-// Mimics sprng(s1, s2)
-void sprng(unsigned int s1, unsigned int s2) {
-    srand(s1 ^ s2); // Combine two seeds for srand
-}
-
-// Mimics stoi(s, chars_read_ptr)
-int stoi(const char* s, int* chars_read) {
-    char* endptr;
-    long val = strtol(s, &endptr, 10);
-    if (chars_read) {
-        *chars_read = (int)(endptr - s);
+// Helper function to mimic the "receive" behavior as interpreted from the snippet.
+// Returns 0 on success (read call was fine, actual_bytes_read will hold count), 1 on failure (read error).
+static int read_input_wrapper(char *buffer, size_t max_len, ssize_t *actual_bytes_read) {
+    ssize_t n = read(STDIN_FILENO, buffer, max_len);
+    if (n < 0) {
+        perror("read");
+        *actual_bytes_read = 0; // Indicate no bytes read on error
+        return 1; // Failure
     }
-    return (int)val;
+    *actual_bytes_read = n; // Store the actual number of bytes read
+    return 0; // Success (even if n=0 for EOF, the original logic proceeds with 0 bytes)
 }
-
-// --- Original functions, fixed and reduced ---
 
 // Function: get_user_answer
-int get_user_answer(int *answer_ptr) { // param_1 -> answer_ptr
-  char buffer[16];
-  memset(buffer, 0, sizeof(buffer)); // Clear the whole buffer
-  
-  // Read into buffer+1 to leave buffer[0] unused, and ensure space for null terminator
-  ssize_t bytes_read = read(STDIN_FILENO, buffer + 1, sizeof(buffer) - 2);
-  if (bytes_read <= 0) { // If read failed or no bytes read (EOF)
-    return 0;
-  }
+undefined4 get_user_answer(int *param_1) {
+  char buffer[16]; // Max 0xe bytes + 1 for null-terminator + 1 for initial offset
+  ssize_t actual_bytes_read;
 
-  // Ensure null termination at the end of actual read bytes
-  buffer[1 + bytes_read] = '\0';
+  memset(buffer + 1, 0, 0xf); // Clear buffer[1] to buffer[15]
   
-  size_t len = strlen(buffer + 1); // Get length of string starting at buffer[1]
-  if (len > 0 && (buffer + 1)[len - 1] == '\n') {
-    (buffer + 1)[len - 1] = '\0'; // Remove trailing newline
-    len--; // Adjust length
-  }
-
-  for (size_t i = 0; i < len; ++i) {
-    if (!isdigit((unsigned char)(buffer + 1)[i]) && ((buffer + 1)[i] != '-')) {
-      printf("incorrect item entered\n");
-      return 0;
+  // `read_input_wrapper` returns 0 on success (read call was fine), 1 on error.
+  // The original `if (local_18 == 0)` implies success.
+  if (read_input_wrapper(buffer + 1, 0xe, &actual_bytes_read) == 0) {
+    // If read was successful, null-terminate the buffer.
+    // buffer+1 starts at index 1. Max read 0xe bytes goes up to index 1+0xe-1 = 14.
+    // Null terminator at 1+actual_bytes_read. Max 1+14 = 15. buffer[15] is valid.
+    buffer[1 + actual_bytes_read] = '\0'; 
+    
+    size_t len = strlen(buffer + 1);
+    // Remove trailing newline if present
+    if (len > 0 && (buffer + 1)[len - 1] == '\n') {
+      (buffer + 1)[--len] = '\0';
     }
+
+    // Validate characters
+    for (size_t i = 0; i < len; ++i) {
+      if (!isdigit((int)(buffer + 1)[i]) && ((buffer + 1)[i] != '-')) {
+        printf("incorrect item entered\n");
+        return 0; // Invalid character found
+      }
+    }
+    
+    *param_1 = atoi(buffer + 1);
+    return 1; // Success
   }
-  *answer_ptr = atoi(buffer + 1);
-  return 1;
+  
+  return 0; // Read error (read_input_wrapper returned non-zero)
 }
 
 // Function: get_user_equation
-int get_user_equation(char *equation_buffer) { // param_1 -> equation_buffer
-  char buffer[257];
-  memset(buffer, 0, sizeof(buffer)); // Clear the whole buffer
+undefined4 get_user_equation(char *param_1) {
+  char buffer[257]; // Max 0xff bytes + 1 for null-terminator + 1 for initial offset
+  ssize_t actual_bytes_read;
+
+  memset(buffer + 1, 0, 0x100); // Clear buffer[1] to buffer[256]
   
-  // Read into buffer+1 to leave buffer[0] unused, and ensure space for null terminator
-  ssize_t bytes_read = read(STDIN_FILENO, buffer + 1, sizeof(buffer) - 2);
-  if (bytes_read <= 0) { // If read failed or no bytes read (EOF)
-    return 0;
-  }
+  // `read_input_wrapper` returns 0 on success (read call was fine), 1 on error.
+  if (read_input_wrapper(buffer + 1, 0xff, &actual_bytes_read) == 0) {
+    // Null-terminate the string. Max 0xff bytes read goes up to index 1+0xff-1 = 255.
+    // Null terminator at 1+actual_bytes_read. Max 1+255 = 256. buffer[256] is valid.
+    buffer[1 + actual_bytes_read] = '\0'; 
 
-  buffer[1 + bytes_read] = '\0'; // Null-terminate at the end of actual read bytes
-
-  size_t len = strlen(buffer + 1);
-  if (len > 0 && (buffer + 1)[len - 1] == '\n') {
-    strncpy(equation_buffer, buffer + 1, len - 1);
-    equation_buffer[len - 1] = '\0'; // Ensure destination is null-terminated
-  } else {
-    strncpy(equation_buffer, buffer + 1, len);
-    equation_buffer[len] = '\0'; // Ensure destination is null-terminated
+    size_t len = strlen(buffer + 1);
+    
+    // Check for trailing newline and copy
+    if (len > 0 && (buffer + 1)[len - 1] == '\n') {
+      strncpy(param_1, buffer + 1, len - 1);
+      param_1[len - 1] = '\0'; // Null-terminate
+    } else {
+      strncpy(param_1, buffer + 1, len);
+      param_1[len] = '\0'; // Null-terminate
+    }
+    return 1; // Success
   }
-  return 1;
+  return 0; // Read error
 }
 
 // Function: isValidChar
-int isValidChar(char c) { // param_1 -> c
-  for (size_t i = 0; i < sizeof(acceptable_char) - 1; ++i) { // Loop through defined acceptable chars
-    if (c == acceptable_char[i]) {
+undefined4 isValidChar(char param_1) {
+  for (unsigned int i = 0; i <= 0x10; ++i) { // Loop up to and including index 0x10
+    if (param_1 == acceptable_char[i]) {
       return 1;
     }
   }
@@ -122,205 +108,217 @@ int isValidChar(char c) { // param_1 -> c
 }
 
 // Function: parse_input
-int parse_input(const char *equation) { // param_1 -> equation
-  size_t len = get_str_end(equation);
-  for (size_t i = 0; i < len; ++i) {
-    if (isValidChar(equation[i]) == 0) {
-      return 0;
+undefined4 parse_input(char *param_1) { // Changed param_1 type to char*
+  int str_len = get_str_end(param_1); // Assumed to be strlen
+  for (int i = 0; i < str_len; ++i) { // Loop from 0 to str_len - 1
+    if (isValidChar(param_1[i]) == 0) {
+      return 0; // Invalid character found
     }
   }
-  return 1;
+  return 1; // All characters are valid
 }
 
 // Function: generate_one_equation
-int generate_one_equation(char *equation_buffer) { // param_1 -> equation_buffer
-  int result_val;
-  int success_flag;
-  
-  do {
-    char last_op_char = '\0';
-    int current_num_val = 1;
-    int current_offset = 0;
-    int num_tokens = random_in_range(4, 0xf); // 4 to 15 tokens
-    int open_paren_target = random_in_range(0, num_tokens);
-    int open_paren_count = 0;
-    int close_paren_count = 0;
-    int is_operand_expected = 0; // 0 for number, 1 for operator
-    
-    // Loop for generating tokens (numbers and operators)
-    for (int i = 0; i < num_tokens + 1; ++i) { // Iterates num_tokens + 1 times for alternating numbers/operators
-      if (is_operand_expected == 0) { // Expecting a number
-        if ((i < (num_tokens + 1) / 2) && (open_paren_count < open_paren_target)) {
-          equation_buffer[current_offset++] = '(';
-          open_paren_count++;
-        }
-        
-        int rand_num = random_in_range(1, 0x100); // 1 to 256
-        if (last_op_char == '/') {
-          // Prevent division by zero or very small numbers
-          rand_num = random_in_range(1, current_num_val > 1 ? current_num_val : 1);
-        }
-        current_num_val = rand_num;
-        
-        char num_str[16]; // Buffer for integer to string conversion
-        itos(rand_num, num_str);
-        size_t num_str_len = strlen(num_str);
-        memcpy(equation_buffer + current_offset, num_str, num_str_len);
-        current_offset += num_str_len;
+int generate_one_equation(char *param_1) { // Changed param_1 type to char*
+  int result_val = 0;
+  int solve_status; // Declared outside loop to be used in condition
 
-        if (((num_tokens + 1) / 2 <= i) && (close_paren_count < open_paren_count)) {
-          equation_buffer[current_offset++] = ')';
-          close_paren_count++;
+  do {
+    char last_op = '\0';
+    int prev_num_val = 1; // Used for division constraint (divisor != 0)
+    int current_pos = 0; // Current write position in param_1
+
+    int num_ops_target = random_in_range(4, 0xf); // Number of operators
+    int total_elements = num_ops_target + 1; // Total numbers + operators
+    int num_open_target = random_in_range(0, num_ops_target); // Number of opening parentheses
+
+    int num_open_count = 0;  // Count of currently open parentheses
+    int num_closed_count = 0; // Count of closed parentheses
+    
+    int is_operator_next = 0; // 0 for number, 1 for operator
+
+    for (int k = 0; k < total_elements; ++k) {
+      if (!is_operator_next) { // Expecting a number
+        if ((k < total_elements / 2) && (num_open_count < num_open_target)) {
+          param_1[current_pos++] = '(';
+          num_open_count++;
         }
-        is_operand_expected = 1; // Next token expected is an operator
+        
+        int current_num = random_in_range(1, 0x100);
+        if (last_op == '/') {
+          // Ensure current_num is a divisor of prev_num_val (or just not zero for simplicity)
+          // Original code ensures divisor is smaller than dividend, but not necessarily a factor.
+          // For integer arithmetic, this needs to be carefully handled.
+          // Assuming random_in_range(1, prev_num_val) implies a non-zero divisor.
+          current_num = random_in_range(1, prev_num_val); 
+        }
+        prev_num_val = current_num; // Store current number for next division check
+
+        char num_str[15]; // Buffer for integer to string conversion
+        itos(current_num, num_str);
+        int num_str_len = get_str_end(num_str); // Assumed strlen
+
+        memcpy(param_1 + current_pos, num_str, num_str_len);
+        current_pos += num_str_len;
+
+        if ((total_elements / 2 <= k) && (num_closed_count < num_open_count)) {
+          param_1[current_pos++] = ')';
+          num_closed_count++;
+        }
+        is_operator_next = 1; // Next will be an operator
       } else { // Expecting an operator
-        char op_char = operator_list[random_in_range(0, 3)]; // Randomly pick from "+-*/"
-        equation_buffer[current_offset++] = op_char;
-        is_operand_expected = 0; // Next token expected is a number
-        last_op_char = op_char;
+        int op_idx = random_in_range(0, 3);
+        char op_char = operator_list[op_idx];
+        param_1[current_pos++] = op_char;
+        is_operator_next = 0; // Next will be a number
+        last_op = op_char;
       }
     }
-    
+
     // Close any remaining open parentheses
-    while (close_paren_count < open_paren_count) {
-      equation_buffer[current_offset++] = ')';
-      close_paren_count++;
+    while (num_closed_count < num_open_count) {
+      param_1[current_pos++] = ')';
+      num_closed_count++;
     }
-    equation_buffer[current_offset] = '\0'; // Null-terminate the generated string
     
-    success_flag = solve_equation(equation_buffer, &result_val);
-  } while ((success_flag != 1) || (result_val == 0)); // Loop until a solvable equation with non-zero result is generated
-  
+    param_1[current_pos] = '\0'; // Null-terminate the equation string
+
+    solve_status = solve_equation(param_1, &result_val); // Call solve_equation once
+    // Loop until equation is valid (solve_status == 1) and result is not 0
+  } while ((solve_status != 1) || (result_val == 0));
+
   return result_val;
 }
 
 // Function: generate_equation
-int generate_equation(void) {
-  char equation_buffer[256];
+undefined4 generate_equation(void) {
+  char equation[256];
+  int correct_answer = generate_one_equation(equation);
   int user_answer = 0;
   
-  int correct_answer = generate_one_equation(equation_buffer);
-  printf("Equation: %s\n", equation_buffer);
+  printf("Equation: %s\n", equation); // Fixed format string
   printf("gimme answer: ");
   
-  if (get_user_answer(&user_answer) == 1) {
+  if (get_user_answer(&user_answer) == 1) { // get_user_answer returns 1 on success
     if (correct_answer == user_answer) {
-      printf("success!!\n");
+      printf("success!!\n"); // Removed extra arg
       return 1;
     } else {
-      printf("Incorrect answer\n");
+      printf("Incorrect answer\n"); // Removed extra arg
       return 0;
     }
   } else {
-    printf("Bad input\n");
+    printf("Bad input\n"); // Removed extra arg
     return 0;
   }
 }
 
 // Function: seed_prng
-int seed_prng(void) {
+undefined4 seed_prng(void) {
   char buffer[256];
+  ssize_t actual_bytes_read; // For actual bytes read by `read`
+  
   memset(buffer, 0, sizeof(buffer));
   printf("Enter some data\n");
   
-  ssize_t bytes_read = read(STDIN_FILENO, buffer, sizeof(buffer) - 1); // Read up to 255 bytes
-  if (bytes_read <= 0) { // If read failed or no bytes read (EOF)
-    return 0;
+  // `read_input_wrapper` returns 0 on success, 1 on error.
+  if (read_input_wrapper(buffer, 0xff, &actual_bytes_read) == 0) {
+    unsigned int seed1 = 0xffffffff;
+    unsigned int seed2 = 0xffffffff;
+    
+    // Loop up to actual_bytes_read
+    for (size_t i = 0; i < (size_t)actual_bytes_read; ++i) {
+      unsigned int temp_seed = seed1 >> 0x1c;
+      seed1 = (unsigned int)buffer[i] ^ (seed1 << 4 | seed2 >> 0x1c);
+      seed2 = (unsigned int)buffer[i] >> 0x1f ^ (seed2 << 4 | temp_seed);
+    }
+    sprng(seed1, seed2);
+    return 1; // Success
+  } else {
+    return 0; // Read error
   }
-  buffer[bytes_read] = '\0'; // Ensure null termination
-
-  unsigned int s1 = 0xffffffff;
-  unsigned int s2 = 0xffffffff;
-  for (ssize_t i = 0; i < bytes_read; ++i) {
-    unsigned int uVar1_temp = s1 >> 0x1c;
-    s1 = (unsigned int)buffer[i] ^ (s1 << 4 | s2 >> 0x1c);
-    s2 = (unsigned int)buffer[i] >> 0x1f ^ (s2 << 4 | uVar1_temp);
-  }
-  sprng(s1, s2);
-  return 1;
 }
 
 // Function: prompt_for_equation
-int prompt_for_equation(void) {
-  char user_equation[256];
-  memset(user_equation, 0, sizeof(user_equation));
+undefined4 prompt_for_equation(void) {
+  char equation_buffer[256];
+  int target_numbers[4];
+  int used_numbers[4] = {0, 0, 0, 0}; // Initialize to zero
 
-  int expected_paren_count = random_in_range(0, 5);
-  int expected_result = random_in_range(0, 0x8000); // 0 to 32768
-  char expected_operator = operator_list[random_in_range(0, 3)];
+  memset(equation_buffer, 0, sizeof(equation_buffer));
+  
+  int target_parens = random_in_range(0, 5);
+  int target_result = random_in_range(0, 0x8000);
+  char target_operator = operator_list[random_in_range(0, 3)];
 
-  int required_numbers[4];
   for (int i = 0; i < 4; ++i) {
-    required_numbers[i] = random_in_range(1, 0x100); // 1 to 256
+    target_numbers[i] = random_in_range(1, 0x100);
   }
+  
+  printf("Enter an equation that has %d sets of parenthesis\n", target_parens); // Fixed format string
+  printf("It must evaluate to %d and contain the %c operator\n", target_result, target_operator); // Fixed format string
+  printf("and must use the numbers: %d %d %d and %d\n", target_numbers[0], target_numbers[1], target_numbers[2], target_numbers[3]); // Fixed format string
 
-  printf("Enter an equation that has %d sets of parenthesis\n", expected_paren_count);
-  printf("It must evaluate to %d and contain the %c operator\n", expected_result, expected_operator);
-  printf("and must use the numbers: %d %d %d and %d\n", required_numbers[0], required_numbers[1], required_numbers[2], required_numbers[3]);
+  int paren_count = 0;
+  int operator_count = 0;
+  
+  if (get_user_equation(equation_buffer) == 1) { // get_user_equation returns 1 on success
+    int parse_status = parse_input(equation_buffer);
+    printf("string is formatted %s\n", parse_status == 1 ? "correct" : "incorrect"); // Fixed format string and simplified
 
-  int actual_paren_count = 0;
-  int actual_operator_count = 0;
-  int number_usage_count[4] = {0};
-
-  if (get_user_equation(user_equation) != 1) {
-    return 0;
-  }
-
-  if (parse_input(user_equation) != 1) {
-    printf("string is formatted incorrect\n");
-    return 0;
-  }
-  printf("string is formatted correct\n");
-
-  size_t eq_len = strlen(user_equation);
-  for (size_t i = 0; i < eq_len; ++i) {
-    if (user_equation[i] == '(') {
-      actual_paren_count++;
+    size_t eq_len = strlen(equation_buffer);
+    for (size_t k = 0; k < eq_len; ++k) {
+      if (equation_buffer[k] == '(') {
+        paren_count++;
+      }
+      if (target_operator == equation_buffer[k]) {
+        operator_count++;
+      }
+      // Check for numbers (digits)
+      if (equation_buffer[k] >= '0' && equation_buffer[k] <= '9') { // Simplified digit check
+        int num_len = 0;
+        int parsed_num = stoi(equation_buffer + k, &num_len);
+        for (int j = 0; j < 4; ++j) {
+          if (parsed_num == target_numbers[j]) {
+            used_numbers[j]++;
+          }
+        }
+        k += num_len - 1; // Advance k by the length of the parsed number
+      }
     }
-    if (expected_operator == user_equation[i]) {
-      actual_operator_count++;
-    }
-    // Check for numbers (digits '0' through '9')
-    if ((user_equation[i] >= '0') && (user_equation[i] <= '9')) {
-      int num_chars_read = 0;
-      int num_from_equation = stoi(user_equation + i, &num_chars_read);
-      for (int j = 0; j < 4; ++j) {
-        if (num_from_equation == required_numbers[j]) {
-          number_usage_count[j]++;
+
+    if (paren_count == target_parens) {
+      if (operator_count == 0) { // Check operator_count *after* the loop
+        printf("Did not use %c operator\n", target_operator); // Fixed format string
+        return 0;
+      } else {
+        for (int m = 0; m < 4; ++m) {
+          if (used_numbers[m] == 0) {
+            printf("Did not use number %d\n", target_numbers[m]); // Fixed format string
+            return 0;
+          }
+        }
+        
+        int actual_result = 0;
+        int solve_status = solve_equation(equation_buffer, &actual_result);
+        if (solve_status == 1) {
+          if (target_result == actual_result) {
+            printf("%s does resolve to %d, good!\n", equation_buffer, actual_result); // Fixed format string
+            return 1;
+          } else {
+            printf("incorrect answer: %d\n", actual_result); // Fixed format string
+            return 0;
+          }
+        } else {
+          printf("Invalid equation format\n");
+          return 0;
         }
       }
-      i += num_chars_read - 1; // Advance loop counter by number length - 1 (since i increments again in loop header)
-    }
-  }
-
-  if (actual_paren_count != expected_paren_count) {
-    printf("Incorrect number of parenthesis\n");
-    return 0;
-  }
-  
-  if (actual_operator_count == 0) {
-    printf("Did not use %c operator\n", expected_operator);
-    return 0;
-  }
-  
-  for (int i = 0; i < 4; ++i) {
-    if (number_usage_count[i] == 0) {
-      printf("Did not use number %d\n", required_numbers[i]);
+    } else {
+      printf("Incorrect number of parenthesis\n"); // Removed extra arg
       return 0;
     }
-  }
-
-  int solved_result = 0;
-  if (solve_equation(user_equation, &solved_result) != 1) {
-    printf("Invalid equation format\n");
-    return 0;
-  }
-  
-  if (expected_result == solved_result) {
-    printf("%s does resolve to %d, good!\n", user_equation, solved_result);
-    return 1;
   } else {
-    printf("incorrect answer: %d\n", solved_result);
-    return 0;
+    return 0; // get_user_equation failed
   }
 }

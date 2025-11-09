@@ -1,123 +1,138 @@
-#include <stdint.h> // For uint, intptr_t
-#include <stdlib.h> // For malloc, free, exit
-#include <string.h> // For memcpy
-#include <stdio.h>  // For getchar (mock receive)
+#include <stdlib.h> // For exit, malloc
+#include <string.h> // For memcpy (optional, if used explicitly)
+#include <stdio.h>  // For getchar (in receive stub)
 
-// Assume 'uint' means unsigned int
+// Assuming uint is unsigned int based on typical usage in decompiled code
 typedef unsigned int uint;
-// Assume 'undefined' means char for byte operations
-typedef char undefined;
-// Assume 'undefined4' means int for 4-byte generic parameter
-typedef int undefined4;
 
-// Mock external data (from decompiled view)
-// These are likely read-only data segments.
-static const char DAT_00012000[] = "Name1"; // 5 bytes including null terminator
-static const char DAT_00012005[] = "Name2"; // 5 bytes
-static const char DAT_0001200a[] = "Name3"; // 5 bytes
-static const char DAT_0001200f[] = "Name4"; // 5 bytes
+// --- Stubs for custom types and functions ---
+// In a real application, these would be provided by external libraries.
 
-// Mock allocate function (based on observed behavior)
-// Returns 0 on success, non-zero on failure. Stores allocated ptr in *out_ptr.
-int mock_allocate(size_t size, int unused_param, char** out_ptr) {
-    *out_ptr = (char*)malloc(size);
-    return (*out_ptr == NULL); // Return 0 for success, 1 for failure
+// Dummy data for DAT_00012000 etc.
+// Each seems to be 5 bytes based on address differences in original code.
+// The get_name loop copies 4 bytes and we add a null terminator.
+static const unsigned char DAT_00012000[] = "STR0"; // Example data
+static const unsigned char DAT_00012005[] = "STR1";
+static const unsigned char DAT_0001200a[] = "STR2";
+static const unsigned char DAT_0001200f[] = "STR3";
+
+// Stub for allocate function
+// Assuming it takes size, some_param, and a pointer to store the allocated address.
+// Returns 0 on success, non-zero on failure.
+int allocate(size_t size, int some_param, char **out_ptr) {
+    *out_ptr = (char *)malloc(size);
+    if (*out_ptr == NULL) {
+        return 1; // Indicate failure
+    }
+    return 0; // Indicate success
 }
 
-// Mock terminate function
+// Stub for _terminate function with status
 void _terminate(int status) {
     exit(status);
 }
 
-// Function: get_name
-int get_name(uint *param_1) {
-    const char *names[] = {
-        DAT_00012000,
-        DAT_00012005,
-        DAT_0001200a,
-        DAT_0001200f
-    };
-    
-    char *allocated_name_ptr;
-    
-    // Allocate 5 bytes (e.g., for "NameX\0")
-    if (mock_allocate(5, 0, &allocated_name_ptr) != 0) {
-        _terminate(1);
-    }
-    
-    uint name_idx = *param_1 & 3; // Use the lower 2 bits of param_1 as an index
-    
-    // Copy 4 characters from the selected name string
-    memcpy(allocated_name_ptr, names[name_idx], 4);
-    allocated_name_ptr[4] = '\0'; // Null-terminate the string in the allocated buffer
-
-    // Return the address as an int. Using intptr_t for portability to convert
-    // pointer to integer, then casting to int as per original signature.
-    return (int)(intptr_t)allocated_name_ptr;
+// Stub for _terminate function without status (calls the one with status)
+void _terminate_no_args() {
+    _terminate(1); // Default status for no-arg terminate
 }
 
-// Mock receive function based on observed behavior
-// It simulates reading a single character from input.
-// Returns 0 on success, non-zero on error.
-// Populates *bytes_read_out with 1 (if char read) or 0 (if EOF).
-// Populates *char_out with the character read.
-int mock_receive(undefined4 param_1_val, int* bytes_read_out, char* char_out) {
-    int c = getchar(); // Read one character from stdin
+// Stub for receive function
+// Based on usage, it seems to read one character and indicate bytes read.
+// Returns 0 on success, non-zero on error/EOF.
+int receive(int context_param, char *out_char, int *out_bytes_read) {
+    // For demonstration, simulate reading from stdin.
+    int c = getchar(); // Read a character
     if (c == EOF) {
-        *bytes_read_out = 0; // No bytes read
-        *char_out = 0;       // No character
-        return 0;            // Indicate EOF as "not an error to terminate" but no data
+        *out_bytes_read = 0;
+        return 1; // Indicate EOF or error
     }
-    *bytes_read_out = 1; // 1 byte read
-    *char_out = (char)c; // Store the character
-    return 0;            // Success
+    *out_char = (char)c;
+    *out_bytes_read = 1;
+    return 0; // Indicate success
+}
+
+// Placeholder for EVP_PKEY_CTX type (OpenSSL context struct)
+// Assuming it's a simple struct for struct assignment to work.
+typedef struct {
+    int id;
+    void *ptr;
+    // ... potentially other members
+} EVP_PKEY_CTX;
+
+// --- Fixed functions ---
+
+// Function: get_name
+char* get_name(uint *param_1) {
+  // Array of pointers to the constant name data
+  const unsigned char *name_data_sources[4] = {
+      DAT_00012000,
+      DAT_00012005,
+      DAT_0001200a,
+      DAT_0001200f
+  };
+  char *allocated_name_buffer; // Pointer to the allocated memory
+  
+  // Calculate the index (0-3) from param_1
+  uint selected_index = *param_1 & 3;
+
+  // Allocate 5 bytes: 4 for the string data + 1 for null terminator
+  if (allocate(5, 0, &allocated_name_buffer) != 0) {
+    _terminate(1);
+  }
+
+  // Copy 4 bytes from the selected name source to the allocated buffer
+  for (int i = 0; i < 4; i++) {
+    allocated_name_buffer[i] = name_data_sources[selected_index][i];
+  }
+  allocated_name_buffer[4] = '\0'; // Null-terminate the string
+
+  return allocated_name_buffer;
 }
 
 // Function: receive_line
-// param_1: an undefined 4-byte value (its purpose is unclear from the snippet, passed to mock_receive)
-// param_2: a pointer to the destination buffer (char*)
-// param_3: maximum number of characters to read (uint)
-uint receive_line(undefined4 param_1, char* param_2, uint param_3) {
-    uint current_len = 0; // Tracks the number of characters read
-    char received_char;   // Stores the character received by mock_receive
-    int bytes_read;       // Stores the number of bytes read by mock_receive
+uint receive_line(int context_param, char *buffer, uint max_len) {
+  uint bytes_received = 0;
+  int bytes_read_by_receive;
+  char received_char;
+  
+  do {
+    // Call the receive stub function to get one character and status
+    if (receive(context_param, &received_char, &bytes_read_by_receive) != 0) {
+      // If receive indicates an error (non-zero return), terminate
+      _terminate_no_args();
+    }
 
-    do {
-        // Call mock_receive to get one character
-        if (mock_receive(param_1, &bytes_read, &received_char) != 0) {
-            _terminate(1); // Terminate if mock_receive indicates an error
-        }
+    // If no bytes were actually read, return 0 (e.g., EOF)
+    if (bytes_read_by_receive == 0) {
+      return 0;
+    }
 
-        if (bytes_read == 0) { // If no bytes were read (e.g., EOF)
-            return 0;
-        }
+    // Check if buffer capacity is exceeded before writing
+    if (bytes_received >= max_len) {
+      return 0;
+    }
+    
+    // Store the received character in the buffer
+    buffer[bytes_received] = received_char;
+    bytes_received++; // Increment count of bytes received
 
-        if (current_len >= param_3) { // If the buffer is full
-            return 0;
-        }
-        
-        // Store the received character in the buffer and increment the length
-        param_2[current_len++] = received_char;
+  } while (received_char != '\n'); // Continue until a newline character is read
 
-    } while (received_char != '\n'); // Continue until a newline character is received
-
-    return current_len; // Return the total number of characters read (including newline)
+  return bytes_received; // Return the total number of bytes received (including newline)
 }
 
 // Function: copy
-// This function performs a byte-by-byte copy from src to dst for 'count' bytes.
-// EVP_PKEY_CTX is treated as a generic pointer type (void*) as its definition is unknown
-// and the operation is a generic memory copy.
-// 'in_stack_0000000c' is interpreted as a 'count' parameter, added to the signature.
-void* copy(void* dst, const void* src, int count) {
-    char* d = (char*)dst;
-    const char* s = (const char*)src;
-
-    while (count > 0) {
-        *d = *s; // Copy one byte
-        count--;
-        s++;     // Move to the next source byte
-        d++;     // Move to the next destination byte
-    }
-    return dst; // Return the destination pointer
+int copy(EVP_PKEY_CTX *dst, EVP_PKEY_CTX *src, int count) {
+  EVP_PKEY_CTX *current_dst = dst;
+  EVP_PKEY_CTX *current_src = src;
+  
+  // Loop while there are elements left to copy
+  while (count > 0) {
+    *current_dst = *current_src; // Copy one EVP_PKEY_CTX struct
+    count--;                     // Decrement the counter
+    current_src++;               // Move to the next source element
+    current_dst++;               // Move to the next destination element
+  }
+  return (int)dst; // Return the original destination pointer (cast to int)
 }

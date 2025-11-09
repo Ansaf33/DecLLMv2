@@ -1,188 +1,178 @@
-#include <stdio.h>    // For fprintf, vfprintf, stdout, stderr, perror
-#include <stdlib.h>   // For calloc, exit, atoi
-#include <string.h>   // For strlen, memcmp, strcpy, memset, strsep, strchr
+#define _GNU_SOURCE // Required for strsep and vdprintf on some systems
+
+#include <stdio.h>    // For vdprintf, fprintf, printf, perror, stdin, stdout
+#include <string.h>   // For strlen, memcmp, strcpy, strsep, memset
+#include <stdlib.h>   // For calloc
 #include <unistd.h>   // For read, STDIN_FILENO
-#include <stdarg.h>   // For va_list, va_start, va_end
+#include <stdarg.h>   // For va_list in vdprintf
 
-// Assume these are global variables as implied by the snippet
-char g_user_resp[1024]; // Buffer for user input (0x400 = 1024 bytes)
-char g_page_idx = 0;    // Current page index
-int g_last_page_completed = -1; // Index of the last successfully completed page
+// --- Global Variables ---
+char g_user_resp[1024]; // Buffer for user input, size 0x400
+char g_page_idx = 0;
+char g_last_page_completed = -1; // Initialize to -1, as page 0 is the first completed.
 
-// Define the structure for form fields
-// The original code implies 0x18 (24 bytes) per field, suggesting 6 pointers or equivalent.
-typedef struct {
-    const char* name;           // Field name (e.g., "First Name")
-    const char* prompt;         // Prompt for user input (e.g., "Enter your first name")
-    char type_char;             // A flag character, e.g., '\0' for specific behavior (empty input allowed)
-    size_t max_len;             // Maximum length of the input string (including null terminator)
-    char* value_ptr;            // Pointer to allocated memory for the field's value
-    int (*validator)(const char* input, size_t max_len); // Validator function for the input
-} FormField;
+// --- String literals (DAT_ variables) ---
+const char DAT_000152d3[] = "prev";
+const char DAT_000152d8[] = "next";
+const char DAT_000152e5[] = "help";
+const char DAT_000152ea[] = "exit";
+const char DAT_000153e8[] = "Welcome to the Sea Eye Association Application\n";
+const char DAT_000155a0[] = "\n*********%s*********\n";
+const char DAT_0001500a[] = "N";
 
-// --- Helper Functions and Data ---
+// --- Custom function definitions ---
 
-// Placeholder validator function (for fields that don't need specific validation)
-int default_validator(const char* input, size_t max_len) {
-    return strlen(input) < max_len ? 0 : -1; // 0 for success, -1 for failure
-}
-
-// Dummy data for DAT_0001500a (used in memcmp with 1 byte, likely a null character)
-const char DAT_0001500a = '\0';
-
-// Strings for commands (replacing DAT_xxxxxx)
-const char* CMD_PREV = "prev";
-const char* CMD_NEXT = "next";
-const char* CMD_UPDATE = "update "; // Note the space for parsing argument
-const char* CMD_HELP = "help";
-const char* CMD_EXIT = "exit";
-
-// Global string literals (replacing DAT_xxxxxx)
-const char* GREETING_MSG = "Welcome to the application!\n"; // DAT_000153e8
-
-// Helper for fdprintf (assuming it means fprintf to stdout/stderr)
-int fdprintf(int fd, const char* format, ...) {
+// Emulate original fdprintf behavior (writing to file descriptor)
+int fdprintf(int fd, const char *format, ...) {
     va_list args;
     va_start(args, format);
-    int ret = 0;
-    if (fd == 1) { // stdout
-        ret = vfprintf(stdout, format, args);
-    } else if (fd == 2) { // stderr
-        ret = vfprintf(stderr, format, args);
-    } else {
-        // Default to stdout for other FDs, or handle as an error
-        ret = vfprintf(stdout, format, args);
-    }
+    int ret = vdprintf(fd, format, args);
     va_end(args);
     return ret;
 }
 
-// --- Validator Functions (Examples) ---
-int validate_name(const char* input, size_t max_len) {
-    if (strlen(input) == 0 || strlen(input) >= max_len) return -1;
-    // Basic check: only letters and spaces
-    for (size_t i = 0; i < strlen(input); ++i) {
-        if (!((input[i] >= 'a' && input[i] <= 'z') || (input[i] >= 'A' && input[i] <= 'Z') || input[i] == ' ')) {
-            return -1;
+// Emulate the custom receive function behavior
+// Returns 0 on success (bytes_read_out set to bytes read), -1 on error.
+// Original implies receive returns 0 for a successful single byte read,
+// and bytes_read_out is set to 1.
+int custom_receive(int fd, char *buf, size_t count, int *bytes_read_out) {
+    ssize_t bytes_read = read(fd, buf, count);
+    if (bytes_read > 0) {
+        *bytes_read_out = (int)bytes_read;
+        return 0; // Success
+    } else if (bytes_read == 0) {
+        *bytes_read_out = 0;
+        return 0; // EOF
+    }
+    *bytes_read_out = -1; // Error
+    return -1;
+}
+
+// --- FormField structure and validator ---
+// Function pointer for field validation
+typedef int (*ValidatorFunc)(const char*, int);
+
+typedef struct {
+    const char *field_name;
+    const char *field_prompt;
+    char validation_type;          // e.g., '\0' for specific 'N' check, or other for custom validation
+    int max_len;                   // Max length of input buffer (including null terminator)
+    char *response_buffer;         // Pointer to allocated buffer for user response
+    ValidatorFunc validator;       // Function to validate input
+} FormField;
+
+// Default validator: always accepts input if not empty and within max_len
+int default_validator(const char *input, int max_len) {
+    if (input == NULL || strlen(input) == 0) {
+        return -1; // Bad input (empty)
+    }
+    if (strlen(input) >= max_len) {
+        return -1; // Input too long
+    }
+    return 0; // Valid
+}
+
+// Example validator for numbers
+int number_validator(const char *input, int max_len) {
+    if (input == NULL || strlen(input) == 0) return -1;
+    if (strlen(input) >= max_len) return -1;
+    for (int i = 0; input[i] != '\0'; i++) {
+        if (input[i] < '0' || input[i] > '9') {
+            return -1; // Not a digit
         }
     }
-    return 0;
+    return 0; // Valid number
 }
 
-int validate_email(const char* input, size_t max_len) {
-    if (strlen(input) == 0 || strlen(input) >= max_len) return -1;
-    if (!strchr(input, '@') || !strchr(input, '.')) return -1; // Simple email check
-    return 0;
-}
-
-int validate_age(const char* input, size_t max_len) {
-    if (strlen(input) == 0 || strlen(input) >= max_len) return -1;
-    for (size_t i = 0; i < strlen(input); ++i) {
-        if (input[i] < '0' || input[i] > '9') return -1;
+// Example validator for email (very basic)
+int email_validator(const char *input, int max_len) {
+    if (input == NULL || strlen(input) == 0) return -1;
+    if (strlen(input) >= max_len) return -1;
+    if (strchr(input, '@') == NULL || strchr(input, '.') == NULL) {
+        return -1; // Missing @ or .
     }
-    int age = atoi(input);
-    if (age < 18 || age > 100) return -1; // Example age range
-    return 0;
+    return 0; // Basic email valid
 }
 
-// --- Form Field Data ---
-// These arrays hold the definitions for each form page's fields.
-// The counts (13, 4, 7, 12, 14, 2) are derived from the original snippet.
-
-FormField applicant_id_fields[] = {
-    {"First Name", "Enter your first name", '\0', 64, NULL, validate_name},
-    {"Last Name", "Enter your last name", '\0', 64, NULL, validate_name},
-    {"Middle Initial", "Enter your middle initial (optional)", '?', 2, NULL, default_validator},
+// --- FormField Arrays ---
+FormField applicant_id[] = {
+    {"First Name", "Enter your first name", '\0', 64, NULL, default_validator},
+    {"Last Name", "Enter your last name", '\0', 64, NULL, default_validator},
+    {"Middle Initial", "Enter your middle initial (optional, leave blank if none)", '\0', 2, NULL, default_validator},
     {"Date of Birth", "Enter your date of birth (MM/DD/YYYY)", '\0', 11, NULL, default_validator},
-    {"Social Security Number", "Enter your SSN (XXX-XX-XXXX)", '\0', 12, NULL, default_validator},
-    {"Age", "Enter your age", '\0', 4, NULL, validate_age},
-    {"Gender", "Enter your gender (M/F/Other)", '\0', 10, NULL, default_validator},
-    {"Nationality", "Enter your nationality", '\0', 64, NULL, default_validator},
-    {"Marital Status", "Enter your marital status", '\0', 32, NULL, default_validator},
-    {"Dependents", "Number of dependents", '\0', 4, NULL, default_validator},
-    {"Phone Number", "Enter your phone number", '\0', 16, NULL, default_validator},
-    {"Email Address", "Enter your email address", '\0', 128, NULL, validate_email},
-    {"Preferred Contact", "Preferred contact method", '\0', 32, NULL, default_validator}
+    {"SSN", "Enter your Social Security Number (XXX-XX-XXXX)", '\0', 12, NULL, default_validator},
+    {"Gender", "Enter your gender (M/F/O)", '\0', 2, NULL, default_validator},
+    {"Race", "Enter your race/ethnicity", '\0', 32, NULL, default_validator},
+    {"Nationality", "Enter your nationality", '\0', 32, NULL, default_validator},
+    {"Veteran Status", "Are you a veteran? (Y/N)", '\0', 2, NULL, default_validator},
+    {"Disability Status", "Do you have a disability? (Y/N)", '\0', 2, NULL, default_validator},
+    {"Marital Status", "Enter your marital status", '\0', 16, NULL, default_validator},
+    {"Dependents", "Number of dependents", '\0', 4, NULL, number_validator},
+    {"ID Type", "Type of ID (e.g., Driver's License)", '\0', 32, NULL, default_validator}
 };
-const int NUM_APPLICANT_ID_FIELDS = sizeof(applicant_id_fields) / sizeof(FormField);
+const int NUM_APPLICANT_ID_FIELDS = sizeof(applicant_id) / sizeof(FormField);
 
-FormField contact_info_fields[] = {
-    {"Emergency Contact Name", "Emergency contact full name", '\0', 128, NULL, validate_name},
-    {"Emergency Contact Relation", "Emergency contact relationship", '\0', 64, NULL, default_validator},
-    {"Emergency Contact Phone", "Emergency contact phone number", '\0', 16, NULL, default_validator},
-    {"Emergency Contact Email", "Emergency contact email", '\0', 128, NULL, validate_email}
+FormField contact_info[] = {
+    {"Email", "Enter your email address", '\0', 128, NULL, email_validator},
+    {"Phone", "Enter your phone number (XXX-XXX-XXXX)", '\0', 16, NULL, default_validator},
+    {"Emergency Contact Name", "Enter emergency contact name", '\0', 64, NULL, default_validator},
+    {"Emergency Contact Phone", "Enter emergency contact phone", '\0', 16, NULL, default_validator}
 };
-const int NUM_CONTACT_INFO_FIELDS = sizeof(contact_info_fields) / sizeof(FormField);
+const int NUM_CONTACT_INFO_FIELDS = sizeof(contact_info) / sizeof(FormField);
 
-FormField current_address_fields[] = {
-    {"Street Address 1", "Street address line 1", '\0', 128, NULL, default_validator},
-    {"Street Address 2", "Street address line 2 (optional)", '?', 128, NULL, default_validator},
-    {"City", "City", '\0', 64, NULL, default_validator},
-    {"State/Province", "State/Province", '\0', 64, NULL, default_validator},
-    {"Zip/Postal Code", "Zip/Postal Code", '\0', 16, NULL, default_validator},
-    {"Country", "Country", '\0', 64, NULL, default_validator},
-    {"Years at Address", "Years at current address", '\0', 4, NULL, default_validator}
+FormField current_address[] = {
+    {"Street Address 1", "Enter street address line 1", '\0', 128, NULL, default_validator},
+    {"Street Address 2", "Enter street address line 2 (optional)", '\0', 128, NULL, default_validator},
+    {"City", "Enter city", '\0', 64, NULL, default_validator},
+    {"State", "Enter state (2-letter abbreviation)", '\0', 3, NULL, default_validator},
+    {"Zip Code", "Enter zip code", '\0', 11, NULL, default_validator},
+    {"Country", "Enter country", '\0', 32, NULL, default_validator},
+    {"Time at Address", "Years at current address", '\0', 4, NULL, number_validator}
 };
-const int NUM_CURRENT_ADDRESS_FIELDS = sizeof(current_address_fields) / sizeof(FormField);
+const int NUM_CURRENT_ADDRESS_FIELDS = sizeof(current_address) / sizeof(FormField);
 
-FormField highest_education_fields[] = {
-    {"Degree Type", "Highest degree obtained", '\0', 64, NULL, default_validator},
-    {"Major/Field", "Major or field of study", '\0', 128, NULL, default_validator},
-    {"Institution Name", "Name of institution", '\0', 128, NULL, default_validator},
-    {"Graduation Year", "Year of graduation", '\0', 8, NULL, default_validator},
-    {"GPA", "GPA (optional)", '?', 8, NULL, default_validator},
-    {"Certifications", "Relevant certifications (comma-separated)", '?', 256, NULL, default_validator},
-    {"Skills", "Key skills (comma-separated)", '?', 512, NULL, default_validator},
-    {"Languages", "Languages spoken (comma-separated)", '?', 256, NULL, default_validator},
-    {"Awards", "Awards/Honors (optional)", '?', 256, NULL, default_validator},
-    {"Thesis Title", "Thesis title (if applicable)", '?', 256, NULL, default_validator},
-    {"Research Interests", "Research interests (optional)", '?', 512, NULL, default_validator},
-    {"Publications", "Publications (optional)", '?', 512, NULL, default_validator}
+FormField highest_education[] = {
+    {"Degree", "Highest degree obtained", '\0', 64, NULL, default_validator},
+    {"Major", "Major/Field of Study", '\0', 64, NULL, default_validator},
+    {"Institution", "Name of institution", '\0', 128, NULL, default_validator},
+    {"Graduation Year", "Year of graduation", '\0', 5, NULL, number_validator},
+    {"GPA", "GPA (optional)", '\0', 5, NULL, default_validator},
+    {"Certifications", "Any relevant certifications", '\0', 128, NULL, default_validator},
+    {"Skills", "Key skills relevant to position", '\0', 256, NULL, default_validator},
+    {"Languages", "Languages spoken", '\0', 128, NULL, default_validator},
+    {"Awards", "Awards or honors received", '\0', 128, NULL, default_validator},
+    {"Publications", "Publications (if any)", '\0', 256, NULL, default_validator},
+    {"Research Experience", "Briefly describe research experience", '\0', 256, NULL, default_validator},
+    {"Thesis Title", "Thesis title (if applicable)", '\0', 256, NULL, default_validator}
 };
-const int NUM_HIGHEST_EDUCATION_FIELDS = sizeof(highest_education_fields) / sizeof(FormField);
+const int NUM_HIGHEST_EDUCATION_FIELDS = sizeof(highest_education) / sizeof(FormField);
 
-FormField last_employer_fields[] = {
-    {"Company Name", "Most recent employer name", '\0', 128, NULL, default_validator},
-    {"Job Title", "Your job title", '\0', 128, NULL, default_validator},
+FormField last_employer[] = {
+    {"Company Name", "Most recent employer's name", '\0', 128, NULL, default_validator},
+    {"Job Title", "Your job title", '\0', 64, NULL, default_validator},
     {"Start Date", "Employment start date (MM/YYYY)", '\0', 8, NULL, default_validator},
     {"End Date", "Employment end date (MM/YYYY) or 'Present'", '\0', 8, NULL, default_validator},
-    {"Supervisor Name", "Supervisor's name", '\0', 128, NULL, default_validator},
-    {"Supervisor Contact", "Supervisor's contact information", '\0', 128, NULL, default_validator},
-    {"Reason for Leaving", "Reason for leaving", '\0', 256, NULL, default_validator},
     {"Responsibilities", "Key responsibilities", '\0', 512, NULL, default_validator},
-    {"Achievements", "Major achievements", '\0', 512, NULL, default_validator},
-    {"Salary", "Final salary (optional)", '?', 32, NULL, default_validator},
-    {"References", "References provided (optional)", '?', 256, NULL, default_validator},
-    {"Industry", "Industry of employer", '\0', 64, NULL, default_validator},
-    {"Employment Type", "Employment type (full-time, part-time, etc.)", '\0', 32, NULL, default_validator},
-    {"Location", "Employer location (City, State)", '\0', 128, NULL, default_validator}
+    {"Salary", "Annual salary (optional)", '\0', 16, NULL, default_validator},
+    {"Reason for Leaving", "Reason for leaving", '\0', 256, NULL, default_validator},
+    {"Supervisor Name", "Supervisor's name", '\0', 64, NULL, default_validator},
+    {"Supervisor Phone", "Supervisor's phone number", '\0', 16, NULL, default_validator},
+    {"Can Contact", "Can we contact this employer? (Y/N)", '\0', 2, NULL, default_validator},
+    {"Previous Employer 1", "Previous employer's name", '\0', 128, NULL, default_validator},
+    {"Previous Job Title 1", "Previous job title", '\0', 64, NULL, default_validator},
+    {"Previous Employer 2", "Second previous employer's name", '\0', 128, NULL, default_validator},
+    {"Previous Job Title 2", "Second previous job title", '\0', 64, NULL, default_validator}
 };
-const int NUM_LAST_EMPLOYER_FIELDS = sizeof(last_employer_fields) / sizeof(FormField);
+const int NUM_LAST_EMPLOYER_FIELDS = sizeof(last_employer) / sizeof(FormField);
 
-FormField screening_questions_fields[] = {
-    {"Criminal Record", "Do you have any criminal record? (Yes/No)", '\0', 4, NULL, default_validator},
-    {"Security Clearance", "Do you hold any security clearance? (Yes/No)", '\0', 4, NULL, default_validator}
+FormField screening_questions[] = {
+    {"Criminal Record", "Do you have a criminal record? (Y/N)", '\0', 2, NULL, default_validator},
+    {"Security Clearance", "Do you have any security clearances? (Y/N)", '\0', 2, NULL, default_validator}
 };
-const int NUM_SCREENING_QUESTIONS_FIELDS = sizeof(screening_questions_fields) / sizeof(FormField);
+const int NUM_SCREENING_QUESTIONS_FIELDS = sizeof(screening_questions) / sizeof(FormField);
 
 
-// Pointers to the actual form field arrays, as used in the original snippet's `form` calls
-FormField* applicant_id = applicant_id_fields;
-FormField* contact_info = contact_info_fields;
-FormField* current_address = current_address_fields;
-FormField* highest_education = highest_education_fields;
-FormField* last_employer = last_employer_fields;
-FormField* screening_questions = screening_questions_fields;
-
-// --- Function Prototypes ---
-// Page functions must return int as they are called in main and return get_response values.
-int get_response(void);
-void print_menu(void);
-int fill_out_form(FormField* fields, int num_fields);
-int update_field(char *field_name_to_update, FormField* fields, int num_fields);
-void print_page(const char* header_text, FormField* fields, int num_fields);
-int form(const char* header_text, FormField* fields, int num_fields);
-
+// --- Function Prototypes (for job_application_page array) ---
 int candidate_info(void);
 int contact(void);
 int address(void);
@@ -191,8 +181,9 @@ int employment_history(void);
 int final_screening(void);
 int finished(void);
 
-// Array of function pointers for pages
-int (*job_application_page[])(void) = {
+// --- Function Pointers for application pages ---
+typedef int (*PageFunc)(void);
+PageFunc job_application_page[] = {
     candidate_info,
     contact,
     address,
@@ -201,333 +192,348 @@ int (*job_application_page[])(void) = {
     final_screening,
     finished
 };
-const int NUM_PAGES = sizeof(job_application_page) / sizeof(job_application_page[0]);
+const int NUM_APPLICATION_PAGES = sizeof(job_application_page) / sizeof(PageFunc);
 
-// --- Core Logic Functions ---
 
+// --- get_response function ---
+// Returns -1 for buffer full/no newline, -2 for read error,
+// 1 for generic input, 2-6 for special commands.
 int get_response(void) {
-    size_t bytes_read_count = 0;
-    ssize_t bytes_read_this_iter;
-    char* current_char_ptr = g_user_resp;
-    const size_t max_len = sizeof(g_user_resp) - 1; // Leave space for null terminator
+    int bytes_read_count = 0;
+    char *current_pos = g_user_resp;
+    int len = 0;
+    const int max_response_len = sizeof(g_user_resp);
 
-    while (bytes_read_count < max_len) {
-        bytes_read_this_iter = read(STDIN_FILENO, current_char_ptr, 1);
-
-        if (bytes_read_this_iter <= 0) {
-            // Error or EOF
-            if (bytes_read_this_iter == 0) { // EOF
-                break;
-            }
-            // Error reading from stdin
-            return -1; // Original 0xffffffff
+    // Read input character by character until newline, buffer full, or read error
+    while (len < max_response_len - 1) { // Leave space for null terminator
+        int read_status = custom_receive(STDIN_FILENO, current_pos, 1, &bytes_read_count);
+        if (read_status != 0) { // Error reading
+            return -2; // 0xfffffffe
         }
-
-        if (*current_char_ptr == '\n') {
+        if (bytes_read_count == 0) { // EOF, no more input
             break;
         }
-
-        current_char_ptr++;
-        bytes_read_count++;
+        if (*current_pos == '\n') {
+            break;
+        }
+        current_pos++;
+        len++;
     }
 
-    *current_char_ptr = '\0'; // Null-terminate the string
-
-    if (bytes_read_count == max_len && *current_char_ptr != '\n') {
-        // Buffer full, and no newline found
-        return -1; // Original 0xffffffff
+    if (len == max_response_len - 1 && *current_pos != '\n') {
+        // Buffer full and no newline found
+        // Clear remaining input from buffer to avoid issues with next read
+        char discard_char;
+        while (read(STDIN_FILENO, &discard_char, 1) > 0 && discard_char != '\n');
+        return -1; // 0xffffffff
     }
+    
+    // Null-terminate the string
+    *current_pos = '\0';
 
-    if (*g_user_resp == '\0') { // Check if empty input (just newline)
-        return 1; // Valid, but empty input
-    }
-
-    // Check for commands
-    if (bytes_read_count >= 2 && g_user_resp[0] == '*' && g_user_resp[1] == '*') {
-        const char* command_start = g_user_resp + 2;
-        size_t cmd_len;
-
-        cmd_len = strlen(CMD_PREV);
-        if (memcmp(command_start, CMD_PREV, cmd_len) == 0 && command_start[cmd_len] == '\0') {
-            return 2; // Prev
+    // Check for special commands
+    if (len > 2 && g_user_resp[0] == '*' && g_user_resp[1] == '*') {
+        if (memcmp(g_user_resp + 2, DAT_000152d3, strlen(DAT_000152d3)) == 0) { // "**prev"
+            return 2;
         }
-        cmd_len = strlen(CMD_NEXT);
-        if (memcmp(command_start, CMD_NEXT, cmd_len) == 0 && command_start[cmd_len] == '\0') {
-            return 3; // Next
+        if (memcmp(g_user_resp + 2, DAT_000152d8, strlen(DAT_000152d8)) == 0) { // "**next"
+            return 3;
         }
-        cmd_len = strlen(CMD_UPDATE);
-        if (memcmp(command_start, CMD_UPDATE, cmd_len) == 0) {
-            // The original code checks only for the prefix, implying arguments follow
-            return 4; // Update
+        if (memcmp(g_user_resp + 2, "update ", strlen("update ")) == 0) { // "**update "
+            return 4;
         }
-        cmd_len = strlen(CMD_HELP);
-        if (memcmp(command_start, CMD_HELP, cmd_len) == 0 && command_start[cmd_len] == '\0') {
-            return 5; // Help
+        if (memcmp(g_user_resp + 2, DAT_000152e5, strlen(DAT_000152e5)) == 0) { // "**help"
+            return 5;
         }
-        cmd_len = strlen(CMD_EXIT);
-        if (memcmp(command_start, CMD_EXIT, cmd_len) == 0 && command_start[cmd_len] == '\0') {
-            return 6; // Exit
+        if (memcmp(g_user_resp + 2, DAT_000152ea, strlen(DAT_000152ea)) == 0) { // "**exit"
+            return 6;
         }
     }
-
-    return 1; // Default response for valid, non-command user input
+    
+    return 1; // Generic input
 }
 
+
+// --- print_menu function ---
 void print_menu(void) {
-    fdprintf(1, "All commands begin with \'**\' and may be entered at any time\n");
-    fdprintf(1, "**prev <Return to the previous page>\n");
-    fdprintf(1, "**next <Move to the next page>\n");
-    fdprintf(1, "**update [id] <Update field, ex: \"**update First Name\">\n");
-    fdprintf(1, "**help <Print this dialogue>\n");
-    fdprintf(1, "**exit <Exit application>\n");
+  fdprintf(1,"All commands begin with \'**\' and may be entered at any time\n");
+  fdprintf(1,"**prev <Return to the previous page>\n");
+  fdprintf(1,"**next <Move to the next page>\n");
+  fdprintf(1,"**update [id] <Update field, ex: \"Update First Name\">\n");
+  fdprintf(1,"**help <Print this dialogue>\n");
+  fdprintf(1,"**exit <Exit application>\n");
+  return;
 }
 
-int fill_out_form(FormField* fields, int num_fields) {
-    for (int i = 0; i < num_fields; ++i) {
-        FormField* field = &fields[i];
+// --- fill_out_form function ---
+int fill_out_form(FormField *fields_array, int num_fields) {
+    for (int i = 0; i < num_fields; i++) {
+        FormField *field = &fields_array[i];
+        while (field->response_buffer == NULL) { // Loop until this field is filled
+            fdprintf(1,"%s%s: ", field->field_name, field->field_prompt);
+            int response_code = get_response();
 
-        // Only prompt if the field has not been filled yet
-        while (field->value_ptr == NULL) {
-            fdprintf(1, "%s (%s): ", field->name, field->prompt);
-            int response = get_response();
-
-            if (response != 1) { // Not a valid user input (e.g., command, read error)
-                return response;
+            if (response_code != 1) { // Not generic input, could be a command or error
+                return response_code;
             }
 
-            // Check if input is empty and field allows it (type_char == '\0')
-            if (field->type_char == '\0' && g_user_resp[0] == DAT_0001500a) {
-                field->value_ptr = (char*)calloc(1, field->max_len);
-                if (!field->value_ptr) {
+            // Check for specific 'N' response if validation_type is '\0'
+            if (field->validation_type == '\0' && memcmp(g_user_resp, DAT_0001500a, 1) == 0 && strlen(g_user_resp) == 1) {
+                field->response_buffer = calloc(1, field->max_len); // Allocate and zero-fill
+                if (!field->response_buffer) {
                     perror("calloc failed");
-                    exit(EXIT_FAILURE);
+                    return -1;
                 }
-                break; // Field filled (with empty string)
+                break; // Move to next field
             }
 
-            // Validate the input
-            if (field->validator(g_user_resp, field->max_len) == 0) {
-                field->value_ptr = (char*)calloc(1, field->max_len);
-                if (!field->value_ptr) {
-                    perror("calloc failed");
-                    exit(EXIT_FAILURE);
+            // Validate input using the field's validator function
+            if (field->validator) {
+                int validation_result = field->validator(g_user_resp, field->max_len);
+                if (validation_result == 0) { // Validation successful
+                    field->response_buffer = calloc(1, field->max_len);
+                    if (!field->response_buffer) {
+                        perror("calloc failed");
+                        return -1;
+                    }
+                    strcpy(field->response_buffer, g_user_resp);
+                    break; // Move to next field
+                } else {
+                    fdprintf(1, "Invalid input for %s. Please try again.\n", field->field_name);
                 }
-                strcpy(field->value_ptr, g_user_resp);
-                break; // Field filled
-            } else {
-                fdprintf(1, "Invalid input for '%s'. Please try again.\n", field->name);
+            } else { // No specific validator, use default logic (if not 'N')
+                if (strlen(g_user_resp) < field->max_len) {
+                     field->response_buffer = calloc(1, field->max_len);
+                    if (!field->response_buffer) {
+                        perror("calloc failed");
+                        return -1;
+                    }
+                    strcpy(field->response_buffer, g_user_resp);
+                    break; // Move to next field
+                } else {
+                    fdprintf(1, "Input too long for %s (max %d chars). Please try again.\n", field->field_name, field->max_len -1);
+                }
             }
         }
     }
-    return 0; // All fields filled or skipped
+    return 0; // All fields processed
 }
 
-int update_field(char *field_name_to_update, FormField* fields, int num_fields) {
-    if (!field_name_to_update || strlen(field_name_to_update) == 0) {
-        fdprintf(1, "Bad field name provided for update.\n");
-        return -1; // Original 0xffffffff
+// --- update_field function ---
+int update_field(char *field_name_to_find, FormField *fields_array, int num_fields) {
+    if (field_name_to_find == NULL || strlen(field_name_to_find) == 0) {
+        fdprintf(1,"Bad field\n");
+        return -1;
     }
 
-    for (int i = 0; i < num_fields; ++i) {
-        FormField* field = &fields[i];
-        size_t name_len = strlen(field_name_to_update);
+    for (int i = 0; i < num_fields; i++) {
+        FormField *field = &fields_array[i];
+        if (strlen(field_name_to_find) == strlen(field->field_name) &&
+            memcmp(field_name_to_find, field->field_name, strlen(field->field_name)) == 0) {
+            
+            fdprintf(1,"%s%s: ", field->field_name, field->field_prompt);
+            int response_code = get_response();
 
-        if (name_len == strlen(field->name) &&
-            memcmp(field_name_to_update, field->name, name_len) == 0) {
-
-            // Found the field
-            fdprintf(1, "%s (%s): ", field->name, field->prompt);
-            int response = get_response();
-
-            if (response != 1) { // Not a valid user input
-                fdprintf(1, "Bad command for field '%s'.\n", field->name);
-                return -2; // Original 0xfffffffe
+            if (response_code != 1) { // Not generic input
+                fdprintf(1,"Bad command\n");
+                return -2;
             }
 
-            // Check if input is empty and field allows it
-            if (field->type_char == '\0' && g_user_resp[0] == DAT_0001500a) {
-                if (field->value_ptr) { // If previously allocated, clear it
-                    memset(field->value_ptr, 0, field->max_len);
-                } else { // Allocate if not already
-                    field->value_ptr = (char*)calloc(1, field->max_len);
-                    if (!field->value_ptr) {
+            // Specific 'N' check
+            if (field->validation_type == '\0' && memcmp(g_user_resp, DAT_0001500a, 1) == 0 && strlen(g_user_resp) == 1) {
+                if (field->response_buffer) {
+                    memset(field->response_buffer, 0, field->max_len); // Clear existing data
+                } else {
+                    field->response_buffer = calloc(1, field->max_len); // Allocate if not already
+                    if (!field->response_buffer) {
                         perror("calloc failed");
-                        exit(EXIT_FAILURE);
+                        return -1;
                     }
                 }
-                return 0; // Successfully updated (to empty string)
+                return 0; // Successfully updated to 'N' (empty)
             }
 
             // Validate and update
-            if (field->validator(g_user_resp, field->max_len) == 0) {
-                if (!field->value_ptr) { // Allocate if not already
-                    field->value_ptr = (char*)calloc(1, field->max_len);
-                    if (!field->value_ptr) {
-                        perror("calloc failed");
-                        exit(EXIT_FAILURE);
-                    }
+            if (field->validator) {
+                int validation_result = field->validator(g_user_resp, field->max_len);
+                if (validation_result != 0) {
+                    fdprintf(1,"Bad input.\n");
+                    return -3;
                 }
-                memset(field->value_ptr, 0, field->max_len); // Clear existing content
-                strcpy(field->value_ptr, g_user_resp);
-                return 0; // Successfully updated
-            } else {
-                fdprintf(1, "Bad input for field '%s'.\n", field->name);
-                return -4; // Original 0xfffffffc
+            } else { // No specific validator, default check
+                if (strlen(g_user_resp) >= field->max_len) {
+                    fdprintf(1,"Input too long.\n");
+                    return -3;
+                }
             }
+
+            // If validation passed, update the field
+            if (field->response_buffer == NULL) {
+                field->response_buffer = calloc(1, field->max_len);
+                if (!field->response_buffer) {
+                    perror("calloc failed");
+                    return -1;
+                }
+            } else {
+                memset(field->response_buffer, 0, field->max_len); // Clear old data
+            }
+            strcpy(field->response_buffer, g_user_resp);
+            return 0; // Successful update
         }
     }
 
-    fdprintf(1, "Could not find specified field '%s'.\n", field_name_to_update);
-    return -1; // Original 0xffffffff
+    fdprintf(1,"Could not find specified field\n");
+    return -1;
 }
 
-void print_page(const char* header_text, FormField* fields, int num_fields) {
-    if (header_text) {
-        fdprintf(1, "%s", header_text);
+// --- print_page function ---
+void print_page(const char *page_title, FormField *fields_array, int num_fields) {
+    if (page_title != NULL) {
+        fdprintf(1, DAT_000155a0, page_title);
     }
-    for (int i = 0; i < num_fields; ++i) {
-        FormField* field = &fields[i];
-        fdprintf(1, "%s=%s\n", field->name, field->value_ptr ? field->value_ptr : "[UNFILLED]");
+    for (int i = 0; i < num_fields; i++) {
+        FormField *field = &fields_array[i];
+        fdprintf(1,"%s=%s\n", field->field_name, field->response_buffer ? field->response_buffer : "[NOT SET]");
     }
+    return;
 }
 
-int form(const char* header_text, FormField* fields, int num_fields) {
-    int response = 0;
+// --- form function ---
+// Returns 0 for success, non-zero for special commands or error.
+int form(const char *page_title, FormField *fields_array, unsigned int num_fields) {
+    int result = 0;
 
-    // Check if the user is trying to skip pages
-    if (g_last_page_completed + 1 < (int)g_page_idx) {
-        fdprintf(1, "You must complete the previous page before proceeding to this page.\n");
-        g_page_idx = g_last_page_completed + 1; // Revert to the next uncompleted page
-        return -1; // Indicate an issue to main loop
+    // Check if previous page is completed
+    if (g_last_page_completed + 1 < g_page_idx) {
+        fdprintf(1,"You must complete the previous page before proceeding to this page\n");
+        g_page_idx = g_last_page_completed + 1;
+        return -1; // Indicate error/needs to re-evaluate
     }
 
-    int all_fields_filled = 1;
-    for (int i = 0; i < num_fields; ++i) {
-        if (fields[i].value_ptr == NULL) {
-            all_fields_filled = 0;
+    int incomplete_fields_found = 0;
+    for (unsigned int i = 0; i < num_fields; i++) {
+        if (fields_array[i].response_buffer == NULL) {
+            incomplete_fields_found = 1;
+            g_last_page_completed = g_page_idx - 1; // Mark current page as incomplete
             break;
         }
     }
 
-    // If this is the current page being filled or if there are unfilled fields
-    if ((int)g_page_idx == g_last_page_completed + 1 || !all_fields_filled) {
-        response = fill_out_form(fields, num_fields);
-        if (response != 0) {
-            if (response == 4) { // Update command encountered during fill_out_form
-                fdprintf(1, "Cannot update field until all fields are inputted on this page.\n");
+    // If current page is the next uncompleted page, or there are incomplete fields
+    if ((g_page_idx == g_last_page_completed + 1) || (incomplete_fields_found != 0)) {
+        result = fill_out_form(fields_array, num_fields);
+        if (result != 0) {
+            if (result == 4) { // Update command received
+                fdprintf(1,"Cannot update field until all fields are inputted\n");
+                return result;
             }
-            return response; // Return command/error from fill_out_form
+            return result; // Other commands or error from fill_out_form
         }
-        g_last_page_completed = g_page_idx; // Mark this page as completed
+        g_last_page_completed = g_page_idx; // Mark current page as completed
+        result = 0;
     }
 
-    print_page(header_text, fields, num_fields);
-    fdprintf(1, "\nType **next to continue\n");
-
-    response = get_response();
-
-    if (response == 4) { // Update command
-        char *update_arg_ptr = g_user_resp;
-        strsep(&update_arg_ptr, " "); // Discard "**update" part
-        if (update_arg_ptr) { // Check if there's an argument after "update "
-            int update_result = update_field(update_arg_ptr, fields, num_fields);
-            if (update_result != 0) {
-                fdprintf(1, "Update Unsuccessful: %d\n", update_result);
-            }
-        } else {
-            fdprintf(1, "Update Unsuccessful: No field name provided.\n");
+    print_page(page_title, fields_array, num_fields);
+    fdprintf(1,"\nType **next to continue\n");
+    
+    result = get_response();
+    if (result == 4) { // Update command
+        char *user_input_ptr = g_user_resp; // strsep modifies the pointer
+        strsep(&user_input_ptr, " "); // Consume "update"
+        char *field_name_token = user_input_ptr; // Remaining part is the field name
+        
+        int update_result = update_field(field_name_token, fields_array, num_fields);
+        if (update_result != 0) {
+            fdprintf(1,"Update Unsuccessful\n");
         }
     }
-    return response;
+    return result;
 }
 
-// --- Page Functions ---
-
+// --- Page functions ---
 int candidate_info(void) {
-    fdprintf(1, "\nCandidate Info Form\n");
-    return form("\n*********Candidate Info:*********\n", applicant_id, NUM_APPLICANT_ID_FIELDS);
+  fdprintf(1,"\nCandidate Info Form\n");
+  return form("\n*********Candidate Info:*********\n", applicant_id, NUM_APPLICANT_ID_FIELDS);
 }
 
 int contact(void) {
-    fdprintf(1, "\nContact Info Form\n");
-    return form("\n*********Contact Info:*********\n", contact_info, NUM_CONTACT_INFO_FIELDS);
+  fdprintf(1,"\nContact Info Form\n");
+  return form("\n*********Contact Info:*********\n", contact_info, NUM_CONTACT_INFO_FIELDS);
 }
 
 int address(void) {
-    fdprintf(1, "\nAddress Form\n");
-    return form("\n*********Address:*********\n", current_address, NUM_CURRENT_ADDRESS_FIELDS);
+  fdprintf(1,"\nAddress Form\n");
+  return form("\n*********Address:*********\n", current_address, NUM_CURRENT_ADDRESS_FIELDS);
 }
 
 int education(void) {
-    fdprintf(1, "\nEducation Form\n");
-    return form("\n*********Highest Education:*********\n", highest_education, NUM_HIGHEST_EDUCATION_FIELDS);
+  fdprintf(1,"\nEducation Form\n");
+  return form("\n*********Highest Education:*********\n", highest_education, NUM_HIGHEST_EDUCATION_FIELDS);
 }
 
 int employment_history(void) {
-    fdprintf(1, "\nEmployment Form\n");
-    return form("\n*********Most Recent Employer:*********\n", last_employer, NUM_LAST_EMPLOYER_FIELDS);
+  fdprintf(1,"\nEmployment Form\n");
+  return form("\n*********Most Recent Employer:*********\n", last_employer, NUM_LAST_EMPLOYER_FIELDS);
 }
 
 int final_screening(void) {
-    fdprintf(1, "\nFinal Questions\n");
-    return form("\n*********Final Screening:*********\n", screening_questions, NUM_SCREENING_QUESTIONS_FIELDS);
+  fdprintf(1,"\nFinal Questions\n");
+  return form("\n*********Final Screening:*********\n", screening_questions, NUM_SCREENING_QUESTIONS_FIELDS);
 }
 
 int finished(void) {
-    fdprintf(1, "\n\nYou have completed your application with the Sea Eye Association.\n");
-    fdprintf(1, "You may review the form. Navigate through the application with **prev and **next.\n");
-    fdprintf(1, "Once your are satisfied type **exit to exit and submit the form\n");
-    fdprintf(1, "If you wish to discard your application, please use Control-C\n");
+    fdprintf(1,"\n\nYou have completed your application with the Sea Eye Association.\n");
+    fdprintf(1,"You may review the form. Navigate through the application with **prev and **next.\n");
+    fdprintf(1,"Once your are satisfied type **exit to exit and submit the form\n");
+    fdprintf(1,"If you wish to discard your application, please use Control-C\n");
 
-    if (g_last_page_completed + 1 < (int)g_page_idx) {
-        fdprintf(1, "You must complete the previous page before proceeding to this page\n");
+    if (g_last_page_completed + 1 < g_page_idx) {
+        fdprintf(1,"You must complete the previous page before proceeding to this page\n");
         g_page_idx = g_last_page_completed + 1;
-        return -1; // Original 0xffffffff
-    } else {
-        return get_response();
+        return -1;
     }
+    return get_response();
 }
 
-// --- Main Function ---
-
+// --- main function ---
 int main(void) {
-    int response;
+    int command_result = 0;
+    g_page_idx = 0; // Start at the first page
 
-    fdprintf(1, GREETING_MSG);
-    fdprintf(1, "Thanks for your interest in the Sea Eye Association.\n");
-    fdprintf(1, "In order to be considered for the job complete the preliminary online background check\n");
-    fdprintf(1, "Due to the secure nature of the position you are applying for you may be asked to\n");
-    fdprintf(1, "submit additional paperwork after your preliminary background check has been approved.\n");
-    fdprintf(1, "Thank you for your cooperation\n");
+    fdprintf(1, DAT_000153e8); // Welcome message
+    fdprintf(1,"Thanks for your interest in the Sea Eye Association.\n");
+    fdprintf(1,"In order to be considered for the job complete the preliminary online background check\n");
+    fdprintf(1,"Due to the secure nature of the position you are applying for you may be asked to\n");
+    fdprintf(1,"submit additional paperwork after your preliminary background check has been approved.\n");
+    fdprintf(1,"Thank you for your cooperation\n");
 
-    g_page_idx = 0; // Start at the first page (index 0)
-    g_last_page_completed = -1; // No pages completed initially
-
-    while (1) { // Loop until exit command (response == 6)
-        // Ensure g_page_idx is within valid bounds
-        if (g_page_idx < 0) g_page_idx = 0;
-        if (g_page_idx >= NUM_PAGES) g_page_idx = NUM_PAGES - 1;
-
-        // Call the current page's function
-        response = job_application_page[g_page_idx]();
-
-        if (response == 6) { // Exit command
-            break;
-        } else if (response == 5) { // Help command
-            print_menu();
-        } else if (response == 2) { // Prev command
-            if (g_page_idx > 0) {
-                g_page_idx--;
-            }
-        } else if (response == 3) { // Next command
-            if (g_page_idx < NUM_PAGES - 1) { // NUM_PAGES - 1 is the last valid index
-                g_page_idx++;
-            }
+    while (command_result != 6) { // 6 is 'exit' command
+        if (g_page_idx < 0 || g_page_idx >= NUM_APPLICATION_PAGES) {
+            fdprintf(1, "Error: Invalid page index. Resetting to first page.\n");
+            g_page_idx = 0;
+            command_result = 0; // Reset command result to avoid immediate exit
+            continue;
         }
-        // Other responses (1 for valid input, 4 for update, or errors)
-        // result in staying on the current page to re-display or re-prompt.
+
+        command_result = job_application_page[g_page_idx]();
+        
+        if (command_result == 5) { // 'help' command
+            print_menu();
+        } else if (command_result < 6) { // Not 'exit' or error code
+            if (command_result == 2) { // 'prev' command
+                if (g_page_idx > 0) {
+                    g_page_idx--;
+                }
+            } else if (command_result == 3) { // 'next' command
+                if (g_page_idx < NUM_APPLICATION_PAGES - 1) {
+                    g_page_idx++;
+                }
+            }
+            // If command_result is 1 (generic input), 4 (update), or a negative error code,
+            // the page index does not change, and the loop will re-evaluate the current page.
+        }
     }
 
-    fdprintf(1, "Thank you!\n");
+    fdprintf(1,"Thank you!\n");
     return 0;
 }

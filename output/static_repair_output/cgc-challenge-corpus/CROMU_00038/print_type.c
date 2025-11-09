@@ -1,9 +1,11 @@
-#include <stdio.h>
-#include <stdint.h> // For uint16_t
+#include <stdio.h> // Required for printf
 
 // Function: print_type
-void print_type(uint16_t param_1) {
+void print_type(unsigned short param_1) { // Replaced undefined2 with unsigned short
   switch(param_1) {
+  default:
+    printf("UNKNOWN");
+    break;
   case 1:
     printf("BYTE");
     break;
@@ -27,13 +29,11 @@ void print_type(uint16_t param_1) {
     break;
   case 10:
     printf("SRATIONAL");
-    break;
-  default:
-    printf("UNKNOWN");
-    break;
+    break; // Added missing break for consistency
   }
 }
 
+// Main function to make it a complete, compilable program
 int main() {
     printf("Type 1: ");
     print_type(1);
@@ -67,12 +67,12 @@ int main() {
     print_type(10);
     printf("\n");
 
-    printf("Type 0 (default): ");
-    print_type(0);
+    printf("Type 6 (unknown): ");
+    print_type(6);
     printf("\n");
 
-    printf("Type 6 (default): ");
-    print_type(6);
+    printf("Type 0 (unknown): ");
+    print_type(0);
     printf("\n");
 
     return 0;

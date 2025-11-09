@@ -1,4 +1,4 @@
-#include <stdio.h> // Required for basic I/O (e.g., printf in main)
+#include <stdio.h> // Required for printf in main
 
 // Global variables
 int bowl_set;
@@ -109,25 +109,24 @@ void dispense_strawberries(void) {
 
 // Main function to demonstrate usage
 int main(void) {
-  printf("--- Initializing Dispenser ---\n");
+  printf("Initializing dispenser...\n");
   init_dispenser();
-  printf("State: Bowl Set = %d, Units = %d, Ready = %d\n", bowl_set, units, ready);
+  printf("Initial state: bowl_set=%d, units=%d, ready=%d\n", bowl_set, units, ready);
 
-  printf("\n--- Dispensing Bowl and Some Items ---\n");
+  printf("Dispensing bowl...\n");
   dispense_bowl();
+  printf("After dispense_bowl: bowl_set=%d, units=%d, ready=%d\n", bowl_set, units, ready);
+
+  printf("Dispensing some items...\n");
   dispense_dairy_milk();
+  dispense_chocolate_drops();
   dispense_sugar_loops();
-  dispense_chocolate_rice_pellets();
-  dispense_blueberries();
-  printf("State: Bowl Set = %d, Units = %d, Ready = %d\n", bowl_set, units, ready);
+  dispense_maize_flakes();
+  printf("After dispensing items: bowl_set=%d, units=%d, ready=%d\n", bowl_set, units, ready);
 
-  printf("\n--- Completing Dispense Cycle ---\n");
+  printf("Completing dispensing with buzzer...\n");
   completion_buzzer();
-  printf("State: Bowl Set = %d, Units = %d, Ready = %d\n", bowl_set, units, ready);
-
-  printf("\n--- Resetting for next use ---\n");
-  init_dispenser();
-  printf("State: Bowl Set = %d, Units = %d, Ready = %d\n", bowl_set, units, ready);
+  printf("Final state: bowl_set=%d, units=%d, ready=%d\n", bowl_set, units, ready);
 
   return 0;
 }

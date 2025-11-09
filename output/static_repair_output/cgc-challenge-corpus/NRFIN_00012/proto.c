@@ -1,246 +1,260 @@
-#include <sys/socket.h> // For recv, send, ssize_t
-#include <sys/types.h>  // For ssize_t
-#include <stddef.h>     // For size_t
-#include <stdint.h>     // For uint32_t, int32_t, uint8_t, uint16_t, uintptr_t
-#include <string.h>     // For memset, strcpy, strncpy, memcpy
-#include <unistd.h>     // For ssize_t
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h> // For sockaddr_in, etc. (though not directly used by custom msghdr)
+#include <string.h>     // For memset, memcpy, strcpy
 #include <stdlib.h>     // For exit
-#include <errno.h>      // For errno (though not explicitly used for specific error checks)
+#include <stdio.h>      // For fprintf (in _terminate)
+#include <stdint.h>     // For uint32_t, uintptr_t, ssize_t
 
-// --- Custom types and structures based on decompiled code ---
+// --- Type Definitions (from decompiled 'undefined' types) ---
+typedef unsigned char byte;
+typedef unsigned int uint;
+typedef unsigned short ushort;
+typedef unsigned int undefined4; // Represents a 4-byte unsigned integer
 
-// Custom structure for custom_recvmsg and senddgram header.
-// Assumes 32-bit architecture where int32_t and void* are 4 bytes, making it 8 bytes total.
+// Custom msghdr structure inferred from `recvmsg` usage in the snippet.
+// It's not the standard `struct msghdr` from sys/socket.h.
+// The snippet implies:
+// 1. `recv` reads 8 bytes into an instance of this struct.
+// 2. `msg_name_size` (first field) is then interpreted as the size of the data payload.
+// 3. `msg_iov_data_ptr` (second field) is then used as the buffer for the data payload.
 typedef struct {
-    int32_t msg_data_len; // Interpreted from 'msg_name' in original recvmsg wrapper.
-                          // Also used as the length field for senddgram.
-    void *msg_data_ptr;   // Interpreted from '&__message->msg_iov' in original recvmsg wrapper.
-                          // In senddgram, this field is not used as a pointer for the second `sendall` call,
-                          // but its value (the second 4 bytes of the header) is part of the 8-byte header sent.
-} custom_msghdr;
+    uint32_t msg_name_size;    // Expected to hold the size of the subsequent data payload
+    void*    msg_iov_data_ptr; // Expected to hold a pointer to the buffer for the data payload
+} msghdr_custom;
 
-// Constants for buffer sizes and magic values
-#define PACKET_FRAGMENT_SIZE 0x180 // 384 bytes, used for max_data_len in custom_recvmsg and validation
-#define FRAGMENT_COPY_SIZE   0x178 // 376 bytes, used for memcpy of individual fragments
-#define MAX_FRAGMENTS        256   // Implied by total buffer size / fragment size (approx 96256 / 376)
+// --- Global Variables and Structures (from decompiled `qss` and related accesses) ---
 
-// The overall packet buffer size as determined from memset(..., 0x17808)
-#define ACTUAL_PACKET_BUFFER_SIZE 0x17808 // 96264 bytes
+// The `qss` variable in the original snippet is used as a base address for offsets.
+// `qss + iVar6 + 0xae623` implies `qss` points to a memory region.
+// `iVar6` is deduced to be `0x119dd`.
+// The total offset `0x119dd + 0xae623` is where a pointer to `msg_data_struct` is stored.
+#define QSS_GLOBAL_BUFFER_PTR_OFFSET (0x119dd + 0xae623)
+#define QSS_GLOBAL_BUFFER_SIZE (QSS_GLOBAL_BUFFER_PTR_OFFSET + sizeof(uintptr_t))
+static unsigned char qss_mem_buffer[QSS_GLOBAL_BUFFER_SIZE];
 
-// Structure for the packet buffer, accessed via global_packet_buffer_ptr.
-// This struct is designed to be compatible with custom_msghdr for its first 8 bytes.
-// The layout is inferred from access patterns in recvdgram.
+// Structure representing the data that `msg_data_ptr` points to.
+// Inferred from accesses like `*(int *)(*(int *)(qss + iVar6 + 0xae623) + 4)` etc.
+// The `0x178` size is used in memcpy, suggesting `field10` is an array of that size.
 typedef struct {
-    custom_msghdr header;        // First 8 bytes, compatible with custom_msghdr.
-                                 // Original `*param_1` and `param_1[1]` access these.
-    uint8_t fragment_idx;        // *(byte *)(current_packet_buffer + 8)
-    uint8_t total_fragments_m1;  // *(byte *)(current_packet_buffer + 9) (total_fragments - 1)
-    uint16_t _padding;           // Padding to align to 0xc or 0x10. Makes 8 bytes after header.
-    uint32_t fieldC_data;        // *(undefined4 *)(current_packet_buffer + 0xc)
-    char data_payload[ACTUAL_PACKET_BUFFER_SIZE - sizeof(custom_msghdr) - 0x8]; // Data starts at 0x10 (8+8)
-} PacketBuffer;
+    unsigned int field0; // Accessed as `**(int **)(qss + iVar6 + 0xae623)`
+    unsigned int field4; // Accessed as `*(int *)(*(int *)(qss + iVar6 + 0xae623) + 4)`
+    byte field8;         // Accessed as `byte at offset +8`
+    byte field9;         // Accessed as `byte at offset +9`
+    undefined4 fieldC;   // Accessed as `undefined4 at offset +0xc`
+    unsigned char field10[0x178]; // Data buffer, accessed from `iVar4 + 0x10`
+} msg_data_struct;
 
-// Placeholder for the global_packet_buffer_ptr.
-// It's assumed to point to a statically allocated buffer for compilation.
-static PacketBuffer *global_packet_buffer_ptr;
+// A static instance of the `msg_data_struct` to simulate global context.
+static msg_data_struct global_msg_data;
+static msg_data_struct* msg_data_ptr = &global_msg_data; // Pointer to the global context struct
 
-// --- Helper function declarations ---
-static ssize_t sendall(int fd, const void *buf, size_t len, int flags);
-static void _terminate(int code); // Placeholder for _terminate
+// Constructor to initialize the global pointer in `qss_mem_buffer`.
+// This simulates the decompiled code storing a pointer to `global_msg_data`
+// at a specific offset within a global memory region.
+__attribute__((constructor))
+static void init_qss_global_pointer(void) {
+    // Store the address of `global_msg_data` into `qss_mem_buffer` at the calculated offset.
+    *(uintptr_t*)(qss_mem_buffer + QSS_GLOBAL_BUFFER_PTR_OFFSET) = (uintptr_t)msg_data_ptr;
+}
 
-// --- Fixed functions ---
+// --- Dummy Implementations for external functions ---
 
-// Function: custom_recvmsg (renamed from recvmsg to avoid conflict with standard library)
-ssize_t custom_recvmsg(int fd, custom_msghdr *message, int max_data_len) {
-    const int custom_recv_flags = 0x118d3;
+// Placeholder for `sendall`.
+// `sendall` is expected to send `len` bytes from `buf` to `fd` with `flags`.
+static int sendall(int fd, const void *buf, size_t len, int flags) {
+    // In a real application, this would loop to ensure all bytes are sent.
+    ssize_t bytes_sent = send(fd, buf, len, flags);
+    if (bytes_sent == (ssize_t)len) {
+        return (int)len; // Success: all bytes sent
+    } else if (bytes_sent < 0) {
+        return (int)bytes_sent; // Error from send()
+    }
+    return 0; // Partial send (simplified for this placeholder)
+}
+
+// Placeholder for `_terminate`.
+static void _terminate(void) {
+    fprintf(stderr, "Program terminated due to an unrecoverable error.\n");
+    exit(1);
+}
+
+// --- Original Functions with Fixes ---
+
+// Function: custom_recvmsg (renamed from `recvmsg` to avoid conflict with standard library)
+// This function implements a custom message reception logic.
+ssize_t custom_recvmsg(int fd, msghdr_custom *message, int flags) {
     ssize_t bytes_received;
+    uint32_t data_payload_size;
 
-    // 1. Initial check: If max_data_len (original __flags) is less than the header size (8 bytes), return error.
-    if ((unsigned int)max_data_len < sizeof(custom_msghdr)) {
-        return -3; // Corresponds to 0xfffffffd in original
+    // Original: `if ((uint)__flags < 8)` then return `0xfffffffd` (-3)
+    // This could be a check for minimum acceptable flags or minimum expected size.
+    if ((uint)flags < 8) {
+        return -3; // Custom error code: invalid flags
     }
 
-    // 2. Receive the header (custom_msghdr) which contains the data length and a pointer.
-    bytes_received = recv(fd, message, sizeof(custom_msghdr), custom_recv_flags);
+    // First `recv` call: reads 8 bytes into the `msghdr_custom` structure.
+    bytes_received = recv(fd, message, 8, 0x118d3); // `0x118d3` is a magic flag from the original snippet
 
-    if (bytes_received != sizeof(custom_msghdr)) {
-        return bytes_received < 0 ? bytes_received : -1; // Propagate system error or return generic error
+    // Original: `if (__n == (void *)0x8)`
+    // Check if exactly 8 bytes (the size of our custom header) were received.
+    if (bytes_received == 8) {
+        // Original: `__n = __message->msg_name;`
+        // Interprets the `msg_name_size` field of the custom header as the size of the actual data payload.
+        data_payload_size = message->msg_name_size;
+
+        // Original: `if (((uint)__flags < __n) || (__n < in_stack_00000010))`
+        // The `in_stack_00000010` part is a decompilation artifact and removed.
+        // `(uint)flags < data_payload_size` implies `flags` might specify a maximum allowed size.
+        // Also, `data_payload_size` should be positive.
+        if (data_payload_size == 0 || (uint)data_payload_size > (uint)flags) {
+            return -1; // Custom error code: invalid data payload size
+        }
+
+        // Second `recv` call: reads the actual data payload into the buffer
+        // pointed to by `message->msg_iov_data_ptr`.
+        bytes_received = recv(fd, message->msg_iov_data_ptr, (size_t)data_payload_size, 0x118d3);
+
+        // Original: `if (pvVar1 != __n)`
+        // Check if the number of bytes received for the payload matches the expected `data_payload_size`.
+        if (bytes_received != (ssize_t)data_payload_size) {
+            return -2; // Custom error code: payload read mismatch
+        }
+        // If both header and payload reads are successful, return the size of the data payload.
+        return (ssize_t)data_payload_size;
+    } else if (bytes_received < 0) {
+        return bytes_received; // Return actual `recv` error
+    } else {
+        return -4; // Custom error code: header read failed or incomplete
     }
-
-    // 3. Validate the data length read from the header.
-    // Original: `((uint)__flags < __n)` means `max_data_len < message->msg_data_len` (data_len too large).
-    if (message->msg_data_len < 0 || message->msg_data_len > max_data_len) {
-        return -1; // Corresponds to 0xffffffff in original
-    }
-
-    // 4. Receive the actual data into the buffer pointed to by msg_data_ptr.
-    bytes_received = recv(fd, message->msg_data_ptr, (size_t)message->msg_data_len, custom_recv_flags);
-
-    if (bytes_received != message->msg_data_len) {
-        return bytes_received < 0 ? bytes_received : -2; // Propagate system error or return specific error
-    }
-
-    return message->msg_data_len; // Success: return number of data bytes read.
 }
 
 // Function: senddgram
-int senddgram(int fd, custom_msghdr *message) {
-    const int custom_send_flags = 0x11972;
-    int ret;
+// `param_1`: Socket file descriptor.
+// `param_2`: Pointer to a buffer, structured similarly to `msghdr_custom` for header and data.
+int senddgram(int param_1, unsigned int *param_2) {
+    int flags = 0x11972; // Magic flag from the original snippet
 
-    // 1. Send the header part (8 bytes, i.e., sizeof(custom_msghdr)).
-    ret = sendall(fd, message, sizeof(custom_msghdr), custom_send_flags);
-
-    if (ret == (int)sizeof(custom_msghdr)) { // If header sent successfully
-        // 2. Send the actual data. The data starts immediately after the 8-byte header.
-        // The length of the data is given by message->msg_data_len.
-        ret = sendall(fd, (char*)message + sizeof(custom_msghdr), (size_t)message->msg_data_len, custom_send_flags);
+    // First `sendall`: sends the first 8 bytes (header-like) from `param_2`.
+    int send_result = sendall(param_1, param_2, 8, flags);
+    if (send_result == 8) {
+        // Second `sendall`: sends the data payload.
+        // `param_2 + 2` offsets the pointer by `2 * sizeof(unsigned int)` (8 bytes),
+        // effectively pointing past the initial 8-byte header.
+        // `*param_2` dereferences the first `unsigned int` in `param_2`, which is
+        // interpreted as the length of the data payload.
+        send_result = sendall(param_1, param_2 + 2, *param_2, flags);
     }
-    return ret;
+    return send_result;
 }
 
 // Function: create_resp_pkt
-void create_resp_pkt(PacketBuffer *packet_buf, const char *message_str) {
-    memset(packet_buf, 0, ACTUAL_PACKET_BUFFER_SIZE);
-    
-    // Original: *param_1 = 0x100; (where param_1 is `packet_buf`)
-    packet_buf->header.msg_data_len = 0x100; 
-    
-    // Original: param_1[1] = 3; This sets the second 4-byte word of `packet_buf`.
-    // In `custom_msghdr`, this is the `msg_data_ptr` field. It's used as a value here.
-    ((uint32_t*)&packet_buf->header)[1] = 3; 
-    
-    // Original: strcpy((char *)(param_1 + 2),param_2);
-    // This copies the message string to `(char*)packet_buf + 8`.
-    // This location is immediately after the `custom_msghdr` part of `PacketBuffer`.
-    strncpy((char*)packet_buf + sizeof(custom_msghdr), message_str, 
-            ACTUAL_PACKET_BUFFER_SIZE - sizeof(custom_msghdr) - 1);
-    ((char*)packet_buf + sizeof(custom_msghdr))[ACTUAL_PACKET_BUFFER_SIZE - sizeof(custom_msghdr) - 1] = '\0';
+// `param_1`: Pointer to a buffer where the response packet will be constructed.
+// `param_2`: String to be copied into the response packet.
+void create_resp_pkt(unsigned int *param_1, char *param_2) {
+    memset(param_1, 0, 0x17808);        // Clear a large buffer (0x17808 bytes)
+    strcpy((char *)(param_1 + 2), param_2); // Copy string to offset 8 bytes into the buffer
+    param_1[1] = 3;                     // Set a field at offset 4 bytes
+    param_1[0] = 0x100;                 // Set a field at offset 0 bytes
+    return;
 }
 
 // Function: recvdgram
-uint32_t recvdgram(void) {
-    // Stack variables from original snippet, adjusted types and sizes
-    char fragment_assembly_buffer[MAX_FRAGMENTS * FRAGMENT_COPY_SIZE]; // 96256 bytes (0x17800)
-    
-    uint32_t total_fragments_expected = 0; // local_10
-    uint32_t current_fragment_idx = 0;   // local_12
-    uint32_t fragments_remaining = 0;    // local_e
-    uint32_t final_fieldC_val = 5;       // local_18, initialized to 5
+undefined4 recvdgram(void) {
+    // Local variables, simplified from decompiled stack offsets
+    ushort remaining_chunks = 0;      // `local_e`: Number of chunks yet to receive
+    ushort total_expected_chunks = 0; // `local_10`: Total number of chunks expected
+    ushort received_chunks_count = 0; // `local_12`: Number of chunks received so far
+    undefined4 final_field4_value = 5; // `local_18`: Value to update `msg_data_ptr->field4` with
 
-    // Allocate global_packet_buffer_ptr if not already done.
-    // For this example, use a static instance to ensure it's a valid memory location.
-    static PacketBuffer s_packet_buffer_instance;
-    global_packet_buffer_ptr = &s_packet_buffer_instance;
+    // Large stack buffer for storing received data chunks.
+    // `0x17800` bytes total, divided into `0x178` byte chunks.
+    // `0x17800 / 0x178 = 256` chunks.
+    unsigned char received_data_buffer[256 * 0x178]; // `auStack_1781c`
 
-    // Initialize buffers
-    memset(fragment_assembly_buffer, 0, sizeof(fragment_assembly_buffer));
-    memset(global_packet_buffer_ptr, 0, ACTUAL_PACKET_BUFFER_SIZE);
+    // Initialize `received_data_buffer` to zeros.
+    memset(received_data_buffer, 0, sizeof(received_data_buffer));
 
-    do {
-        // Set up `msg_data_ptr` within the `global_packet_buffer_ptr->header`.
-        // This pointer tells `custom_recvmsg` where to write the actual data payload.
-        global_packet_buffer_ptr->header.msg_data_ptr = global_packet_buffer_ptr->data_payload;
-        
-        // Receive a fragment. The header will be written to `global_packet_buffer_ptr->header`,
-        // and the data payload will be written to `global_packet_buffer_ptr->data_payload`.
-        // The `max_data_len` for `custom_recvmsg` is `PACKET_FRAGMENT_SIZE` (0x180 = 384 bytes).
-        // This is the expected maximum size of each data payload.
-        ssize_t bytes_received = custom_recvmsg(0, &global_packet_buffer_ptr->header, PACKET_FRAGMENT_SIZE);
+    // Initialize `msg_data_ptr`'s structure to zeros.
+    // `0x17808` is the size used in the original `memset` call.
+    memset(msg_data_ptr, 0, 0x17808);
 
-        if (bytes_received < 0) {
-            // Error in receiving. Create and send a response packet, then terminate.
-            create_resp_pkt(global_packet_buffer_ptr, "Recv Error");
-            
+    // Loop condition: Continue if there are `remaining_chunks` to receive,
+    // OR if it's the very first iteration (`received_chunks_count == 0`).
+    while (remaining_chunks != 0 || received_chunks_count == 0) {
+        msghdr_custom msg_header;
+        // The `msg_iov_data_ptr` in our custom header points to the `msg_data_ptr`
+        // which will receive the packet data (after the initial 8 bytes).
+        msg_header.msg_iov_data_ptr = (void*)msg_data_ptr;
+
+        // Call the custom `recvmsg` function.
+        // Assuming socket FD is 0 and flags are 0x180.
+        ssize_t recv_result = custom_recvmsg(0, &msg_header, 0x180);
+
+        if (recv_result < 0) {
+            // Handle error during receive.
+            // Create a response packet using `msg_data_ptr` as the buffer.
+            create_resp_pkt((unsigned int*)msg_data_ptr, "Error response");
             // Send the response packet.
-            // `senddgram` expects `custom_msghdr *`.
-            // `global_packet_buffer_ptr->header` holds the necessary fields for sending.
-            int send_result = senddgram(1, &global_packet_buffer_ptr->header);
+            int send_result = senddgram(0, (unsigned int*)msg_data_ptr);
 
             if (send_result < 0) {
-                _terminate(0x1a); // senddgram failed
+                _terminate(); // Unrecoverable error, terminate.
             }
-            _terminate(0x18); // Terminate regardless of senddgram success after recvmsg error
+            _terminate(); // Terminate after sending error response.
         }
 
-        // Validate packet buffer fields after receiving
-        // Original: `*(int *)(*(int *)(qss + iVar6 + 0xae623) + 4) != 4`
-        // This maps to `global_packet_buffer_ptr->fieldC_data` in this structure.
-        if (global_packet_buffer_ptr->fieldC_data != 4 && fragments_remaining == 0) {
-            return 0; // Special early exit condition
+        // Validate received packet data based on `msg_data_ptr` fields.
+        if (msg_data_ptr->field4 != 4 && remaining_chunks == 0) {
+            return 0; // Specific success condition for initial packet if `field4` is not 4
         }
-        if (global_packet_buffer_ptr->fieldC_data != 4) {
-            return -1; // Corresponds to 0xffffffff
+        if (msg_data_ptr->field4 != 4) {
+            return -1; // Error: `field4` mismatch
         }
-        // Original: `**(int **)(qss + iVar6 + 0xae623) != 0x180`
-        // This maps to `global_packet_buffer_ptr->header.msg_data_len`.
-        if (global_packet_buffer_ptr->header.msg_data_len != PACKET_FRAGMENT_SIZE) {
-            return -2; // Corresponds to 0xfffffffe
+        if (msg_data_ptr->field0 != 0x180) {
+            return -2; // Error: `field0` mismatch
         }
 
-        uint8_t received_fragment_idx = global_packet_buffer_ptr->fragment_idx;
-        if (current_fragment_idx != received_fragment_idx) {
-            return -3; // Corresponds to 0xfffffffd
+        byte current_chunk_index = msg_data_ptr->field8;
+
+        if (received_chunks_count != current_chunk_index) {
+            return -3; // Error: Chunk index mismatch
         }
 
-        if (received_fragment_idx == 0) {
-            // First fragment received, initialize total_fragments and final_fieldC_val
-            total_fragments_expected = global_packet_buffer_ptr->total_fragments_m1 + 1;
-            if (total_fragments_expected < 2) {
-                return -4; // Corresponds to 0xfffffffc
+        if (current_chunk_index == 0) { // This is the first chunk of a multi-chunk message
+            total_expected_chunks = msg_data_ptr->field9 + 1; // Calculate total chunks
+
+            if (total_expected_chunks < 2) {
+                return -4; // Error: Less than 2 chunks expected (invalid)
             }
-            final_fieldC_val = global_packet_buffer_ptr->fieldC_data; // Original: local_18 = *(undefined4 *)(iVar4 + 0xc)
-            fragments_remaining = total_fragments_expected;
+            final_field4_value = msg_data_ptr->fieldC; // Update `final_field4_value`
+            remaining_chunks = total_expected_chunks;   // Initialize remaining chunks
         }
 
-        if (fragments_remaining == 0) { // Should not happen after first fragment processing, but check
-            return -5; // Corresponds to 0xfffffffb
+        if (remaining_chunks == 0) {
+            return -5; // Error: No chunks expected but loop continues (logic error)
+        }
+        if (total_expected_chunks != (ushort)(msg_data_ptr->field9 + 1)) {
+            return -6; // Error: Total expected chunks mismatch
         }
 
-        // Verify total_fragments_expected against current packet's total_fragments_m1
-        if (total_fragments_expected != (uint32_t)(global_packet_buffer_ptr->total_fragments_m1 + 1)) {
-            return -6; // Corresponds to 0xfffffffa
-        }
+        // Copy the data from the current packet (`msg_data_ptr->field10`)
+        // into the appropriate slot in the `received_data_buffer`.
+        memcpy(received_data_buffer + (uint)current_chunk_index * 0x178,
+               msg_data_ptr->field10, 0x178);
 
-        // Copy fragment data from `data_payload` into the `fragment_assembly_buffer`.
-        memcpy(fragment_assembly_buffer + (uint32_t)received_fragment_idx * FRAGMENT_COPY_SIZE,
-               global_packet_buffer_ptr->data_payload, FRAGMENT_COPY_SIZE);
+        remaining_chunks--;   // Decrement count of chunks remaining
+        received_chunks_count++; // Increment count of chunks received
+    } // End of while loop
 
-        fragments_remaining--;
-        current_fragment_idx++;
+    // After all chunks are received:
+    msg_data_ptr->field4 = final_field4_value; // Update `field4` with the accumulated value
 
-    } while (fragments_remaining != 0); // Loop until all fragments received
+    // Copy the entire `received_data_buffer` into `msg_data_ptr` starting at `field8`.
+    memcpy(&(msg_data_ptr->field8), received_data_buffer, sizeof(received_data_buffer));
 
-    // After loop, all fragments assembled. Update global_packet_buffer_ptr with final values.
-    global_packet_buffer_ptr->fieldC_data = final_fieldC_val; // Update field C
-    
-    // Copy assembled data into the data_payload section of the PacketBuffer
-    memcpy(global_packet_buffer_ptr->data_payload, fragment_assembly_buffer, sizeof(fragment_assembly_buffer));
-    
-    // Update header.msg_data_len for the final assembled packet
-    global_packet_buffer_ptr->header.msg_data_len = (total_fragments_expected * 0x100) + 0x80;
+    // Calculate and update `field0` based on `total_expected_chunks`.
+    msg_data_ptr->field0 = (uint)total_expected_chunks * 0x100 + 0x80;
 
     return 0; // Success
-}
-
-// --- Helper function implementations ---
-
-// A minimal implementation of sendall. In a real scenario, this would loop until all bytes are sent.
-static ssize_t sendall(int fd, const void *buf, size_t len, int flags) {
-    size_t total_sent = 0;
-    ssize_t bytes_sent;
-    while (total_sent < len) {
-        bytes_sent = send(fd, (const char*)buf + total_sent, len - total_sent, flags);
-        if (bytes_sent == -1) {
-            // Handle error, e.g., check errno for specific error codes
-            return -1; // Or propagate specific error
-        }
-        total_sent += bytes_sent;
-    }
-    return total_sent;
-}
-
-// Placeholder for _terminate
-static void _terminate(int code) {
-    exit(code); // Use stdlib's exit
 }

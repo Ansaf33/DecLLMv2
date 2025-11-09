@@ -1,116 +1,113 @@
-#include <stdio.h>  // Required for printf, fprintf
-#include <stdlib.h> // Required for exit, EXIT_FAILURE
+#include <stdio.h>   // For printf
+#include <stdlib.h>  // For exit
+#include <termios.h> // For tcgetattr, tcsetattr
+#include <unistd.h>  // For STDIN_FILENO, read, etc.
+#include <fcntl.h>   // For fcntl, O_NONBLOCK
 
-// Global variables (inferred from the original snippet)
-// These variables are often used to store simulation state or configuration.
-int TGrid = 0;
-int HGrid = 0;
-int X = 0;
-int Y = 0;
-int Z = 0;
+// Global variables, inferred as int based on context and initialization
+int TGrid;
+int HGrid;
+int X;
+int Y;
+int Z;
 
-// Placeholder functions for the operations implied in the original snippet.
-// In a real application, these would contain specific logic.
+// Function prototypes, inferred from usage
+int InitMaterial(void);
+int GetSimLength(void);
+void GraphTemps(void);
+void RunSim(void);
+void _terminate(void);
 
-/**
- * @brief Initializes material properties for the simulation.
- * @return 0 on success, non-zero on failure.
- */
+// Linux-compatible kbhit implementation
+int kbhit(void) {
+    struct termios oldt, newt;
+    int ch;
+    int oldf;
+
+    // Get current terminal settings
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+
+    // Set terminal to non-canonical mode and disable echo
+    newt.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+    // Set stdin to non-blocking
+    oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+
+    ch = getchar(); // Attempt to read a character
+
+    // Restore original terminal settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    // Restore original fcntl flags
+    fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+    if (ch != EOF) {
+        ungetc(ch, stdin); // Put the character back if one was read
+        return 1; // A key was pressed
+    }
+    return 0; // No key was pressed
+}
+
+// Placeholder implementations for other functions
+// These functions would contain the actual simulation logic.
 int InitMaterial(void) {
-    // Simulate material initialization logic.
-    // For this example, we always return success.
+    // Placeholder: return 0 for success, non-zero for failure
     return 0;
 }
 
-/**
- * @brief Retrieves the total length or duration of the simulation.
- * @return 0 on success, non-zero on failure.
- */
 int GetSimLength(void) {
-    // Simulate logic to determine simulation length.
-    // For this example, we always return success.
+    // Placeholder: return 0 for success, non-zero for failure
     return 0;
 }
 
-/**
- * @brief Graphs temperature data, likely using the global TGrid value.
- */
 void GraphTemps(void) {
-    // Simulate graphing logic.
-    // This function would typically use global variables like TGrid to perform its task.
-    // For this example, it does nothing visible.
+    // This function likely uses global variables like TGrid, HGrid, etc.
 }
 
-/**
- * @brief Runs the main simulation logic.
- */
 void RunSim(void) {
-    // Simulate the core simulation execution.
-    // For this example, it does nothing visible.
+    // This function performs the main simulation steps.
 }
 
-/**
- * @brief Simulates kbhit functionality for Linux.
- *
- * On Windows, `kbhit()` checks if a key has been pressed without blocking.
- * For a simple Linux compilable example that doesn't introduce complex
- * terminal control (`termios`), this function is implemented as a placeholder.
- * If actual non-blocking input is required, a more elaborate solution
- * involving `termios` and potentially `select` would be necessary.
- * Since the original code does not check the return value of `kbhit()`,
- * an empty `void` function fulfills the compilation requirement.
- */
-void kbhit(void) {
-    // This function is intentionally left empty to act as a non-blocking placeholder.
-    // If a blocking "Press any key to continue" behavior is desired,
-    // uncomment the following lines:
-    // printf("Press Enter to continue...\n");
-    // getchar(); // Blocks until a character is entered and Enter is pressed.
+void _terminate(void) {
+    // This function is called upon critical errors.
+    exit(1); // Standard way to terminate a program with an error code.
 }
 
-/**
- * @brief Main function for the simulation program.
- *
- * This function orchestrates the setup, execution, and error handling
- * of the simulation based on the logic inferred from the original snippet.
- */
+// Main function
 int main(void) {
-    // Initialize global simulation parameters.
+    // Initialize global variables
     TGrid = 0;
     HGrid = 0;
     X = 0;
     Y = 0;
     Z = 0;
 
-    // Initialize material properties.
-    // If initialization fails, print an error and terminate the program.
+    // Initialize material properties; terminate if initialization fails
     if (InitMaterial() != 0) {
-        fprintf(stderr, "Error: Material initialization failed.\n");
-        exit(EXIT_FAILURE); // Standard way to terminate on error
+        _terminate();
     }
 
-    // Get the simulation length or parameters.
-    // If retrieval fails, print an error and terminate the program.
+    // Get simulation length; terminate if there's an issue
     if (GetSimLength() != 0) {
-        fprintf(stderr, "Error: Simulation length retrieval failed.\n");
-        exit(EXIT_FAILURE); // Standard way to terminate on error
+        _terminate();
     }
 
-    // Graph the initial temperatures.
+    // Graph initial temperatures
     GraphTemps();
 
-    // Print a status message to the console.
+    // Print current simulation time
     printf("At 0.00000 seconds\n");
 
-    // Call kbhit, possibly to pause or check for user input.
+    // Check for keyboard input (e.g., to pause or quit)
     kbhit();
 
-    // Run the main simulation process.
+    // Run the main simulation loop
     RunSim();
 
-    // Graph the temperatures again after the simulation run.
+    // Graph final temperatures
     GraphTemps();
 
-    // Indicate successful program execution.
-    return 0;
+    return 0; // Indicate successful execution
 }

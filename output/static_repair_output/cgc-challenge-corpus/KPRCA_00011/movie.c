@@ -1,176 +1,160 @@
-#include <stdint.h> // For uint32_t
-#include <stdlib.h> // For malloc, free, NULL
-#include <string.h> // For strcmp
+#include <stdlib.h>   // For malloc, free
+#include <string.h>   // For strcmp
+#include <stdint.h>   // For uint32_t, intptr_t, uintptr_t
 
-// Define the linked list node structure.
-// This structure is inferred from the original code's memory access patterns
-// and the use of strcmp.
-typedef struct MovieNode {
-    char *movie_title; // Pointer to the movie title string (assumed to be dynamically allocated by caller, e.g., via strdup)
-    struct MovieNode *next; // Pointer to the next node in the list
-} MovieNode;
+// Fix missing types
+typedef unsigned int uint;
+typedef uint32_t undefined4; // Assuming undefined4 is a 4-byte unsigned integer
+
+// Forward declaration for movie_find, as it's used by movie_add
+undefined4 * movie_find(undefined4 *param_1, char *param_2);
 
 // Function: movie_g2s
-char * movie_g2s(uint32_t param_1) {
-  if (param_1 == 4) {
-    return "Horror";
-  }
-  if (param_1 == 3) {
-    return "Comedy";
-  }
-  if (param_1 == 1) {
-    return "Action";
-  }
-  if (param_1 == 2) {
-    return "Romance";
-  }
+char * movie_g2s(uint param_1) {
+  if (param_1 == 4) return "Horror";
+  if (param_1 == 3) return "Comedy";
+  if (param_1 == 1) return "Action";
+  if (param_1 == 2) return "Romance";
   return "Other";
 }
 
 // Function: movie_r2s
-char * movie_r2s(uint32_t param_1) {
-  if (param_1 == 4) {
-    return "R";
-  }
-  if (param_1 == 3) {
-    return "PG13";
-  }
-  if (param_1 == 1) {
-    return "G";
-  }
-  if (param_1 == 2) {
-    return "PG";
-  }
+char * movie_r2s(uint param_1) {
+  if (param_1 == 4) return "R";
+  if (param_1 == 3) return "PG13";
+  if (param_1 == 1) return "G";
+  if (param_1 == 2) return "PG";
   return "Unknown";
 }
 
-// Function: movie_find
-// Finds a movie node by title.
-// Returns a pointer to the MovieNode if found, otherwise NULL.
-MovieNode *movie_find(MovieNode *head, const char *target_title) {
-  if (head == NULL || target_title == NULL) {
-    return NULL;
-  }
+// Function: movie_add
+// param_1: pointer to an integer that holds the head node's address. `*param_1` is essentially a `MovieNode*`
+// param_2: pointer to an `undefined4`. Based on usage in `movie_find`, this is intended to be a `char*` (the title string).
+// We'll cast `param_2` to `char*` internally to resolve the type contradiction in the original snippet.
+undefined4 movie_add(int *param_1, undefined4 *param_2_as_title_ptr) {
+  if (param_1 == NULL) return 0xffffffff;
 
-  MovieNode *current = head;
-  while (current != NULL) {
-    if (current->movie_title != NULL && strcmp(current->movie_title, target_title) == 0) {
-      return current;
+  // Allocate space for two undefined4s (one for title pointer, one for next pointer)
+  undefined4 *newNode = (undefined4 *)malloc(sizeof(undefined4) * 2);
+  if (newNode == NULL) return 0xffffffff;
+
+  // Reconcile the type of param_2 with its usage in movie_find
+  char *title_string = (char *)(uintptr_t)param_2_as_title_ptr;
+
+  newNode[0] = (undefined4)(uintptr_t)title_string; // Store the title string pointer
+  newNode[1] = 0; // Set next pointer to NULL
+
+  // Check if list is empty
+  if (*param_1 == 0) { // *param_1 holds the head node's address
+    *param_1 = (int)(uintptr_t)newNode; // Store newNode's address in *param_1
+    return 0;
+  } else {
+    // Check for duplicates
+    // movie_find expects `undefined4 *param_1` (head node) and `char *param_2` (title string)
+    undefined4 *head_node = (undefined4 *)(uintptr_t)*param_1;
+    undefined4 *foundNode = movie_find(head_node, title_string);
+    if (foundNode != NULL) { // Movie already exists
+      free(newNode); // Don't add duplicate, free allocated node
+      return 0xffffffff; // Error for duplicate
+    } else {
+      // Traverse to the end of the list
+      undefined4 *current = head_node;
+      while ((undefined4 *)(uintptr_t)current[1] != NULL) { // current[1] is the next pointer
+        current = (undefined4 *)(uintptr_t)current[1];
+      }
+      current[1] = (undefined4)(uintptr_t)newNode; // Link new node
+      return 0;
     }
-    current = current->next;
+  }
+}
+
+// Function: free_movie
+// The original logic of this function is problematic for a linked list.
+// It frees `*param_1`, then `param_1[1]`, then `param_1`. This would free node data and the next node pointer.
+// Given that `movie_delete` directly calls `free()` on the node, this function
+// seems to be for a different data structure or is logically flawed for a linked list.
+// We keep its original logic, replacing `0x0` with `NULL`.
+void free_movie(void **param_1) {
+  if (param_1 != NULL) {
+    if (*param_1 != NULL) {
+      free(*param_1);
+    }
+    if (param_1[1] != NULL) {
+      free(param_1[1]);
+    }
+    free(param_1);
+  }
+}
+
+// Function: movie_delete
+// param_1: pointer to a `void*` that holds the head node's address. `*param_1` is essentially a `MovieNode*`
+// param_2: 1-based index of the node to delete
+undefined4 movie_delete(void **param_1, int param_2) {
+  if (param_1 == NULL) return 0xffffffff;
+
+  // `*param_1` is the head node (MovieNode*). Cast to undefined4* for consistent pointer arithmetic.
+  undefined4 *head = (undefined4 *)(uintptr_t)*param_1;
+
+  if (head == NULL || param_2 < 1) return 0xffffffff; // List empty or invalid index
+
+  if (param_2 == 1) { // Delete the head node
+    *param_1 = (void *)(uintptr_t)head[1]; // Update head to point to the next node
+    free(head); // Free the original head node
+    return 0;
+  } else {
+    undefined4 *current = head;
+    int current_index = 1;
+    while ((undefined4 *)(uintptr_t)current[1] != NULL) { // Iterate through next pointers
+      current_index++;
+      if (param_2 == current_index) {
+        undefined4 *node_to_delete = (undefined4 *)(uintptr_t)current[1];
+        current[1] = node_to_delete[1]; // Link previous node to the node after the one being deleted
+        free(node_to_delete);
+        return 0;
+      }
+      current = (undefined4 *)(uintptr_t)current[1];
+    }
+  }
+  return 0xffffffff; // Node not found at index
+}
+
+// Function: movie_update
+undefined4 movie_update(void) {
+  return 0;
+}
+
+// Function: movie_find
+// param_1: head of the list (MovieNode* cast to undefined4*)
+// param_2: title string to find
+undefined4 * movie_find(undefined4 *param_1, char *param_2) {
+  if (param_1 != NULL) {
+    undefined4 *current = param_1;
+    while (current != NULL) {
+      // current[0] holds the address of the title string
+      if (strcmp(*(char **)(uintptr_t)current[0], param_2) == 0) {
+        return current;
+      }
+      current = (undefined4 *)(uintptr_t)current[1]; // current[1] is the next pointer
+    }
   }
   return NULL;
 }
 
-// Function: free_movie
-// Frees the resources associated with a single MovieNode.
-// Specifically, it frees the movie title string (if dynamically allocated)
-// and then the MovieNode structure itself.
-// NOTE: The original function had a bug attempting to free param_1[1] (node->next),
-// which would corrupt the linked list. This has been removed.
-void free_movie(MovieNode *node) {
-  if (node != NULL) {
-    if (node->movie_title != NULL) {
-      free(node->movie_title); // Assume movie_title was dynamically allocated by caller (e.g., via strdup)
-    }
-    free(node); // Free the MovieNode structure
-  }
-}
-
-// Function: movie_add
-// Adds a new movie node to the linked list.
-// param_1: Pointer to the head pointer of the list (MovieNode **).
-// param_2: The movie title string (char *). Assumed to be dynamically allocated by caller.
-// Returns 0 on success, 0xffffffff on error (e.g., malloc failure, movie already exists).
-uint32_t movie_add(MovieNode **head, char *title_to_add) {
-  if (head == NULL || title_to_add == NULL) {
-    return 0xffffffff;
-  }
-
-  // Check if movie already exists before allocating
-  if (*head != NULL && movie_find(*head, title_to_add) != NULL) {
-    return 0xffffffff; // Error: Movie with this title already exists
-  }
-
-  MovieNode *newNode = (MovieNode *)malloc(sizeof(MovieNode));
-  if (newNode == NULL) {
-    return 0xffffffff; // Error: malloc failed
-  }
-
-  newNode->movie_title = title_to_add; // Store the pointer to the title string
-  newNode->next = NULL;
-
-  if (*head == NULL) { // If the list is empty, new node becomes the head
-    *head = newNode;
-  } else { // Append to the end of the list
-    MovieNode *current = *head;
-    while (current->next != NULL) {
-      current = current->next;
-    }
-    current->next = newNode;
-  }
-  return 0; // Success
-}
-
-// Function: movie_delete
-// Deletes a movie node from the list by its 1-based index.
-// param_1: Pointer to the head pointer of the list (MovieNode **).
-// param_2: The 1-based index of the movie to delete.
-// Returns 0 on success, 0xffffffff if the list is invalid or index not found.
-uint32_t movie_delete(MovieNode **head, int index_to_delete) {
-  if (head == NULL || *head == NULL || index_to_delete <= 0) {
-    return 0xffffffff; // Error: Invalid head, empty list, or invalid index
-  }
-
-  if (index_to_delete == 1) { // Deleting the head node
-    MovieNode *nodeToDelete = *head;
-    *head = nodeToDelete->next; // Update head to the next node
-    free_movie(nodeToDelete); // Free the deleted node's resources
-    return 0;
-  }
-
-  MovieNode *prev = *head;
-  MovieNode *current = prev->next;
-  int current_index = 2; // Start from the second node
-
-  while (current != NULL) {
-    if (current_index == index_to_delete) {
-      prev->next = current->next; // Link previous node to current's next
-      free_movie(current); // Free the deleted node's resources
-      return 0;
-    }
-    prev = current;
-    current = current->next;
-    current_index++;
-  }
-
-  return 0xffffffff; // Movie not found at the given index
-}
-
-// Function: movie_update
-// Placeholder function, returns 0.
-uint32_t movie_update(void) {
-  return 0;
-}
-
 // Function: movie_find_by_id
-// Finds a movie node by its 1-based index.
-// param_1: Head of the linked list (MovieNode *).
-// param_2: The 1-based index of the movie to find.
-// Returns a pointer to the MovieNode if found, otherwise NULL.
-MovieNode *movie_find_by_id(MovieNode *head, int target_id) {
-  if (head == NULL || target_id <= 0) {
-    return NULL;
-  }
-
-  MovieNode *current = head;
-  int current_id = 1;
-  while (current != NULL) {
-    if (target_id == current_id) {
-      return current;
+// param_1: head of the list (MovieNode* address cast to int)
+// param_2: 1-based index to find
+int movie_find_by_id(int param_1, int param_2) {
+  if (param_1 != 0 && param_2 >= 1) {
+    int current_index = 0;
+    int current_node_addr = param_1;
+    while (current_node_addr != 0) {
+      current_index++;
+      if (param_2 == current_index) {
+        return current_node_addr;
+      }
+      // The next pointer is at an offset of 4 bytes from the start of the node
+      current_node_addr = *(int *)(uintptr_t)(current_node_addr + 4);
     }
-    current = current->next;
-    current_id++;
   }
-  return NULL; // Movie not found at the given index
+  return 0;
 }

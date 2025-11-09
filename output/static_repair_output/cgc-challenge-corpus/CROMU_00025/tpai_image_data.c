@@ -1,331 +1,354 @@
-#include <stdbool.h> // For bool, true, false
-#include <stdint.h>  // For uint32_t, intptr_t
-#include <stdio.h>   // For printf, fprintf, stderr
-#include <stdlib.h>  // For NULL
-#include <string.h>  // For memset
-#include <stddef.h>  // For size_t
+#include <stdio.h>    // For printf
+#include <stdlib.h>   // For malloc, free
+#include <string.h>   // For memset
+#include <stdint.h>   // For uint16_t, uint32_t, etc.
+#include <stdbool.h>  // For bool type
 
-// Define the structure for TPAI_Context based on memory accesses
-// This structure is inferred from the offset-based accesses in the original code.
+// Define the TpaiImageContext structure based on memory access patterns
+// Offsets inferred from the original code:
+// param_1 + 0x00: file_data (char*)
+// param_1 + 0x04: size (int)
+// param_1 + 0x08: offset (int)
+// param_1 + 0x0C: bit_offset (int)
+// param_1 + 0x10: width (int)
+// param_1 + 0x14: height (int)
+// param_1 + 0x18: load_mode (int)
 typedef struct {
-    char *data_buffer_ptr;      // Offset 0x00: Base address of the data buffer (e.g., file content)
-    uint32_t total_data_len;    // Offset 0x04: Total length of the data buffer in bytes
-    uint32_t current_byte_offset; // Offset 0x08: Current byte offset in data_buffer
-    uint32_t bit_offset_or_checksum_flag; // Offset 0x0C: Used as current bit offset (0-7) in bit reading functions,
-                                          // and as a flag (0 for enabled) in checksum calculation.
+    char *file_data;
+    int size;
+    int offset;
+    int bit_offset;
+    int width;
+    int height;
+    int load_mode;
+} TpaiImageContext;
 
-    uint32_t width;             // Offset 0x10: Image width
-    uint32_t height;            // Offset 0x14: Image height
-    uint32_t load_direction;    // Offset 0x18: Pixel loading direction (0-7)
-    // ... potentially more fields if the context is larger
-} TPAI_Context;
+// Forward declarations for functions
+bool tpai_read_check(TpaiImageContext *ctx, int num_bits);
+bool tpai_read_nbits(TpaiImageContext *ctx, int num_bits, unsigned int *value);
+bool tpai_read_magic(TpaiImageContext *ctx);
+bool tpai_read_width(TpaiImageContext *ctx);
+bool tpai_read_height(TpaiImageContext *ctx);
+bool tpai_read_loadd(TpaiImageContext *ctx, unsigned int *load_mode_value);
+bool tpai_skip_rsrvd(TpaiImageContext *ctx);
+bool tpai_calc_checksum(TpaiImageContext *ctx);
+bool tpai_read_pixel(TpaiImageContext *ctx, int *pixel_value);
+bool tpai_display_image(TpaiImageContext *ctx);
 
-// Magic number for TPAI format, converted from signed -0x34a6f0cf to unsigned.
-#define TPAI_MAGIC 0xCB590F31U
+// Custom memory allocation/deallocation functions
+// Assuming 'allocate' returns non-zero on success (and sets *out_ptr), 0 on failure.
+// Assuming 'deallocate' is void.
+static int allocate(size_t size, int flags, void **out_ptr) {
+    (void)flags; // flags parameter is unused in this simple wrapper
+    *out_ptr = malloc(size);
+    return (*out_ptr != NULL);
+}
 
-// Character map for pixel display.
-// The original code used `local_80 < 0x60` (96) as a bound.
-// The inferred string " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-// has 95 characters (ASCII 32 to 126).
-// To allow access up to index 95 (0x5F), we pad the array to 96 characters.
-static const char pixel_char_map[96] =
-    " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~?";
-
-// External function declarations (assuming these are provided elsewhere)
-// These are placeholders for custom memory allocation/deallocation.
-extern bool allocate(size_t size, int flags, void **buffer);
-extern void deallocate(void *buffer, size_t size);
-
+static void deallocate(void *ptr, size_t size) {
+    (void)size; // size parameter might be for debugging/tracking, not strictly needed for free
+    free(ptr);
+}
 
 // Function: tpai_read_check
-// Checks if there are enough bits remaining in the buffer to read.
-bool tpai_read_check(TPAI_Context *ctx, int num_bits_to_read) {
-    if (ctx == NULL || ctx->data_buffer_ptr == NULL) {
+bool tpai_read_check(TpaiImageContext *ctx, int num_bits) {
+    if (!ctx || !ctx->file_data) {
         return false;
     }
-    // num_bits_to_read must be positive and not exceed 32 bits (0x20)
-    // The original check `param_2 < 0x21` means `param_2 <= 0x20` (32).
-    if (num_bits_to_read <= 0 || num_bits_to_read > 32) {
+    if (num_bits <= 0 || num_bits > 32) { // Max 32 bits for unsigned int in this context
         return false;
     }
-
-    // Calculate total bits available from current position
-    // available_bits = (total_bytes - current_byte_offset) * 8 - current_bit_offset
-    uint32_t available_bits =
-        (ctx->total_data_len - ctx->current_byte_offset) * 8 - ctx->bit_offset_or_checksum_flag;
-
-    return available_bits >= (uint32_t)num_bits_to_read;
+    // Check if there are enough bits left in the buffer
+    // ctx->size is total bytes, ctx->offset is current byte offset, ctx->bit_offset is current bit in byte
+    // Total bits available from current position: (ctx->size - ctx->offset) * 8 - ctx->bit_offset
+    if ((size_t)ctx->offset * 8 + ctx->bit_offset + num_bits > (size_t)ctx->size * 8) {
+        return false;
+    }
+    return true;
 }
 
 // Function: tpai_read_nbits
-// Reads a specified number of bits from the context's data buffer.
-bool tpai_read_nbits(TPAI_Context *ctx, int num_bits_to_read, unsigned int *output_value_ptr) {
-    if (output_value_ptr == NULL) {
+bool tpai_read_nbits(TpaiImageContext *ctx, int num_bits, unsigned int *value) {
+    if (!tpai_read_check(ctx, num_bits) || !value) {
         return false;
     }
 
-    if (!tpai_read_check(ctx, num_bits_to_read)) {
-        return false;
-    }
+    *value = 0; // Initialize result
+    for (int i = 0; i < num_bits; ++i) {
+        // Read the current bit
+        // (7 - ctx->bit_offset) gives the position of the bit from MSB (0-7)
+        unsigned char current_byte = (unsigned char)ctx->file_data[ctx->offset];
+        unsigned int bit = (current_byte >> (7 - ctx->bit_offset)) & 1;
 
-    unsigned int read_value = 0;
-    char *current_data_byte_ptr = ctx->data_buffer_ptr + ctx->current_byte_offset;
+        // Accumulate the bit (shift existing value left, then add new bit)
+        *value = (*value << 1) | bit;
 
-    for (int i = 0; i < num_bits_to_read; i++) {
-        // Read the current bit from the current byte
-        unsigned char current_byte = *(unsigned char *)current_data_byte_ptr;
-        unsigned char bit = (current_byte >> (7U - ctx->bit_offset_or_checksum_flag)) & 1;
-
-        read_value = (read_value << 1) | bit; // Shift left and OR the new bit
-
-        ctx->bit_offset_or_checksum_flag = (ctx->bit_offset_or_checksum_flag + 1) % 8; // Increment bit offset, wrap around
-        if (ctx->bit_offset_or_checksum_flag == 0) { // If bit offset wraps to 0, advance to next byte
-            ctx->current_byte_offset++;
-            current_data_byte_ptr++; // Update pointer to the next byte
+        // Advance bit_offset
+        ctx->bit_offset++;
+        if (ctx->bit_offset == 8) {
+            ctx->bit_offset = 0;
+            ctx->offset++;
         }
     }
-
-    *output_value_ptr = read_value;
     return true;
 }
 
 // Function: tpai_read_magic
-// Reads and validates the magic number from the context.
-bool tpai_read_magic(TPAI_Context *ctx) {
-    if (ctx == NULL) {
+bool tpai_read_magic(TpaiImageContext *ctx) {
+    if (!ctx) {
         return false;
     }
-
     unsigned int magic_value = 0;
-    if (!tpai_read_nbits(ctx, 32, &magic_value)) { // Read 32 bits for magic number
+    if (!tpai_read_nbits(ctx, 32, &magic_value)) { // 0x20 is 32 bits
         return false;
     }
-    return magic_value == TPAI_MAGIC;
+    // The magic value is -0x34a6f0cf, which is 0xCB590F31 as an unsigned int
+    return (magic_value == 0xCB590F31);
 }
 
 // Function: tpai_read_width
-// Reads the image width from the context.
-bool tpai_read_width(TPAI_Context *ctx) {
-    if (ctx == NULL) {
+bool tpai_read_width(TpaiImageContext *ctx) {
+    if (!ctx) {
         return false;
     }
-
-    unsigned int width_val = 0;
-    if (!tpai_read_nbits(ctx, 6, &width_val)) { // Read 6 bits for width
-        ctx->width = 0; // Set to 0 on failure
+    unsigned int width_value = 0;
+    if (!tpai_read_nbits(ctx, 6, &width_value)) {
+        ctx->width = 0; // Ensure width is zero on failure
         return false;
     }
-    ctx->width = width_val;
+    ctx->width = (int)width_value;
     return true;
 }
 
 // Function: tpai_read_height
-// Reads the image height from the context.
-bool tpai_read_height(TPAI_Context *ctx) {
-    if (ctx == NULL) {
+bool tpai_read_height(TpaiImageContext *ctx) {
+    if (!ctx) {
         return false;
     }
-
-    unsigned int height_val = 0;
-    if (!tpai_read_nbits(ctx, 6, &height_val)) { // Read 6 bits for height
-        ctx->height = 0; // Set to 0 on failure
+    unsigned int height_value = 0;
+    if (!tpai_read_nbits(ctx, 6, &height_value)) {
+        ctx->height = 0; // Ensure height is zero on failure
         return false;
     }
-    ctx->height = height_val;
+    ctx->height = (int)height_value;
     return true;
 }
 
 // Function: tpai_read_loadd
-// Reads the pixel load direction and stores it in the context.
-bool tpai_read_loadd(TPAI_Context *ctx, unsigned int *load_direction_out) {
-    if (ctx == NULL || load_direction_out == NULL) {
+bool tpai_read_loadd(TpaiImageContext *ctx, unsigned int *load_mode_value) {
+    if (!ctx || !load_mode_value) {
         return false;
     }
-
-    unsigned int read_value = 0;
-    if (!tpai_read_nbits(ctx, 3, &read_value)) { // Read 3 bits for load direction
+    unsigned int mode = 0;
+    if (!tpai_read_nbits(ctx, 3, &mode)) {
         return false;
     }
-
-    *load_direction_out = read_value;
-    ctx->load_direction = read_value; // Update context directly
+    *load_mode_value = mode;
+    ctx->load_mode = (int)mode;
     return true;
 }
 
 // Function: tpai_skip_rsrvd
-// Skips the reserved section, expecting it to be zero.
-bool tpai_skip_rsrvd(TPAI_Context *ctx) {
-    if (ctx == NULL) {
+bool tpai_skip_rsrvd(TpaiImageContext *ctx) {
+    if (!ctx) {
         return false;
     }
-
     unsigned int reserved_value = 0;
-    if (!tpai_read_nbits(ctx, 0x11, &reserved_value)) { // Read 17 bits for reserved value
+    if (!tpai_read_nbits(ctx, 17, &reserved_value)) { // 0x11 is 17 bits
         return false;
     }
-    // Assuming the reserved value must be 0 for success
-    return reserved_value == 0;
+    // The original code checks if reserved_value is 0.
+    return (reserved_value == 0);
 }
 
 // Function: tpai_calc_checksum
-// Calculates and validates the checksum of a data section.
-bool tpai_calc_checksum(TPAI_Context *ctx) {
-    if (ctx == NULL) {
-        return false;
-    }
-    // Assuming bit_offset_or_checksum_flag is 0 when checksum is enabled
-    if (ctx->bit_offset_or_checksum_flag != 0) {
-        return false; // Checksum is disabled or invalid flag
-    }
-
-    // Check if the data section length for checksum is even
-    if (((ctx->total_data_len - ctx->current_byte_offset) & 1U) != 0) {
-        return false; // Data length must be even for 2-byte checksums
-    }
-
-    // Number of 2-byte words to checksum, excluding the last word (which is the stored checksum)
-    int num_words_to_checksum = (int)((ctx->total_data_len - ctx->current_byte_offset) / 2) - 1;
-
-    if (num_words_to_checksum < 0) { // Not enough data for at least one word + checksum word
+bool tpai_calc_checksum(TpaiImageContext *ctx) {
+    if (!ctx) {
         return false;
     }
 
-    unsigned short calculated_checksum = 0;
-    char *data_base = ctx->data_buffer_ptr + ctx->current_byte_offset;
-
-    for (int i = 0; i < num_words_to_checksum; i++) {
-        calculated_checksum ^= *(unsigned short *)(data_base + (size_t)i * 2);
+    // Checksum is calculated only if bit_offset is 0 (byte aligned)
+    // and the remaining data length is an even number of bytes (for ushort access).
+    // The last ushort is the expected checksum.
+    if (ctx->bit_offset != 0) {
+        return false; // Not byte-aligned
     }
 
-    // The last 2-byte word is the stored checksum
-    unsigned short stored_checksum = *(unsigned short *)(data_base + (size_t)num_words_to_checksum * 2);
+    int remaining_bytes = ctx->size - ctx->offset;
+    if (remaining_bytes < 2 || (remaining_bytes % 2) != 0) {
+        return false; // Not enough bytes for at least one 16-bit word, or odd number of bytes
+    }
 
-    return calculated_checksum == stored_checksum;
+    int num_checksum_words = remaining_bytes / 2; // Total 16-bit words including the checksum itself
+
+    uint16_t current_checksum = 0;
+    char *data_ptr = ctx->file_data + ctx->offset;
+
+    // Iterate over all words except the last one (which is the stored checksum)
+    for (int i = 0; i < num_checksum_words - 1; ++i) {
+        // Read 16-bit word. Assuming direct memory access (endianness dependent).
+        // To be strictly portable, one would read two bytes and combine them.
+        // For now, mirroring the decompiler's `*(ushort *)`
+        uint16_t word = *(uint16_t *)(data_ptr + i * 2);
+        current_checksum ^= word;
+    }
+
+    // The last word is the expected checksum
+    uint16_t expected_checksum = *(uint16_t *)(data_ptr + (num_checksum_words - 1) * 2);
+
+    ctx->offset += remaining_bytes; // Advance offset past checksum data
+    ctx->bit_offset = 0;            // Ensure bit_offset is reset
+
+    return (current_checksum == expected_checksum);
 }
 
+// Pixel lookup table
+// Original string: " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+// This string has 95 characters. Valid indices are 0 to 94.
+static const char TPAI_PIXEL_MAP[] =
+    " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+#define TPAI_PIXEL_MAP_LENGTH (sizeof(TPAI_PIXEL_MAP) - 1) // Exclude null terminator
+
 // Function: tpai_read_pixel
-// Reads a single pixel value and converts it to its corresponding character.
-bool tpai_read_pixel(TPAI_Context *ctx, int *pixel_char_val_out) {
-    if (ctx == NULL || pixel_char_val_out == NULL) {
+bool tpai_read_pixel(TpaiImageContext *ctx, int *pixel_value) {
+    if (!ctx || !pixel_value) {
         return false;
     }
 
-    unsigned int pixel_index_val = 0; // The value read from the stream, determines char from map
-    if (!tpai_read_nbits(ctx, 7, &pixel_index_val)) { // Read 7 bits for pixel value index
+    unsigned int pixel_index = 0;
+    // Reads 7 bits for the pixel index
+    if (!tpai_read_nbits(ctx, 7, &pixel_index)) {
         return false;
     }
 
-    // Check if pixel_index_val is within valid bounds for the character map
-    // `pixel_char_map` has 96 characters (indices 0-95).
-    if (pixel_index_val < sizeof(pixel_char_map)) {
-        *pixel_char_val_out = (int)pixel_char_map[pixel_index_val];
+    // The original code had a check `(local_80 < 0x60) && (local_80 != 0)`.
+    // `0x60` (96) is the upper bound. `TPAI_PIXEL_MAP_LENGTH` is 95.
+    // If pixel_index is 0, it maps to ' ' (space). This is a valid character.
+    // The `local_80 != 0` check is removed as it makes ' ' an invalid pixel.
+    // The upper bound is corrected to match the actual string length.
+    if (pixel_index < TPAI_PIXEL_MAP_LENGTH) {
+        *pixel_value = (int)TPAI_PIXEL_MAP[pixel_index];
         return true;
     }
-    return false; // Pixel value out of bounds for character map
+
+    return false; // Pixel index out of bounds
 }
 
 // Function: tpai_display_image
-// Reads image data from the context and prints it to stdout.
-bool tpai_display_image(TPAI_Context *ctx) {
-    void *image_buffer = NULL;
-    size_t image_size = 0;
-    unsigned int pixel_char_val = 0;
-    unsigned int current_pixel_index = 0;
-    unsigned int row = 0;
-    unsigned int col = 0;
-    unsigned int buffer_offset = 0;
-
-    if (ctx == NULL) {
+bool tpai_display_image(TpaiImageContext *ctx) {
+    if (!ctx) {
         return false;
     }
 
-    // Chain function calls using logical AND for early exit on failure
-    if (!tpai_read_magic(ctx) ||
-        !tpai_read_width(ctx) ||
-        !tpai_read_height(ctx) ||
-        !tpai_read_loadd(ctx, &ctx->load_direction) || // tpai_read_loadd updates ctx->load_direction
-        !tpai_skip_rsrvd(ctx) ||
-        !tpai_calc_checksum(ctx)) {
-        return false;
+    // Chain success checks for header parsing
+    if (!tpai_read_magic(ctx)) return false;
+    if (!tpai_read_width(ctx)) return false;
+    if (!tpai_read_height(ctx)) return false;
+
+    unsigned int load_mode_val;
+    if (!tpai_read_loadd(ctx, &load_mode_val)) return false;
+    // ctx->load_mode is already set by tpai_read_loadd, this line is redundant but harmless:
+    // ctx->load_mode = (int)load_mode_val;
+
+    if (!tpai_skip_rsrvd(ctx)) return false;
+    if (!tpai_calc_checksum(ctx)) return false;
+
+    // Calculate image size
+    size_t image_pixel_count = (size_t)ctx->width * ctx->height;
+    if (image_pixel_count == 0) {
+        printf("\n"); // Print newline for consistency if nothing to display
+        return true; // No image data to display, but operations succeeded.
     }
 
-    // Calculate image_size based on width and height from ctx
-    image_size = (size_t)ctx->width * ctx->height;
-
-    // Allocate memory for the image buffer (+1 for null terminator)
-    if (!allocate(image_size + 1, 0, &image_buffer)) {
+    char *pixel_buffer = NULL;
+    // Allocate image_pixel_count + 1 for null terminator
+    if (!allocate(image_pixel_count + 1, 0, (void **)&pixel_buffer)) {
         return false;
     }
+    memset(pixel_buffer, ' ', image_pixel_count); // Initialize with spaces
+    pixel_buffer[image_pixel_count] = '\0';       // Null terminate
 
-    memset(image_buffer, ' ', image_size); // Initialize buffer with spaces
-    ((char *)image_buffer)[image_size] = '\0'; // Null-terminate the buffer
-
-    // Read and place pixels into the buffer
-    while (true) {
-        if (!tpai_read_pixel(ctx, (int *)&pixel_char_val)) {
-            break; // Stop if pixel reading fails (e.g., end of stream, invalid pixel)
+    for (size_t current_pixel_idx = 0; current_pixel_idx < image_pixel_count; ++current_pixel_idx) {
+        int pixel_char_val = 0;
+        if (!tpai_read_pixel(ctx, &pixel_char_val)) {
+            deallocate(pixel_buffer, image_pixel_count + 1);
+            return false;
         }
 
-        // Determine row and col based on load_direction
-        switch (ctx->load_direction) {
-            case 0: // Top-Left to Bottom-Right
-                row = current_pixel_index / ctx->width;
-                col = current_pixel_index % ctx->width;
+        unsigned int row = 0;
+        unsigned int col = 0;
+
+        // Calculate row and column based on load_mode
+        switch (ctx->load_mode) {
+            case 0: // Normal (row-major, top-left origin)
+                row = current_pixel_idx / ctx->width;
+                col = current_pixel_idx % ctx->width;
                 break;
-            case 1: // Top-Right to Bottom-Left
-                row = current_pixel_index / ctx->width;
-                col = (ctx->width - (current_pixel_index % ctx->width)) - 1;
+            case 1: // Flipped horizontally
+                row = current_pixel_idx / ctx->width;
+                col = (ctx->width - 1) - (current_pixel_idx % ctx->width);
                 break;
-            case 2: // Bottom-Left to Top-Right
-                row = (ctx->height - (current_pixel_index / ctx->width)) - 1;
-                col = current_pixel_index % ctx->width;
+            case 2: // Flipped vertically
+                row = (ctx->height - 1) - (current_pixel_idx / ctx->width);
+                col = current_pixel_idx % ctx->width;
                 break;
-            case 3: // Bottom-Right to Top-Left
-                row = (ctx->height - (current_pixel_index / ctx->width)) - 1;
-                col = (ctx->width - (current_pixel_index % ctx->width)) - 1;
+            case 3: // Flipped horizontally and vertically
+                row = (ctx->height - 1) - (current_pixel_idx / ctx->width);
+                col = (ctx->width - 1) - (current_pixel_idx % ctx->width);
                 break;
-            case 4: // Top-Left to Bottom-Right (Transposed: width and height swapped for coordinates)
-                row = current_pixel_index % ctx->height; // Transposed row based on height
-                col = current_pixel_index / ctx->height; // Transposed col based on height
+            case 4: // Transposed (column-major, top-left origin)
+                row = current_pixel_idx % ctx->height;
+                col = current_pixel_idx / ctx->height;
                 break;
-            case 5: // Top-Right to Bottom-Left (Transposed)
-                row = current_pixel_index % ctx->height;
-                col = (ctx->width - (current_pixel_index / ctx->height)) - 1;
+            case 5: // Transposed, flipped horizontally
+                row = current_pixel_idx % ctx->height;
+                col = (ctx->width - 1) - (current_pixel_idx / ctx->height);
                 break;
-            case 6: // Bottom-Left to Top-Right (Transposed)
-                row = (ctx->height - (current_pixel_index % ctx->height)) - 1;
-                col = current_pixel_index / ctx->height;
+            case 6: // Transposed, flipped vertically
+                row = (ctx->height - 1) - (current_pixel_idx % ctx->height);
+                col = current_pixel_idx / ctx->height;
                 break;
-            case 7: // Bottom-Right to Top-Left (Transposed)
-                row = (ctx->height - (current_pixel_index % ctx->height)) - 1;
-                col = (ctx->width - (current_pixel_index / ctx->height)) - 1;
+            case 7: // Transposed, flipped horizontally and vertically
+                row = (ctx->height - 1) - (current_pixel_idx % ctx->height);
+                col = (ctx->width - 1) - (current_pixel_idx / ctx->height);
                 break;
             default:
-                fprintf(stderr, "[ERROR] Unknown load direction: %u\n", ctx->load_direction);
-                deallocate(image_buffer, image_size + 1);
+                printf("[ERROR] Unknown load mode: %d\n", ctx->load_mode);
+                deallocate(pixel_buffer, image_pixel_count + 1);
                 return false;
         }
 
-        // Calculate the linear offset in the 1D image buffer
-        buffer_offset = col + ctx->width * row;
-        if (buffer_offset >= image_size) {
-            fprintf(stderr, "[ERROR] Pixel out of bounds in image buffer: offset %u, size %zu\n", buffer_offset, image_size);
-            deallocate(image_buffer, image_size + 1);
+        // Calculate linear index in the buffer
+        size_t linear_buffer_idx = (size_t)row * ctx->width + col;
+
+        if (linear_buffer_idx >= image_pixel_count) { // Should not happen if calculations are correct
+            printf("[ERROR] Pixel out of bounds during placement\n");
+            deallocate(pixel_buffer, image_pixel_count + 1);
             return false;
         }
-        ((char *)image_buffer)[buffer_offset] = (char)pixel_char_val;
-        current_pixel_index++;
+        pixel_buffer[linear_buffer_idx] = (char)pixel_char_val;
     }
 
-    // Print the image to stdout
-    for (buffer_offset = 0; buffer_offset < image_size; buffer_offset++) {
-        if ((buffer_offset % ctx->width == 0) && (buffer_offset != 0)) {
-            printf("\n"); // Newline at the start of each row (except the very first pixel)
+    // Print the image
+    for (size_t i = 0; i < image_pixel_count; ++i) {
+        // Print newline after each row, except before the very first character
+        if (i % ctx->width == 0 && i != 0) {
+            printf("\n");
         }
-        printf("%c", ((char *)image_buffer)[buffer_offset]);
+        printf("%c", pixel_buffer[i]);
     }
     printf("\n"); // Final newline after the image
 
-    deallocate(image_buffer, image_size + 1);
+    deallocate(pixel_buffer, image_pixel_count + 1);
     return true;
+}
+
+// Main function (dummy for compilation)
+// This function was not part of the original snippet but is included
+// to make the provided code a compilable unit.
+int main() {
+    // This is a placeholder main function.
+    // To test, you would initialize a TpaiImageContext with actual image data
+    // and then call tpai_display_image(&ctx).
+    printf("Placeholder main function executed. No image data processed.\n");
+    return 0;
 }

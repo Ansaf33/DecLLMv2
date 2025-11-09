@@ -1,125 +1,119 @@
-#include <unistd.h> // For size_t, ssize_t
-#include <stdint.h> // For uint8_t, uint32_t (if needed, but unsigned int is used)
-#include <stdio.h>  // For printf
-#include <string.h> // For memset (in mock)
+#include <stdio.h> // Required for printf in the main function
+#include <string.h> // Required for strlen in the mock_input_buffer (though not directly used in the provided snippet)
 
-// Define types as specified by typical usage in similar contexts
-typedef unsigned int uint;
-typedef unsigned char byte;
+// Mock receive function for compilation purposes.
+// In a real system, this would be provided by the OS or a library.
+// This mock simulates reading from a static buffer.
+static const char *mock_input_buffer = "hello world\nthis is a test input";
+static int mock_buffer_pos = 0;
 
-// Mock implementation of receive function for compilation
-// In a real scenario, this would be a system call (e.g., recv, read).
-// Signature: int receive(int fd, byte *buf, uint len, int *bytes_received);
-// Returns 0 on success, non-zero on error.
-// The fd parameter is ignored in this mock.
-// The len parameter is expected to be 1 for this use case.
-
-// Static buffer to simulate input data
-static const byte mock_input_buffer[] = "Hello World!\nThis is a test.\n";
-static size_t mock_input_pos = 0;
-static const size_t mock_input_len = sizeof(mock_input_buffer) - 1; // Exclude null terminator
-
-int receive(int fd, byte *buf, uint len, int *bytes_received) {
-    if (len != 1) {
-        if (bytes_received) *bytes_received = 0;
-        return -1; // Indicate error
+// receive function signature: int receive(int fd, byte *buf, int len, int *bytes_received)
+// Using unsigned char for byte for standard C compatibility.
+int receive(int fd, unsigned char *buf, int len, int *bytes_received) {
+    if (fd != 0) { // Simulating only stdin (fd 0)
+        *bytes_received = 0;
+        return -1; // Invalid file descriptor
     }
 
-    if (mock_input_pos < mock_input_len) {
-        *buf = mock_input_buffer[mock_input_pos++];
-        if (bytes_received) *bytes_received = 1;
-        return 0; // Success
-    } else {
-        // No more data
-        if (bytes_received) *bytes_received = 0;
-        return -1; // Indicate end of file/error
+    if (len <= 0) {
+        *bytes_received = 0;
+        return -1; // Invalid length
     }
+
+    if (mock_input_buffer[mock_buffer_pos] == '\0') {
+        *bytes_received = 0;
+        return 1; // End of mock input, return non-zero to indicate no more data
+    }
+
+    *buf = (unsigned char)mock_input_buffer[mock_buffer_pos];
+    mock_buffer_pos++;
+    *bytes_received = 1;
+    return 0; // Success
 }
 
 // Function: readUntil
-uint readUntil(byte *param_1, uint param_2, char param_3) {
-  byte received_byte;
-  int bytes_read_from_call;
-  unsigned int i;
+// Using unsigned int for uint and unsigned char for byte for standard C compatibility.
+unsigned int readUntil(unsigned char *param_1, unsigned int param_2, char param_3) {
+  unsigned int i; // Loop counter, used for the return value
+  unsigned char current_byte; // Stores the byte received
+  int receive_status; // Stores the return value of the receive function
+  int bytes_received_count; // Stores the number of bytes actually received
 
   for (i = 0; i < param_2; ++i) {
-    if (receive(0, &received_byte, 1, &bytes_read_from_call) != 0) {
-      return 0xffffffff;
-    }
-    if (bytes_read_from_call != 1) {
-      return 0xffffffff;
+    receive_status = receive(0, &current_byte, 1, &bytes_received_count);
+    
+    // Check for errors from receive or if not exactly one byte was received
+    if (receive_status != 0 || bytes_received_count != 1) {
+      return 0xffffffff; // Return error code
     }
     
-    if (received_byte == (byte)param_3) {
-      break;
+    // Check if the received byte matches the delimiter character
+    if (current_byte == (unsigned char)param_3) {
+      break; // Delimiter found, exit loop
     }
     
-    *param_1 = received_byte;
-    param_1++;
+    // Store the received byte and advance the buffer pointer
+    *param_1++ = current_byte;
   }
   
+  // Null-terminate the buffer
   *param_1 = 0;
-  
-  return i;
+  return i; // Return the number of bytes read before the delimiter or buffer full
 }
 
-// Main function for testing
+// Main function for compilation and testing
 int main() {
-    byte buffer[50];
-    uint result;
+    unsigned char buffer[100];
+    unsigned int bytes_read;
 
-    printf("--- Test Case 1: Read until 'W' ---\n");
-    mock_input_pos = 0; // Reset mock input
-    result = readUntil(buffer, sizeof(buffer) - 1, 'W');
-    if (result == 0xffffffff) {
-        printf("Error during readUntil.\n");
+    // Test 1: Read until 'o'
+    printf("Test 1: Reading until 'o'\n");
+    mock_buffer_pos = 0; // Reset mock input buffer position
+    bytes_read = readUntil(buffer, sizeof(buffer) - 1, 'o');
+    if (bytes_read == 0xffffffff) {
+        printf("Error reading!\n");
     } else {
-        printf("Read %u bytes: '%s'\n", result, buffer);
+        printf("Read %u bytes: '%s'\n", bytes_read, buffer); // Expected: "hell"
     }
 
-    printf("\n--- Test Case 2: Read until '\\n' ---\n");
-    mock_input_pos = 0; // Reset mock input
-    result = readUntil(buffer, sizeof(buffer) - 1, '\n');
-    if (result == 0xffffffff) {
-        printf("Error during readUntil.\n");
+    // Test 2: Read until ' '
+    printf("\nTest 2: Reading until ' '\n");
+    mock_buffer_pos = 0; // Reset mock input buffer position
+    bytes_read = readUntil(buffer, sizeof(buffer) - 1, ' ');
+    if (bytes_read == 0xffffffff) {
+        printf("Error reading!\n");
     } else {
-        printf("Read %u bytes: '%s'\n", result, buffer);
+        printf("Read %u bytes: '%s'\n", bytes_read, buffer); // Expected: "hello"
     }
 
-    printf("\n--- Test Case 3: Read more than available ---\n");
-    mock_input_pos = 0; // Reset mock input
-    result = readUntil(buffer, 5, 'X');
-    if (result == 0xffffffff) {
-        printf("Error during readUntil.\n");
+    // Test 3: Buffer too small (max 3 bytes for content)
+    printf("\nTest 3: Buffer too small (max 3 bytes), until 'o'\n");
+    mock_buffer_pos = 0; // Reset mock input buffer position
+    bytes_read = readUntil(buffer, 3, 'o'); // Max 3 chars + null terminator
+    if (bytes_read == 0xffffffff) {
+        printf("Error reading!\n");
     } else {
-        printf("Read %u bytes: '%s'\n", result, buffer);
+        printf("Read %u bytes: '%s'\n", bytes_read, buffer); // Expected: "hel" (stopped by param_2)
     }
 
-    printf("\n--- Test Case 4: Terminator is first char ---\n");
-    mock_input_pos = 0; // Reset mock input
-    result = readUntil(buffer, sizeof(buffer) - 1, 'H');
-    if (result == 0xffffffff) {
-        printf("Error during readUntil.\n");
+    // Test 4: Delimiter 'z' not found within limit (10 bytes)
+    printf("\nTest 4: Delimiter 'z' not found within limit (10 bytes)\n");
+    mock_buffer_pos = 0; // Reset mock input buffer position
+    bytes_read = readUntil(buffer, 10, 'z');
+    if (bytes_read == 0xffffffff) {
+        printf("Error reading!\n");
     } else {
-        printf("Read %u bytes: '%s'\n", result, buffer);
+        printf("Read %u bytes: '%s'\n", bytes_read, buffer); // Expected: "hello worl"
     }
     
-    printf("\n--- Test Case 5: Read until end of mock buffer ---\n");
-    mock_input_pos = 0; // Reset mock input
-    result = readUntil(buffer, sizeof(buffer) - 1, '.');
-    if (result == 0xffffffff) {
-        printf("Error during readUntil.\n");
+    // Test 5: Read until newline
+    printf("\nTest 5: Reading until '\\n'\n");
+    mock_buffer_pos = 0; // Reset mock input buffer position
+    bytes_read = readUntil(buffer, sizeof(buffer) - 1, '\n');
+    if (bytes_read == 0xffffffff) {
+        printf("Error reading!\n");
     } else {
-        printf("Read %u bytes: '%s'\n", result, buffer);
-    }
-
-    printf("\n--- Test Case 6: Buffer too small for content before terminator ---\n");
-    mock_input_pos = 0; // Reset mock input
-    result = readUntil(buffer, 5, '\n');
-    if (result == 0xffffffff) {
-        printf("Error during readUntil.\n");
-    } else {
-        printf("Read %u bytes: '%s'\n", result, buffer);
+        printf("Read %u bytes: '%s'\n", bytes_read, buffer); // Expected: "hello world"
     }
 
     return 0;

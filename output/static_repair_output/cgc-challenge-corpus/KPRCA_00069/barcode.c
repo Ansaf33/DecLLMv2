@@ -1,405 +1,471 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdbool.h> // For bool type
+#include <stdlib.h> // For malloc, free, strdup, strtoul, calloc
+#include <string.h> // For strlen, strcmp, memcpy, memset, strcpy
+#include <ctype.h>  // For isdigit
 
-// Global variables - declarations needed.
-// These are minimal declarations to make the code compile.
-// In a real application, g_barcode_lut would be populated with specific data.
-// Assuming each entry in g_barcode_lut is 0x18 bytes.
-// The string for strcmp starts at offset 4.
-// The char value for calculation/printing is at offset 0.
-char g_barcode_lut[0x6C * 0x18]; // 0x6C (108) entries, each 24 bytes long.
-char *g_blut_quiet;
-char *g_blut_startb;
-char *g_blut_startc;
-char *g_blut_stop;
+// Structure for a barcode lookup table entry
+// Total size 4 + 11 + 9 = 24 bytes (0x18)
+typedef struct BarcodeEntry {
+    int id_val;       // Value used for checksum or identification (e.g., ASCII - 0x20, 0-99 for Code C, special codes)
+    char bin_rep[11]; // Binary representation string (e.g., "1010101010") - 10 chars + null
+    char ascii_rep[9]; // ASCII representation string (e.g., "A", "05", "STARTB") - 8 chars + null
+} BarcodeEntry;
 
-// Helper function to initialize dummy data for compilation
-// In a real application, this would be loaded from a file or defined properly.
+// Global lookup table (108 entries total, indices 0 to 107)
+// Indices 0-95: Mapped from ASCII 0x20-0x7F for Code B (e.g., ' ' -> 0, 'A' -> 33)
+// Index 96-99: Unused (can be filled or remain empty)
+// Index 100: TAB (Code B special character)
+// Index 101: FNC1 (Code B special character)
+// Indices 0-99 (re-used): Mapped from 00-99 for Code C
+// Indices 0-102 (re-used): Mapped from checksum calculation (value % 103)
+// Index 103: Quiet Zone
+// Index 104: Start B
+// Index 105: Start C
+// Index 106: Stop
+// Index 107: (Could be used for something else, or just padding)
+BarcodeEntry g_barcode_lut[0x6c];
+
+// Pointers to special entries within the lookup table
+BarcodeEntry *g_blut_quiet;
+BarcodeEntry *g_blut_startb;
+BarcodeEntry *g_blut_startc;
+BarcodeEntry *g_blut_stop;
+
+// Dummy initialization function for the global lookup table
+// In a real application, this would be loaded from a configuration or data file.
 void init_dummy_barcode_lut() {
-    for (int i = 0; i < 0x6C; ++i) {
-        memset(&g_barcode_lut[i * 0x18], 0, 0x18);
-        g_barcode_lut[i * 0x18] = (char)('!' + i); // Dummy char value
-        if (i < 100) { // For numeric codes 0-99
-            snprintf(&g_barcode_lut[i * 0x18 + 1], 3, "%02d", i); // Store "00" to "99" at offset 1 for Code C
-        }
-        snprintf(&g_barcode_lut[i * 0x18 + 4], 0x18 - 4, "BIN_REP_%02d", i); // Dummy binary representation string
+    // Initialize special control entries
+    g_blut_quiet = &g_barcode_lut[103];
+    strcpy(g_blut_quiet->bin_rep, "0000000000"); // Dummy binary rep
+    strcpy(g_blut_quiet->ascii_rep, "QUIET"); // Dummy ASCII rep
+    g_blut_quiet->id_val = 0; // Not typically used for quiet zone
+
+    g_blut_startb = &g_barcode_lut[104];
+    strcpy(g_blut_startb->bin_rep, "1111111111");
+    strcpy(g_blut_startb->ascii_rep, "STARTB");
+    g_blut_startb->id_val = 104; // A unique ID value for this entry
+
+    g_blut_startc = &g_barcode_lut[105];
+    strcpy(g_blut_startc->bin_rep, "2222222222");
+    strcpy(g_blut_startc->ascii_rep, "STARTC");
+    g_blut_startc->id_val = 105;
+
+    g_blut_stop = &g_barcode_lut[106];
+    strcpy(g_blut_stop->bin_rep, "3333333333");
+    strcpy(g_blut_stop->ascii_rep, "STOP");
+    g_blut_stop->id_val = 106;
+
+    // Initialize Code B characters (ASCII 0x20 to 0x7F -> indices 0 to 95)
+    // The `id_val` stores the ASCII character for data reconstruction and checksum.
+    for (int i = 0; i < 96; ++i) {
+        int ascii_char = i + 0x20; // ' ' (32) maps to index 0, 'A' (65) maps to index 33
+        g_barcode_lut[i].id_val = ascii_char;
+        sprintf(g_barcode_lut[i].bin_rep, "B%03d%03d", ascii_char, i); // Dummy binary representation
+        sprintf(g_barcode_lut[i].ascii_rep, "%c", (char)ascii_char); // Single ASCII character
     }
 
-    // Assign specific global pointers to these dummy entries
-    // The specific indices (100, 0x65) are based on their usage in the original code's logic.
-    g_barcode_lut[0 * 0x18] = 'Q'; // Quiet zone
-    g_barcode_lut[1 * 0x18] = 'B'; // Start B
-    g_barcode_lut[2 * 0x18] = 'C'; // Start C
-    g_barcode_lut[3 * 0x18] = 'P'; // Stop
+    // Initialize special Code B characters (TAB and FNC1)
+    g_barcode_lut[100].id_val = 100; // Original code used 100 for TAB
+    strcpy(g_barcode_lut[100].bin_rep, "T\tT\tT\tT\tT\t"); // Dummy binary rep
+    strcpy(g_barcode_lut[100].ascii_rep, "TAB"); // ASCII rep for TAB
 
-    g_barcode_lut[100 * 0x18] = 9; // For TAB character
-    g_barcode_lut[0x65 * 0x18] = (char)0xC0; // For -0x40 character (192 unsigned)
+    g_barcode_lut[101].id_val = 0x65; // Original code used 0x65 (101) for FNC1
+    strcpy(g_barcode_lut[101].bin_rep, "FNC1FNC1F1");
+    strcpy(g_barcode_lut[101].ascii_rep, "FNC1");
 
-    g_blut_quiet = &g_barcode_lut[0 * 0x18];
-    g_blut_startb = &g_barcode_lut[1 * 0x18];
-    g_blut_startc = &g_barcode_lut[2 * 0x18];
-    g_blut_stop = &g_barcode_lut[3 * 0x18];
+    // Initialize Code C characters (numeric pairs 00-99 -> indices 0 to 99)
+    // The `id_val` stores the numeric value (0-99) for data reconstruction and checksum.
+    // These entries overlap with Code B ASCII characters, but are used based on barcode_type.
+    for (int i = 0; i < 100; ++i) {
+        g_barcode_lut[i].id_val = i;
+        sprintf(g_barcode_lut[i].bin_rep, "C%02dC%02dC", i, i); // Dummy binary representation
+        sprintf(g_barcode_lut[i].ascii_rep, "%02d", i); // Two-digit numeric string
+    }
 }
 
+// Structure for the generated barcode output
+typedef struct Barcode {
+    int total_elements;    // Number of barcode elements (quiet zones, start, data, checksum, stop, quiet)
+    int barcode_type;      // 100 for CODE B, 0x65 for CODE C
+    char *data_string;     // The original or modified input string (human-readable)
+    BarcodeEntry **elements; // Array of pointers to BarcodeEntry for each element
+    int checksum_value;    // Calculated checksum
+} Barcode;
+
+
 // Function: find_entry_by_bin_rep
-char *find_entry_by_bin_rep(char *param_1) {
-    unsigned int i = 0;
-    while (i <= 0x6b) { // Loop condition changed to include 0x6b (max index)
-        if (strcmp(g_barcode_lut + i * 0x18 + 4, param_1) == 0) {
-            return g_barcode_lut + i * 0x18;
-        }
-        i++;
+BarcodeEntry * find_entry_by_bin_rep(const char *binary_representation) {
+  for (unsigned int i = 0; i <= 0x6b; ++i) { // Loop through all possible entries up to index 107 (0x6b)
+    if (strcmp(g_barcode_lut[i].bin_rep, binary_representation) == 0) {
+      return &g_barcode_lut[i];
     }
-    return NULL;
+  }
+  return NULL;
 }
 
 // Function: create_barcode_from_str
-int *create_barcode_from_str(char *param_1) {
-    size_t param_len;
-    int *barcode_data = NULL;
-    int is_numeric = 1;
-    char *temp_param_str = NULL;
-    char temp_concat_str[3];
-    unsigned long current_num_val;
-    int current_lut_idx = 0;
-    int char_code_val;
-    size_t i;
+Barcode * create_barcode_from_str(const char *input_param) {
+  size_t input_len = strlen(input_param);
+  
+  if (input_param == NULL || input_len == 0 || input_len > 0xfa) { // Max length 250
+    return NULL;
+  }
 
-    if (param_1 == NULL || (param_len = strlen(param_1)) == 0 || param_len > 0xfa) {
-        return NULL;
+  Barcode *barcode = (Barcode *)malloc(sizeof(Barcode));
+  if (barcode == NULL) {
+      return NULL;
+  }
+  // Initialize fields to safe values
+  memset(barcode, 0, sizeof(Barcode));
+
+  int is_numeric = 1;
+  for (size_t i = 0; i < input_len; ++i) {
+    if (!isdigit((unsigned char)input_param[i])) { // Use unsigned char for isdigit
+      is_numeric = 0;
     }
-
-    barcode_data = (int *)malloc(5 * sizeof(int));
-    if (barcode_data == NULL) {
-        return NULL;
+    // Check for invalid characters based on the original logic
+    // Characters below ' ' (0x20) or 0x7F are invalid, unless they are '\t' or 0xC0 (-0x40)
+    if (((input_param[i] < ' ') || (input_param[i] == '\x7f')) &&
+        (input_param[i] != '\t' && (input_param[i] != (char)0xC0))) {
+      free(barcode);
+      return NULL;
     }
+  }
+  
+  printf("but the q isdid i make it here?\n"); // Original debug print
 
-    for (i = 0; i < param_len; i++) {
-        if (!isdigit((int)param_1[i])) {
-            is_numeric = 0;
-        }
-        // Check for control characters, excluding TAB ('\t') and 0xC0 (-0x40)
-        if ((param_1[i] < ' ' || param_1[i] == 0x7f) && param_1[i] != '\t' && (unsigned char)param_1[i] != 0xC0) {
-            free(barcode_data);
-            return NULL;
-        }
+  int current_element_idx = 0; // Index for barcode->elements array
+  
+  if (!is_numeric) { // Barcode Type B
+    barcode->barcode_type = 100; // CODE B identifier
+    barcode->data_string = strdup(input_param);
+    if (barcode->data_string == NULL) { free(barcode); return NULL; }
+
+    barcode->checksum_value = 0x68; // Initial checksum for CODE B
+    // total_elements: Quiet, StartB, Data (input_len), Checksum, Stop, Quiet
+    barcode->total_elements = input_len + 5;
+    barcode->elements = (BarcodeEntry **)malloc(barcode->total_elements * sizeof(BarcodeEntry *));
+    if (barcode->elements == NULL) { free(barcode->data_string); free(barcode); return NULL; }
+
+    barcode->elements[current_element_idx++] = g_blut_quiet;
+    barcode->elements[current_element_idx++] = g_blut_startb;
+
+    for (size_t i = 0; i < input_len; ++i) {
+      int char_map_idx;
+      if (input_param[i] == '\t') {
+        char_map_idx = 100; // Index for TAB entry
+      } else if (input_param[i] == (char)0xC0) { // -0x40
+        char_map_idx = 101; // Index for FNC1 entry
+      } else {
+        char_map_idx = input_param[i] - 0x20; // Map ASCII 0x20-0x7F to indices 0-95
+      }
+      barcode->elements[current_element_idx++] = &g_barcode_lut[char_map_idx];
+      barcode->checksum_value += (i + 1) * g_barcode_lut[char_map_idx].id_val; // Use id_val for checksum
     }
+  } else { // Barcode Type C
+    const char *current_param_ptr = input_param; // Pointer to the string being processed
+    char *temp_param_alloc = NULL; // Temporary allocation if '0' is prepended
 
-    printf("but the q isdid i make it here?\n");
-
-    if (!is_numeric) { // Code B logic
-        barcode_data[1] = 100; // Type code for Code B
-        barcode_data[2] = (int)strdup(param_1); // Store original string pointer
-        if ((char *)barcode_data[2] == NULL) {
-            free(barcode_data);
-            return NULL;
-        }
-
-        barcode_data[4] = 0x68; // Initial checksum value for Code B
-        barcode_data[0] = (int)(param_len + 5); // Total elements in LUT entry array
-        barcode_data[3] = (int)malloc(barcode_data[0] * sizeof(char *)); // Array of char* (pointers to LUT entries)
-        if ((char **)barcode_data[3] == NULL) {
-            free((char *)barcode_data[2]);
-            free(barcode_data);
-            return NULL;
-        }
-
-        ((char **)barcode_data[3])[current_lut_idx++] = g_blut_quiet;
-        ((char **)barcode_data[3])[current_lut_idx++] = g_blut_startb;
-
-        for (i = 0; i < param_len; i++) {
-            if (param_1[i] == '\t') {
-                char_code_val = 100; // Special code for TAB
-            } else if ((unsigned char)param_1[i] == 0xC0) { // Special code for -0x40
-                char_code_val = 0x65;
-            } else {
-                char_code_val = param_1[i] - 0x20; // ASCII char to Code B value
-            }
-            ((char **)barcode_data[3])[current_lut_idx++] = g_barcode_lut + char_code_val * 0x18;
-            barcode_data[4] += (int)((i + 1) * char_code_val); // Checksum calculation
-        }
-    } else { // Code C logic
-        barcode_data[1] = 0x65; // Type code for Code C
-
-        if ((param_len & 1) == 0) { // Even length
-            barcode_data[2] = (int)strdup(param_1);
-            if ((char *)barcode_data[2] == NULL) {
-                free(barcode_data);
-                return NULL;
-            }
-        } else { // Odd length, pad with '0'
-            temp_param_str = (char *)malloc(param_len + 2); // +1 for '0', +1 for null terminator
-            if (temp_param_str == NULL) {
-                free(barcode_data);
-                return NULL;
-            }
-            temp_param_str[0] = '0';
-            memcpy(temp_param_str + 1, param_1, param_len + 1); // Copy param_1 including null terminator
-            param_1 = temp_param_str;                            // Point param_1 to the padded string
-            param_len++;                                         // Update param_len for padded string
-            barcode_data[2] = (int)temp_param_str;
-        }
-
-        barcode_data[4] = 0x69; // Initial checksum value for Code C
-        barcode_data[0] = (int)((param_len >> 1) + 5); // Total elements in LUT entry array
-        barcode_data[3] = (int)malloc(barcode_data[0] * sizeof(char *));
-        if ((char **)barcode_data[3] == NULL) {
-            if (temp_param_str != NULL)
-                free(temp_param_str); // Free padded string if allocated
-            if ((char *)barcode_data[2] != NULL)
-                free((char *)barcode_data[2]); // Free strdup string if allocated
-            free(barcode_data);
-            return NULL;
-        }
-
-        ((char **)barcode_data[3])[current_lut_idx++] = g_blut_quiet;
-        ((char **)barcode_data[3])[current_lut_idx++] = g_blut_startc;
-
-        for (i = 0; i < param_len; i += 2) {
-            temp_concat_str[0] = param_1[i];
-            temp_concat_str[1] = param_1[i + 1];
-            temp_concat_str[2] = '\0';
-            current_num_val = strtoul(temp_concat_str, NULL, 10); // Convert two digits to int
-
-            if (current_num_val > 99) { // Capped at 99
-                current_num_val = 0;
-            }
-            ((char **)barcode_data[3])[current_lut_idx++] = g_barcode_lut + current_num_val * 0x18;
-            barcode_data[4] += (int)(((i + 2) / 2) * current_num_val); // Checksum calculation
-        }
+    barcode->barcode_type = 0x65; // CODE C identifier
+    
+    // If input length is odd, prepend '0'
+    if ((input_len & 1) != 0) {
+      temp_param_alloc = (char *)malloc(input_len + 2); // +1 for '0', +1 for null terminator
+      if (temp_param_alloc == NULL) { free(barcode); return NULL; }
+      temp_param_alloc[0] = '0';
+      memcpy(temp_param_alloc + 1, input_param, input_len + 1); // Copy original string + null
+      current_param_ptr = temp_param_alloc;
+      input_len++; // Update length to include the prepended '0'
     }
+    barcode->data_string = strdup(current_param_ptr);
+    if (barcode->data_string == NULL) { free(temp_param_alloc); free(barcode); return NULL; }
+    free(temp_param_alloc); // Free the temporary buffer if it was used
 
-    barcode_data[4] %= 0x67; // Final checksum modulo
-    ((char **)barcode_data[3])[current_lut_idx++] = g_barcode_lut + barcode_data[4] * 0x18; // Checksum entry
-    ((char **)barcode_data[3])[current_lut_idx++] = g_blut_stop;
-    ((char **)barcode_data[3])[current_lut_idx++] = g_blut_quiet;
+    barcode->checksum_value = 0x69; // Initial checksum for CODE C
+    // total_elements: Quiet, StartC, Data (input_len/2 pairs), Checksum, Stop, Quiet
+    barcode->total_elements = (input_len >> 1) + 5;
+    barcode->elements = (BarcodeEntry **)malloc(barcode->total_elements * sizeof(BarcodeEntry *));
+    if (barcode->elements == NULL) { free(barcode->data_string); free(barcode); return NULL; }
 
-    if (current_lut_idx != barcode_data[0]) {
-        printf("Bad barcode processing\n");
-        barcode_data[0] = current_lut_idx;
+    barcode->elements[current_element_idx++] = g_blut_quiet;
+    barcode->elements[current_element_idx++] = g_blut_startc;
+
+    char num_buf[3]; // Buffer for 2-digit number + null terminator
+    num_buf[2] = '\0';
+    for (size_t i = 0; i < input_len; i += 2) {
+      num_buf[0] = current_param_ptr[i];
+      num_buf[1] = current_param_ptr[i + 1];
+      unsigned long val = strtoul(num_buf, NULL, 10);
+      if (val > 99) { // If value is > 99, treat as 0
+        val = 0;
+      }
+      barcode->elements[current_element_idx++] = &g_barcode_lut[val];
+      barcode->checksum_value += ((i + 2) / 2) * (int)val; // Use numeric value for checksum
     }
+  }
 
-    return barcode_data;
+  barcode->checksum_value %= 0x67; // Final checksum modulo 103
+  barcode->elements[current_element_idx++] = &g_barcode_lut[barcode->checksum_value]; // Checksum element
+  barcode->elements[current_element_idx++] = g_blut_stop;
+  barcode->elements[current_element_idx++] = g_blut_quiet;
+
+  if (current_element_idx != barcode->total_elements) {
+    printf("Bad barcode processing: element count mismatch. Expected %d, got %d\n", 
+           barcode->total_elements, current_element_idx);
+    barcode->total_elements = current_element_idx; // Adjust total_elements
+  }
+  
+  return barcode;
 }
 
 // Function: find_stop_code
-char *find_stop_code(char *param_1) {
-    char *stop_code_str = g_blut_stop + 4; // String part of g_blut_stop entry
-    size_t stop_code_len = strlen(stop_code_str);
-    size_t param_len = strlen(param_1);
+char * find_stop_code(const char *encoded_data) {
+  const char *stop_pattern = g_blut_stop->bin_rep;
+  size_t stop_len = strlen(stop_pattern);
+  size_t data_len = strlen(encoded_data);
 
-    // Trim trailing spaces from param_1
-    while (param_len > 0 && param_1[param_len - 1] == ' ') {
-        param_len--;
-    }
+  // Trim trailing spaces from encoded_data
+  while (data_len > 0 && encoded_data[data_len - 1] == ' ') {
+    data_len--;
+  }
 
-    // Compare from end
-    size_t i = stop_code_len;
-    size_t j = param_len;
-    while (i > 0 && j > 0) {
-        i--;
-        j--;
-        if (stop_code_str[i] != param_1[j]) {
-            return NULL;
-        }
-    }
+  // If the data is shorter than the stop pattern, it cannot contain it
+  if (data_len < stop_len) {
+      return NULL;
+  }
 
-    // If we matched the entire stop_code_str
-    if (i == 0) {
-        return param_1 + j + 1; // Return pointer to character after stop code
+  // Compare from the end of the (trimmed) encoded_data
+  size_t param_idx = data_len;
+  size_t stop_idx = stop_len;
+
+  while (stop_idx > 0) {
+    stop_idx--;
+    param_idx--;
+    if (stop_pattern[stop_idx] != encoded_data[param_idx]) {
+      return NULL; // Mismatch
     }
-    return NULL; // Mismatch or stop_code_str was longer than available param_1 part
+  }
+  
+  return (char *)(encoded_data + param_idx); // Return pointer to the start of the matched stop code
 }
 
 // Function: create_barcode_from_encoded_data
-int *create_barcode_from_encoded_data(char *param_1) { // Changed param_1 type from int to char*
-    int *barcode_data = NULL;
-    char **barcode_lut_entry_ptrs = NULL;
-    char *decoded_str = NULL;
-    bool success = false; // Flag to manage cleanup without goto
+Barcode * create_barcode_from_encoded_data(const char *encoded_data_param) {
+  Barcode *barcode = NULL;
+  char bin_rep_buf[11]; // Buffer for 10-char binary representation + null terminator
+  bin_rep_buf[10] = '\0'; 
 
-    do { // Using a do-while(0) loop to simulate goto for cleanup
-        char *stop_code_pos = find_stop_code(param_1);
-        if (stop_code_pos == NULL) {
-            break;
-        }
+  char *stop_pos = find_stop_code(encoded_data_param);
+  if (stop_pos == NULL) {
+    return NULL;
+  }
 
-        int encoded_data_len = (int)(stop_code_pos - param_1) - 0xb;
-        int header_len = 0;
-        while (param_1[header_len] != '\0' && param_1[header_len] != '|') {
-            header_len++;
-        }
+  // Calculate the offset of the last character of the checksum element's binary representation.
+  // The stop code's binary representation is 10 characters long.
+  // The checksum element's binary representation is also 10 characters long.
+  // So, `stop_pos` points to the start of the stop code.
+  // `stop_pos - 10` would be the start of the checksum element.
+  // `stop_pos - 1` would be the last char of checksum element.
+  // `data_end_offset` should be the index of the last character of the checksum element.
+  int data_end_offset = (stop_pos - encoded_data_param) - 1; // Index of last char of checksum_bin
 
-        if (encoded_data_len <= header_len || param_1[header_len] == '\0') {
-            break;
-        }
+  int prefix_len = 0;
+  // Find the '|' separator or end of string to determine prefix length
+  for (prefix_len = 0;
+       encoded_data_param[prefix_len] != '\0' && encoded_data_param[prefix_len] != '|';
+       prefix_len++);
 
-        barcode_data = (int *)malloc(5 * sizeof(int));
-        if (barcode_data == NULL) {
-            break;
-        }
-        barcode_data[4] = 0; // Checksum
-        barcode_data[1] = 0; // Barcode type
+  // Check if the data portion (after prefix, before checksum/stop) is valid
+  // `prefix_len + 1` is the index of the first char of the first data element (after '|').
+  // `data_end_offset` is the index of the last char of the checksum element.
+  // The total length of the binary block (start_code + data_elements + checksum) is
+  // `data_end_offset - (prefix_len + 1) + 1`.
+  if (data_end_offset < (prefix_len + 1) || encoded_data_param[prefix_len] == '\0') {
+    return NULL;
+  }
 
-        int num_lut_entries = (encoded_data_len - header_len) / 0xb + 4;
-        barcode_data[0] = num_lut_entries;
+  // Allocate Barcode structure
+  barcode = (Barcode *)malloc(sizeof(Barcode));
+  if (barcode == NULL) { return NULL; }
+  memset(barcode, 0, sizeof(Barcode)); // Initialize all members to zero
 
-        barcode_lut_entry_ptrs = (char **)malloc(num_lut_entries * sizeof(char *));
-        if (barcode_lut_entry_ptrs == NULL) {
-            break;
-        }
-        barcode_data[3] = (int)barcode_lut_entry_ptrs; // Store pointer to array of pointers
+  int current_element_idx = 0; // Index for barcode->elements array
+  int data_element_count = 0; // Counter for checksum calculation weight
 
-        int current_lut_idx = 0;
-        barcode_lut_entry_ptrs[current_lut_idx++] = g_blut_quiet;
+  // The number of data elements (start code, data elements, checksum element)
+  // `(data_end_offset - (prefix_len + 1) + 1)` is the total length of the binary block.
+  // This length divided by 11 (each binary element is 10 chars + a separator or implicit end) gives the number of binary elements.
+  // Add 3 for initial quiet, and final stop, quiet.
+  // Total elements = Quiet + (Start + Data + Checksum) + Stop + Quiet
+  barcode->total_elements = ((data_end_offset - (prefix_len + 1) + 1) / 10) + 4;
+  
+  barcode->elements = (BarcodeEntry **)malloc(barcode->total_elements * sizeof(BarcodeEntry *));
+  if (barcode->elements == NULL) { free(barcode); return NULL; }
+  // Initialize elements array pointers to NULL
+  for(int i = 0; i < barcode->total_elements; ++i) barcode->elements[i] = NULL;
 
-        char temp_bin_rep[0xb + 1];
-        temp_bin_rep[0xb] = '\0';
+  barcode->elements[current_element_idx++] = g_blut_quiet;
 
-        // Process first data entry (start code)
-        memcpy(temp_bin_rep, param_1 + header_len, 0xb);
-        char *entry_ptr = find_entry_by_bin_rep(temp_bin_rep);
+  // Start processing after the prefix and '|'
+  int current_encoded_offset = prefix_len + 1; // Start of binary data elements
 
-        if (entry_ptr == NULL) {
-            break;
-        }
-        barcode_lut_entry_ptrs[current_lut_idx++] = entry_ptr;
+  // Read the first data element (which should be a Start B or Start C code)
+  memcpy(bin_rep_buf, encoded_data_param + current_encoded_offset, 10);
+  BarcodeEntry *entry = find_entry_by_bin_rep(bin_rep_buf);
+  
+  if (entry == NULL) { // First element (start code) not found
+      free(barcode->elements); free(barcode); return NULL;
+  }
+  
+  barcode->elements[current_element_idx++] = entry;
+  
+  if (entry == g_blut_startb) {
+    barcode->barcode_type = 100; // CODE B
+    barcode->checksum_value = 0x68; // Initial checksum for CODE B
+  } else if (entry == g_blut_startc) {
+    barcode->barcode_type = 0x65; // CODE C
+    barcode->checksum_value = 0x69; // Initial checksum for CODE C
+  } else { // Not a valid start code
+      free(barcode->elements); free(barcode); return NULL;
+  }
 
-        if (entry_ptr == g_blut_startb) {
-            barcode_data[1] = 100; // Code B
-            barcode_data[4] += 0x68;
-        } else if (entry_ptr == g_blut_startc) {
-            barcode_data[1] = 0x65; // Code C
-            barcode_data[4] += 0x69;
-        } else {
-            break; // Invalid start code
-        }
-
-        int data_item_pos = 0;
-        int current_param_pos = header_len + 0xb;
-        while (current_param_pos < encoded_data_len) {
-            memcpy(temp_bin_rep, param_1 + current_param_pos, 0xb);
-            entry_ptr = find_entry_by_bin_rep(temp_bin_rep);
-            if (entry_ptr == NULL) {
-                break; // Error in data section
-            }
-            barcode_lut_entry_ptrs[current_lut_idx++] = entry_ptr;
-
-            int char_val = (int)*(unsigned char *)entry_ptr; // First byte of LUT entry is the char value
-            if (char_val == 9) {                             // TAB
-                barcode_data[4] += (data_item_pos + 1) * 100;
-            } else if (char_val == 0xc0) { // -0x40
-                barcode_data[4] += (data_item_pos + 1) * 0x65;
-            } else {
-                barcode_data[4] += (char_val - 0x20) * (data_item_pos + 1);
-            }
-            data_item_pos++;
-            current_param_pos += 0xb;
-        }
-        if (entry_ptr == NULL) { // Check if loop broke due to error
-            break;
-        }
-
-        // Process checksum entry
-        barcode_data[4] %= 0x67;
-        char *calculated_checksum_entry = g_barcode_lut + barcode_data[4] * 0x18;
-
-        memcpy(temp_bin_rep, param_1 + current_param_pos, 0xb);
-        char *input_checksum_entry = find_entry_by_bin_rep(temp_bin_rep);
-
-        if (input_checksum_entry == NULL || input_checksum_entry != calculated_checksum_entry) {
-            break; // Checksum mismatch
-        }
-        barcode_lut_entry_ptrs[current_lut_idx++] = input_checksum_entry;
-        barcode_lut_entry_ptrs[current_lut_idx++] = g_blut_stop;
-        barcode_lut_entry_ptrs[current_lut_idx++] = g_blut_quiet;
-
-        if (current_lut_idx != barcode_data[0]) {
-            printf("Bad barcode processing\n");
-            barcode_data[0] = current_lut_idx;
-        }
-
-        size_t decoded_str_len = 0;
-        if (barcode_data[1] == 100) { // Code B
-            decoded_str_len = barcode_data[0] - 4;
-        } else if (barcode_data[1] == 0x65) { // Code C
-            decoded_str_len = (barcode_data[0] - 5) * 2 + 1;
-        }
-
-        decoded_str = (char *)malloc(decoded_str_len + 1);
-        if (decoded_str == NULL) {
-            break;
-        }
-        decoded_str[decoded_str_len] = '\0';
-        barcode_data[2] = (int)decoded_str; // Store pointer to decoded string
-
-        for (int i = 2; i < barcode_data[0] - 3; i++) {
-            if (barcode_data[1] == 100) { // Code B
-                decoded_str[i - 2] = *((unsigned char *)barcode_lut_entry_ptrs[i]);
-            } else if (barcode_data[1] == 0x65) { // Code C
-                decoded_str[(i - 2) * 2] = *((unsigned char *)barcode_lut_entry_ptrs[i] + 1);
-                decoded_str[(i - 2) * 2 + 1] = *((unsigned char *)barcode_lut_entry_ptrs[i] + 2);
-            }
-        }
-        success = true; // All operations completed successfully
-    } while (0); // End of do-while(0) for cleanup
-
-    if (!success) {
-        if (decoded_str != NULL)
-            free(decoded_str);
-        if (barcode_lut_entry_ptrs != NULL)
-            free(barcode_lut_entry_ptrs);
-        if (barcode_data != NULL)
-            free(barcode_data);
-        return NULL;
+  // Process subsequent data elements until the checksum element
+  current_encoded_offset += 10; // Move past the start code binary representation (10 chars)
+  while (current_encoded_offset <= data_end_offset) {
+    memcpy(bin_rep_buf, encoded_data_param + current_encoded_offset, 10);
+    entry = find_entry_by_bin_rep(bin_rep_buf);
+    
+    if (entry == NULL) { // Data element not found
+        free(barcode->elements); free(barcode); return NULL;
     }
-    return barcode_data;
+    
+    barcode->elements[current_element_idx++] = entry;
+
+    // Checksum calculation based on entry's id_val and position
+    // The original code used `*local_28 == 9` (TAB) or `*local_28 == 0xc0` (FNC1)
+    // and then `*local_28 - 0x20` for others.
+    // This implies `entry->id_val` should be used, as it stores the original value.
+    if (entry->id_val == 100) { // TAB
+      barcode->checksum_value += (data_element_count + 1) * 100;
+    } else if (entry->id_val == 0x65) { // FNC1
+      barcode->checksum_value += (data_element_count + 1) * 0x65;
+    } else { // Normal character (ASCII for B, numeric for C)
+      barcode->checksum_value += (data_element_count + 1) * entry->id_val;
+    }
+    
+    data_element_count++;
+    current_encoded_offset += 10; // Move to the next 10-char binary representation
+  }
+
+  // Final checksum calculation and add checksum element
+  barcode->checksum_value %= 0x67;
+  // Verify the calculated checksum against the actual checksum element from encoded data
+  BarcodeEntry *actual_checksum_entry = barcode->elements[current_element_idx - 1]; // This is the last element processed in the loop
+  BarcodeEntry *expected_checksum_entry = &g_barcode_lut[barcode->checksum_value];
+
+  if (actual_checksum_entry != expected_checksum_entry) {
+      // Checksum mismatch, this implies corruption or incorrect encoding
+      printf("Checksum mismatch during decoding. Calculated ID: %d, Encoded ID: %d\n",
+             expected_checksum_entry->id_val, actual_checksum_entry->id_val);
+      free(barcode->elements); free(barcode); return NULL;
+  }
+  // If we reach here, the checksum element was already processed in the loop `current_encoded_offset <= data_end_offset`
+  // and `current_element_idx` already points to the next slot after checksum.
+  // So no need to add it again.
+
+  // Add stop and quiet zone elements (these are *not* part of the checksum calculation)
+  barcode->elements[current_element_idx++] = g_blut_stop;
+  barcode->elements[current_element_idx++] = g_blut_quiet;
+
+  if (current_element_idx != barcode->total_elements) {
+    printf("Bad barcode processing: element count mismatch. Expected %d, got %d\n",
+           barcode->total_elements, current_element_idx);
+    barcode->total_elements = current_element_idx; // Adjust total_elements
+  }
+
+  // Reconstruct data_string (human-readable)
+  size_t data_str_len = 0;
+  if (barcode->barcode_type == 100) { // CODE B
+    // Number of data elements is (total_elements - 4) -> (quiet, start, checksum, stop, quiet)
+    data_str_len = barcode->total_elements - 4;
+  } else if (barcode->barcode_type == 0x65) { // CODE C
+    // Number of 2-digit pairs is (total_elements - 5). Each pair is 2 chars.
+    data_str_len = (barcode->total_elements - 5) * 2;
+  }
+  
+  if (data_str_len > 0) {
+      barcode->data_string = (char *)malloc(data_str_len + 1);
+      if (barcode->data_string == NULL) { free(barcode->elements); free(barcode); return NULL; }
+      char *current_char_ptr = barcode->data_string;
+
+      // Loop from index 2 (after quiet and start) up to the checksum element
+      for (int i = 2; i < barcode->total_elements - 3; ++i) { // -3 for checksum, stop, quiet
+          BarcodeEntry *data_entry = barcode->elements[i];
+          if (barcode->barcode_type == 100) { // CODE B
+              *current_char_ptr++ = (char)data_entry->id_val;
+          } else if (barcode->barcode_type == 0x65) { // CODE C
+              sprintf(current_char_ptr, "%02d", data_entry->id_val);
+              current_char_ptr += 2;
+          }
+      }
+      *current_char_ptr = '\0';
+  } else {
+      barcode->data_string = strdup(""); // Empty string if no data was decoded
+      if (barcode->data_string == NULL) { free(barcode->elements); free(barcode); return NULL; }
+  }
+
+  return barcode;
 }
 
 // Function: create_barcode_ascii
-char *create_barcode_ascii(int *param_1) {
-    char *ascii_barcode = (char *)calloc(1, (param_1[0] - 1) * 0xb + 0xe);
-    if (ascii_barcode == NULL)
-        return NULL;
-    char *current_pos = ascii_barcode;
+char * create_barcode_ascii(const Barcode *barcode) {
+  if (barcode == NULL || barcode->elements == NULL) {
+      return NULL;
+  }
 
-    for (int i = 0; i < param_1[0]; i++) {
-        char *entry_str = ((char **)param_1[3])[i] + 4;
-        while (*entry_str != '\0') {
-            *current_pos++ = *entry_str++;
-        }
+  // Calculate total length needed for concatenated ascii_rep strings
+  size_t total_ascii_len = 0;
+  for (int i = 0; i < barcode->total_elements; ++i) {
+      if (barcode->elements[i] != NULL) {
+          total_ascii_len += strlen(barcode->elements[i]->ascii_rep);
+      }
+  }
+  
+  char *ascii_output = (char *)calloc(1, total_ascii_len + 1); // +1 for null terminator
+  if (ascii_output == NULL) {
+      return NULL;
+  }
+  
+  char *current_pos = ascii_output;
+  for (int i = 0; i < barcode->total_elements; ++i) {
+    if (barcode->elements[i] != NULL) {
+        strcpy(current_pos, barcode->elements[i]->ascii_rep);
+        current_pos += strlen(barcode->elements[i]->ascii_rep);
     }
-    return ascii_barcode;
+  }
+  return ascii_output;
 }
 
 // Function: print_barcode_ascii
-void print_barcode_ascii(int *param_1, int param_2) {
-    if (param_2 != 0) {
-        for (int i = 2; i < param_1[0] - 3; i++) {
-            if (param_1[1] == 100) { // Code B
-                printf("%c", (unsigned int)*((unsigned char **)param_1[3])[i]);
-            } else if (param_1[1] == 0x65) { // Code C
-                printf("%s", ((char **)param_1[3])[i] + 1);
-            }
-        }
-        printf("\n");
-    }
-    for (int i = 1; i < param_1[0] - 1; i++) {
-        printf("%s", ((char **)param_1[3])[i] + 4);
-    }
-    printf("\n");
-}
+void print_barcode_ascii(const Barcode *barcode, int print_human_readable) {
+  if (barcode == NULL) {
+      printf("Error: Barcode is NULL.\n");
+      return;
+  }
 
-// Main function for compilation
-int main() {
-    init_dummy_barcode_lut(); // Initialize the global LUT
-    // Suppress unused variable warnings for global pointers if not used in main
-    (void)g_blut_quiet;
-    (void)g_blut_startb;
-    (void)g_blut_startc;
-    (void)g_blut_stop;
-    return 0;
+  if (print_human_readable != 0 && barcode->data_string != NULL) {
+    printf("Human-readable data: %s\n", barcode->data_string);
+  }
+
+  // Print binary representations for all elements from Start Code to Stop Code
+  // Original loop was from index 1 to total_elements - 1 (exclusive of first/last quiet zone)
+  printf("Binary representation: ");
+  for (int i = 1; i < barcode->total_elements - 1; ++i) {
+    if (barcode->elements[i] != NULL) {
+        printf("%s", barcode->elements[i]->bin_rep);
+    } else {
+        printf("[NULL_ELEMENT]"); // Should not happen with proper creation
+    }
+  }
+  printf("\n");
 }

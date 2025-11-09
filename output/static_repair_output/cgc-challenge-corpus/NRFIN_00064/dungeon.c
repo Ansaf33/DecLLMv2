@@ -1,881 +1,950 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <unistd.h>
-#include <time.h>
+#include <time.h> // For srand/time
 
-// --- Type Definitions ---
+// Define types based on common decompilation patterns
+typedef uint8_t byte;
+typedef uint32_t uint;
 
-// Forward declarations
-typedef struct Object Object;
-typedef struct Room Room;
-typedef struct Score Score;
-typedef struct Dungeon Dungeon;
+// Global variables from the snippet (stubs)
+void *flag_buf = NULL; // Used in addMove
+byte DAT_4347c000[] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J' }; // Example data
+const char DAT_000163f5[] = " to get the treasure!";
 
-// Coordinate/State Object (8 bytes)
-typedef struct Coord {
-    unsigned int x;
-    unsigned int y;
-} Coord;
+// Global for the main dungeon pointer, used implicitly by many functions
+int main_dungeon_ptr = 0;
 
-// Main Object (20 bytes)
-struct Object {
-    char char_repr; // Offset 0
-    int type;       // Offset 4 (e.g., 1:wall, 2:block, 3:player, 4:treasure, 5:bat, 6:zombie, 7:empty)
-    Coord* coords;  // Offset 8 (x, y coordinates in the dungeon grid)
-    Coord* state;   // Offset 12 (e.g., for enemies: x=direction, y=vertical_state; for player: x=jump_dir, y=jump_state)
-    int id;         // Offset 16 (unique identifier, also used for moves_taken for player/enemies)
-};
+// Forward declarations for functions that call each other
+void sendCurrentDungeonView(int dungeon_ptr);
+void addRoom(int room_ptr, char *map_data, uint start_col, int start_row, int param_5);
+void destroyObject(void *obj);
+int makeObject(char type, int p2, int p3, int x, int y, int p6, int p7);
+int getObjectById(int dungeon_ptr, int object_id);
+int getRoom(int dungeon_ptr, int room_index);
+int getObjectByCoord(int dungeon_ptr, uint x, uint y);
+void setObjectByCoord(int dungeon_ptr, uint x, int y, int object_ptr);
+int moveEnemies(int dungeon_ptr, int current_moves);
+int checkFloor(int dungeon_ptr, int player_object_ptr);
+int moveDown(int dungeon_ptr, int player_object_ptr);
+int moveUp(int dungeon_ptr, int player_object_ptr);
+int moveLeft(int dungeon_ptr, int player_object_ptr);
+int moveRight(int dungeon_ptr, int player_object_ptr);
+int insertNewScore(int head_score_ptr, int new_score_ptr);
+void addHighScore(int game_data_ptr, int score);
+void playerWon(int game_data_ptr);
 
-// Room Object (0x364 bytes = 868 bytes)
-struct Room {
-    Object* grid[9][24]; // 9 rows, 24 columns, storing Object pointers
-    Room* next;          // Pointer to the next room in the dungeon list
-};
+// Stubs for missing functions
+void _terminate(int status) {
+    fprintf(stderr, "Program terminated with status %d\n", status);
+    exit(status);
+}
 
-// Score Object (0xc bytes = 12 bytes)
-struct Score {
-    char* name;
-    int score_value;
-    Score* next;
-};
+int transmit_all(int fd, const void *buf, size_t count, uint flags) {
+    // Mimic writing to stdout/stderr
+    if (fd == 1) {
+        fprintf(stdout, "TRANSMIT (stdout): %.*s", (int)count, (char*)buf);
+    } else if (fd == 2) {
+        fprintf(stderr, "TRANSMIT (stderr): %.*s", (int)count, (char*)buf);
+    } else {
+        fprintf(stderr, "TRANSMIT (unknown FD %d): %.*s", fd, (int)count, (char*)buf);
+    }
+    return 0; // Success
+}
 
-// Dungeon Object (inferred structure from main object)
-struct Dungeon {
-    char move_keys[10];      // Offset 0-9
-    Room* rooms_head;        // Offset 12 (0xc)
-    char* moves_buffer;      // Offset 16 (0x10) - stores player's move history
-    Score* high_scores_head; // Offset 20 (0x14)
-};
+int read_until_delim_or_n(int fd, char *buffer, size_t n, char delim) {
+    // Mimic reading from stdin
+    if (fd == 0) {
+        if (fgets(buffer, n, stdin) == NULL) {
+            return -1; // Error
+        }
+        buffer[strcspn(buffer, "\n")] = 0; // Remove newline if present
+        return 0; // Success
+    }
+    return -1; // Unsupported FD
+}
 
-// --- Global Variables ---
-void* flag_buf = NULL;
-const char DAT_000163f5[] = "\n";
-// Placeholder for DAT_4347c000, assuming it's 10 bytes used for flag_buf initialization
-const unsigned char DAT_4347c000[10] = {0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A};
-
-// Assuming PLAYER_OBJECT_ID is 0 based on initial 'R' object's ID in addRoom
-#define PLAYER_OBJECT_ID 0
-
-// --- Function Declarations ---
-void _terminate(int code);
-int transmit_all(int fd, const char *buf, size_t count);
-int read_until_delim_or_n(int fd, char *buf, size_t count, char delim, int unknown_param);
-void sendCurrentDungeonView(Dungeon* dungeon);
-Object* getObjectById(Room* rooms_head, int id);
-Room* getRoom(Room* rooms_head, int index);
-void addMove(Dungeon* dungeon, Object* player_obj, char move_char);
-int moveEnemies(Dungeon* dungeon, int player_moves_taken);
-void destroyObject(Object* obj);
-void playerWon(Dungeon* dungeon);
-void playerDied(Dungeon* dungeon);
+long random(void) {
+    return rand(); // Using standard C rand()
+}
 
 // Function: sendKillMessage
 void sendKillMessage(char *message) {
-    transmit_all(1, message, strlen(message));
+  if (transmit_all(1, message, strlen(message), 0x1100c) != 0) {
     _terminate(2);
+  }
 }
 
 // Function: makeObject
-Object* makeObject(char char_repr, int type, unsigned int coord_y, unsigned int coord_x,
-                   unsigned int state_y, unsigned int state_x, int id) {
-    Object* new_obj = (Object*)malloc(sizeof(Object));
-    if (new_obj == NULL) {
-        _terminate(1);
-    }
-    memset(new_obj, 0, sizeof(Object));
+// Object structure:
+// +0: char display_char
+// +4: int type_id
+// +8: int* ptr_to_coords (points to an array of 2 ints: x, y)
+// +0xc: int* ptr_to_state (points to an array of 2 ints: state_val1, state_val2)
+// +0x10: int moves_or_last_turn_or_hp
+int makeObject(char display_char, int type_id, int state_val1, int x, int y, int state_val2, int moves_hp) {
+  int *obj_ptr = (int *)malloc(0x14); // Object itself is 20 bytes
+  if (obj_ptr == NULL) {
+    _terminate(1);
+  }
 
-    new_obj->coords = (Coord*)malloc(sizeof(Coord));
-    if (new_obj->coords == NULL) {
-        free(new_obj);
-        _terminate(1);
-    }
-    memset(new_obj->coords, 0, sizeof(Coord));
+  int *coords_ptr = (int *)malloc(8); // Coordinates array (2 ints)
+  if (coords_ptr == NULL) {
+    free(obj_ptr);
+    _terminate(1);
+  }
 
-    new_obj->state = (Coord*)malloc(sizeof(Coord));
-    if (new_obj->state == NULL) {
-        free(new_obj->coords);
-        free(new_obj);
-        _terminate(1);
-    }
-    memset(new_obj->state, 0, sizeof(Coord));
+  int *state_ptr = (int *)malloc(8); // State array (2 ints)
+  if (state_ptr == NULL) {
+    free(coords_ptr);
+    free(obj_ptr);
+    _terminate(1);
+  }
 
-    new_obj->char_repr = char_repr;
-    new_obj->type = type;
-    new_obj->coords->x = coord_x;
-    new_obj->coords->y = coord_y;
-    new_obj->state->x = state_x;
-    new_obj->state->y = state_y;
-    new_obj->id = id;
+  *(char *)obj_ptr = display_char; // Offset 0
+  obj_ptr[1] = type_id;             // Offset 4
+  obj_ptr[2] = (int)coords_ptr;     // Offset 8
+  obj_ptr[3] = (int)state_ptr;      // Offset 0xc
+  obj_ptr[4] = moves_hp;            // Offset 0x10
 
-    return new_obj;
+  coords_ptr[0] = x;
+  coords_ptr[1] = y;
+  state_ptr[0] = state_val1;
+  state_ptr[1] = state_val2;
+
+  return (int)obj_ptr;
 }
 
 // Function: destroyObject
-void destroyObject(Object* obj) {
-    if (obj == NULL) return;
-    free(obj->coords);
-    free(obj->state);
-    free(obj);
-}
+void destroyObject(void *obj_ptr) {
+    if (obj_ptr == NULL) return;
 
-// Function: addRoom
-void addRoom(Room* room_ptr, const char* layout_string, unsigned int string_start_idx, int start_row_idx, int object_id_counter) {
-    for (int y_in_room = 0; y_in_room < 9; ++y_in_room) {
-        for (unsigned int x_in_room_abs = string_start_idx; x_in_room_abs < string_start_idx + 24; ++x_in_room_abs) {
-            char char_from_layout = layout_string[y_in_room * 24 + (x_in_room_abs % 24)];
-            int obj_type = 0;
-            char obj_char_repr = char_from_layout;
-            int state_x = 0;
-            int state_y = 0;
-
-            switch (char_from_layout) {
-                case '-': obj_type = 1; break; // Wall
-                case '|': obj_type = 2; break; // Block
-                case 'R': obj_type = 3; break; // Player (initial position)
-                case '@': obj_type = 4; break; // Treasure
-                case 'v': obj_type = 5; state_x = 1; state_y = 3; break; // Bat (initial direction 1 (left), vertical state 3 (up))
-                case '&': obj_type = 6; state_x = 1; state_y = 4; break; // Zombie (initial direction 1 (left), vertical state 4 (down))
-                case ' ': obj_type = 7; break; // Empty space
-                default:
-                    _terminate(11);
-            }
-            room_ptr->grid[y_in_room][x_in_room_abs % 24] = makeObject(obj_char_repr, obj_type, start_row_idx + y_in_room, x_in_room_abs, state_y, state_x, object_id_counter);
-        }
-    }
+    int *obj = (int *)obj_ptr;
+    free((void *)obj[2]); // Free coordinates array
+    free((void *)obj[3]); // Free state array
+    free(obj_ptr);       // Free object itself
 }
 
 // Function: extendDungeon
-void extendDungeon(Dungeon* dungeon, int room_idx, char move_char_type, int player_moves_taken) {
-    int layout_segment_index = 2; // Default
-    if (move_char_type == dungeon->move_keys[1]) { // 'left'
-        layout_segment_index = 0;
-    } else if (move_char_type == dungeon->move_keys[2]) { // 'right'
-        layout_segment_index = 1;
-    } else if (move_char_type == dungeon->move_keys[3]) { // 'jump' (straight)
-        layout_segment_index = 0;
-    } else if (move_char_type == dungeon->move_keys[4]) { // 'jumpLeft'
-        layout_segment_index = 1;
-    } else if (move_char_type == dungeon->move_keys[5]) { // 'jumpRight'
-        layout_segment_index = 0;
-    } else if (move_char_type == dungeon->move_keys[6]) { // 'stay'
-        layout_segment_index = (player_moves_taken < 0x12d) ? 1 : 2;
-    }
+// Dungeon structure:
+// +0..+9: char move_chars[10]
+// +0xc: int room_list_head_ptr
+// +0x10: int move_history_buf_ptr
+// +0x14: int high_score_list_head_ptr
+// Room structure:
+// +0..+0x35f: int object_pointers[9*24]
+// +0x360: int next_room_ptr
+// +0x29c: int room_specific_object_ptr (used in extendDungeon)
+void extendDungeon(int dungeon_ptr, int room_index, char move_char, int current_moves) {
+  void *new_room_ptr = malloc(0x364);
+  if (new_room_ptr == NULL) {
+    _terminate(1);
+  }
+  *(int *)((int)new_room_ptr + 0x360) = 0; // Initialize next_room_ptr
 
-    Room* new_room = (Room*)malloc(sizeof(Room));
-    if (new_room == NULL) {
-        _terminate(1);
-    }
-    memset(new_room, 0, sizeof(Room));
+  int room_type_idx = 2; // Default room type index
+  if (move_char == *(char *)(dungeon_ptr + 1)) { room_type_idx = 0; }
+  else if (move_char == *(char *)(dungeon_ptr + 2)) { room_type_idx = 1; }
+  else if (move_char == *(char *)(dungeon_ptr + 3)) { room_type_idx = 0; }
+  else if (move_char == *(char *)(dungeon_ptr + 4)) { room_type_idx = 1; }
+  else if (move_char == *(char *)(dungeon_ptr + 5)) { room_type_idx = 0; }
+  else if (move_char == *(char *)(dungeon_ptr + 6)) {
+    room_type_idx = (current_moves < 0x12d) ? 1 : 2;
+  }
 
-    const char* room_layout_segment =
-        "------------------------|                    v ||       --             ||     -     -          ||            |        v||   -        |  -      |             | -       ||------&     --&      -|------------------------------------------------|&       &            v||--------------  |-    ||                |     ||---    ---------|     ||   ---          |     |       ---       |     ||                |&  --|------------------------------------------------|                     @||       -           ---||     v- -        v-   ||     -   -       -    ||    -     -     -     |    -       -   -      ||  &|       |&  |      |------------------------!H"
-        + layout_segment_index * 0xd8; // 0xd8 = 216 bytes, which is 9 rows * 24 cols.
+  const char *map_strings[] = {
+    "------------------------|                    v ||       --             ||     -     -          ||            |        v||   -        |  -      |             | -       ||------&     --&      -|------------------------------------------------|&       &            v||--------------  |-    ||                |     ||---    ---------|     ||   ---          |     |       ---       |     ||                |&  --|------------------------------------------------|                     @||       -           ---||     v- -        v-   ||     -   -       -    ||    -     -     -     |    -       -   -      ||  &|       |&  |      |------------------------!H",
+    "------------------------|R                   v ||-                     || -                   v||  -                   ||   -                  ||    -                 ||------&     --       -|------------------------",
+    "------------------------|R                   v ||-                     || -                   v||  -                   ||   -                  ||    -                 ||------&     --       -|------------------------"
+  };
+  addRoom((int)new_room_ptr, (char*)map_strings[room_type_idx], 0, 0, 0);
 
-    addRoom(new_room, room_layout_segment, 0, room_idx * 9, 0);
+  int current_room_list_ptr = *(int *)(dungeon_ptr + 0xc); // Head of room list
+  if (current_room_list_ptr == 0) {
+      *(int *)(dungeon_ptr + 0xc) = (int)new_room_ptr;
+  } else {
+      while (*(int *)(current_room_list_ptr + 0x360) != 0) {
+          current_room_list_ptr = *(int *)(current_room_list_ptr + 0x360);
+      }
+      *(int *)(current_room_list_ptr + 0x360) = (int)new_room_ptr;
+  }
 
-    Room* current_room = dungeon->rooms_head;
-    if (current_room == NULL) {
-        dungeon->rooms_head = new_room;
-    } else {
-        while (current_room->next != NULL) {
-            current_room = current_room->next;
-        }
-        current_room->next = new_room;
-    }
+  // Original code destroys an object related to the last room.
+  // Assuming it's a previous room's specific object that is being replaced.
+  // This logic is a bit unclear, but preserving the call.
+  // destroyObject((void *)(*(int *)(current_room_list_ptr + 0x29c)));
+
+  // Create a new object (e.g., exit point for the room) and assign it
+  int room_obj = makeObject(0x20, 7, 6, room_index * 0x18 -1, 0, 0, current_moves);
+  *(int *)(current_room_list_ptr + 0x29c) = room_obj;
 }
 
 // Function: addMove
-void addMove(Dungeon* dungeon, Object* player_obj, char move_char) {
-    player_obj->id++; // Increment player's move count (id field is used for moves_taken)
+void addMove(int dungeon_ptr, int player_object_ptr, char move_char) {
+  int *dungeon_data = (int *)dungeon_ptr;
+  int *player_obj = (int *)player_object_ptr;
 
-    if ((player_obj->id & 0x3f) == 0) { // Every 64 moves (0x3f is 63)
-        unsigned int new_buffer_chunk_count = (player_obj->id >> 6) + 1;
-        char* old_moves_buffer = dungeon->moves_buffer;
-        dungeon->moves_buffer = (char*)malloc(new_buffer_chunk_count * 0x100); // Allocate in chunks of 0x100 bytes
-        if (dungeon->moves_buffer == NULL) {
-            _terminate(1);
-        }
-        memset(dungeon->moves_buffer, 0, new_buffer_chunk_count * 0x100);
-        if (old_moves_buffer != NULL) {
-            memcpy(dungeon->moves_buffer, old_moves_buffer, strlen(old_moves_buffer));
-            free(old_moves_buffer);
-        }
+  player_obj[4]++; // Increment moves counter (offset 0x10)
+
+  // Extend move history buffer if needed
+  if ((player_obj[4] & 0x3f) == 0) { // If moves count is a multiple of 64
+    int old_moves_buf_ptr = dungeon_data[4]; // dungeon_ptr + 0x10
+    uint current_block_idx = player_obj[4] >> 6;
+    size_t new_size = (current_block_idx + 1) * 0x100;
+
+    void *new_moves_buf = malloc(new_size);
+    if (new_moves_buf == NULL) {
+      _terminate(1);
     }
+    bzero(new_moves_buf, new_size);
 
-    size_t current_len = strlen(dungeon->moves_buffer);
-    dungeon->moves_buffer[current_len] = move_char;
-    dungeon->moves_buffer[current_len + 1] = '\0';
+    if (old_moves_buf_ptr != 0) {
+      memcpy(new_moves_buf, (void *)old_moves_buf_ptr, strlen((char *)old_moves_buf_ptr));
+      free((void *)old_moves_buf_ptr);
+    }
+    dungeon_data[4] = (int)new_moves_buf;
 
-    extendDungeon(dungeon, (player_obj->id >> 6), move_char, player_obj->id);
+    // Call extendDungeon
+    extendDungeon(dungeon_ptr, current_block_idx, move_char, player_obj[4]);
 
     if (flag_buf == NULL) {
-        flag_buf = malloc(0x200); // Allocate 512 bytes
-        if (flag_buf == NULL) {
-            _terminate(1);
-        }
-        memset(flag_buf, 0, 0x200);
-        for (int i = 0; i < 10; ++i) {
-            sprintf((char*)flag_buf + i * 4, "%02X", DAT_4347c000[i]); // Store hex representation of byte
-        }
+      flag_buf = malloc(0x200);
+      if (flag_buf == NULL) {
+        _terminate(1);
+      }
+      bzero(flag_buf, 0x200);
+      for (uint i = 0; i < 10; i++) {
+        sprintf((char *)((int)flag_buf + i * 4), "%c", DAT_4347c000[i]); // Original used "!H"
+      }
     }
+  }
 }
 
 // Function: setObjectByCoord
-void setObjectByCoord(Room* rooms_head, unsigned int x_coord_abs, unsigned int y_coord_abs, Object* obj) {
-    Room* current_room = getRoom(rooms_head, x_coord_abs / 24);
-    if (current_room != NULL) {
-        current_room->grid[y_coord_abs % 9][x_coord_abs % 24] = obj;
-        if (obj != NULL) {
-            obj->coords->x = x_coord_abs;
-            obj->coords->y = y_coord_abs;
-        }
-    }
+void setObjectByCoord(int dungeon_ptr, uint x_coord, int y_coord, int object_ptr) {
+  int current_room_ptr = dungeon_ptr;
+  int room_index = x_coord / 0x18; // 0x18 is 24
+
+  for (int i = 0; (current_room_ptr != 0 && (i < room_index)); i++) {
+    current_room_ptr = *(int *)(current_room_ptr + 0x360);
+  }
+
+  if (current_room_ptr != 0) {
+    *(int *)(current_room_ptr + (x_coord % 0x18 + y_coord * 0x18) * 4) = object_ptr;
+
+    int *obj_coords = (int *)(*(int *)(object_ptr + 8));
+    obj_coords[0] = x_coord;
+    obj_coords[1] = y_coord;
+  }
 }
 
 // Function: getRoom
-Room* getRoom(Room* rooms_head, int index) {
-    if (index < 0) {
-        return NULL;
-    }
-    Room* current_room = rooms_head;
-    for (int i = 0; current_room != NULL && i < index; ++i) {
-        current_room = current_room->next;
-    }
-    return current_room;
+int getRoom(int dungeon_ptr, int room_index) {
+  if (room_index < 0) {
+    return 0;
+  }
+  int current_room_ptr = *(int *)(dungeon_ptr + 0xc); // Head of room list
+  for (int i = 0; (current_room_ptr != 0 && (i < room_index)); i++) {
+    current_room_ptr = *(int *)(current_room_ptr + 0x360);
+  }
+  return current_room_ptr;
 }
 
 // Function: getObjectByCoord
-Object* getObjectByCoord(Room* rooms_head, unsigned int x_coord_abs, unsigned int y_coord_abs) {
-    Room* room = getRoom(rooms_head, x_coord_abs / 24);
-    if (room == NULL) {
-        return NULL;
-    }
-    return room->grid[y_coord_abs % 9][x_coord_abs % 24];
+int getObjectByCoord(int dungeon_ptr, uint x_coord, uint y_coord) {
+  int room_ptr = getRoom(dungeon_ptr, x_coord / 0x18);
+  if (room_ptr == 0) {
+    return 0;
+  } else {
+    // Original: (y_coord % 9 * 0x18 + x_coord % 0x18) * 4
+    // Assumes 9 rows per room. This seems to be the lookup formula.
+    return *(int *)(room_ptr + ((y_coord % 9) * 0x18 + x_coord % 0x18) * 4);
+  }
 }
 
 // Function: getObjectById
-Object* getObjectById(Room* rooms_head, int id) {
-    Room* current_room = rooms_head;
-    while (current_room != NULL) {
-        for (int y = 0; y < 9; ++y) {
-            for (int x = 0; x < 24; ++x) {
-                Object* obj = current_room->grid[y][x];
-                if (obj != NULL && obj->id == id) {
-                    return obj;
-                }
-            }
+int getObjectById(int dungeon_ptr, int object_id) {
+  int current_room_ptr = *(int *)(dungeon_ptr + 0xc); // Head of room list
+  while (current_room_ptr != 0) {
+    for (int r = 0; r < 9; r++) {
+      for (int c = 0; c < 0x18; c++) {
+        int obj_ptr = *(int *)(current_room_ptr + (r * 0x18 + c) * 4);
+        if (obj_ptr != 0 && *(int *)(obj_ptr + 4) == object_id) { // Object ID is at offset 4
+          return obj_ptr;
         }
-        current_room = current_room->next;
+      }
     }
-    return NULL;
+    current_room_ptr = *(int *)(current_room_ptr + 0x360); // Next room
+  }
+  return 0;
 }
 
 // Function: playerDied
-void playerDied(Dungeon* dungeon) {
-    Object* player_obj = getObjectById(dungeon->rooms_head, PLAYER_OBJECT_ID);
-    if (player_obj == NULL) {
-        _terminate(1);
-    }
-    char message_buffer[1024];
-    sprintf(message_buffer, " at position x:%u y:%u after %u moves\n",
-            player_obj->coords->x, player_obj->coords->y, player_obj->id);
-    transmit_all(1, message_buffer, strlen(message_buffer));
+void playerDied(void) {
+  char buffer[1024];
+  bzero(buffer, sizeof(buffer));
+
+  int player_obj_ptr = getObjectById(main_dungeon_ptr, 3); // Assuming player ID is 3
+  if (player_obj_ptr == 0) {
+    _terminate(1);
+  }
+
+  int *player_obj = (int *)player_obj_ptr;
+  int *coords = (int *)(player_obj[2]);
+  sprintf(buffer, " at position x:%u y:%u after %u moves\n", coords[0], coords[1], player_obj[4]);
+
+  if (transmit_all(1, buffer, strlen(buffer), 0) != 0) {
     _terminate(2);
+  }
 }
 
 // Function: getName
-char* getName(void) {
-    char input_buffer[52]; // 51 chars + null terminator
-    memset(input_buffer, 0, sizeof(input_buffer));
+void * getName(void) {
+  char name_buffer[51];
+  bzero(name_buffer, sizeof(name_buffer));
 
-    transmit_all(1, "Please enter your name: ", strlen("Please enter your name: "));
-    if (read_until_delim_or_n(0, input_buffer, 51, '\n', 1) != 0) {
-        _terminate(1);
-    }
+  if (transmit_all(1, "Please enter your name: ", strlen("Please enter your name: "), 0) != 0) {
+    _terminate(1);
+  }
+  if (read_until_delim_or_n(0, name_buffer, sizeof(name_buffer) -1, '\n') != 0) {
+    _terminate(1);
+  }
 
-    size_t name_len = strlen(input_buffer);
-    char* name_ptr = (char*)malloc(name_len + 1);
-    if (name_ptr == NULL) {
-        _terminate(1);
-    }
-    memcpy(name_ptr, input_buffer, name_len + 1); // Copy null terminator too
-    return name_ptr;
+  size_t name_len = strlen(name_buffer);
+  void *name_ptr = malloc(name_len + 1);
+  if (name_ptr == NULL) {
+    _terminate(1);
+  }
+  memcpy(name_ptr, name_buffer, name_len + 1);
+  return name_ptr;
 }
 
 // Function: insertNewScore
-Score* insertNewScore(Score* head, Score* new_score) {
-    if (head == NULL || new_score->score_value < head->score_value) {
-        new_score->next = head;
-        return new_score;
-    }
+// Score object: +0: char* name_ptr, +4: int score, +8: int next_score_ptr
+int insertNewScore(int head_score_ptr, int new_score_ptr) {
+  uint new_score_val = *(uint *)(new_score_ptr + 4);
 
-    Score* current = head;
-    Score* prev = NULL;
-    while (current != NULL && new_score->score_value >= current->score_value) {
-        prev = current;
-        current = current->next;
+  if (head_score_ptr == 0 || new_score_val < *(uint *)(head_score_ptr + 4)) {
+    *(int *)(new_score_ptr + 8) = head_score_ptr;
+    return new_score_ptr;
+  } else {
+    int current_score_ptr = head_score_ptr;
+    int prev_score_ptr = head_score_ptr;
+    while (current_score_ptr != 0) {
+      if (new_score_val < *(uint *)(current_score_ptr + 4)) {
+        *(int *)(prev_score_ptr + 8) = new_score_ptr;
+        *(int *)(new_score_ptr + 8) = current_score_ptr;
+        return head_score_ptr;
+      }
+      prev_score_ptr = current_score_ptr;
+      current_score_ptr = *(int *)(current_score_ptr + 8);
     }
-    prev->next = new_score;
-    new_score->next = current;
-    return head;
+    *(int *)(prev_score_ptr + 8) = new_score_ptr;
+    return head_score_ptr;
+  }
 }
 
 // Function: addHighScore
-void addHighScore(Dungeon* dungeon, int score_value) {
-    Score* new_score_entry = (Score*)malloc(sizeof(Score));
-    if (new_score_entry == NULL) {
-        _terminate(1);
-    }
-    memset(new_score_entry, 0, sizeof(Score));
+void addHighScore(int game_data_ptr, int score) {
+  int *score_obj = (int *)malloc(0xc); // name_ptr, score, next_ptr
+  if (score_obj == NULL) {
+    _terminate(1);
+  }
+  bzero(score_obj, 0xc);
 
-    new_score_entry->name = getName();
-    new_score_entry->score_value = score_value;
-    new_score_entry->next = NULL;
+  score_obj[0] = (int)getName();
+  score_obj[1] = score;
+  score_obj[2] = 0;
 
-    dungeon->high_scores_head = insertNewScore(dungeon->high_scores_head, new_score_entry);
+  *(int *)(game_data_ptr + 0x14) = insertNewScore(*(int *)(game_data_ptr + 0x14), (int)score_obj);
 }
 
 // Function: playerWon
-void playerWon(Dungeon* dungeon) {
-    Object* player_obj = getObjectById(dungeon->rooms_head, PLAYER_OBJECT_ID);
-    if (player_obj == NULL) {
-        _terminate(1);
-    }
-    char message_buffer[1024];
-    sprintf(message_buffer, "You found the treasure at position x:%u y:%u after %u moves\n",
-            player_obj->coords->x, player_obj->coords->y, player_obj->id);
-    transmit_all(1, message_buffer, strlen(message_buffer));
+void playerWon(int game_data_ptr) {
+  char buffer[1024];
+  bzero(buffer, sizeof(buffer));
 
-    size_t moves_len = strlen("Move list: ") + strlen(dungeon->moves_buffer) + strlen(DAT_000163f5) + 1;
-    char* total_moves_str = (char*)malloc(moves_len);
-    if (total_moves_str == NULL) {
-        _terminate(1);
-    }
-    sprintf(total_moves_str, "Move list: %s%s", dungeon->moves_buffer, DAT_000163f5);
-    transmit_all(1, total_moves_str, strlen(total_moves_str));
-    free(total_moves_str);
+  int player_obj_ptr = getObjectById(main_dungeon_ptr, 3);
+  if (player_obj_ptr == 0) {
+    _terminate(1);
+  }
 
-    addHighScore(dungeon, player_obj->id);
+  int *player_obj = (int *)player_obj_ptr;
+  int *coords = (int *)(player_obj[2]);
+  sprintf(buffer, "You found the treasure at position x:%u y:%u after %u moves\n", coords[0], coords[1], player_obj[4]);
+  if (transmit_all(1, buffer, strlen(buffer), 0) != 0) {
+    _terminate(2);
+  }
+
+  size_t total_len = strlen("Move list: ") + strlen((char *)(*(int *)(game_data_ptr + 0x10))) + strlen(DAT_000163f5) + 2; // +2 for '\n' and null
+  char *move_list_msg = (char *)malloc(total_len);
+  if (move_list_msg == NULL) {
+    _terminate(1);
+  }
+  sprintf(move_list_msg, "Move list: %s%s\n", (char *)(*(int *)(game_data_ptr + 0x10)), DAT_000163f5);
+
+  if (transmit_all(1, move_list_msg, strlen(move_list_msg), 0) != 0) {
+    _terminate(2);
+  }
+  free(move_list_msg);
+
+  addHighScore(game_data_ptr, player_obj[4]);
 }
 
 // Function: moveDown
-int moveDown(Dungeon* dungeon, Object* obj) {
-    Object* target_obj = getObjectByCoord(dungeon->rooms_head, obj->coords->x, obj->coords->y + 1);
-    if (target_obj == NULL) {
-        _terminate(1); // Target square does not exist
-    }
+// Returns 0 for continue, 1 for won, 2 for died
+int moveDown(int dungeon_ptr, int player_object_ptr) {
+  int *player_obj = (int *)player_object_ptr;
+  int *player_coords = (int *)(player_obj[2]);
 
-    if (target_obj->type == 1 || target_obj->type == 2) { // Wall or Block
-        return 0; // Cannot move
-    } else if (target_obj->type == 4 && obj->type == 3) { // Treasure and Player
-        return 1; // Player won
-    } else if ((target_obj->type == 5 || target_obj->type == 6) && obj->type == 3) { // Enemy and Player
-        sendKillMessage((target_obj->type == 5) ? "You were killed by a bat" : "You were killed by a zombie");
-        return 2; // Player died
-    } else if (target_obj->type == 3) { // Player (collision with another player, should not happen)
-        return 2; // Player died (or error)
-    } else if (target_obj->type == 7) { // Empty space
-        // Swap positions
-        setObjectByCoord(dungeon->rooms_head, obj->coords->x, obj->coords->y + 1, obj);
-        setObjectByCoord(dungeon->rooms_head, target_obj->coords->x, target_obj->coords->y, target_obj);
-    }
-    return 0; // Move successful or no action
+  uint target_x = player_coords[0];
+  int target_y = player_coords[1] + 1;
+
+  int target_obj_ptr = getObjectByCoord(dungeon_ptr, target_x, target_y);
+  if (target_obj_ptr == 0) { _terminate(1); }
+
+  int target_obj_type = *(int *)(target_obj_ptr + 4);
+
+  if (target_obj_type == 1 || target_obj_type == 2) { return 0; }
+  if (target_obj_type == 4 && player_obj[1] == 3) { return 1; }
+  if (target_obj_type == 5 && player_obj[1] == 3) { sendKillMessage("You were killed by a bat"); return 2; }
+  if (target_obj_type == 6 && player_obj[1] == 3) { sendKillMessage("You were killed by a zombie"); return 2; }
+  if (target_obj_type == 3) { return 2; } // Another player/unmovable
+  if (target_obj_type == 7) { // Empty space
+    setObjectByCoord(dungeon_ptr, target_x, target_y, player_object_ptr);
+    setObjectByCoord(dungeon_ptr, player_coords[0], player_coords[1], target_obj_ptr);
+  }
+  return 0;
 }
 
 // Function: moveUp
-int moveUp(Dungeon* dungeon, Object* obj) {
-    Object* target_obj = getObjectByCoord(dungeon->rooms_head, obj->coords->x, obj->coords->y - 1);
-    if (target_obj == NULL) {
-        _terminate(1); // Target square does not exist
-    }
+// Returns 0 for continue, 1 for won, 2 for died
+int moveUp(int dungeon_ptr, int player_object_ptr) {
+  int *player_obj = (int *)player_object_ptr;
+  int *player_coords = (int *)(player_obj[2]);
 
-    if (target_obj->type == 1 || target_obj->type == 2) { // Wall or Block
-        return 0; // Cannot move
-    } else if (target_obj->type == 4 && obj->type == 3) { // Treasure and Player
-        return 1; // Player won
-    } else if ((target_obj->type == 5 || target_obj->type == 6) && obj->type == 3) { // Enemy and Player
-        sendKillMessage((target_obj->type == 5) ? "You were killed by a bat" : "You were killed by a zombie");
-        return 2; // Player died
-    } else if (target_obj->type == 3) { // Player
-        return 2; // Player died (or error)
-    } else if (target_obj->type == 7) { // Empty space
-        // Swap positions
-        setObjectByCoord(dungeon->rooms_head, obj->coords->x, obj->coords->y - 1, obj);
-        setObjectByCoord(dungeon->rooms_head, target_obj->coords->x, target_obj->coords->y, target_obj);
-    }
-    return 0; // Move successful or no action
+  uint target_x = player_coords[0];
+  int target_y = player_coords[1] - 1;
+
+  int target_obj_ptr = getObjectByCoord(dungeon_ptr, target_x, target_y);
+  if (target_obj_ptr == 0) { _terminate(1); }
+
+  int target_obj_type = *(int *)(target_obj_ptr + 4);
+
+  if (target_obj_type == 1 || target_obj_type == 2) { return 0; }
+  if (target_obj_type == 4 && player_obj[1] == 3) { return 1; }
+  if (target_obj_type == 5 && player_obj[1] == 3) { sendKillMessage("You were killed by a bat"); return 2; }
+  if (target_obj_type == 6 && player_obj[1] == 3) { sendKillMessage("You were killed by a zombie"); return 2; }
+  if (target_obj_type == 3) { return 2; }
+  if (target_obj_type == 7) { // Empty space
+    setObjectByCoord(dungeon_ptr, target_x, target_y, player_object_ptr);
+    setObjectByCoord(dungeon_ptr, player_coords[0], player_coords[1], target_obj_ptr);
+  }
+  return 0;
 }
 
 // Function: moveLeft
-int moveLeft(Dungeon* dungeon, Object* obj) {
-    if (obj->type == 3) { // If it's the player, add move
-        addMove(dungeon, obj, dungeon->move_keys[1]);
-    }
+// Returns 0 for continue, 1 for won, 2 for died
+int moveLeft(int dungeon_ptr, int player_object_ptr) {
+  int *player_obj = (int *)player_object_ptr;
+  int *player_coords = (int *)(player_obj[2]);
+  int *player_state = (int *)(player_obj[3]);
 
-    Object* target_obj = getObjectByCoord(dungeon->rooms_head, obj->coords->x - 1, obj->coords->y);
-    if (target_obj == NULL) {
-        _terminate(1); // Target square does not exist
-    }
+  uint target_x = player_coords[0] - 1;
+  int target_y = player_coords[1];
 
-    if (target_obj->type == 1 || target_obj->type == 2) { // Wall or Block
-        if (obj->type == 5 || obj->type == 6) { // Bat or Zombie hits wall/block
-            obj->state->x = 2; // Change direction to right
-        }
-    } else if (target_obj->type == 4 && obj->type == 3) { // Treasure and Player
-        return 1; // Player won
-    } else if ((target_obj->type == 5 || target_obj->type == 6) && obj->type == 3) { // Enemy and Player
-        sendKillMessage((target_obj->type == 5) ? "You were killed by a bat" : "You were killed by a zombie");
-        return 2; // Player died
-    } else if (target_obj->type == 3) { // Player
-        return 2; // Player died (or error)
-    } else if (target_obj->type == 7) { // Empty space
-        // Swap positions
-        setObjectByCoord(dungeon->rooms_head, obj->coords->x - 1, obj->coords->y, obj);
-        setObjectByCoord(dungeon->rooms_head, target_obj->coords->x, target_obj->coords->y, target_obj);
-    }
-    return 0; // Move successful or no action
+  int target_obj_ptr = getObjectByCoord(dungeon_ptr, target_x, target_y);
+  if (target_obj_ptr == 0) { _terminate(1); }
+
+  if (player_obj[1] == 3) { // Player type
+    addMove(dungeon_ptr, player_object_ptr, *(char *)(dungeon_ptr + 1));
+  }
+
+  int target_obj_type = *(int *)(target_obj_ptr + 4);
+  int result = 0;
+
+  if (target_obj_type == 1 || target_obj_type == 2) {
+    if (player_obj[1] == 6 || player_obj[1] == 5) { player_state[0] = 2; } // Enemy change direction
+  } else if (target_obj_type == 4) { // Treasure
+    if (player_obj[1] == 6 || player_obj[1] == 5) { player_state[0] = 2; }
+    if (player_obj[1] == 3) { result = 1; } // Player wins
+  } else if (target_obj_type == 5) { // Bat
+    if (player_obj[1] == 3) { sendKillMessage("You were killed by a bat"); result = 2; }
+    else if (player_obj[1] == 6 || player_obj[1] == 5) { player_state[0] = 2; }
+  } else if (target_obj_type == 6) { // Zombie
+    if (player_obj[1] == 3) { sendKillMessage("You were killed by a zombie"); result = 2; }
+    else if (player_obj[1] == 6 || player_obj[1] == 5) { player_state[0] = 2; }
+  } else if (target_obj_type == 3) { result = 2; }
+  else if (target_obj_type == 7) { // Empty space
+    setObjectByCoord(dungeon_ptr, target_x, target_y, player_object_ptr);
+    setObjectByCoord(dungeon_ptr, player_coords[0], player_coords[1], target_obj_ptr);
+  }
+  return result;
 }
 
 // Function: moveRight
-int moveRight(Dungeon* dungeon, Object* obj) {
-    if (obj->type == 3) { // If it's the player, add move
-        addMove(dungeon, obj, dungeon->move_keys[2]);
-    }
+// Returns 0 for continue, 1 for won, 2 for died
+int moveRight(int dungeon_ptr, int player_object_ptr) {
+  int *player_obj = (int *)player_object_ptr;
+  int *player_coords = (int *)(player_obj[2]);
+  int *player_state = (int *)(player_obj[3]);
 
-    Object* target_obj = getObjectByCoord(dungeon->rooms_head, obj->coords->x + 1, obj->coords->y);
-    if (target_obj == NULL) {
-        _terminate(1); // Target square does not exist
-    }
+  uint target_x = player_coords[0] + 1;
+  int target_y = player_coords[1];
 
-    if (target_obj->type == 1 || target_obj->type == 2) { // Wall or Block
-        if (obj->type == 5 || obj->type == 6) { // Bat or Zombie hits wall/block
-            obj->state->x = 1; // Change direction to left
-        }
-    } else if (target_obj->type == 4 && obj->type == 3) { // Treasure and Player
-        return 1; // Player won
-    } else if ((target_obj->type == 5 || target_obj->type == 6) && obj->type == 3) { // Enemy and Player
-        sendKillMessage((target_obj->type == 5) ? "You were killed by a bat" : "You were killed by a zombie");
-        return 2; // Player died
-    } else if (target_obj->type == 3) { // Player
-        return 2; // Player died (or error)
-    } else if (target_obj->type == 7) { // Empty space
-        // Swap positions
-        setObjectByCoord(dungeon->rooms_head, obj->coords->x + 1, obj->coords->y, obj);
-        setObjectByCoord(dungeon->rooms_head, target_obj->coords->x, target_obj->coords->y, target_obj);
-    }
-    return 0; // Move successful or no action
+  int target_obj_ptr = getObjectByCoord(dungeon_ptr, target_x, target_y);
+  if (target_obj_ptr == 0) { _terminate(1); }
+
+  if (player_obj[1] == 3) { // Player type
+    addMove(dungeon_ptr, player_object_ptr, *(char *)(dungeon_ptr + 2));
+  }
+
+  int target_obj_type = *(int *)(target_obj_ptr + 4);
+  int result = 0;
+
+  if (target_obj_type == 1 || target_obj_type == 2) {
+    if (player_obj[1] == 6 || player_obj[1] == 5) { player_state[0] = 1; } // Enemy change direction
+  } else if (target_obj_type == 4) { // Treasure
+    if (player_obj[1] == 6 || player_obj[1] == 5) { player_state[0] = 1; }
+    if (player_obj[1] == 3) { result = 1; } // Player wins
+  } else if (target_obj_type == 5) { // Bat
+    if (player_obj[1] == 3) { sendKillMessage("You were killed by a bat"); result = 2; }
+    else if (player_obj[1] == 6 || player_obj[1] == 5) { player_state[0] = 1; }
+  } else if (target_obj_type == 6) { // Zombie
+    if (player_obj[1] == 3) { sendKillMessage("You were killed by a zombie"); result = 2; }
+    else if (player_obj[1] == 6 || player_obj[1] == 5) { player_state[0] = 1; }
+  } else if (target_obj_type == 3) { result = 2; }
+  else if (target_obj_type == 7) { // Empty space
+    setObjectByCoord(dungeon_ptr, target_x, target_y, player_object_ptr);
+    setObjectByCoord(dungeon_ptr, player_coords[0], player_coords[1], target_obj_ptr);
+  }
+  return result;
 }
 
 // Function: checkFloor
-int checkFloor(Dungeon* dungeon, Object* obj) {
-    int result = 0;
-    obj->state->y = 4; // Set vertical state to falling down
+// Returns 0 for continue, 1 for won, 2 for died
+int checkFloor(int dungeon_ptr, int player_object_ptr) {
+  int *player_obj = (int *)player_object_ptr;
+  int *player_coords = (int *)(player_obj[2]);
+  int *player_state = (int *)(player_obj[3]);
 
-    Object* target_obj = getObjectByCoord(dungeon->rooms_head, obj->coords->x, obj->coords->y + 1);
-    if (target_obj == NULL) {
-        _terminate(1); // Should not happen if dungeon is properly built
+  int result = 0;
+  // Loop while player is in air (floor object type is not a solid surface like wall/boundary)
+  while (2 < *(uint *)(getObjectByCoord(dungeon_ptr, player_coords[0], player_coords[1] + 1) + 4)) {
+    result = moveDown(dungeon_ptr, player_object_ptr);
+    if (result != 0) return result;
+
+    if (player_state[0] == 1) { // Left bias for falling
+      result = moveLeft(dungeon_ptr, player_object_ptr);
+      if (result != 0) return result;
+    } else if (player_state[0] == 2) { // Right bias for falling
+      result = moveRight(dungeon_ptr, player_object_ptr);
+      if (result != 0) return result;
     }
 
-    while (target_obj->type > 2) { // While the object below is not a wall (1) or block (2)
-        if (obj->state->x == 0) { // Fall straight
-            result = moveDown(dungeon, obj);
-        } else if (obj->state->x == 1) { // Fall left
-            result = moveLeft(dungeon, obj);
-            if (result == 0) { // If moveLeft was successful, then also moveDown
-                result = moveDown(dungeon, obj);
-            }
-        } else if (obj->state->x == 2) { // Fall right
-            result = moveRight(dungeon, obj);
-            if (result == 0) { // If moveRight was successful, then also moveDown
-                result = moveDown(dungeon, obj);
-            }
-        }
-        if (result != 0) {
-            return result;
-        }
-
-        if (obj->type == 3) { // Only for player
-            // Add a 'fall' move (using 'left' key as placeholder)
-            addMove(dungeon, obj, dungeon->move_keys[1]); 
-            result = moveEnemies(dungeon, obj->id);
-            if (result != 0) {
-                return result;
-            }
-            sendCurrentDungeonView(dungeon);
-        }
-
-        // Re-evaluate the object below after movement
-        target_obj = getObjectByCoord(dungeon->rooms_head, obj->coords->x, obj->coords->y + 1);
-        if (target_obj == NULL) {
-            _terminate(1);
-        }
+    if (player_obj[1] == 3) { // Only player adds move and moves enemies
+      addMove(dungeon_ptr, player_object_ptr, *(char *)(dungeon_ptr + 1)); // Original used param_1+1 for a move char
+      result = moveEnemies(dungeon_ptr, player_obj[4]);
+      if (result != 0) return result;
+      sendCurrentDungeonView(dungeon_ptr);
     }
-    return 0;
+  }
+  return result;
 }
 
 // Function: moveZombie
-int moveZombie(Dungeon* dungeon, Object* zombie_obj, int player_moves_taken) {
-    if (player_moves_taken == zombie_obj->id) { // Only move if it's the current turn
-        return 0;
-    }
-    int result = 0;
-    if (zombie_obj->state->x == 1) { // Moving Left
-        result = moveLeft(dungeon, zombie_obj);
-        if (result != 0) return result;
-        result = checkFloor(dungeon, zombie_obj);
-    } else if (zombie_obj->state->x == 2) { // Moving Right
-        result = moveRight(dungeon, zombie_obj);
-        if (result != 0) return result;
-        result = checkFloor(dungeon, zombie_obj);
-    }
+// Returns 0 for continue, 1 for won, 2 for died
+int moveZombie(int dungeon_ptr, int zombie_object_ptr, int current_moves) {
+  int *zombie_obj = (int *)zombie_object_ptr;
+  int *zombie_state = (int *)(zombie_obj[3]);
+
+  if (current_moves == zombie_obj[4]) { return 0; } // Zombie already moved this turn
+
+  int result = 0;
+  if (zombie_state[0] == 1) { // Move left
+    result = moveLeft(dungeon_ptr, zombie_object_ptr);
     if (result != 0) return result;
-    zombie_obj->id++; // Increment zombie's move count
-    return 0;
+    result = checkFloor(dungeon_ptr, zombie_object_ptr);
+  } else if (zombie_state[0] == 2) { // Move right
+    result = moveRight(dungeon_ptr, zombie_object_ptr);
+    if (result != 0) return result;
+    result = checkFloor(dungeon_ptr, zombie_object_ptr);
+  }
+
+  if (result != 0) { return result; }
+  zombie_obj[4]++; // Increment zombie's last_move_turn
+  return 0;
 }
 
 // Function: moveBat
-int moveBat(Dungeon* dungeon, Object* bat_obj, int player_moves_taken) {
-    if (player_moves_taken == bat_obj->id) { // Only move if it's the current turn
-        return 0;
-    }
-    int result = 0;
-    if (bat_obj->state->x == 1) { // Moving Left
-        result = moveLeft(dungeon, bat_obj);
-    } else if (bat_obj->state->x == 2) { // Moving Right
-        result = moveRight(dungeon, bat_obj);
-    }
-    if (result != 0) return result;
+// Returns 0 for continue, 1 for won, 2 for died
+int moveBat(int dungeon_ptr, int bat_object_ptr, int current_moves) {
+  int *bat_obj = (int *)bat_object_ptr;
+  int *bat_state = (int *)(bat_obj[3]);
 
-    if (bat_obj->state->y == 3) { // Moving Up
-        result = moveUp(dungeon, bat_obj);
-        if (result != 0) return result;
-        bat_obj->state->y = 4; // Change to moving down
-    } else { // Moving Down
-        result = moveDown(dungeon, bat_obj);
-        if (result != 0) return result;
-        bat_obj->state->y = 3; // Change to moving up
-    }
-    bat_obj->id++; // Increment bat's move count
-    return 0;
+  if (current_moves == bat_obj[4]) { return 0; } // Bat already moved this turn
+
+  int result = 0;
+  if (bat_state[0] == 1) { result = moveLeft(dungeon_ptr, bat_object_ptr); }
+  else if (bat_state[0] == 2) { result = moveRight(dungeon_ptr, bat_object_ptr); }
+  if (result != 0) return result;
+
+  if (bat_state[1] == 3) { // Move down
+    result = moveDown(dungeon_ptr, bat_object_ptr);
+    if (result != 0) return result;
+    bat_state[1] = 4; // Change vertical direction to up
+  } else { // Move up
+    result = moveUp(dungeon_ptr, bat_object_ptr);
+    if (result != 0) return result;
+    bat_state[1] = 3; // Change vertical direction to down
+  }
+
+  if (result != 0) return result;
+  bat_obj[4]++; // Increment bat's last_move_turn
+  return 0;
 }
 
 // Function: moveEnemies
-int moveEnemies(Dungeon* dungeon, int player_moves_taken) {
-    Room* current_room = dungeon->rooms_head;
-    while (current_room != NULL) {
-        for (int y = 0; y < 9; ++y) {
-            for (int x = 0; x < 24; ++x) {
-                Object* obj = current_room->grid[y][x];
-                if (obj != NULL) {
-                    if (obj->type == 5) { // Bat
-                        int result = moveBat(dungeon, obj, player_moves_taken);
-                        if (result != 0) {
-                            return result;
-                        }
-                    } else if (obj->type == 6) { // Zombie
-                        int result = moveZombie(dungeon, obj, player_moves_taken);
-                        if (result != 0) {
-                            return result;
-                        }
-                    }
-                }
-            }
+// Returns 0 for continue, 1 for won, 2 for died
+int moveEnemies(int dungeon_ptr, int current_moves) {
+  int current_room_ptr = *(int *)(dungeon_ptr + 0xc);
+  while (current_room_ptr != 0) {
+    for (int r = 0; r < 9; r++) {
+      for (int c = 0; c < 0x18; c++) {
+        int obj_ptr = *(int *)(current_room_ptr + (r * 0x18 + c) * 4);
+        if (obj_ptr == 0) continue;
+
+        int obj_type = *(int *)(obj_ptr + 4);
+        int result = 0;
+
+        if (obj_type == 5) { // Bat
+          result = moveBat(dungeon_ptr, obj_ptr, current_moves);
+          if (result == 2) { sendKillMessage("You were killed by a bat"); }
+          if (result != 0) { return result; }
+        } else if (obj_type == 6) { // Zombie
+          result = moveZombie(dungeon_ptr, obj_ptr, current_moves);
+          if (result == 2) { sendKillMessage("You were killed by a zombie"); }
+          if (result != 0) { return result; }
         }
-        current_room = current_room->next;
+      }
     }
-    return 0;
+    current_room_ptr = *(int *)(current_room_ptr + 0x360);
+  }
+  return 0;
 }
 
 // Function: jump
-int jump(Dungeon* dungeon, Object* player_obj) {
-    player_obj->state->x = 0; // Jump straight
-    player_obj->state->y = 3; // Jump up
+// Returns 0 for continue, 1 for won, 2 for died
+int jump(int dungeon_ptr, int player_object_ptr) {
+  int *player_obj = (int *)player_object_ptr;
+  int *player_state = (int *)(player_obj[3]);
 
-    for (int i = 1; i <= 2; ++i) { // Jump two units up
-        addMove(dungeon, player_obj, dungeon->move_keys[3]); // Add a 'jump' move
-        int result = moveUp(dungeon, player_obj);
-        if (result != 0) return result;
-        result = moveEnemies(dungeon, player_obj->id);
-        if (result != 0) return result;
-        sendCurrentDungeonView(dungeon);
+  player_state[0] = 0; // No horizontal bias
+  player_state[1] = 3; // Initial vertical state for jump (move down)
+
+  int result = 0;
+  for (int i = 1; i <= 2; i++) {
+    if (player_obj[1] == 3) { // Player type
+      addMove(dungeon_ptr, player_object_ptr, *(char *)(dungeon_ptr + 3));
     }
-    player_obj->state->y = 4; // Set to falling state
-    return checkFloor(dungeon, player_obj);
+    result = moveUp(dungeon_ptr, player_object_ptr);
+    if (result != 0) return result;
+    result = moveEnemies(dungeon_ptr, player_obj[4]);
+    if (result != 0) return result;
+    sendCurrentDungeonView(dungeon_ptr);
+  }
+
+  player_state[1] = 4; // Set vertical state to move up (for falling check)
+  return checkFloor(dungeon_ptr, player_object_ptr);
 }
 
 // Function: jumpLeft
-int jumpLeft(Dungeon* dungeon, Object* player_obj) {
-    player_obj->state->x = 1; // Jump left
-    player_obj->state->y = 3; // Jump up
+// Returns 0 for continue, 1 for won, 2 for died
+int jumpLeft(int dungeon_ptr, int player_object_ptr) {
+  int *player_obj = (int *)player_object_ptr;
+  int *player_state = (int *)(player_obj[3]);
 
-    for (int i = 1; i <= 2; ++i) { // Jump two units
-        addMove(dungeon, player_obj, dungeon->move_keys[4]); // Add a 'jumpLeft' move
-        int result = moveUp(dungeon, player_obj);
-        if (result != 0) return result;
-        result = moveLeft(dungeon, player_obj);
-        if (result != 0) return result;
-        result = moveEnemies(dungeon, player_obj->id);
-        if (result != 0) return result;
-        sendCurrentDungeonView(dungeon);
-    }
-    player_obj->state->y = 4; // Set to falling state
-    return checkFloor(dungeon, player_obj);
+  player_state[1] = 3; // Initial vertical state (move down)
+  player_state[0] = 1; // Left bias
+
+  int result = 0;
+  for (int i = 1; i <= 2; i++) {
+    result = moveUp(dungeon_ptr, player_object_ptr);
+    if (result != 0) return result;
+    result = moveLeft(dungeon_ptr, player_object_ptr);
+    if (result != 0) return result;
+    result = moveEnemies(dungeon_ptr, player_obj[4]);
+    if (result != 0) return result;
+    sendCurrentDungeonView(dungeon_ptr);
+  }
+
+  player_state[1] = 4; // Set vertical state to move up
+  result = checkFloor(dungeon_ptr, player_object_ptr);
+  if (result == 0) { player_state[0] = 0; } // Reset horizontal bias
+  return result;
 }
 
 // Function: jumpRight
-int jumpRight(Dungeon* dungeon, Object* player_obj) {
-    player_obj->state->x = 2; // Jump right
-    player_obj->state->y = 3; // Jump up
+// Returns 0 for continue, 1 for won, 2 for died
+int jumpRight(int dungeon_ptr, int player_object_ptr) {
+  int *player_obj = (int *)player_object_ptr;
+  int *player_state = (int *)(player_obj[3]);
 
-    for (int i = 1; i <= 2; ++i) { // Jump two units
-        addMove(dungeon, player_obj, dungeon->move_keys[5]); // Add a 'jumpRight' move
-        int result = moveUp(dungeon, player_obj);
-        if (result != 0) return result;
-        result = moveRight(dungeon, player_obj);
-        if (result != 0) return result;
-        result = moveEnemies(dungeon, player_obj->id);
-        if (result != 0) return result;
-        sendCurrentDungeonView(dungeon);
-    }
-    player_obj->state->y = 4; // Set to falling state
-    return checkFloor(dungeon, player_obj);
+  player_state[1] = 3; // Initial vertical state (move down)
+  player_state[0] = 2; // Right bias
+
+  int result = 0;
+  for (int i = 1; i <= 2; i++) {
+    result = moveUp(dungeon_ptr, player_object_ptr);
+    if (result != 0) return result;
+    result = moveRight(dungeon_ptr, player_object_ptr);
+    if (result != 0) return result;
+    result = moveEnemies(dungeon_ptr, player_obj[4]);
+    if (result != 0) return result;
+    sendCurrentDungeonView(dungeon_ptr);
+  }
+
+  player_state[1] = 4; // Set vertical state to move up
+  result = checkFloor(dungeon_ptr, player_object_ptr);
+  if (result == 0) { player_state[0] = 0; } // Reset horizontal bias
+  return result;
 }
 
 // Function: makeMove
-int makeMove(Dungeon* dungeon, char move_char) {
-    if (dungeon->moves_buffer == NULL) {
-        dungeon->moves_buffer = (char*)malloc(0x101); // Initial buffer size
-        if (dungeon->moves_buffer == NULL) {
-            _terminate(1);
-        }
-        memset(dungeon->moves_buffer, 0, 0x101);
-    }
+// Returns 0 for continue, 1 for won, 2 for died, -1 for invalid move
+int makeMove(int dungeon_ptr, char move_char) {
+  int *dungeon_data = (int *)dungeon_ptr;
 
-    Object* player_obj = getObjectById(dungeon->rooms_head, PLAYER_OBJECT_ID);
-    if (player_obj == NULL) {
-        _terminate(1); // Player object not found
-    }
+  if (dungeon_data[4] == 0) { // Initialize move history buffer
+    void *move_buf = malloc(0x101); // 257 bytes
+    if (move_buf == NULL) _terminate(1);
+    bzero(move_buf, 0x101);
+    dungeon_data[4] = (int)move_buf;
+  }
+  char *move_history_buf = (char *)dungeon_data[4];
+  size_t current_len = strlen(move_history_buf);
+  if (current_len < 0x100) {
+      move_history_buf[current_len] = move_char;
+      move_history_buf[current_len + 1] = '\0';
+  }
 
-    int result = 0;
-    if (move_char == dungeon->move_keys[1]) { // Move Left
-        player_obj->state->x = 0; // Reset jump direction
-        result = moveLeft(dungeon, player_obj);
-        if (result != 0) return result;
-        result = moveEnemies(dungeon, player_obj->id);
-        if (result != 0) return result;
-        sendCurrentDungeonView(dungeon);
-        result = checkFloor(dungeon, player_obj);
-    } else if (move_char == dungeon->move_keys[2]) { // Move Right
-        player_obj->state->x = 0; // Reset jump direction
-        result = moveRight(dungeon, player_obj);
-        if (result != 0) return result;
-        result = moveEnemies(dungeon, player_obj->id);
-        if (result != 0) return result;
-        sendCurrentDungeonView(dungeon);
-        result = checkFloor(dungeon, player_obj);
-    } else if (move_char == dungeon->move_keys[3]) { // Jump
-        result = jump(dungeon, player_obj);
-    } else if (move_char == dungeon->move_keys[4]) { // Jump Left
-        result = jumpLeft(dungeon, player_obj);
-    } else if (move_char == dungeon->move_keys[5]) { // Jump Right
-        result = jumpRight(dungeon, player_obj);
-    } else if (move_char == dungeon->move_keys[6]) { // Stay
-        addMove(dungeon, player_obj, dungeon->move_keys[6]);
-        result = moveEnemies(dungeon, player_obj->id);
-        if (result != 0) return result;
-        sendCurrentDungeonView(dungeon);
-    } else {
-        return -1; // Invalid move
-    }
-    return result;
+  int player_obj_ptr = getObjectById(dungeon_ptr, 3);
+  if (player_obj_ptr == 0) { _terminate(1); }
+  int *player_obj = (int *)player_obj_ptr;
+
+  int result = 0;
+  if (move_char == *(char *)(dungeon_ptr + 1)) { // Move Left
+    *(int *)(player_obj[3]) = 0; // Reset horizontal bias
+    result = moveLeft(dungeon_ptr, player_obj_ptr);
+    if (result != 0) return result;
+    result = moveEnemies(dungeon_ptr, player_obj[4]);
+    if (result != 0) return result;
+    sendCurrentDungeonView(dungeon_ptr);
+    result = checkFloor(dungeon_ptr, player_obj_ptr);
+  } else if (move_char == *(char *)(dungeon_ptr + 2)) { // Move Right
+    *(int *)(player_obj[3]) = 0; // Reset horizontal bias
+    result = moveRight(dungeon_ptr, player_obj_ptr);
+    if (result != 0) return result;
+    result = moveEnemies(dungeon_ptr, player_obj[4]);
+    if (result != 0) return result;
+    sendCurrentDungeonView(dungeon_ptr);
+    result = checkFloor(dungeon_ptr, player_obj_ptr);
+  } else if (move_char == *(char *)(dungeon_ptr + 3)) { // Jump
+    result = jump(dungeon_ptr, player_obj_ptr);
+  } else if (move_char == *(char *)(dungeon_ptr + 4)) { // Jump Left
+    result = jumpLeft(dungeon_ptr, player_obj_ptr);
+  } else if (move_char == *(char *)(dungeon_ptr + 5)) { // Jump Right
+    result = jumpRight(dungeon_ptr, player_obj_ptr);
+  } else if (move_char == *(char *)(dungeon_ptr + 6)) { // Wait
+    addMove(dungeon_ptr, player_obj_ptr, *(char *)(dungeon_ptr + 6));
+    result = moveEnemies(dungeon_ptr, player_obj[4]);
+    if (result != 0) return result;
+    sendCurrentDungeonView(dungeon_ptr);
+    result = 0;
+  } else {
+    return -1; // Invalid move
+  }
+  return result;
 }
 
 // Function: sendCurrentDungeonView
-void sendCurrentDungeonView(Dungeon* dungeon) {
-    Object* player_obj = getObjectById(dungeon->rooms_head, PLAYER_OBJECT_ID);
-    if (player_obj == NULL) {
-        _terminate(1);
-    }
+void sendCurrentDungeonView(int dungeon_ptr) {
+  char view_buffer[25]; // 0x19 bytes for local_51
+  
+  int player_obj_ptr = getObjectById(dungeon_ptr, 3);
+  if (player_obj_ptr == 0) { _terminate(1); }
 
-    unsigned int player_abs_x = player_obj->coords->x;
-    unsigned int player_abs_y = player_obj->coords->y;
+  int *player_obj = (int *)player_obj_ptr;
+  int *player_coords = (int *)(player_obj[2]);
+  int player_x = player_coords[0];
+  int player_y = player_coords[1];
 
-    char view_buffer[25 + 1]; // 25 characters + null terminator
-    
-    for (int y_offset = -6; y_offset <= 6; ++y_offset) { // Iterate 13 rows (y-view)
-        memset(view_buffer, ' ', sizeof(view_buffer)); // Fill with spaces for each row
-        
-        for (int x_offset = -12; x_offset <= 12; ++x_offset) { // Iterate 25 columns (x-view)
-            int current_y_in_room = player_abs_y + y_offset;
-            int current_abs_x = player_abs_x + x_offset;
+  int view_radius_x = 12;
+  int view_radius_y = 6;
 
-            if (current_y_in_room < 0 || current_y_in_room >= 9) { // Out of room Y bounds
-                continue;
-            }
+  for (int dy = -view_radius_y; dy <= view_radius_y; dy++) {
+    bzero(view_buffer, sizeof(view_buffer));
+    for (int dx = -view_radius_x; dx <= view_radius_x; dx++) {
+      char display_char = ' ';
+      int current_y = player_y + dy;
+      int current_x = player_x + dx;
 
-            Room* target_room = getRoom(dungeon->rooms_head, current_abs_x / 24);
-            if (target_room != NULL) {
-                Object* obj_at_coord = target_room->grid[current_y_in_room][current_abs_x % 24];
-                if (obj_at_coord != NULL) {
-                    view_buffer[12 + x_offset] = obj_at_coord->char_repr;
-                }
-            }
+      if (current_y >= 0 && current_y < 9) { // Assuming 9 rows per room
+        int obj_ptr = getObjectByCoord(dungeon_ptr, current_x, current_y);
+        if (obj_ptr != 0) {
+          display_char = *(char *)obj_ptr; // Display char is at offset 0
         }
-        transmit_all(1, view_buffer, 25); // Print 25 characters
-        transmit_all(1, "\n", 1); // Newline after each row
+      }
+      view_buffer[view_radius_x + dx] = display_char;
     }
+    transmit_all(1, view_buffer, strlen(view_buffer), 0);
+    transmit_all(1, "\n", 1, 0);
+  }
+}
+
+// Function: addRoom
+void addRoom(int room_ptr, char *map_data, uint start_col, int start_row, int param_5) {
+  for (int row = start_row; row < 9; row++) {
+    for (uint col = start_col; col < start_col + 0x18; col++) {
+      char map_char = map_data[(row % 9) * 0x18 + col % 0x18];
+
+      int obj_type = 7; // Default to empty space
+      char display_char = ' ';
+      int state1 = 0;
+      int state2 = 0;
+
+      switch (map_char) {
+        case '-': obj_type = 1; display_char = '-'; break;
+        case '|': obj_type = 2; display_char = '|'; break;
+        case 'R': obj_type = 3; display_char = 'R'; break; // Player
+        case '@': obj_type = 4; display_char = '@'; break; // Treasure
+        case 'v': obj_type = 5; display_char = 'v'; state1 = 1; state2 = 3; break; // Bat (left, down)
+        case '&': obj_type = 6; display_char = '&'; state1 = 1; state2 = 4; break; // Zombie (left, up)
+        case ' ': obj_type = 7; display_char = ' '; break;
+        default: _terminate(11); // Unknown map character
+      }
+
+      int new_obj_ptr = makeObject(display_char, obj_type, state1, col, row, state2, 0);
+      *(int *)(room_ptr + (row * 0x18 + col % 0x18) * 4) = new_obj_ptr;
+    }
+  }
 }
 
 // Function: destroyRoom
-void destroyRoom(Room* room_ptr) {
-    if (room_ptr == NULL) return;
-    for (int y = 0; y < 9; ++y) {
-        for (int x = 0; x < 24; ++x) {
-            destroyObject(room_ptr->grid[y][x]);
-            room_ptr->grid[y][x] = NULL;
-        }
+void destroyRoom(void *room_ptr) {
+  if (room_ptr == NULL) return;
+  for (int r = 0; r < 9; r++) {
+    for (int c = 0; c < 0x18; c++) {
+      int obj_ptr = *(int *)((int)room_ptr + (r * 0x18 + c) * 4);
+      if (obj_ptr != 0) {
+        destroyObject((void *)obj_ptr);
+        *(int *)((int)room_ptr + (r * 0x18 + c) * 4) = 0;
+      }
     }
+  }
 }
 
 // Function: buildDungeon
-void buildDungeon(Dungeon* dungeon) {
-    memset(dungeon, 0, sizeof(Dungeon));
+void buildDungeon(char *dungeon_ptr) {
+  bzero(dungeon_ptr, 10); // Clear move characters area
 
-    Room* initial_room = (Room*)malloc(sizeof(Room));
-    if (initial_room == NULL) {
-        _terminate(1);
-    }
-    memset(initial_room, 0, sizeof(Room));
-    dungeon->rooms_head = initial_room;
+  int first_room_ptr = (int)malloc(0x364);
+  if (first_room_ptr == 0) {
+    _terminate(1);
+  }
+  *(int *)(dungeon_ptr + 0xc) = first_room_ptr; // Store room list head
+  *(int *)(first_room_ptr + 0x360) = 0; // No next room yet
 
-    const char* initial_layout =
-       "------------------------|R                   v ||-                     || -                   v||  -                   ||   -                  ||    -                 ||------&     --       -|------------------------";
-    addRoom(initial_room, initial_layout, 0, 0, 0); // Start at (0,0) with object ID counter 0
-    initial_room->next = NULL; // Ensure it's the only room initially
+  const char *initial_map = "------------------------|R                   v ||-                     || -                   v||  -                   ||   -                  ||    -                 ||------&     --       -|------------------------";
+  addRoom(first_room_ptr, (char*)initial_map, 0, 0, 0);
 
-    dungeon->moves_buffer = NULL; // Initialize moves buffer to NULL
+  *(int *)(dungeon_ptr + 0x10) = 0; // Initialize move history buffer pointer
+  *(int *)(dungeon_ptr + 0x14) = 0; // Initialize high score list head
 
-    // Generate 10 unique random characters for move_keys
-    char used_chars[256] = {0}; // Boolean array to track used characters
-    int char_count = 0;
-    while (char_count < 10) {
-        char random_char = (char)(rand() % ('}' - 't' + 1) + 't'); // Characters from 't' (0x74) to '}' (0x7d)
-        if (used_chars[(unsigned char)random_char] == 0) {
-            dungeon->move_keys[char_count] = random_char;
-            used_chars[(unsigned char)random_char] = 1;
-            char_count++;
-        }
-    }
+  char assigned_chars[256] = {0}; // Boolean array for tracking used chars
+  char possible_chars[] = "!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  int num_possible_chars = strlen(possible_chars);
+
+  for (int i = 0; i < 10; i++) { // Assign 10 unique random characters for moves
+    char random_char;
+    do {
+      random_char = possible_chars[rand() % num_possible_chars];
+    } while (assigned_chars[(unsigned char)random_char] != 0);
+    
+    assigned_chars[(unsigned char)random_char] = 1;
+    dungeon_ptr[i] = random_char;
+  }
 }
 
 // Function: destroyDungeon
-void destroyDungeon(Dungeon* dungeon) {
-    if (dungeon == NULL) return;
+void destroyDungeon(void *dungeon_ptr) {
+  char *dungeon_data = (char *)dungeon_ptr;
 
-    // Free moves_buffer
-    if (dungeon->moves_buffer != NULL) {
-        free(dungeon->moves_buffer);
-        dungeon->moves_buffer = NULL;
-    }
+  bzero(dungeon_data, 10); // Clear move characters
 
-    // Destroy all rooms
-    Room* current_room = dungeon->rooms_head;
-    while (current_room != NULL) {
-        Room* next_room = current_room->next;
-        destroyRoom(current_room);
-        free(current_room);
-        current_room = next_room;
-    }
-    dungeon->rooms_head = NULL;
+  if (*(int *)(dungeon_data + 0x10) != 0) { // Free move history buffer
+    free((void *)(*(int *)(dungeon_data + 0x10)));
+    *(int *)(dungeon_data + 0x10) = 0;
+  }
 
-    // Destroy high scores list
-    Score* current_score = dungeon->high_scores_head;
-    while (current_score != NULL) {
-        Score* next_score = current_score->next;
-        free(current_score->name);
-        free(current_score);
-        current_score = next_score;
-    }
-    dungeon->high_scores_head = NULL;
+  void *current_room_ptr = (void *)(*(int *)(dungeon_data + 0xc));
+  while (current_room_ptr != NULL) { // Free all rooms
+    void *next_room_ptr = (void *)(*(int *)((int)current_room_ptr + 0x360));
+    destroyRoom(current_room_ptr);
+    free(current_room_ptr);
+    current_room_ptr = next_room_ptr;
+  }
+  *(int *)(dungeon_data + 0xc) = 0;
+
+  int current_score_ptr = *(int *)(dungeon_data + 0x14);
+  while (current_score_ptr != 0) { // Free high score list
+      int *score_obj = (int *)current_score_ptr;
+      int next_score_ptr = score_obj[2];
+      if (score_obj[0] != 0) {
+          free((void *)score_obj[0]);
+      }
+      free((void *)current_score_ptr);
+      current_score_ptr = next_score_ptr;
+  }
+  *(int *)(dungeon_data + 0x14) = 0;
 }
 
-// --- Helper Functions (replacing non-standard/decompiled ones) ---
-
-// Replace _terminate with exit
-void _terminate(int code) {
-    exit(code);
-}
-
-// Replace transmit_all with write to stdout
-int transmit_all(int fd, const char *buf, size_t count) {
-    if (write(fd, buf, count) != count) {
-        return -1; // Indicate error
-    }
-    return 0; // Success
-}
-
-// Replace read_until_delim_or_n with read from stdin
-int read_until_delim_or_n(int fd, char *buf, size_t count, char delim, int unknown_param) {
-    ssize_t bytes_read = read(fd, buf, count);
-    if (bytes_read < 0) {
-        return -1; // Error
-    }
-    // Find delimiter or end of buffer
-    for (ssize_t i = 0; i < bytes_read; ++i) {
-        if (buf[i] == delim) {
-            buf[i] = '\0'; // Null-terminate at delimiter
-            return 0; // Success
-        }
-    }
-    if (bytes_read > 0 && buf[bytes_read - 1] == '\n') { // handle newline as delimiter for convenience
-        buf[bytes_read - 1] = '\0';
-    } else {
-        buf[bytes_read] = '\0'; // Null-terminate if no delimiter found
-    }
-    return 0; // Success
-}
-
-// --- Main Function ---
+// Main function for testing
 int main() {
-    srand(time(NULL)); // Seed random number generator
-
-    Dungeon game_dungeon;
-    buildDungeon(&game_dungeon);
-
-    // Find the player object (initial 'R' becomes type 3)
-    Object* player = getObjectById(game_dungeon.rooms_head, PLAYER_OBJECT_ID);
-    if (player != NULL) {
-        player->id = 0; // Player's move count (re-purpose ID field for moves)
-        player->char_repr = '@'; // Player character
-        player->type = 3; // Player type
-    } else {
-        fprintf(stderr, "Player object not found after building dungeon!\n");
-        _terminate(1);
+    main_dungeon_ptr = (int)malloc(0x18);
+    if (main_dungeon_ptr == 0) {
+        fprintf(stderr, "Failed to allocate main dungeon struct\n");
+        return 1;
     }
-    
-    sendCurrentDungeonView(&game_dungeon);
+    bzero((void*)main_dungeon_ptr, 0x18);
 
-    char move_input[2];
-    int game_state = 0; // 0: playing, 1: won, 2: died, -1: invalid move
-    while (game_state == 0) {
-        transmit_all(1, "Enter move (l/r/j/k/i/s): ", strlen("Enter move (l/r/j/k/i/s): "));
-        ssize_t bytes_read = read(0, move_input, 1);
-        if (bytes_read <= 0) break; // EOF or error
-        move_input[bytes_read] = '\0'; // Null-terminate
+    srand(time(NULL));
 
-        game_state = makeMove(&game_dungeon, move_input[0]);
+    buildDungeon((char*)main_dungeon_ptr);
+    fprintf(stdout, "Dungeon built. Move characters: L:%c R:%c J:%c JL:%c JR:%c W:%c\n",
+            *(char*)(main_dungeon_ptr + 1), *(char*)(main_dungeon_ptr + 2), *(char*)(main_dungeon_ptr + 3),
+            *(char*)(main_dungeon_ptr + 4), *(char*)(main_dungeon_ptr + 5), *(char*)(main_dungeon_ptr + 6));
 
-        if (game_state == 1) {
-            playerWon(&game_dungeon);
-        } else if (game_state == 2) {
-            playerDied(&game_dungeon);
-        } else if (game_state == -1) {
-            transmit_all(1, "Invalid move.\n", strlen("Invalid move.\n"));
-        }
-    }
+    sendCurrentDungeonView(main_dungeon_ptr);
 
-    destroyDungeon(&game_dungeon);
+    fprintf(stdout, "Making a move (Right)...\n");
+    int result = makeMove(main_dungeon_ptr, *(char*)(main_dungeon_ptr + 2));
+    if (result == 1) { playerWon(main_dungeon_ptr); }
+    else if (result == 2) { playerDied(); }
+    sendCurrentDungeonView(main_dungeon_ptr);
 
+    fprintf(stdout, "Making another move (Jump)...\n");
+    result = makeMove(main_dungeon_ptr, *(char*)(main_dungeon_ptr + 3));
+    if (result == 1) { playerWon(main_dungeon_ptr); }
+    else if (result == 2) { playerDied(); }
+    sendCurrentDungeonView(main_dungeon_ptr);
+
+    destroyDungeon((void*)main_dungeon_ptr);
+    free((void*)main_dungeon_ptr);
+    main_dungeon_ptr = 0;
+
+    fprintf(stdout, "Program finished successfully.\n");
     return 0;
 }

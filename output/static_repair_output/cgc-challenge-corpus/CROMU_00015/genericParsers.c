@@ -1,348 +1,341 @@
-#include <stdio.h>   // For printf, fprintf
+#include <stdio.h>   // For printf
 #include <stdlib.h>  // For malloc, free, atof, atoi
 #include <string.h>  // For strcmp, strlen, strncpy
-#include <ctype.h>   // For isspace, isalpha, isalnum
+#include <ctype.h>   // For isspace, isalpha, isdigit, isalnum
 
-// --- Dummy/Placeholder Context and Helper Functions ---
-// Assuming param_1 is a pointer to a struct that holds the input string
-// and its current parsing position.
-typedef struct {
-    const char *buffer; // The input string to parse
-    int current_pos;    // The current reading position in the buffer
-    int buffer_len;     // Length of the buffer, for bounds checking
-} Context;
+// Placeholder for the parser state structure.
+// In the original snippet, 'param_1' is treated as an integer but then
+// dereferenced as a pointer (e.g., '*(int *)(param_1 + 8)').
+// This implies 'param_1' is a pointer to a custom structure, and 'param_1 + 8'
+// accesses a member, likely the current parsing position within a buffer.
+// We'll define a dummy struct to represent this.
+typedef struct ParserState {
+    char *data;        // The string buffer being parsed
+    size_t length;     // Total length of the data
+    int current_pos;   // Current reading position, corresponds to 'param_1 + 8'
+} ParserState;
 
-// Dummy allocate function using malloc
-// Returns 0 on success, -1 on failure
-int allocate(size_t size, int some_flag, void **ptr) {
+// --- Placeholder functions for memory management and parsing ---
+// These are minimal implementations to make the provided code compilable.
+// Their actual logic would depend on the system they originated from.
+
+// Memory management
+int allocate(size_t size, int flags, void **ptr) {
+    (void)flags; // Suppress unused parameter warning for 'flags'
     *ptr = malloc(size);
-    if (*ptr == NULL) {
-        fprintf(stderr, "Allocation failed for size %zu\n", size);
-        return -1; // Indicate failure
-    }
-    // Initialize to zero, as the original code often implies NULL or zeroed memory
-    memset(*ptr, 0, size);
-    (void)some_flag; // Suppress unused parameter warning
-    return 0; // Indicate success
+    return (*ptr != NULL) ? 0 : -1;
 }
 
-// Dummy deallocate function using free
 void deallocate(void *ptr, size_t size) {
-    if (ptr) {
-        free(ptr);
+    (void)size; // Suppress unused parameter warning for 'size'
+    free(ptr);
+}
+
+// Parsing functions (return 0 for success/found, -1 for failure/not found, or an index)
+// 'state' is assumed to be ParserState*
+void skipWhiteSpace(ParserState *state) {
+    if (!state || !state->data) return;
+    while (state->current_pos < state->length && isspace((unsigned char)state->data[state->current_pos])) {
+        state->current_pos++;
     }
-    // size is not strictly needed for free, but kept for signature match
-    (void)size; // Suppress unused parameter warning
 }
 
-// Dummy skipWhiteSpace function
-// Returns the new position or -1 on error (e.g., null context)
-int skipWhiteSpace(Context *ctx) {
-    if (!ctx || !ctx->buffer) return -1; // Error condition
-    while (ctx->current_pos < ctx->buffer_len && isspace((unsigned char)ctx->buffer[ctx->current_pos])) {
-        ctx->current_pos++;
+int atChar(ParserState *state, char c) {
+    if (!state || !state->data || state->current_pos >= state->length) {
+        return 0; // Not at char or end of data
     }
-    return ctx->current_pos; // Return new position
+    return (state->data[state->current_pos] == c) ? 1 : 0;
 }
 
-// Dummy atChar function
-// Returns 1 if char matches, 0 otherwise
-int atChar(Context *ctx, char c) {
-    if (!ctx || !ctx->buffer || ctx->current_pos >= ctx->buffer_len) return 0; // 0 for false
-    return (ctx->buffer[ctx->current_pos] == c); // 1 for true, 0 for false
-}
-
-// Dummy skipLength function
-// Returns the new position or -1 on error (e.g., out of bounds)
-int skipLength(Context *ctx, int len) {
-    if (!ctx || !ctx->buffer || ctx->current_pos + len > ctx->buffer_len || ctx->current_pos + len < 0) return -1;
-    ctx->current_pos += len;
-    return ctx->current_pos; // Return new position
-}
-
-// Dummy skipAlpha function
-// Returns the end position of the alpha sequence, or -1 if no alpha char found
-int skipAlpha(Context *ctx) {
-    if (!ctx || !ctx->buffer) return -1;
-    int start_alpha = ctx->current_pos;
-    while (ctx->current_pos < ctx->buffer_len && isalpha((unsigned char)ctx->buffer[ctx->current_pos])) {
-        ctx->current_pos++;
+int skipLength(ParserState *state, int len) {
+    if (!state || !state->data || (state->current_pos + len) > state->length || (state->current_pos + len) < 0) {
+        return -1; // Indicate failure (e.g., out of bounds)
     }
-    if (ctx->current_pos == start_alpha) return -1; // No alpha character found
-    return ctx->current_pos; // Return end position
+    state->current_pos += len;
+    return state->current_pos; // Return new position
 }
 
-// Dummy copyData function
-// Returns a dynamically allocated string, or NULL on error
-char *copyData(Context *ctx, int start, int end) {
-    if (!ctx || !ctx->buffer || start < 0 || end > ctx->buffer_len || start > end) return NULL;
-    size_t len = end - start;
-    char *new_str = (char *)malloc(len + 1);
-    if (!new_str) {
-        fprintf(stderr, "Memory allocation failed in copyData\n");
+// Skips alphabetic characters. Returns the new current_pos or -1 on error.
+int skipAlpha(ParserState *state) {
+    if (!state || !state->data || state->current_pos >= state->length) return -1;
+    int original_pos = state->current_pos;
+    while (state->current_pos < state->length && isalpha((unsigned char)state->data[state->current_pos])) {
+        state->current_pos++;
+    }
+    return (state->current_pos > original_pos) ? state->current_pos : -1; // -1 if no alpha found
+}
+
+// Skips float characters (digits, '.', optional '+', '-'). Returns the new current_pos or -1 on error.
+int skipFloat(ParserState *state) {
+    if (!state || !state->data || state->current_pos >= state->length) return -1;
+    int original_pos = state->current_pos;
+    int dot_found = 0;
+    int digits_found = 0;
+
+    // Optional sign
+    if (state->current_pos < state->length && (state->data[state->current_pos] == '+' || state->data[state->current_pos] == '-')) {
+        state->current_pos++;
+    }
+    // Digits before dot
+    while (state->current_pos < state->length && isdigit((unsigned char)state->data[state->current_pos])) {
+        state->current_pos++;
+        digits_found = 1;
+    }
+    // Optional dot and digits after dot
+    if (state->current_pos < state->length && state->data[state->current_pos] == '.') {
+        dot_found = 1;
+        state->current_pos++;
+        while (state->current_pos < state->length && isdigit((unsigned char)state->data[state->current_pos])) {
+            state->current_pos++;
+            digits_found = 1;
+        }
+    }
+    // Must have at least one digit if no dot, or at least one digit around the dot
+    if (!digits_found && !dot_found) { // No digits and no dot
+        return -1;
+    }
+    if (state->current_pos == original_pos) { // Nothing was skipped
+        return -1;
+    }
+    return state->current_pos;
+}
+
+// Skips integer characters (digits, optional sign). Returns the new current_pos or -1 on error.
+int skipInt(ParserState *state) {
+    if (!state || !state->data || state->current_pos >= state->length) return -1;
+    int original_pos = state->current_pos;
+    // Optional sign
+    if (state->current_pos < state->length && (state->data[state->current_pos] == '+' || state->data[state->current_pos] == '-')) {
+        state->current_pos++;
+    }
+    int digits_found = 0;
+    while (state->current_pos < state->length && isdigit((unsigned char)state->data[state->current_pos])) {
+        state->current_pos++;
+        digits_found = 1;
+    }
+    return (digits_found) ? state->current_pos : -1; // Must have at least one digit
+}
+
+// Skips alphanumeric characters. Returns the new current_pos or -1 on error.
+int skipToNonAlphaNum(ParserState *state) {
+    if (!state || !state->data || state->current_pos >= state->length) return -1;
+    int original_pos = state->current_pos;
+    while (state->current_pos < state->length && isalnum((unsigned char)state->data[state->current_pos])) {
+        state->current_pos++;
+    }
+    return (state->current_pos > original_pos) ? state->current_pos : -1; // -1 if no alpha-num found
+}
+
+// Copies data from start to end position. Returns new allocated string or NULL.
+char *copyData(ParserState *state, int start_pos, int end_pos) {
+    if (!state || !state->data || start_pos < 0 || end_pos < start_pos || (size_t)end_pos > state->length) {
         return NULL;
     }
-    strncpy(new_str, ctx->buffer + start, len);
-    new_str[len] = '\0';
-    return new_str;
+    size_t len = end_pos - start_pos;
+    char *buffer = (char *)malloc(len + 1);
+    if (buffer) {
+        strncpy(buffer, state->data + start_pos, len);
+        buffer[len] = '\0';
+    }
+    return buffer;
 }
-
-// Dummy skipFloat function
-// Returns the end position of the float, or -1 if no valid float found
-int skipFloat(Context *ctx) {
-    if (!ctx || !ctx->buffer) return -1;
-    int start_float = ctx->current_pos;
-    int digit_count = 0;
-
-    // Optional sign
-    if (ctx->current_pos < ctx->buffer_len && (ctx->buffer[ctx->current_pos] == '-' || ctx->buffer[ctx->current_pos] == '+')) {
-        ctx->current_pos++;
-    }
-
-    // Digits before decimal
-    while (ctx->current_pos < ctx->buffer_len && isdigit((unsigned char)ctx->buffer[ctx->current_pos])) {
-        ctx->current_pos++;
-        digit_count++;
-    }
-
-    // Decimal point and digits after
-    if (ctx->current_pos < ctx->buffer_len && ctx->buffer[ctx->current_pos] == '.') {
-        ctx->current_pos++;
-        while (ctx->current_pos < ctx->buffer_len && isdigit((unsigned char)ctx->buffer[ctx->current_pos])) {
-            ctx->current_pos++;
-            digit_count++;
-        }
-    }
-
-    // Exponent (e or E)
-    if (ctx->current_pos < ctx->buffer_len && (ctx->buffer[ctx->current_pos] == 'e' || ctx->buffer[ctx->current_pos] == 'E')) {
-        ctx->current_pos++;
-        // Optional sign for exponent
-        if (ctx->current_pos < ctx->buffer_len && (ctx->buffer[ctx->current_pos] == '-' || ctx->buffer[ctx->current_pos] == '+')) {
-            ctx->current_pos++;
-        }
-        // Digits for exponent
-        int exp_digit_count = 0;
-        while (ctx->current_pos < ctx->buffer_len && isdigit((unsigned char)ctx->buffer[ctx->current_pos])) {
-            ctx->current_pos++;
-            exp_digit_count++;
-        }
-        if (exp_digit_count == 0) return -1; // Exponent sign without digits is invalid
-    }
-
-    if (ctx->current_pos == start_float || digit_count == 0) return -1; // No actual number found
-    return ctx->current_pos; // Return end position
-}
-
-// Dummy skipInt function
-// Returns the end position of the int, or -1 if no valid int found
-int skipInt(Context *ctx) {
-    if (!ctx || !ctx->buffer) return -1;
-    int start_int = ctx->current_pos;
-
-    // Optional sign
-    if (ctx->current_pos < ctx->buffer_len && (ctx->buffer[ctx->current_pos] == '-' || ctx->buffer[ctx->current_pos] == '+')) {
-        ctx->current_pos++;
-    }
-
-    // Digits
-    int digit_count = 0;
-    while (ctx->current_pos < ctx->buffer_len && isdigit((unsigned char)ctx->buffer[ctx->current_pos])) {
-        ctx->current_pos++;
-        digit_count++;
-    }
-    if (ctx->current_pos == start_int || digit_count == 0) return -1; // No integer found
-    return ctx->current_pos; // Return end position
-}
-
-// Dummy skipToNonAlphaNum function
-// Returns the end position of the alphanumeric sequence, or -1 if no alphanumeric char found
-int skipToNonAlphaNum(Context *ctx) {
-    if (!ctx || !ctx->buffer) return -1;
-    int start_pos = ctx->current_pos;
-    while (ctx->current_pos < ctx->buffer_len && isalnum((unsigned char)ctx->buffer[ctx->current_pos])) {
-        ctx->current_pos++;
-    }
-    if (ctx->current_pos == start_pos) return -1; // No alphanumeric character found
-    return ctx->current_pos; // Return end position
-}
-
+// --- End of placeholder functions ---
 
 // Function: extractBorder
-double *extractBorder(Context *ctx) {
-    double *border_data = NULL;
+double * extractBorder(ParserState *state) {
+    double *result_border = NULL;
     char *temp_str = NULL;
-    int start_idx, end_idx;
+    int start_pos, end_pos;
 
-    if (!ctx) {
+    if (!state) {
         return NULL;
     }
 
-    // Allocate space for 4 doubles (sizeof(double) * 4 = 32 bytes)
-    if (allocate(sizeof(double) * 4, 0, (void **)&border_data) != 0) {
-        return NULL; // Allocation failed
+    // Allocate memory for 4 doubles (0x20 bytes)
+    if (allocate(4 * sizeof(double), 0, (void **)&result_border) != 0) {
+        return NULL;
     }
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '{')) {
+    // Step 1: Locate and skip opening brace '{'
+    skipWhiteSpace(state);
+    if (atChar(state, '{') == 0) {
         printf("!!Failed to locate opening brace\n");
-        deallocate(border_data, sizeof(double) * 4);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
-    if (skipLength(ctx, 1) == -1) {
+    if (skipLength(state, 1) == -1) {
         printf("!!Failed to skip opening brace\n");
-        deallocate(border_data, sizeof(double) * 4);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
 
-    skipWhiteSpace(ctx);
-    start_idx = ctx->current_pos;
-    end_idx = skipAlpha(ctx);
-    if (end_idx == -1) {
+    // Step 2: Read element ID "Border"
+    skipWhiteSpace(state);
+    start_pos = state->current_pos;
+    end_pos = skipAlpha(state);
+    if (end_pos == -1 || start_pos == end_pos) {
         printf("!!Failed to locate the end of the element id\n");
-        deallocate(border_data, sizeof(double) * 4);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
-    
-    temp_str = copyData(ctx, start_idx, end_idx);
+
+    temp_str = copyData(state, start_pos, end_pos);
     if (temp_str == NULL) {
-        printf("!!Copy from %d to %d failed\n", start_idx, end_idx);
-        deallocate(border_data, sizeof(double) * 4);
+        printf("!!Copy from %d to %d failed\n", start_pos, end_pos);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
     if (strcmp(temp_str, "Border") != 0) {
         printf("!!Element id is not \"Border\"\n");
         deallocate(temp_str, strlen(temp_str) + 1);
-        deallocate(border_data, sizeof(double) * 4);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
     deallocate(temp_str, strlen(temp_str) + 1);
     temp_str = NULL; // Clear pointer after deallocation
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '}')) {
+    // Step 3: Locate and skip initial closing brace '}'
+    skipWhiteSpace(state);
+    if (atChar(state, '}') == 0) {
         printf("!!Failed to locate initial closing brace\n");
-        deallocate(border_data, sizeof(double) * 4);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
-    if (skipLength(ctx, 1) == -1) {
+    if (skipLength(state, 1) == -1) {
         printf("!!Failed to skip initial closing brace\n");
-        deallocate(border_data, sizeof(double) * 4);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
 
-    // Parse 4 doubles
-    const char* float_names[] = {"first lat", "first long", "second lat", "second long"};
-    for (int i = 0; i < 4; ++i) {
-        skipWhiteSpace(ctx);
-        start_idx = ctx->current_pos;
-        end_idx = skipFloat(ctx);
-        
-        if (start_idx == end_idx) { // No characters were skipped for the float
-            printf("!!Failed to locate %s\n", float_names[i]);
-            deallocate(border_data, sizeof(double) * 4);
-            return NULL;
-        }
-        if (end_idx == -1) { // skipFloat returned an error
-            printf("!!Failed to locate the end of the %s float\n", float_names[i]);
-            deallocate(border_data, sizeof(double) * 4);
-            return NULL;
-        }
-
-        temp_str = copyData(ctx, start_idx, end_idx);
-        if (temp_str == NULL) {
-            printf("!!Failed to copy %s float\n", float_names[i]);
-            deallocate(border_data, sizeof(double) * 4);
-            return NULL;
-        }
-        border_data[i] = atof(temp_str);
-        deallocate(temp_str, (end_idx - start_idx) + 1); // Deallocate copied string
+    // Macro to simplify reading float data, converting, and error handling
+    #define READ_FLOAT_AND_STORE(index, locate_err_msg, copy_err_msg) \
+        skipWhiteSpace(state); \
+        start_pos = state->current_pos; \
+        end_pos = skipFloat(state); \
+        if (end_pos == -1 || start_pos == end_pos) { \
+            printf("!!" locate_err_msg "\n"); \
+            deallocate(result_border, 4 * sizeof(double)); \
+            return NULL; \
+        } \
+        temp_str = copyData(state, start_pos, end_pos); \
+        if (temp_str == NULL) { \
+            printf("!!" copy_err_msg "\n"); \
+            deallocate(result_border, 4 * sizeof(double)); \
+            return NULL; \
+        } \
+        result_border[index] = atof(temp_str); \
+        deallocate(temp_str, (size_t)(end_pos - start_pos) + 1); \
         temp_str = NULL;
-    }
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '{')) {
+    // Step 4: Read first latitude
+    READ_FLOAT_AND_STORE(0, "Failed to locate first lat", "Failed to copy first latitude float");
+
+    // Step 5: Read first longitude
+    READ_FLOAT_AND_STORE(1, "Failed to locate first long", "Failed to copy first longitude float");
+
+    // Step 6: Read second latitude
+    READ_FLOAT_AND_STORE(2, "Failed to locate second lat", "Failed to copy second latitude float");
+
+    // Step 7: Read second longitude
+    READ_FLOAT_AND_STORE(3, "Failed to locate second long", "Failed to copy second longitude float");
+
+    #undef READ_FLOAT_AND_STORE
+
+    // Step 8: Locate and skip final opening brace '{'
+    skipWhiteSpace(state);
+    if (atChar(state, '{') == 0) {
         printf("!!Failed to locate the final opening brace\n");
-        deallocate(border_data, sizeof(double) * 4);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
-    if (skipLength(ctx, 1) == -1) {
+    if (skipLength(state, 1) == -1) {
         printf("!!Failed to skip the final opening brace\n");
-        deallocate(border_data, sizeof(double) * 4);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '#')) {
+    // Step 9: Locate and skip closing mark '#'
+    skipWhiteSpace(state);
+    if (atChar(state, '#') == 0) {
         printf("!!Failed to locate the closing mark\n");
-        deallocate(border_data, sizeof(double) * 4);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
-    if (skipLength(ctx, 1) == -1) { // This advances past '#'
+    start_pos = skipLength(state, 1); // start_pos now holds the position after '#'
+    if (start_pos == -1) {
         printf("!!Failed to skip closing mark\n");
-        deallocate(border_data, sizeof(double) * 4);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
 
-    start_idx = ctx->current_pos; // After '#'
-    end_idx = skipAlpha(ctx);
-    if (end_idx == -1) {
+    // Step 10: Read closing element ID "Border"
+    end_pos = skipAlpha(state);
+    if (end_pos == -1) {
         printf("!!Failed to locate the end of the closing element id\n");
-        deallocate(border_data, sizeof(double) * 4);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
 
-    temp_str = copyData(ctx, start_idx, end_idx);
+    temp_str = copyData(state, start_pos, end_pos);
     if (temp_str == NULL) {
-        printf("!!Failed to copy closing element id\n");
-        deallocate(border_data, sizeof(double) * 4);
+        printf("!!Copy of closing element id failed\n");
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
     if (strcmp(temp_str, "Border") != 0) {
         printf("!!Invalid closing element id: %s\n", temp_str);
         deallocate(temp_str, strlen(temp_str) + 1);
-        deallocate(border_data, sizeof(double) * 4);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
     deallocate(temp_str, strlen(temp_str) + 1);
     temp_str = NULL;
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '}')) {
+    // Step 11: Locate and skip final closing brace '}'
+    skipWhiteSpace(state);
+    if (atChar(state, '}') == 0) {
         printf("!!Failed to locate final closing brace\n");
-        deallocate(border_data, sizeof(double) * 4);
+        deallocate(result_border, 4 * sizeof(double));
         return NULL;
     }
-    skipLength(ctx, 1); // Skip final closing brace
+    skipLength(state, 1); // Advance past '}'
 
-    return border_data;
+    return result_border;
 }
 
 // Function: extractPopulation
-int extractPopulation(Context *ctx) {
+int extractPopulation(ParserState *state) {
+    int result_population = -1; // Default failure value
     char *temp_str = NULL;
-    int start_idx, end_idx;
-    int population_start_idx; // Variable for the start of population data
+    int start_pos, end_pos;
 
-    if (!ctx) {
+    if (!state) {
         return -1;
     }
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '{')) {
+    // Step 1: Locate and skip opening brace '{'
+    skipWhiteSpace(state);
+    if (atChar(state, '{') == 0) {
         printf("!!Failed to locate opening brace\n");
         return -1;
     }
-    if (skipLength(ctx, 1) == -1) {
+    if (skipLength(state, 1) == -1) {
         printf("!!Failed to skip opening brace\n");
         return -1;
     }
 
-    skipWhiteSpace(ctx);
-    start_idx = ctx->current_pos;
-    end_idx = skipAlpha(ctx);
-    if (end_idx == -1) {
+    // Step 2: Read element ID "Population"
+    skipWhiteSpace(state);
+    start_pos = state->current_pos;
+    end_pos = skipAlpha(state);
+    if (end_pos == -1 || start_pos == end_pos) {
         printf("!!Failed to locate the end of the element id\n");
         return -1;
     }
 
-    temp_str = copyData(ctx, start_idx, end_idx);
+    temp_str = copyData(state, start_pos, end_pos);
     if (temp_str == NULL) {
-        printf("!!Copy from %d to %d failed\n", start_idx, end_idx);
+        printf("!!Copy from %d to %d failed\n", start_pos, end_pos);
         return -1;
     }
     if (strcmp(temp_str, "Population") != 0) {
@@ -353,51 +346,59 @@ int extractPopulation(Context *ctx) {
     deallocate(temp_str, strlen(temp_str) + 1);
     temp_str = NULL;
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '}')) {
+    // Step 3: Locate and skip initial closing brace '}'
+    skipWhiteSpace(state);
+    if (atChar(state, '}') == 0) {
         printf("!!Failed to locate initial closing brace\n");
         return -1;
     }
-    if (skipLength(ctx, 1) == -1) {
+    if (skipLength(state, 1) == -1) {
         printf("!!Failed to skip initial closing brace\n");
         return -1;
     }
 
-    skipWhiteSpace(ctx);
-    population_start_idx = ctx->current_pos; // Store start for population data
-    end_idx = skipInt(ctx); // `end_idx` now holds the end of the integer data
-    if (end_idx == -1) {
+    // Step 4: Read population data (integer)
+    skipWhiteSpace(state);
+    int population_start_pos = state->current_pos;
+    int population_end_pos = skipInt(state);
+    if (population_end_pos == -1 || population_start_pos == population_end_pos) {
         printf("!!Failed to locate the end of the population data\n");
         return -1;
     }
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '{')) {
+    // Step 5: Locate and skip final opening brace '{'
+    skipWhiteSpace(state);
+    if (atChar(state, '{') == 0) {
         printf("!!Failed to locate the final opening brace\n");
         return -1;
     }
-    if (skipLength(ctx, 1) == -1) {
+    if (skipLength(state, 1) == -1) {
         printf("!!Failed to skip the final opening brace\n");
         return -1;
     }
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '#')) {
+    // Step 6: Locate and skip closing mark '#'
+    skipWhiteSpace(state);
+    if (atChar(state, '#') == 0) {
         printf("!!Failed to locate the closing mark\n");
         return -1;
     }
-    if (skipLength(ctx, 1) == -1) { // This advances past '#'
+    start_pos = skipLength(state, 1); // start_pos now holds the position after '#'
+    if (start_pos == -1) {
         printf("!!Failed to skip closing mark\n");
         return -1;
     }
 
-    start_idx = ctx->current_pos; // After '#'
-    int closing_id_end_idx = skipAlpha(ctx); // Use a distinct variable name for the end of closing ID
-    if (closing_id_end_idx == -1) {
+    // Step 7: Read closing element ID "Population"
+    end_pos = skipAlpha(state);
+    if (end_pos == -1) {
         printf("!!Failed to locate the end of the closing element id\n");
         return -1;
     }
 
-    temp_str = copyData(ctx, start_idx, closing_id_end_idx);
+    temp_str = copyData(state, start_pos, end_pos);
     if (temp_str == NULL) {
-        printf("!!Failed to copy closing element id\n");
+        printf("!!Copy of closing element id failed\n");
         return -1;
     }
     if (strcmp(temp_str, "Population") != 0) {
@@ -408,55 +409,59 @@ int extractPopulation(Context *ctx) {
     deallocate(temp_str, strlen(temp_str) + 1);
     temp_str = NULL;
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '}')) {
+    // Step 8: Locate and skip final closing brace '}'
+    skipWhiteSpace(state);
+    if (atChar(state, '}') == 0) {
         printf("!!Failed to locate final closing brace\n");
         return -1;
     }
-    skipLength(ctx, 1); // Skip final closing brace
+    skipLength(state, 1); // Advance past '}'
 
-    // Now, copy and convert the actual population data
-    // The `end_idx` here is the one from `skipInt`
-    temp_str = copyData(ctx, population_start_idx, end_idx); 
+    // Final step: copy and convert population data
+    temp_str = copyData(state, population_start_pos, population_end_pos);
     if (temp_str == NULL) {
         printf("!!Failed to copy population data\n");
         return -1;
     }
-    int population_data = atoi(temp_str);
+    result_population = atoi(temp_str);
     deallocate(temp_str, strlen(temp_str) + 1);
-    return population_data;
+
+    return result_population;
 }
 
 // Function: extractName
-char *extractName(Context *ctx) { // Changed return type to char*
-    char *name_data = NULL;
+char * extractName(ParserState *state) { // Changed return type from undefined4 to char*
+    char *result_name = NULL; // Default failure value
     char *temp_str = NULL;
-    int start_idx, end_idx;
-    int name_data_start_idx; // Variable for the start of name data
+    int start_pos, end_pos;
 
-    if (!ctx) {
+    if (!state) {
         return NULL;
     }
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '{')) {
+    // Step 1: Locate and skip opening brace '{'
+    skipWhiteSpace(state);
+    if (atChar(state, '{') == 0) {
         printf("!!Failed to locate opening brace\n");
         return NULL;
     }
-    if (skipLength(ctx, 1) == -1) {
+    if (skipLength(state, 1) == -1) {
         printf("!!Failed to skip opening brace\n");
         return NULL;
     }
 
-    skipWhiteSpace(ctx);
-    start_idx = ctx->current_pos;
-    end_idx = skipAlpha(ctx);
-    if (end_idx == -1) {
+    // Step 2: Read element ID "Name"
+    skipWhiteSpace(state);
+    start_pos = state->current_pos;
+    end_pos = skipAlpha(state);
+    if (end_pos == -1 || start_pos == end_pos) {
         printf("!!Failed to locate the end of the element id\n");
         return NULL;
     }
 
-    temp_str = copyData(ctx, start_idx, end_idx);
+    temp_str = copyData(state, start_pos, end_pos);
     if (temp_str == NULL) {
-        printf("!!Copy from %d to %d failed\n", start_idx, end_idx);
+        printf("!!Copy from %d to %d failed\n", start_pos, end_pos);
         return NULL;
     }
     if (strcmp(temp_str, "Name") != 0) {
@@ -467,51 +472,59 @@ char *extractName(Context *ctx) { // Changed return type to char*
     deallocate(temp_str, strlen(temp_str) + 1);
     temp_str = NULL;
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '}')) {
+    // Step 3: Locate and skip initial closing brace '}'
+    skipWhiteSpace(state);
+    if (atChar(state, '}') == 0) {
         printf("!!Failed to locate initial closing brace\n");
         return NULL;
     }
-    if (skipLength(ctx, 1) == -1) {
+    if (skipLength(state, 1) == -1) {
         printf("!!Failed to skip initial closing brace\n");
         return NULL;
     }
 
-    skipWhiteSpace(ctx);
-    name_data_start_idx = ctx->current_pos; // Store start for name data
-    end_idx = skipToNonAlphaNum(ctx); // `end_idx` now holds the end of the name data
-    if (end_idx == -1) {
+    // Step 4: Read name data (alphanumeric string)
+    skipWhiteSpace(state);
+    int name_start_pos = state->current_pos;
+    int name_end_pos = skipToNonAlphaNum(state);
+    if (name_end_pos == -1 || name_start_pos == name_end_pos) {
         printf("!!Failed to locate the end of the name data\n");
         return NULL;
     }
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '{')) {
+    // Step 5: Locate and skip final opening brace '{'
+    skipWhiteSpace(state);
+    if (atChar(state, '{') == 0) {
         printf("!!Failed to locate the final opening brace\n");
         return NULL;
     }
-    if (skipLength(ctx, 1) == -1) {
+    if (skipLength(state, 1) == -1) {
         printf("!!Failed to skip the final opening brace\n");
         return NULL;
     }
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '#')) {
+    // Step 6: Locate and skip closing mark '#'
+    skipWhiteSpace(state);
+    if (atChar(state, '#') == 0) {
         printf("!!Failed to locate the closing mark\n");
         return NULL;
     }
-    if (skipLength(ctx, 1) == -1) { // This advances past '#'
+    start_pos = skipLength(state, 1); // start_pos now holds the position after '#'
+    if (start_pos == -1) {
         printf("!!Failed to skip closing mark\n");
         return NULL;
     }
 
-    start_idx = ctx->current_pos; // After '#'
-    int closing_id_end_idx = skipAlpha(ctx);
-    if (closing_id_end_idx == -1) {
+    // Step 7: Read closing element ID "Name"
+    end_pos = skipAlpha(state);
+    if (end_pos == -1) {
         printf("!!Failed to locate the end of the closing element id\n");
         return NULL;
     }
 
-    temp_str = copyData(ctx, start_idx, closing_id_end_idx);
+    temp_str = copyData(state, start_pos, end_pos);
     if (temp_str == NULL) {
-        printf("!!Failed to copy closing element id\n");
+        printf("!!Copy of closing element id failed\n");
         return NULL;
     }
     if (strcmp(temp_str, "Name") != 0) {
@@ -522,18 +535,19 @@ char *extractName(Context *ctx) { // Changed return type to char*
     deallocate(temp_str, strlen(temp_str) + 1);
     temp_str = NULL;
 
-    if (skipWhiteSpace(ctx) == -1 || !atChar(ctx, '}')) {
+    // Step 8: Locate and skip final closing brace '}'
+    skipWhiteSpace(state);
+    if (atChar(state, '}') == 0) {
         printf("!!Failed to locate final closing brace\n");
         return NULL;
     }
-    skipLength(ctx, 1); // Skip final closing brace
+    skipLength(state, 1); // Advance past '}'
 
-    // Now, copy the actual name data
-    // The `end_idx` here is the one from `skipToNonAlphaNum`
-    name_data = copyData(ctx, name_data_start_idx, end_idx); 
-    if (name_data == NULL) {
+    // Final step: copy name data
+    result_name = copyData(state, name_start_pos, name_end_pos);
+    if (result_name == NULL) {
         printf("!!Failed to copy name data\n");
-        return NULL;
     }
-    return name_data;
+
+    return result_name;
 }

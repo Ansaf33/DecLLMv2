@@ -1,60 +1,50 @@
-#include <stdbool.h> // For bool type
+#include <stdbool.h>
+#include <stdint.h>
 
 #define STACK_SIZE 64
 
-// Global variables for the number stack
-static int num_stack[STACK_SIZE];
-static int curr_num_stack = -1; // -1 indicates an empty stack
+static int curr_num_stack = -1;
+static uint32_t num_stack[STACK_SIZE];
 
-// Global variables for the operator stack
+static int curr_op_stack = -1;
 static char op_stack[STACK_SIZE];
-static int curr_op_stack = -1; // -1 indicates an empty stack
 
-// Function: push_num
-bool push_num(int value) {
+bool push_num(uint32_t value) {
   if (curr_num_stack < STACK_SIZE - 1) {
-    curr_num_stack++;
-    num_stack[curr_num_stack] = value;
+    num_stack[++curr_num_stack] = value;
     return true;
   }
-  return false; // Stack full
+  return false;
 }
 
-// Function: pop_num
-bool pop_num(int *value) {
+bool pop_num(uint32_t *value) {
   if (curr_num_stack >= 0) {
-    *value = num_stack[curr_num_stack];
-    curr_num_stack--;
+    *value = num_stack[curr_num_stack--];
     return true;
   }
-  return false; // Stack empty
+  return false;
 }
 
-// Function: peek_op
-bool peek_op(char *op) {
+bool peek_op(char *value) {
   if (curr_op_stack >= 0) {
-    *op = op_stack[curr_op_stack];
+    *value = op_stack[curr_op_stack];
     return true;
   }
-  return false; // Stack empty
+  return false;
 }
 
-// Function: push_op
-bool push_op(char op) {
+bool push_op(char value) {
   if (curr_op_stack < STACK_SIZE - 1) {
-    curr_op_stack++;
-    op_stack[curr_op_stack] = op;
+    op_stack[++curr_op_stack] = value;
     return true;
   }
-  return false; // Stack full
+  return false;
 }
 
-// Function: pop_op
-bool pop_op(char *op) {
+bool pop_op(char *value) {
   if (curr_op_stack >= 0) {
-    *op = op_stack[curr_op_stack];
-    curr_op_stack--;
+    *value = op_stack[curr_op_stack--];
     return true;
   }
-  return false; // Stack empty
+  return false;
 }

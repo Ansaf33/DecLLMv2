@@ -1,343 +1,235 @@
-#include <stdio.h>   // For printf
-#include <stdlib.h>  // For malloc, free, perror
-#include <string.h>  // For strlen, strcmp, strncpy, memset
-#include <ctype.h>   // For isspace, isalpha
-#include <stdint.h>  // For uintptr_t (for 64-bit safe pointer arithmetic)
+#include <stdio.h>    // For printf, fprintf
+#include <stdlib.h>   // For malloc, free
+#include <string.h>   // For strlen, strncpy, strcmp, memset
+#include <ctype.h>    // For isspace, isalpha
 
-// --- Stub Implementations for functions not supplied in the snippet ---
-// These stubs are designed to match the inferred usage from the provided code
-// and ensure compilation.
-//
-// The 'param_1' argument (type 'int *') is interpreted as an array:
-//   param_1[0]: Base address of the character buffer (stored as an int, potentially truncated on 64-bit systems)
-//   param_1[1]: End limit/length of the buffer (int)
-//   param_1[2]: Current parsing offset (int)
+// Define a structure for the parser state for better readability
+// Original: param_1[0] = buffer_ptr, param_1[1] = buffer_len, param_1[2] = current_pos
+typedef struct {
+    char *buffer;
+    int length;
+    int current_pos;
+} ParserState;
 
-void skipWhiteSpace(int *param_1) {
-    if (param_1 == NULL) return;
-    uintptr_t buffer_base = (uintptr_t)param_1[0];
-    int buffer_limit = param_1[1];
-    while (param_1[2] < buffer_limit && isspace((unsigned char)*(char *)(buffer_base + param_1[2]))) {
-        param_1[2]++;
-    }
-}
+// --- STUB FUNCTIONS (to make the provided code compilable) ---
+// In a real scenario, these would be provided by other modules.
 
-int incChar(int *param_1) {
-    if (param_1 == NULL) return -1;
-    int buffer_limit = param_1[1];
-    if (param_1[2] < buffer_limit) {
-        param_1[2]++;
-        return 0; // Success
-    }
-    return -1; // End of buffer
-}
-
-int allocate(size_t size, int flags, char **ptr) {
+// Simulates allocation, returns 0 on success, non-zero on failure.
+int allocate(size_t size, int some_flag, char **ptr) {
+    (void)some_flag; // Unused parameter
     *ptr = (char *)malloc(size);
     if (*ptr == NULL) {
-        perror("Memory allocation failed");
-        return 1; // Failure
+        fprintf(stderr, "Allocation failed for size %zu\n", size);
+        return -1; // Indicate failure
     }
-    // 'flags' parameter is ignored as per original snippet's usage (0)
-    return 0; // Success
+    return 0; // Indicate success
 }
 
+// Simulates deallocation
 void deallocate(char *ptr, size_t size) {
-    free(ptr);
-    // 'size' parameter is ignored as per original snippet's usage
+    (void)size; // Unused parameter, size is often redundant for free
+    if (ptr != NULL) {
+        free(ptr);
+    }
 }
+
+// Skips whitespace characters in the buffer
+void skipWhiteSpace(ParserState *state) {
+    if (state == NULL || state->buffer == NULL) {
+        return;
+    }
+    while (state->current_pos < state->length &&
+           isspace((unsigned char)state->buffer[state->current_pos])) {
+        state->current_pos++;
+    }
+}
+
+// Increments the current position, returns -1 if out of bounds
+int incChar(ParserState *state) {
+    if (state == NULL || state->buffer == NULL) {
+        return -1;
+    }
+    if (state->current_pos < state->length) {
+        state->current_pos++;
+        return 0; // Success
+    }
+    return -1; // Failure (out of bounds)
+}
+
+// --- ORIGINAL FUNCTIONS, REFACTORED ---
 
 // Function: pullNextElementName
-char *pullNextElementName(int *param_1) {
+char *pullNextElementName(ParserState *state) {
     char *result = NULL;
-    size_t element_len = 0;
-    int temp_int_val; // For return values of incChar, isspace, isalpha
+    int original_pos; 
+    size_t element_length = 0;
 
-    if (param_1 == NULL) {
+    if (state == NULL || state->buffer == NULL) {
         return NULL;
     }
 
-    uintptr_t buffer_base = (uintptr_t)param_1[0];
-    int buffer_limit = param_1[1];
-    int initial_parse_pos = param_1[2];
+    original_pos = state->current_pos;
 
-    skipWhiteSpace(param_1);
+    skipWhiteSpace(state);
 
-    // Check for opening brace
-    if (param_1[2] < buffer_limit && *(char *)(buffer_base + param_1[2]) == '{') {
-        temp_int_val = incChar(param_1); // Move past '{'
-        if (temp_int_val != -1) { // incChar successful
-            skipWhiteSpace(param_1);
+    if (state->current_pos >= state->length || state->buffer[state->current_pos] != '{') {
+        printf("!!Invalid opening element: %c at position %d\n", 
+               (state->current_pos < state->length ? state->buffer[state->current_pos] : '?'), 
+               state->current_pos);
+        // Restore position at the end, as per original snippet's logic
+    } else if (incChar(state) == -1) { // Increment past '{'
+        // Restore position at the end
+    } else {
+        skipWhiteSpace(state);
 
-            int start_element_name_pos = param_1[2];
+        int start_pos = state->current_pos;
 
-            // Loop to find the end of the element name
-            for (int current_char_pos = start_element_name_pos; current_char_pos < buffer_limit; current_char_pos++) {
-                char current_char = *(char *)(buffer_base + current_char_pos);
+        while (state->current_pos < state->length) {
+            char current_char = state->buffer[state->current_pos];
 
-                if (current_char == '\0') {
-                    printf("!!Null character hit. Improperly formatted element\n");
+            if (current_char == '\0') {
+                printf("!!Null character hit. Improperly formatted element\n");
+                break;
+            }
+
+            if (current_char == '}' || isspace((unsigned char)current_char)) {
+                element_length = state->current_pos - start_pos;
+
+                if (element_length == 0) {
+                    printf("!!Empty element name found.\n");
                     break;
                 }
 
-                // Check for '}' or whitespace
-                temp_int_val = isspace((unsigned char)current_char);
-                if (current_char == '}' || temp_int_val != 0) {
-                    element_len = current_char_pos - start_element_name_pos;
-
-                    // Handle empty element name case
-                    if (element_len == 0) {
-                        printf("!!Empty element name found.\n");
-                        break;
-                    }
-
-                    temp_int_val = allocate(element_len + 1, 0, &result);
-                    if (temp_int_val == 0) { // Allocation successful
-                        memset(result, 0, element_len + 1);
-                        strncpy(result, (char *)(buffer_base + start_element_name_pos), element_len);
-                        param_1[2] = current_char_pos; // Update context position
-
-                        skipWhiteSpace(param_1);
-
-                        // Check for closing brace
-                        if (param_1[2] < buffer_limit && *(char *)(buffer_base + param_1[2]) == '}') {
-                            incChar(param_1); // Move past '}'
-                        } else {
-                            printf("!!Improperly formatted element name: expected '}'\n");
-                            deallocate(result, element_len + 1);
-                            result = NULL;
-                        }
-                    } else { // Allocation failed
-                        result = NULL;
-                    }
-                    break; // Exit loop after processing element name
+                if (allocate(element_length + 1, 0, &result) != 0) {
+                    result = NULL; // Allocation failed
+                    break;
                 }
+                
+                memset(result, 0, element_length + 1);
+                strncpy(result, state->buffer + start_pos, element_length);
 
-                // Element names must be alphabetic
-                temp_int_val = isalpha((unsigned char)current_char);
-                if (temp_int_val == 0) {
-                    printf("!!Non-alphabetic character in element name: %c\n", current_char);
-                    break; // Exit loop, result remains NULL
+                // state->current_pos is already at the position after the name
+                skipWhiteSpace(state);
+
+                if (state->current_pos >= state->length || state->buffer[state->current_pos] != '}') {
+                    printf("!!Improperly formatted element name: missing closing '}'\n");
+                    deallocate(result, element_length + 1);
+                    result = NULL;
+                } else {
+                    incChar(state); // Advance past '}'
                 }
+                break; // Exit loop after processing element name
             }
-        } else { // incChar failed (unexpected end of buffer after '{')
-             printf("!!Unexpected end of buffer after '{'\n");
-        }
-    } else { // No opening brace found
-        if (param_1[2] < buffer_limit) {
-            printf("!!Invalid opening element: %c\n", *(char *)(buffer_base + param_1[2]));
-        } else {
-            printf("!!End of buffer reached, expected '{'\n");
+
+            if (!isalpha((unsigned char)current_char)) {
+                printf("!!Invalid character '%c' in element name at position %d\n", current_char, state->current_pos);
+                break;
+            }
+            
+            state->current_pos++;
         }
     }
 
-    param_1[2] = initial_parse_pos; // Restore original position as per original snippet
+    // Restore the original position regardless of success or failure, as per original snippet.
+    state->current_pos = original_pos;
+    
     return result;
 }
 
 // Function: elementNameToEnum
-int elementNameToEnum(char *param_1) {
-    int element_enum = 25; // Default value 0x19
-    if (param_1 == NULL) {
-        return element_enum;
+int elementNameToEnum(char *element_name) {
+    int enum_value = 0x19; // Default unknown value
+
+    if (element_name == NULL) {
+        return enum_value;
     }
 
-    size_t len = strlen(param_1);
-    int cmp_result;
+    size_t len = strlen(element_name);
 
     switch (len) {
         case 3:
-            cmp_result = strcmp(param_1, "Url");
-            if (cmp_result == 0) element_enum = 24;
+            if (strcmp(element_name, "Url") == 0) {
+                enum_value = 0x18;
+            }
             break;
         case 4:
-            cmp_result = strcmp(param_1, "Name");
-            if (cmp_result == 0) element_enum = 1;
-            else {
-                cmp_result = strcmp(param_1, "Mass");
-                if (cmp_result == 0) element_enum = 8;
-                else {
-                    cmp_result = strcmp(param_1, "Area");
-                    if (cmp_result == 0) element_enum = 20;
-                    else {
-                        cmp_result = strcmp(param_1, "Seat");
-                        if (cmp_result == 0) element_enum = 19;
-                        else {
-                            cmp_result = strcmp(param_1, "City");
-                            if (cmp_result == 0) element_enum = 22;
-                        }
-                    }
-                }
+            if (strcmp(element_name, "Name") == 0) {
+                enum_value = 1;
+            } else if (strcmp(element_name, "Mass") == 0) {
+                enum_value = 8;
+            } else if (strcmp(element_name, "Area") == 0) {
+                enum_value = 0x14;
+            } else if (strcmp(element_name, "Seat") == 0) {
+                enum_value = 0x13;
+            } else if (strcmp(element_name, "City") == 0) {
+                enum_value = 0x16;
             }
             break;
         case 5:
-            cmp_result = strcmp(param_1, "Mayor");
-            if (cmp_result == 0) element_enum = 23;
+            if (strcmp(element_name, "Mayor") == 0) {
+                enum_value = 0x17;
+            }
             break;
         case 6:
-            cmp_result = strcmp(param_1, "Planet");
-            if (cmp_result == 0) element_enum = 0;
-            else {
-                cmp_result = strcmp(param_1, "Period");
-                if (cmp_result == 0) element_enum = 2;
-                else {
-                    cmp_result = strcmp(param_1, "Radius");
-                    if (cmp_result == 0) element_enum = 6;
-                    else {
-                        cmp_result = strcmp(param_1, "Border");
-                        if (cmp_result == 0) element_enum = 14;
-                        else {
-                            cmp_result = strcmp(param_1, "County");
-                            if (cmp_result == 0) element_enum = 18;
-                        }
-                    }
-                }
+            if (strcmp(element_name, "Planet") == 0) {
+                enum_value = 0;
+            } else if (strcmp(element_name, "Period") == 0) {
+                enum_value = 2;
+            } else if (strcmp(element_name, "Radius") == 0) {
+                enum_value = 6;
+            } else if (strcmp(element_name, "Border") == 0) {
+                enum_value = 0xe;
+            } else if (strcmp(element_name, "County") == 0) {
+                enum_value = 0x12;
             }
             break;
         case 7:
-            cmp_result = strcmp(param_1, "ERadius");
-            if (cmp_result == 0) element_enum = 7;
-            else {
-                cmp_result = strcmp(param_1, "Gravity");
-                if (cmp_result == 0) element_enum = 9;
-                else {
-                    cmp_result = strcmp(param_1, "Country");
-                    if (cmp_result == 0) element_enum = 11;
-                    else {
-                        cmp_result = strcmp(param_1, "Capitol");
-                        if (cmp_result == 0) element_enum = 12;
-                        else {
-                            cmp_result = strcmp(param_1, "Founder");
-                            if (cmp_result == 0) element_enum = 17;
-                            else {
-                                cmp_result = strcmp(param_1, "Density");
-                                if (cmp_result == 0) element_enum = 21;
-                            }
-                        }
-                    }
-                }
+            if (strcmp(element_name, "ERadius") == 0) {
+                enum_value = 7;
+            } else if (strcmp(element_name, "Gravity") == 0) {
+                enum_value = 9;
+            } else if (strcmp(element_name, "Country") == 0) {
+                enum_value = 0xb;
+            } else if (strcmp(element_name, "Capitol") == 0) {
+                enum_value = 0xc;
+            } else if (strcmp(element_name, "Founder") == 0) {
+                enum_value = 0x11;
+            } else if (strcmp(element_name, "Density") == 0) {
+                enum_value = 0x15;
             }
             break;
         case 8:
-            cmp_result = strcmp(param_1, "Aphelion");
-            if (cmp_result == 0) element_enum = 4;
-            else {
-                cmp_result = strcmp(param_1, "Language");
-                if (cmp_result == 0) element_enum = 13;
+            if (strcmp(element_name, "Aphelion") == 0) {
+                enum_value = 4;
+            } else if (strcmp(element_name, "Language") == 0) {
+                enum_value = 0xd;
             }
             break;
         case 9:
-            cmp_result = strcmp(param_1, "Territory");
-            if (cmp_result == 0) element_enum = 15;
-            break;
-        case 10:
-            cmp_result = strcmp(param_1, "OrbitSpeed");
-            if (cmp_result == 0) element_enum = 3;
-            else {
-                cmp_result = strcmp(param_1, "Perihelion");
-                if (cmp_result == 0) element_enum = 5;
-                else {
-                    cmp_result = strcmp(param_1, "Population");
-                    if (cmp_result == 0) element_enum = 10;
-                }
+            if (strcmp(element_name, "Territory") == 0) {
+                enum_value = 0xf;
             }
             break;
-        case 11: // 0xb
-            cmp_result = strcmp(param_1, "Established");
-            if (cmp_result == 0) element_enum = 16;
+        case 10:
+            if (strcmp(element_name, "OrbitSpeed") == 0) {
+                enum_value = 3;
+            } else if (strcmp(element_name, "Perihelion") == 0) {
+                enum_value = 5;
+            } else if (strcmp(element_name, "Population") == 0) {
+                enum_value = 10;
+            }
+            break;
+        case 11: // 0xb is 11 in decimal
+            if (strcmp(element_name, "Established") == 0) {
+                enum_value = 0x10;
+            }
             break;
         default:
-            // element_enum remains 25
             break;
     }
 
-    if (element_enum == 25) {
-        printf("!!Unknown element id: %s\n", param_1);
+    if (enum_value == 0x19) {
+        printf("!!Unknown element id: %s\n", element_name);
     }
-    return element_enum;
-}
-
-// Minimal main function for compilation and testing
-int main() {
-    // Test buffers (char arrays)
-    char test_buffer1[] = "{Planet}";
-    char test_buffer2[] = "{ Name }"; // With spaces
-    char test_buffer3[] = "{InvalidName}"; // No closing brace after name
-    char test_buffer4[] = "{ValidName } ExtraData"; // Name followed by space then '}' then more data
-    char test_buffer5[] = "{NoClosingBrace"; // Missing '}' entirely
-    char test_buffer6[] = "NotAnElement"; // Doesn't start with '{'
-    char test_buffer7[] = "{P1an3t}"; // Contains non-alphabetic char
-    char test_buffer8[] = "{  }"; // Empty name after whitespace
-    char test_buffer9[] = "{TooMany}"; // Valid name, but no matching enum
-    char test_buffer10[] = "{Url}";
-
-
-    // Parsing context for each buffer.
-    // param_1[0] stores the buffer address, param_1[1] the length, param_1[2] the offset.
-    // Note: Storing a pointer (char*) into an int (param_1[0]) can lead to truncation
-    // and warnings on 64-bit systems if int is 32-bit.
-    // A robust solution would use uintptr_t* for param_1, but the original snippet uses int*.
-    int ctx1[] = {(int)(uintptr_t)test_buffer1, (int)(sizeof(test_buffer1) - 1), 0};
-    int ctx2[] = {(int)(uintptr_t)test_buffer2, (int)(sizeof(test_buffer2) - 1), 0};
-    int ctx3[] = {(int)(uintptr_t)test_buffer3, (int)(sizeof(test_buffer3) - 1), 0};
-    int ctx4[] = {(int)(uintptr_t)test_buffer4, (int)(sizeof(test_buffer4) - 1), 0};
-    int ctx5[] = {(int)(uintptr_t)test_buffer5, (int)(sizeof(test_buffer5) - 1), 0};
-    int ctx6[] = {(int)(uintptr_t)test_buffer6, (int)(sizeof(test_buffer6) - 1), 0};
-    int ctx7[] = {(int)(uintptr_t)test_buffer7, (int)(sizeof(test_buffer7) - 1), 0};
-    int ctx8[] = {(int)(uintptr_t)test_buffer8, (int)(sizeof(test_buffer8) - 1), 0};
-    int ctx9[] = {(int)(uintptr_t)test_buffer9, (int)(sizeof(test_buffer9) - 1), 0};
-    int ctx10[] = {(int)(uintptr_t)test_buffer10, (int)(sizeof(test_buffer10) - 1), 0};
-
-    char *name;
-
-    printf("--- Testing pullNextElementName ---\n");
-
-    name = pullNextElementName(ctx1);
-    printf("Buffer: \"%s\", Result: \"%s\", Enum: %d\n", test_buffer1, name ? name : "NULL", name ? elementNameToEnum(name) : -1);
-    deallocate(name, 0);
-
-    name = pullNextElementName(ctx2);
-    printf("Buffer: \"%s\", Result: \"%s\", Enum: %d\n", test_buffer2, name ? name : "NULL", name ? elementNameToEnum(name) : -1);
-    deallocate(name, 0);
-
-    name = pullNextElementName(ctx3);
-    printf("Buffer: \"%s\", Result: \"%s\", Enum: %d\n", test_buffer3, name ? name : "NULL", name ? elementNameToEnum(name) : -1);
-    deallocate(name, 0);
-
-    name = pullNextElementName(ctx4);
-    printf("Buffer: \"%s\", Result: \"%s\", Enum: %d\n", test_buffer4, name ? name : "NULL", name ? elementNameToEnum(name) : -1);
-    deallocate(name, 0);
-
-    name = pullNextElementName(ctx5);
-    printf("Buffer: \"%s\", Result: \"%s\", Enum: %d\n", test_buffer5, name ? name : "NULL", name ? elementNameToEnum(name) : -1);
-    deallocate(name, 0);
-
-    name = pullNextElementName(ctx6);
-    printf("Buffer: \"%s\", Result: \"%s\", Enum: %d\n", test_buffer6, name ? name : "NULL", name ? elementNameToEnum(name) : -1);
-    deallocate(name, 0);
-
-    name = pullNextElementName(ctx7);
-    printf("Buffer: \"%s\", Result: \"%s\", Enum: %d\n", test_buffer7, name ? name : "NULL", name ? elementNameToEnum(name) : -1);
-    deallocate(name, 0);
-    
-    name = pullNextElementName(ctx8);
-    printf("Buffer: \"%s\", Result: \"%s\", Enum: %d\n", test_buffer8, name ? name : "NULL", name ? elementNameToEnum(name) : -1);
-    deallocate(name, 0);
-
-    name = pullNextElementName(ctx9);
-    printf("Buffer: \"%s\", Result: \"%s\", Enum: %d\n", test_buffer9, name ? name : "NULL", name ? elementNameToEnum(name) : -1);
-    deallocate(name, 0);
-
-    name = pullNextElementName(ctx10);
-    printf("Buffer: \"%s\", Result: \"%s\", Enum: %d\n", test_buffer10, name ? name : "NULL", name ? elementNameToEnum(name) : -1);
-    deallocate(name, 0);
-
-    printf("\n--- Testing elementNameToEnum (standalone) ---\n");
-    printf("Name: \"Planet\", Enum: %d\n", elementNameToEnum("Planet"));
-    printf("Name: \"Name\", Enum: %d\n", elementNameToEnum("Name"));
-    printf("Name: \"Url\", Enum: %d\n", elementNameToEnum("Url"));
-    printf("Name: \"Unknown\", Enum: %d\n", elementNameToEnum("Unknown"));
-    printf("Name: NULL, Enum: %d\n", elementNameToEnum(NULL));
-
-    return 0;
+    return enum_value;
 }

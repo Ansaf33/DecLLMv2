@@ -1,79 +1,78 @@
-#include <stdlib.h>  // For calloc, exit, EXIT_FAILURE, free
-#include <stdio.h>   // For puts, printf
 #include <stdbool.h> // For bool
+#include <stdlib.h>  // For calloc, exit, EXIT_FAILURE, NULL
+#include <stdio.h>   // For puts, printf
 
 // Function: pop
-// Reduces the intermediate variable 'iVar1' by using postfix decrement.
 int pop(int *param_1) {
-  // *param_1 holds the 1-based count of elements.
-  // Elements are stored from param_1[2] onwards.
-  // The top element is at param_1[*param_1 + 1].
-  // (*param_1)-- evaluates *param_1 (the current count) first,
-  // uses that value to access the array, then decrements *param_1.
+  if (*param_1 == 0) {
+    puts("Stack underflow!");
+    exit(EXIT_FAILURE);
+  }
   return param_1[(*param_1)-- + 1];
 }
 
 // Function: push
-// param_1[0] stores the 1-based count of elements.
-// Elements are stored from param_1[2] onwards.
 void push(int *param_1, int param_2) {
-  (*param_1)++;                   // Increment stack pointer (count)
-  param_1[*param_1 + 1] = param_2; // Store at new_count + 1
+  // Assuming a maximum capacity of 31 elements based on 0x84 bytes allocation (33 ints)
+  // param_1[0] is count, param_1[1] is unused. Max element index is 32.
+  // So max count is 31 (param_1[31+1] = param_1[32]).
+  if (*param_1 >= 31) {
+    puts("Stack overflow!");
+    exit(EXIT_FAILURE);
+  }
+  param_1[++(*param_1) + 1] = param_2;
 }
 
 // Function: isEmpty
-// param_1[0] stores the 1-based count of elements.
 bool isEmpty(int *param_1) {
   return *param_1 == 0;
 }
 
 // Function: initStack
-// Allocates memory for the stack.
-// The stack is an array of ints. The first element (param_1[0]) is the stack pointer/count.
-// Max capacity is 0x84 bytes (33 integers).
-// Given the push/pop logic, param_1[1] is unused, and elements are stored from param_1[2] onwards.
-// Therefore, the actual stack can hold 33 - 2 = 31 elements.
-void *initStack(void) {
-  void *stack_ptr = calloc(0x84, 1); // Allocate 0x84 bytes, initialized to zero
-  if (stack_ptr == NULL) {           // Check for allocation failure
-    puts("Critical memory error. Cowardly exiting."); // Fixed typo and standard error message
-    exit(EXIT_FAILURE);              // Replaced _terminate with standard exit
+void * initStack(void) {
+  void *stack_ptr;
+  if ((stack_ptr = calloc(0x84, 1)) == NULL) { // 0x84 bytes = 33 integers
+    puts("Critical memory error. Cowardly exiting.");
+    exit(EXIT_FAILURE);
   }
-  // calloc already initializes all bytes to zero, so stack_ptr[0] will be 0,
-  // correctly indicating an empty stack.
+  // Initialize the stack pointer (count of elements) to 0
+  ((int*)stack_ptr)[0] = 0;
   return stack_ptr;
 }
 
-// Main function to demonstrate usage and make the code compilable
 int main() {
-  // Initialize the stack (initStack returns void*, cast to int* for type safety)
   int *myStack = (int *)initStack();
 
-  printf("Is stack empty? %s\n", isEmpty(myStack) ? "Yes" : "No"); // Expected: Yes
+  printf("Is stack empty? %s\n", isEmpty(myStack) ? "Yes" : "No");
 
   printf("Pushing 10, 20, 30...\n");
   push(myStack, 10);
   push(myStack, 20);
   push(myStack, 30);
 
-  printf("Is stack empty? %s\n", isEmpty(myStack) ? "Yes" : "No"); // Expected: No
+  printf("Is stack empty? %s\n", isEmpty(myStack) ? "Yes" : "No");
+  printf("Current stack size: %d\n", myStack[0]);
 
-  printf("Popped: %d\n", pop(myStack)); // Expected: 30
-  printf("Popped: %d\n", pop(myStack)); // Expected: 20
-
-  printf("Is stack empty? %s\n", isEmpty(myStack) ? "Yes" : "No"); // Expected: No
+  printf("Popped: %d\n", pop(myStack));
+  printf("Current stack size: %d\n", myStack[0]);
+  printf("Popped: %d\n", pop(myStack));
+  printf("Current stack size: %d\n", myStack[0]);
 
   printf("Pushing 40...\n");
   push(myStack, 40);
+  printf("Current stack size: %d\n", myStack[0]);
 
-  printf("Popped: %d\n", pop(myStack)); // Expected: 40
-  printf("Popped: %d\n", pop(myStack)); // Expected: 10
+  printf("Popped: %d\n", pop(myStack));
+  printf("Current stack size: %d\n", myStack[0]);
+  printf("Popped: %d\n", pop(myStack));
+  printf("Current stack size: %d\n", myStack[0]);
 
-  printf("Is stack empty? %s\n", isEmpty(myStack) ? "Yes" : "No"); // Expected: Yes
+  printf("Is stack empty? %s\n", isEmpty(myStack) ? "Yes" : "No");
 
-  // Free the allocated memory to prevent memory leaks
+  // Attempt to pop from an empty stack (will trigger underflow error and exit)
+  // printf("Attempting to pop from empty stack...\n");
+  // pop(myStack); 
+
   free(myStack);
-  myStack = NULL;
-
-  return 0;
+  return EXIT_SUCCESS;
 }

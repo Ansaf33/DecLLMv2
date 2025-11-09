@@ -1,301 +1,261 @@
-#include <stdlib.h> // For calloc, NULL
+#include <stdlib.h> // For calloc
+#include <stdint.h> // For uint32_t
 #include <stddef.h> // For size_t
 
-// --- Type Definitions (to match original snippet's inferred types) ---
+// Custom types from decompilation
 typedef unsigned char byte;
-typedef unsigned int uint;
-typedef int undefined4; // Assuming 4-byte integer
-// 'undefined' is used for rank parameter in `qty_of_rank_in_hand` and `is_rank`.
-// It is likely an unsigned char representing the rank.
-typedef unsigned char undefined;
+typedef unsigned char undefined; // Used for single byte values, like rank
+typedef uint32_t undefined4; // Used for 4-byte values, like card IDs or return codes
 
-// --- Constants ---
-// Error codes (derived from 0xffffffXX values in original snippet)
-#define HAND_ERR_NULL_POINTER       -23 // 0xffffffe9
-#define HAND_ERR_INVALID_CARD       -43 // 0xffffffd5
-#define HAND_ERR_HAND_FULL          -22 // 0xffffffea
-#define HAND_ERR_INVALID_INDEX      -42 // 0xffffffd6
-#define HAND_ERR_HAND_EMPTY         -24 // 0xffffffe8
-#define HAND_ERR_INVALID_CARDS_ARRAY -43 // Reused for param_2 == 0 in add_cards_to_hand or null output ptr
+// Constants
+#define MAX_HAND_SIZE 52
+#define HAND_STRUCT_SIZE (sizeof(byte) + 3 * sizeof(byte) + MAX_HAND_SIZE * sizeof(int)) // 1 (count) + 3 (padding) + 52 * 4 (cards) = 212 bytes
 
-// Maximum number of cards in a hand (0x34 = 52)
-#define MAX_CARDS 52
-// Total size of hand structure in bytes (0xd4 = 212).
-// Assuming 1 byte for count + MAX_CARDS * sizeof(int) = 1 + 52 * 4 = 209 bytes.
-// 212 bytes might include some padding or additional metadata.
-#define HAND_STRUCT_SIZE 212
+// Error codes (derived from original negative return values)
+#define ERR_NULL_HAND_PTR       -23 // 0xffffffe9
+#define ERR_INVALID_CARD_VALUE  -43 // 0xffffffd5 (e.g., card value 0 or NULL output buffer)
+#define ERR_HAND_FULL           -22 // 0xffffffea (specific to add_card_to_hand)
+#define ERR_HAND_FULL_BATCH     -52 // 0xffffffcc (specific to add_cards_to_hand for multiple cards)
+#define ERR_HAND_EMPTY          -24 // 0xffffffe8
+#define ERR_INDEX_OUT_OF_BOUNDS -26 // 0xffffffd6
 
-// --- External Function Declarations (placeholders) ---
-// These functions are called in the provided snippet but not defined.
-// Assuming prng_get_next returns a byte (unsigned char) for random number generation.
+// Dummy declarations for external functions (replace with actual implementations if available)
+int is_rank(undefined4 card_value, undefined rank_value);
 byte prng_get_next(void);
-// Assuming is_rank takes an int card value and an unsigned char rank,
-// and returns 1 if the card's rank matches, 0 otherwise.
-int is_rank(int card_value, unsigned char rank);
 
-
-// --- Function: create_hand ---
-// Allocates memory for a new hand structure.
-// Returns a pointer to the newly created hand, or NULL if allocation fails.
+// Function: create_hand
 void *create_hand(void) {
-  // Allocate HAND_STRUCT_SIZE bytes and initialize to zero.
-  return calloc(HAND_STRUCT_SIZE, 1);
+  // Original: pvVar1 = calloc(0xd4,in_stack_ffffffd8);
+  // 0xd4 is 212 decimal. `in_stack_ffffffd8` is an uninitialized decompiler artifact.
+  // This likely means `calloc(1, 212)` to allocate a single hand structure of 212 bytes.
+  return calloc(1, HAND_STRUCT_SIZE);
 }
 
-// --- Function: consolidate_hand ---
-// Consolidates the cards in the hand pointed to by hand_data.
-// It removes any zero (empty) card slots by shifting valid cards to the left.
-// It updates the card count stored in hand_data[0].
-// Returns 0 on success.
-int consolidate_hand(byte *hand_data) {
-  unsigned char write_idx = 0; // Index for where the next non-zero card should be placed
-  unsigned char read_idx = 0;  // Index for iterating through all possible card slots
+// Function: consolidate_hand
+// The original return type 'undefined **' and variable 'ppuVar1' are decompiler artifacts.
+// This function modifies the hand in place to remove empty slots.
+void consolidate_hand(byte *hand_ptr) {
+  int *cards = (int *)(hand_ptr + 4); // Pointer to the array of card integers
+  byte read_idx = 0;  // Index for reading cards
+  byte write_idx = 0; // Index for writing consolidated cards
 
-  // Iterate through all possible card slots up to MAX_CARDS.
-  while (read_idx < MAX_CARDS) {
-    // Check if the card at the current read_idx is not zero (i.e., it's a valid card).
-    if (*(int *)(hand_data + 4 + (uint)read_idx * 4) != 0) {
-      // If the card is not already in its consolidated position (i.e., read_idx != write_idx),
-      // then move it to the write_idx position.
-      if (read_idx != write_idx) {
-        *(int *)(hand_data + 4 + (uint)write_idx * 4) = *(int *)(hand_data + 4 + (uint)read_idx * 4);
-        // Clear the original slot where the card was read from.
-        *(int *)(hand_data + 4 + (uint)read_idx * 4) = 0;
-      }
-      // Advance the write_idx, as we've placed a valid card.
+  // Iterate through all possible card slots up to MAX_HAND_SIZE
+  while (read_idx < MAX_HAND_SIZE) {
+    if (cards[read_idx] == 0) {
+      // If the card at read_idx is empty, just advance the read pointer.
+      read_idx++;
+    } else if (cards[write_idx] != 0) {
+      // If the card at read_idx is valid, AND the slot at write_idx is also valid,
+      // then both pointers advance without moving a card.
+      read_idx++;
+      write_idx++;
+    } else {
+      // If the card at read_idx is valid, BUT the slot at write_idx is empty,
+      // move the card from read_idx to write_idx.
+      cards[write_idx] = cards[read_idx];
+      cards[read_idx] = 0; // Clear the source slot
+      read_idx++;
       write_idx++;
     }
-    // Always advance the read_idx to check the next slot.
-    read_idx++;
   }
 
-  // After consolidation, update the hand's card count to the new number of valid cards.
-  hand_data[0] = write_idx;
+  // After consolidation, 'write_idx' holds the new count of valid cards.
+  // Zero out any remaining slots from 'write_idx' to 'MAX_HAND_SIZE - 1'.
+  for (byte i = write_idx; i < MAX_HAND_SIZE; ++i) {
+    cards[i] = 0;
+  }
 
-  return 0; // Indicate success.
+  // Update the hand's card count.
+  *hand_ptr = write_idx;
 }
 
-// --- Function: add_card_to_hand ---
-// Adds a single card to the hand.
-// Returns 0 on success, or a negative error code.
-int add_card_to_hand(byte *hand_data, int card_value) {
-  if (hand_data == NULL) {
-    return HAND_ERR_NULL_POINTER;
+// Function: add_card_to_hand
+undefined4 add_card_to_hand(byte *hand_ptr, int card_value) {
+  if (hand_ptr == NULL) {
+    return ERR_NULL_HAND_PTR;
   }
-  if (card_value == 0) { // Card value 0 is considered invalid/empty.
-    return HAND_ERR_INVALID_CARD;
+  if (card_value == 0) { // Card value 0 is considered invalid/empty
+    return ERR_INVALID_CARD_VALUE;
   }
-  if (hand_data[0] < MAX_CARDS) { // Check if there's space in the hand.
-    // Add card to the next available slot.
-    *(int *)(hand_data + 4 + (uint)hand_data[0] * 4) = card_value;
-    hand_data[0]++; // Increment card count.
-    return 0;       // Success.
+  // Check if there is space in the hand
+  if (*hand_ptr < MAX_HAND_SIZE) {
+    int *cards = (int *)(hand_ptr + 4); // Pointer to the card array
+    cards[*hand_ptr] = card_value;      // Add card to the next available slot
+    *hand_ptr = *hand_ptr + 1;          // Increment card count
+    return 0;                           // Success
   }
-  return HAND_ERR_HAND_FULL;
+  return ERR_HAND_FULL; // Hand is full
 }
 
-// --- Function: add_cards_to_hand ---
-// Adds multiple cards from an array to the hand.
-// Returns 0 on success, or a negative error code.
-int add_cards_to_hand(byte *hand_data, int *cards_to_add, byte num_cards_to_add) {
-  if (hand_data == NULL) {
-    return HAND_ERR_NULL_POINTER;
+// Function: add_cards_to_hand
+int add_cards_to_hand(byte *hand_ptr, int *card_values, byte num_cards_to_add) {
+  if (hand_ptr == NULL) {
+    return ERR_NULL_HAND_PTR;
   }
-  if (cards_to_add == NULL) { // Check if the source array of cards is valid.
-    return HAND_ERR_INVALID_CARDS_ARRAY;
+  // Check if there's enough space in the hand for all new cards
+  if ((uint)*hand_ptr + (uint)num_cards_to_add > MAX_HAND_SIZE) {
+    return ERR_HAND_FULL_BATCH;
   }
-  // Check if adding cards would exceed hand capacity.
-  if ((uint)hand_data[0] + (uint)num_cards_to_add > MAX_CARDS) {
-    return HAND_ERR_HAND_FULL;
+  if (card_values == NULL) {
+    return ERR_INVALID_CARD_VALUE; // Source array of cards is NULL
   }
 
-  // First, validate all cards to be added.
-  for (unsigned char i = 0; i < num_cards_to_add; i++) {
-    if (cards_to_add[i] == 0) {
-      return HAND_ERR_INVALID_CARD; // Return error if any card is invalid.
+  // Verify all cards in the batch are valid (non-zero) before adding any
+  for (byte i = 0; i < num_cards_to_add; ++i) {
+    if (card_values[i] == 0) {
+      return ERR_INVALID_CARD_VALUE;
     }
   }
 
-  // Add cards one by one.
-  for (unsigned char i = 0; i < num_cards_to_add; i++) {
-    int result = add_card_to_hand(hand_data, cards_to_add[i]);
+  // Add cards one by one
+  for (byte i = 0; i < num_cards_to_add; ++i) {
+    int result = add_card_to_hand(hand_ptr, card_values[i]);
     if (result != 0) {
-      // If add_card_to_hand fails for any reason (e.g., hand becomes full unexpectedly),
-      // return the error.
-      return result;
+      return result; // Return error if any card fails to add
     }
-    cards_to_add[i] = 0; // Clear the card from the source array after adding.
+    card_values[i] = 0; // Clear the card from the source array after adding
   }
-  return 0; // Success.
+  return 0; // Success
 }
 
-// --- Function: rm_card_from_hand ---
-// Removes a card from the hand at a specified index.
-// The removed card's value is stored in `removed_card_ptr` if provided.
-// Returns 0 on success, or a negative error code.
-int rm_card_from_hand(byte *hand_data, byte index_to_remove, int *removed_card_ptr) {
-  if (hand_data == NULL) {
-    return HAND_ERR_NULL_POINTER;
+// Function: rm_card_from_hand
+undefined4 rm_card_from_hand(byte *hand_ptr, byte card_idx, int *removed_card_value_out) {
+  if (hand_ptr == NULL) {
+    return ERR_NULL_HAND_PTR;
   }
-  // Check if index is within bounds of current cards in hand.
-  if (index_to_remove >= hand_data[0]) {
-    return HAND_ERR_INVALID_INDEX;
+  if (removed_card_value_out == NULL) { // Added check for output pointer
+    return ERR_INVALID_CARD_VALUE;
   }
-
-  int card_value = *(int *)(hand_data + 4 + (uint)index_to_remove * 4);
-  if (card_value == 0) { // Card at index is already empty.
-    return HAND_ERR_INVALID_CARD;
+  // Check if the card_idx is within the bounds of currently active cards
+  if (card_idx >= *hand_ptr) {
+    return ERR_INDEX_OUT_OF_BOUNDS;
   }
 
-  // Store the removed card's value if a pointer is provided.
-  if (removed_card_ptr != NULL) {
-    *removed_card_ptr = card_value;
+  int *cards = (int *)(hand_ptr + 4);
+  *removed_card_value_out = cards[card_idx]; // Store the removed card's value
+
+  if (*removed_card_value_out == 0) { // Should not happen if hand is consolidated and index is valid
+    return ERR_INVALID_CARD_VALUE;
   }
-  
-  // Mark the slot as empty.
-  *(int *)(hand_data + 4 + (uint)index_to_remove * 4) = 0;
-  hand_data[0]--; // Decrement card count.
-  
-  // Consolidate the hand to fill the gap created by removal.
-  consolidate_hand(hand_data);
-  return 0; // Success.
+
+  cards[card_idx] = 0;       // Mark the slot as empty
+  *hand_ptr = *hand_ptr - 1; // Decrement card count
+
+  consolidate_hand(hand_ptr); // Consolidate the hand to remove the empty slot
+
+  return 0; // Success
 }
 
-// --- Function: qty_of_rank_in_hand ---
-// Counts the number of cards of a specific rank in the hand.
-// Returns the count, or a negative error code.
-int qty_of_rank_in_hand(byte *hand_data, undefined rank) {
-  if (hand_data == NULL) {
-    return HAND_ERR_NULL_POINTER;
+// Function: qty_of_rank_in_hand
+int qty_of_rank_in_hand(byte *hand_ptr, undefined rank_value) {
+  if (hand_ptr == NULL) {
+    return ERR_NULL_HAND_PTR;
   }
 
   int count = 0;
-  // Iterate through currently held cards.
-  for (unsigned char i = 0; i < hand_data[0]; i++) {
-    int card_value = *(int *)(hand_data + 4 + (uint)i * 4);
-    if (is_rank(card_value, rank) == 1) {
+  int *cards = (int *)(hand_ptr + 4);
+
+  // Iterate through currently active cards (up to *hand_ptr)
+  for (byte i = 0; i < *hand_ptr; ++i) {
+    if (is_rank(cards[i], rank_value) == 1) {
       count++;
     }
   }
   return count;
 }
 
-// --- Function: get_all_of_rank_from_hand ---
-// Extracts all cards of a specific rank from the hand and stores them in `removed_cards_array`.
-// Returns the number of cards removed, or a negative error code.
-int get_all_of_rank_from_hand(byte *hand_data, unsigned char rank, int *removed_cards_array) {
-  if (hand_data == NULL) {
-    return HAND_ERR_NULL_POINTER;
+// Function: get_all_of_rank_from_hand
+uint get_all_of_rank_from_hand(byte *hand_ptr, char rank_to_remove, int *removed_cards_array) {
+  if (hand_ptr == NULL) {
+    return ERR_NULL_HAND_PTR;
   }
-  if (removed_cards_array == NULL) {
-    return HAND_ERR_INVALID_CARDS_ARRAY; // Using this error for a null output array pointer.
+  if (removed_cards_array == NULL) { // Output array for removed cards is NULL
+    return ERR_INVALID_CARD_VALUE;
   }
-  if (rank == 0) { // Rank 0 might be considered an invalid or "no rank" value.
-    return 0; // No cards to remove for rank 0, or invalid rank.
+  if (rank_to_remove == '\0') { // If rank is 0, nothing to remove
+    return 0;
   }
 
-  unsigned char removed_count = 0;
-  // Iterate through the hand. When a card is removed, the hand is consolidated (cards shift left).
-  // Thus, we do NOT increment `i` when a card is removed, as the next card
-  // will have shifted into the current `i` position.
-  unsigned char i = 0;
-  while (i < hand_data[0]) { // Loop while 'i' is less than the current card count.
-    int card_value = *(int *)(hand_data + 4 + (uint)i * 4);
-    if (is_rank(card_value, rank) == 1) {
-      // If card matches rank, remove it. rm_card_from_hand decrements hand_data[0] and consolidates.
-      int rm_result = rm_card_from_hand(hand_data, i, &removed_cards_array[removed_count]);
-      if (rm_result < 0) {
-        return rm_result; // Return error if removal fails.
+  uint num_removed_cards = 0;
+  uint initial_card_count = *hand_ptr; // Store initial count for loop iterations
+
+  int *cards = (int *)(hand_ptr + 4);
+  byte current_card_slot_idx = 0; // This index tracks the current position in the hand.
+                                  // It is not incremented if a card is removed, as consolidation
+                                  // will shift the next card into this position.
+
+  for (uint i = 0; i < initial_card_count; ++i) { // Loop 'initial_card_count' times
+    if (is_rank(cards[current_card_slot_idx], rank_to_remove) == 1) {
+      // If card matches rank, remove it and store its value
+      undefined4 result = rm_card_from_hand(hand_ptr, current_card_slot_idx, &removed_cards_array[num_removed_cards]);
+      if ((int)result < 0) {
+        return result; // Return error if removal fails
       }
-      removed_count++;
-      // Do NOT increment 'i' here, as the next card has shifted into position 'i'.
+      num_removed_cards++;
+      // Do NOT increment current_card_slot_idx here; consolidate_hand has shifted
+      // the next card into this position, which needs to be checked.
     } else {
-      // If card does not match, move to the next card.
-      i++;
+      // If card does not match, move to the next slot
+      current_card_slot_idx++;
     }
   }
-  return removed_count; // Return the total number of cards removed.
+
+  return num_removed_cards; // Return count of cards removed
 }
 
-// --- Function: get_count_cards_in_hand ---
-// Returns the number of cards currently in the hand.
-// Returns the count, or a negative error code.
-int get_count_cards_in_hand(byte *hand_data) {
-  if (hand_data == NULL) {
-    return HAND_ERR_NULL_POINTER;
+// Function: get_count_cards_in_hand
+uint get_count_cards_in_hand(byte *hand_ptr) {
+  if (hand_ptr == NULL) {
+    return ERR_NULL_HAND_PTR;
   }
-  return hand_data[0]; // The first byte stores the card count.
+  return (uint)*hand_ptr;
 }
 
-// --- Function: get_rank_of_random_card_in_hand ---
-// Retrieves the rank of a randomly selected card from the hand.
-// Returns the rank (0-255), or a negative error code.
-int get_rank_of_random_card_in_hand(byte *hand_data) {
-  if (hand_data == NULL) {
-    return HAND_ERR_NULL_POINTER;
+// Function: get_rank_of_random_card_in_hand
+uint get_rank_of_random_card_in_hand(byte *hand_ptr) {
+  if (hand_ptr == NULL) {
+    return ERR_NULL_HAND_PTR;
   }
 
-  int card_count = get_count_cards_in_hand(hand_data);
-  if (card_count < 0) { // Handle error from get_count_cards_in_hand.
-    return card_count;
-  }
+  uint card_count = get_count_cards_in_hand(hand_ptr);
   if (card_count == 0) {
-    return HAND_ERR_HAND_EMPTY;
+    return ERR_HAND_EMPTY;
   }
 
-  unsigned char random_index = 0;
-  if (card_count > 1) {
-    // Generate a random index within the bounds of current cards.
-    random_index = prng_get_next() % card_count;
+  byte random_idx = 0;
+  if (card_count > 1) { // Only generate random number if more than one card
+    random_idx = prng_get_next() % card_count;
   }
 
-  // Retrieve the card value at the random index.
-  int card_value = *(int *)(hand_data + 4 + (uint)random_index * 4);
-  
-  // Assuming the rank is encoded as the second byte (offset 1) within the 4-byte integer card value.
-  // This is a common way to pack rank/suit into an int.
-  // The original decompiled code had a suspicious dereference:
-  // `*(byte *)(*(int *)(param_1 + 4 + (uint)local_d * 4) + 1)`
-  // which suggests reading a byte at address `(card_value + 1)`. If `card_value` is an `int`,
-  // `card_value + 1` would be `card_value + sizeof(int)`. This is usually incorrect for rank extraction.
-  // A more plausible interpretation is bit shifting to get the second byte.
-  return (unsigned char)((card_value >> 8) & 0xFF); 
+  // Cards are stored as `int`. Assuming rank is the second byte of the 4-byte card value.
+  int *cards = (int *)(hand_ptr + 4);
+  return (uint)*((byte *)&cards[random_idx] + 1); // Extract the second byte
 }
 
-// --- Function: is_hand_empty ---
-// Checks if the hand is empty.
-// Returns 1 if empty, 0 if not empty, or a negative error code.
-int is_hand_empty(byte *hand_data) {
-  if (hand_data == NULL) {
-    return HAND_ERR_NULL_POINTER;
+// Function: is_hand_empty
+undefined4 is_hand_empty(byte *hand_ptr) {
+  if (hand_ptr == NULL) {
+    return ERR_NULL_HAND_PTR;
   }
-  int card_count = get_count_cards_in_hand(hand_data);
-  if (card_count < 0) { // Handle error from get_count_cards_in_hand.
-    return card_count;
-  }
-  return (card_count == 0) ? 1 : 0;
+  return (get_count_cards_in_hand(hand_ptr) == 0) ? 1 : 0;
 }
 
-// --- Function: get_latest_card ---
-// Retrieves the value of the last card added to the hand.
-// Returns 0 on success, or a negative error code.
-int get_latest_card(byte *hand_data, int *latest_card_ptr) {
-  if (hand_data == NULL) {
-    return HAND_ERR_NULL_POINTER;
+// Function: get_latest_card
+undefined4 get_latest_card(byte *hand_ptr, undefined4 *latest_card_value_out) {
+  if (hand_ptr == NULL) {
+    return ERR_NULL_HAND_PTR;
   }
-  if (latest_card_ptr == NULL) {
-      return HAND_ERR_INVALID_CARDS_ARRAY; // Using this error for a null output pointer.
+  if (latest_card_value_out == NULL) { // Added check for output pointer
+    return ERR_INVALID_CARD_VALUE;
   }
 
-  int is_empty_result = is_hand_empty(hand_data);
-  if (is_empty_result < 0) { // Handle error from is_hand_empty.
-    return is_empty_result;
-  }
-  if (is_empty_result == 1) {
-    return HAND_ERR_HAND_EMPTY;
+  if (is_hand_empty(hand_ptr) == 1) {
+    return ERR_HAND_EMPTY;
   }
 
-  // The "latest" card is typically the one at the highest index (count - 1).
-  *latest_card_ptr = *(int *)(hand_data + 4 + (uint)(hand_data[0] - 1) * 4);
-  return 0; // Success.
+  // The latest card is at index (*hand_ptr - 1)
+  int *cards = (int *)(hand_ptr + 4);
+  *latest_card_value_out = cards[*hand_ptr - 1];
+
+  return 0; // Success
 }

@@ -1,690 +1,665 @@
-#include <stddef.h> // For size_t
-#include <stdlib.h> // For malloc, free
-#include <string.h> // For memcpy, memset
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-// --- Type Definitions (mapping from decompiler output) ---
-typedef unsigned char byte;
-typedef unsigned short ushort;
-typedef unsigned int uint;
+// Type definitions for clarity and Linux compatibility
+typedef uint8_t byte;
+typedef uint8_t undefined;
+typedef uint16_t undefined2;
+typedef uint32_t undefined4;
+typedef uint16_t ushort;
 
-// Decompiler's 'undefined' types
-typedef unsigned char undefined;
-typedef unsigned short undefined2;
-typedef unsigned int undefined4;
+// External functions (mocked for compilation, actual implementation would be linked)
+// These functions are assumed to exist in the environment this code will run in.
+// Their parameters are derived from the usage in the provided snippet.
+extern int link_send(undefined4 type, undefined4 length, void *data);
+extern int link_recv(int *type, size_t *length, void *buffer);
 
-// Forward declarations for external functions
-// Assuming link_send takes (type, length, data_ptr)
-void link_send(undefined4 type, size_t length, const void *data);
-// Assuming link_recv takes (type_out, length_out, buffer_out)
-int link_recv(int *type_out, size_t *length_out, void *buffer_out);
+// Structure for PSM (Protocol/Service Multiplexer) entries
+// Based on usage in session_find_psm and session_register_psm
+typedef struct psm_entry {
+    struct psm_entry *next;        // 0x0: Pointer to the next PSM entry in the linked list
+    undefined4 psm_id;             // 0x4: The PSM ID
+    undefined4 callback_fn;        // 0x8: Function pointer for PSM events (e.g., connection request)
+} psm_entry_t;
 
-// --- Global Variables (inferred from usage) ---
+// Structure for Channel entries
+// Based on usage in session_new_channel and other session_* functions
+typedef struct channel_entry {
+    undefined state;                // 0x0: Channel state (e.g., 0=disconnected, 1=connected, 2=configured)
+    undefined unknown1;             // 0x1: An additional flag or sub-state
+    ushort local_cid;               // 0x2: Local Channel ID
+    ushort remote_cid;              // 0x4: Remote Channel ID
+    undefined4 psm_id;              // 0x6: PSM ID associated with this channel (guessed, not explicitly set in snippet)
+    undefined4 callback_fn;         // 0x8: Function pointer for channel events (e.g., data reception, disconnection)
+    undefined4 user_data;           // 0xc: User-defined data associated with the channel
+    undefined4 local_mtu;           // 0x10: Local MTU (Maximum Transmission Unit)
+    undefined4 remote_mtu;          // 0x14: Remote MTU
+} channel_entry_t; // Total size 0x18 (24 bytes)
 
-// For session_find_psm, session_register_psm: g_psm_head
-typedef struct PsmEntry {
-    struct PsmEntry *next;
-    int psm_id;
-    void (*callback)(void *); // Callback for PSM connection requests, receives Channel*
-} PsmEntry;
-static PsmEntry *g_psm_head = NULL;
+// Global variables
+static psm_entry_t *g_psm_head = NULL;
+static int g_dynamic_id = 0x100; // Starting value for dynamic channel IDs
+static channel_entry_t *g_channels[256] = {0}; // Array of pointers to channel entries, max 256 channels
+static undefined g_config_req_id = 0; // ID for configuration requests
 
-// For session_new_channel, session_configuration_request, etc.: g_dynamic_id, g_channels
-// A channel structure is 0x18 bytes.
-typedef struct Channel {
-    unsigned char status;     // Offset 0: 0=inactive, 1=connecting, 2=open, 3=disconnecting
-    unsigned char config_status; // Offset 1: 0=no config pending, 1=config request sent
-    unsigned short local_cid; // Offset 2
-    unsigned short remote_cid; // Offset 4
-    void (*callback)(struct Channel *, undefined4, undefined4); // Offset 8: Data/event callback
-    undefined4 userdata;      // Offset 0xc: User-defined data
-    unsigned int mtu;         // Offset 0x10: Maximum Transmission Unit
-    unsigned int config_val2; // Offset 0x14: Flow control/retransmission mode, etc.
-} Channel;
-#define MAX_L2CAP_CHANNELS 256 // Assuming channel IDs are 1-255, 0 is special.
-static Channel *g_channels[MAX_L2CAP_CHANNELS] = {NULL};
-static ushort g_dynamic_id = 0x40; // Common dynamic CID range start (0x40 for L2CAP)
+// Global buffer for sending L2CAP packets
+// Max chunk size 0x153 + 4 bytes L2CAP header. Assuming total max packet fits.
+static uint8_t g_send_pkt_buffer[0x1000];
+// Macros to access specific fields within the send buffer
+#define G_SEND_PKT_LEN (*(uint16_t*)g_send_pkt_buffer) // L2CAP payload length
+#define G_SEND_PKT_CMD_OR_CID (*(uint16_t*)(g_send_pkt_buffer + 2)) // L2CAP Command Code or Channel ID
+#define G_SEND_PKT_DATA (g_send_pkt_buffer + 4) // Start of L2CAP payload data
 
-// For session_send_config: g_config_req_id
-static unsigned char g_config_req_id = 0; // Counter for config requests identifier
-
-// Global buffer for outgoing L2CAP packets (_session_send)
-#define MAX_L2CAP_PAYLOAD_SIZE 0xFFFF // Max ushort value
-#define L2CAP_HEADER_SIZE 4 // Length (2 bytes) + CID (2 bytes)
-static unsigned char g_outgoing_l2cap_buffer[L2CAP_HEADER_SIZE + MAX_L2CAP_PAYLOAD_SIZE];
-
-// Global buffer for incoming L2CAP packets (session_loop, session_handle_packet, session_handle_control)
-#define MAX_LINK_RECV_FRAGMENT_SIZE 339 // From local_163 size in session_loop
-#define MAX_L2CAP_PACKET_TOTAL_SIZE (L2CAP_HEADER_SIZE + MAX_L2CAP_PAYLOAD_SIZE)
-static unsigned char g_incoming_l2cap_buffer[MAX_L2CAP_PACKET_TOTAL_SIZE];
-static size_t g_incoming_l2cap_current_len = 0; // How much of the current L2CAP packet has been received
-
-// Macros for accessing fields within the incoming L2CAP packet buffer
-#define IN_L2CAP_LEN  (*(ushort*)&g_incoming_l2cap_buffer[0]) // L2CAP Payload Length
-#define IN_L2CAP_CID  (*(ushort*)&g_incoming_l2cap_buffer[2]) // L2CAP Channel ID
-#define IN_SDU_START  (&g_incoming_l2cap_buffer[4]) // Start of L2CAP Payload (SDU)
-
-// Function prototypes (needed for mutual recursion or calls before definition)
-void session_send_reject(undefined identifier, undefined2 reason);
-void session_send_config(Channel *channel);
-
-// --- Function Implementations ---
+// Global buffer for receiving L2CAP packets
+// Size 0x10004 based on `memset(&g_current_packet,0,0x10003)` and `local_10 < 0x10004` in session_loop
+static uint8_t g_recv_pkt_buffer[0x10004];
+// Macros to access specific fields within the receive buffer
+#define G_RECV_TOTAL_L2CAP_PAYLOAD_LEN (*(uint16_t*)g_recv_pkt_buffer) // L2CAP payload length from header
+#define G_RECV_L2CAP_CID_OR_TYPE (*(uint16_t*)(g_recv_pkt_buffer + 2)) // L2CAP Channel ID or Command Type
+#define G_RECV_L2CAP_PAYLOAD_START (g_recv_pkt_buffer + 4) // Start of L2CAP payload (contains commands or data)
 
 // Function: _session_send
-// param_1: L2CAP Channel ID (CID)
-// param_2: L2CAP Payload Length
-// param_3: Pointer to L2CAP Payload data
-void _session_send(undefined2 param_1, ushort param_2, void *param_3) {
-    // Construct the L2CAP packet in the global buffer
-    *(undefined2 *)&g_outgoing_l2cap_buffer[0] = param_1; // CID
-    *(ushort *)&g_outgoing_l2cap_buffer[2] = param_2;     // Length
-    memcpy(&g_outgoing_l2cap_buffer[4], param_3, param_2); // Payload
+// Sends an L2CAP packet in chunks.
+void _session_send(undefined2 type_or_cid, ushort payload_len, void *data) {
+    G_SEND_PKT_LEN = payload_len;
+    G_SEND_PKT_CMD_OR_CID = type_or_cid;
+    memcpy(G_SEND_PKT_DATA, data, payload_len);
 
-    size_t total_packet_len = param_2 + L2CAP_HEADER_SIZE;
-    size_t current_offset = 0;
-
-    while (current_offset < total_packet_len) {
-        size_t fragment_len = total_packet_len - current_offset;
-        if (fragment_len > MAX_LINK_RECV_FRAGMENT_SIZE) { // Max fragment size for link_send
-            fragment_len = MAX_LINK_RECV_FRAGMENT_SIZE;
+    size_t total_packet_len = payload_len + 4; // L2CAP payload + 4 bytes L2CAP header
+    for (size_t sent_bytes = 0; sent_bytes < total_packet_len; ) {
+        size_t chunk_len = total_packet_len - sent_bytes;
+        if (0x153 < chunk_len) { // Max chunk size (0x153 bytes)
+            chunk_len = 0x153;
         }
-
-        undefined4 send_type;
-        if (current_offset == 0) {
-            send_type = 2; // Start of packet
-        } else {
-            send_type = 1; // Continuation
-        }
-        link_send(send_type, fragment_len, &g_outgoing_l2cap_buffer[current_offset]);
-        current_offset += fragment_len;
+        // Packet type: 2 for first chunk, 1 for subsequent chunks
+        uint32_t link_pkt_type = (sent_bytes == 0) ? 2 : 1;
+        link_send(link_pkt_type, chunk_len, g_send_pkt_buffer + sent_bytes);
+        sent_bytes += chunk_len;
     }
 }
 
 // Function: session_find_psm
-PsmEntry *session_find_psm(int psm_id) {
-    PsmEntry *current = g_psm_head;
-    while (current != NULL) {
-        if (psm_id == current->psm_id) {
-            return current;
+// Finds a PSM entry in the g_psm_head linked list.
+psm_entry_t *session_find_psm(int psm_id) {
+    psm_entry_t *current_psm = g_psm_head;
+    while (current_psm != NULL) {
+        if (psm_id == current_psm->psm_id) {
+            break;
         }
-        current = current->next;
+        current_psm = current_psm->next;
     }
-    return NULL;
+    return current_psm;
 }
 
 // Function: session_new_channel
-Channel *session_new_channel(ushort remote_cid) {
-    ushort local_cid = remote_cid;
-    if (remote_cid == 0) { // If remote_cid is 0, generate a dynamic local_cid
-        local_cid = g_dynamic_id;
-        // Find next available dynamic ID
-        while (local_cid < MAX_L2CAP_CHANNELS && g_channels[local_cid] != NULL) {
-            local_cid++;
-        }
-        if (local_cid >= MAX_L2CAP_CHANNELS) { // No available dynamic CID
-            return NULL;
-        }
-        g_dynamic_id = local_cid + 1; // Update for next allocation
-    } else { // Static CID, check if already in use
-        if (local_cid >= MAX_L2CAP_CHANNELS || g_channels[local_cid] != NULL) {
-            return NULL; // CID out of bounds or already in use
-        }
+// Allocates and initializes a new channel entry.
+channel_entry_t *session_new_channel(ushort param_1_cid) {
+    ushort channel_id = param_1_cid;
+    if (channel_id == 0) { // If param_1_cid is 0, assign a dynamic ID
+        channel_id = (ushort)g_dynamic_id++;
     }
 
-    Channel *new_channel = (Channel *)malloc(sizeof(Channel));
+    channel_entry_t *new_channel = (channel_entry_t *)malloc(sizeof(channel_entry_t));
     if (new_channel == NULL) {
         return NULL;
     }
 
-    memset(new_channel, 0, sizeof(Channel)); // Initialize to zero
-    new_channel->status = 0;
-    new_channel->local_cid = local_cid;
-    new_channel->mtu = 0x2a0; // Default MTU
-    new_channel->config_val2 = 0x2a0; // Default config value
+    memset(new_channel, 0, sizeof(channel_entry_t)); // Initialize all fields to 0
+    new_channel->state = 0;
+    new_channel->local_cid = channel_id;
+    new_channel->local_mtu = 0x2a0; // Default MTU
+    new_channel->remote_mtu = 0x2a0; // Default MTU
 
-    g_channels[local_cid] = new_channel;
+    if (channel_id < sizeof(g_channels) / sizeof(g_channels[0])) { // Check for array bounds
+        g_channels[channel_id] = new_channel;
+    } else {
+        free(new_channel); // Channel ID out of bounds, free memory
+        return NULL;
+    }
     return new_channel;
 }
 
 // Function: session_send_reject
-// identifier: Identifier from incoming SDU
-// reason: Reason code
-void session_send_reject(undefined identifier, undefined2 reason) {
-    // SDU structure for Command Reject:
-    // Code (1 byte) = 0x01
-    // Identifier (1 byte)
-    // Length (2 bytes) = 2
-    // Reason (2 bytes)
-    unsigned char reject_sdu[6];
-    reject_sdu[0] = 1; // Code: Command Reject
-    reject_sdu[1] = identifier; // Identifier from original command
-    *(ushort *)&reject_sdu[2] = 2; // Length: 2 bytes for reason
-    *(undefined2 *)&reject_sdu[4] = reason; // Reason code
+// Sends an L2CAP Command Reject response.
+void session_send_reject(undefined packet_id, undefined2 result_code) {
+    // L2CAP Command Reject packet structure:
+    // Code (1) | ID (1) | Length (2) | Reason (2) | Data (variable, 0-2)
+    // Here, it seems to be Code (1) | ID (1) | Length (2) | Reason (2) | Result (2)
+    struct {
+        undefined code;
+        undefined id;
+        undefined2 length;
+        undefined2 reason;
+        undefined2 result_data; // Not always used, but implied by original length
+    } reject_pkt;
 
-    _session_send(1, sizeof(reject_sdu), reject_sdu); // CID 1 for signaling
+    reject_pkt.code = 1; // Command Reject
+    reject_pkt.id = packet_id;
+    reject_pkt.length = 2; // Length of the reason field
+    reject_pkt.reason = result_code; // The actual reject reason (e.g., 0=command not understood)
+    // The original code implies a 6-byte payload (code,id,len,reason,result_data)
+    // So if result_data is used, length should be 4.
+    // Given `_session_send(1,6,&local_12)`, it implies a total payload of 6 bytes.
+    // If reject_pkt.length is 2, then total payload is 1 (code) + 1 (id) + 2 (length) + 2 (reason) = 6.
+    // Let's explicitly set the length to 2 for just the reason code.
+    // If the original `local_10` was for `length` and `local_e` was for `result`,
+    // then it's `length = 2` and `result = param_2`.
+    // The struct has `length` and `result_data`. Let's use `result_code` for `result_data`.
+    reject_pkt.length = 2; // Length of the `result_code` field
+    reject_pkt.result_data = result_code; // Assuming `param_2` is the reason code
+
+    // Correcting interpretation of original code: local_12=1(code), local_11=param_1(id), local_10=2(length), local_e=param_2(data)
+    // So the payload is [1, param_1, 2, param_2] (6 bytes total)
+    // This implies `reject_pkt.code = 1; reject_pkt.id = packet_id; reject_pkt.length = 2; reject_pkt.result_data = result_code;`
+    // And `_session_send(1, 6, &reject_pkt.code)`
+    // To match the original `_session_send(1,6,&local_12)`, `local_12` being the first byte of the payload.
+    // So, `reject_pkt` is correct, and the _session_send call uses `sizeof(reject_pkt)`.
+    _session_send(1, sizeof(reject_pkt), &reject_pkt);
 }
 
 // Function: session_send_config
-void session_send_config(Channel *channel) {
-    // SDU structure for Configuration Request:
-    // Code (1 byte) = 0x04
-    // Identifier (1 byte)
-    // Length (2 bytes)
-    // Local CID (2 bytes)
-    // Remote CID (2 bytes)
-    // Config Options (variable)
-    unsigned char config_req_sdu[8];
-    config_req_sdu[0] = 4; // Code: Configuration Request
-    config_req_sdu[1] = g_config_req_id++; // Identifier
-    *(ushort *)&config_req_sdu[2] = 4; // Length of parameters (Local CID + Remote CID)
-    *(ushort *)&config_req_sdu[4] = channel->local_cid; // Local CID
-    *(ushort *)&config_req_sdu[6] = 0; // Remote CID (set to 0 for initial request)
+// Sends an L2CAP Configuration Request or Response.
+void session_send_config(channel_entry_t *channel) {
+    // L2CAP Configuration Request/Response packet structure:
+    // Code (1) | ID (1) | Length (2) | Local_CID (2) | Options (variable)
+    // The snippet sends 8 bytes total, which implies:
+    // Code (1) | ID (1) | Length (2) | Local_CID (2) | Flags/Result (2)
+    struct {
+        undefined code;
+        undefined id;
+        undefined2 length;
+        undefined2 remote_cid; // Corresponds to *(param_1 + 4)
+        undefined2 flags; // Corresponds to local_e = 0
+    } config_pkt;
 
-    _session_send(1, sizeof(config_req_sdu), config_req_sdu); // CID 1 for signaling
-    channel->config_status = 1; // Mark channel as waiting for config response
+    config_pkt.code = 4; // Configuration Request
+    config_pkt.id = g_config_req_id; // Use global ID
+    config_pkt.length = 4; // Length of CID + Flags
+    config_pkt.remote_cid = channel->remote_cid; // Use remote CID for the request
+    config_pkt.flags = 0; // Default flags
+
+    _session_send(1, sizeof(config_pkt), &config_pkt);
+    channel->unknown1 = 1; // Mark channel as having sent a config request
 }
 
 // Function: session_connection_request
-// sdu_data: Pointer to incoming SDU (Code, ID, Len, Params...)
-void session_connection_request(unsigned char *sdu_data) {
-    // SDU structure for Connection Request:
-    // Code (1 byte) = 0x02
-    // Identifier (1 byte)
-    // Length (2 bytes) = 4
-    // PSM (2 bytes)
-    // Source CID (2 bytes)
-    unsigned char identifier = sdu_data[1];
-    ushort sdu_len = *(ushort *)&sdu_data[2];
-    ushort psm = *(ushort *)&sdu_data[4];
-    ushort remote_cid = *(ushort *)&sdu_data[6];
+// Handles an incoming L2CAP Connection Request.
+void session_connection_request(const undefined *param_1_cmd_data) {
+    // Incoming L2CAP Connection Request packet structure (from param_1_cmd_data):
+    // Code (0) | ID (1) | Length (2,3) | PSM (4,5) | Remote_CID (6,7)
+    const uint16_t payload_len = *(const uint16_t *)(param_1_cmd_data + 2);
+    const uint16_t psm_id = *(const uint16_t *)(param_1_cmd_data + 4);
+    const uint16_t remote_cid_in_pkt = *(const uint16_t *)(param_1_cmd_data + 6);
+    const undefined packet_id = param_1_cmd_data[1];
 
-    if (sdu_len != 4) { // Expected length for PSM + Source CID
-        session_send_reject(identifier, 0); // Invalid length
-        return;
-    }
+    if (payload_len == 4) { // Expected payload length for PSM + Remote_CID
+        psm_entry_t *psm_entry = session_find_psm(psm_id);
 
-    // SDU structure for Connection Response:
-    // Code (1 byte) = 0x03
-    // Identifier (1 byte)
-    // Length (2 bytes) = 8
-    // Destination CID (2 bytes)
-    // Source CID (2 bytes)
-    // Result (2 bytes)
-    // Status (2 bytes)
-    unsigned char conn_resp_sdu[12];
-    conn_resp_sdu[0] = 3; // Code: Connection Response
-    conn_resp_sdu[1] = identifier; // Identifier
-    *(ushort *)&conn_resp_sdu[2] = 8; // Length of parameters
+        struct {
+            undefined code;
+            undefined id;
+            undefined2 length;
+            undefined2 local_cid;
+            undefined2 remote_cid;
+            undefined2 result;
+            undefined2 status; // Often 0 for success
+        } conn_resp_pkt;
 
-    PsmEntry *psm_entry = session_find_psm(psm);
-    if (psm_entry == NULL) {
-        // PSM not found
-        *(ushort *)&conn_resp_sdu[4] = 0; // Local CID (Destination CID)
-        *(ushort *)&conn_resp_sdu[6] = remote_cid; // Remote CID (Source CID)
-        *(ushort *)&conn_resp_sdu[8] = 0x0002; // Result: PSM not supported
-        *(ushort *)&conn_resp_sdu[10] = 0; // Status: No further information
+        conn_resp_pkt.code = 3; // Connection Response
+        conn_resp_pkt.id = packet_id;
+        conn_resp_pkt.length = 8; // Length of data fields (local_cid, remote_cid, result, status)
+        conn_resp_pkt.status = 0; // Default status (success)
+
+        if (psm_entry == NULL) {
+            // PSM not found, reject connection
+            conn_resp_pkt.local_cid = 0;
+            conn_resp_pkt.remote_cid = remote_cid_in_pkt;
+            conn_resp_pkt.result = 2; // Result: PSM not supported
+        } else {
+            channel_entry_t *new_channel = session_new_channel(0); // Get a dynamic channel ID
+            if (new_channel == NULL) {
+                session_send_reject(packet_id, 0); // Out of memory
+                return;
+            }
+            new_channel->remote_cid = remote_cid_in_pkt;
+            new_channel->state = 1; // Mark channel as connected
+            new_channel->unknown1 = 0; // Reset any flags
+
+            if (psm_entry->callback_fn != 0) {
+                // Call the PSM's connection callback
+                // Assuming callback_fn is of type void (*)(channel_entry_t*)
+                ((void (*)(channel_entry_t*))psm_entry->callback_fn)(new_channel);
+            }
+            conn_resp_pkt.local_cid = new_channel->local_cid;
+            conn_resp_pkt.remote_cid = new_channel->remote_cid;
+            conn_resp_pkt.result = 0; // Result: success
+        }
+        _session_send(1, sizeof(conn_resp_pkt), &conn_resp_pkt);
     } else {
-        // PSM found, create a new channel
-        Channel *new_channel = session_new_channel(0); // Generate dynamic local CID
-        if (new_channel == NULL) {
-            // Out of resources
-            session_send_reject(identifier, 0); // Can't create channel
-            return;
-        }
-
-        new_channel->remote_cid = remote_cid; // Store remote CID
-        new_channel->status = 1; // Set channel status to connecting (waiting for config)
-        new_channel->config_status = 0; // Not yet configured
-
-        // Call PSM callback if registered
-        if (psm_entry->callback != NULL) {
-            psm_entry->callback(new_channel);
-        }
-
-        *(ushort *)&conn_resp_sdu[4] = new_channel->local_cid; // Local CID (Destination CID)
-        *(ushort *)&conn_resp_sdu[6] = remote_cid; // Remote CID (Source CID)
-        *(ushort *)&conn_resp_sdu[8] = 0x0000; // Result: Connection successful
-        *(ushort *)&conn_resp_sdu[10] = 0; // Status: No further information
+        session_send_reject(packet_id, 0); // Invalid length for Connection Request
     }
-
-    _session_send(1, sizeof(conn_resp_sdu), conn_resp_sdu); // CID 1 for signaling
 }
 
 // Function: session_configuration_request
-// sdu_data: Pointer to incoming SDU (Code, ID, Len, Params...)
-void session_configuration_request(unsigned char *sdu_data) {
-    // SDU structure for Configuration Request:
-    // Code (1 byte) = 0x04
-    // Identifier (1 byte)
-    // Length (2 bytes)
-    // Destination CID (2 bytes)
-    // Flags (2 bytes)
-    // Config Options (variable)
-    unsigned char identifier = sdu_data[1];
-    ushort sdu_len = *(ushort *)&sdu_data[2];
-    ushort local_cid = *(ushort *)&sdu_data[4];
-    ushort flags = *(ushort *)&sdu_data[6];
-    unsigned char *options_start = &sdu_data[8];
+// Handles an incoming L2CAP Configuration Request.
+void session_configuration_request(const undefined *param_1_cmd_data) {
+    // Incoming L2CAP Configuration Request packet structure (from param_1_cmd_data):
+    // Code (0) | ID (1) | Length (2,3) | Local_CID (4,5) | Flags (6,7) | Options (...)
+    const uint16_t payload_len = *(const uint16_t *)(param_1_cmd_data + 2);
+    const uint16_t local_cid_in_pkt = *(const uint16_t *)(param_1_cmd_data + 4);
+    const undefined packet_id = param_1_cmd_data[1];
 
-    if (sdu_len < 4) { // Minimum length for Dest CID + Flags
-        session_send_reject(identifier, 0);
+    if (payload_len < 4) { // Minimum payload: Local_CID (2) + Flags (2)
+        session_send_reject(packet_id, 0); // Invalid length
         return;
     }
 
-    Channel *channel = (local_cid < MAX_L2CAP_CHANNELS) ? g_channels[local_cid] : NULL;
-    if (channel == NULL || channel->status == 0) { // Channel not found or not active
-        session_send_reject(identifier, 2); // Invalid CID
-        return;
-    }
-    if (channel->status == 1 && channel->config_status != 0) { // Channel in connecting state, already sent config req
-        // This might be a re-transmission or a race condition.
-        // For simplicity, reject for now or handle more gracefully.
-        session_send_reject(identifier, 2); // Invalid CID (or state)
-        return;
+    channel_entry_t *channel = NULL;
+    if (local_cid_in_pkt < sizeof(g_channels) / sizeof(g_channels[0])) {
+        channel = g_channels[local_cid_in_pkt];
     }
 
-    // Allocate buffer for Configuration Response SDU
-    // Response SDU: Code, ID, Len, Dest CID, Flags, Result, Config Options
-    // Minimum 10 bytes: Code, ID, Len=6, Dest CID, Flags, Result
-    // Max options len is sdu_len - 4.
-    unsigned char *config_resp_sdu = (unsigned char *)malloc(L2CAP_HEADER_SIZE + sdu_len + 2); // +2 for Result field
-    if (config_resp_sdu == NULL) {
-        session_send_reject(identifier, 0); // Out of memory
+    if (channel == NULL || channel->state == 0) {
+        session_send_reject(packet_id, 2); // Channel not found or disconnected
+        return;
+    }
+    if (channel->state == 1 && channel->unknown1 != 0) {
+        session_send_reject(packet_id, 2); // Already in config process or mis-state
         return;
     }
 
-    config_resp_sdu[0] = 5; // Code: Configuration Response
-    config_resp_sdu[1] = identifier; // Identifier
-    *(ushort *)&config_resp_sdu[4] = local_cid; // Destination CID
-    *(ushort *)&config_resp_sdu[6] = flags; // Flags (echo back)
+    // Allocate response packet buffer (header + options from request)
+    undefined *response_pkt_buffer = (undefined *)malloc(payload_len + 10); // 10 bytes for config response header
+    if (response_pkt_buffer == NULL) {
+        session_send_reject(packet_id, 0); // Out of memory
+        return;
+    }
 
-    ushort response_result = 0; // 0 = Success
-    ushort response_options_len = 0;
-    unsigned char *resp_options_ptr = &config_resp_sdu[10]; // Start of options in response
+    // Initialize response packet header
+    response_pkt_buffer[0] = 5; // Configuration Response
+    response_pkt_buffer[1] = packet_id;
+    // Length (bytes 2,3) will be filled later
+    *(uint16_t*)(response_pkt_buffer + 4) = channel->remote_cid; // Remote CID
+    response_pkt_buffer[6] = *(byte *)(param_1_cmd_data + 6) & 1; // Copy flags from request
+    response_pkt_buffer[7] = 0; // Reserved
+    *(uint16_t*)(response_pkt_buffer + 8) = 0; // Result code (0=success)
 
-    size_t current_option_offset = 0;
-    while (current_option_offset < sdu_len - 4) { // Iterate through config options
-        byte type = options_start[current_option_offset];
-        byte len = options_start[current_option_offset + 1];
-        unsigned char *value_ptr = &options_start[current_option_offset + 2];
+    // Process configuration options from the incoming packet
+    // Options start at param_1_cmd_data + 8
+    size_t response_option_offset = 0; // Offset for options in the response buffer (after 10 bytes header)
+    size_t options_data_len = payload_len - 4; // Total length of options data (excluding Local_CID and Flags)
 
-        // Ensure option length doesn't exceed available SDU data
-        if (current_option_offset + 2 + len > sdu_len - 4) {
-             response_result = 2; // Invalid parameters (option length exceeds SDU)
-             break;
+    for (size_t option_offset = 0; option_offset < options_data_len; ) {
+        byte option_type = *(byte *)(param_1_cmd_data + 8 + option_offset);
+        byte option_len = *(byte *)(param_1_cmd_data + 9 + option_offset);
+
+        // Check if option_len would exceed remaining options data
+        if (option_offset + option_len + 2 > options_data_len) {
+            *(uint16_t*)(response_pkt_buffer + 8) = 2; // Result: Bad parameter
+            break; // Malformed packet
         }
 
-        if ((type & 0x7F) == 1) { // MTU option
-            if (len == 2) {
-                ushort mtu_val = *(ushort *)value_ptr;
-                if (mtu_val < 0x30) { // Reject MTU < 48
-                    response_result = 1; // Unacceptable parameters
-                    // Add MTU option with min value 0x30 to response
-                    resp_options_ptr[response_options_len++] = type;
-                    resp_options_ptr[response_options_len++] = 2;
-                    *(ushort *)&resp_options_ptr[response_options_len] = 0x30;
-                    response_options_len += 2;
+        if ((option_type & 0x7f) == 1) { // Option type 1: MTU
+            if (option_len == 2) {
+                ushort mtu_val = *(ushort *)(param_1_cmd_data + 10 + option_offset);
+                if (mtu_val < 0x30) { // MTU too small
+                    *(uint16_t*)(response_pkt_buffer + 8) = 1; // Result: Unacceptable parameter
+                    // Add option to response indicating unacceptable MTU
+                    response_pkt_buffer[response_option_offset + 10] = option_type;
+                    response_pkt_buffer[response_option_offset + 11] = 2;
+                    *(uint16_t*)(response_pkt_buffer + response_option_offset + 12) = 0x30; // Report min MTU
+                    response_option_offset += 4;
                 } else {
-                    channel->mtu = mtu_val;
-                    // Echo back accepted MTU
-                    resp_options_ptr[response_options_len++] = type;
-                    resp_options_ptr[response_options_len++] = 2;
-                    *(ushort *)&resp_options_ptr[response_options_len] = mtu_val;
-                    response_options_len += 2;
+                    channel->local_mtu = (uint32_t)mtu_val; // Update channel's MTU
+                    // Add option to response indicating acceptance (same as request)
+                    response_pkt_buffer[response_option_offset + 10] = option_type;
+                    response_pkt_buffer[response_option_offset + 11] = 2;
+                    *(uint16_t*)(response_pkt_buffer + response_option_offset + 12) = mtu_val;
+                    response_option_offset += 4;
                 }
             } else { // Invalid length for MTU option
-                response_result = 2; // Invalid parameters
-                break;
+                *(uint16_t*)(response_pkt_buffer + 8) = 2; // Result: Bad parameter
             }
-        } else if ((char)type < 0) { // Hint bit set (unknown option, but acceptable)
-            // Copy the unknown option to the response
-            resp_options_ptr[response_options_len++] = type;
-            resp_options_ptr[response_options_len++] = len;
-            memcpy(&resp_options_ptr[response_options_len], value_ptr, len);
-            response_options_len += len;
-        } else { // Unknown mandatory option
-            response_result = 3; // Unknown option
-            // Copy the unknown option to the response with a "reject" bit
-            resp_options_ptr[response_options_len++] = type | 0x80; // Set hint bit
-            resp_options_ptr[response_options_len++] = len;
-            memcpy(&resp_options_ptr[response_options_len], value_ptr, len);
-            response_options_len += len;
+        } else if ((int8_t)option_type >= 0) { // Unknown mandatory option (bit 7 not set)
+            *(uint16_t*)(response_pkt_buffer + 8) = 3; // Result: Unknown option
+            // Copy unknown option to response (as is)
+            response_pkt_buffer[response_option_offset + 10] = option_type;
+            response_pkt_buffer[response_option_offset + 11] = option_len;
+            memcpy(response_pkt_buffer + response_option_offset + 12,
+                   (void *)(param_1_cmd_data + 10 + option_offset), option_len);
+            response_option_offset += (2 + option_len);
         }
-        current_option_offset += len + 2;
+        // If (char)option_type < 0, it's an optional parameter, ignore if unknown.
+        option_offset += (2 + option_len); // Move to next option
     }
 
-    *(ushort *)&config_resp_sdu[8] = response_result; // Result
-    *(ushort *)&config_resp_sdu[2] = 6 + response_options_len; // Total Length of parameters
+    // Fill in total length of response packet (header + processed options)
+    uint16_t response_payload_total_len = (uint16_t)(response_option_offset + 6); // 6 bytes for fixed header (CID, flags, result)
+    *(uint16_t*)(response_pkt_buffer + 2) = response_payload_total_len;
 
-    _session_send(1, *(ushort *)&config_resp_sdu[2] + L2CAP_HEADER_SIZE, config_resp_sdu);
-    free(config_resp_sdu);
+    _session_send(1, response_payload_total_len + 4, response_pkt_buffer); // +4 for L2CAP header
+    free(response_pkt_buffer);
 
-    // If configuration was successful and no renegotiation is pending, and channel status is not already open
-    if (response_result == 0 && (flags & 1) == 0 && channel->status != 2) {
-        session_send_config(channel); // Send own config request to peer
+    // If configuration was successful and channel state is not already 'configured'
+    if ((*(uint16_t*)(response_pkt_buffer + 8) == 0) && // Result is success
+        ((*(uint16_t*)(response_pkt_buffer + 6) & 1) == 0) && // Configuration flags check
+        (channel->state != 2)) {
+        session_send_config(channel); // Send a config request back (if needed for negotiation)
     }
 }
 
 // Function: session_configuration_response
-// sdu_data: Pointer to incoming SDU (Code, ID, Len, Params...)
-void session_configuration_response(unsigned char *sdu_data) {
-    // SDU structure for Configuration Response:
-    // Code (1 byte) = 0x05
-    // Identifier (1 byte)
-    // Length (2 bytes)
-    // Destination CID (2 bytes)
-    // Flags (2 bytes)
-    // Result (2 bytes)
-    // Config Options (variable)
-    ushort local_cid = *(ushort *)&sdu_data[4];
-    ushort result = *(ushort *)&sdu_data[8];
+// Handles an incoming L2CAP Configuration Response.
+void session_configuration_response(const undefined *param_1_cmd_data) {
+    // Incoming L2CAP Configuration Response packet structure:
+    // Code (0) | ID (1) | Length (2,3) | Local_CID (4,5) | Flags (6,7) | Result (8,9) | Options (...)
+    const uint16_t local_cid_in_pkt = *(const uint16_t*)(param_1_cmd_data + 4);
+    // const undefined packet_id = param_1_cmd_data[1]; // Not used
 
-    Channel *channel = (local_cid < MAX_L2CAP_CHANNELS) ? g_channels[local_cid] : NULL;
-    if (channel != NULL && channel->status == 1 && channel->config_status == 1) {
-        if (result == 0) { // Success
-            channel->status = 2; // Channel is now open
-        }
-        channel->config_status = 0; // Clear config request pending
-    } else {
-        session_send_reject(sdu_data[1], 2); // Invalid CID or state
+    channel_entry_t *channel = NULL;
+    if (local_cid_in_pkt < sizeof(g_channels) / sizeof(g_channels[0])) {
+        channel = g_channels[local_cid_in_pkt];
     }
+
+    // Check if channel exists, is in 'connected' state (1), and a config request was sent (unknown1 == 1)
+    if (channel != NULL && channel->state == 1 && channel->unknown1 == 1) {
+        channel->state = 2; // Move channel to 'configured' state
+    }
+    // No explicit reject for invalid response, just ignores it if conditions not met.
 }
 
 // Function: session_disconnection_request
-// sdu_data: Pointer to incoming SDU (Code, ID, Len, Params...)
-void session_disconnection_request(unsigned char *sdu_data) {
-    // SDU structure for Disconnection Request:
-    // Code (1 byte) = 0x06
-    // Identifier (1 byte)
-    // Length (2 bytes) = 4
-    // Destination CID (2 bytes)
-    // Source CID (2 bytes)
-    unsigned char identifier = sdu_data[1];
-    ushort sdu_len = *(ushort *)&sdu_data[2];
-    ushort local_cid = *(ushort *)&sdu_data[4];
-    ushort remote_cid = *(ushort *)&sdu_data[6];
+// Handles an incoming L2CAP Disconnection Request.
+void session_disconnection_request(const undefined *param_1_cmd_data) {
+    // Incoming L2CAP Disconnection Request packet structure:
+    // Code (0) | ID (1) | Length (2,3) | Local_CID (4,5) | Remote_CID (6,7)
+    const uint16_t payload_len = *(const uint16_t *)(param_1_cmd_data + 2);
+    const uint16_t local_cid_in_pkt = *(const uint16_t *)(param_1_cmd_data + 4);
+    const uint16_t remote_cid_in_pkt = *(const uint16_t *)(param_1_cmd_data + 6);
+    const undefined packet_id = param_1_cmd_data[1];
 
-    if (sdu_len != 4) {
-        session_send_reject(identifier, 0); // Invalid length
-        return;
+    if (payload_len == 4) { // Expected payload length for CIDs
+        channel_entry_t *channel = NULL;
+        if (local_cid_in_pkt < sizeof(g_channels) / sizeof(g_channels[0])) {
+            channel = g_channels[local_cid_in_pkt];
+        }
+
+        if (channel == NULL || channel->state == 0) {
+            session_send_reject(packet_id, 2); // Invalid CID or channel already disconnected
+        } else {
+            // Call disconnection callback if registered
+            if (channel->callback_fn != 0) {
+                uint32_t reason = 1; // Disconnect reason (e.g., remote initiated)
+                // Assuming callback_fn is of type void (*)(channel_entry_t*, undefined4, uint32_t*)
+                ((void (*)(channel_entry_t*, undefined4, uint32_t*))channel->callback_fn)
+                    (channel, channel->user_data, &reason);
+            }
+
+            // Send L2CAP Disconnection Response
+            struct {
+                undefined code;
+                undefined id;
+                undefined2 length;
+                undefined2 local_cid;
+                undefined2 remote_cid;
+            } disc_resp_pkt;
+
+            disc_resp_pkt.code = 7; // Disconnection Response
+            disc_resp_pkt.id = packet_id;
+            disc_resp_pkt.length = 4; // Length of CIDs
+            disc_resp_pkt.local_cid = local_cid_in_pkt;
+            disc_resp_pkt.remote_cid = remote_cid_in_pkt;
+
+            _session_send(1, sizeof(disc_resp_pkt), &disc_resp_pkt);
+
+            channel->state = 0; // Mark channel as disconnected
+            // The actual channel_entry_t object is not freed here,
+            // assuming it might be reused or freed by a higher layer.
+        }
+    } else {
+        session_send_reject(packet_id, 0); // Invalid length
     }
-
-    Channel *channel = (local_cid < MAX_L2CAP_CHANNELS) ? g_channels[local_cid] : NULL;
-    if (channel == NULL || channel->status == 0) {
-        session_send_reject(identifier, 2); // Invalid CID
-        return;
-    }
-
-    // SDU structure for Disconnection Response:
-    // Code (1 byte) = 0x07
-    // Identifier (1 byte)
-    // Length (2 bytes) = 4
-    // Destination CID (2 bytes)
-    // Source CID (2 bytes)
-    unsigned char disc_resp_sdu[8];
-    disc_resp_sdu[0] = 7; // Code: Disconnection Response
-    disc_resp_sdu[1] = identifier; // Identifier
-    *(ushort *)&disc_resp_sdu[2] = 4; // Length
-    *(ushort *)&disc_resp_sdu[4] = local_cid; // Destination CID
-    *(ushort *)&disc_resp_sdu[6] = remote_cid; // Source CID
-
-    if (channel->callback != NULL) {
-        // Call callback with channel, userdata, and a reason for disconnection
-        undefined4 reason_code = 1; // Generic reason
-        channel->callback(channel, channel->userdata, reason_code);
-    }
-
-    _session_send(1, sizeof(disc_resp_sdu), disc_resp_sdu); // CID 1 for signaling
-    channel->status = 0; // Mark channel as inactive/closed
 }
 
 // Function: session_disconnection_response
-// sdu_data: Pointer to incoming SDU (Code, ID, Len, Params...)
-void session_disconnection_response(unsigned char *sdu_data) {
-    // SDU structure for Disconnection Response:
-    // Code (1 byte) = 0x07
-    // Identifier (1 byte)
-    // Length (2 bytes) = 4
-    // Destination CID (2 bytes)
-    // Source CID (2 bytes)
-    unsigned char identifier = sdu_data[1];
-    ushort sdu_len = *(ushort *)&sdu_data[2];
-    ushort local_cid = *(ushort *)&sdu_data[4];
-    // ushort remote_cid = *(ushort *)&sdu_data[6]; // Not used in this function
+// Handles an incoming L2CAP Disconnection Response.
+void session_disconnection_response(const undefined *param_1_cmd_data) {
+    // Incoming L2CAP Disconnection Response packet structure:
+    // Code (0) | ID (1) | Length (2,3) | Local_CID (4,5) | Remote_CID (6,7)
+    const uint16_t payload_len = *(const uint16_t *)(param_1_cmd_data + 2);
+    const uint16_t local_cid_in_pkt = *(const uint16_t*)(param_1_cmd_data + 4);
+    const undefined packet_id = param_1_cmd_data[1];
 
-    if (sdu_len != 4) {
-        session_send_reject(identifier, 0); // Invalid length
-        return;
+    if (payload_len == 4) { // Expected payload length for CIDs
+        channel_entry_t *channel = NULL;
+        if (local_cid_in_pkt < sizeof(g_channels) / sizeof(g_channels[0])) {
+            channel = g_channels[local_cid_in_pkt];
+        }
+
+        // If channel exists and is in 'disconnecting' state (3, as implied by original `*pcVar1 != '\x03'`)
+        if (channel != NULL && channel->state == 3) {
+            channel->state = 0; // Mark channel as disconnected
+        } else {
+            session_send_reject(packet_id, 2); // Channel not in expected state or not found
+        }
+    } else {
+        session_send_reject(packet_id, 0); // Invalid length
     }
-
-    Channel *channel = (local_cid < MAX_L2CAP_CHANNELS) ? g_channels[local_cid] : NULL;
-    if (channel == NULL || channel->status != 3) { // Expecting status 3 (disconnecting)
-        session_send_reject(identifier, 2); // Invalid CID or state
-        return;
-    }
-
-    channel->status = 0; // Mark channel as inactive/closed
 }
 
 // Function: session_echo_request
-// sdu_data: Pointer to incoming SDU (Code, ID, Len, Params...)
-void session_echo_request(unsigned char *sdu_data) {
-    // SDU structure for Echo Request:
-    // Code (1 byte) = 0x08
-    // Identifier (1 byte)
-    // Length (2 bytes)
-    // Data (variable)
-    // Echo Response has Code = 0x09, same ID, Length, Data
-    sdu_data[0] = 9; // Change code to Echo Response
-    ushort sdu_len = *(ushort *)&sdu_data[2];
-    _session_send(1, sdu_len + L2CAP_HEADER_SIZE, sdu_data); // CID 1 for signaling
+// Handles an incoming L2CAP Echo Request by sending an Echo Response.
+void session_echo_request(undefined *param_1_cmd_data) {
+    // Incoming L2CAP Echo Request packet structure:
+    // Code (0) | ID (1) | Length (2,3) | Data (...)
+    // Change command code from 8 (Echo Request) to 9 (Echo Response)
+    param_1_cmd_data[0] = 9;
+    // The total length for _session_send is the L2CAP command payload length + 4 bytes for L2CAP Command Header
+    _session_send(1, *(uint16_t*)(param_1_cmd_data + 2) + 4, param_1_cmd_data);
 }
 
 // Function: session_information_request
-// sdu_data: Pointer to incoming SDU (Code, ID, Len, Params...)
-void session_information_request(unsigned char *sdu_data) {
-    // SDU structure for Information Request:
-    // Code (1 byte) = 0x0A
-    // Identifier (1 byte)
-    // Length (2 bytes) = 2
-    // InfoType (2 bytes)
-    unsigned char identifier = sdu_data[1];
-    ushort sdu_len = *(ushort *)&sdu_data[2];
-    // ushort info_type = *(ushort *)&sdu_data[4]; // Not directly used in response content
+// Handles an incoming L2CAP Information Request.
+void session_information_request(const undefined *param_1_cmd_data) {
+    // Incoming L2CAP Information Request packet structure:
+    // Code (0) | ID (1) | Length (2,3) | Info_Type (4,5)
+    const uint16_t payload_len = *(const uint16_t *)(param_1_cmd_data + 2);
+    const uint16_t info_type_in_pkt = *(const uint16_t*)(param_1_cmd_data + 4);
+    const undefined packet_id = param_1_cmd_data[1];
 
-    if (sdu_len != 2) {
-        session_send_reject(identifier, 0); // Invalid length
-        return;
+    if (payload_len == 2) { // Expected payload length for Info_Type
+        struct {
+            undefined code;
+            undefined id;
+            undefined2 length;
+            undefined2 info_type;
+            undefined2 result;
+        } info_resp_pkt;
+
+        info_resp_pkt.code = 0xb; // Information Response
+        info_resp_pkt.id = packet_id;
+        info_resp_pkt.length = 4; // Length of info_type + result
+        info_resp_pkt.info_type = info_type_in_pkt;
+        info_resp_pkt.result = 1; // Result: success/supported
+
+        _session_send(1, sizeof(info_resp_pkt), &info_resp_pkt);
+    } else {
+        session_send_reject(packet_id, 0); // Invalid length
     }
-
-    // SDU structure for Information Response:
-    // Code (1 byte) = 0x0B
-    // Identifier (1 byte)
-    // Length (2 bytes) = 4 (for InfoType + Result)
-    // InfoType (2 bytes)
-    // Result (2 bytes)
-    unsigned char info_resp_sdu[8];
-    info_resp_sdu[0] = 0x0B; // Code: Information Response
-    info_resp_sdu[1] = identifier; // Identifier
-    *(ushort *)&info_resp_sdu[2] = 4; // Length (InfoType + Result)
-    *(ushort *)&info_resp_sdu[4] = *(ushort *)&sdu_data[4]; // InfoType (echo back)
-    *(ushort *)&info_resp_sdu[6] = 1; // Result: Not supported (0x0001)
-
-    _session_send(1, sizeof(info_resp_sdu), info_resp_sdu); // CID 1 for signaling
 }
 
 // Function: session_handle_command
-// sdu_data: Pointer to incoming SDU (Code, ID, Len, Params...)
-void session_handle_command(unsigned char *sdu_data) {
-    switch (sdu_data[0]) { // SDU Code
+// Dispatches L2CAP control commands to their respective handlers.
+void session_handle_command(undefined *param_1_cmd_data) {
+    switch (param_1_cmd_data[0]) { // Command Code is the first byte
         case 1: // Command Reject
         case 3: // Connection Response
         case 9: // Echo Response
-        case 0xB: // Information Response
-            // These are responses to commands we sent, or errors.
-            // For simplicity, just ignore them here. A real stack would parse them.
+        case 0xb: // Information Response
+            // These are responses, typically processed by the sender of the request.
+            // Original code does nothing for these cases, implying they are handled elsewhere
+            // or simply ignored if received by this general command handler.
             break;
         case 2: // Connection Request
-            session_connection_request(sdu_data);
+            session_connection_request(param_1_cmd_data);
             break;
         case 4: // Configuration Request
-            session_configuration_request(sdu_data);
+            session_configuration_request(param_1_cmd_data);
             break;
         case 5: // Configuration Response
-            session_configuration_response(sdu_data);
+            session_configuration_response(param_1_cmd_data);
             break;
         case 6: // Disconnection Request
-            session_disconnection_request(sdu_data);
+            session_disconnection_request(param_1_cmd_data);
             break;
         case 7: // Disconnection Response
-            session_disconnection_response(sdu_data);
+            session_disconnection_response(param_1_cmd_data);
             break;
         case 8: // Echo Request
-            session_echo_request(sdu_data);
+            session_echo_request(param_1_cmd_data);
             break;
         case 10: // Information Request
-            session_information_request(sdu_data);
+            session_information_request(param_1_cmd_data);
             break;
         default:
-            session_send_reject(sdu_data[1], 0); // Command not understood (Reason 0: Command not understood)
+            session_send_reject(param_1_cmd_data[1], 0); // Unknown command
             break;
     }
 }
 
 // Function: session_handle_control
-// Handles L2CAP Signaling channel (CID 1) commands
+// Parses and handles multiple L2CAP control commands within a single L2CAP control packet.
 undefined4 session_handle_control(void) {
-    size_t current_sdu_offset = 0;
-    // Iterate through multiple SDUs if present in the L2CAP payload
-    while (current_sdu_offset < IN_L2CAP_LEN) {
-        // Each SDU has Code (1), Identifier (1), Length (2), Parameters (Length bytes)
-        unsigned char *sdu_ptr = IN_SDU_START + current_sdu_offset;
-        // Check if there's enough data for SDU header (Code, ID, Len)
-        if (current_sdu_offset + 4 > IN_L2CAP_LEN) {
-            // Malformed SDU, not enough data for header
-            return 0; // Error
-        }
-        ushort sdu_payload_len = *(ushort *)&sdu_ptr[2];
-        // Check if there's enough data for the full SDU payload
-        if (current_sdu_offset + 4 + sdu_payload_len > IN_L2CAP_LEN) {
-            // Malformed SDU, payload length exceeds L2CAP payload
-            return 0; // Error
+    size_t offset_in_payload = 0; // Current offset within the L2CAP control packet payload
+
+    // Loop through commands in the L2CAP payload
+    while (G_RECV_TOTAL_L2CAP_PAYLOAD_LEN >= offset_in_payload + 4) { // Ensure at least a command header (Code, ID, Length) is available
+        undefined *current_cmd_data = G_RECV_L2CAP_PAYLOAD_START + offset_in_payload;
+        uint16_t command_payload_len = *(uint16_t*)(current_cmd_data + 2); // Length field of the current command
+
+        // Check for malformed packet: reported total payload length is less than expected for current command
+        if (G_RECV_TOTAL_L2CAP_PAYLOAD_LEN < offset_in_payload + 4 + command_payload_len) {
+            return 0; // Or handle error appropriately (e.g., log, reject, discard)
         }
 
-        session_handle_command(sdu_ptr);
-        current_sdu_offset += (4 + sdu_payload_len);
+        session_handle_command(current_cmd_data);
+        offset_in_payload += (4 + command_payload_len); // Move to the next command (4 bytes for command header)
     }
-    return 0; // Success
+    return 0;
 }
 
 // Function: session_handle_packet
-// Handles a complete incoming L2CAP packet
+// Dispatches received L2CAP packets to either the control channel handler or a data channel handler.
 undefined4 session_handle_packet(void) {
-    // IN_L2CAP_CID refers to the channel ID received in the L2CAP header
-    if (IN_L2CAP_CID == 1) { // Signaling channel
+    // G_RECV_L2CAP_CID_OR_TYPE identifies the L2CAP channel or command type (1 for control channel)
+    if (G_RECV_L2CAP_CID_OR_TYPE == 1) { // L2CAP Control Channel
         return session_handle_control();
-    } else { // Data channel
-        Channel *channel = (IN_L2CAP_CID < MAX_L2CAP_CHANNELS) ? g_channels[IN_L2CAP_CID] : NULL;
-        if (channel == NULL || channel->status != 2) { // Channel not found or not open
-            return 0; // Drop packet
+    } else { // L2CAP Data Channel
+        channel_entry_t *channel = NULL;
+        if (G_RECV_L2CAP_CID_OR_TYPE < sizeof(g_channels) / sizeof(g_channels[0])) {
+            channel = g_channels[G_RECV_L2CAP_CID_OR_TYPE];
         }
 
-        if (channel->callback != NULL) {
-            // Call data callback if registered
-            // Assuming callback takes channel, userdata, and data buffer/length
-            channel->callback(channel, channel->userdata, (undefined4)IN_SDU_START); // Pass pointer to SDU
+        // Check if channel exists and is in 'configured' state (2)
+        if (channel == NULL || channel->state != 2) {
+            return 0; // Or indicate error (e.g., drop packet, send reject)
+        } else {
+            if (channel->callback_fn != 0) {
+                // Call the channel's data reception callback
+                // Assuming callback_fn is of type void (*)(channel_entry_t*, undefined4, undefined*, uint32_t)
+                ((void (*)(channel_entry_t*, undefined4, undefined*, uint32_t))channel->callback_fn)
+                    (channel, channel->user_data, G_RECV_L2CAP_PAYLOAD_START, G_RECV_TOTAL_L2CAP_PAYLOAD_LEN);
+            }
+            return 0;
         }
-        return 0; // Success
     }
 }
 
 // Function: session_loop
-// Main loop for receiving and processing L2CAP packets
+// Main event loop for receiving and processing L2CAP packets.
 void session_loop(void) {
-    int link_packet_type; // 2 for start, 1 for continuation
-    size_t link_packet_len; // Length of current fragment
-    unsigned char link_packet_buffer[MAX_LINK_RECV_FRAGMENT_SIZE]; // Buffer for received fragment
+    size_t current_recv_offset = SIZE_MAX; // Use SIZE_MAX to indicate an invalid/reset state for the current packet
 
-    while (1) {
-        if (link_recv(&link_packet_type, &link_packet_len, link_packet_buffer) != 0) {
-            // Error or no data, return from loop
-            return;
+    while (1) { // Infinite loop for continuous packet processing
+        int link_pkt_type;
+        size_t link_pkt_len;
+        uint8_t recv_chunk_buffer[0x153]; // Max chunk size for link_recv
+
+        int ret = link_recv(&link_pkt_type, &link_pkt_len, recv_chunk_buffer);
+        if (ret != 0) {
+            return; // Error during receive or shutdown signal
         }
 
-        if (link_packet_type == 2) { // Start of a new L2CAP packet
-            g_incoming_l2cap_current_len = 0;
-            // memset(g_incoming_l2cap_buffer, 0, MAX_L2CAP_PACKET_TOTAL_SIZE); // Not strictly necessary if overwritten
-        } else if (link_packet_type != 1) { // Unknown type, discard current packet state
-            g_incoming_l2cap_current_len = 0; // Reset state
-            continue; // Go to next link_recv
+        if (link_pkt_type == 2) { // Start of a new L2CAP packet
+            current_recv_offset = 0;
+            memset(g_recv_pkt_buffer, 0, sizeof(g_recv_pkt_buffer)); // Clear receive buffer for new packet
+        } else if (link_pkt_type != 1) { // Not start (2) or continuation (1), invalid packet type
+            current_recv_offset = SIZE_MAX; // Reset state, discard current incomplete packet
+            continue;
         }
 
-        // Check for buffer overflow before copying
-        if (g_incoming_l2cap_current_len + link_packet_len > MAX_L2CAP_PACKET_TOTAL_SIZE) {
-            g_incoming_l2cap_current_len = 0; // Discard oversized packet
-            continue; // Go to next link_recv
-        }
+        if (current_recv_offset != SIZE_MAX) { // If we are in the middle of receiving a packet
+            // Check for buffer overflow before copying
+            if (link_pkt_len + current_recv_offset < sizeof(g_recv_pkt_buffer)) {
+                memcpy(g_recv_pkt_buffer + current_recv_offset, recv_chunk_buffer, link_pkt_len);
+                current_recv_offset += link_pkt_len;
 
-        // Copy received fragment into the global L2CAP buffer
-        memcpy(&g_incoming_l2cap_buffer[g_incoming_l2cap_current_len], link_packet_buffer, link_packet_len);
-        g_incoming_l2cap_current_len += link_packet_len;
-
-        // Check if L2CAP header is complete (at least 4 bytes)
-        if (g_incoming_l2cap_current_len >= L2CAP_HEADER_SIZE) {
-            // Check if the announced L2CAP payload length is too large for our buffer
-            if (IN_L2CAP_LEN + L2CAP_HEADER_SIZE > MAX_L2CAP_PACKET_TOTAL_SIZE) {
-                g_incoming_l2cap_current_len = 0; // Discard malformed/oversized packet
-                continue; // Go to next link_recv
-            }
-
-            // Check if the full L2CAP packet has been received
-            // Total expected length is L2CAP_Header_Size (4) + L2CAP_Payload_Length
-            if (IN_L2CAP_LEN + L2CAP_HEADER_SIZE == g_incoming_l2cap_current_len) {
-                // Full L2CAP packet received
-                session_handle_packet();
-                g_incoming_l2cap_current_len = 0; // Reset for next packet
+                // Check if a full L2CAP packet has been received
+                // An L2CAP packet consists of 2 bytes Length + 2 bytes CID + L2CAP Payload.
+                // G_RECV_TOTAL_L2CAP_PAYLOAD_LEN holds the L2CAP Payload Length.
+                // So, the total expected bytes in g_recv_pkt_buffer for a complete L2CAP packet is G_RECV_TOTAL_L2CAP_PAYLOAD_LEN + 4.
+                if (current_recv_offset > 3 && (G_RECV_TOTAL_L2CAP_PAYLOAD_LEN + 4 == current_recv_offset)) {
+                    current_recv_offset = SIZE_MAX; // Packet complete, reset state
+                    if (session_handle_packet() != 0) {
+                        return; // Error during packet handling, or shutdown signal
+                    }
+                }
+            } else {
+                // Buffer overflow: received packet chunk would exceed buffer size
+                current_recv_offset = SIZE_MAX; // Reset state, discard current packet
             }
         }
     }
 }
 
 // Function: session_register_psm
-void session_register_psm(int psm_id, void (*callback)(void *)) {
-    PsmEntry *existing_psm = session_find_psm(psm_id);
-    if (existing_psm == NULL) {
-        PsmEntry *new_psm = (PsmEntry *)malloc(sizeof(PsmEntry));
-        if (new_psm == NULL) {
+// Registers a PSM ID and its associated callback function.
+void session_register_psm(undefined4 psm_id, undefined4 callback_fn_ptr) {
+    psm_entry_t *psm_entry = session_find_psm(psm_id);
+    if (psm_entry == NULL) {
+        psm_entry = (psm_entry_t *)malloc(sizeof(psm_entry_t));
+        if (psm_entry == NULL) {
             return; // Out of memory
         }
-        new_psm->psm_id = psm_id;
-        new_psm->next = g_psm_head;
-        g_psm_head = new_psm;
-        existing_psm = new_psm;
+        psm_entry->psm_id = psm_id;
+        psm_entry->next = g_psm_head; // Add new entry to the head of the linked list
+        g_psm_head = psm_entry;
     }
-    existing_psm->callback = callback; // Update or set callback
+    psm_entry->callback_fn = callback_fn_ptr; // Update or set callback function
 }
 
 // Function: session_register_events
-void session_register_events(Channel *channel, void (*callback)(Channel *, undefined4, undefined4)) {
+// Registers an event callback function for a specific channel.
+void session_register_events(channel_entry_t *channel, undefined4 callback_fn_ptr) {
     if (channel != NULL) {
-        channel->callback = callback;
+        channel->callback_fn = callback_fn_ptr;
     }
 }
 
 // Function: session_register_userdata
-void session_register_userdata(Channel *channel, undefined4 userdata) {
+// Registers user-defined data for a specific channel.
+void session_register_userdata(channel_entry_t *channel, undefined4 user_data_val) {
     if (channel != NULL) {
-        channel->userdata = userdata;
+        channel->user_data = user_data_val;
     }
 }
 
 // Function: session_send
-// channel: Pointer to the Channel structure
-// payload_len: L2CAP Payload Length
-// payload_data_ptr: Pointer to L2CAP Payload data
-void session_send(Channel *channel, undefined2 payload_len, undefined4 payload_data_ptr) {
-    if (channel == NULL || channel->status != 2) {
-        // Channel not open or invalid
-        return;
+// Sends data over a specific channel.
+void session_send(channel_entry_t *channel, undefined2 payload_len, undefined4 data_ptr) {
+    if (channel != NULL) {
+        _session_send(channel->remote_cid, payload_len, (void *)(uintptr_t)data_ptr);
     }
-    _session_send(channel->local_cid, payload_len, (void *)payload_data_ptr);
 }

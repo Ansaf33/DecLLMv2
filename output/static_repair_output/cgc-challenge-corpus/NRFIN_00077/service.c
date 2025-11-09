@@ -1,609 +1,787 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h> // For uint32_t or similar, if specific integer widths are needed.
-#include <unistd.h> // For potential use of file descriptors, though transmit_all is a placeholder.
+#include <stdint.h> // For uint8_t, etc., though unsigned char is used for 'byte'
 
-// Placeholder for _terminate, usually exit(1) in critical error paths
-void _terminate() {
-    fprintf(stderr, "Error: Program terminated unexpectedly.\n");
-    exit(1);
-}
+// --- Global Data / String Literals (from decompiled DAT_ addresses) ---
+// These are assumed to be constant strings or data based on their usage.
+const char * const STR_SUBSCRIBE = "/subscribe";
+const char * const STR_OUT = "/out";
+const char * const STR_AUTH = "/auth";
+const char * const STR_TOKEN = "/token";
+const char * const STR_IN = "/in";
+const char * const STR_NEWLINE = "\n";
+const char * const STR_FLAG_CHANNEL_NAME = "FLAG"; // DAT_00018086
+const char * const STR_SPACE = " ";               // DAT_00018052
+const char * const STR_FLAG_PREFIX = "FLAG{";     // DAT_0001803a
+const char * const STR_FLAG_SUFFIX = "}";
 
-// External functions (placeholders for compilation)
-// In a real scenario, these would be defined in other source files or libraries.
-void transmit_all(int fd, const char *buf, size_t len) {
-    // Example: write(fd, buf, len);
-    // For this exercise, just a placeholder.
-    (void)fd; // Suppress unused parameter warning
-    (void)buf;
-    (void)len;
-    // fprintf(stderr, "TRANSMIT (fd %d, len %zu): %s\n", fd, len, buf);
-}
-void *getMessageById(void *channel_messages, int message_id) { (void)channel_messages; (void)message_id; return NULL; }
-void cleanupChannel(void *channel) { (void)channel; }
-void *getSubscription(void *subscriptions, const char *channel_id_or_name) { (void)subscriptions; (void)channel_id_or_name; return NULL; }
-void *getChannel(void *channels, const char *channel_name) { (void)channels; (void)channel_name; return NULL; }
-void *getLastMessage(void *channel_messages) { (void)channel_messages; return NULL; }
-void *computeSignature(void *user_data) { (void)user_data; return strdup("DUMMY_SIGNATURE"); } // Returns a char*
-void setDeliveryType(void *subscription, const char *type) { (void)subscription; (void)type; }
-void *getUserByName(void *users, const char *name) { (void)users; (void)name; return NULL; }
-int verifySignature(void *auth_response, void *user_secret) { (void)auth_response; (void)user_secret; return 1; } // Assume valid for now
-void *newToken(void *user_data) { // Returns a char** (token string and subscription info)
-    (void)user_data;
-    char **token_info = (char**)malloc(sizeof(char*) * 2);
-    if (token_info) {
-        token_info[0] = strdup("DUMMY_TOKEN");
-        token_info[1] = strdup("DUMMY_SUB_INFO"); // Placeholder for subscription type
+// Dummy random data for getRandomString and sendMessageToFlagChannel
+// In a real scenario, this would be cryptographically secure random data or a seeded PRNG.
+static const unsigned char DAT_4347c000[] = {
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+    0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20,
+    0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30,
+    0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40,
+    0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F, 0x50,
+    0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F, 0x60,
+    0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F, 0x70,
+    0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F, 0x80,
+    // ... extend as needed for larger random strings
+};
+
+// --- Dummy Structures for Type Safety and Readability ---
+// These are minimal definitions to allow compilation and type checking.
+// The actual definitions might be more complex in the full program.
+
+typedef struct Message {
+    int id;
+    char *sender;
+    char *content1; // command/priority type
+    char *content2; // argument/message content
+    struct Message *next;
+} Message;
+
+typedef struct Subscription {
+    int id; // Often a unique ID or index.
+    char *channel_name;
+    char *delivery_type; // e.g., "latest", "guaranteed", "high", "medium", "low", "next"
+    int last_message_id; // Last message ID read by this subscription
+    struct Subscription *next; // For linked list of subscriptions per user
+} Subscription;
+
+typedef struct Channel {
+    char *name;
+    int message_count;
+    Message *messages_head;
+    Subscription *subscriptions_head; // Subscriptions specific to this channel
+    struct Channel *next; // For linked list of all channels
+} Channel;
+
+typedef struct User {
+    char *username;
+    char *password_hash; // Or secret key
+    char *token; // Current session token
+    Subscription *subscriptions_head; // Linked list of channels this user is subscribed to
+    struct User *next; // For linked list of all users
+} User;
+
+typedef struct AuthSubscription {
+    char *channel_name;
+    char *delivery_type; // e.g., "latest"
+    struct AuthSubscription *next;
+} AuthSubscription;
+
+typedef struct AuthResponse {
+    char *username;
+    char *signature; // Or password
+    AuthSubscription *subscriptions; // Head of linked list of subscriptions from auth response
+} AuthResponse;
+
+// --- External Function Prototypes (Assumed to be defined elsewhere) ---
+// These are placeholder definitions to allow the provided code to compile.
+// The actual implementations would come from other compilation units.
+
+// General utilities
+extern void transmit_all(int fd, const void *buf, size_t count);
+extern char to_hex(unsigned char nibble); // Converts a 4-bit nibble to its hex char representation
+
+// Channel and Message Management
+extern Message *getMessageById(Message *head, int id);
+extern void cleanupChannel(Channel *channel);
+extern Message *getLastMessage(Message *head);
+extern Subscription *getSubscription(Subscription *head, const char *channel_name);
+extern Channel *getChannel(Channel *head, const char *channel_name);
+extern void setDeliveryType(Subscription **subscription_ptr, const char *type); // Takes ptr to ptr to update
+extern void addSubscriptions(Channel *channels_head, Subscription **user_subs_head_ptr, const char *user_name, const char *channel_name);
+
+// User and Authentication Management
+extern User *getUserByName(User *head, const char *username);
+extern char *computeSignature(User *user);
+extern int verifySignature(AuthResponse *auth_response, const char *user_secret);
+extern User *newUser(User **users_head_ptr, const char *username, const char *password);
+extern User *newToken(User *user); // Updates user's token and returns user pointer
+extern int authenticateToken(User *users_head, const char *token);
+extern User *getUserByToken(User *users_head, const char *token);
+
+// --- Helper Functions for Cleanup ---
+
+// Frees a char** array of 4 elements (as used by newRequest and parseCommand)
+void freeRequest(char **request) {
+    if (request == NULL) return;
+    for (int i = 0; i < 4; ++i) {
+        if (request[i] != NULL) {
+            free(request[i]);
+            request[i] = NULL;
+        }
     }
-    return token_info;
+    free(request);
 }
-void *newUser(void *users, const char *username, const char *password) { (void)users; (void)username; (void)password; return (void*)1; } // Return non-NULL as a placeholder user_data
-void addSubscriptions(void *channels, void *user_subscriptions, const char *username, const char *channel_name) { (void)channels; (void)user_subscriptions; (void)username; (void)channel_name; }
-int authenticateToken(void *users, const char *token) { (void)users; (void)token; return 1; } // Assume valid for now
-void *getUserByToken(void *users, const char *token) { (void)users; (void)token; return (void*)1; } // Return non-NULL as a placeholder user_data
 
-// Placeholder for DAT_4347c000
-// Assuming it's a large array of random bytes for generation purposes.
-// For compilation, we'll make it static and provide some dummy data.
-static unsigned char DAT_4347c000[4096];
-
-// Helper function to convert a nibble to its hex character
-char to_hex(unsigned char nibble) {
-    if (nibble < 10) {
-        return '0' + nibble;
+// Frees an AuthSubscription linked list
+void freeAuthSubscriptions(AuthSubscription *head) {
+    AuthSubscription *current = head;
+    while (current != NULL) {
+        AuthSubscription *next = current->next;
+        free(current->channel_name);
+        free(current->delivery_type);
+        free(current);
+        current = next;
     }
-    return 'a' + (nibble - 10);
 }
+
+// Frees an AuthResponse structure
+void freeAuthResponse(AuthResponse *response) {
+    if (response == NULL) return;
+    free(response->username);
+    free(response->signature);
+    freeAuthSubscriptions(response->subscriptions);
+    free(response);
+}
+
 
 // Function: newRequest
+// Allocates a char** array [command, path_segment, stdin_command, stdin_argument]
 char ** newRequest(char *param_1, char *param_2) {
-    char **request_info = NULL;
+    char **req = NULL;
     char *path_segment = NULL;
     char *input_buffer = NULL;
-    char *token = NULL;
-    size_t len;
+    char *token_cmd = NULL;
+    char *token_arg = NULL;
 
     if (param_2 == NULL || *param_2 != '/') {
         return NULL;
     }
 
-    path_segment = param_2 + 1; // Skip the leading '/'
+    path_segment = param_2 + 1;
 
-    request_info = (char **)malloc(sizeof(char *) * 4); // Allocate space for 4 char*
-    if (request_info == NULL) {
+    // Allocate array for 4 char pointers: [command, path_segment, stdin_command, stdin_argument]
+    req = (char **)malloc(sizeof(char*) * 4);
+    if (req == NULL) {
         return NULL;
     }
-    memset(request_info, 0, sizeof(char *) * 4);
+    for (int i = 0; i < 4; ++i) req[i] = NULL; // Initialize for safe cleanup
 
-    len = strlen(param_1);
-    request_info[0] = (char *)malloc(len + 1);
-    if (request_info[0] == NULL) {
-        free(request_info);
+    // Duplicate param_1 (e.g., "/subscribe")
+    req[0] = strdup(param_1);
+    if (req[0] == NULL) {
+        freeRequest(req);
         return NULL;
     }
-    strcpy(request_info[0], param_1);
 
-    len = strlen(path_segment);
-    request_info[1] = (char *)malloc(len + 1);
-    if (request_info[1] == NULL) {
-        free(request_info[0]);
-        free(request_info);
+    // Duplicate path_segment (e.g., "channel_name")
+    req[1] = strdup(path_segment);
+    if (req[1] == NULL) {
+        freeRequest(req);
         return NULL;
     }
-    strcpy(request_info[1], path_segment);
 
+    // Read command and arguments from stdin (e.g., "cmd:arg")
     input_buffer = (char *)malloc(0x400); // Max 1024 bytes
     if (input_buffer == NULL) {
-        free(request_info[1]);
-        free(request_info[0]);
-        free(request_info);
+        freeRequest(req);
         return NULL;
     }
     memset(input_buffer, 0, 0x400);
 
     if (fgets(input_buffer, 0x3ff, stdin) == NULL) {
+        fprintf(stderr, "Error: Failed to read from stdin in newRequest.\n");
         free(input_buffer);
-        free(request_info[1]); free(request_info[0]); free(request_info);
-        return NULL;
+        freeRequest(req);
+        exit(1); // Critical termination
     }
 
-    len = strlen(input_buffer);
-    if (len == 0 || input_buffer[0] == '\n') {
+    size_t len = strlen(input_buffer);
+    if (len == 0 || (len == 1 && input_buffer[0] == '\n')) { // Empty line or just newline
+        fprintf(stderr, "Error: Empty input read from stdin in newRequest.\n");
         free(input_buffer);
-        free(request_info[1]); free(request_info[0]); free(request_info);
-        return NULL;
+        freeRequest(req);
+        exit(1); // Critical termination
     }
+    // Remove trailing newline if present
     if (input_buffer[len - 1] == '\n') {
         input_buffer[len - 1] = '\0';
-        len--;
     }
 
-    token = strtok(input_buffer, ":");
-    if (token == NULL) {
-        free(input_buffer);
-        free(request_info[1]); free(request_info[0]); free(request_info);
+    // Tokenize the input_buffer: command:argument
+    token_cmd = strtok(input_buffer, ":");
+    if (token_cmd == NULL) {
+        free(input_buffer); // input_buffer is consumed by strtok
+        freeRequest(req);
         return NULL;
     }
 
-    len = strlen(token);
-    request_info[2] = (char *)malloc(len + 1);
-    if (request_info[2] == NULL) {
+    req[2] = strdup(token_cmd);
+    if (req[2] == NULL) {
         free(input_buffer);
-        free(request_info[1]); free(request_info[0]); free(request_info);
-        return NULL;
-    }
-    strcpy(request_info[2], token);
-
-    token = strtok(NULL, ":");
-    if (token == NULL) {
-        free(input_buffer);
-        free(request_info[2]); free(request_info[1]); free(request_info[0]); free(request_info);
+        freeRequest(req);
         return NULL;
     }
 
-    len = strlen(token);
-    request_info[3] = (char *)malloc(len + 1);
-    if (request_info[3] == NULL) {
+    // Get the second token (argument)
+    token_arg = strtok(NULL, ":"); // Continue tokenizing with ':'
+    if (token_arg == NULL) {
         free(input_buffer);
-        free(request_info[2]); free(request_info[1]); free(request_info[0]); free(request_info);
+        freeRequest(req);
         return NULL;
     }
-    strcpy(request_info[3], token);
 
-    free(input_buffer);
-    return request_info;
+    req[3] = strdup(token_arg);
+    if (req[3] == NULL) {
+        free(input_buffer);
+        freeRequest(req);
+        return NULL;
+    }
+
+    free(input_buffer); // input_buffer is no longer needed after strdup
+    return req;
 }
 
 // Function: parseCommand
+// Parses the initial command (e.g., "/subscribe", "/auth") from param_1
 char ** parseCommand(char *param_1) {
-    size_t len;
-    char **request_data = NULL;
+    char **request_data = NULL; // Renamed from local_10 for clarity
 
-    if (param_1 == NULL) return NULL;
-
-    if (strncmp("/subscribe", param_1, len = strlen("/subscribe")) == 0) {
-        request_data = newRequest("/subscribe", param_1 + len);
-    } else if (strncmp("/out", param_1, len = strlen("/out")) == 0) {
-        request_data = newRequest("/out", param_1 + len);
-    } else if (strncmp("/auth", param_1, len = strlen("/auth")) == 0) {
-        request_data = newRequest("/auth", param_1 + len);
-    } else if (strncmp("/token", param_1, len = strlen("/token")) == 0) {
-        request_data = newRequest("/token", param_1 + len);
-    } else if (strncmp("/in", param_1, len = strlen("/in")) == 0) {
-        request_data = newRequest("/in", param_1 + len);
+    if (strncmp(STR_SUBSCRIBE, param_1, strlen(STR_SUBSCRIBE)) == 0) {
+        request_data = newRequest((char*)STR_SUBSCRIBE, param_1 + strlen(STR_SUBSCRIBE));
+    } else if (strncmp(STR_OUT, param_1, strlen(STR_OUT)) == 0) {
+        request_data = newRequest((char*)STR_OUT, param_1 + strlen(STR_OUT));
+    } else if (strncmp(STR_AUTH, param_1, strlen(STR_AUTH)) == 0) {
+        request_data = newRequest((char*)STR_AUTH, param_1 + strlen(STR_AUTH));
+    } else if (strncmp(STR_TOKEN, param_1, strlen(STR_TOKEN)) == 0) {
+        request_data = newRequest((char*)STR_TOKEN, param_1 + strlen(STR_TOKEN));
+    } else if (strncmp(STR_IN, param_1, strlen(STR_IN)) == 0) {
+        request_data = newRequest((char*)STR_IN, param_1 + strlen(STR_IN));
     }
     return request_data;
 }
 
 // Function: getCommand
+// Reads a line from stdin, removes trailing newline, and returns the buffer
 char * getCommand(void) {
-    char *input_buffer = (char *)malloc(0x400);
-    if (input_buffer == NULL) {
+    char *cmd_buffer = (char *)malloc(0x400); // Renamed from local_10
+    if (cmd_buffer == NULL) {
         return NULL;
     }
-    memset(input_buffer, 0, 0x400);
-
-    if (fgets(input_buffer, 0x3ff, stdin) == NULL) {
-        free(input_buffer);
-        return NULL;
+    
+    memset(cmd_buffer, 0, 0x400);
+    if (fgets(cmd_buffer, 0x3ff, stdin) == NULL) {
+        fprintf(stderr, "Error: Failed to read from stdin in getCommand.\n");
+        free(cmd_buffer);
+        exit(1); // Critical termination
     }
-
-    size_t len = strlen(input_buffer);
-    if (len == 0) {
-        free(input_buffer);
-        return NULL;
+    
+    size_t input_len = strlen(cmd_buffer); // Renamed from local_14
+    
+    if (input_len == 0 || (input_len == 1 && cmd_buffer[0] == '\n')) { // Check for empty or just newline
+        fprintf(stderr, "Error: Empty input read from stdin in getCommand.\n");
+        free(cmd_buffer);
+        exit(1); // Critical termination
     }
-    if (input_buffer[len - 1] == '\n') {
-        input_buffer[len - 1] = '\0';
+    
+    // Remove trailing newline if present
+    if (cmd_buffer[input_len - 1] == '\n') {
+      cmd_buffer[input_len - 1] = '\0';
     }
-    return input_buffer;
+    
+    return cmd_buffer;
 }
 
 // Function: getRandomString
-void * getRandomString(unsigned int length) {
-    unsigned char *result_str = (unsigned char *)malloc(length + 1);
-    if (result_str == NULL) {
+// Generates a string of specified length using DAT_4347c000 for "randomness"
+char * getRandomString(unsigned int length) { // Changed uint to unsigned int, void* to char*
+    char *random_string = (char *)malloc(length + 1);
+    if (random_string == NULL) {
         return NULL;
     }
-    memset(result_str, 0, length + 1);
-
+    
+    memset(random_string, 0, length + 1);
     for (unsigned int i = 0; i < length; i++) {
-        unsigned char byte_val = DAT_4347c000[i % sizeof(DAT_4347c000)]; // Use modulo for smaller array
-        if ((byte_val & 1) == 0) {
-            if ((byte_val & 3) == 0) {
-                result_str[i] = (byte_val % 0x1a) + 'A';
-            } else {
-                result_str[i] = (byte_val % 0x1a) + 'a';
+        unsigned char byte_val = DAT_4347c000[i % sizeof(DAT_4347c000)]; // Use modulo for array bounds
+        if ((byte_val & 1) == 0) { // Even
+            if ((byte_val & 3) == 0) { // Divisible by 4 (0, 4, 8, ...)
+                random_string[i] = (byte_val % 26) + 'A'; // 'A' to 'Z'
+            } else { // Not divisible by 4 (2, 6, 10, ...)
+                random_string[i] = (byte_val % 26) + 'a'; // 'a' to 'z'
             }
-        } else if ((byte_val % 7) == 0) {
-            result_str[i] = ' ';
-        } else {
-            result_str[i] = (byte_val % 10) + '0';
+        } else if ((byte_val % 7) == 0) { // Odd and divisible by 7
+            random_string[i] = ' '; // Space
+        } else { // Odd and not divisible by 7
+            random_string[i] = (byte_val % 10) + '0'; // '0' to '9'
         }
     }
-    return result_str;
+    return random_string;
 }
 
 // Function: sendAllPriorityMessages
-void sendAllPriorityMessages(void *channel_ptr, void *sub_user_ptr, void *sub_channel_ptr) {
-    void *message_ptr = getMessageById(*(void **)((char *)channel_ptr + 0xc), *(int *)((char *)sub_user_ptr + 8) + 1);
-    if (message_ptr != NULL) {
-        for (; message_ptr != NULL; message_ptr = *(void **)((char *)message_ptr + 0x10)) {
-            if (strcmp(*(char **)((char *)message_ptr + 0xc), *(char **)((char *)sub_user_ptr + 4)) == 0) {
-                transmit_all(1, *(char **)((char *)message_ptr + 8), strlen(*(char **)((char *)message_ptr + 8)));
-                transmit_all(1, "\n", strlen("\n"));
+// param_1: Channel*
+// param_2: Subscription* (user's subscription for this channel)
+// param_3: Subscription* (user's subscription for all channels)
+void sendAllPriorityMessages(Channel *channel_ptr, Subscription *user_sub_ptr, Subscription *all_sub_ptr) {
+    Message *current_message = getMessageById(channel_ptr->messages_head, user_sub_ptr->last_message_id + 1);
+    if (current_message != NULL) {
+        for (; current_message != NULL; current_message = current_message->next) {
+            if (strcmp(current_message->content1, user_sub_ptr->delivery_type) == 0) { // Compare priority type
+                transmit_all(1, current_message->content2, strlen(current_message->content2));
+                transmit_all(1, STR_NEWLINE, strlen(STR_NEWLINE));
             }
-            *(int *)((char *)sub_user_ptr + 8) = *(int *)message_ptr;
-            *(int *)((char *)sub_channel_ptr + 8) = *(int *)message_ptr;
+            user_sub_ptr->last_message_id = current_message->id;
+            all_sub_ptr->last_message_id = current_message->id;
         }
         cleanupChannel(channel_ptr);
     }
 }
 
 // Function: sendAllMessages
-void sendAllMessages(void *channel_ptr, void *sub_user_ptr, void *sub_channel_ptr) {
-    void *message_ptr = getMessageById(*(void **)((char *)channel_ptr + 0xc), *(int *)((char *)sub_user_ptr + 8) + 1);
-    if (message_ptr != NULL) {
-        for (; message_ptr != NULL; message_ptr = *(void **)((char *)message_ptr + 0x10)) {
-            transmit_all(1, *(char **)((char *)message_ptr + 8), strlen(*(char **)((char *)message_ptr + 8)));
-            transmit_all(1, "\n", strlen("\n"));
-            *(int *)((char *)sub_user_ptr + 8) = *(int *)message_ptr;
-            *(int *)((char *)sub_channel_ptr + 8) = *(int *)message_ptr;
+// param_1: Channel*
+// param_2: Subscription* (user's subscription for this channel)
+// param_3: Subscription* (user's subscription for all channels)
+void sendAllMessages(Channel *channel_ptr, Subscription *user_sub_ptr, Subscription *all_sub_ptr) {
+    Message *current_message = getMessageById(channel_ptr->messages_head, user_sub_ptr->last_message_id + 1);
+    if (current_message != NULL) {
+        for (; current_message != NULL; current_message = current_message->next) {
+            transmit_all(1, current_message->content2, strlen(current_message->content2));
+            transmit_all(1, STR_NEWLINE, strlen(STR_NEWLINE));
+            user_sub_ptr->last_message_id = current_message->id;
+            all_sub_ptr->last_message_id = current_message->id;
         }
         cleanupChannel(channel_ptr);
     }
 }
 
 // Function: sendLatestMessage
-void sendLatestMessage(void *channel_ptr, void *sub_user_ptr, void *sub_channel_ptr) {
-    void *message_ptr = getLastMessage(*(void **)((char *)channel_ptr + 0xc));
-    if ((message_ptr != NULL) && (*(int *)message_ptr != *(int *)((char *)sub_user_ptr + 8))) {
-        transmit_all(1, *(char **)((char *)message_ptr + 8), strlen(*(char **)((char *)message_ptr + 8)));
-        transmit_all(1, "\n", strlen("\n"));
-        *(int *)((char *)sub_user_ptr + 8) = *(int *)message_ptr;
-        *(int *)((char *)sub_channel_ptr + 8) = *(int *)message_ptr;
+// param_1: Channel*
+// param_2: Subscription* (user's subscription for this channel)
+// param_3: Subscription* (user's subscription for all channels)
+void sendLatestMessage(Channel *channel_ptr, Subscription *user_sub_ptr, Subscription *all_sub_ptr) {
+    Message *latest_message = getLastMessage(channel_ptr->messages_head);
+    if ((latest_message != NULL) && (latest_message->id != user_sub_ptr->last_message_id)) {
+        transmit_all(1, latest_message->content2, strlen(latest_message->content2));
+        transmit_all(1, STR_NEWLINE, strlen(STR_NEWLINE));
+        user_sub_ptr->last_message_id = latest_message->id;
+        all_sub_ptr->last_message_id = latest_message->id;
         cleanupChannel(channel_ptr);
     }
 }
 
 // Function: sendNextMessage
-void sendNextMessage(void *channel_ptr, void *sub_user_ptr, void *sub_channel_ptr) {
-    void *message_ptr = getMessageById(*(void **)((char *)channel_ptr + 0xc), *(int *)((char *)sub_user_ptr + 8) + 1);
-    if (message_ptr != NULL) {
-        transmit_all(1, *(char **)((char *)message_ptr + 8), strlen(*(char **)((char *)message_ptr + 8)));
-        transmit_all(1, "\n", strlen("\n"));
-        *(int *)((char *)sub_user_ptr + 8) = *(int *)message_ptr;
-        *(int *)((char *)sub_channel_ptr + 8) = *(int *)message_ptr;
+// param_1: Channel*
+// param_2: Subscription* (user's subscription for this channel)
+// param_3: Subscription* (user's subscription for all channels)
+void sendNextMessage(Channel *channel_ptr, Subscription *user_sub_ptr, Subscription *all_sub_ptr) {
+    Message *next_message = getMessageById(channel_ptr->messages_head, user_sub_ptr->last_message_id + 1);
+    if (next_message != NULL) {
+        transmit_all(1, next_message->content2, strlen(next_message->content2));
+        transmit_all(1, STR_NEWLINE, strlen(STR_NEWLINE));
+        user_sub_ptr->last_message_id = next_message->id;
+        all_sub_ptr->last_message_id = next_message->id;
         cleanupChannel(channel_ptr);
     }
 }
 
 // Function: getMessagesFromChannel
-void getMessagesFromChannel(void *channel_ptr, void *user_data_ptr) {
-    void *sub_user = getSubscription(*(void **)((char *)user_data_ptr + 0x10), *(char **)channel_ptr);
-    if (sub_user == NULL) return;
+// param_1: Channel* (the specific channel to get messages from)
+// param_2: User* (the user requesting messages)
+void getMessagesFromChannel(Channel *channel_ptr, User *user_ptr) {
+    Subscription *channel_sub = getSubscription(channel_ptr->subscriptions_head, user_ptr->username);
+    Subscription *user_sub = getSubscription(user_ptr->subscriptions_head, channel_ptr->name);
 
-    void *sub_channel = getSubscription(*(void **)((char *)channel_ptr + 0x10), *(char **)((char *)user_data_ptr + 4));
-    if (sub_channel == NULL) return;
-
-    char *delivery_type = *(char **)((char *)sub_user + 4);
-    if (delivery_type != NULL) {
-        if (strcmp(delivery_type, "guaranteed") == 0) {
-            sendAllMessages(channel_ptr, sub_user, sub_channel);
-        } else if (strcmp(delivery_type, "latest") == 0) {
-            sendLatestMessage(channel_ptr, sub_user, sub_channel);
-        } else if (strcmp(delivery_type, "next") == 0) {
-            sendNextMessage(channel_ptr, sub_user, sub_channel);
-        } else if (strcmp(delivery_type, "high") == 0 ||
-                   strcmp(delivery_type, "medium") == 0 ||
-                   strcmp(delivery_type, "low") == 0) {
-            sendAllPriorityMessages(channel_ptr, sub_user, sub_channel);
+    if (channel_sub != NULL && user_sub != NULL && channel_sub->delivery_type != NULL) {
+        if (strcmp(channel_sub->delivery_type, "guaranteed") == 0) {
+            sendAllMessages(channel_ptr, channel_sub, user_sub);
+        } else if (strcmp(channel_sub->delivery_type, "latest") == 0) {
+            sendLatestMessage(channel_ptr, channel_sub, user_sub);
+        } else if (strcmp(channel_sub->delivery_type, "next") == 0) {
+            sendNextMessage(channel_ptr, channel_sub, user_sub);
+        } else if (strcmp(channel_sub->delivery_type, "high") == 0 ||
+                   strcmp(channel_sub->delivery_type, "medium") == 0 ||
+                   strcmp(channel_sub->delivery_type, "low") == 0) {
+            sendAllPriorityMessages(channel_ptr, channel_sub, user_sub);
         }
     }
 }
 
 // Function: getMessagesFromAllChannels
-void getMessagesFromAllChannels(void *channels_list_ptr, void *user_data_ptr) {
-    void *current_sub = *(void **)((char *)user_data_ptr + 0x10);
-    for (; current_sub != NULL; current_sub = *(void **)((char *)current_sub + 0xc)) {
-        void *channel = getChannel(channels_list_ptr, *(char **)current_sub);
-        if (channel != NULL) {
-            getMessagesFromChannel(channel, user_data_ptr);
+// param_1: Channel* (head of all channels list)
+// param_2: User* (the user requesting messages)
+void getMessagesFromAllChannels(Channel *channels_head, User *user_ptr) {
+    Subscription *current_user_sub = user_ptr->subscriptions_head;
+    for (; current_user_sub != NULL; current_user_sub = current_user_sub->next) {
+        Channel *channel_ptr = getChannel(channels_head, current_user_sub->channel_name);
+        if (channel_ptr != NULL) {
+            getMessagesFromChannel(channel_ptr, user_ptr);
         }
     }
 }
 
 // Function: sendMessage
-void sendMessage(void *channels_list_ptr, char **request_info, void *user_data_ptr) {
-    if (request_info == NULL || request_info[2] == NULL) return;
+// param_1: Channel* (head of all channels list)
+// param_2: char** (request_data from newRequest: [command, channel_name, message_command, message_argument])
+// param_3: User* (the user sending the message)
+void sendMessage(Channel *channels_head, char **request_data, User *user_ptr) {
+    // request_data[3] is the message to tokenize (e.g., "priority:content")
+    // request_data[1] is the target channel name
+    // user_ptr->username is the sender's username
 
-    void *channel = getChannel(channels_list_ptr, request_info[1]);
-    if (channel == NULL) return;
-
-    void *sub_user = getSubscription(*(void **)((char *)channel + 0x10), *(char **)((char *)user_data_ptr + 4));
-    if (sub_user == NULL) return;
-
-    void *sub_channel = getSubscription(*(void **)((char *)user_data_ptr + 0x10), *(char **)((char *)channel + 4));
-    if (sub_channel == NULL) return;
-
-    // Assuming a 32-bit Message struct layout: {int id; char* sender; char* content; char* priority; void* next;}
-    void *new_message = malloc(20); // 0x14 bytes
-    if (new_message == NULL) return;
-    memset(new_message, 0, 20);
-
-    char *auth_str_copy = strdup(request_info[2]); // strtok modifies the string
-    if (auth_str_copy == NULL) { free(new_message); return; }
-
-    char *content_token = strtok(auth_str_copy, ":");
-    char *priority_token = strtok(NULL, ":");
-
-    if (content_token == NULL || priority_token == NULL) {
-        free(auth_str_copy); free(new_message); return;
+    if (request_data[3] == NULL || *request_data[3] == '\0') {
+        return; // No message content
     }
 
-    *(char **)((char *)new_message + 8) = strdup(content_token); // content
-    if (*(char **)((char *)new_message + 8) == NULL) { free(auth_str_copy); free(new_message); return; }
-
-    *(char **)((char *)new_message + 12) = strdup(priority_token); // priority
-    if (*(char **)((char *)new_message + 12) == NULL) {
-        free(*(char **)((char *)new_message + 8)); free(auth_str_copy); free(new_message); return;
+    Channel *target_channel = getChannel(channels_head, request_data[1]);
+    if (target_channel == NULL) {
+        return; // Channel not found
     }
 
-    *(char **)((char *)new_message + 4) = strdup(*(char **)((char *)user_data_ptr + 4)); // sender
-    if (*(char **)((char *)new_message + 4) == NULL) {
-        free(*(char **)((char *)new_message + 12)); free(*(char **)((char *)new_message + 8)); free(auth_str_copy); free(new_message); return;
+    // Check if user has subscription to send messages to this channel
+    Subscription *user_channel_sub = getSubscription(user_ptr->subscriptions_head, request_data[1]);
+    if (user_channel_sub == NULL) {
+        return; // User not subscribed to this channel
     }
 
-    void *last_message = getLastMessage(*(void **)((char *)channel + 0xc));
-    if (last_message == NULL) {
-        *(void **)((char *)channel + 0xc) = new_message;
+    // Check if channel has a subscription for the sending user (for delivery type config)
+    Subscription *channel_user_sub = getSubscription(target_channel->subscriptions_head, user_ptr->username);
+    if (channel_user_sub == NULL) {
+        return; // Channel not configured for this user
+    }
+
+    Message *new_message = (Message *)malloc(sizeof(Message));
+    if (new_message == NULL) {
+        return; // Malloc failed
+    }
+    memset(new_message, 0, sizeof(Message));
+
+    char *message_part1_str = strtok(request_data[3], ":"); // Modifies request_data[3]
+    if (message_part1_str == NULL) {
+        free(new_message);
+        return;
+    }
+    new_message->content1 = strdup(message_part1_str);
+    if (new_message->content1 == NULL) {
+        free(new_message);
+        return;
+    }
+
+    char *message_part2_str = strtok(NULL, ":");
+    if (message_part2_str == NULL) {
+        free(new_message->content1);
+        free(new_message);
+        return;
+    }
+    new_message->content2 = strdup(message_part2_str);
+    if (new_message->content2 == NULL) {
+        free(new_message->content1);
+        free(new_message);
+        return;
+    }
+
+    new_message->sender = strdup(user_ptr->username);
+    if (new_message->sender == NULL) {
+        free(new_message->content2);
+        free(new_message->content1);
+        free(new_message);
+        return;
+    }
+
+    // Add message to channel's message list
+    Message *last_channel_message = getLastMessage(target_channel->messages_head);
+    if (last_channel_message == NULL) {
+        target_channel->messages_head = new_message;
     } else {
-        *(void **)((char *)last_message + 0x10) = new_message;
+        last_channel_message->next = new_message;
     }
+    target_channel->message_count++;
+    new_message->id = target_channel->message_count; // Assign ID
+    new_message->next = NULL;
 
-    *(int *)((char *)channel + 8) += 1;
-    *(int *)new_message = *(int *)((char *)channel + 8);
+    // Update last message ID for relevant subscriptions
+    user_channel_sub->last_message_id = new_message->id;
+    channel_user_sub->last_message_id = new_message->id;
 
-    *(int *)((char *)sub_user + 8) = *(int *)((char *)channel + 8);
-    *(int *)((char *)sub_channel + 8) = *(int *)((char *)channel + 8);
-    cleanupChannel(channel);
-
-    free(auth_str_copy);
+    cleanupChannel(target_channel);
 }
 
 // Function: getMessages
-void getMessages(void *channels_list_ptr, char *channel_name, void *user_data_ptr) {
-    void *channel = getChannel(channels_list_ptr, channel_name);
-    if (channel == NULL) {
+// param_1: Channel* (head of all channels list)
+// param_2: char* (channel name, or "ALL")
+// param_3: User* (the user requesting messages)
+void getMessages(Channel *channels_head, char *channel_name, User *user_ptr) {
+    Channel *target_channel = getChannel(channels_head, channel_name);
+    if (target_channel == NULL) {
         if (strcmp(channel_name, "ALL") == 0) {
-            getMessagesFromAllChannels(channels_list_ptr, user_data_ptr);
+            getMessagesFromAllChannels(channels_head, user_ptr);
         }
     } else {
-        getMessagesFromChannel(channel, user_data_ptr);
+        getMessagesFromChannel(target_channel, user_ptr);
     }
 }
 
 // Function: sendAuthRequest
-void sendAuthRequest(char **request_info) {
-    size_t total_len = strlen("/auth") + strlen("/") + strlen(request_info[1]) + strlen("\n");
-    char *buffer = (char *)malloc(total_len + 1);
-    if (buffer == NULL) return;
+// param_1: char** (request_data from newRequest, specifically request_data[1] for channel name)
+void sendAuthRequest(char **request_data) {
+    char *channel_name = request_data[1]; // Request data's second element is the channel name
+    size_t total_len = strlen(STR_AUTH) + strlen("/") + strlen(channel_name) + strlen(STR_NEWLINE) + 1;
+    char *output_buffer = (char *)malloc(total_len);
+    if (output_buffer == NULL) {
+        return;
+    }
+    memset(output_buffer, 0, total_len);
 
-    strcpy(buffer, "/auth");
-    strcat(buffer, "/");
-    strcat(buffer, request_info[1]);
-    strcat(buffer, "\n");
+    strcpy(output_buffer, STR_AUTH);
+    strcat(output_buffer, "/");
+    strcat(output_buffer, channel_name);
+    strcat(output_buffer, STR_NEWLINE);
 
-    transmit_all(1, buffer, strlen(buffer));
-    free(buffer);
+    transmit_all(1, output_buffer, strlen(output_buffer));
+    free(output_buffer);
 }
 
 // Function: updateSubscription
-void updateSubscription(void *user_data_ptr, char **request_info) {
-    char *delivery_type_str = request_info[2];
-    if (delivery_type_str == NULL) return;
-
-    void *subscription = getSubscription(*(void **)((char *)user_data_ptr + 0x10), request_info[1]);
-    if (subscription == NULL) {
-        sendAuthRequest(request_info);
+// param_1: User* (the user whose subscription is being updated)
+// param_2: char** (request_data from newRequest: [command, channel_name, delivery_type:arg, arg])
+void updateSubscription(User *user_ptr, char **request_data) {
+    char *delivery_type_str = NULL;
+    char *channel_name = request_data[1]; // Channel name is request_data[1]
+    
+    // request_data[2] contains the delivery type string from stdin, e.g., "guaranteed:some_arg"
+    // The original code uses strtok on request_data[2], modifying it.
+    delivery_type_str = strtok(request_data[2], ":"); 
+    if (delivery_type_str == NULL) {
+        return; // No delivery type specified
+    }
+    
+    Subscription *user_sub = getSubscription(user_ptr->subscriptions_head, channel_name);
+    
+    if (user_sub == NULL) {
+        // If no subscription exists, send an auth request
+        // The original code passed `param_2` (request_data) to sendAuthRequest, which then used `param_1[1]`
+        sendAuthRequest(request_data);
     } else {
-        setDeliveryType(subscription, delivery_type_str);
+        // Update existing subscription
+        setDeliveryType(&user_sub, delivery_type_str);
     }
 }
 
 // Function: parseAuthResponse
-char ** parseAuthResponse(char *param_1) {
-    // Assuming format "status:username:token:channel1,channel2,..."
-    // result: [0]=status, [1]=username, [2]=token, [3]=subscriptions_list_head
-    char **auth_response = (char **)malloc(sizeof(char *) * 4);
-    if (auth_response == NULL) return NULL;
-    memset(auth_response, 0, sizeof(char *) * 4);
-
-    char *token_str = strtok(param_1, ":");
-    if (token_str == NULL || strlen(token_str) == 0) { free(auth_response); return NULL; }
-    auth_response[0] = strdup(token_str); // Status
-    if (auth_response[0] == NULL) { free(auth_response); return NULL; }
-
-    token_str = strtok(NULL, ":");
-    if (token_str == NULL || strlen(token_str) == 0) { free(auth_response[0]); free(auth_response); return NULL; }
-    auth_response[1] = strdup(token_str); // Username
-    if (auth_response[1] == NULL) { free(auth_response[0]); free(auth_response); return NULL; }
-
-    token_str = strtok(NULL, ":");
-    if (token_str == NULL || strlen(token_str) == 0) { free(auth_response[1]); free(auth_response[0]); free(auth_response); return NULL; }
-    auth_response[2] = strdup(token_str); // Token/Signature
-    if (auth_response[2] == NULL) { free(auth_response[1]); free(auth_response[0]); free(auth_response); return NULL; }
-
-    char *channels_list_str = strtok(NULL, ""); // Get the rest for channels
-    if (channels_list_str != NULL) {
-        char *channel_name_token = strtok(channels_list_str, ",");
-        while (channel_name_token != NULL) {
-            // Subscription node: {name, type, NULL, next} (4 char* on 32-bit, or 4 void* on 64-bit)
-            char **new_sub_node = (char **)malloc(sizeof(char *) * 4);
-            if (new_sub_node == NULL) {
-                // Simplified error: return NULL and rely on caller to free
-                // In full code, would iterate and free existing list.
-                return NULL;
-            }
-            memset(new_sub_node, 0, sizeof(char *) * 4);
-
-            new_sub_node[0] = strdup(channel_name_token); // Channel name
-            if (new_sub_node[0] == NULL) { free(new_sub_node); return NULL; }
-
-            new_sub_node[1] = strdup("latest"); // Default delivery type
-            if (new_sub_node[1] == NULL) { free(new_sub_node[0]); free(new_sub_node); return NULL; }
-
-            new_sub_node[3] = auth_response[3]; // Link to previous head
-            auth_response[3] = (char *)new_sub_node; // New head of the list
-
-            channel_name_token = strtok(NULL, ",");
-        }
+// Parses an authentication response string from the server.
+// Expected format for param_1: "username:signature:channel1,channel2,..."
+AuthResponse * parseAuthResponse(char *param_1) {
+    AuthResponse *response = (AuthResponse *)malloc(sizeof(AuthResponse));
+    if (response == NULL) {
+        return NULL;
     }
-    return auth_response;
+    response->username = NULL;
+    response->signature = NULL;
+    response->subscriptions = NULL;
+
+    char *token = NULL;
+
+    // Token 1: username
+    token = strtok(param_1, ":");
+    if (token == NULL) {
+        freeAuthResponse(response);
+        return NULL;
+    }
+    response->username = strdup(token);
+    if (response->username == NULL) {
+        freeAuthResponse(response);
+        return NULL;
+    }
+
+    // Token 2: signature/password
+    token = strtok(NULL, ":");
+    if (token == NULL) {
+        freeAuthResponse(response);
+        return NULL;
+    }
+    response->signature = strdup(token);
+    if (response->signature == NULL) {
+        freeAuthResponse(response);
+        return NULL;
+    }
+
+    // Token 3: comma-separated channel names for subscriptions
+    token = strtok(NULL, ",");
+    while (token != NULL) {
+        AuthSubscription *sub = (AuthSubscription *)malloc(sizeof(AuthSubscription));
+        if (sub == NULL) {
+            freeAuthResponse(response);
+            return NULL;
+        }
+        sub->channel_name = NULL;
+        sub->delivery_type = NULL;
+        sub->next = NULL;
+
+        sub->channel_name = strdup(token);
+        if (sub->channel_name == NULL) {
+            free(sub);
+            freeAuthResponse(response);
+            return NULL;
+        }
+
+        // Original code hardcodes "latest" for delivery type
+        sub->delivery_type = strdup("latest");
+        if (sub->delivery_type == NULL) {
+            free(sub->channel_name);
+            free(sub);
+            freeAuthResponse(response);
+            return NULL;
+        }
+        
+        // Prepend to the list
+        sub->next = response->subscriptions;
+        response->subscriptions = sub;
+
+        token = strtok(NULL, ",");
+    }
+    return response;
 }
 
 // Function: sendAuthResponse
-void sendAuthResponse(void *user_data_ptr, char *channel_name) {
-    char *signature = (char *)computeSignature(user_data_ptr);
-    if (signature == NULL) return;
+// param_1: User* (the user who authenticated)
+// param_2: char* (the channel name from the request)
+void sendAuthResponse(User *user_ptr, char *channel_name) {
+    char *signature = computeSignature(user_ptr);
+    if (signature == NULL) {
+        return; // Failed to compute signature
+    }
 
+    // Calculate buffer size
     size_t total_len = 0;
-    total_len += strlen("/token") + strlen("/") + strlen(channel_name) + strlen("\n");
-    total_len += strlen("0") + strlen(":") + strlen(*(char **)((char *)user_data_ptr + 4)) + strlen(":") + strlen(signature) + strlen(":");
+    total_len += strlen(STR_TOKEN);
+    total_len += strlen("/");
+    total_len += strlen(channel_name);
+    total_len += strlen(STR_NEWLINE);
+    total_len += strlen("0"); // Placeholder "0" from original
+    total_len += strlen(":");
+    total_len += strlen(user_ptr->username);
+    total_len += strlen(":");
+    total_len += strlen(signature);
+    total_len += strlen(":");
 
-    void *current_sub = *(void **)((char *)user_data_ptr + 0x10);
-    for (; current_sub != NULL; current_sub = *(void **)((char *)current_sub + 0xc)) {
-        total_len += strlen(*(char **)current_sub);
-        if (*(void **)((char *)current_sub + 0xc) != NULL) {
+    AuthSubscription *current_sub = (AuthSubscription *)user_ptr->subscriptions_head; // Assuming User->subscriptions_head is AuthSubscription*
+    while (current_sub != NULL) {
+        total_len += strlen(current_sub->channel_name);
+        if (current_sub->next != NULL) {
             total_len += strlen(",");
         }
+        current_sub = current_sub->next;
     }
-    total_len += strlen("\n");
+    total_len += strlen(STR_NEWLINE);
+    total_len += 1; // Null terminator
 
-    char *buffer = (char *)malloc(total_len + 1);
-    if (buffer == NULL) { free(signature); return; }
-    memset(buffer, 0, total_len + 1);
+    char *output_buffer = (char *)malloc(total_len);
+    if (output_buffer == NULL) {
+        free(signature);
+        return;
+    }
+    memset(output_buffer, 0, total_len);
 
-    strcpy(buffer, "/token");
-    strcat(buffer, "/");
-    strcat(buffer, channel_name);
-    strcat(buffer, "\n");
-    strcat(buffer, "0");
-    strcat(buffer, ":");
-    strcat(buffer, *(char **)((char *)user_data_ptr + 4));
-    strcat(buffer, ":");
-    strcat(buffer, signature);
-    strcat(buffer, ":");
+    strcpy(output_buffer, STR_TOKEN);
+    strcat(output_buffer, "/");
+    strcat(output_buffer, channel_name);
+    strcat(output_buffer, STR_NEWLINE);
+    strcat(output_buffer, "0"); // Placeholder
+    strcat(output_buffer, ":");
+    strcat(output_buffer, user_ptr->username);
+    strcat(output_buffer, ":");
+    strcat(output_buffer, signature);
+    strcat(output_buffer, ":");
 
-    current_sub = *(void **)((char *)user_data_ptr + 0x10);
-    for (; current_sub != NULL; current_sub = *(void **)((char *)current_sub + 0xc)) {
-        strcat(buffer, *(char **)current_sub);
-        if (*(void **)((char *)current_sub + 0xc) != NULL) {
-            strcat(buffer, ",");
+    current_sub = (AuthSubscription *)user_ptr->subscriptions_head;
+    while (current_sub != NULL) {
+        strcat(output_buffer, current_sub->channel_name);
+        if (current_sub->next != NULL) {
+            strcat(output_buffer, ",");
         }
+        current_sub = current_sub->next;
     }
-    strcat(buffer, "\n");
+    strcat(output_buffer, STR_NEWLINE);
 
-    transmit_all(1, buffer, strlen(buffer));
+    transmit_all(1, output_buffer, strlen(output_buffer));
     free(signature);
-    free(buffer);
+    free(output_buffer);
 }
 
 // Function: sendTokenResponse
-void sendTokenResponse(char **token_info, char **subscription_info) {
-    size_t total_len;
-    total_len = strlen("/subscribe") + strlen("/") + strlen(subscription_info[0]) + strlen("\n");
-    total_len += strlen(token_info[0]) + strlen(":") + strlen(subscription_info[1]) + strlen("\n");
+// param_1: User* (the user who received the token)
+// param_2: Subscription* (the specific subscription for this token)
+void sendTokenResponse(User *user_ptr, Subscription *sub_ptr) {
+    size_t total_len = 0;
+    total_len += strlen(STR_SUBSCRIBE);
+    total_len += strlen("/");
+    total_len += strlen(sub_ptr->channel_name);
+    total_len += strlen(STR_NEWLINE);
+    total_len += strlen(user_ptr->username);
+    total_len += strlen(":");
+    total_len += strlen(user_ptr->token); // Assuming user_ptr->token holds the token
+    total_len += strlen(STR_NEWLINE);
+    total_len += 1; // Null terminator
 
-    char *buffer = (char *)malloc(total_len + 1);
-    if (buffer == NULL) return;
-    memset(buffer, 0, total_len + 1);
-
-    strcpy(buffer, "/subscribe");
-    strcat(buffer, "/");
-    strcat(buffer, subscription_info[0]);
-    strcat(buffer, "\n");
-    strcat(buffer, token_info[0]);
-    strcat(buffer, ":");
-    strcat(buffer, subscription_info[1]);
-    strcat(buffer, "\n");
-
-    transmit_all(1, buffer, strlen(buffer));
-    free(buffer);
-}
-
-// Function: freeResponse
-void freeResponse(char **param_1) {
-    if (param_1 == NULL) return;
-    if (param_1[0] != NULL) free(param_1[0]);
-    if (param_1[1] != NULL) free(param_1[1]);
-    if (param_1[2] != NULL) free(param_1[2]);
-
-    char **current_sub_node = (char **)param_1[3];
-    while (current_sub_node != NULL) {
-        char **next_node = (char **)current_sub_node[3];
-        if (current_sub_node[0] != NULL) free(current_sub_node[0]);
-        if (current_sub_node[1] != NULL) free(current_sub_node[1]);
-        free(current_sub_node);
-        current_sub_node = next_node;
+    char *output_buffer = (char *)malloc(total_len);
+    if (output_buffer == NULL) {
+        return;
     }
+    memset(output_buffer, 0, total_len);
 
-    free(param_1);
+    strcpy(output_buffer, STR_SUBSCRIBE);
+    strcat(output_buffer, "/");
+    strcat(output_buffer, sub_ptr->channel_name);
+    strcat(output_buffer, STR_NEWLINE);
+    strcat(output_buffer, user_ptr->username);
+    strcat(output_buffer, ":");
+    strcat(output_buffer, user_ptr->token);
+    strcat(output_buffer, STR_NEWLINE);
+
+    transmit_all(1, output_buffer, strlen(output_buffer));
+    free(output_buffer);
 }
 
 // Function: sendInvalidSignatureError
 void sendInvalidSignatureError(void) {
-    transmit_all(1, "Invalid Signature.\n", strlen("Invalid Signature.\n"));
+    const char *error_msg = "Invalid Signature.\n";
+    transmit_all(1, error_msg, strlen(error_msg));
 }
 
 // Function: processTokenRequest
-void processTokenRequest(void *users_list_ptr, char **request_info) {
-    char *auth_response_str_copy = strdup(request_info[2]);
-    if (auth_response_str_copy == NULL) return;
-
-    char **parsed_auth_response = parseAuthResponse(auth_response_str_copy);
-    if (parsed_auth_response == NULL) {
-        free(auth_response_str_copy);
-        return;
+// param_1: User** (pointer to head of users list, to modify if new user)
+// param_2: char** (request_data from newRequest: [command, channel_name, username:signature, arg])
+void processTokenRequest(User **users_head_ptr, char **request_data) {
+    // request_data[2] is "username:signature"
+    AuthResponse *auth_response = parseAuthResponse(request_data[2]);
+    if (auth_response == NULL) {
+        return; // Failed to parse
     }
 
-    void *user = getUserByName(users_list_ptr, parsed_auth_response[1]);
-    if (user == NULL) {
-        freeResponse(parsed_auth_response);
-        free(auth_response_str_copy);
-        return;
-    }
-
-    int signature_ok = verifySignature(parsed_auth_response, *(void **)((char *)user + 0xc));
-    if (!signature_ok) {
-        size_t secret_len = strlen(*(char **)((char *)user + 0xc));
-        memset(*(void **)((char *)user + 0xc), 0, secret_len);
-        free(*(void **)((char *)user + 0xc));
-        *(void **)((char *)user + 0xc) = NULL;
-
-        freeResponse(parsed_auth_response);
-        free(auth_response_str_copy);
-        sendInvalidSignatureError();
-    } else {
-        size_t secret_len = strlen(*(char **)((char *)user + 0xc));
-        memset(*(void **)((char *)user + 0xc), 0, secret_len);
-        free(*(void **)((char *)user + 0xc));
-        *(void **)((char *)user + 0xc) = NULL;
-
-        freeResponse(parsed_auth_response);
-        free(auth_response_str_copy);
-
-        char **new_token_info = (char **)newToken(user);
-        if (new_token_info != NULL) {
-            void *subscription = getSubscription(*(void **)((char *)user + 0x10), request_info[1]);
-            if (subscription != NULL) {
-                sendTokenResponse(new_token_info, (char**)subscription);
+    User *target_user = getUserByName(*users_head_ptr, auth_response->username);
+    if (target_user != NULL) {
+        if (target_user->password_hash != NULL) {
+            // Verify signature (using password_hash for verification)
+            if (verifySignature(auth_response, target_user->password_hash) == 0) {
+                // Signature invalid
+                free(target_user->token); // Clear old token if any
+                target_user->token = NULL;
+                freeAuthResponse(auth_response);
+                sendInvalidSignatureError();
+                return;
             }
-            if (new_token_info[0] != NULL) free(new_token_info[0]);
-            if (new_token_info[1] != NULL) free(new_token_info[1]);
-            free(new_token_info);
+            // Signature valid - clear password_hash and issue new token
+            memset(target_user->password_hash, 0, strlen(target_user->password_hash));
+            free(target_user->password_hash);
+            target_user->password_hash = NULL;
         }
+
+        freeAuthResponse(auth_response);
+        
+        // Issue new token and send response
+        User *user_with_new_token = newToken(target_user); // newToken updates user and returns user_ptr
+        if (user_with_new_token != NULL) {
+             Subscription *token_sub = getSubscription(user_with_new_token->subscriptions_head, request_data[1]); // request_data[1] is channel name
+             if (token_sub != NULL) {
+                 sendTokenResponse(user_with_new_token, token_sub);
+             }
+        }
+    } else {
+        freeAuthResponse(auth_response);
     }
 }
 
@@ -611,186 +789,205 @@ void processTokenRequest(void *users_list_ptr, char **request_info) {
 void sendWrongPasswordMessage(void) {
     const char *msg = "Wrong password! Try again.\n";
     transmit_all(1, msg, strlen(msg));
-    transmit_all(1, "\n", strlen("\n")); // Original code had an extra newline transmit
+    transmit_all(1, STR_NEWLINE, strlen(STR_NEWLINE));
 }
 
 // Function: processAuthRequest
-void processAuthRequest(void *channels_list_ptr, void *users_list_ptr, char **request_info) {
-    if (request_info == NULL || request_info[2] == NULL) return;
-
-    char *auth_str_copy = strdup(request_info[2]);
-    if (auth_str_copy == NULL) return;
-
-    char *username = strtok(auth_str_copy, ":");
+// param_1: Channel* (head of all channels list)
+// param_2: User** (pointer to head of users list, to modify if new user)
+// param_3: char** (request_data from newRequest: [command, channel_name, username:password, arg])
+void processAuthRequest(Channel *channels_head, User **users_head_ptr, char **request_data) {
+    // request_data[2] is "username:password"
+    char *username = strtok(request_data[2], ":"); // Modifies request_data[2]
     char *password = strtok(NULL, ":");
 
     if (username == NULL || password == NULL) {
-        free(auth_str_copy);
-        return;
+        return; // Invalid format
     }
 
-    void *user_data = getUserByName(users_list_ptr, username);
-    if (user_data == NULL) {
-        user_data = newUser(users_list_ptr, username, password);
-        if (user_data == NULL) { free(auth_str_copy); return; }
+    User *target_user = getUserByName(*users_head_ptr, username);
+    if (target_user == NULL) {
+        target_user = newUser(users_head_ptr, username, password);
+        if (target_user == NULL) {
+            fprintf(stderr, "Error: Failed to create new user.\n");
+            return;
+        }
     }
 
-    if (strcmp(request_info[1], "FLAG") == 0) {
-        void *admin_user = getUserByName(users_list_ptr, "admin");
-        if (admin_user == NULL || strcmp(*(char **)((char *)admin_user + 8), password) != 0) {
+    // Special handling for "FLAG" channel
+    if (strcmp(request_data[1], STR_FLAG_CHANNEL_NAME) == 0) {
+        User *admin_user = getUserByName(*users_head_ptr, "admin");
+        if (admin_user != NULL && strcmp(admin_user->password_hash, password) != 0) {
             sendWrongPasswordMessage();
-            free(auth_str_copy);
             return;
         }
     } else {
-        if (strcmp(*(char **)((char *)user_data + 8), password) != 0) {
+        if (strcmp(target_user->password_hash, password) != 0) {
             sendWrongPasswordMessage();
-            free(auth_str_copy);
             return;
         }
     }
 
-    addSubscriptions(channels_list_ptr, (void *)((char *)user_data + 0x10), *(char **)((char *)user_data + 4), request_info[1]);
-    sendAuthResponse(user_data, request_info[1]);
-    free(auth_str_copy);
+    // Add subscriptions (if any) and send auth response
+    addSubscriptions(channels_head, &target_user->subscriptions_head, target_user->username, request_data[1]);
+    sendAuthResponse(target_user, request_data[1]);
 }
 
 // Function: initFlagChannel
-void initFlagChannel(void *channels_list_ptr, void *users_list_ptr) {
-    char *random_password = (char *)getRandomString(16);
-    if (random_password == NULL) {
-        _terminate();
+// param_1: Channel** (pointer to head of channels list)
+// param_2: User** (pointer to head of users list)
+void initFlagChannel(Channel **channels_head_ptr, User **users_head_ptr) {
+    char *admin_password = getRandomString(20); // Generate a 20-char random string for admin password
+    if (admin_password == NULL) {
+        fprintf(stderr, "Critical error: Failed to generate admin password.\n");
+        exit(1);
     }
 
     char *admin_username = strdup("admin");
     if (admin_username == NULL) {
-        free(random_password);
-        _terminate();
+        fprintf(stderr, "Critical error: Failed to duplicate admin username.\n");
+        free(admin_password);
+        exit(1);
     }
 
-    void *admin_user = newUser(users_list_ptr, admin_username, random_password);
+    User *admin_user = newUser(users_head_ptr, admin_username, admin_password);
     if (admin_user == NULL) {
+        fprintf(stderr, "Critical error: Failed to create admin user.\n");
         free(admin_username);
-        free(random_password);
-        _terminate();
+        free(admin_password);
+        exit(1);
     }
-    free(admin_username);
+    free(admin_username); // newUser makes its own copy
 
-    addSubscriptions(channels_list_ptr, (void *)((char *)admin_user + 0x10), *(char **)((char *)admin_user + 4), "FLAG");
+    // Add admin subscription to FLAG channel
+    addSubscriptions(*channels_head_ptr, &admin_user->subscriptions_head, admin_user->username, STR_FLAG_CHANNEL_NAME);
 
-    free(random_password);
+    free(admin_password); // Free the generated password string
 }
 
 // Function: sendMessageToFlagChannel
-void sendMessageToFlagChannel(void *channels_list_ptr, void *users_list_ptr) {
-    void *admin_user = getUserByName(users_list_ptr, "admin");
-    if (admin_user == NULL) return;
+// param_1: Channel* (head of all channels list)
+// param_2: User* (head of all users list)
+void sendMessageToFlagChannel(Channel *channels_head, User *users_head) {
+    // Construct the flag message (hex_string + " " + "FLAG{" + "}")
+    char hex_buffer[41]; // 20 bytes * 2 hex chars/byte + 1 for null terminator
+    memset(hex_buffer, 0, sizeof(hex_buffer));
 
-    char *hex_flag_buffer = (char *)malloc(0x29); // 0x14 bytes (20) -> 40 hex chars + null
-    if (hex_flag_buffer == NULL) {
-        _terminate();
+    // Convert 20 bytes from DAT_4347c000 to hex string
+    for (unsigned int i = 0; i < 20; i++) {
+        unsigned char byte_val = DAT_4347c000[i % sizeof(DAT_4347c000)]; // Use modulo for array bounds
+        hex_buffer[i * 2] = to_hex(byte_val >> 4);
+        hex_buffer[i * 2 + 1] = to_hex(byte_val & 0xF);
     }
-    memset(hex_flag_buffer, 0, 0x29);
+    hex_buffer[40] = '\0';
 
-    for (unsigned int i = 0; i < 0x14; ++i) { // Process 20 bytes from DAT_4347c000
-        hex_flag_buffer[i * 2] = to_hex(DAT_4347c000[i] >> 4);
-        hex_flag_buffer[i * 2 + 1] = to_hex(DAT_4347c000[i] & 0xF);
+    // Calculate total length for the message content
+    size_t content_len = strlen(hex_buffer) + strlen(STR_SPACE) + strlen(STR_FLAG_PREFIX) + strlen(STR_FLAG_SUFFIX) + 1;
+    char *message_content = (char *)malloc(content_len);
+    if (message_content == NULL) {
+        return;
     }
-    hex_flag_buffer[0x28] = '\0';
+    memset(message_content, 0, content_len);
 
-    char **message_request_info = (char **)malloc(sizeof(char *) * 4);
-    if (message_request_info == NULL) {
-        free(hex_flag_buffer);
-        _terminate();
+    strcpy(message_content, hex_buffer);
+    strcat(message_content, STR_SPACE);
+    strcat(message_content, STR_FLAG_PREFIX);
+    strcat(message_content, STR_FLAG_SUFFIX);
+
+    // Prepare a dummy request_data array for sendMessage
+    char **flag_request_data = (char **)malloc(sizeof(char*) * 4);
+    if (flag_request_data == NULL) {
+        free(message_content);
+        return;
     }
-    memset(message_request_info, 0, sizeof(char *) * 4);
+    for (int i = 0; i < 4; ++i) flag_request_data[i] = NULL;
 
-    message_request_info[1] = strdup("FLAG"); // Channel name
-    if (message_request_info[1] == NULL) {
-        free(message_request_info);
-        free(hex_flag_buffer);
-        _terminate();
+    flag_request_data[0] = strdup(STR_IN); // Command type for sendMessage
+    flag_request_data[1] = strdup(STR_FLAG_CHANNEL_NAME); // Target channel
+    flag_request_data[2] = strdup("priority:high"); // Dummy message command part (priority)
+    flag_request_data[3] = strdup(message_content); // Actual message content
+
+    if (flag_request_data[0] == NULL || flag_request_data[1] == NULL ||
+        flag_request_data[2] == NULL || flag_request_data[3] == NULL) {
+        free(message_content);
+        freeRequest(flag_request_data);
+        return;
     }
 
-    size_t msg_content_len = strlen(hex_flag_buffer) + strlen(":high") + 1;
-    message_request_info[2] = (char *)malloc(msg_content_len);
-    if (message_request_info[2] == NULL) {
-        free(message_request_info[1]); free(message_request_info); free(hex_flag_buffer);
-        _terminate();
+    User *admin_user = getUserByName(users_head, "admin");
+    if (admin_user != NULL) {
+        sendMessage(channels_head, flag_request_data, admin_user);
+    } else {
+        fprintf(stderr, "Error: Admin user not found for sending flag message.\n");
     }
-    snprintf(message_request_info[2], msg_content_len, "%s:high", hex_flag_buffer);
 
-    sendMessage(channels_list_ptr, message_request_info, admin_user);
-
-    free(hex_flag_buffer);
-    free(message_request_info[1]);
-    free(message_request_info[2]);
-    free(message_request_info);
+    free(message_content);
+    freeRequest(flag_request_data);
 }
 
 // Function: main
 int main(void) {
-    void *channels_list = NULL;
-    void *users_list = NULL;
-    char *command_line = NULL;
-    char **parsed_command = NULL;
+    Channel *channels_head = NULL;
+    User *users_head = NULL;
+    char *cmd_line_buffer = NULL; // Buffer for command line input
+    char **request_data = NULL; // Parsed request data from `newRequest`
+    User *current_user = NULL;
 
-    srand(0x1337); // Seed for reproducible pseudo-random data
-    for (int i = 0; i < sizeof(DAT_4347c000); ++i) {
-        DAT_4347c000[i] = (unsigned char)(rand() % 256);
-    }
-
-    initFlagChannel(channels_list, users_list);
+    initFlagChannel(&channels_head, &users_head);
 
     while (1) {
-        // Free memory from previous iteration
-        if (parsed_command != NULL) {
-            if (parsed_command[0] != NULL) free(parsed_command[0]);
-            if (parsed_command[1] != NULL) free(parsed_command[1]);
-            if (parsed_command[2] != NULL) free(parsed_command[2]);
-            if (parsed_command[3] != NULL) free(parsed_command[3]);
-            free(parsed_command);
-            parsed_command = NULL;
+        if (request_data != NULL) { // Free previous request_data before getting new command
+            freeRequest(request_data);
+            request_data = NULL;
         }
-        if (command_line != NULL) {
-            free(command_line);
-            command_line = NULL;
+        if (cmd_line_buffer != NULL) { // Free previous command line buffer
+            free(cmd_line_buffer);
+            cmd_line_buffer = NULL;
         }
 
-        command_line = getCommand();
-        if (command_line != NULL) {
-            parsed_command = parseCommand(command_line);
-        }
-
-        if (parsed_command == NULL) {
-            // If getCommand failed or parseCommand failed, loop again
+        cmd_line_buffer = getCommand();
+        if (cmd_line_buffer == NULL) {
+            fprintf(stderr, "Error: Failed to get command. Continuing...\n");
             continue;
         }
 
-        if (strcmp(parsed_command[0], "/auth") == 0) {
-            processAuthRequest(channels_list, users_list, parsed_command);
-        } else if (strcmp(parsed_command[0], "/token") == 0) {
-            processTokenRequest(users_list, parsed_command);
+        request_data = parseCommand(cmd_line_buffer);
+        if (request_data == NULL) {
+            fprintf(stderr, "Error: Failed to parse command. Continuing...\n");
+            // cmd_line_buffer must be freed here as parseCommand didn't take ownership if it failed early
+            free(cmd_line_buffer); 
+            continue;
+        }
+
+        // Process request_data based on the command type
+        if (strcmp(request_data[0], STR_AUTH) == 0) {
+            processAuthRequest(channels_head, &users_head, request_data);
+        } else if (strcmp(request_data[0], STR_TOKEN) == 0) {
+            processTokenRequest(&users_head, request_data);
         } else {
-            // All other commands require authentication with a token
-            // parsed_command[2] holds the token string
-            int authenticated = authenticateToken(users_list, parsed_command[2]);
-            if (!authenticated) {
-                sendAuthRequest(parsed_command);
+            // Commands requiring authentication
+            // request_data[2] should contain the token for authentication
+            if (authenticateToken(users_head, request_data[2]) == 0) {
+                sendAuthRequest(request_data); // Prompt for authentication
             } else {
-                void *current_user = getUserByToken(users_list, parsed_command[2]);
+                current_user = getUserByToken(users_head, request_data[2]);
                 if (current_user != NULL) {
-                    if (strcmp(parsed_command[0], "/subscribe") == 0) {
-                        updateSubscription(current_user, parsed_command);
-                    } else if (strcmp(parsed_command[0], "/out") == 0) {
-                        getMessages(channels_list, parsed_command[1], current_user);
-                    } else if (strcmp(parsed_command[0], "/in") == 0) {
-                        sendMessage(channels_list, parsed_command, current_user);
-                        sendMessageToFlagChannel(channels_list, users_list);
+                    if (strcmp(request_data[0], STR_SUBSCRIBE) == 0) {
+                        updateSubscription(current_user, request_data);
+                    } else if (strcmp(request_data[0], STR_OUT) == 0) {
+                        getMessages(channels_head, request_data[1], current_user);
+                    } else if (strcmp(request_data[0], STR_IN) == 0) {
+                        sendMessage(channels_head, request_data, current_user);
+                        sendMessageToFlagChannel(channels_head, users_head);
                     }
+                } else {
+                    fprintf(stderr, "Error: Authenticated token but no user found. Continuing...\n");
                 }
             }
         }
+        // Loop will handle freeing cmd_line_buffer and request_data at the beginning of next iteration
     }
+
+    // Should not be reached in an infinite loop, but good practice for completeness
     return 0;
 }

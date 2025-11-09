@@ -1,178 +1,166 @@
-#include <stdio.h>   // For printf, fgets, stderr
-#include <stdlib.h>  // For atoi, malloc, free, strdup
-#include <string.h>  // For memset, strcspn, strncpy
-#include <ctype.h>   // For isalnum
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdbool.h> // For 'true' in while(true)
+#include <stdint.h>  // For standard integer types like uint32_t if needed, but not strictly required for this problem.
 
-// Define a simple Planet structure
+// --- Placeholder Type Definitions ---
+
+// Placeholder for a string object type returned by initString
+// The original code uses `if (*local_18 == 0)` and `deallocate(local_18,0xc);`.
+// `0xc` (12 bytes) is a common size for a pointer + length/ref_count on a 64-bit system.
+typedef struct String_t {
+    int ref_count; // Or length, or some other integer field
+    char *data;    // Pointer to the actual string data
+} String_t;
+
+// Placeholder for a Planet structure
+// Allocation size 0xd4 (212 bytes).
+// The original code copies the name directly into the start of the allocated memory.
+#define PLANET_NAME_MAX_LEN 29 // From receive_until(local_36,10,0x1d) for name input
 typedef struct Planet {
-    char name[30]; // Assuming name is at the beginning, based on *(char *)(local_14 + local_3c)
-    // Add other planet properties here if needed for further functionality
+    char name[PLANET_NAME_MAX_LEN + 1]; // +1 for null terminator
+    // Add other fields here to make up the 0xd4 (212 bytes) total size
+    // For now, use padding to match the size.
+    char padding[212 - (PLANET_NAME_MAX_LEN + 1)]; // 212 - 30 = 182 bytes
 } Planet;
 
-// Define a structure for the custom PML string object
-typedef struct PMLString {
-    int status;     // e.g., 0 for error/empty, 1 for valid
-    char *str_data; // The actual string data
-} PMLString;
+// --- Global Variable Declaration ---
 
-// Global array for solar system planets (10 pointers to Planet structs)
-Planet *solarSystem[10];
+// Global array of pointers to Planets
+Planet* solarSystem[10];
 
-// --- Custom Function Stubs ---
-// These are minimal implementations to make the code compile and demonstrate basic functionality.
-// Actual implementations would be more complex.
+// --- Placeholder Function Implementations (to make code compile) ---
 
-// Placeholder for receive_until
-// Reads up to max_len characters or until terminator is found, into buffer.
-void receive_until(char *buffer, char terminator, int max_len) {
-    if (!fgets(buffer, max_len + 1, stdin)) { // +1 for null terminator
-        buffer[0] = '\0'; // Ensure buffer is empty on error
-    }
-    // Remove trailing newline or the specified terminator if present
-    char *term_pos = strchr(buffer, terminator);
-    if (term_pos != NULL) {
-        *term_pos = '\0';
-    } else {
-        // If terminator not found, ensure buffer is null-terminated within max_len
-        buffer[max_len] = '\0';
-    }
-}
-
-// Placeholder for allocate
-// Simulates memory allocation.
-int allocate(size_t size, int flags, void **ptr) {
-    *ptr = malloc(size);
-    if (*ptr == NULL) {
+// Custom allocator/deallocator
+// These are likely wrappers around malloc/free, possibly with some tracking or security features.
+// Returns 0 on success, non-zero on failure.
+int allocate(size_t size, int flags, void **out_ptr) {
+    *out_ptr = malloc(size);
+    if (*out_ptr == NULL) {
         fprintf(stderr, "Allocation failed for size %zu\n", size);
-        return -1; // Indicate failure
+        return 1; // Indicate failure
     }
-    memset(*ptr, 0, size); // Zero out allocated memory, similar to bzero
-    (void)flags; // Suppress unused parameter warning
-    return 0;    // Indicate success
+    memset(*out_ptr, 0, size); // Initialize allocated memory to zero
+    return 0; // Indicate success
 }
 
-// Placeholder for deallocate
-// Simulates memory deallocation.
+// Custom deallocator. 'size' might be used by a custom allocator.
 void deallocate(void *ptr, size_t size) {
-    free(ptr);
-    (void)size; // Suppress unused parameter warning
+    if (ptr) {
+        // In a real scenario, 'size' might be used by a custom allocator
+        // for memory pool management or debugging. For simple malloc/free, it's ignored.
+        free(ptr);
+    }
 }
 
-// Placeholder for initString
-// Simulates string initialization, might parse PML.
-// Returns a pointer to a newly allocated PMLString object.
-PMLString *initString(const char *src) {
-    PMLString *pml_str = (PMLString *)malloc(sizeof(PMLString));
-    if (pml_str == NULL) {
-        return NULL;
-    }
-    memset(pml_str, 0, sizeof(PMLString)); // Clear the allocated PMLString object
+// Mimic bzero behavior for receive_until's buffer and reads from stdin.
+// `terminator_char` is usually '\n' (ASCII 10).
+void receive_until(char *buffer, int terminator_char, int max_len) {
+    // Clear the buffer first as per bzero usage in original snippet
+    memset(buffer, 0, max_len + 1); // +1 for null terminator
 
-    if (!src || *src == '\0') {
-        pml_str->status = 0; // Indicate empty or error
-        pml_str->str_data = NULL;
-    } else {
-        pml_str->status = 1; // Indicate valid
-        pml_str->str_data = strdup(src);
-        if (pml_str->str_data == NULL) {
-            free(pml_str);
+    if (fgets(buffer, max_len + 1, stdin) == NULL) {
+        // Handle error or EOF
+        buffer[0] = '\0'; // Ensure buffer is empty string
+        return;
+    }
+    // Remove trailing newline if present, or other terminator char
+    char *newline_pos = strchr(buffer, terminator_char);
+    if (newline_pos != NULL) {
+        *newline_pos = '\0';
+    }
+}
+
+// Assumed to take a char* (from pml_buffer) and create a String_t object.
+String_t* initString(void *data_buffer) {
+    String_t *str_obj = (String_t*)malloc(sizeof(String_t)); // Assuming sizeof(String_t) is 12 bytes or similar
+    if (str_obj) {
+        str_obj->ref_count = 1; // Initialize reference count or length
+        str_obj->data = strdup((char*)data_buffer); // Duplicate the string data
+        if (!str_obj->data) {
+            free(str_obj);
             return NULL;
         }
     }
-    return pml_str;
+    return str_obj;
 }
 
-// Placeholder for freeString
-// Frees the PMLString object and its internal string data.
-void freeString(PMLString *str_ptr) {
-    if (str_ptr) {
-        free(str_ptr->str_data); // Free the internal string data
-        free(str_ptr);           // Free the PMLString object itself
+// Frees the String_t object and its internal data.
+void freeString(String_t *str_obj) {
+    if (str_obj) {
+        free(str_obj->data); // Free the duplicated string data
+        free(str_obj);       // Free the String_t object itself
     }
 }
 
-// Placeholder for planetTopLevel
-// Processes PML and returns a pointer to a new Planet.
-Planet *planetTopLevel(PMLString *pml_obj) {
-    if (!pml_obj || pml_obj->status == 0 || !pml_obj->str_data) {
-        printf("PML string object is empty or invalid.\n");
-        return NULL;
-    }
+// This function likely parses PML (Planet Markup Language) and creates a Planet object.
+Planet* planetTopLevel(String_t *pml_string_obj) {
+    printf("Parsing PML: %s\n", pml_string_obj->data);
     Planet *p = NULL;
-    if (allocate(sizeof(Planet), 0, (void **)&p) == 0) {
-        printf("Processing PML: %s\n", pml_obj->str_data);
-        strncpy(p->name, pml_obj->str_data, sizeof(p->name) - 1);
-        p->name[sizeof(p->name) - 1] = '\0'; // Ensure null-termination
-        printf("Created planet from PML: %s\n", p->name);
+    // Allocate a new Planet object
+    if (allocate(sizeof(Planet), 0, (void**)&p) != 0) {
+        return NULL; // Allocation failed
     }
+    // For demonstration, just set a dummy name
+    strncpy(p->name, "PML_Planet", PLANET_NAME_MAX_LEN);
+    p->name[PLANET_NAME_MAX_LEN] = '\0';
     return p;
 }
 
-// Placeholder for printPlanetInfo
-void printPlanetInfo(Planet *p) {
-    if (p) {
-        printf("Planet Name: %s\n", p->name);
-        // Print other info if Planet struct had more fields
+// This function initializes a newly allocated Planet object (other than its name).
+void initPlanet(Planet *planet) {
+    // The original code copies the name *after* this call.
+    // So, this likely sets up other default fields or just ensures zeroing.
+    // Our allocate already zeroes, so this might be redundant or for specific fields.
+    if (planet) {
+        // Example: planet->mass = 0; planet->radius = 0; etc.
+    }
+}
+
+// Prints information about a planet.
+void printPlanetInfo(Planet *planet) {
+    if (planet) {
+        printf("  Planet: %s\n", planet->name);
+        // Print other info if the Planet struct had more fields
     } else {
-        printf("Invalid planet pointer.\n");
+        printf("  Planet: (Null)\n");
     }
 }
 
-// Placeholder for initPlanet
-void initPlanet(Planet *p) {
-    if (p) {
-        memset(p->name, 0, sizeof(p->name)); // Clear name initially
-        printf("Initialized new planet structure.\n");
+// Presents a menu for a selected planet. Returns 0 if the planet should be removed, 1 otherwise.
+int planetMenu(Planet *planet) {
+    printf("--- Planet Menu for %s ---\n", planet->name);
+    printf("1) Do something\n");
+    printf("2) Delete Planet\n");
+    printf("3) Back\n");
+    printf("Selection: ");
+    char menu_input[10];
+    receive_until(menu_input, '\n', 9); // Max 9 chars for input
+    int choice = atoi(menu_input);
+    if (choice == 2) {
+        printf("Deleting planet %s.\n", planet->name);
+        deallocate(planet, sizeof(Planet)); // Deallocate the planet itself
+        return 0; // Signal to remove from solarSystem array
     }
+    return 1; // Keep the planet
 }
 
-// Placeholder for planetMenu
-// Returns 0 if the planet was deleted, 1 otherwise.
-int planetMenu(Planet *p) {
-    if (p) {
-        printf("\n--- Planet Menu for %s ---\n", p->name);
-        printf("1) Rename Planet\n");
-        printf("2) Delete Planet\n");
-        printf("3) Back\n");
-        printf("Selection: ");
-        char buf[10];
-        receive_until(buf, '\n', sizeof(buf) - 1);
-        int selection = atoi(buf);
+// --- Main Function ---
 
-        switch (selection) {
-            case 1:
-                printf("New name: ");
-                receive_until(p->name, '\n', sizeof(p->name) - 1);
-                p->name[sizeof(p->name) - 1] = '\0'; // Ensure null-termination
-                printf("Planet renamed to %s.\n", p->name);
-                break;
-            case 2:
-                printf("Deleting Planet %s...\n", p->name);
-                deallocate(p, sizeof(Planet));
-                return 0; // Indicate deletion
-            case 3:
-                break; // Go back
-            default:
-                printf("Invalid planet menu selection.\n");
-        }
-    } else {
-        printf("Cannot open menu for invalid planet.\n");
-    }
-    return 1; // Indicate not deleted
-}
-
-// Function: main
 int main(void) {
-    char input_buffer[30];
-    int selection;
-    void *pml_alloc_buffer = NULL; // Buffer for raw PML content
-    PMLString *pml_string_obj = NULL; // Processed PML string object
-    Planet *new_planet_ptr = NULL;     // Pointer for new planet allocation
+    int result; // Replaces iVar1
+    void *pml_buffer = NULL; // Replaces local_40
+    Planet *new_planet_ptr = NULL; // Replaces local_3c
+    char input_buffer[30]; // Replaces local_36
+    String_t *pml_string_obj = NULL; // Replaces local_18
+    int selection = 0; // Replaces local_14
 
-    // Initialize solarSystem array (10 pointers, sizeof(Planet*) each)
+    // Initialize the global solarSystem array to all NULL pointers
     memset(solarSystem, 0, sizeof(solarSystem));
 
-    while (1) { // Main menu loop
+    while (true) { // Replaces do...while(true)
         printf("\nPlanet Markup Language Main\n");
         printf("1) Print Planets\n");
         printf("2) Add PML\n");
@@ -181,127 +169,120 @@ int main(void) {
         printf("5) Exit\n");
         printf("Selection: ");
 
-        memset(input_buffer, 0, sizeof(input_buffer)); // Clear input buffer
-        receive_until(input_buffer, '\n', sizeof(input_buffer) - 1);
+        memset(input_buffer, 0, sizeof(input_buffer));
+        receive_until(input_buffer, '\n', 4); // Read up to 4 chars for selection
         selection = atoi(input_buffer);
 
         switch (selection) {
             default:
                 printf("Invalid...\n");
                 break;
-
-            case 1: // Print Planets
-                for (int i = 0; i < 10; ++i) {
-                    if (solarSystem[i] != NULL) {
-                        printPlanetInfo(solarSystem[i]);
+            case 1:
+                for (selection = 0; selection < 10; selection++) {
+                    if (solarSystem[selection] != NULL) {
+                        printPlanetInfo(solarSystem[selection]);
                     }
                 }
                 break;
-
-            case 2: // Add PML
-                if (allocate(0x1000, 0, &pml_alloc_buffer) == 0) {
+            case 2:
+                // Attempt to allocate 0x1000 bytes for PML input
+                result = allocate(0x1000, 0, &pml_buffer);
+                if (result == 0) { // Allocation successful
                     printf("PML: ");
-                    // pml_alloc_buffer is already zeroed by allocate
-                    receive_until((char *)pml_alloc_buffer, '\n', 0xfff); // 0xfff = 4095
+                    // Read PML input into the allocated buffer
+                    receive_until((char*)pml_buffer, '\n', 0xfff); // Read up to 0xfff chars
 
-                    pml_string_obj = initString((char *)pml_alloc_buffer);
-                    deallocate(pml_alloc_buffer, 0x1000); // Deallocate the raw PML buffer
-                    pml_alloc_buffer = NULL; // Reset pointer after deallocation
+                    pml_string_obj = initString(pml_buffer);
+                    deallocate(pml_buffer, 0x1000); // Free the temporary PML input buffer
 
                     if (pml_string_obj != NULL) {
-                        if (pml_string_obj->status == 0) { // If the PML string object indicates an empty/error string
-                            deallocate(pml_string_obj, sizeof(PMLString)); // Free the empty object
+                        // The original code `if (*local_18 == 0)` implies checking an int field.
+                        // Assuming String_t's first member `ref_count` serves this purpose.
+                        if (pml_string_obj->ref_count == 0) {
+                            freeString(pml_string_obj); // Deallocate the String_t object
                         } else {
-                            int i;
-                            for (i = 0; i < 10; ++i) {
-                                if (solarSystem[i] == NULL) {
-                                    Planet *created_planet = planetTopLevel(pml_string_obj);
-                                    solarSystem[i] = created_planet;
-                                    if (solarSystem[i] == NULL) { // If planet creation failed
-                                        printf("Failed to add planet from PML.\n");
-                                    }
-                                    break; // Only add one planet from PML at a time
+                            selection = 0; // Reuse 'selection' as loop counter
+                            while (selection < 10) {
+                                if (solarSystem[selection] == NULL) {
+                                    Planet *new_p = planetTopLevel(pml_string_obj);
+                                    solarSystem[selection] = new_p;
+                                    if (solarSystem[selection] == NULL) break; // If planetTopLevel failed
+                                    selection++;
+                                } else {
+                                    selection++; // Move to next slot if current one is occupied
                                 }
                             }
-                            if (i == 10) {
-                                printf("Solar system is full. Cannot add more planets.\n");
-                            }
-                            freeString(pml_string_obj); // Free the PML string object
+                            freeString(pml_string_obj); // Free the String_t object after use
                         }
-                    } else {
-                        printf("Failed to initialize PML string object.\n");
                     }
-                } else {
-                    printf("Failed to allocate buffer for PML input.\n");
-                    pml_alloc_buffer = NULL; // Ensure it's NULL on allocation failure
+                } else { // Allocation failed
+                    pml_buffer = NULL; // Ensure pointer is NULL
                 }
                 break;
-
-            case 3: // Add Planet
+            case 3:
                 printf("\n-> ");
                 memset(input_buffer, 0, sizeof(input_buffer));
-                receive_until(input_buffer, '\n', 0x1d); // 0x1d = 29, max 29 chars + null for name
+                receive_until(input_buffer, '\n', PLANET_NAME_MAX_LEN); // Read planet name
 
-                int i;
-                for (i = 0; i < 10; ++i) {
-                    if (solarSystem[i] == NULL) {
-                        break; // Found an empty slot
-                    }
-                }
+                // Find the first empty slot in solarSystem
+                for (selection = 0; (selection < 10 && (solarSystem[selection] != NULL)); selection++);
 
-                if (i != 10) { // If an empty slot was found
-                    if (allocate(sizeof(Planet), 0, (void **)&new_planet_ptr) == 0) {
-                        initPlanet(new_planet_ptr);
-                        solarSystem[i] = new_planet_ptr;
+                if (selection != 10) { // If an empty slot was found
+                    // Allocate memory for a new Planet object
+                    result = allocate(sizeof(Planet), 0, (void**)&new_planet_ptr);
+                    if (result == 0) { // Allocation successful
+                        initPlanet(new_planet_ptr); // Initialize other planet fields
+                        solarSystem[selection] = new_planet_ptr; // Assign to solarSystem slot
 
-                        int name_idx = 0;
-                        // Copy alphanumeric characters up to name buffer size - 1
-                        while (input_buffer[name_idx] != '\0' && isalnum((unsigned char)input_buffer[name_idx]) && name_idx < sizeof(new_planet_ptr->name) - 1) {
+                        int name_idx = 0; // Use a separate index for name copying
+                        // Copy alphanumeric characters from input_buffer to planet's name
+                        while (isalnum((unsigned char)input_buffer[name_idx])) {
                             new_planet_ptr->name[name_idx] = input_buffer[name_idx];
                             name_idx++;
+                            // Prevent buffer overflow in planet name
+                            if (name_idx >= PLANET_NAME_MAX_LEN) break;
                         }
                         new_planet_ptr->name[name_idx] = '\0'; // Null-terminate the name
-                        printf("Planet '%s' added to slot %d.\n", new_planet_ptr->name, i + 1);
-                    } else {
-                        printf("Failed to allocate memory for new planet.\n");
-                        new_planet_ptr = NULL; // Ensure it's NULL on allocation failure
+                    } else { // Allocation failed
+                        new_planet_ptr = NULL; // Ensure pointer is NULL
                     }
                 } else {
-                    printf("Solar system is full. Cannot add more planets.\n");
+                    printf("Solar system is full! Cannot add more planets.\n");
                 }
                 break;
-
-            case 4: // Select Planet
-                for (int j = 0; j < 10; ++j) {
-                    if (solarSystem[j] != NULL) {
-                        printf("%d) %s\n", j + 1, solarSystem[j]->name);
+            case 4:
+                // Print list of existing planets with numbers
+                for (selection = 0; selection < 10; selection++) {
+                    if (solarSystem[selection] != NULL) {
+                        Planet *current_planet = solarSystem[selection];
+                        printf("%d) %s\n", selection + 1, current_planet->name);
                     }
                 }
 
                 memset(input_buffer, 0, sizeof(input_buffer));
                 printf("\n-> ");
-                receive_until(input_buffer, '\n', 4); // Max 3 chars + null (e.g., "10\n")
+                receive_until(input_buffer, '\n', 4); // Read selection for planet menu
                 selection = atoi(input_buffer);
 
-                if (selection < 1 || selection > 10) {
-                    printf("Invalid planet selection number.\n");
+                if ((selection < 1) || (10 < selection)) {
+                    printf("Invalid selection.\n");
                 } else if (solarSystem[selection - 1] == NULL) {
-                    printf("Invalid planet selection: Slot %d is empty.\n", selection);
+                    printf("Invalid selection (no planet at that slot).\n");
                 } else {
-                    // If planetMenu indicates deletion (returns 0), mark slot as empty
-                    if (planetMenu(solarSystem[selection - 1]) == 0) {
-                        solarSystem[selection - 1] = NULL;
+                    // Call planetMenu for the selected planet
+                    result = planetMenu(solarSystem[selection - 1]);
+                    if (result == 0) { // If planetMenu indicates deletion
+                        solarSystem[selection - 1] = NULL; // Remove planet from solarSystem
                     }
                 }
                 break;
-
-            case 5: // Exit
+            case 5:
                 printf("Exitting..\n");
-                // Clean up any allocated planets before exiting
-                for (int k = 0; k < 10; ++k) {
-                    if (solarSystem[k] != NULL) {
-                        deallocate(solarSystem[k], sizeof(Planet));
-                        solarSystem[k] = NULL;
+                // In a real application, you might deallocate all planets here.
+                for (selection = 0; selection < 10; selection++) {
+                    if (solarSystem[selection] != NULL) {
+                        deallocate(solarSystem[selection], sizeof(Planet));
+                        solarSystem[selection] = NULL;
                     }
                 }
                 return 0; // Exit program

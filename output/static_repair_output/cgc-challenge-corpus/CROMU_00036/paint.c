@@ -1,406 +1,471 @@
-#include <stdint.h> // For uint8_t, uint16_t, uint32_t, int32_t, uintptr_t
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h> // For malloc, free, abs
 
-// Custom types mapping to standard integer types
-typedef uint16_t ushort;
+// Type definitions to match common decompiled patterns
 typedef uint8_t byte;
 typedef uint8_t undefined;
-typedef uint32_t undefined4; // Assuming 4-byte undefined value
+typedef uint16_t ushort;
+typedef uint32_t undefined4; // Used for Context* in ConnectPoints
 
-// Forward declarations for functions
-// Assuming fb_context_addr is a uintptr_t representing a base memory address
-// and that pointer arithmetic and dereferencing are handled by casting.
-int GetColor(uintptr_t fb_context_addr, ushort y, ushort x, byte color_idx_offset);
-undefined GetColorIndex(uintptr_t fb_context_addr, ushort y, ushort x, byte color_idx_offset);
-void SetColor(uintptr_t fb_context_addr, ushort y, ushort x, byte color_idx_offset, undefined color_val);
-void ConnectPoints(uintptr_t fb_context_addr, byte color_idx_offset, undefined color_val, ushort x1, ushort y1, ushort x2, ushort y2);
+// Context structure for Get/SetColor and ConnectPoints
+// `param_1` in Get/SetColor (int) and ConnectPoints (undefined4) is a pointer to this.
+typedef struct {
+    uint8_t  _pad0[2];        // Placeholder, offset 0-1
+    ushort   pitch;           // Offset 2: `*(ushort *)(ctx + 2)` - Bytes per scanline
+    uint8_t  _pad1[4];        // Placeholder, offset 4-7
+    uint8_t* buffers[256];    // Offset 8: `*(int *)(ctx + 8 + (uint)buffer_idx * 4)`
+                               // Array of pointers to pixel data for different "layers" or "color channels".
+                               // Assuming `param_4` (byte) is an index into this array.
+} Context;
+
+// Canvas structure for Paint functions
+// `param_1` in Paint functions (ushort*) is a pointer to this.
+// Based on usage and typical graphics APIs, (width, height) is standard.
+// The original code's bounds checks seemed to swap width/height, but they've been corrected to
+// standard (x < width, y < height) in the function implementations.
+typedef struct {
+    ushort width;
+    ushort height;
+} Canvas;
+
+// Function prototypes
+// Note: ConnectPoints' 8th parameter was unused in the original snippet and has been removed from its signature and calls.
+int GetColor(Context* ctx, ushort y, ushort x, byte buffer_idx);
+undefined GetColorIndex(Context* ctx, ushort y, ushort x, byte buffer_idx);
+void SetColor(Context* ctx, ushort y, ushort x, byte buffer_idx, undefined value);
+
+void ConnectPoints(Context* ctx, byte buffer_idx, undefined value, ushort x1, ushort y1, ushort x2, ushort y2);
+
+void PaintTriangle(Canvas* canvas, byte buffer_idx, undefined value, char fill_flag, ushort* points);
+void PaintRectangle(Canvas* canvas, byte buffer_idx, undefined value, char fill_flag, ushort* rect_params);
+void PaintSquare(Canvas* canvas, byte buffer_idx, undefined value, char fill_flag, ushort* square_params);
+void PaintLine(Canvas* canvas, byte buffer_idx, undefined value, byte unused_param, ushort* line_params);
+void PaintCircle(Canvas* canvas, byte buffer_idx, undefined value, char fill_flag, ushort* circle_params);
+void PaintSpray(Canvas* canvas, byte buffer_idx, undefined value, byte unused_param, ushort* spray_params);
+
 
 // Function: GetColor
-int GetColor(uintptr_t fb_context_addr, ushort y, ushort x, byte color_idx_offset) {
-  uint8_t *base_ptr = (uint8_t*)fb_context_addr;
-  // Accessing int32_t at offset 8 + color_idx_offset * 4 (likely an array of scanline pointers)
-  int32_t scanline_base_addr = *(int32_t*)(base_ptr + 8 + (uint32_t)color_idx_offset * 4);
-  // Accessing ushort at offset 2 (likely screen pitch/width)
-  ushort pitch = *(ushort*)(base_ptr + 2);
-  // Accessing byte at calculated pixel address
-  uint8_t pixel_value = *(uint8_t*)((uint8_t*)scanline_base_addr + (uint32_t)y * pitch + x);
-  // Returns fb_context_addr (as int) + pixel_value * 3 + 0x20. This seems to be a palette lookup/color calculation.
-  return (int)fb_context_addr + (uint32_t)pixel_value * 3 + 0x20;
+int GetColor(Context* ctx, ushort y, ushort x, byte buffer_idx) {
+  // The original return statement `param_1 + (uint)*(byte *)(...) * 3 + 0x20` is ambiguous.
+  // Given `GetColorIndex` returns the raw byte, `GetColor` likely performs a palette lookup
+  // or similar transformation. Without a palette definition, the `* 3 + 0x20` part
+  // cannot be meaningfully replicated. For now, it returns the raw pixel value as an int.
+  return (int)*(ctx->buffers[buffer_idx] + x + (uint32_t)y * ctx->pitch);
 }
 
 // Function: GetColorIndex
-undefined GetColorIndex(uintptr_t fb_context_addr, ushort y, ushort x, byte color_idx_offset) {
-  uint8_t *base_ptr = (uint8_t*)fb_context_addr;
-  int32_t scanline_base_addr = *(int32_t*)(base_ptr + 8 + (uint32_t)color_idx_offset * 4);
-  ushort pitch = *(ushort*)(base_ptr + 2);
-  return *(uint8_t*)((uint8_t*)scanline_base_addr + (uint32_t)y * pitch + x);
+undefined GetColorIndex(Context* ctx, ushort y, ushort x, byte buffer_idx) {
+  return *(ctx->buffers[buffer_idx] + x + (uint32_t)y * ctx->pitch);
 }
 
 // Function: SetColor
-void SetColor(uintptr_t fb_context_addr, ushort y, ushort x, byte color_idx_offset, undefined color_val) {
-  uint8_t *base_ptr = (uint8_t*)fb_context_addr;
-  int32_t scanline_base_addr = *(int32_t*)(base_ptr + 8 + (uint32_t)color_idx_offset * 4);
-  if (scanline_base_addr != 0) {
-    ushort pitch = *(ushort*)(base_ptr + 2);
-    *(uint8_t*)((uint8_t*)scanline_base_addr + (uint32_t)y * pitch + x) = color_val;
+void SetColor(Context* ctx, ushort y, ushort x, byte buffer_idx, undefined value) {
+  uint8_t* buffer = ctx->buffers[buffer_idx];
+  if (buffer != NULL) {
+    *(buffer + x + (uint32_t)y * ctx->pitch) = value;
+  }
+}
+
+// Function: ConnectPoints (Bresenham-like line drawing)
+void ConnectPoints(Context* ctx, byte buffer_idx, undefined value, ushort x1, ushort y1, ushort x2, ushort y2) {
+  short sx, sy;
+  int dx_abs, dy_abs;
+  int longest_axis_len;
+
+  if (x1 < x2) {
+    dx_abs = (uint)x2 - (uint)x1;
+    sx = 1;
+  } else {
+    dx_abs = (uint)x1 - (uint)x2;
+    sx = -1;
+  }
+  if (y1 < y2) {
+    dy_abs = (uint)y2 - (uint)y1;
+    sy = 1;
+  } else {
+    dy_abs = (uint)y1 - (uint)y2;
+    sy = -1;
+  }
+
+  longest_axis_len = (dx_abs < dy_abs) ? dy_abs : dx_abs;
+
+  int error_x = 0;
+  int error_y = 0;
+
+  for (int i = 0; i <= longest_axis_len + 1; ++i) {
+    SetColor(ctx, y1, x1, buffer_idx, value);
+    error_x += dx_abs;
+    error_y += dy_abs;
+
+    if (longest_axis_len < error_x) {
+      x1 += sx;
+      error_x -= longest_axis_len;
+    }
+    if (longest_axis_len < error_y) {
+      y1 += sy;
+      error_y -= longest_axis_len;
+    }
   }
 }
 
 // Function: PaintTriangle
-void PaintTriangle(uintptr_t fb_context_addr, byte color_idx_offset, undefined color_val, char fill_flag, ushort *vertices) {
-  // Assuming fb_context_addr points to a struct where width is at offset 0 and height at offset 2.
-  ushort screen_width = *(ushort*)((uint8_t*)fb_context_addr + 0);
-  ushort screen_height = *(ushort*)((uint8_t*)fb_context_addr + 2);
+void PaintTriangle(Canvas* canvas, byte buffer_idx, undefined value, char fill_flag, ushort* points) {
+  // points: {x1, y1, x2, y2, x3, y3} => points[0]-points[5]
+  ushort p1_x = points[0], p1_y = points[1];
+  ushort p2_x = points[2], p2_y = points[3];
+  ushort p3_x = points[4], p3_y = points[5];
 
-  // vertices: [x1, y1, x2, y2, x3, y3]
-  ushort v0_x = vertices[0], v0_y = vertices[1];
-  ushort v1_x = vertices[2], v1_y = vertices[3];
-  ushort v2_x = vertices[4], v2_y = vertices[5];
+  // Bounds check: all points must be within canvas dimensions
+  if ((p1_x < canvas->width && p1_y < canvas->height &&
+       p2_x < canvas->width && p2_y < canvas->height &&
+       p3_x < canvas->width && p3_y < canvas->height)) {
 
-  // Boundary check
-  if (!((v0_x < screen_height && v1_x < screen_height && v2_x < screen_height) &&
-        (v0_y < screen_width && v1_y < screen_width && v2_y < screen_width))) {
-    return;
-  }
+    if (fill_flag == 0) { // Outline
+      ConnectPoints((Context*)canvas, buffer_idx, value, p1_x, p1_y, p2_x, p2_y);
+      ConnectPoints((Context*)canvas, buffer_idx, value, p3_x, p3_y, p1_x, p1_y);
+      ConnectPoints((Context*)canvas, buffer_idx, value, p2_x, p2_y, p3_x, p3_y);
+    } else { // Fill
+      // Sort points by Y-coordinate, then by X-coordinate for ties
+      ushort x[3] = {p1_x, p2_x, p3_x};
+      ushort y[3] = {p1_y, p2_y, p3_y};
 
-  if (fill_flag == 0) { // Outline
-    ConnectPoints(fb_context_addr, color_idx_offset, color_val, v0_x, v0_y, v1_x, v1_y);
-    ConnectPoints(fb_context_addr, color_idx_offset, color_val, v2_x, v2_y, v0_x, v0_y);
-    ConnectPoints(fb_context_addr, color_idx_offset, color_val, v1_x, v1_y, v2_x, v2_y);
-  } else { // Filled
-    struct Point { ushort x, y; };
-    struct Point p[3] = {{v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}};
-
-    // Sort points by y-coordinate (p[0] = top, p[1] = mid, p[2] = bot)
-    for (int i = 0; i < 2; ++i) {
-      for (int j = i + 1; j < 3; ++j) {
-        if (p[j].y < p[i].y) {
-          struct Point temp = p[i];
-          p[i] = p[j];
-          p[j] = temp;
-        }
-      }
-    }
-
-    ushort x_top = p[0].x, y_top = p[0].y;
-    ushort x_mid = p[1].x, y_mid = p[1].y;
-    ushort x_bot = p[2].x, y_bot = p[2].y;
-
-    // Handle flat-bottom triangle case (y_mid == y_bot)
-    if (y_bot == y_mid) {
-      ushort min_x = x_top, max_x = x_top;
-      if (x_mid < min_x) min_x = x_mid; else if (x_mid > max_x) max_x = x_mid;
-      if (x_bot < min_x) min_x = x_bot; else if (x_bot > max_x) max_x = x_bot;
-      if (min_x < max_x) {
-        ConnectPoints(fb_context_addr, color_idx_offset, color_val, min_x, y_mid, max_x - 1, y_mid);
-      }
-    } else { // General triangle fill
-      int acc_long_edge_dx = 0; // Accumulator for the edge from top to bottom (p[0] to p[2])
-      int acc_current_edge_dx = 0; // Accumulator for the current shorter edge (p[0] to p[1] or p[1] to p[2])
-
-      // First half: from y_top to y_mid
-      if (y_top == y_mid) { // Flat-top triangle
-        ushort min_x_flat_top = x_top;
-        ushort max_x_flat_top = x_mid;
-        if (min_x_flat_top > max_x_flat_top) {
-            ushort temp = min_x_flat_top; min_x_flat_top = max_x_flat_top; max_x_flat_top = temp;
-        }
-        if (min_x_flat_top < max_x_flat_top) {
-            ConnectPoints(fb_context_addr, color_idx_offset, color_val, min_x_flat_top, y_top, max_x_flat_top - 1, y_top);
-        }
-        // Initialize accumulators for the second half, starting from y_mid
-        acc_long_edge_dx = (int)(x_bot - x_top) * (y_mid - y_top);
-        acc_current_edge_dx = (int)(x_bot - x_mid) * (y_mid - y_mid); // Will be 0
-      } else { // Standard first half
-        for (ushort y_scan = y_top; y_scan <= y_mid; ++y_scan) {
-          int delta_y_long = y_bot - y_top;
-          int delta_y_current = y_mid - y_top;
-
-          ushort current_x_long = x_top;
-          if (delta_y_long != 0) {
-            current_x_long = x_top + acc_long_edge_dx / delta_y_long;
+      for (int i = 0; i < 3; ++i) {
+          for (int j = i + 1; j < 3; ++j) {
+              if (y[i] > y[j] || (y[i] == y[j] && x[i] > x[j])) {
+                  ushort temp_y = y[i]; y[i] = y[j]; y[j] = temp_y;
+                  ushort temp_x = x[i]; x[i] = x[j]; x[j] = temp_x;
+              }
           }
-
-          ushort current_x_current = x_top;
-          if (delta_y_current != 0) {
-            current_x_current = x_top + acc_current_edge_dx / delta_y_current;
-          }
-
-          acc_long_edge_dx += (x_bot - x_top);
-          acc_current_edge_dx += (x_mid - x_top);
-
-          ushort fill_x_start = current_x_current;
-          ushort fill_x_end = current_x_long;
-          if (current_x_long < current_x_current) {
-            fill_x_start = current_x_long;
-            fill_x_end = current_x_current;
-          }
-          if (fill_x_start < fill_x_end) {
-            ConnectPoints(fb_context_addr, color_idx_offset, color_val, fill_x_start, y_scan, (fill_x_end - 1), y_scan);
-          }
-        }
       }
 
-      // Second half: from y_mid to y_bot
-      // Re-initialize accumulators based on the state at y_mid
-      acc_long_edge_dx = (int)(x_bot - x_top) * (y_mid - y_top); // Accumulator for long edge at y_mid
-      acc_current_edge_dx = (int)(x_bot - x_mid) * (y_mid - y_mid); // Accumulator for new short edge (p[1] to p[2]) at y_mid
+      ushort p_top_x = x[0], p_top_y = y[0];
+      ushort p_mid_x = x[1], p_mid_y = y[1];
+      ushort p_bot_x = x[2], p_bot_y = y[2];
 
-      for (ushort y_scan = y_mid; y_scan <= y_bot; ++y_scan) {
-        int delta_y_long = y_bot - y_top;
-        int delta_y_current = y_bot - y_mid;
+      // Handle horizontal top edge explicitly if it exists
+      if (p_top_y == p_mid_y) {
+          ushort min_x = (p_top_x < p_mid_x) ? p_top_x : p_mid_x;
+          ushort max_x = (p_top_x > p_mid_x) ? p_top_x : p_mid_x;
+          if (min_x < max_x) {
+              ConnectPoints((Context*)canvas, buffer_idx, value, min_x, p_top_y, max_x - 1, p_top_y);
+          }
+      }
 
-        ushort current_x_long = x_top;
-        if (delta_y_long != 0) {
-          current_x_long = x_top + acc_long_edge_dx / delta_y_long;
-        }
+      // First segment: from p_top_y to p_mid_y (exclusive of p_mid_y if not horizontal)
+      if (p_top_y < p_mid_y) {
+          int dx_top_bot = (int)p_bot_x - (int)p_top_x;
+          int dy_top_bot = (int)p_bot_y - (int)p_top_y;
+          int dx_top_mid = (int)p_mid_x - (int)p_top_x;
+          int dy_top_mid = (int)p_mid_y - (int)p_top_y;
 
-        ushort current_x_current = x_mid;
-        if (delta_y_current != 0) {
-          current_x_current = x_mid + acc_current_edge_dx / delta_y_current;
-        }
+          int current_x_tb_accumulator = 0;
+          int current_x_tm_accumulator = 0;
 
-        acc_long_edge_dx += (x_bot - x_top);
-        acc_current_edge_dx += (x_bot - x_mid);
+          ushort loop_end_y = (p_mid_y == p_bot_y) ? p_mid_y : p_mid_y -1;
+          if (p_top_y == p_mid_y) loop_end_y = p_top_y;
 
-        ushort fill_x_start = current_x_current;
-        ushort fill_x_end = current_x_long;
-        if (current_x_long < current_x_current) {
-          fill_x_start = current_x_long;
-          fill_x_end = current_x_current;
-        }
-        if (fill_x_start < fill_x_end) {
-          ConnectPoints(fb_context_addr, color_idx_offset, color_val, fill_x_start, y_scan, (fill_x_end - 1), y_scan);
-        }
+          for (ushort current_y = p_top_y; current_y <= loop_end_y; ++current_y) {
+              if (dy_top_bot == 0 || dy_top_mid == 0) continue;
+
+              ushort x_tb = p_top_x + current_x_tb_accumulator / dy_top_bot;
+              ushort x_tm = p_top_x + current_x_tm_accumulator / dy_top_mid;
+
+              current_x_tb_accumulator += dx_top_bot;
+              current_x_tm_accumulator += dx_top_mid;
+
+              ushort scan_x1 = x_tm;
+              ushort scan_x2 = x_tb;
+              if (x_tb < x_tm) {
+                  scan_x1 = x_tb;
+                  scan_x2 = x_tm;
+              }
+
+              if (scan_x1 < scan_x2) {
+                  ConnectPoints((Context*)canvas, buffer_idx, value, scan_x1, current_y, scan_x2 - 1, current_y);
+              }
+          }
+      }
+
+      // Handle horizontal mid/bot edge explicitly if it exists
+      if (p_mid_y == p_bot_y) {
+          ushort min_x = (p_mid_x < p_bot_x) ? p_mid_x : p_bot_x;
+          ushort max_x = (p_mid_x > p_bot_x) ? p_mid_x : p_bot_x;
+          if (min_x < max_x) {
+              ConnectPoints((Context*)canvas, buffer_idx, value, min_x, p_mid_y, max_x - 1, p_mid_y);
+          }
+      }
+
+      // Second segment: from p_mid_y to p_bot_y (inclusive)
+      if (p_mid_y < p_bot_y) {
+          int dx_top_bot = (int)p_bot_x - (int)p_top_x;
+          int dy_top_bot = (int)p_bot_y - (int)p_top_y;
+          int dx_mid_bot = (int)p_bot_x - (int)p_mid_x;
+          int dy_mid_bot = (int)p_bot_y - (int)p_mid_y;
+
+          int current_x_tb_accumulator = (p_mid_y - p_top_y) * dx_top_bot;
+          int current_x_mb_accumulator = (p_mid_y - p_mid_y) * dx_mid_bot;
+
+          for (ushort current_y = p_mid_y; current_y <= p_bot_y; ++current_y) {
+              if (dy_top_bot == 0 || dy_mid_bot == 0) continue;
+
+              ushort x_tb = p_top_x + current_x_tb_accumulator / dy_top_bot;
+              ushort x_mb = p_mid_x + current_x_mb_accumulator / dy_mid_bot;
+
+              current_x_tb_accumulator += dx_top_bot;
+              current_x_mb_accumulator += dx_mid_bot;
+
+              ushort scan_x1 = x_mb;
+              ushort scan_x2 = x_tb;
+              if (x_tb < x_mb) {
+                  scan_x1 = x_tb;
+                  scan_x2 = x_mb;
+              }
+
+              if (scan_x1 < scan_x2) {
+                  ConnectPoints((Context*)canvas, buffer_idx, value, scan_x1, current_y, scan_x2 - 1, current_y);
+              }
+          }
       }
     }
   }
 }
 
 // Function: PaintRectangle
-void PaintRectangle(uintptr_t fb_context_addr, byte color_idx_offset, undefined color_val, char fill_flag, ushort *rect_params) {
-  // rect_params: [x, y, width, height]
-  ushort x = rect_params[0], y = rect_params[1];
-  ushort width = rect_params[2], height = rect_params[3];
+void PaintRectangle(Canvas* canvas, byte buffer_idx, undefined value, char fill_flag, ushort* rect_params) {
+  // rect_params: {x, y, width, height}
+  ushort x = rect_params[0];
+  ushort y = rect_params[1];
+  ushort w = rect_params[2];
+  ushort h = rect_params[3];
 
-  ushort screen_width = *(ushort*)((uint8_t*)fb_context_addr + 0);
-  ushort screen_height = *(ushort*)((uint8_t*)fb_context_addr + 2);
+  if ((x < canvas->width && y < canvas->height) &&
+      (x + w <= canvas->width) &&
+      (y + h <= canvas->height) &&
+      (w != 0 || h != 0)) {
 
-  // Boundary check
-  if (!((x < screen_height && y < screen_width) &&
-        ((uint32_t)x + width < screen_height) &&
-        ((uint32_t)y + height < screen_width) &&
-        (width != 0 || height != 0))) {
-    return;
-  }
+    // Outline
+    ConnectPoints((Context*)canvas, buffer_idx, value, x, y, x, y + h -1);
+    ConnectPoints((Context*)canvas, buffer_idx, value, x, y + h -1, x + w -1, y + h -1);
+    ConnectPoints((Context*)canvas, buffer_idx, value, x + w -1, y, x + w -1, y + h -1);
+    ConnectPoints((Context*)canvas, buffer_idx, value, x, y, x + w -1, y);
 
-  // Draw outline
-  ConnectPoints(fb_context_addr, color_idx_offset, color_val, x, y, x, y + height);
-  ConnectPoints(fb_context_addr, color_idx_offset, color_val, x, y + height, x + width, y + height);
-  ConnectPoints(fb_context_addr, color_idx_offset, color_val, x + width, y, x + width, y + height);
-  ConnectPoints(fb_context_addr, color_idx_offset, color_val, x, y, x + width, y);
-
-  if (fill_flag == 1 && width > 1) {
-    for (ushort row = 1; row < height; ++row) {
-      ConnectPoints(fb_context_addr, color_idx_offset, color_val, x + 1, row + y, x + width - 1, row + y);
+    if ((fill_flag == 1) && (w > 1)) {
+      for (ushort current_y = 1; current_y < h; ++current_y) {
+        ConnectPoints((Context*)canvas, buffer_idx, value, x + 1, current_y + y,
+                      x + w - 2, current_y + y);
+      }
     }
   }
 }
 
 // Function: PaintSquare
-void PaintSquare(uintptr_t fb_context_addr, byte color_idx_offset, undefined color_val, char fill_flag, ushort *square_params) {
-  // square_params: [x, y, size]
-  ushort x = square_params[0], y = square_params[1];
+void PaintSquare(Canvas* canvas, byte buffer_idx, undefined value, char fill_flag, ushort* square_params) {
+  // square_params: {x, y, size}
+  ushort x = square_params[0];
+  ushort y = square_params[1];
   ushort size = square_params[2];
 
-  ushort screen_width = *(ushort*)((uint8_t*)fb_context_addr + 0);
-  ushort screen_height = *(ushort*)((uint8_t*)fb_context_addr + 2);
+  if ((x < canvas->width && y < canvas->height) &&
+      (x + size <= canvas->width) &&
+      (y + size <= canvas->height) &&
+      (size != 0)) {
 
-  // Boundary check
-  if (!((x < screen_height && y < screen_width) &&
-        ((uint32_t)x + size < screen_height) &&
-        ((uint32_t)y + size < screen_width) &&
-        (size != 0))) {
-    return;
-  }
+    // Outline
+    ConnectPoints((Context*)canvas, buffer_idx, value, x, y, x, y + size -1);
+    ConnectPoints((Context*)canvas, buffer_idx, value, x, y + size -1, x + size -1, y + size -1);
+    ConnectPoints((Context*)canvas, buffer_idx, value, x + size -1, y, x + size -1, y + size -1);
+    ConnectPoints((Context*)canvas, buffer_idx, value, x, y, x + size -1, y);
 
-  // Draw outline
-  ConnectPoints(fb_context_addr, color_idx_offset, color_val, x, y, x, y + size);
-  ConnectPoints(fb_context_addr, color_idx_offset, color_val, x, y + size, x + size, y + size);
-  ConnectPoints(fb_context_addr, color_idx_offset, color_val, x + size, y, x + size, y + size);
-  ConnectPoints(fb_context_addr, color_idx_offset, color_val, x, y, x + size, y);
-
-  if (fill_flag == 1 && size > 1) {
-    for (ushort row = 1; row < size; ++row) {
-      ConnectPoints(fb_context_addr, color_idx_offset, color_val, x + 1, row + y, x + size - 1, row + y);
-    }
-  }
-}
-
-// Function: ConnectPoints (Bresenham-like line drawing)
-void ConnectPoints(uintptr_t fb_context_addr, byte color_idx_offset, undefined color_val, ushort x1, ushort y1, ushort x2, ushort y2) {
-  int dx_abs, dy_abs;
-  short sx, sy; // Step direction
-  int max_dim; // Max of dx_abs or dy_abs
-  int error_x_acc, error_y_acc; // Accumulators for error terms
-
-  // Calculate absolute differences and step directions
-  dx_abs = (int)x2 > (int)x1 ? (int)x2 - (int)x1 : (int)x1 - (int)x2;
-  sx = x1 < x2 ? 1 : -1;
-
-  dy_abs = (int)y2 > (int)y1 ? (int)y2 - (int)y1 : (int)y1 - (int)y2;
-  sy = y1 < y2 ? 1 : -1;
-
-  // Determine the number of steps (max dimension)
-  max_dim = dx_abs > dy_abs ? dx_abs : dy_abs;
-
-  error_x_acc = 0;
-  error_y_acc = 0;
-
-  // Loop `max_dim + 2` times as per original code, which draws `max_dim + 2` points.
-  for (int i = 0; i <= max_dim + 1; ++i) {
-    SetColor(fb_context_addr, y1, x1, color_idx_offset, color_val);
-    error_x_acc += dx_abs;
-    error_y_acc += dy_abs;
-
-    // Adjust x if accumulated error exceeds max_dim
-    if (max_dim < error_x_acc) {
-      x1 += sx;
-      error_x_acc -= max_dim;
-    }
-    // Adjust y if accumulated error exceeds max_dim
-    if (max_dim < error_y_acc) {
-      y1 += sy;
-      error_y_acc -= max_dim;
+    if ((fill_flag == 1) && (size > 1)) {
+      for (ushort current_y = 1; current_y < size; ++current_y) {
+        ConnectPoints((Context*)canvas, buffer_idx, value, x + 1, current_y + y,
+                      x + size - 2, current_y + y);
+      }
     }
   }
 }
 
 // Function: PaintLine
-void PaintLine(uintptr_t fb_context_addr, byte color_idx_offset, undefined color_val, ushort *line_params) {
-  // line_params: [x1, y1, x2, y2]
-  ushort x1 = line_params[0], y1 = line_params[1];
-  ushort x2 = line_params[2], y2 = line_params[3];
+void PaintLine(Canvas* canvas, byte buffer_idx, undefined value, byte unused_param, ushort* line_params) {
+  // line_params: {x1, y1, x2, y2}
+  ushort x1 = line_params[0];
+  ushort y1 = line_params[1];
+  ushort x2 = line_params[2];
+  ushort y2 = line_params[3];
 
-  ushort screen_width = *(ushort*)((uint8_t*)fb_context_addr + 0);
-  ushort screen_height = *(ushort*)((uint8_t*)fb_context_addr + 2);
-
-  // Boundary check
-  if (!((x1 < screen_height && x1 <= x2) && (y1 < screen_width) &&
-        (y1 <= y2 && y2 < screen_width) && (x2 < screen_height))) {
-    return;
+  if ((x1 < canvas->width && y1 < canvas->height) &&
+      (x2 < canvas->width && y2 < canvas->height)) {
+    ConnectPoints((Context*)canvas, buffer_idx, value, x1, y1, x2, y2);
   }
-
-  ConnectPoints(fb_context_addr, color_idx_offset, color_val, x1, y1, x2, y2);
 }
 
 // Function: PaintCircle
-void PaintCircle(uintptr_t fb_context_addr, byte color_idx_offset, undefined color_val, char fill_flag, ushort *circle_params) {
-  // circle_params: [x_center, y_center, radius]
-  ushort xc = circle_params[0], yc = circle_params[1];
+void PaintCircle(Canvas* canvas, byte buffer_idx, undefined value, char fill_flag, ushort* circle_params) {
+  // circle_params: {x_center, y_center, radius}
+  ushort cx = circle_params[0];
+  ushort cy = circle_params[1];
   ushort r = circle_params[2];
 
-  ushort screen_width = *(ushort*)((uint8_t*)fb_context_addr + 0);
-  ushort screen_height = *(uint8_t*)((uint8_t*)fb_context_addr + 2);
+  // Check if circle is within canvas bounds
+  if ((cx >= r && cy >= r) &&
+      (cx + r < canvas->width && cy + r < canvas->height)) {
 
-  // Boundary check: circle must be within screen bounds
-  if (!((xc < screen_height && yc < screen_width) &&
-        ((uint32_t)xc + r < screen_height) &&
-        ((uint32_t)yc + r < screen_width) &&
-        ((int32_t)xc - r >= -1) && // check against -1 due to original comparison
-        ((int32_t)yc - r >= -1))) { // check against -1 due to original comparison
-    return;
-  }
-
-  int x_current = 0;
-  int y_current = r;
-  int decision_param = 1 - r; // Corresponds to local_1c
-  int d_east_delta = 1;       // Corresponds to local_20
-  int d_north_east_delta = (int)r * -2; // Corresponds to local_24
-
-  if (fill_flag == 0) { // Outline
-    SetColor(fb_context_addr, yc + r, xc, color_idx_offset, color_val);
-    SetColor(fb_context_addr, yc - r, xc, color_idx_offset, color_val);
-    SetColor(fb_context_addr, yc, xc + r, color_idx_offset, color_val);
-    SetColor(fb_context_addr, yc, xc - r, color_idx_offset, color_val);
-  } else { // Filled
-    ConnectPoints(fb_context_addr, color_idx_offset, color_val, xc, yc - r, xc, (yc + r) - 1);
-  }
-
-  while (x_current < y_current) {
-    if (-1 < decision_param) { // If decision_param >= 0 (original `-1 < local_1c`)
-      y_current--;
-      d_north_east_delta += 2;
-      decision_param += d_north_east_delta;
-    }
-    x_current++;
-    d_east_delta += 2;
-    decision_param += d_east_delta;
+    int current_x = 0;
+    ushort current_y = r;
+    int p = 1 - r; // Decision parameter for Bresenham's circle algorithm
+    int dx = 1;
+    int dy = -2 * r;
 
     if (fill_flag == 0) { // Outline
-      SetColor(fb_context_addr, yc + y_current, xc + x_current, color_idx_offset, color_val);
-      SetColor(fb_context_addr, yc + y_current, xc - x_current, color_idx_offset, color_val);
-      SetColor(fb_context_addr, yc - y_current, xc + x_current, color_idx_offset, color_val);
-      SetColor(fb_context_addr, yc - y_current, xc - x_current, color_idx_offset, color_val);
-      SetColor(fb_context_addr, yc + x_current, xc + y_current, color_idx_offset, color_val);
-      SetColor(fb_context_addr, yc + x_current, xc - y_current, color_idx_offset, color_val);
-      SetColor(fb_context_addr, yc - x_current, xc + y_current, color_idx_offset, color_val);
-      SetColor(fb_context_addr, yc - x_current, xc - y_current, color_idx_offset, color_val);
-    } else { // Filled
-      if (y_current > 0) {
-        ConnectPoints(fb_context_addr, color_idx_offset, color_val, xc + x_current, yc - y_current, xc + x_current, (yc + y_current) - 1);
-        ConnectPoints(fb_context_addr, color_idx_offset, color_val, xc - x_current, yc - y_current, xc - x_current, (yc + y_current) - 1);
+      SetColor((Context*)canvas, cy + r, cx, buffer_idx, value);
+      SetColor((Context*)canvas, cy - r, cx, buffer_idx, value);
+      SetColor((Context*)canvas, cy, cx + r, buffer_idx, value);
+      SetColor((Context*)canvas, cy, cx - r, buffer_idx, value);
+    } else { // Fill (Draw initial vertical line at center)
+      ConnectPoints((Context*)canvas, buffer_idx, value, cx, cy - r, cx, cy + r - 1);
+    }
+
+    while (current_x < current_y) {
+      if (p >= 0) {
+        current_y--;
+        dy += 2;
+        p += dy;
       }
-      if (x_current > 0) {
-        ConnectPoints(fb_context_addr, color_idx_offset, color_val, xc + y_current, yc - x_current, xc + y_current, (yc + x_current) - 1);
-        ConnectPoints(fb_context_addr, color_idx_offset, color_val, xc - y_current, yc - x_current, xc - y_current, (yc + x_current) - 1);
+      current_x++;
+      dx += 2;
+      p += dx;
+
+      if (fill_flag == 0) { // Outline
+        SetColor((Context*)canvas, cy + current_y, cx + current_x, buffer_idx, value);
+        SetColor((Context*)canvas, cy + current_y, cx - current_x, buffer_idx, value);
+        SetColor((Context*)canvas, cy - current_y, cx + current_x, buffer_idx, value);
+        SetColor((Context*)canvas, cy - current_y, cx - current_x, buffer_idx, value);
+        SetColor((Context*)canvas, cy + current_x, cx + current_y, buffer_idx, value);
+        SetColor((Context*)canvas, cy + current_x, cx - current_y, buffer_idx, value);
+        SetColor((Context*)canvas, cy - current_x, cx + current_y, buffer_idx, value);
+        SetColor((Context*)canvas, cy - current_x, cx - current_y, buffer_idx, value);
+      } else { // Fill (Draw horizontal lines for symmetry)
+        if (current_y > 0) {
+          ConnectPoints((Context*)canvas, buffer_idx, value, cx - current_x, cy - current_y, cx + current_x, cy - current_y);
+          ConnectPoints((Context*)canvas, buffer_idx, value, cx - current_x, cy + current_y, cx + current_x, cy + current_y);
+        }
+        if (current_x > 0) {
+          ConnectPoints((Context*)canvas, buffer_idx, value, cx - current_y, cy - current_x, cx + current_y, cy - current_x);
+          ConnectPoints((Context*)canvas, buffer_idx, value, cx - current_y, cy + current_x, cx + current_y, cy + current_x);
+        }
       }
     }
   }
 }
 
 // Function: PaintSpray
-void PaintSpray(uintptr_t fb_context_addr, byte color_idx_offset, undefined color_val, ushort *spray_params) {
-  // spray_params: [x_center, y_center, radius, density, magic_val_low, magic_val_high]
-  // Note: magic_val is 0x59745974
-  ushort xc = spray_params[0];
-  ushort yc = spray_params[1];
-  ushort radius = spray_params[2];
-  ushort density_divisor = spray_params[3];
+void PaintSpray(Canvas* canvas, byte buffer_idx, undefined value, byte unused_param, ushort* spray_params) {
+  // spray_params: {x_center, y_center, radius, density, magic_word_low, magic_word_high}
+  ushort cx = spray_params[0];
+  ushort cy = spray_params[1];
+  ushort r = spray_params[2];
+  ushort density = spray_params[3];
 
-  uint32_t magic_val = *(uint32_t*)&spray_params[4]; // *(int *)(param_5 + 4)
+  // `param_5 + 4` accesses `spray_params[4]`. `*(uint32_t*)(spray_params + 4)` reads `spray_params[4]` and `spray_params[5]` as a single 32-bit int.
+  uint32_t magic_word = *(uint32_t*)(spray_params + 4);
 
-  ushort screen_width = *(ushort*)((uint8_t*)fb_context_addr + 0);
-  ushort screen_height = *(ushort*)((uint8_t*)fb_context_addr + 2);
+  if ((cx < canvas->width && cy < canvas->height) &&
+      (magic_word == 0x59745974) && (density < 0x65 && density != 0)) {
 
-  // Boundary and parameter checks
-  if (!((xc < screen_height && yc < screen_width) &&
-        (magic_val == 0x59745974) &&
-        (density_divisor < 0x65 && density_divisor != 0))) {
-    return;
+    int step_size = 100 / density;
+    if (step_size == 0) return;
+
+    // Loop 1: Horizontal lines from center_x outwards
+    for (ushort current_x = cx; current_x < cx + r && current_x < canvas->width; current_x += step_size) {
+      SetColor((Context*)canvas, cy, current_x, buffer_idx, value);
+    }
+    for (ushort current_x = cx; (current_x > cx - r || current_x == (ushort)-1) && current_x != (ushort)-1; current_x -= step_size) {
+      SetColor((Context*)canvas, cy, current_x, buffer_idx, value);
+    }
+
+    // Loop 2: Vertical lines from center_y outwards
+    for (ushort current_y = cy; current_y < cy + r && current_y < canvas->height; current_y += step_size) {
+      SetColor((Context*)canvas, current_y, cx, buffer_idx, value);
+    }
+    for (ushort current_y = cy; (current_y > cy - r || current_y == (ushort)-1) && current_y != (ushort)-1; current_y -= step_size) {
+      SetColor((Context*)canvas, current_y, cx, buffer_idx, value);
+    }
+
+    // Additional points (corners or specific offsets)
+    SetColor((Context*)canvas, cy, cx + r, buffer_idx, value);
+    SetColor((Context*)canvas, cy, cx - r, buffer_idx, value);
+    SetColor((Context*)canvas, cy + r, cx, buffer_idx, value);
+    SetColor((Context*)canvas, cy - r, cx, buffer_idx, value);
   }
+}
 
-  int step_size = 100 / (int)density_divisor;
-  if (step_size == 0) return; // Avoid division by zero or infinite loop if step_size is 0.
 
-  // Draw horizontal lines (along y_center)
-  for (ushort current_x = xc; (int)current_x < (int)(radius + xc) && (int)current_x < (int)screen_height; current_x += step_size) {
-    SetColor(fb_context_addr, yc, current_x, color_idx_offset, color_val);
-  }
-  for (ushort current_x = xc; (int)(xc - radius) < (int)current_x && (int)current_x >= 0; current_x -= step_size) {
-    SetColor(fb_context_addr, yc, current_x, color_idx_offset, color_val);
-  }
+// Main function for demonstration
+int main() {
+    const ushort SCREEN_WIDTH = 80;
+    const ushort SCREEN_HEIGHT = 25;
+    const byte PIXEL_BUFFER_IDX = 0; // Assuming we use the first buffer
+    const undefined DRAW_COLOR = '@'; // ASCII character to draw
 
-  // Draw vertical lines (along x_center)
-  for (ushort current_y = yc; (int)current_y < (int)(radius + yc) && (int)current_y < (int)screen_width; current_y += step_size) {
-    SetColor(fb_context_addr, current_y, xc, color_idx_offset, color_val);
-  }
-  for (ushort current_y = yc; (int)(yc - radius) < (int)current_y && (int)current_y >= 0; current_y -= step_size) {
-    SetColor(fb_context_addr, current_y, xc, color_idx_offset, color_val);
-  }
+    // Setup Canvas
+    Canvas screen_canvas = { .width = SCREEN_WIDTH, .height = SCREEN_HEIGHT };
 
-  // Draw four cardinal points at radius distance
-  SetColor(fb_context_addr, yc, xc + radius, color_idx_offset, color_val);
-  SetColor(fb_context_addr, yc, xc - radius, color_idx_offset, color_val);
-  SetColor(fb_context_addr, yc + radius, xc, color_idx_offset, color_val);
-  SetColor(fb_context_addr, yc - radius, xc, color_idx_offset, color_val);
+    // Setup Context
+    Context screen_context = { .pitch = SCREEN_WIDTH }; // Pitch is bytes per row
+    // Allocate memory for the pixel buffer
+    screen_context.buffers[PIXEL_BUFFER_IDX] = (uint8_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint8_t));
+    if (screen_context.buffers[PIXEL_BUFFER_IDX] == NULL) {
+        fprintf(stderr, "Failed to allocate pixel buffer.\n");
+        return 1;
+    }
+    // Initialize buffer with spaces
+    for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; ++i) {
+        screen_context.buffers[PIXEL_BUFFER_IDX][i] = ' ';
+    }
+
+    // Example drawing operations
+    ushort line_params[] = {10, 5, 70, 20}; // x1, y1, x2, y2
+    PaintLine(&screen_canvas, PIXEL_BUFFER_IDX, DRAW_COLOR, 0, line_params);
+
+    ushort rect_params[] = {5, 2, 20, 10}; // x, y, width, height
+    PaintRectangle(&screen_canvas, PIXEL_BUFFER_IDX, '#', 0, rect_params); // Outline rectangle
+
+    ushort filled_rect_params[] = {30, 15, 15, 8}; // x, y, width, height
+    PaintRectangle(&screen_canvas, PIXEL_BUFFER_IDX, 'X', 1, filled_rect_params); // Filled rectangle
+
+    ushort square_params[] = {60, 5, 10}; // x, y, size
+    PaintSquare(&screen_canvas, PIXEL_BUFFER_IDX, 'S', 0, square_params); // Outline square
+
+    ushort filled_square_params[] = {40, 0, 5}; // x, y, size
+    PaintSquare(&screen_canvas, PIXEL_BUFFER_IDX, 'F', 1, filled_square_params); // Filled square
+
+    ushort circle_params[] = {15, 15, 8}; // x_center, y_center, radius
+    PaintCircle(&screen_canvas, PIXEL_BUFFER_IDX, 'O', 0, circle_params); // Outline circle
+
+    ushort filled_circle_params[] = {50, 10, 5}; // x_center, y_center, radius
+    PaintCircle(&screen_canvas, PIXEL_BUFFER_IDX, '.', 1, filled_circle_params); // Filled circle
+
+    ushort triangle_params[] = {10, 10, 20, 20, 5, 20}; // x1, y1, x2, y2, x3, y3
+    PaintTriangle(&screen_canvas, PIXEL_BUFFER_IDX, 'T', 0, triangle_params); // Outline triangle
+
+    ushort filled_triangle_params[] = {70, 5, 75, 15, 65, 15}; // x1, y1, x2, y2, x3, y3
+    PaintTriangle(&screen_canvas, PIXEL_BUFFER_IDX, '*', 1, filled_triangle_params); // Filled triangle
+
+    // Spray params: {x_center, y_center, radius, density, magic_word_low, magic_word_high}
+    ushort spray_data[] = {25, 20, 7, 5, 0x5974, 0x5974};
+    PaintSpray(&screen_canvas, PIXEL_BUFFER_IDX, '~', 0, spray_data);
+
+
+    // Print the buffer to console
+    for (int y = 0; y < SCREEN_HEIGHT; ++y) {
+        for (int x = 0; x < SCREEN_WIDTH; ++x) {
+            putchar(screen_context.buffers[PIXEL_BUFFER_IDX][y * SCREEN_WIDTH + x]);
+        }
+        putchar('\n');
+    }
+
+    // Clean up
+    free(screen_context.buffers[PIXEL_BUFFER_IDX]);
+    return 0;
 }

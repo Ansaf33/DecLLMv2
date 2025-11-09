@@ -2,7 +2,7 @@
 #include <stdlib.h> // Required for exit
 
 // Function: _error
-void _error(int error_code, const char *file, int line) {
+void _error(int error_code, const char* file, int line) {
   switch(error_code) {
   default:
     fprintf(stderr, "%s:%d - unknown error\n", file, line);

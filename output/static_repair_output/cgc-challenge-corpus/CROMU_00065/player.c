@@ -1,18 +1,34 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h> // For atoi
+#include <stdio.h>    // For printf, fgets
+#include <stdlib.h>   // For atoi
+#include <string.h>   // For strcpy, strlen
+#include <stdbool.h>  // For bool type (though not strictly used, char 0/1 serves)
 
-// Placeholder for algorithm functions
-void matchDealer() { printf("matchDealer logic executed\n"); }
-void basicAlgo() { printf("basicAlgo logic executed\n"); }
-void simpleAlgo() { printf("simpleAlgo logic executed\n"); }
-void neverBustAlgo() { printf("neverBustAlgo logic executed\n"); }
-void superDuperAlgo() { printf("superDuperAlgo logic executed\n"); }
+// --- Stub Functions to make the code compilable ---
 
-// Mimics a function that reads input up to max_len (excluding null terminator)
-// Returns 0 on error/EOF/no input, 1 on success
-int receive_until(char *buffer, int max_len, int delimiter_char) {
-    if (fgets(buffer, max_len + 1, stdin) == NULL) {
+// Dummy function pointers for algorithms
+void matchDealer(void) {
+    // printf("Match Dealer algorithm logic would go here.\n");
+}
+void basicAlgo(void) {
+    // printf("Basic Algorithm logic would go here.\n");
+}
+void simpleAlgo(void) {
+    // printf("Simple Algorithm logic would go here.\n");
+}
+void neverBustAlgo(void) {
+    // printf("Never Bust Algorithm logic would go here.\n");
+}
+void superDuperAlgo(void) {
+    // printf("Super Duper Algorithm logic would go here.\n");
+}
+
+// Dummy receive_until function
+// Simulates reading input from stdin.
+// Returns 0 on error/EOF, 1 on success.
+// The original snippet uses the second parameter as a character limit
+// and the third as the allocated buffer size. We'll use the third for fgets size.
+int receive_until(char *buffer, int max_chars_to_read, int buffer_allocated_size) {
+    if (fgets(buffer, buffer_allocated_size, stdin) == NULL) {
         return 0; // Error or EOF
     }
     // Remove trailing newline if present
@@ -20,255 +36,232 @@ int receive_until(char *buffer, int max_len, int delimiter_char) {
     if (len > 0 && buffer[len - 1] == '\n') {
         buffer[len - 1] = '\0';
     }
-    // If the buffer is empty after stripping newline, it's considered no input
-    if (strlen(buffer) == 0) {
-        return 0;
-    }
+    // Optionally truncate if input exceeds max_chars_to_read,
+    // but fgets with buffer_allocated_size handles the buffer limit.
+    // The original logic doesn't explicitly truncate, just checks success.
     return 1; // Success
 }
 
-// Struct definition based on memory offsets (assuming 32-bit pointers)
-typedef struct Player {
-    char name[12];                  // 0x00 - 0x0B (max 11 chars + null)
-    void (*algo_func)(void);        // 0x0C - 0x0F (function pointer for AI/hint logic)
-    int funds;                      // 0x10 - 0x13
-    char padding1[10];              // 0x14 - 0x1D (padding)
-    char is_computer;               // 0x1E (0 for human, 1 for AI)
-    char computer_method;           // 0x1F (AI method if is_computer)
-    char hints_enabled;             // 0x20 (0 for no hints, 1 for hints)
-    char hint_method;               // 0x21 (Hint method if hints_enabled)
-    char padding2[2];               // 0x22 - 0x23 (padding)
-    int wins;                       // 0x24 - 0x27
-    int losses;                     // 0x28 - 0x2B
-    char padding3[4];               // 0x2C - 0x2F (padding to 0x30 total size)
-} Player;
+// --- Player Data Structure Constants ---
+#define PLAYER_COUNT 8
+#define PLAYER_DATA_SIZE 0x30 // 48 bytes per player entry
 
-#define MAX_PLAYERS 8
+// Offsets within a PLAYER_DATA_SIZE block (0x30 bytes)
+#define OFFSET_NAME 0x00
+#define OFFSET_ALGO_FUNC 0x0C // Overlaps with name, assuming 32-bit pointer or specific packing
+#define OFFSET_FUNDS 0x10
+#define OFFSET_IS_COMPUTER 0x1E
+#define OFFSET_COMPUTER_METHOD 0x1F
+#define OFFSET_HINTS_ENABLED 0x20
+#define OFFSET_HINT_METHOD 0x21
+#define OFFSET_WINS 0x24
+#define OFFSET_LOSSES 0x28
+
+// --- Main Functions ---
 
 // Function: add_player
-int add_player(int param_1) {
-  Player* players = (Player*)param_1; // Cast param_1 back to Player*
-  char local_20[16]; // Buffer for user input
-  int local_10; // Player index
+// param_1 is a pointer to the start of the player data array
+int add_player(char *players_data) {
+    char input_buffer[16]; // local_20
+    int player_idx;        // local_10, loop counter for player slots
 
-  for (local_10 = 0; local_10 < MAX_PLAYERS; ++local_10) {
-    if (players[local_10].name[0] == '\0') {
-      break; // Found an empty slot
-    }
-  }
-
-  if (local_10 == MAX_PLAYERS) {
-    printf("Too many players\n");
-    return -1; // -1 is 0xffffffff
-  }
-
-  printf("Enter player name\n");
-  if (receive_until(local_20, 10, 0) == 0) { // Max 10 chars, delimiter 0 (unused in this impl)
-    return -1;
-  }
-
-  strncpy(players[local_10].name, local_20, sizeof(players[local_10].name) - 1);
-  players[local_10].name[sizeof(players[local_10].name) - 1] = '\0'; // Ensure null termination
-
-  players[local_10].funds = 500;
-  players[local_10].is_computer = 0;
-  players[local_10].wins = 0;
-  players[local_10].losses = 0;
-  players[local_10].hints_enabled = 0;
-  players[local_10].algo_func = NULL; // Default to no function
-
-  printf("Computer player? (y/n)\n");
-  if (receive_until(local_20, 10, 0) == 0) {
-    return -1;
-  }
-
-  int iVar2; // Reusing iVar2 for different purposes, as in original
-  if ((local_20[0] == 'y') || (local_20[0] == 'Y')) {
-    players[local_10].is_computer = 1;
-    printf("Method 1-5:\n"); // Changed to 1-5 because of superDuperAlgo
-    if (receive_until(local_20, 10, 0) == 0) {
-      return -1;
-    }
-    iVar2 = atoi(local_20);
-    players[local_10].computer_method = (char)iVar2;
-
-    switch (iVar2) {
-    case 1: players[local_10].algo_func = matchDealer; break;
-    case 2: players[local_10].algo_func = basicAlgo; break;
-    case 3: players[local_10].algo_func = simpleAlgo; break;
-    case 4: players[local_10].algo_func = neverBustAlgo; break;
-    case 5: players[local_10].algo_func = superDuperAlgo; break;
-    default: printf("Invalid method, defaulting to no algo.\n"); break;
-    }
-  } else {
-    printf("Would you like to enable hints?\n");
-    if (receive_until(local_20, 10, 0) == 0) {
-      return -1;
-    }
-    if ((local_20[0] == 'y') || (local_20[0] == 'Y')) {
-      players[local_10].hints_enabled = 1;
-      printf("Method 1-4:\n");
-      if (receive_until(local_20, 10, 0) == 0) {
-        return -1;
-      }
-      iVar2 = atoi(local_20);
-      players[local_10].hint_method = (char)iVar2;
-
-      // Original code had nested if-else for hint methods
-      if (iVar2 == 4) {
-        players[local_10].algo_func = neverBustAlgo;
-      } else if (iVar2 < 5) { // Original condition
-        if (iVar2 == 3) {
-          players[local_10].algo_func = simpleAlgo;
-        } else if (iVar2 < 4) { // Original condition
-          if (iVar2 == 1) {
-            players[local_10].algo_func = matchDealer;
-          } else if (iVar2 == 2) {
-            players[local_10].algo_func = basicAlgo;
-          }
+    // Find the first empty player slot
+    for (player_idx = 0; player_idx < PLAYER_COUNT; player_idx++) {
+        // Check if slot is empty (name starts with null terminator)
+        if (*(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_NAME) == '\0') {
+            break; // Found an empty slot
         }
-      } else {
-        printf("Invalid hint method, defaulting to no algo.\n");
-      }
     }
-  }
-  return 0;
+
+    if (player_idx == PLAYER_COUNT) {
+        printf("Too many players\n");
+        return -1; // Return -1 (original 0xffffffff) on failure
+    }
+
+    printf("Enter player name\n");
+    if (receive_until(input_buffer, 10, sizeof(input_buffer)) == 0) { // Use input_buffer directly
+        return -1;
+    }
+
+    // Initialize player data
+    strcpy((char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_NAME), input_buffer);
+    *(int *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_FUNDS) = 500;
+    *(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_IS_COMPUTER) = 0;
+    *(int *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_WINS) = 0;
+    *(int *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_LOSSES) = 0;
+    *(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_HINTS_ENABLED) = 0;
+
+    printf("Computer player? (y/n)\n");
+    if (receive_until(input_buffer, 10, sizeof(input_buffer)) == 0) {
+        return -1;
+    }
+
+    if ((input_buffer[0] == 'y') || (input_buffer[0] == 'Y')) {
+        *(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_IS_COMPUTER) = 1; // Set is_computer to 1
+        printf("Method 1-5:\n");
+        if (receive_until(input_buffer, 10, sizeof(input_buffer)) == 0) {
+            return -1;
+        }
+        int method_choice = atoi(input_buffer); // Use a new variable for the choice
+        *(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_COMPUTER_METHOD) = (char)method_choice;
+
+        // Array of function pointers to simplify assignment
+        void (*algo_funcs[])(void) = {
+            NULL, // 0-indexed, but methods are 1-indexed
+            matchDealer,
+            basicAlgo,
+            simpleAlgo,
+            neverBustAlgo,
+            superDuperAlgo
+        };
+
+        if (method_choice >= 1 && method_choice <= 5) {
+            // Cast the memory address to a pointer-to-function-pointer type before assignment
+            *(void (**)(void))(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_ALGO_FUNC) = algo_funcs[method_choice];
+        }
+    } else {
+        printf("Would you like to enable hints?\n");
+        if (receive_until(input_buffer, 10, sizeof(input_buffer)) == 0) {
+            return -1;
+        }
+        if ((input_buffer[0] == 'y') || (input_buffer[0] == 'Y')) {
+            *(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_HINTS_ENABLED) = 1; // Set hints_enabled to 1
+            printf("Method 1-4:\n");
+            if (receive_until(input_buffer, 10, sizeof(input_buffer)) == 0) {
+                return -1;
+            }
+            int hint_method_choice = atoi(input_buffer); // New variable
+            *(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_HINT_METHOD) = (char)hint_method_choice;
+
+            // Array of function pointers for hint methods
+            void (*hint_algo_funcs[])(void) = {
+                NULL,
+                matchDealer,
+                basicAlgo,
+                simpleAlgo,
+                neverBustAlgo
+            };
+            if (hint_method_choice >= 1 && hint_method_choice <= 4) {
+                *(void (**)(void))(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_ALGO_FUNC) = hint_algo_funcs[hint_method_choice];
+            }
+        }
+    }
+    return 0; // Return 0 on success
 }
 
 // Function: show_players
-int show_players(int param_1) {
-  Player* players = (Player*)param_1;
-  int local_10;
-  
-  printf("\n--- Current Players ---\n");
-  int players_found = 0;
-  for (local_10 = 0; local_10 < MAX_PLAYERS; local_10 = local_10 + 1) {
-    if (players[local_10].name[0] != '\0') {
-      printf("Player name: %s\n", players[local_10].name);
-      printf("       Wins: %d\n", players[local_10].wins);
-      printf("     Losses: %d\n", players[local_10].losses);
-      printf("      Funds: %d\n", players[local_10].funds);
-      printf("-----------------------\n");
-      players_found = 1;
+// param_1 is a pointer to the start of the player data array
+int show_players(char *players_data) {
+    int player_idx; // local_10, loop counter for player slots
+
+    for (player_idx = 0; player_idx < PLAYER_COUNT; player_idx++) {
+        // Check if player slot is active (name starts with a non-null character)
+        if (*(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_NAME) != '\0') {
+            printf("Player name: %s\n", players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_NAME); // Fixed format specifier
+            printf("       Wins: %d\n", *(int *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_WINS));      // Fixed format specifier
+            printf("     Losses: %d\n", *(int *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_LOSSES));    // Fixed format specifier
+            printf("      Funds: %d\n", *(int *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_FUNDS));      // Fixed format specifier
+        }
     }
-  }
-  if (!players_found) {
-      printf("No players to display.\n");
-  }
-  return 0;
+    return 0;
 }
 
 // Function: delete_player
-int delete_player(int param_1) {
-  Player* players = (Player*)param_1;
-  char local_2c[24]; // Buffer for user input
-  int local_14 = 1; // Display index for players (1-based)
-  int local_10; // Array index (0-based)
-  
-  printf("Players available for deletion:\n");
-  for (local_10 = 0; local_10 < MAX_PLAYERS; local_10 = local_10 + 1) {
-    if (players[local_10].name[0] != '\0') {
-      printf("%d) %s\n", local_14, players[local_10].name);
-      local_14 = local_14 + 1;
-    }
-  }
-  if (local_14 == 1) { // Only the initial "1" means no players were found
-    printf("No players to delete.\n");
-    return -1;
-  }
-  else {
-    printf("Player to delete (1-%d):\n", local_14 - 1);
-    if (receive_until(local_2c, 10, 0) == 0) { // Max 10 chars, delimiter 0
-      return -1;
-    }
-    int iVar2 = atoi(local_2c); // User's 1-based choice
-    if (iVar2 < 1 || iVar2 >= local_14) { // Check if choice is within valid range
-      printf("Invalid player number.\n");
-      return -1;
-    }
-    else {
-      int current_player_display_idx = 0; // Counter for 1-based display index
-      for (local_10 = 0; local_10 < MAX_PLAYERS; local_10 = local_10 + 1) {
-        if (players[local_10].name[0] != '\0') {
-          current_player_display_idx++;
-          if (current_player_display_idx == iVar2) {
-            // Found the player to delete
-            char deleted_player_name[sizeof(players[local_10].name)];
-            strncpy(deleted_player_name, players[local_10].name, sizeof(deleted_player_name));
-            deleted_player_name[sizeof(deleted_player_name) - 1] = '\0';
+// param_1 is a pointer to the start of the player data array
+int delete_player(char *players_data) {
+    char input_buffer[24]; // local_2c
+    int display_idx;       // local_14, used for 1-indexed display and counting active players
+    int player_idx;        // local_10, loop counter for player slots
 
-            players[local_10].name[0] = '\0'; // Mark as empty
-            players[local_10].wins = 0;
-            players[local_10].losses = 0;
-            players[local_10].funds = 500; // Reset funds
-            players[local_10].is_computer = 0;
-            players[local_10].computer_method = 0;
-            players[local_10].hints_enabled = 0;
-            players[local_10].hint_method = 0;
-            players[local_10].algo_func = NULL;
-            printf("Player '%s' deleted.\n", deleted_player_name);
-            break;
-          }
+    display_idx = 1; // Start 1-indexed count for display
+    for (player_idx = 0; player_idx < PLAYER_COUNT; player_idx++) {
+        // If player slot is active
+        if (*(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_NAME) != '\0') {
+            printf("%d) %s\n", display_idx, players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_NAME); // Fixed format specifier
+            display_idx++; // Increment for next active player
         }
-      }
-      return 0;
     }
-  }
+
+    if (display_idx == 1) { // If display_idx is still 1, no players were found
+        printf("No players\n");
+        return -1; // Return -1 on failure
+    }
+
+    printf("Player to delete (1-%d):\n", display_idx - 1); // Fixed format specifier
+    if (receive_until(input_buffer, 10, sizeof(input_buffer)) == 0) {
+        return -1;
+    }
+
+    int player_to_delete = atoi(input_buffer); // iVar2, use descriptive name
+    // Check bounds: player_to_delete must be between 1 and (display_idx - 1) inclusive
+    if (player_to_delete < 1 || player_to_delete >= display_idx) {
+        return -1; // Invalid player number
+    }
+
+    // Reset display_idx to 0 for counting to find the actual player_idx
+    int current_active_player_count = 0;
+    for (player_idx = 0; player_idx < PLAYER_COUNT; player_idx++) {
+        if (*(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_NAME) != '\0') { // If player slot is active
+            current_active_player_count++; // Count active players
+            if (current_active_player_count == player_to_delete) { // If this is the chosen player
+                *(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_NAME) = 0; // Clear player name (mark as inactive)
+                *(int *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_WINS) = 0;    // Reset wins
+                *(int *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_LOSSES) = 0;  // Reset losses
+                *(int *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_FUNDS) = 500; // Reset funds
+                // Also clear other fields to a default state if desired, e.g., algo_func = NULL
+                *(void (**)(void))(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_ALGO_FUNC) = NULL;
+                *(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_IS_COMPUTER) = 0;
+                *(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_COMPUTER_METHOD) = 0;
+                *(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_HINTS_ENABLED) = 0;
+                *(char *)(players_data + player_idx * PLAYER_DATA_SIZE + OFFSET_HINT_METHOD) = 0;
+                break; // Player found and deleted, exit loop
+            }
+        }
+    }
+    return 0; // Return 0 on success
 }
 
-Player players[MAX_PLAYERS]; // Global array of players
-
+// --- Minimal Main function for demonstration ---
 int main() {
-    // Initialize players
-    for (int i = 0; i < MAX_PLAYERS; ++i) {
-        players[i].name[0] = '\0'; // Mark as empty
-        players[i].funds = 500; // Default funds
-        players[i].wins = 0;
-        players[i].losses = 0;
-        players[i].is_computer = 0;
-        players[i].hints_enabled = 0;
-        players[i].algo_func = NULL; // No algorithm by default
-        players[i].computer_method = 0;
-        players[i].hint_method = 0;
-    }
+    // Allocate memory for PLAYER_COUNT players.
+    // Each player takes PLAYER_DATA_SIZE bytes.
+    // This replicates the `int param_1` which is treated as a base address.
+    char player_data_array[PLAYER_COUNT * PLAYER_DATA_SIZE] = {0};
 
-    char choice_str[16]; // Buffer for menu choice
     int choice;
-
-    while (1) {
+    do {
         printf("\n--- Player Management ---\n");
         printf("1. Add Player\n");
         printf("2. Show Players\n");
         printf("3. Delete Player\n");
-        printf("4. Exit\n");
+        printf("0. Exit\n");
         printf("Enter your choice: ");
 
-        if (!receive_until(choice_str, 10, 0)) {
-            printf("Error reading input or no input. Exiting.\n");
-            break;
+        char input_buffer[16];
+        if (receive_until(input_buffer, 10, sizeof(input_buffer)) == 0) {
+            printf("Error reading input. Exiting.\n");
+            return 1;
         }
-
-        choice = atoi(choice_str);
+        choice = atoi(input_buffer);
 
         switch (choice) {
             case 1:
-                // Cast players array address to int to match original function signature
-                add_player((int)players);
+                add_player(player_data_array);
                 break;
             case 2:
-                show_players((int)players);
+                show_players(player_data_array);
                 break;
             case 3:
-                delete_player((int)players);
+                delete_player(player_data_array);
                 break;
-            case 4:
+            case 0:
                 printf("Exiting.\n");
-                return 0;
+                break;
             default:
                 printf("Invalid choice. Please try again.\n");
                 break;
         }
-    }
+    } while (choice != 0);
 
     return 0;
 }

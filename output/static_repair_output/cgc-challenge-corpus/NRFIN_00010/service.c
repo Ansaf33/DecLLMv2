@@ -1,630 +1,618 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <sys/types.h>
+#include <stdint.h>
+#include <unistd.h>     // For send, recv, close
+#include <sys/socket.h> // For socket types
 
-// Define standard types for the undefined ones
-typedef int int32_t;
-typedef unsigned int uint32_t;
-typedef unsigned char uint8_t;
+// --- Global List Pointers ---
+// These are assumed to be initialized elsewhere or by list_create.
+// For compilation, we declare them as generic void pointers.
+void *transaction_list;
+void *card_list;
 
-// Dummy global list structures
-// In a real system, these would be defined in a header
-typedef struct List List; // Forward declaration
-List *card_list;
-List *transaction_list;
+// --- Placeholder Types and Structures ---
+// These are inferred from the decompiled code and are mock-ups for compilation.
+// Actual definitions would be in specific header files of the original project.
+typedef uint32_t card_id_t;
+typedef uint32_t transaction_id_t;
+typedef uint32_t amount_t; // For balance, purchase amounts, etc.
 
-// Dummy structures for packet and transaction data for type safety
-// These are guesses based on usage. A real system would have these defined.
-// Packet structure guess:
-// Offset 0-3: some ID/header
-// Offset 4-7: socket_fd (int)
-// Offset 8: pkt_type (uint8_t)
-// Offset 9: op_code (uint8_t)
-// ...
+// Mock structure for packet data, assuming a 16-byte header
+// The offsets (e.g., +8, +9, +10) are based on the original snippet.
 typedef struct {
-    char data[16]; // Example size, needs to match recv_all(..., 0x10)
-} Packet;
+    uint32_t field0;    // Offset 0
+    uint32_t socket_fd; // Offset 4 (used as param_2[1] in some calls, assumed to be socket)
+    uint8_t pkt_type;   // Offset 8 (bVar1 in dispatch_packet)
+    uint8_t op_code;    // Offset 9 (char at param_2 + 9)
+    uint8_t error_code_field; // Offset 10 (used in send_error)
+    uint8_t reserved[5]; // Remaining bytes to make it 16 bytes
+} PacketHeader;
 
-// Dummy function declarations to make the code compilable
-// Replace 'void *' with actual struct pointers if definitions are available
-int transaction_recv_issue(void **data_out);
-int card_create_and_add_to_list(void **card_out, List *card_list_ptr, int card_id);
-int transaction_create_and_add_to_list(void **trans_out, List *trans_list_ptr, int param_val, int card_id);
-void transaction_set_details(void *transaction_obj, void *details_data);
-int packet_from_transaction_and_send(void *transaction_obj, int socket_fd);
+// Mock transaction structure
+// Assuming a transaction object holds its ID, and potentially a socket_fd.
+typedef struct {
+    uint32_t field0;
+    uint32_t transaction_id; // Assumed at offset 4 based on some calls
+    uint32_t field2;
+    uint32_t other_id_or_data; // Assumed at offset 0xc based on process_fin
+    // ... other transaction details
+} Transaction;
 
-int transaction_recv_purchase(void **data_out);
-void transaction_update_state(void *transaction_obj, int state);
-int card_purchase(int card_id, List *card_list_ptr, int amount);
 
-int transaction_recv_recharge(void **data_out);
-int card_recharge(int card_id, List *card_list_ptr, int amount);
+// --- External Function Prototypes (Mocks) ---
+// These functions are assumed to exist and perform operations on lists, cards, transactions, and network.
+// Their exact signatures are inferred from the decompiled code.
+// For simplicity, `int` is used for return values representing success (0) or error (non-zero).
 
-int transaction_recv_balance(void **data_out);
-int card_get_balance(int card_id, List *card_list_ptr, void *balance_out);
-void transaction_send_balance(void *balance_data);
+// List operations
+int list_create(void* compare_func);
+int transaction_node_contains(void* node, void* data); // Placeholder comparison function
+int card_node_contains(void* node, void* data);       // Placeholder comparison function
 
-int transaction_recv_history(void **data_out);
-int transaction_get_history_count_and_send(int card_id, List *trans_list_ptr, int count_param);
-int transaction_list_send_last_n(int card_id, List *trans_list_ptr, int n_param);
+// Network operations (recv_all is likely a wrapper for recv)
+ssize_t recv_all(void *buf, size_t len);
 
-int transaction_recv_refund(void **data_out);
-int transaction_get_and_verify_purchase_id(List *trans_list_ptr, void *data, void *purchase_id_out);
-int card_refund(int card_id, List *card_list_ptr, int purchase_id);
-int transaction_rm_purchase_details(void *purchase_id_ptr);
+// Transaction-related functions
+int transaction_recv_issue(void **issue_data_ptr);
+int transaction_create_and_add_to_list(void **transaction_handle_ptr, void *list, void *packet_data, card_id_t card_id);
+int transaction_set_details(void *transaction_handle, void *details_data);
+int transaction_update_state(void *transaction_handle, int state);
+int transaction_recv_purchase(void **purchase_data_ptr);
+int transaction_recv_recharge(void **recharge_data_ptr);
+int transaction_recv_balance(void **balance_data_ptr);
+int transaction_send_balance(void *balance_data);
+int transaction_recv_history(void **history_data_ptr);
+int transaction_get_history_count_and_send(card_id_t card_id, void *list, void *history_request_data);
+int transaction_list_send_last_n(card_id_t card_id, void *list, void *history_request_data);
+int transaction_recv_refund(void **refund_data_ptr);
+int transaction_get_and_verify_purchase_id(void *list, void *refund_data, transaction_id_t *purchase_id_ptr);
+int transaction_rm_purchase_details(transaction_id_t *purchase_id_ptr);
+int transaction_destroy(void *list, transaction_id_t transaction_id);
+int transaction_init_done(void *transaction_handle_ptr, void *packet_data, void *list);
+int transaction_authd(void *transaction_handle_ptr, void *packet_data, void *list);
+int transaction_ops_done(void *transaction_handle_ptr, void *packet_data, void *list);
 
-int transaction_destroy(List *trans_list_ptr, int transaction_id);
+// Card-related functions
+int card_create_and_add_to_list(void **card_handle_ptr, void *list, void *issue_data);
+int card_purchase(card_id_t card_id, void *list, amount_t amount);
+int card_recharge(card_id_t card_id, void *list, amount_t amount);
+int card_get_balance(card_id_t card_id, void *list, void *balance_data_ptr);
+int card_refund(card_id_t card_id, void *list, transaction_id_t purchase_id);
+int card_is_valid(card_id_t card_id, uint32_t auth_code, void *list);
 
-int card_is_valid(int card_id, int auth_code, List *card_list_ptr);
-int transaction_init_done(void *transaction_obj, void *packet_data, List *trans_list_ptr);
-int transaction_authd(void *transaction_obj, void *packet_data, List *trans_list_ptr);
-int transaction_ops_done(void *transaction_obj, void *packet_data, List *trans_list_ptr);
+// Packet-related functions
+// Assumed destination_info is the socket FD based on usage in `main` and other functions.
+int packet_from_transaction_and_send(void *transaction_handle, uint32_t destination_socket_fd);
 
-// List management functions
-typedef int (*NodeCompareFunc)(void *, void *); // Dummy comparator function type
-struct List {
-    NodeCompareFunc compare_func;
-    // other list fields
-};
-List *list_create(NodeCompareFunc compare_func);
-int transaction_node_contains(void *node_data, void *compare_data);
-int card_node_contains(void *node_data, void *compare_data);
-
-// Network functions
-int recv_all(void *buffer, size_t len);
-
-// Dummy implementations for compilation
-// These functions will simply return 0 (success) or a dummy error code (e.g., 1)
-// to allow the provided code to compile and link.
-int transaction_recv_issue(void **data_out) { *data_out = malloc(sizeof(int)); if (*data_out) *(int*)*data_out = 100; return 0; }
-int card_create_and_add_to_list(void **card_out, List *card_list_ptr, int card_id) { *card_out = malloc(2 * sizeof(int)); if (*card_out) { ((int*)*card_out)[0] = card_id; ((int*)*card_out)[1] = 12345; } return 0; }
-int transaction_create_and_add_to_list(void **trans_out, List *trans_list_ptr, int param_val, int card_id) { *trans_out = malloc(4 * sizeof(int)); if (*trans_out) { ((int*)*trans_out)[0] = 1; ((int*)*trans_out)[1] = param_val; ((int*)*trans_out)[2] = card_id; ((int*)*trans_out)[3] = 0; } return 0; }
-void transaction_set_details(void *transaction_obj, void *details_data) { /*noop*/ }
-int packet_from_transaction_and_send(void *transaction_obj, int socket_fd) { return 0; }
-
-int transaction_recv_purchase(void **data_out) { *data_out = malloc(2 * sizeof(int)); if (*data_out) { ((int*)*data_out)[0] = 100; ((int*)*data_out)[1] = 5000; } return 0; }
-void transaction_update_state(void *transaction_obj, int state) { /*noop*/ }
-int card_purchase(int card_id, List *card_list_ptr, int amount) { return 0; }
-
-int transaction_recv_recharge(void **data_out) { *data_out = malloc(sizeof(int)); if (*data_out) *(int*)*data_out = 2000; return 0; }
-int card_recharge(int card_id, List *card_list_ptr, int amount) { return 0; }
-
-int transaction_recv_balance(void **data_out) { *data_out = malloc(sizeof(int)); if (*data_out) *(int*)*data_out = 1001; return 0; }
-int card_get_balance(int card_id, List *card_list_ptr, void *balance_out) { if (balance_out) *(int*)balance_out = 12345; return 0; }
-void transaction_send_balance(void *balance_data) { /*noop*/ }
-
-int transaction_recv_history(void **data_out) { *data_out = malloc(sizeof(int)); if (*data_out) *(int*)*data_out = 5; return 0; }
-int transaction_get_history_count_and_send(int card_id, List *trans_list_ptr, int count_param) { return 0; }
-int transaction_list_send_last_n(int card_id, List *trans_list_ptr, int n_param) { return 0; }
-
-int transaction_recv_refund(void **data_out) { *data_out = malloc(sizeof(int)); if (*data_out) *(int*)*data_out = 123; return 0; }
-int transaction_get_and_verify_purchase_id(List *trans_list_ptr, void *data, void *purchase_id_out) { if (purchase_id_out) *(int*)purchase_id_out = 456; return 0; }
-int card_refund(int card_id, List *card_list_ptr, int purchase_id) { return 0; }
-int transaction_rm_purchase_details(void *purchase_id_ptr) { return 0; }
-
-int transaction_destroy(List *trans_list_ptr, int transaction_id) { return 0; }
-
-int card_is_valid(int card_id, int auth_code, List *card_list_ptr) { return 0; }
-int transaction_init_done(void *transaction_obj, void *packet_data, List *trans_list_ptr) { return 0; }
-int transaction_authd(void *transaction_obj, void *packet_data, List *trans_list_ptr) { return 0; }
-int transaction_ops_done(void *transaction_obj, void *packet_data, List *trans_list_ptr) { return 0; }
-
-List *list_create(NodeCompareFunc compare_func) { List *l = (List*)malloc(sizeof(List)); if (l) l->compare_func = compare_func; return l; }
-int transaction_node_contains(void *node_data, void *compare_data) { return 0; }
-int card_node_contains(void *node_data, void *compare_data) { return 0; }
-
-int recv_all(void *buffer, size_t len) {
-    // Dummy implementation: simulate receiving 16 bytes
-    // For main loop to continue, it should return len for a few iterations
-    static int call_count = 0;
-    if (len == 16) {
-        char *buf = (char*)buffer;
-        memset(buf, 0, len); // Clear buffer
-
-        if (call_count == 0) { // Simulate first packet: issue card (PKT_TYPE 0, OP_CODE 4)
-            buf[8] = 0; // PKT_TYPE = 0 (INIT_PKT)
-            buf[9] = 4; // OP_CODE = 4 (ISSUE_CARD)
-            *(int*)(buf + 4) = 100; // Dummy socket_fd
-        } else if (call_count == 1) { // Simulate second packet: make purchase (auth packet)
-            buf[8] = 1; // PKT_TYPE = 1 (AUTH_PKT)
-            buf[9] = 0; // OP_CODE = 0 (MAKE_PURCHASE)
-            *(int*)(buf + 4) = 100; // Dummy socket_fd
-        } else if (call_count == 2) { // Simulate third packet: process_op_code (OPS packet)
-            buf[8] = 2; // PKT_TYPE = 2 (OPS_PKT)
-            buf[9] = 0; // OP_CODE = 0 (MAKE_PURCHASE)
-            *(int*)(buf + 4) = 100; // Dummy socket_fd
-        } else { // Simulate disconnect or no more data
-            return 0;
-        }
-        call_count++;
-        return 16;
-    }
-    return 0; // Simulate EOF or error
-}
-
-// Function: issue_card
-int issue_card(int param_val) {
-  void *recv_data = NULL;
-  int result = transaction_recv_issue(&recv_data);
-  if (result != 0) {
-    return result;
-  }
-
-  void *new_card = NULL;
-  result = card_create_and_add_to_list(&new_card, card_list, *(int*)recv_data);
-  if (result != 0) {
-    free(recv_data); // Clean up allocated data
-    return result;
-  }
-
-  void *new_transaction = NULL;
-  result = transaction_create_and_add_to_list(&new_transaction, transaction_list, param_val, *(int*)new_card);
-  if (result != 0) {
-    free(recv_data);
-    free(new_card); // Clean up allocated data
-    return result;
-  }
-
-  transaction_set_details(new_transaction, recv_data);
-  result = packet_from_transaction_and_send(new_transaction, ((int*)new_card)[1]);
-  
-  // Clean up dynamically allocated memory
-  free(recv_data);
-  free(new_card);
-  // new_transaction might be owned by transaction_list, so not freed here.
-  return result;
-}
-
-// Function: make_purchase
-int make_purchase(void *transaction_obj, void *packet_data) {
-  void *recv_data = NULL;
-  int result = transaction_recv_purchase(&recv_data);
-  if (result != 0) {
-    return result;
-  }
-
-  transaction_set_details(transaction_obj, recv_data);
-  transaction_update_state(transaction_obj, 2);
-  
-  result = card_purchase(*(int*)packet_data, card_list, *(int*)((char*)recv_data + 4));
-  if (result != 0) {
-    free(recv_data);
-    return result;
-  }
-
-  result = packet_from_transaction_and_send(*(void**)transaction_obj, ((int*)packet_data)[1]);
-  
-  free(recv_data);
-  return result;
-}
-
-// Function: recharge_card
-int recharge_card(void *transaction_obj, void *packet_data) {
-  void *recv_data = NULL;
-  int result = transaction_recv_recharge(&recv_data);
-  if (result != 0) {
-    return result;
-  }
-
-  transaction_set_details(transaction_obj, recv_data);
-  transaction_update_state(transaction_obj, 2);
-  
-  result = card_recharge(*(int*)packet_data, card_list, *(int*)recv_data);
-  if (result != 0) {
-    free(recv_data);
-    return result;
-  }
-
-  result = packet_from_transaction_and_send(*(void**)transaction_obj, ((int*)packet_data)[1]);
-  
-  free(recv_data);
-  return result;
-}
-
-// Function: get_card_balance
-int get_card_balance(void *transaction_obj, void *packet_data) {
-  int balance_data = 0; // Use an int for balance, as it's passed by address
-  int result = transaction_recv_balance(&balance_data); // Assuming it takes a pointer to int
-  if (result != 0) {
-    return result;
-  }
-
-  transaction_set_details(transaction_obj, &balance_data); // Pass address of int
-  transaction_update_state(transaction_obj, 2);
-  
-  result = card_get_balance(*(int*)packet_data, card_list, &balance_data); // Pass address of int
-  if (result != 0) {
-    return result;
-  }
-
-  result = packet_from_transaction_and_send(*(void**)transaction_obj, ((int*)packet_data)[1]);
-  if (result != 0) {
-    return result;
-  }
-  
-  transaction_send_balance(&balance_data); // Pass address of int
-  return 0; // If packet_from_transaction_and_send succeeded, return 0
-}
-
-// Function: get_transaction_history
-int get_transaction_history(void *transaction_obj, void *packet_data) {
-  void *recv_data = NULL;
-  int result = transaction_recv_history(&recv_data);
-  if (result != 0) {
-    return result;
-  }
-
-  transaction_set_details(transaction_obj, recv_data);
-  transaction_update_state(transaction_obj, 2);
-  
-  result = packet_from_transaction_and_send(*(void**)transaction_obj, ((int*)packet_data)[1]);
-  if (result != 0) {
-    free(recv_data);
-    return result;
-  }
-
-  result = transaction_get_history_count_and_send(*(int*)packet_data, transaction_list, *(int*)recv_data);
-  if (result != 0) {
-    free(recv_data);
-    return result;
-  }
-
-  result = transaction_list_send_last_n(*(int*)packet_data, transaction_list, *(int*)recv_data);
-  
-  free(recv_data);
-  return result;
-}
-
-// Function: refund_purchase
-int refund_purchase(void *transaction_obj, void *packet_data) {
-  int recv_data_val = 0; // Assuming single int value
-  int result = transaction_recv_refund(&recv_data_val);
-  if (result != 0) {
-    return result;
-  }
-
-  transaction_set_details(transaction_obj, &recv_data_val);
-  transaction_update_state(transaction_obj, 2);
-  
-  int purchase_id = 0;
-  result = transaction_get_and_verify_purchase_id(transaction_list, &recv_data_val, &purchase_id);
-  if (result != 0) {
-    return result;
-  }
-
-  result = card_refund(*(int*)packet_data, card_list, purchase_id);
-  if (result != 0) {
-    return result;
-  }
-
-  result = transaction_rm_purchase_details(&purchase_id);
-  if (result != 0) {
-    return result;
-  }
-
-  result = packet_from_transaction_and_send(*(void**)transaction_obj, ((int*)packet_data)[1]);
-  return result;
-}
-
-// Function: process_op_code
-int process_op_code(void *transaction_obj, void *packet_data) {
-  int result;
-  uint8_t op_code = ((uint8_t*)packet_data)[9];
-
-  switch(op_code) {
-  case 0:
-    result = make_purchase(transaction_obj, packet_data);
-    break;
-  case 1:
-    result = recharge_card(transaction_obj, packet_data);
-    break;
-  case 2:
-    result = get_card_balance(transaction_obj, packet_data);
-    break;
-  case 3:
-    result = get_transaction_history(transaction_obj, packet_data);
-    break;
-  case 5:
-    result = refund_purchase(transaction_obj, packet_data);
-    break;
-  default:
-    result = 9; // Invalid OP_CODE
-    break;
-  }
-  return result;
-}
-
-// Function: process_fin
-int process_fin(void **transaction_obj_ptr, void *packet_data) {
-  int result = 0;
-  uint8_t op_code = ((uint8_t*)packet_data)[9];
-
-  // Original condition: if (4 < *(byte *)(param_2 + 9)) && (*(byte *)(param_2 + 9) != 5)
-  // Which means op_code > 4 AND op_code != 5. This implies op_code is 6, 7, ...
-  if (op_code > 4 && op_code != 5) {
-    return 9; // Invalid OP_CODE
-  }
-  
-  // If op_code is 5 (refund), destroy transaction
-  if (op_code == 5) {
-    void* current_transaction = *transaction_obj_ptr;
-    // Assuming *(int *)(*param_1 + 0xc) is a pointer to another structure
-    // and then *(undefined4 *)(iVar3 + 4) is an ID within that structure.
-    // This is complex and highly dependent on actual struct definitions.
-    // Making a best guess based on common patterns.
-    void* ptr_at_offset_c = *(void**)((char*)current_transaction + 0xC);
-    int destroy_id = *(int*)((char*)ptr_at_offset_c + 4);
-    
-    result = transaction_destroy(transaction_list, destroy_id);
-    if (result != 0) {
-      return result;
-    }
-  }
-
-  transaction_update_state(*transaction_obj_ptr, 3);
-  result = packet_from_transaction_and_send(*transaction_obj_ptr, ((int*)packet_data)[1]);
-  return result;
-}
+// For simplicity, let's assume a global socket_fd for error sending in this example.
+// In a real application, this would be passed around or part of a connection context.
+static int current_socket_fd = -1; // Placeholder for the active connection socket
 
 // Function: send_error
-void send_error(int socket_fd, uint8_t error_code, const char *error_msg) {
-  char error_pkt_header[16]; // Assume a 16-byte fixed-size header
-  memset(error_pkt_header, 0, sizeof(error_pkt_header));
+// param_1: The socket file descriptor to send the error on.
+// param_2: The error code.
+// param_3: The error message string.
+void send_error(int socket_fd, uint8_t error_code, const char *message) {
+    PacketHeader error_packet;
+    memset(&error_packet, 0, sizeof(error_packet)); // Clear the packet
+    error_packet.pkt_type = 0xFF; // Assuming an error packet type
+    error_packet.op_code = error_code; // Place error code here
+    error_packet.error_code_field = error_code; // Also place it at offset 10 as per original
 
-  // Set packet type (e.g., to indicate error) - assuming offset 8 for pkt_type
-  error_pkt_header[8] = 0xFF; // Example: 0xFF for error packet type
-  // Set the error code at the specified offset (offset 10 in original)
-  error_pkt_header[10] = error_code; 
+    // Send the fixed-size error packet header (16 bytes)
+    send(socket_fd, &error_packet, sizeof(error_packet), 0);
 
-  // Send the 16-byte header
-  send(socket_fd, error_pkt_header, sizeof(error_pkt_header), 0);
+    // If no message provided, use a default one
+    if (message == NULL) {
+        message = "Unknown Error.";
+    }
 
-  const char *effective_error_msg = (error_msg == NULL) ? "Unknown Error." : error_msg;
-  size_t msg_len = strlen(effective_error_msg);
+    // Send the length of the error message
+    size_t message_len = strlen(message);
+    send(socket_fd, &message_len, sizeof(size_t), 0);
 
-  // Send the length of the error message
-  send(socket_fd, &msg_len, sizeof(size_t), 0);
-
-  // Send the error message itself
-  send(socket_fd, effective_error_msg, msg_len, 0);
-  return;
+    // Send the error message string itself
+    send(socket_fd, message, message_len, 0);
 }
 
 // Function: send_error_pkt
-void send_error_pkt(void *packet_data, uint8_t error_code) {
-  // Assuming socket_fd is at offset 4 in the packet_data
-  int socket_fd = *(int*)((char*)packet_data + 4);
-  
-  switch(error_code) {
-  default:
-    send_error(socket_fd, error_code,"Unknown Error.");
-    break;
-  case 1:
-    send_error(socket_fd, error_code,"Failed to extend list.");
-    break;
-  case 2:
-    send_error(socket_fd, error_code,"Failed to remove node from list.");
-    break;
-  case 3:
-    send_error(socket_fd, error_code,"Failed to allocate memory.");
-    break;
-  case 4:
-    send_error(socket_fd, error_code,"Failed to deallocate memory.");
-    break;
-  case 5:
-    send_error(socket_fd, error_code,"Insuffient funds for purchase.");
-    break;
-  case 6:
-    send_error(socket_fd, error_code,"Unable to recharge card. Balance near max.");
-    break;
-  case 7:
-    send_error(socket_fd, error_code,"Unable to refund card. Balance near max.");
-    break;
-  case 8:
-    send_error(socket_fd, error_code,"No matching transaction history.");
-    break;
-  case 9:
-    send_error(socket_fd, error_code,"Invalid OP_CODE.");
-    break;
-  case 10:
-    send_error(socket_fd, error_code,"Invalid PKT_TYPE.");
-    break;
-  case 0xb: // 11
-    send_error(socket_fd, error_code,"Invalid VENDOR_TYPE.");
-    break;
-  case 0xc: // 12
-    send_error(socket_fd, error_code,"Transaction has not completed AUTH.");
-    break;
-  case 0xd: // 13
-    send_error(socket_fd, error_code,"Transaction has not completed INIT.");
-    break;
-  case 0xe: // 14
-    send_error(socket_fd, error_code,"Transaction has not completed OPS.");
-    break;
-  case 0xf: // 15
-    send_error(socket_fd, error_code,"Card or transaction not found.");
-    break;
-  case 0x10: // 16
-    send_error(socket_fd, error_code,"Invalid card or auth code.");
-    break;
-  case 0x11: // 17
-    send_error(socket_fd, error_code,"Receive failed.");
-  }
-  return;
+// param_1: A pointer to a packet context (e.g., the received PacketHeader).
+//          From this context, the socket_fd should be derivable, or use a global.
+// param_2: The error code.
+void send_error_pkt(void *packet_context, uint8_t error_code) {
+    // In a real system, 'packet_context' might be used to determine the target socket.
+    // For this example, we use the global 'current_socket_fd'.
+    int socket_fd = current_socket_fd; // Assuming current_socket_fd is set by main loop
+
+    switch (error_code) {
+        case 1:
+            send_error(socket_fd, error_code, "Failed to extend list.");
+            break;
+        case 2:
+            send_error(socket_fd, error_code, "Failed to remove node from list.");
+            break;
+        case 3:
+            send_error(socket_fd, error_code, "Failed to allocate memory.");
+            break;
+        case 4:
+            send_error(socket_fd, error_code, "Failed to deallocate memory.");
+            break;
+        case 5:
+            send_error(socket_fd, error_code, "Insufficient funds for purchase.");
+            break;
+        case 6:
+            send_error(socket_fd, error_code, "Unable to recharge card. Balance near max.");
+            break;
+        case 7:
+            send_error(socket_fd, error_code, "Unable to refund card. Balance near max.");
+            break;
+        case 8:
+            send_error(socket_fd, error_code, "No matching transaction history.");
+            break;
+        case 9:
+            send_error(socket_fd, error_code, "Invalid OP_CODE.");
+            break;
+        case 10:
+            send_error(socket_fd, error_code, "Invalid PKT_TYPE.");
+            break;
+        case 0xb: // 11
+            send_error(socket_fd, error_code, "Invalid VENDOR_TYPE.");
+            break;
+        case 0xc: // 12
+            send_error(socket_fd, error_code, "Transaction has not completed AUTH.");
+            break;
+        case 0xd: // 13
+            send_error(socket_fd, error_code, "Transaction has not completed INIT.");
+            break;
+        case 0xe: // 14
+            send_error(socket_fd, error_code, "Transaction has not completed OPS.");
+            break;
+        case 0xf: // 15
+            send_error(socket_fd, error_code, "Card or transaction not found.");
+            break;
+        case 0x10: // 16
+            send_error(socket_fd, error_code, "Invalid card or auth code.");
+            break;
+        case 0x11: // 17
+            send_error(socket_fd, error_code, "Receive failed.");
+            break;
+        default:
+            send_error(socket_fd, error_code, "Unknown Error.");
+            break;
+    }
+}
+
+// Function: issue_card
+int issue_card(void *packet_data) {
+    int result;
+    void *issue_data = NULL;
+    void *new_card_handle = NULL;
+    void *new_transaction_handle = NULL;
+
+    result = transaction_recv_issue(&issue_data);
+    if (result != 0) {
+        return result;
+    }
+
+    // Assuming packet_data points to a PacketHeader, and its field0 is the card_id
+    result = card_create_and_add_to_list(&new_card_handle, card_list, issue_data);
+    if (result != 0) {
+        return result;
+    }
+
+    // Assuming packet_data field0 is card_id and *new_card_handle is another card_id
+    // This looks like a decompiler artifact. Let's assume the transaction creation needs
+    // the original packet data and the newly created card handle.
+    result = transaction_create_and_add_to_list(&new_transaction_handle, transaction_list, packet_data, (card_id_t)(uintptr_t)new_card_handle);
+    if (result != 0) {
+        return result;
+    }
+
+    transaction_set_details(new_transaction_handle, issue_data);
+    // Assuming packet_data is PacketHeader*, and its socket_fd is used.
+    result = packet_from_transaction_and_send(new_transaction_handle, ((PacketHeader*)packet_data)->socket_fd);
+    // The original code has a redundant call if it fails. We just return the error.
+    return result;
+}
+
+// Function: make_purchase
+int make_purchase(void *transaction_handle_ptr, void *packet_data) {
+    int result;
+    void *purchase_data = NULL; // This will point to the purchase details received
+
+    result = transaction_recv_purchase(&purchase_data);
+    if (result != 0) {
+        return result;
+    }
+
+    transaction_set_details(transaction_handle_ptr, purchase_data);
+    transaction_update_state(transaction_handle_ptr, 2); // Assuming state 2 is 'processing'
+
+    // Assuming packet_data is PacketHeader*, and its field0 is card_id.
+    // purchase_data is assumed to be a pointer, and we access data at offset 4.
+    // This is often ((uint32_t*)purchase_data)[1]
+    result = card_purchase( ((PacketHeader*)packet_data)->field0, card_list, *(amount_t*)((uintptr_t)purchase_data + 4));
+    if (result != 0) {
+        return result;
+    }
+
+    // Assuming packet_data is PacketHeader*, and its socket_fd is used.
+    result = packet_from_transaction_and_send(transaction_handle_ptr, ((PacketHeader*)packet_data)->socket_fd);
+    return result;
+}
+
+// Function: recharge_card
+int recharge_card(void *transaction_handle_ptr, void *packet_data) {
+    int result;
+    void *recharge_data = NULL; // This will point to the recharge details received
+
+    result = transaction_recv_recharge(&recharge_data);
+    if (result != 0) {
+        return result;
+    }
+
+    transaction_set_details(transaction_handle_ptr, recharge_data);
+    transaction_update_state(transaction_handle_ptr, 2); // Assuming state 2 is 'processing'
+
+    // Assuming packet_data is PacketHeader*, and its field0 is card_id.
+    // *recharge_data is assumed to be the amount.
+    result = card_recharge(((PacketHeader*)packet_data)->field0, card_list, (amount_t)(uintptr_t)recharge_data);
+    if (result != 0) {
+        return result;
+    }
+
+    // Assuming packet_data is PacketHeader*, and its socket_fd is used.
+    result = packet_from_transaction_and_send(transaction_handle_ptr, ((PacketHeader*)packet_data)->socket_fd);
+    return result;
+}
+
+// Function: get_card_balance
+int get_card_balance(void *transaction_handle_ptr, void *packet_data) {
+    int result;
+    void *balance_data = NULL; // This will point to the balance data received/calculated
+
+    result = transaction_recv_balance(&balance_data);
+    if (result != 0) {
+        return result;
+    }
+
+    transaction_set_details(transaction_handle_ptr, balance_data);
+    transaction_update_state(transaction_handle_ptr, 2); // Assuming state 2 is 'processing'
+
+    // Assuming packet_data is PacketHeader*, and its field0 is card_id.
+    result = card_get_balance(((PacketHeader*)packet_data)->field0, card_list, balance_data);
+    if (result != 0) {
+        return result;
+    }
+
+    // Assuming packet_data is PacketHeader*, and its socket_fd is used.
+    result = packet_from_transaction_and_send(transaction_handle_ptr, ((PacketHeader*)packet_data)->socket_fd);
+    if (result != 0) {
+        return result;
+    }
+
+    transaction_send_balance(balance_data);
+    return 0; // Success
+}
+
+// Function: get_transaction_history
+int get_transaction_history(void *transaction_handle_ptr, void *packet_data) {
+    int result;
+    void *history_data = NULL; // This will point to the history request data
+
+    result = transaction_recv_history(&history_data);
+    if (result != 0) {
+        return result;
+    }
+
+    transaction_set_details(transaction_handle_ptr, history_data);
+    transaction_update_state(transaction_handle_ptr, 2); // Assuming state 2 is 'processing'
+
+    // Assuming packet_data is PacketHeader*, and its field0 is card_id.
+    result = packet_from_transaction_and_send(transaction_handle_ptr, ((PacketHeader*)packet_data)->socket_fd);
+    if (result != 0) {
+        return result;
+    }
+
+    // *history_data is assumed to be the card_id for history lookup
+    result = transaction_get_history_count_and_send(((PacketHeader*)packet_data)->field0, transaction_list, history_data);
+    if (result != 0) {
+        return result;
+    }
+
+    result = transaction_list_send_last_n(((PacketHeader*)packet_data)->field0, transaction_list, history_data);
+    return result;
+}
+
+// Function: refund_purchase
+int refund_purchase(void *transaction_handle_ptr, void *packet_data) {
+    int result;
+    void *refund_data = NULL; // This will point to the refund request data
+    transaction_id_t purchase_id = 0; // The ID of the purchase to refund
+
+    result = transaction_recv_refund(&refund_data);
+    if (result != 0) {
+        return result;
+    }
+
+    transaction_set_details(transaction_handle_ptr, refund_data);
+    transaction_update_state(transaction_handle_ptr, 2); // Assuming state 2 is 'processing'
+
+    result = transaction_get_and_verify_purchase_id(transaction_list, refund_data, &purchase_id);
+    if (result != 0) {
+        return result;
+    }
+
+    // Assuming packet_data is PacketHeader*, and its field0 is card_id.
+    result = card_refund(((PacketHeader*)packet_data)->field0, card_list, purchase_id);
+    if (result != 0) {
+        return result;
+    }
+
+    result = transaction_rm_purchase_details(&purchase_id);
+    if (result != 0) {
+        return result;
+    }
+
+    // Assuming packet_data is PacketHeader*, and its socket_fd is used.
+    result = packet_from_transaction_and_send(transaction_handle_ptr, ((PacketHeader*)packet_data)->socket_fd);
+    return result;
+}
+
+// Function: process_op_code
+// param_1: A pointer to the current transaction handle (e.g., Transaction*).
+// param_2: A pointer to the received packet data (e.g., PacketHeader*).
+int process_op_code(void *transaction_handle_ptr, void *packet_data) {
+    uint8_t op_code = ((PacketHeader*)packet_data)->op_code;
+    int result = 0; // Default success
+
+    switch (op_code) {
+        case 0: // Make Purchase
+            result = make_purchase(transaction_handle_ptr, packet_data);
+            break;
+        case 1: // Recharge Card
+            result = recharge_card(transaction_handle_ptr, packet_data);
+            break;
+        case 2: // Get Card Balance
+            result = get_card_balance(transaction_handle_ptr, packet_data);
+            break;
+        case 3: // Get Transaction History
+            result = get_transaction_history(transaction_handle_ptr, packet_data);
+            break;
+        case 5: // Refund Purchase
+            result = refund_purchase(transaction_handle_ptr, packet_data);
+            break;
+        default:
+            result = 9; // Invalid OP_CODE
+            break;
+    }
+    return result;
+}
+
+// Function: process_fin
+// param_1: A pointer to the transaction handle (e.g., Transaction**).
+// param_2: A pointer to the received packet data (e.g., PacketHeader*).
+int process_fin(void **transaction_handle_ptr_addr, void *packet_data) {
+    int result = 0;
+    uint8_t op_code = ((PacketHeader*)packet_data)->op_code;
+    void *transaction_handle = *transaction_handle_ptr_addr; // Dereference the pointer to get the actual handle
+
+    // If OP_CODE > 4 (i.e., 5 or greater, but only 5 is handled explicitly)
+    if (op_code > 4) {
+        if (op_code != 5) {
+            return 9; // Invalid OP_CODE
+        }
+        // This block handles OP_CODE 5 (Refund Purchase) after ops_completed.
+        // It destroys a transaction. This logic is a bit unusual if refund_purchase already happened.
+        // Assuming `transaction_handle` points to a Transaction struct, and its transaction_id is at offset 0xc (index 3 for uint32_t).
+        transaction_id_t transaction_id = ((Transaction*)transaction_handle)->other_id_or_data;
+        result = transaction_destroy(transaction_list, transaction_id);
+        if (result != 0) {
+            return result;
+        }
+    }
+
+    // This part executes if OP_CODE <= 4 OR if OP_CODE == 5 and transaction_destroy succeeded.
+    transaction_update_state(transaction_handle, 3); // Assuming state 3 is 'finalized'
+
+    // Assuming packet_data is PacketHeader*, and its socket_fd is used.
+    result = packet_from_transaction_and_send(transaction_handle, ((PacketHeader*)packet_data)->socket_fd);
+    return result;
 }
 
 // Function: auth_new_transaction
+// param_1: A pointer to the received packet data (e.g., PacketHeader*).
 int auth_new_transaction(void *packet_data) {
-  // Assuming *param_1 is card_id, param_1[1] is auth_code/socket_fd
-  int card_id = *(int*)packet_data;
-  int auth_code = ((int*)packet_data)[1]; // This might be the socket_fd in this context
+    int result;
+    void *new_transaction_handle = NULL;
 
-  int result = card_is_valid(card_id, auth_code, card_list);
-  if (result != 0) {
+    // Assuming packet_data is PacketHeader*, and its field0 is card_id, socket_fd is auth_code
+    result = card_is_valid(((PacketHeader*)packet_data)->field0, ((PacketHeader*)packet_data)->socket_fd, card_list);
+    if (result != 0) {
+        return result;
+    }
+
+    // Assuming packet_data field0 is card_id
+    result = transaction_create_and_add_to_list(&new_transaction_handle, transaction_list, packet_data, ((PacketHeader*)packet_data)->field0);
+    if (result != 0) {
+        return result;
+    }
+
+    // Assuming packet_data is PacketHeader*, and its socket_fd is used.
+    result = packet_from_transaction_and_send(new_transaction_handle, ((PacketHeader*)packet_data)->socket_fd);
     return result;
-  }
-
-  void *new_transaction = NULL;
-  result = transaction_create_and_add_to_list(&new_transaction, transaction_list, card_id, card_id); // param_1 used twice in original
-  if (result != 0) {
-    return result;
-  }
-
-  result = packet_from_transaction_and_send(new_transaction, auth_code); // Using auth_code as socket_fd here
-  return result;
 }
 
 // Function: init_completed
-int init_completed(void *transaction_obj, void *packet_data) {
-  int card_id = *(int*)packet_data;
-  int auth_code = ((int*)packet_data)[1]; // Or socket_fd
+// param_1: A pointer to the transaction handle (e.g., Transaction**).
+// param_2: A pointer to the received packet data (e.g., PacketHeader*).
+int init_completed(void **transaction_handle_ptr_addr, void *packet_data) {
+    int result;
+    void *transaction_handle = *transaction_handle_ptr_addr; // Dereference to get the handle
 
-  int result = card_is_valid(card_id, auth_code, card_list);
-  if (result != 0) {
+    // Assuming packet_data is PacketHeader*, and its field0 is card_id, socket_fd is auth_code
+    result = card_is_valid(((PacketHeader*)packet_data)->field0, ((PacketHeader*)packet_data)->socket_fd, card_list);
+    if (result != 0) {
+        return result;
+    }
+
+    result = transaction_init_done(transaction_handle, packet_data, transaction_list);
     return result;
-  }
-  
-  result = transaction_init_done(transaction_obj, packet_data, transaction_list);
-  return result;
 }
 
 // Function: auth_completed
-int auth_completed(void *transaction_obj, void *packet_data) {
-  int card_id = *(int*)packet_data;
-  int auth_code = ((int*)packet_data)[1]; // Or socket_fd
+// param_1: A pointer to the transaction handle (e.g., Transaction**).
+// param_2: A pointer to the received packet data (e.g., PacketHeader*).
+int auth_completed(void **transaction_handle_ptr_addr, void *packet_data) {
+    int result;
+    void *transaction_handle = *transaction_handle_ptr_addr; // Dereference to get the handle
 
-  int result = card_is_valid(card_id, auth_code, card_list);
-  if (result != 0) {
+    // Assuming packet_data is PacketHeader*, and its field0 is card_id, socket_fd is auth_code
+    result = card_is_valid(((PacketHeader*)packet_data)->field0, ((PacketHeader*)packet_data)->socket_fd, card_list);
+    if (result != 0) {
+        return result;
+    }
+
+    result = transaction_authd(transaction_handle, packet_data, transaction_list);
     return result;
-  }
-  
-  result = transaction_authd(transaction_obj, packet_data, transaction_list);
-  return result;
 }
 
 // Function: ops_completed
-int ops_completed(void *transaction_obj, void *packet_data) {
-  int card_id = *(int*)packet_data;
-  int auth_code = ((int*)packet_data)[1]; // Or socket_fd
+// param_1: A pointer to the transaction handle (e.g., Transaction**).
+// param_2: A pointer to the received packet data (e.g., PacketHeader*).
+int ops_completed(void **transaction_handle_ptr_addr, void *packet_data) {
+    int result;
+    void *transaction_handle = *transaction_handle_ptr_addr; // Dereference to get the handle
 
-  int result = card_is_valid(card_id, auth_code, card_list);
-  if (result != 0) {
+    // Assuming packet_data is PacketHeader*, and its field0 is card_id, socket_fd is auth_code
+    result = card_is_valid(((PacketHeader*)packet_data)->field0, ((PacketHeader*)packet_data)->socket_fd, card_list);
+    if (result != 0) {
+        return result;
+    }
+
+    result = transaction_ops_done(transaction_handle, packet_data, transaction_list);
     return result;
-  }
-  
-  result = transaction_ops_done(transaction_obj, packet_data, transaction_list);
-  return result;
 }
 
 // Function: dispatch_packet
+// param_1: A pointer to the received packet data (e.g., PacketHeader*).
 int dispatch_packet(void *packet_data) {
-  uint8_t pkt_type = ((uint8_t*)packet_data)[8];
-  uint8_t op_code = ((uint8_t*)packet_data)[9];
-  int result = 0;
-  void *transaction_obj = NULL; // Used for local_18 and local_14
+    int result = 0;
+    PacketHeader *pkt = (PacketHeader *)packet_data;
+    uint8_t pkt_type = pkt->pkt_type;
+    uint8_t op_code = pkt->op_code;
+    void *current_transaction_handle = NULL; // Used for PKT_TYPE 2 and 3
 
-  switch (pkt_type) {
-    case 0: // INIT_PKT
-      if (op_code == 4) { // OP_CODE_ISSUE_CARD
-        result = issue_card(*(int*)packet_data); // param_1 for issue_card is an int
-      } else {
-        result = 9; // Invalid OP_CODE for INIT_PKT
-      }
-      break;
-    case 1: // AUTH_PKT
-      // Check for valid OP_CODES for AUTH_PKT
-      if (!((op_code == 0) || (op_code == 1) || (op_code == 2) || (op_code == 3) || (op_code == 5))) {
-        result = 9; // Invalid OP_CODE
-      } else {
+    if (pkt_type == 3) { // PKT_TYPE == FIN (Finalize transaction)
+        // Check if OP_CODE is one of 0, 1, 2, 3, 4, 5
+        if (!((op_code == 0) || (op_code == 1) || (op_code == 2) ||
+              (op_code == 3) || (op_code == 4) || (op_code == 5))) {
+            return 9; // Invalid OP_CODE
+        }
+
+        // The original code uses `local_18 = 0;` and then passes `&local_18`.
+        // This implies init_completed/ops_completed might *retrieve* or *create* the transaction handle.
+        // Let's assume they retrieve it based on the packet data and store it in `current_transaction_handle`.
+        if (op_code == 4) { // OP_CODE == INIT (Init completed)
+            result = init_completed(&current_transaction_handle, packet_data);
+            if (result != 0) {
+                return result;
+            }
+        } else { // OP_CODE == AUTH, OPS, etc. (Other operations completed)
+            result = ops_completed(&current_transaction_handle, packet_data);
+            if (result != 0) {
+                return result;
+            }
+        }
+        result = process_fin(&current_transaction_handle, packet_data);
+        return result;
+    }
+
+    if (pkt_type == 2) { // PKT_TYPE == AUTH (Authenticate transaction)
+        // Check if OP_CODE is one of 0, 1, 2, 3, 5
+        if (!((op_code == 0) || (op_code == 1) || (op_code == 2) ||
+              (op_code == 3) || (op_code == 5))) {
+            return 9; // Invalid OP_CODE
+        }
+
+        // `auth_completed` retrieves/creates the transaction handle.
+        result = auth_completed(&current_transaction_handle, packet_data);
+        if (result != 0) {
+            return result;
+        }
+        result = process_op_code(current_transaction_handle, packet_data);
+        return result;
+    }
+
+    if (pkt_type == 0) { // PKT_TYPE == ISSUE (Issue new card)
+        if (op_code == 4) { // OP_CODE == INIT (Initialize card issuance)
+            result = issue_card(packet_data);
+            return result;
+        }
+        return 9; // Invalid OP_CODE for PKT_TYPE 0
+    }
+
+    if (pkt_type == 1) { // PKT_TYPE == INIT (Initialize transaction)
+        // Check if OP_CODE is one of 0, 1, 2, 3, 5
+        if (!((op_code == 0) || (op_code == 1) || (op_code == 2) ||
+              (op_code == 3) || (op_code == 5))) {
+            return 9; // Invalid OP_CODE
+        }
         result = auth_new_transaction(packet_data);
-      }
-      break;
-    case 2: // OPS_PKT
-      // Check for valid OP_CODES for OPS_PKT
-      if (!((op_code == 0) || (op_code == 1) || (op_code == 2) || (op_code == 3) || (op_code == 5))) {
-        result = 9; // Invalid OP_CODE
-      } else {
-        // transaction_obj is initialized to NULL, then passed by address to auth_completed.
-        // auth_completed should populate transaction_obj if successful.
-        result = auth_completed(&transaction_obj, packet_data);
-        if (result == 0) {
-          result = process_op_code(transaction_obj, packet_data);
-        }
-      }
-      break;
-    case 3: // FIN_PKT
-      // Check for valid OP_CODES for FIN_PKT
-      if (!((op_code == 0) || (op_code == 1) || (op_code == 2) || (op_code == 3) || (op_code == 4) || (op_code == 5))) {
-        result = 9; // Invalid OP_CODE
-      } else {
-        // transaction_obj is initialized to NULL, then passed by address to init_completed/ops_completed.
-        // These functions should populate transaction_obj if successful.
-        if (op_code == 4) { // OP_CODE_INIT_DONE
-          result = init_completed(&transaction_obj, packet_data);
-        } else { // Other OP_CODES for FIN_PKT
-          result = ops_completed(&transaction_obj, packet_data);
-        }
-        
-        if (result == 0) {
-          result = process_fin(&transaction_obj, packet_data);
-        }
-      }
-      break;
-    default:
-      result = 10; // Invalid PKT_TYPE
-      break;
-  }
-  
-  return result;
+        return result;
+    }
+
+    return 10; // Invalid PKT_TYPE
 }
 
 // Function: main
 int main(void) {
-  Packet recv_packet_buffer; // Use the Packet struct
-  void *packet_ptr = NULL;
-  int error_code = 0;
-  
-  transaction_list = list_create(transaction_node_contains);
-  if (transaction_list == NULL) {
-    error_code = 3; // Failed to allocate memory
-  } else {
-    card_list = list_create(card_node_contains);
-    if (card_list == NULL) {
-      error_code = 3; // Failed to allocate memory
-      // In a real scenario, you'd call a list_destroy(transaction_list) here.
+    PacketHeader received_packet_buffer; // Buffer to receive incoming packets
+    void *packet_ptr = NULL;            // Pointer to the received packet buffer
+    int operation_result = 0;           // Stores the result of operations, 0 for success
+
+    // Initialize global lists
+    transaction_list = list_create(transaction_node_contains);
+    if (transaction_list == NULL) {
+        operation_result = 3; // Failed to allocate memory
     } else {
-      while (1) {
-        packet_ptr = &recv_packet_buffer; // Point to the buffer for receiving
-        int bytes_received = recv_all(packet_ptr, sizeof(Packet));
-        
-        if (bytes_received != sizeof(Packet)) {
-          error_code = 0x11; // Receive failed (or EOF)
-          if (bytes_received == 0) { // Clean shutdown, no error to report
-              error_code = 0;
-              packet_ptr = NULL; // No packet to send error for
-          }
-          break; // Exit loop on error or EOF
+        card_list = list_create(card_node_contains);
+        if (card_list == NULL) {
+            operation_result = 3; // Failed to allocate memory
+        } else {
+            // Main processing loop
+            while (operation_result == 0) {
+                packet_ptr = NULL; // Reset packet_ptr for each iteration
+
+                // Receive a fixed-size packet header (16 bytes)
+                ssize_t bytes_received = recv_all(&received_packet_buffer, sizeof(received_packet_buffer));
+
+                if (bytes_received != sizeof(received_packet_buffer)) {
+                    operation_result = 0x11; // Error code for receive failure
+                    // We break here, as we can't process an incomplete packet.
+                    // packet_ptr remains NULL, so no error packet is sent based on it.
+                    break;
+                }
+
+                packet_ptr = &received_packet_buffer; // Point to the received data
+                current_socket_fd = received_packet_buffer.socket_fd; // Assume socket_fd is in the packet header
+
+                // Dispatch the packet for processing
+                operation_result = dispatch_packet(packet_ptr);
+
+                // If dispatch_packet was successful (operation_result == 0), the loop continues.
+                // If dispatch_packet returned an error, operation_result is non-zero, and the loop terminates.
+            }
         }
-        
-        error_code = dispatch_packet(packet_ptr);
-        if (error_code != 0) {
-          break; // Exit loop on dispatch error
-        }
-        // If dispatch was successful, reset error_code for the next iteration
-        error_code = 0;
-        packet_ptr = NULL; // Clear packet_ptr so error is not sent for a successful packet
-      }
     }
-  }
 
-  if (error_code != 0 && packet_ptr != NULL) {
-    send_error_pkt(packet_ptr, (uint8_t)error_code);
-  }
+    // After the loop, if an error occurred and a packet was successfully received (or at least buffer was ready)
+    if (operation_result != 0 && packet_ptr != NULL) {
+        // Send an error response packet using the determined socket_fd
+        send_error_pkt(packet_ptr, operation_result & 0xff);
+    }
 
-  // In a real scenario, you'd call list_destroy(transaction_list) and list_destroy(card_list) here.
-  
-  return error_code;
+    // Return the final result code
+    return operation_result;
 }

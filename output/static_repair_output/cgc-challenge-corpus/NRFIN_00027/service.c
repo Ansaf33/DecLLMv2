@@ -1,79 +1,46 @@
-#include <unistd.h>  // For read, write, or similar low-level I/O if read_all/write_all use them
-#include <stddef.h>  // For size_t
+#include <unistd.h> // For STDIN_FILENO, STDOUT_FILENO, ssize_t
 
-// --- Function Declarations (placeholders for external functions) ---
-// These functions are called by main but their implementations are not provided.
-// Their signatures are inferred from their usage in the original snippet.
+// Function prototypes for external functions
+// Assuming rpncalc_init initializes an 8-byte buffer
+void rpncalc_init(char *state_buffer);
 
-/**
- * @brief Reads 'count' bytes from file descriptor 'fd' into 'buf'.
- *        Keeps reading until 'count' bytes are read or an unrecoverable error occurs.
- * @param fd The file descriptor to read from (e.g., 0 for stdin).
- * @param buf The buffer to store the read data.
- * @param count The number of bytes to read.
- * @param flags_or_arg An additional argument, possibly flags or a magic number.
- * @return The number of bytes successfully read (expected to be 'count' on success),
- *         or a negative value on error.
- */
-int read_all(int fd, void *buf, size_t count, unsigned int flags_or_arg);
+// Assuming read_all reads 'count' bytes into 'buf' from 'fd'.
+// The 'flags' argument (0x13d0f) is kept as per original.
+// Returns the number of bytes read, or -1 on error.
+ssize_t read_all(int fd, void *buf, size_t count, unsigned int flags);
 
-/**
- * @brief Writes 'count' bytes from 'buf' to file descriptor 'fd'.
- *        Keeps writing until 'count' bytes are written or an unrecoverable error occurs.
- * @param fd The file descriptor to write to (e.g., 1 for stdout).
- * @param buf The buffer containing the data to write.
- * @param count The number of bytes to write.
- */
-void write_all(int fd, const void *buf, size_t count);
+// Assuming perform_rpncalc_op takes the state buffer and an integer operation code.
+// Returns a 32-bit unsigned integer result.
+unsigned int perform_rpncalc_op(char *state_buffer, int op_code);
 
-/**
- * @brief Initializes the RPN calculator context.
- * @param context_buffer A pointer to an 8-byte buffer to store the calculator's state.
- */
-void rpncalc_init(char *context_buffer);
+// Assuming write_all writes 'count' bytes from 'buf' to 'fd'.
+// Returns the number of bytes written, or -1 on error.
+ssize_t write_all(int fd, const void *buf, size_t count);
 
-/**
- * @brief Performs an RPN calculator operation.
- * @param context_buffer A pointer to the 8-byte calculator context.
- * @param operand The integer operand for the operation.
- * @return The result of the operation.
- */
-int perform_rpncalc_op(char *context_buffer, int operand);
+// Assuming rpncalc_destroy cleans up the 8-byte state buffer
+void rpncalc_destroy(char *state_buffer);
 
-/**
- * @brief Destroys or cleans up the RPN calculator context.
- * @param context_buffer A pointer to the 8-byte calculator context.
- */
-void rpncalc_destroy(char *context_buffer);
-
-// --- Main Function ---
 int main(void) {
-  int bytes_read;
-  char rpn_context_buffer[8]; // Represents undefined local_20 [8]
-  int rpn_result;             // Represents undefined4 local_18
-  int input_value;            // Represents int local_14
-  
-  // Decompiler artifacts 'local_10 = &stack0x00000004;' and 'uVar2 = 0x13d0f;' have been removed or inlined.
+  ssize_t bytes_read;
+  char rpn_state_buffer[8]; // Calculator state buffer
+  int input_value;          // Value read from input
+  unsigned int operation_result; // Result of RPN operation
 
-  rpncalc_init(rpn_context_buffer);
+  rpncalc_init(rpn_state_buffer);
 
-  while (1) { // Infinite loop until a break condition is met
+  while (1) {
     do {
-      // Read 4 bytes into input_value. 0x13d0f is an unknown argument (inlined from uVar2).
-      bytes_read = read_all(0, &input_value, sizeof(input_value), 0x13d0f);
-    } while (bytes_read != sizeof(input_value)); // Loop until exactly 4 bytes are read
+      bytes_read = read_all(STDIN_FILENO, &input_value, sizeof(input_value), 0x13d0f);
+    } while (bytes_read != sizeof(input_value));
 
-    if (input_value == -1) { // Check for termination condition
-      break;
+    if (input_value == -1) {
+      break; // Exit loop if termination value is read
     }
 
-    // Perform RPN operation and store result
-    rpn_result = perform_rpncalc_op(rpn_context_buffer, input_value);
-
-    // Write the 4-byte result
-    write_all(1, &rpn_result, sizeof(rpn_result));
+    operation_result = perform_rpncalc_op(rpn_state_buffer, input_value);
+    write_all(STDOUT_FILENO, &operation_result, sizeof(operation_result));
   }
 
-  rpncalc_destroy(rpn_context_buffer);
+  rpncalc_destroy(rpn_state_buffer);
   return 0;
 }

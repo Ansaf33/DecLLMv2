@@ -1,735 +1,764 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h> // For va_list in fdprintf mock
+#include <stdbool.h> // For true/false, though int 0/1 is common in C
 
-// Type definition for function pointers used by built-in functions
-typedef struct SExp* (*builtin_func)(struct SExp*, struct SExp*);
+// Define types for better readability and 64-bit compatibility
+enum NodeType {
+    NODE_INVALID = 0,
+    NODE_SYMBOL = 1,
+    NODE_FUNCTION = 2, // Built-in function
+    NODE_LIST = 3,
+    NODE_LAMBDA = 4
+};
 
-// SExp structure definition, adjusted for 64-bit safety and clarity.
-// This structure maps the original 20-byte `undefined4` array access pattern
-// to proper C types. The `calloc` calls will be adjusted to `sizeof(SExp)`.
-typedef struct SExp {
-    unsigned int type; // [0] type (1: atom, 2: builtin, 3: list, 4: lambda)
-    char* symbol_name; // [1] For type 1 (atom), holds symbol name (char*).
-                       //     For other types, typically NULL.
-    builtin_func func_ptr; // [2] For type 2 (builtin), holds function pointer.
-                           //     For other types, typically NULL.
-    struct SExp* car_or_params; // [3] For type 3 (list), 'car'. For type 4 (lambda), 'params'.
-    struct SExp* cdr_or_body;   // [4] For type 3 (list), 'cdr'. For type 4 (lambda), 'body'.
-} SExp;
+// Forward declarations for Node and SymEntry
+typedef struct Node Node;
+typedef struct SymEntry SymEntry;
 
-// Global string constants (matching DAT_ addresses from original snippet)
-const char DAT_00015004[] = "%s"; // Format string for printing symbols
-const char DAT_00015000[] = "("; // Format string for printing list start
-const char DAT_00015007[] = " "; // Format string for printing list separator
-const char DAT_00015002[] = ")"; // Format string for printing list end
-const char DAT_00015009[] = "t"; // Symbol string for true
-const char DAT_0001500b[] = "nil"; // Symbol string for false
-const char DAT_00015030[] = "car";
-const char DAT_00015034[] = "cdr";
-const char DAT_00015038[] = "cons";
-const char DAT_00015043[] = "atom";
-const char DAT_00015048[] = "cond";
+// Function pointer type for built-in functions
+typedef Node *(*BuiltinFunc)(Node *args, SymEntry *env);
 
-// Forward declarations for functions
-SExp* parse(char **current_token_ptr_ref, char **out_next_token_str_ptr_ref);
-void print(SExp *sexp_node);
-SExp* eval(SExp *expr, SExp *sym_list_env);
+// Node structure (designed for 64-bit alignment and logical field access)
+// Total size 32 bytes: int (4) + padding (4) + union (8) + Node* (8) + Node* (8)
+struct Node {
+    int type; // Offset 0
+    char _padding_type_val[4]; // Padding to align val_union to 8 bytes
+    union {
+        char *symbol_val; // For NODE_SYMBOL
+        BuiltinFunc func_ptr; // For NODE_FUNCTION
+    } val_union; // Offset 8
+    Node *car; // For NODE_LIST, NODE_LAMBDA (parameters). Offset 16.
+    Node *cdr; // For NODE_LIST, NODE_LAMBDA (body). Offset 24.
+};
 
-// --- Mock/Helper Functions (for compilation) ---
+// Symbol table entry structure (24 bytes for 64-bit alignment)
+struct SymEntry {
+    char *name; // Offset 0
+    Node *value; // Offset 8 (the actual value associated with the symbol)
+    SymEntry *next; // Offset 16 (pointer to the next symbol in the list)
+};
 
-// Helper to create a new SExp node, replacing calloc(1, 0x14)
-SExp* create_sexp(unsigned int type) {
-    SExp* node = (SExp*)calloc(1, sizeof(SExp));
+// Global string literals (from DAT_ addresses in original snippet)
+static const char * const FORMAT_STRING_S = "%s";
+static const char * const PAREN_OPEN = "(";
+static const char * const PAREN_CLOSE = ")";
+static const char * const SPACE = " ";
+static const char * const SYMBOL_T_STR = "t";
+static const char * const SYMBOL_NIL_STR = "nil";
+static const char * const SYMBOL_CAR_STR = "car";
+static const char * const SYMBOL_CDR_STR = "cdr";
+static const char * const SYMBOL_CONS_STR = "cons";
+static const char * const SYMBOL_ATOM_STR = "atom";
+static const char * const SYMBOL_COND_STR = "cond";
+static const char * const SYMBOL_QUOTE_STR = "quote";
+static const char * const SYMBOL_LAMBDA_STR = "lambda";
+static const char * const CAKE_STR = "CAKE";
+static const char * const CAKE_MESSAGE = "That's a lot of CAKE!";
+
+// Placeholder for external tokenize function.
+// A real Lisp would have a proper lexer. This dummy one leaks memory from strdup.
+// It splits input by spaces and treats parentheses as individual tokens.
+char **tokenize(char *input) {
+    static char *dummy_tokens[100]; // Static buffer for simplicity, not thread-safe.
+    static char buffer[1024]; // Static buffer for input copy
+    strncpy(buffer, input, sizeof(buffer) - 1);
+    buffer[sizeof(buffer) - 1] = '\0';
+
+    int token_idx = 0;
+    char *token_start = buffer;
+    char *p = buffer;
+
+    while (*p != '\0' && token_idx < 99) {
+        if (*p == '(' || *p == ')') {
+            if (p > token_start && *token_start != ' ' && *token_start != '\t' && *token_start != '\n') {
+                *p = '\0'; // Null-terminate previous token
+                dummy_tokens[token_idx++] = strdup(token_start);
+            }
+            if (token_idx < 99) {
+                char paren_str[2];
+                paren_str[0] = *p;
+                paren_str[1] = '\0';
+                dummy_tokens[token_idx++] = strdup(paren_str);
+            }
+            token_start = p + 1;
+        } else if (*p == ' ' || *p == '\t' || *p == '\n') {
+            if (p > token_start && *token_start != ' ' && *token_start != '\t' && *token_start != '\n') {
+                *p = '\0'; // Null-terminate token
+                dummy_tokens[token_idx++] = strdup(token_start);
+            }
+            token_start = p + 1;
+        }
+        p++;
+    }
+    if (token_idx < 99 && p > token_start && *token_start != ' ' && *token_start != '\t' && *token_start != '\n') {
+        // Handle last token if not followed by space/paren
+        *p = '\0';
+        dummy_tokens[token_idx++] = strdup(token_start);
+    }
+    dummy_tokens[token_idx] = NULL; // Null-terminate the token array
+    return dummy_tokens;
+}
+
+
+// Generic list entry for the `exptup` list in `lambda`
+typedef struct GenericListEntry {
+    void *data;
+    struct GenericListEntry *next;
+} GenericListEntry;
+
+// Container for the generic list (used in lambda to pass head pointer)
+typedef struct ExpTupleList {
+    GenericListEntry *head;
+} ExpTupleList;
+
+// Forward declarations for functions defined in the snippet
+Node *parse(char **current_token_ptr_ref, char **next_unconsumed_token_out_ref);
+void print(Node *node);
+SymEntry *make_fp(char *name, BuiltinFunc func);
+Node *eval(Node *node, SymEntry *env);
+Node *find_sym(SymEntry *env, char *name); // Returns Node* (the value)
+SymEntry *make_syms(void); // Returns the head of the global symbol list
+Node *lambda(Node *lambda_node, Node *args_list, SymEntry *env);
+
+
+// Helper to create a new Node
+Node *create_node(int type) {
+    Node *node = (Node *)calloc(1, sizeof(Node));
     if (node == NULL) {
-        exit(1); // WARNING: Subroutine does not return
+        perror("calloc failed");
+        exit(1);
     }
     node->type = type;
+    return node; // calloc initializes all members to 0/NULL
+}
+
+// Helper to create a symbol node
+Node *create_symbol_node(char *val_str) {
+    Node *node = create_node(NODE_SYMBOL);
+    node->val_union.symbol_val = val_str; // Assumes val_str is a static string or owned elsewhere
     return node;
 }
 
-// Mock fdprintf: Replaces fdprintf(1, ...) with fprintf(stdout, ...)
-int fdprintf(int fd, const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    int ret = vfprintf(fd == 1 ? stdout : stderr, format, args);
-    va_end(args);
-    return ret;
+// Helper to create a list node
+Node *create_list_node(Node *car, Node *cdr) {
+    Node *node = create_node(NODE_LIST);
+    node->car = car;
+    node->cdr = cdr;
+    return node;
 }
 
-// Structure for symbol table nodes (used internally by make_syms and find_sym)
-typedef struct SymNode {
-    char* name;
-    SExp* value;
-    struct SymNode* next;
-} SymNode;
+// Helper to create a function node
+Node *create_function_node(BuiltinFunc func_ptr) {
+    Node *node = create_node(NODE_FUNCTION);
+    node->val_union.func_ptr = func_ptr;
+    return node;
+}
 
-// Structure to manage a list of symbols
-struct SymbolList {
-    SymNode* head;
-    SymNode* tail;
-};
+// Helper to create a lambda node
+Node *create_lambda_node(Node *params, Node *body) {
+    Node *node = create_node(NODE_LAMBDA);
+    node->car = params; // Parameters list is stored in car
+    node->cdr = body;   // Body expression is stored in cdr
+    return node;
+}
 
-// Appends a symbol-value pair to the symbol list
-void sym_list_append(struct SymbolList* list_head, char** sym_pair) {
-    SymNode* new_node = (SymNode*)malloc(sizeof(SymNode));
-    if (new_node == NULL) {
-        exit(1);
-    }
-    new_node->name = sym_pair[0]; // First element is symbol name
-    new_node->value = (SExp*)sym_pair[1]; // Second element is SExp value
-    new_node->next = NULL;
-
-    if (list_head->head == NULL) {
-        list_head->head = new_node;
-        list_head->tail = new_node;
+// Simple list append for SymEntry
+void sym_list_append_impl(SymEntry **head, SymEntry *new_entry) {
+    if (!new_entry) return;
+    new_entry->next = NULL; 
+    if (!*head) {
+        *head = new_entry;
     } else {
-        list_head->tail->next = new_node;
-        list_head->tail = new_node;
-    }
-    free(sym_pair); // Free the temporary `sym_pair` array
-}
-
-// Structure for expression tuple nodes (used internally by lambda and subst)
-typedef struct ExpTupleNode {
-    SExp* param_name;
-    SExp* param_value;
-    struct ExpTupleNode* next;
-} ExpTupleNode;
-
-// Structure to manage a list of expression tuples (bindings)
-struct ExpTupleList {
-    ExpTupleNode* head;
-    ExpTupleNode* tail;
-};
-
-// Appends an expression tuple (param, value) to the list
-void exptup_list_append(struct ExpTupleList* list_head, SExp** exp_pair) {
-    ExpTupleNode* new_node = (ExpTupleNode*)malloc(sizeof(ExpTupleNode));
-    if (new_node == NULL) {
-        exit(1);
-    }
-    new_node->param_name = exp_pair[0];
-    new_node->param_value = exp_pair[1];
-    new_node->next = NULL;
-
-    if (list_head->head == NULL) {
-        list_head->head = new_node;
-        list_head->tail = new_node;
-    } else {
-        list_head->tail->next = new_node;
-        list_head->tail = new_node;
-    }
-    free(exp_pair); // Free the temporary array
-}
-
-// Mock tokenize function for REPL.
-// For demonstration, it returns a fixed token stream for `( A B )`.
-// In a real application, this would parse an input string.
-char** tokenize(const char* input_string) {
-    // This is a minimal mock for compilation.
-    // In a real Lisp, it would parse `input_string`.
-    // For `repl` to call `parse` with `tokens + 0`, this mock creates `{"(", "A", "B", ")", NULL}`
-    // or similar.
-    const char* example_tokens_str[] = {"(", "A", "B", ")", NULL};
-    int count = 0;
-    while(example_tokens_str[count] != NULL) count++;
-
-    char** result = (char**)malloc((count + 1) * sizeof(char*));
-    if (!result) exit(1);
-
-    for (int i = 0; i < count; ++i) {
-        result[i] = strdup(example_tokens_str[i]);
-        if (!result[i]) {
-            for (int j = 0; j < i; ++j) free(result[j]);
-            free(result);
-            exit(1);
+        SymEntry *current = *head;
+        while (current->next) {
+            current = current->next;
         }
+        current->next = new_entry;
     }
-    result[count] = NULL;
-    return result;
 }
 
+// Generic list append for void* (used by lambda for exptup list)
+void generic_list_append_impl(GenericListEntry **head, void *data) {
+    GenericListEntry *new_entry = (GenericListEntry *)malloc(sizeof(GenericListEntry));
+    if (!new_entry) {
+        perror("malloc failed");
+        exit(1);
+    }
+    new_entry->data = data;
+    new_entry->next = NULL;
 
-// --- Original Functions with Fixes ---
+    if (!*head) {
+        *head = new_entry;
+    } else {
+        GenericListEntry *current = *head;
+        while (current->next) {
+            current = current->next;
+        }
+        current->next = new_entry;
+    }
+}
+
+// Helper for exptup_list_append used in lambda
+void exptup_list_append_impl(ExpTupleList *list_container, void *data) {
+    if (!list_container) {
+        fprintf(stderr, "Error: ExpTupleList container is NULL.\n");
+        exit(1);
+    }
+    generic_list_append_impl(&(list_container->head), data);
+}
+
 
 // Function: parse
-// Parses a sequence of tokens into an S-expression.
-// `current_token_ptr_ref`: A pointer to the current token string pointer in the token array.
-// `out_next_token_str_ptr_ref`: A pointer to a char* to store the token string pointer
-//                                 immediately after the parsed S-expression.
-SExp *parse(char **current_token_ptr_ref, char **out_next_token_str_ptr_ref) {
-    SExp *result_sexp = NULL;
-    char *next_token_str_after_subexpr = NULL; // Temp for recursive calls
+// param_1: A pointer to the current token string (char **).
+//          E.g., if tokens are {"(", "a", "b", ")", "c"}, param_1 could be &tokens[0].
+//          *param_1 would be "(".
+// param_2: A pointer to a char* which will be updated to point to the next unconsumed token.
+//          E.g., if parse consumes "( a b )", *param_2 will be updated to point to "c".
+Node * parse(char **current_token_ptr_ref, char **next_unconsumed_token_out_ref) {
+  if (current_token_ptr_ref == NULL || *current_token_ptr_ref == NULL) {
+    return NULL;
+  }
 
-    if (current_token_ptr_ref == NULL || *current_token_ptr_ref == NULL) {
-        return NULL;
+  char *current_token_str = *current_token_ptr_ref;
+  
+  if (strcmp(current_token_str, PAREN_OPEN) == 0) {
+    // Consume "("
+    char **car_token_ptr_ref = current_token_ptr_ref + 1; // Point to token after "("
+    Node *car_node = parse(car_token_ptr_ref, car_token_ptr_ref); // Parse CAR, update car_token_ptr_ref to next
+    
+    Node *cdr_node = parse(car_token_ptr_ref, car_token_ptr_ref); // Parse CDR, update car_token_ptr_ref to next
+
+    if (next_unconsumed_token_out_ref != NULL) {
+        *next_unconsumed_token_out_ref = *car_token_ptr_ref; // Update caller's pointer to the token after this list
     }
-
-    if (strcmp(*current_token_ptr_ref, "(") == 0) {
-        // Handle list: ( CAR CDR )
-        // Parse CAR: advance token stream past '('
-        SExp *car_sexp = parse(current_token_ptr_ref + 1, &next_token_str_after_subexpr);
-        // Parse CDR: start from where CAR parsing left off
-        SExp *cdr_sexp = parse(&next_token_str_after_subexpr, &next_token_str_after_subexpr);
-
-        if (out_next_token_str_ptr_ref != NULL) {
-            *out_next_token_str_ptr_ref = next_token_str_after_subexpr;
-        }
-
-        result_sexp = create_sexp(3); // Type 3 for list
-        result_sexp->car_or_params = car_sexp;
-        result_sexp->cdr_or_body = cdr_sexp;
-    } else if (strcmp(*current_token_ptr_ref, ")") == 0) {
-        // Handle end of list ')'
-        if (out_next_token_str_ptr_ref != NULL) {
-            *out_next_token_str_ptr_ref = *(current_token_ptr_ref + 1); // Advance past ')'
-        }
-        return NULL; // ')' itself doesn't form an SExp value
-    } else {
-        // Handle atom/symbol
-        result_sexp = create_sexp(1); // Type 1 for atom
-        result_sexp->symbol_name = strdup(*current_token_ptr_ref);
-        if (result_sexp->symbol_name == NULL) {
-            exit(1);
-        }
-
-        if (out_next_token_str_ptr_ref != NULL) {
-            *out_next_token_str_ptr_ref = *(current_token_ptr_ref + 1); // Advance past the symbol
-        }
+    return create_list_node(car_node, cdr_node);
+  } else if (strcmp(current_token_str, PAREN_CLOSE) == 0) {
+    // Consume ")"
+    if (next_unconsumed_token_out_ref != NULL) {
+        *next_unconsumed_token_out_ref = *(current_token_ptr_ref + 1); // Update caller's pointer to token after ")"
     }
-    return result_sexp;
+    return NULL; // End of list
+  } else { // It's a symbol
+    Node *symbol_node = create_symbol_node(current_token_str);
+    
+    char **cdr_token_ptr_ref = current_token_ptr_ref + 1; // Point to token after the symbol
+    Node *cdr_node = parse(cdr_token_ptr_ref, cdr_token_ptr_ref); // Parse rest of list, update cdr_token_ptr_ref to next
+
+    if (next_unconsumed_token_out_ref != NULL) {
+        *next_unconsumed_token_out_ref = *cdr_token_ptr_ref; // Update caller's pointer
+    }
+    return create_list_node(symbol_node, cdr_node);
+  }
 }
 
 // Function: print
-void print(SExp *sexp_node) {
-    if (sexp_node == NULL) {
-        return;
-    }
+void print(Node *node) {
+  if (node == NULL) {
+    return;
+  }
 
-    if (sexp_node->type == 1) { // Atom/Symbol
-        fdprintf(1, DAT_00015004, sexp_node->symbol_name);
-    } else { // List or other complex type
-        fdprintf(1, DAT_00015000); // Print "("
-        SExp* current_list_node = sexp_node;
-        while (current_list_node != NULL) {
-            print(current_list_node->car_or_params);
-            current_list_node = current_list_node->cdr_or_body;
-            if (current_list_node != NULL && current_list_node->type == 3) {
-                fdprintf(1, DAT_00015007); // Print " " separator
-            } else {
-                break; // End of proper list or improper list tail
-            }
+  if (node->type == NODE_SYMBOL) {
+    printf(FORMAT_STRING_S, node->val_union.symbol_val);
+  } else if (node->type == NODE_LIST) {
+    printf(PAREN_OPEN);
+    Node *current_list_element = node;
+    bool first_element = true;
+    while (current_list_element != NULL) {
+        if (!first_element) {
+            printf(SPACE);
         }
-        fdprintf(1, DAT_00015002); // Print ")"
+        print(current_list_element->car); // Print the CAR
+        
+        current_list_element = current_list_element->cdr; // Move to the CDR
+        
+        // If there's a next element and it's not a list (improper list tail)
+        if (current_list_element != NULL && current_list_element->type != NODE_LIST) {
+            printf(" . "); // Print dot for improper list
+            print(current_list_element); // Print the non-list tail
+            break; // Stop iteration after printing the tail
+        }
+        first_element = false;
     }
+    printf(PAREN_CLOSE);
+  }
+  // NODE_FUNCTION and NODE_LAMBDA types are not meant for direct printing.
 }
 
-// Function: find_sym
-// Searches for a symbol in the given symbol list environment.
-// Returns the SExp value associated with the symbol, or NULL if not found.
-SExp* find_sym(struct SymbolList* sym_list_env, char *symbol_name) {
-    if (sym_list_env == NULL || symbol_name == NULL) {
-        return NULL;
-    }
-    SymNode* current = sym_list_env->head;
-    while (current != NULL) {
-        if (current->name != NULL && strcmp(current->name, symbol_name) == 0) {
-            return current->value;
-        }
-        current = current->next;
-    }
+// Function: find_sym (returns the Node* value associated with the symbol)
+Node *find_sym(SymEntry *env, char *name) {
+  if (env == NULL || name == NULL) {
     return NULL;
+  }
+
+  SymEntry *current_sym = env;
+  while (current_sym != NULL) {
+    if (current_sym->name != NULL && strcmp(current_sym->name, name) == 0) {
+      return current_sym->value;
+    }
+    current_sym = current_sym->next;
+  }
+  return NULL;
 }
 
 // Function: make_fp
-// Creates a symbol-value pair for a built-in function.
-// Returns `char**` where `[0]` is symbol name and `[1]` is SExp* of the function.
-char **make_fp(char *symbol_name, builtin_func func_ptr) {
-    char **sym_pair = (char **)malloc(2 * sizeof(char*));
-    if (sym_pair == NULL) {
-        exit(1);
-    }
-    
-    sym_pair[0] = strdup(symbol_name);
-    if (sym_pair[0] == NULL) {
-        free(sym_pair);
-        exit(1);
-    }
+// Creates a new SymEntry for a built-in function and returns it.
+SymEntry * make_fp(char *name, BuiltinFunc func_ptr) {
+  SymEntry *new_sym_entry = (SymEntry *)malloc(sizeof(SymEntry));
+  if (new_sym_entry == NULL) {
+    perror("malloc failed for SymEntry");
+    exit(1);
+  }
 
-    SExp *func_sexp = create_sexp(2); // Type 2 for built-in function
-    func_sexp->func_ptr = func_ptr;
-    
-    sym_pair[1] = (char*)func_sexp; // Store SExp* as char* for `sym_list_append`
-    return sym_pair;
+  new_sym_entry->name = strdup(name);
+  if (new_sym_entry->name == NULL) {
+      perror("strdup failed for function name");
+      exit(1);
+  }
+
+  Node *func_node = create_function_node(func_ptr);
+  
+  new_sym_entry->value = func_node;
+  new_sym_entry->next = NULL;
+
+  return new_sym_entry;
 }
 
+// Built-in functions must have signature: Node *(*BuiltinFunc)(Node *args, SymEntry *env)
+
 // Function: quote_fn
-SExp* quote_fn(SExp* args_list, SExp* sym_list_env) {
-    (void)sym_list_env; // Unused parameter
-    if (args_list == NULL) {
-        return NULL;
-    }
-    return args_list->car_or_params; // Returns the first argument as is
+Node *quote_fn(Node *args, SymEntry *env) {
+  if (args == NULL || args->type != NODE_LIST) {
+    return NULL;
+  }
+  return args->car; // Return the first argument directly
 }
 
 // Function: car_fn
-SExp* car_fn(SExp* args_list, SExp* sym_list_env) {
-    (void)sym_list_env; // Unused parameter
-    if (args_list == NULL || args_list->car_or_params == NULL || args_list->car_or_params->type != 3) {
-        return NULL;
-    }
-    return args_list->car_or_params->car_or_params; // Returns the car of the first argument
+Node *car_fn(Node *args, SymEntry *env) {
+  if (args == NULL || args->type != NODE_LIST) {
+    return NULL;
+  }
+  Node *list_arg = eval(args->car, env);
+  if (list_arg == NULL || list_arg->type != NODE_LIST) {
+    return NULL;
+  }
+  return list_arg->car;
 }
 
 // Function: cdr_fn
-SExp* cdr_fn(SExp* args_list, SExp* sym_list_env) {
-    (void)sym_list_env; // Unused parameter
-    if (args_list == NULL || args_list->car_or_params == NULL || args_list->car_or_params->type != 3) {
-        return NULL;
-    }
-    return args_list->car_or_params->cdr_or_body; // Returns the cdr of the first argument
+Node *cdr_fn(Node *args, SymEntry *env) {
+  if (args == NULL || args->type != NODE_LIST) {
+    return NULL;
+  }
+  Node *list_arg = eval(args->car, env);
+  if (list_arg == NULL || list_arg->type != NODE_LIST) {
+    return NULL;
+  }
+  return list_arg->cdr;
 }
 
-// Function: cons_fn (behaves like append in original code)
-SExp* cons_fn(SExp* args_list, SExp* sym_list_env) {
-    (void)sym_list_env; // Unused parameter
-    if (args_list == NULL || args_list->car_or_params == NULL || args_list->cdr_or_body == NULL) {
-        return NULL;
-    }
-    SExp* list1 = args_list->car_or_params;
-    SExp* list2 = args_list->cdr_or_body->car_or_params; // Second argument (the list to append to)
+// Function: cons_fn
+Node *cons_fn(Node *args, SymEntry *env) {
+  if (args == NULL || args->type != NODE_LIST) {
+    return NULL;
+  }
+  
+  Node *evaluated_elem = eval(args->car, env);
+  Node *evaluated_list = NULL;
+  if (args->cdr != NULL && args->cdr->type == NODE_LIST) {
+      evaluated_list = eval(args->cdr->car, env);
+  }
 
-    if (list1 == NULL) return list2;
-    if (list2 == NULL) return list1;
-
-    SExp* new_list_head = NULL;
-    SExp* current_new_list_node = NULL;
-    SExp* current_list1_node = list1;
-
-    // Deep copy list1
-    while (current_list1_node != NULL && current_list1_node->type == 3) {
-        SExp* new_node = create_sexp(3);
-        new_node->car_or_params = current_list1_node->car_or_params; // Shallow copy of car content
-        new_node->cdr_or_body = NULL;
-
-        if (new_list_head == NULL) {
-            new_list_head = new_node;
-            current_new_list_node = new_node;
-        } else {
-            current_new_list_node->cdr_or_body = new_node;
-            current_new_list_node = new_node;
-        }
-        current_list1_node = current_list1_node->cdr_or_body;
-    }
-
-    // Append list2 to the end of the copied list1
-    if (current_new_list_node != NULL) {
-        current_new_list_node->cdr_or_body = list2;
-    } else { // list1 was not a list (e.g., atom) or empty, then result is just list2
-        new_list_head = list2;
-    }
-
-    return new_list_head;
+  // Create a new list node: (evaluated_elem . evaluated_list)
+  return create_list_node(evaluated_elem, evaluated_list);
 }
 
 // Function: equal_fn
-SExp* equal_fn(SExp* args_list, SExp* sym_list_env) {
-    if (args_list == NULL || args_list->car_or_params == NULL || args_list->cdr_or_body == NULL || args_list->cdr_or_body->car_or_params == NULL) {
-        return NULL; // Not enough arguments
-    }
-    SExp* arg1 = args_list->car_or_params;
-    SExp* arg2 = args_list->cdr_or_body->car_or_params;
+Node *equal_fn(Node *args, SymEntry *env) {
+  if (args == NULL || args->type != NODE_LIST || args->cdr == NULL || args->cdr->type != NODE_LIST) {
+    return find_sym(env, SYMBOL_NIL_STR);
+  }
 
-    if (arg1->type == 1 && arg2->type == 1 && strcmp(arg1->symbol_name, arg2->symbol_name) == 0) {
-        return find_sym(sym_list_env, (char*)DAT_00015009); // Return 't'
-    } else {
-        return find_sym(sym_list_env, (char*)DAT_0001500b); // Return 'nil'
-    }
+  Node *arg1 = eval(args->car, env);
+  Node *arg2 = eval(args->cdr->car, env);
+
+  if (arg1 == NULL || arg2 == NULL || arg1->type != NODE_SYMBOL || arg2->type != NODE_SYMBOL) {
+    return find_sym(env, SYMBOL_NIL_STR);
+  }
+
+  if (strcmp(arg1->val_union.symbol_val, arg2->val_union.symbol_val) == 0) {
+    return find_sym(env, SYMBOL_T_STR);
+  } else {
+    return find_sym(env, SYMBOL_NIL_STR);
+  }
 }
 
 // Function: atom_fn
-SExp* atom_fn(SExp* args_list, SExp* sym_list_env) {
-    if (args_list == NULL || args_list->car_or_params == NULL) {
-        return NULL;
-    }
-    SExp* arg = args_list->car_or_params;
+Node *atom_fn(Node *args, SymEntry *env) {
+  if (args == NULL || args->type != NODE_LIST) {
+    return find_sym(env, SYMBOL_NIL_STR);
+  }
 
-    if (arg->type == 1) { // It's an atom
-        return find_sym(sym_list_env, (char*)DAT_00015009); // Return 't'
-    } else {
-        return find_sym(sym_list_env, (char*)DAT_0001500b); // Return 'nil'
-    }
+  Node *arg = eval(args->car, env);
+
+  if (arg == NULL || arg == find_sym(env, SYMBOL_NIL_STR)) { // nil is considered an atom in some Lisps
+      return find_sym(env, SYMBOL_T_STR);
+  }
+  if (arg->type == NODE_SYMBOL) {
+    return find_sym(env, SYMBOL_T_STR);
+  } else {
+    return find_sym(env, SYMBOL_NIL_STR);
+  }
 }
 
 // Function: cond_fn
-SExp* cond_fn(SExp* args_list, SExp* sym_list_env) {
-    if (args_list == NULL) {
-        return NULL;
+Node *cond_fn(Node *args, SymEntry *env) {
+  Node *current_clause = args;
+  while (current_clause != NULL && current_clause->type == NODE_LIST) {
+    Node *clause_pair = current_clause->car; // (test expr)
+    if (clause_pair == NULL || clause_pair->type != NODE_LIST || clause_pair->cdr == NULL || clause_pair->cdr->type != NODE_LIST) {
+      return NULL; // Malformed clause
     }
-    SExp* current_clause = args_list;
-    while (current_clause != NULL) {
-        if (current_clause->type != 3 || current_clause->car_or_params == NULL || current_clause->car_or_params->type != 3 ||
-            current_clause->car_or_params->car_or_params == NULL || current_clause->car_or_params->cdr_or_body == NULL ||
-            current_clause->car_or_params->cdr_or_body->car_or_params == NULL) {
-            return NULL; // Invalid clause format
-        }
-        
-        SExp* predicate = current_clause->car_or_params->car_or_params;
-        SExp* consequence = current_clause->car_or_params->cdr_or_body->car_or_params;
 
-        SExp* evaluated_predicate = eval(predicate, sym_list_env);
-        SExp* true_sym = find_sym(sym_list_env, (char*)DAT_00015009);
+    Node *test_expr = clause_pair->car;
+    Node *result_expr = clause_pair->cdr->car;
 
-        if (evaluated_predicate == true_sym) {
-            return eval(consequence, sym_list_env);
-        }
-        current_clause = current_clause->cdr_or_body;
+    Node *test_result = eval(test_expr, env);
+    Node *t_sym_node = find_sym(env, SYMBOL_T_STR);
+
+    if (test_result == t_sym_node) { // Pointer comparison is fine if 't' is a singleton
+      return eval(result_expr, env);
     }
-    return NULL; // No condition met
+    current_clause = current_clause->cdr;
+  }
+  return NULL; // No condition met
 }
 
-// Function: get
-// Retrieves the Nth element of a list.
-SExp* get(int index, SExp* list_sexp) {
-    SExp* current_node = list_sexp;
-    while (index > 0 && current_node != NULL && current_node->type == 3) {
-        current_node = current_node->cdr_or_body;
-        index--;
-    }
-    if (current_node == NULL || current_node->type != 3) {
-        return NULL; // Index out of bounds or not a list node
-    }
-    return current_node->car_or_params;
+// Function: get (Helper for lambda and subst)
+// get(N, list) returns the N-th element of the list (0-indexed).
+Node *get(int index, Node *list_node) {
+  Node *current = list_node;
+  for (int i = 0; i < index && current != NULL; ++i) {
+    current = current->cdr;
+  }
+  if (current == NULL || current->type != NODE_LIST) { // Ensure it's a list node before accessing car
+    return NULL;
+  } else {
+    return current->car;
+  }
 }
 
-// Function: subst
-// Substitutes variables in an expression based on a list of bindings.
-// Performs a deep copy of lists and substitutes atoms.
-SExp* subst(ExpTupleNode* bindings, SExp* expr) {
-    if (expr == NULL) {
-        return NULL;
-    }
+// Function: subst (substitute)
+Node * subst(SymEntry *alist_head, Node *tree) {
+  if (tree == NULL) {
+    return NULL;
+  }
 
-    if (expr->type == 1) { // If it's an atom/symbol
-        ExpTupleNode* current_binding = bindings;
-        while (current_binding != NULL) {
-            if (current_binding->param_name->type == 1 && 
-                strcmp(expr->symbol_name, current_binding->param_name->symbol_name) == 0) {
-                return current_binding->param_value;
-            }
-            current_binding = current_binding->next;
-        }
-        return expr; // If not found, return the original symbol
-    } else if (expr->type == 3) { // If it's a list, recursively substitute car and cdr
-        SExp* new_list_head = NULL;
-        SExp* current_new_list_node = NULL;
-        
-        SExp* current_expr_node = expr;
-        while (current_expr_node != NULL && current_expr_node->type == 3) {
-            SExp* substituted_car = subst(bindings, current_expr_node->car_or_params);
-            
-            SExp* new_node = create_sexp(3);
-            new_node->car_or_params = substituted_car;
-            new_node->cdr_or_body = NULL;
-
-            if (new_list_head == NULL) {
-                new_list_head = new_node;
-                current_new_list_node = new_node;
-            } else {
-                current_new_list_node->cdr_or_body = new_node;
-                current_new_list_node = new_node;
-            }
-            current_expr_node = current_expr_node->cdr_or_body;
-        }
-        // If the original expression ended with a non-list SExp (e.g., a symbol), append it.
-        if (current_expr_node != NULL) {
-            SExp* substituted_tail = subst(bindings, current_expr_node);
-            if (current_new_list_node != NULL) {
-                current_new_list_node->cdr_or_body = substituted_tail;
-            } else { // This case happens if the original expr was just an atom (not a list)
-                new_list_head = substituted_tail;
-            }
-        }
-        return new_list_head;
+  if (tree->type == NODE_SYMBOL) {
+    SymEntry *current_pair = alist_head;
+    while (current_pair != NULL) {
+      if (current_pair->name != NULL && strcmp(tree->val_union.symbol_val, current_pair->name) == 0) {
+        return current_pair->value;
+      }
+      current_pair = current_pair->next;
     }
-    return expr; // For other types, return as is (e.g., builtin, lambda)
+    return tree;
+  } else if (tree->type == NODE_LIST) {
+    Node *new_car = subst(alist_head, tree->car);
+    Node *new_cdr = subst(alist_head, tree->cdr);
+    return create_list_node(new_car, new_cdr);
+  } else {
+    return tree;
+  }
 }
 
-// Function: lambda
-// Evaluates a lambda expression.
-SExp* lambda(SExp* lambda_sexp, SExp* args_list, SExp* sym_list_env) {
-    if (lambda_sexp == NULL || args_list == NULL || sym_list_env == NULL) {
-        return NULL;
+// Function: lambda (executes a lambda node)
+// param_1: The lambda Node (type 4). `lambda_node->car` is params, `lambda_node->cdr` is body.
+// param_2: The arguments to the lambda, as a list `(arg1 arg2 ...)`.
+// param_3: The current environment `SymEntry *env`.
+Node *lambda(Node *lambda_node, Node *args_list, SymEntry *env) {
+  if (lambda_node == NULL || lambda_node->type != NODE_LAMBDA || args_list == NULL || env == NULL) {
+    return NULL;
+  }
+
+  Node *params = lambda_node->car; // The list of parameter symbols
+  Node *body = lambda_node->cdr;   // The lambda body expression
+
+  ExpTupleList *alist_container = (ExpTupleList *)malloc(sizeof(ExpTupleList));
+  if (alist_container == NULL) {
+      perror("malloc failed for alist_container");
+      exit(1);
+  }
+  alist_container->head = NULL;
+
+  int param_index = 0;
+  bool args_params_match = true;
+  while (true) {
+    Node *param_sym_node = get(param_index, params);
+    Node *arg_node = get(param_index, args_list);
+
+    if (param_sym_node == NULL && arg_node == NULL) {
+      break; // Both lists exhausted
+    }
+    if (param_sym_node == NULL || arg_node == NULL) {
+        args_params_match = false;
+        break;
     }
 
-    struct ExpTupleList bindings_list = {NULL, NULL};
-    int i = 0;
-    while (1) {
-        SExp* param_name = get(i, lambda_sexp->car_or_params); // lambda_sexp->car_or_params is the param list
-        SExp* arg_value = get(i, args_list);
-
-        if (param_name == NULL && arg_value == NULL) {
-            break; // No more parameters and no more arguments
-        }
-        if (param_name == NULL || arg_value == NULL) { // Mismatch in number of args/params
-            return NULL; // Error in argument count
-        }
-
-        SExp** binding_pair = (SExp**)malloc(2 * sizeof(SExp*));
-        if (binding_pair == NULL) exit(1);
-        binding_pair[0] = param_name;
-        binding_pair[1] = arg_value;
-        exptup_list_append(&bindings_list, binding_pair);
-        i++;
-    }
-
-    SExp* substituted_body = subst(bindings_list.head, lambda_sexp->cdr_or_body); // lambda_sexp->cdr_or_body is the body
-    SExp* eval_result = eval(substituted_body, sym_list_env);
-
-    // CAKE logic (based on original `goto LAB_00011d13` section)
-    unsigned int cake_count = 0;
-    SExp* current_cake_check_node = eval_result;
-    SExp* final_eval_result = eval_result;
-
-    // Iterate through the list to check for "CAKE" sequence
-    SExp* prev_cake_node = NULL; // Keep track of the node before current_cake_check_node
-    while (current_cake_check_node != NULL && current_cake_check_node->type == 3) {
-        SExp* car_content = current_cake_check_node->car_or_params;
-        if (car_content != NULL && car_content->type == 1 && strcmp(car_content->symbol_name, "CAKE") == 0) {
-            cake_count++;
-            if (cake_count >= 4) { // Found 4 "CAKE"s
-                SExp* new_sym_sexp = create_sexp(1);
-                new_sym_sexp->symbol_name = strdup("That's a lot of CAKE!");
-                if (new_sym_sexp->symbol_name == NULL) exit(1);
-
-                SExp* new_list_sexp = create_sexp(3);
-                new_list_sexp->car_or_params = new_sym_sexp;
-                new_list_sexp->cdr_or_body = NULL;
-
-                // The original code `*(undefined4 **)(*(int *)(local_18 + 0x10) + 0x10) = puVar6;`
-                // is ambiguous. A common interpretation is to replace the remainder of the list
-                // from the point where the 4th "CAKE" was found.
-                // If `current_cake_check_node` is the 4th "CAKE" node, its `cdr_or_body` should be replaced.
-                current_cake_check_node->cdr_or_body = new_list_sexp;
-                break; // Stop processing after modification
-            }
-        } else {
-            // Not a "CAKE" or not a list node, stop checking sequence
-            break;
-        }
-        prev_cake_node = current_cake_check_node;
-        current_cake_check_node = current_cake_check_node->cdr_or_body;
+    if (param_sym_node->type != NODE_SYMBOL) {
+        fprintf(stderr, "Error: Lambda parameter is not a symbol.\n");
+        args_params_match = false;
+        break;
     }
     
-    // TODO: Free bindings_list (not implemented for brevity, but crucial for memory management)
-    return final_eval_result;
+    // Create a new SymEntry for the substitution (param_sym_node.name, arg_node)
+    SymEntry *subst_entry = (SymEntry *)malloc(sizeof(SymEntry));
+    if (subst_entry == NULL) {
+        perror("malloc failed for subst_entry");
+        exit(1);
+    }
+    subst_entry->name = param_sym_node->val_union.symbol_val; // Use the parameter symbol's string
+    subst_entry->value = arg_node; // The evaluated argument node
+    subst_entry->next = NULL;
+
+    exptup_list_append_impl(alist_container, subst_entry); // Append to the list of substitutions
+    param_index++;
+  }
+
+  if (!args_params_match) {
+      fprintf(stderr, "Error: Mismatch in number of lambda arguments and parameters.\n");
+      // Free alist_container and its contents
+      GenericListEntry *current = alist_container->head;
+      while(current) {
+          GenericListEntry *next = current->next;
+          SymEntry *subst_entry = (SymEntry *)current->data;
+          free(subst_entry); // Free the SymEntry allocated for substitution
+          free(current);
+          current = next;
+      }
+      free(alist_container);
+      return NULL;
+  }
+  
+  Node *substituted_body = subst((SymEntry *)alist_container->head, body); // Perform substitutions on the body
+  Node *result = eval(substituted_body, env); // Evaluate the substituted body
+
+  // --- Cake logic from original code ---
+  unsigned int cake_count = 0;
+  Node *cake_checker_node = result;
+  Node *final_result_for_cake_check = result; // Keep track of the original result for return
+
+  while (true) {
+    if (cake_count > 3 || cake_checker_node == NULL || cake_checker_node->car == NULL || cake_checker_node->car->type != NODE_SYMBOL) {
+      break; // Break condition 1
+    }
+    if (strcmp(cake_checker_node->car->val_union.symbol_val, CAKE_STR) != 0) {
+      break; // Break condition 2
+    }
+    if (cake_checker_node->cdr == NULL || cake_checker_node->cdr->type != NODE_LIST) {
+        break; // Break condition 3 (improper list or end of list)
+    }
+    cake_checker_node = cake_checker_node->cdr;
+    cake_count++;
+  }
+
+  // After the loop, if cake_count is 4, perform the special action
+  if (cake_count == 4) {
+    Node *cake_message_symbol = create_symbol_node((char *)CAKE_MESSAGE);
+    Node *cake_list = create_list_node(cake_message_symbol, NULL);
+
+    if (cake_checker_node != NULL) { // cake_checker_node is the node whose cdr needs to be modified
+        cake_checker_node->cdr = cake_list;
+    }
+  }
+
+  // Free alist_container and its contents
+  GenericListEntry *current = alist_container->head;
+  while(current) {
+      GenericListEntry *next = current->next;
+      SymEntry *subst_entry = (SymEntry *)current->data;
+      free(subst_entry); // Free the SymEntry allocated for substitution
+      free(current);
+      current = next;
+  }
+  free(alist_container);
+  
+  return final_result_for_cake_check; // Return the original result, possibly modified by cake logic
 }
 
 // Function: make_syms
 // Initializes the global symbol table with built-in functions and constants.
-// Returns the head of the symbol list.
-SExp* make_syms(void) {
-    struct SymbolList sym_list = {NULL, NULL};
+SymEntry * make_syms(void) {
+  SymEntry *global_env_head = NULL; // Head of the global symbol list
 
-    sym_list_append(&sym_list, make_fp("quote", quote_fn));
-    sym_list_append(&sym_list, make_fp((char*)DAT_00015030, car_fn)); // "car"
-    sym_list_append(&sym_list, make_fp((char*)DAT_00015034, cdr_fn)); // "cdr"
-    sym_list_append(&sym_list, make_fp((char*)DAT_00015038, cons_fn)); // "cons"
-    sym_list_append(&sym_list, make_fp("equal", equal_fn));
-    sym_list_append(&sym_list, make_fp((char*)DAT_00015043, atom_fn)); // "atom"
-    sym_list_append(&sym_list, make_fp((char*)DAT_00015048, cond_fn)); // "cond"
+  #define APPEND_SYM_ENTRY(name_str, func) \
+    sym_list_append_impl(&global_env_head, make_fp(name_str, func));
 
-    // Add "nil" symbol
-    char **nil_sym_pair = (char **)malloc(2 * sizeof(char*));
-    if (nil_sym_pair == NULL) exit(1);
-    nil_sym_pair[0] = strdup("nil");
-    if (nil_sym_pair[0] == NULL) { free(nil_sym_pair); exit(1); }
-    SExp *nil_sexp = create_sexp(3); // Type 3 for list, represents empty list
-    nil_sexp->car_or_params = NULL;
-    nil_sexp->cdr_or_body = NULL;
-    nil_sym_pair[1] = (char*)nil_sexp;
-    sym_list_append(&sym_list, nil_sym_pair);
+  APPEND_SYM_ENTRY(SYMBOL_QUOTE_STR, quote_fn);
+  APPEND_SYM_ENTRY(SYMBOL_CAR_STR, car_fn);
+  APPEND_SYM_ENTRY(SYMBOL_CDR_STR, cdr_fn);
+  APPEND_SYM_ENTRY(SYMBOL_CONS_STR, cons_fn);
+  APPEND_SYM_ENTRY("equal", equal_fn); // Original used "equal"
+  APPEND_SYM_ENTRY(SYMBOL_ATOM_STR, atom_fn);
+  APPEND_SYM_ENTRY(SYMBOL_COND_STR, cond_fn);
 
-    // Add "t" symbol
-    char **t_sym_pair = (char **)malloc(2 * sizeof(char*));
-    if (t_sym_pair == NULL) exit(1);
-    t_sym_pair[0] = strdup("t");
-    if (t_sym_pair[0] == NULL) { free(t_sym_pair); exit(1); }
-    SExp *t_sexp = create_sexp(1); // Type 1 for atom
-    t_sexp->symbol_name = strdup("t");
-    if (t_sexp->symbol_name == NULL) { free(t_sym_pair[0]); free(t_sym_pair); exit(1); }
-    t_sym_pair[1] = (char*)t_sexp;
-    sym_list_append(&sym_list, t_sym_pair);
+  // Add 'nil' symbol
+  SymEntry *nil_sym_entry = (SymEntry *)malloc(sizeof(SymEntry));
+  if (nil_sym_entry == NULL) { perror("malloc failed for nil_sym_entry"); exit(1); }
+  nil_sym_entry->name = strdup(SYMBOL_NIL_STR);
+  if (nil_sym_entry->name == NULL) { perror("strdup failed for nil symbol name"); exit(1); }
+  nil_sym_entry->value = create_list_node(NULL, NULL); // nil is an empty list
+  nil_sym_entry->next = NULL;
+  sym_list_append_impl(&global_env_head, nil_sym_entry);
 
-    return (SExp*)sym_list.head; // Return the head of the symbol list
+  // Add 't' symbol
+  SymEntry *t_sym_entry = (SymEntry *)malloc(sizeof(SymEntry));
+  if (t_sym_entry == NULL) { perror("malloc failed for t_sym_entry"); exit(1); }
+  t_sym_entry->name = strdup(SYMBOL_T_STR);
+  if (t_sym_entry->name == NULL) { perror("strdup failed for t symbol name"); exit(1); }
+  t_sym_entry->value = create_symbol_node((char *)SYMBOL_T_STR); // 't' evaluates to itself as a symbol
+  t_sym_entry->next = NULL;
+  sym_list_append_impl(&global_env_head, t_sym_entry);
+
+  return global_env_head;
 }
 
 // Function: eval
-// Evaluates an S-expression in the given symbol environment.
-SExp *eval(SExp *expr, SExp *sym_list_env) {
-    if (expr == NULL) {
-        return NULL;
+Node * eval(Node *node, SymEntry *env) {
+  if (node == NULL) {
+    return find_sym(env, SYMBOL_NIL_STR);
+  }
+
+  if (node->type == NODE_SYMBOL) {
+    Node *sym_value = find_sym(env, node->val_union.symbol_val);
+    if (sym_value == NULL) {
+      return node; // If symbol not found, it evaluates to itself (e.g., free variable)
+    }
+    return sym_value;
+  } else if (node->type == NODE_LIST) {
+    if (node->car == NULL) { // Empty list literal, evaluates to nil
+        return find_sym(env, SYMBOL_NIL_STR);
     }
 
-    if (expr->type == 1) { // Atom/Symbol
-        SExp* found_sym = find_sym((struct SymbolList*)sym_list_env, expr->symbol_name);
-        return (found_sym != NULL) ? found_sym : expr; // Return value if found, else the symbol itself
-    } else if (expr->type == 3) { // List (function call or special form)
-        if (expr->car_or_params == NULL) { // Empty list or just a tail
-            return NULL;
-        }
-
-        // Special form: lambda definition
-        if (expr->car_or_params->type == 1 && strcmp(expr->car_or_params->symbol_name, "lambda") == 0) {
-            // (lambda (params) body)
-            if (expr->cdr_or_body == NULL || expr->cdr_or_body->type != 3 ||
-                expr->cdr_or_body->car_or_params == NULL || expr->cdr_or_body->cdr_or_body == NULL) {
-                return NULL; // Invalid lambda syntax
+    // Check for special forms (quote, lambda) first, as their arguments are not always evaluated
+    if (node->car->type == NODE_SYMBOL) {
+        char *operator_name = node->car->val_union.symbol_val;
+        if (strcmp(operator_name, SYMBOL_QUOTE_STR) == 0) {
+            if (node->cdr == NULL || node->cdr->type != NODE_LIST || node->cdr->car == NULL) {
+                fprintf(stderr, "Error: Malformed quote expression.\n");
+                return NULL;
             }
-            SExp* lambda_params = expr->cdr_or_body->car_or_params;
-            SExp* lambda_body = expr->cdr_or_body->cdr_or_body;
-
-            SExp* lambda_sexp = create_sexp(4); // Type 4 for lambda
-            lambda_sexp->car_or_params = lambda_params;
-            lambda_sexp->cdr_or_body = lambda_body;
-            return lambda_sexp;
-        }
-
-        // Evaluate the function (first element of the list)
-        SExp* func_sexp = eval(expr->car_or_params, sym_list_env);
-        if (func_sexp == NULL) {
-            return NULL;
-        }
-
-        // Evaluate arguments (rest of the list)
-        SExp* evaluated_args_head = NULL;
-        SExp* current_eval_arg_node = NULL;
-        SExp* current_arg_node = expr->cdr_or_body;
-
-        while (current_arg_node != NULL && current_arg_node->type == 3) {
-            SExp* eval_arg = eval(current_arg_node->car_or_params, sym_list_env);
-            SExp* new_arg_node = create_sexp(3);
-            new_arg_node->car_or_params = eval_arg;
-            new_arg_node->cdr_or_body = NULL;
-
-            if (evaluated_args_head == NULL) {
-                evaluated_args_head = new_arg_node;
-                current_eval_arg_node = new_arg_node;
-            } else {
-                current_eval_arg_node->cdr_or_body = new_arg_node;
-                current_eval_arg_node = new_arg_node;
+            return node->cdr->car; // Return the first argument directly
+        } else if (strcmp(operator_name, SYMBOL_LAMBDA_STR) == 0) {
+            // (lambda (params) body) -> returns a NODE_LAMBDA node
+            if (node->cdr == NULL || node->cdr->type != NODE_LIST || // (params) part
+                node->cdr->car == NULL || // params list itself
+                node->cdr->cdr == NULL || node->cdr->cdr->type != NODE_LIST || // body part
+                node->cdr->cdr->car == NULL) { // body expression
+                fprintf(stderr, "Error: Malformed lambda expression.\n");
+                return NULL;
             }
-            current_arg_node = current_arg_node->cdr_or_body;
+            Node *params_list = node->cdr->car;
+            Node *body_expr = node->cdr->cdr->car;
+            return create_lambda_node(params_list, body_expr);
         }
+    }
 
-        // Apply the function
-        if (func_sexp->type == 4) { // Lambda function
-            return lambda(func_sexp, evaluated_args_head, sym_list_env);
-        } else if (func_sexp->type == 2) { // Built-in function
-            return func_sexp->func_ptr(evaluated_args_head, (struct SymbolList*)sym_list_env);
+    // If not a special form, evaluate the operator and then the arguments
+    Node *operator_node = eval(node->car, env);
+
+    if (operator_node == NULL) {
+      return NULL; // Operator evaluation failed
+    }
+
+    // Collect and evaluate arguments into a new list
+    Node *evaluated_args_head = NULL;
+    Node *evaluated_args_tail = NULL;
+    Node *current_arg_list_node = node->cdr; // This is the list of arguments to be evaluated
+
+    while (current_arg_list_node != NULL && current_arg_list_node->type == NODE_LIST) {
+        Node *evaluated_arg = eval(current_arg_list_node->car, env);
+        Node *new_arg_list_node = create_list_node(evaluated_arg, NULL);
+        
+        if (evaluated_args_head == NULL) {
+            evaluated_args_head = new_arg_list_node;
+            evaluated_args_tail = new_arg_list_node;
         } else {
-            return NULL; // Not a callable function
+            evaluated_args_tail->cdr = new_arg_list_node;
+            evaluated_args_tail = new_arg_list_node;
+        }
+        current_arg_list_node = current_arg_list_node->cdr;
+    }
+    // Handle potential improper list of arguments (if current_arg_list_node is not NULL but not a list)
+    if (current_arg_list_node != NULL && current_arg_list_node->type != NODE_LIST) {
+        Node *evaluated_arg = eval(current_arg_list_node, env);
+        Node *new_arg_list_node = create_list_node(evaluated_arg, NULL);
+        if (evaluated_args_head == NULL) {
+            evaluated_args_head = new_arg_list_node;
+            evaluated_args_tail = new_arg_list_node;
+        } else {
+            evaluated_args_tail->cdr = new_arg_list_node;
+            evaluated_args_tail = new_arg_list_node;
         }
     }
-    return expr; // For other types (e.g., already evaluated built-in/lambda objects), return as is.
+
+
+    if (operator_node->type == NODE_FUNCTION) {
+        return operator_node->val_union.func_ptr(evaluated_args_head, env);
+    } else if (operator_node->type == NODE_LAMBDA) {
+        return lambda(operator_node, evaluated_args_head, env);
+    } else {
+      fprintf(stderr, "Error: Cannot apply non-function/non-lambda object: ");
+      print(operator_node);
+      fprintf(stderr, "\n");
+      // TODO: Free evaluated_args_head list if not consumed by the called function
+      return NULL;
+    }
+  } else {
+    // For other node types (FUNCTION, LAMBDA when they are not the operator, but a value)
+    return node;
+  }
 }
 
 // Function: repl
-// Read-Eval-Print Loop.
-int repl(const char* input_string) {
-    char **tokens = tokenize(input_string);
+void repl(void) {
+  char input_buffer[1024];
+  SymEntry *global_env = make_syms();
+
+  printf("> ");
+  while (fgets(input_buffer, sizeof(input_buffer), stdin) != NULL) {
+    char **tokens = tokenize(input_buffer);
     if (tokens == NULL || *tokens == NULL) {
-        if (tokens) free(tokens);
-        return -1;
+      // In a real application, you'd free memory allocated by tokenize here.
+      printf("> ");
+      continue;
     }
 
-    if (strcmp(*tokens, "(") == 0) {
-        char **current_token_stream_ptr = tokens;
-        SExp *parsed_sexp = parse(current_token_stream_ptr, &current_token_stream_ptr);
+    char **current_token_ptr_ref = tokens;
+    Node *parsed_expression = parse(&current_token_ptr_ref, &current_token_ptr_ref);
 
-        SExp *symbol_env_list_head = make_syms();
-        SExp *eval_result = eval(parsed_sexp, symbol_env_list_head);
-        
-        if (eval_result == NULL) {
-            // TODO: Free tokens, parsed_sexp, symbol_env_list_head for proper memory management
-            return -1;
-        }
-        print(eval_result);
-        fprintf(stdout, "\n"); // Add newline for readability
-
-        // Free tokens
-        char **temp_tokens = tokens;
-        while (*temp_tokens) {
-            free(*temp_tokens);
-            temp_tokens++;
-        }
-        free(tokens);
-
-        // TODO: Free parsed_sexp and symbol_env_list_head recursively
-        return 0;
+    if (parsed_expression == NULL) {
+      printf("Error: Failed to parse expression.\n");
+    } else {
+      Node *result = eval(parsed_expression, global_env);
+      if (result == NULL) {
+        printf("Error: Evaluation failed or returned nil.\n");
+      } else {
+        print(result);
+        printf("\n");
+      }
     }
 
-    // Free tokens if the initial check `strcmp(*tokens, "(") == 0` failed
-    char **temp_tokens = tokens;
-    while (*temp_tokens) {
-        free(*temp_tokens);
-        temp_tokens++;
-    }
-    free(tokens);
-    return -1;
+    // TODO: Implement proper memory deallocation for tokens, parsed_expression, and result.
+    // For a simple REPL, this might be deferred or handled by OS on exit.
+
+    printf("> ");
+  }
 }
 
-// Main function (example usage)
+// Main function
 int main() {
-    // Example usage of REPL
-    // The tokenize mock will provide "( A B )"
-    // So `parse` will parse `(A B)`.
-    // `eval` will try to evaluate `A` as a function with `B` as argument.
-    // Since `A` is not a defined function, it will likely return NULL or an error.
-    // For a working example, you might need to manually set up `tokenize` to produce
-    // something like `(cons (quote A) (quote (B C)))` or `(car (quote (A B)))`.
-    printf("--- Lisp REPL Simulation ---\n");
-    printf("Input: ( A B ) (Mocked input)\n");
-    int result = repl("( A B )"); // The input string is mocked by `tokenize`
-    if (result == 0) {
-        printf("REPL executed successfully.\n");
-    } else {
-        printf("REPL failed.\n");
-    }
-
-    printf("\nInput: (car (quote (X Y)))\n");
-    // To make this work, `tokenize` needs to be more sophisticated or manually set for this test.
-    // For now, it will still use the `(A B)` mock.
-    // Let's create a direct test.
-    char* test_tokens[] = {"(", "car", "(", "quote", "(", "X", "Y", ")", ")", ")", NULL};
-    char** test_token_stream = (char**)malloc(sizeof(test_tokens));
-    for(int i = 0; test_tokens[i] != NULL; ++i) test_token_stream[i] = strdup(test_tokens[i]);
-    test_token_stream[sizeof(test_tokens)/sizeof(char*)-1] = NULL;
-
-    char **current_test_token_ptr = test_token_stream;
-    SExp *test_parsed_sexp = parse(current_test_token_ptr, &current_test_token_ptr);
-    SExp *test_symbol_env = make_syms();
-    SExp *test_eval_result = eval(test_parsed_sexp, test_symbol_env);
-
-    if (test_eval_result != NULL) {
-        printf("Result: ");
-        print(test_eval_result);
-        printf("\n");
-    } else {
-        printf("Test evaluation failed.\n");
-    }
-    
-    // Free test tokens
-    char **temp_test_tokens = test_token_stream;
-    while (*temp_test_tokens) {
-        free(*temp_test_tokens);
-        temp_test_tokens++;
-    }
-    free(test_token_stream);
-
-    // TODO: Implement SExp freeing for `test_parsed_sexp` and `test_symbol_env`
-
+    repl();
     return 0;
 }

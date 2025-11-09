@@ -1,344 +1,235 @@
-#include <stdio.h>    // For printf
-#include <stdlib.h>   // For malloc, free, srand, rand
-#include <string.h>   // For memcpy, memset
-#include <stdint.h>   // For uint8_t, uint16_t, uint32_t
-#include <math.h>     // For cos, sin, round, M_PI
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <math.h>   // For cos, sin, round, fmax, fmin
+#include <limits.h> // For SHRT_MAX, SHRT_MIN
 
-// Custom type definitions based on common disassembler output
-typedef uint8_t  byte;
-typedef uint8_t  undefined;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
+// --- Custom types from decompiler output ---
 
-// `code` type: function pointer
-typedef void (*code_func_ptr)(uint32_t, int);
+// PixelData structure (10 bytes)
+// XYZ coordinates (3 int16_t) + RGBA (4 uint8_t)
+typedef struct {
+    int16_t x;
+    int16_t y;
+    int16_t z;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+} PixelData;
 
-// Global constants (dummy values for compilation)
-// DAT_00016070 is a divisor for scaling, likely 100.0 (for percentage)
-double DAT_00016070 = 100.0;
-// _DAT_4347c000 is a seed for PRNG
-uint32_t _DAT_4347c000 = 0x4347c000; // Example value
-// DAT_00016080 and DAT_00016078 used in degree_to_radian (PI/180)
-double DAT_00016080 = M_PI;
-double DAT_00016078 = 180.0;
+// Function pointer type for RunTask
+typedef void (*TaskFunction)(uint32_t, int);
 
-// Dummy function declarations for external functions
-void seed_prng(uint32_t seed);
-uint8_t prng_u8();
-uint16_t prng_u16();
-void receive_bytes(void* buffer, size_t size);
+// --- External function declarations (placeholders) ---
+// These functions are not provided in the snippet, but are used.
+// Their signatures are inferred from context.
+extern void seed_prng(uint32_t seed);
+extern uint16_t prng(void); // prng returns undefined2, so uint16_t
+extern void receive_bytes(void *buffer, size_t size);
 
-// Function: multiply (redefined based on usage)
-double multiply(double val1, double val2) {
-  return val1 * val2;
+// --- Global variables (placeholders) ---
+// Inferred from decompiler DAT_ addresses.
+// Assuming they are static constants or global variables.
+static uint32_t _DAT_4347c000 = 0x12345678; // Example PRNG seed
+static double DAT_00016070 = 100.0;        // Example scale factor base (e.g., for percentage)
+static double _DAT_00016080 = M_PI;        // Example PI constant for degree_to_radian
+static double DAT_00016078 = 180.0;        // Example 180.0 constant for degree_to_radian
+
+// --- Helper functions (re-defined based on usage and inferred intent) ---
+
+// Redefined based on how they are called (taking two doubles)
+// and their original return type usage.
+int multiply(double val1, double val2) {
+  return (int)round(val1 * val2);
 }
 
-// Function: divide (redefined based on usage)
-double divide(double val1, double val2) {
-  if (val2 == 0.0) return 0.0;
-  return val1 / val2;
+short divide(double val1, double val2) {
+  return (short)round(val1 / val2);
 }
 
-// Function: degree_to_radian (redefined based on usage)
-double degree_to_radian(short degrees) {
-  return divide((double)degrees * DAT_00016080, DAT_00016078); // degrees * PI / 180
-}
-
-// Function: cosine (redefined based on usage)
-double cosine(double angle_radians) {
-  return cos(angle_radians);
-}
-
-// Function: sine (redefined based on usage)
-double sine(double angle_radians) {
-  return sin(angle_radians);
+// degree_to_radian should return a double representing radians
+double degree_to_radian(int degrees) {
+  return (double)degrees * divide(_DAT_00016080, DAT_00016078);
 }
 
 // Function: Push
-void Push(void **array_of_ptrs, void *data_to_copy) {
-  if (array_of_ptrs != NULL && data_to_copy != NULL) {
-    void *new_dest = malloc(10);
-    if (new_dest == NULL) {
-        return;
+void Push(void **param_1, void *param_2) {
+  if ((param_2 != NULL) && (param_1 != NULL)) {
+    void *dest = malloc(sizeof(PixelData)); // Allocate for PixelData struct
+    if (dest == NULL) {
+        return; // Handle malloc failure
     }
-    memcpy(new_dest, data_to_copy, 10);
-    for (unsigned int i = 0; i < 0x19a; ++i) { // 0x19a = 410
-      if (array_of_ptrs[i] == NULL) {
-        array_of_ptrs[i] = new_dest;
+    memcpy(dest, param_2, sizeof(PixelData)); // Copy 10 bytes (PixelData size)
+    for (unsigned int i = 0; i < 0x19a; ++i) {
+      if (param_1[i] == NULL) { // Check for a NULL pointer slot
+        param_1[i] = dest;
         return;
       }
     }
-    free(new_dest); // No empty slot found, free to avoid leak
+    // If no space found, free the allocated memory to avoid a leak
+    free(dest);
   }
 }
 
 // Function: RunTask
-void RunTask(uint32_t *data_array, code_func_ptr task_func, short param_3) {
-  for (unsigned int i = 0; i < 0x19a; ++i) { // 0x19a = 410 iterations, matching original loop count
-    task_func(data_array[i], (int)param_3);
+void RunTask(uint32_t *param_1, TaskFunction param_2, int param_3) {
+  for (int i = 0; i < 0x199; ++i) {
+    param_2(param_1[i], param_3);
   }
 }
 
 // Function: ReadFile
-void ReadFile(void **array_of_ptrs) {
-  int count = 0x1000; // 4096 bytes
+void ReadFile(void **param_1) {
   seed_prng(_DAT_4347c000);
-  while (0 < count) {
-    uint8_t *temp_data = (uint8_t *)malloc(10);
-    if (temp_data == NULL) {
-        return;
+  for (int i = 0x1000; i > 0; i -= 10) {
+    PixelData *pixel_data = (PixelData *)malloc(sizeof(PixelData));
+    if (pixel_data == NULL) {
+        // Handle malloc failure, e.g., break the loop
+        break;
     }
-
-    // Fill 10 bytes: 3 shorts (XYZ) and 4 bytes (RGBA)
-    *(uint16_t*)(temp_data + 0) = prng_u16(); // X
-    *(uint16_t*)(temp_data + 2) = prng_u16(); // Y
-    *(uint16_t*)(temp_data + 4) = prng_u16(); // Z
-    temp_data[6] = prng_u8(); // R
-    temp_data[7] = prng_u8(); // G
-    temp_data[8] = prng_u8(); // B
-    temp_data[9] = prng_u8(); // A
-
-    Push(array_of_ptrs, temp_data);
-    free(temp_data); // Free the temporary buffer
-    count -= 10;
+    pixel_data->x = prng();
+    pixel_data->y = prng();
+    pixel_data->z = prng();
+    pixel_data->r = (uint8_t)prng();
+    pixel_data->g = (uint8_t)prng();
+    pixel_data->b = (uint8_t)prng();
+    pixel_data->a = (uint8_t)prng();
+    Push(param_1, pixel_data);
+    free(pixel_data); // Free the temporary buffer, Push copies its content.
   }
 }
 
 // Function: NewFile
-void NewFile(void **array_of_ptrs, const uint8_t *source_data) {
-  printf("Please submit your new file data (%d bytes):\n", 0xffa); // 0xffa = 4090
-  receive_bytes((void*)source_data, 0xffa);
-
-  for (unsigned int i = 0, data_offset = 0; data_offset < 0xffa; data_offset += 10, ++i) {
-    void *dest_ptr = array_of_ptrs[i];
-    if (dest_ptr == NULL) {
-        // Handle error: array_of_ptrs[i] is NULL
+void NewFile(void **param_1, const uint8_t *param_2) {
+  printf("Please submit your new file data (%d bytes):\n", 0xffa); // Corrected format specifier
+  receive_bytes((void *)param_2, 0xffa);
+  for (unsigned int i = 0; i < 0xffa / sizeof(PixelData); ++i) {
+    PixelData *dest_pixel = (PixelData *)param_1[i];
+    if (dest_pixel == NULL) {
+        // Handle null destination, e.g., allocate or skip
         continue;
     }
-    // Copy 10 bytes in chunks, matching the pixel structure (3 shorts, 4 bytes)
-    memcpy((uint8_t*)dest_ptr + 0, source_data + data_offset + 0, 2); // X
-    memcpy((uint8_t*)dest_ptr + 2, source_data + data_offset + 2, 2); // Y
-    memcpy((uint8_t*)dest_ptr + 4, source_data + data_offset + 4, 2); // Z
-    memcpy((uint8_t*)dest_ptr + 6, source_data + data_offset + 6, 1); // R
-    memcpy((uint8_t*)dest_ptr + 7, source_data + data_offset + 7, 1); // G
-    memcpy((uint8_t*)dest_ptr + 8, source_data + data_offset + 8, 1); // B
-    memcpy((uint8_t*)dest_ptr + 9, source_data + data_offset + 9, 1); // A
+    // Copy the entire PixelData structure if source is contiguous
+    memcpy(dest_pixel, param_2 + i * sizeof(PixelData), sizeof(PixelData));
   }
   printf("New file loaded\n");
 }
 
 // Function: ShowPixel
-void ShowPixel(const short *pixel_data) {
-  printf("XYZ:  (%d, %d, %d)\n", (int)pixel_data[0], (int)pixel_data[1], (int)pixel_data[2]);
-  const uint8_t *byte_data = (const uint8_t*)pixel_data;
-  printf("RGBA: (#%02x%02x%02x%02x)\n",
-         (unsigned int)byte_data[6], // R
-         (unsigned int)byte_data[7], // G
-         (unsigned int)byte_data[8], // B
-         (unsigned int)byte_data[9]);// A
+void ShowPixel(const PixelData *param_1) {
+  printf("XYZ:  (%d, %d, %d)\n", (int)param_1->x, (int)param_1->y, (int)param_1->z); // Corrected format specifiers
+  printf("RGBA: (#%02x%02x%02x%02x)\n", (unsigned int)param_1->r, // Corrected format specifiers
+         (unsigned int)param_1->g, (unsigned int)param_1->b,
+         (unsigned int)param_1->a);
   printf("\n");
 }
 
 // Function: CheckFile
-void CheckFile(void **array_of_ptrs, short num_pixels) {
-  if (array_of_ptrs != NULL) {
-    for (int i = 0; i < num_pixels; ++i) {
-      const short *pixel_data = (const short *)array_of_ptrs[i];
-      if (pixel_data == NULL) {
-          printf("Pixel data at index %d is NULL.\n", i);
+void CheckFile(void **param_1, int param_2) {
+  if (param_1 != NULL) {
+    for (int i = 0; i < param_2; ++i) {
+      const PixelData *pixel = (const PixelData *)param_1[i];
+      if (pixel == NULL) {
+          printf("Pixel %d is NULL\n", i);
           continue;
       }
-      printf("XYZ:  (%d, %d, %d)\n",
-             (int)pixel_data[0],
-             (int)pixel_data[1],
-             (int)pixel_data[2]);
-      const uint8_t *byte_data = (const uint8_t*)pixel_data;
-      printf("RGBA: (#%02x%02x%02x%02x)\n",
-             (unsigned int)byte_data[6],
-             (unsigned int)byte_data[7],
-             (unsigned int)byte_data[8],
-             (unsigned int)byte_data[9]);
+      printf("XYZ:  (%d, %d, %d)\n", (int)pixel->x, (int)pixel->y, (int)pixel->z); // Corrected format specifiers
+      printf("RGBA: (#%02x%02x%02x%02x)\n", (unsigned int)pixel->r, // Corrected format specifiers
+             (unsigned int)pixel->g, (unsigned int)pixel->b,
+             (unsigned int)pixel->a);
       printf("\n");
     }
   }
 }
 
 // Function: RotateX
-void RotateX(short *pixel_data, short degrees) {
-  double radians = degree_to_radian(degrees);
-  double cos_val = cosine(radians);
-  double sin_val = sine(radians);
+void RotateX(PixelData *param_1, int param_2) {
+  double angle_rad = degree_to_radian(param_2);
+  double cos_angle = cos(angle_rad);
+  double sin_angle = sin(angle_rad);
 
-  short y = pixel_data[1];
-  short z = pixel_data[2];
+  double old_y = (double)param_1->y;
+  double old_z = (double)param_1->z;
 
-  pixel_data[1] = (short)round(y * cos_val - z * sin_val);
-  pixel_data[2] = (short)round(y * sin_val + z * cos_val);
+  param_1->y = (int16_t)round(old_y * cos_angle - old_z * sin_angle);
+  param_1->z = (int16_t)round(old_y * sin_angle + old_z * cos_angle);
 }
 
 // Function: RotateY
-void RotateY(short *pixel_data, short degrees) {
-  double radians = degree_to_radian(degrees);
-  double cos_val = cosine(radians);
-  double sin_val = sine(radians);
+void RotateY(PixelData *param_1, int param_2) {
+  double angle_rad = degree_to_radian(param_2);
+  double cos_angle = cos(angle_rad);
+  double sin_angle = sin(angle_rad);
 
-  short x = pixel_data[0];
-  short z = pixel_data[2];
+  double old_x = (double)param_1->x;
+  double old_z = (double)param_1->z;
 
-  pixel_data[0] = (short)round(x * cos_val + z * sin_val);
-  pixel_data[2] = (short)round(z * cos_val - x * sin_val);
+  param_1->x = (int16_t)round(old_x * cos_angle + old_z * sin_angle);
+  param_1->z = (int16_t)round(old_z * cos_angle - old_x * sin_angle);
 }
 
 // Function: RotateZ
-void RotateZ(short *pixel_data, short degrees) {
-  double radians = degree_to_radian(degrees);
-  double cos_val = cosine(radians);
-  double sin_val = sine(radians);
+void RotateZ(PixelData *param_1, int param_2) {
+  double angle_rad = degree_to_radian(param_2);
+  double cos_angle = cos(angle_rad);
+  double sin_angle = sin(angle_rad);
 
-  short x = pixel_data[0];
-  short y = pixel_data[1];
+  double old_x = (double)param_1->x;
+  double old_y = (double)param_1->y;
 
-  pixel_data[0] = (short)round(x * cos_val - y * sin_val);
-  pixel_data[1] = (short)round(x * sin_val + y * cos_val);
+  param_1->x = (int16_t)round(old_x * cos_angle - old_y * sin_angle);
+  param_1->y = (int16_t)round(old_x * sin_angle + old_y * cos_angle);
 }
 
 // Function: SkewX
-void SkewX(short *pixel_data, short skew_val) {
-  pixel_data[0] += skew_val;
+void SkewX(PixelData *param_1, short param_2) {
+  param_1->x += param_2;
 }
 
 // Function: SkewY
-void SkewY(short *pixel_data, short skew_val) {
-  pixel_data[1] += skew_val;
+void SkewY(PixelData *param_1, short param_2) {
+  param_1->y += param_2;
 }
 
 // Function: SkewZ
-void SkewZ(short *pixel_data, short skew_val) {
-  pixel_data[2] += skew_val;
+void SkewZ(PixelData *param_1, short param_2) {
+  param_1->z += param_2;
 }
 
 // Function: Scale
-void Scale(short *pixel_data, short scale_percent) {
-  if (scale_percent > 0 && scale_percent < 0xc9) { // 0xc9 = 201
-    double scale_factor = divide((double)scale_percent, DAT_00016070);
+void Scale(PixelData *param_1, short param_2) {
+  if ((0 < param_2) && (param_2 < 0xc9)) { // 0xc9 is 201
+    double scale_factor = (double)param_2 / DAT_00016070;
 
-    int new_x = (int)round(pixel_data[0] * scale_factor);
-    int new_y = (int)round(pixel_data[1] * scale_factor);
-    int new_z = (int)round(pixel_data[2] * scale_factor);
+    int new_x = multiply((double)param_1->x, scale_factor);
+    int new_y = multiply((double)param_1->y, scale_factor);
+    int new_z = multiply((double)param_1->z, scale_factor);
 
-    pixel_data[0] = (new_x > 0x7fff) ? 0x7fff : ((new_x < -0x8000) ? -0x8000 : (short)new_x);
-    pixel_data[1] = (new_y > 0x7fff) ? 0x7fff : ((new_y < -0x8000) ? -0x8000 : (short)new_y);
-    pixel_data[2] = (new_z > 0x7fff) ? 0x7fff : ((new_z < -0x8000) ? -0x8000 : (short)new_z);
+    // Clamping to short range
+    param_1->x = (int16_t)fmax(SHRT_MIN, fmin(SHRT_MAX, new_x));
+    param_1->y = (int16_t)fmax(SHRT_MIN, fmin(SHRT_MAX, new_y));
+    param_1->z = (int16_t)fmax(SHRT_MIN, fmin(SHRT_MAX, new_z));
   }
 }
 
 // Function: Brightness
-void Brightness(uint8_t *pixel_data, short brightness_val) {
-  if (brightness_val > -0x100 && brightness_val < 0x100) { // -256 to 255
-    int new_r = (unsigned short)pixel_data[6] + brightness_val;
-    int new_g = (unsigned short)pixel_data[7] + brightness_val;
-    int new_b = (unsigned short)pixel_data[8] + brightness_val;
+void Brightness(PixelData *param_1, short param_2) {
+  if ((-0x100 < param_2) && (param_2 < 0x100)) { // -256 < param_2 < 256
+    int r_val = (unsigned char)param_1->r + param_2;
+    int g_val = (unsigned char)param_1->g + param_2;
+    int b_val = (unsigned char)param_1->b + param_2;
 
-    pixel_data[6] = (new_r > 0xff) ? 0xff : ((new_r < 0) ? 0 : (uint8_t)new_r);
-    pixel_data[7] = (new_g > 0xff) ? 0xff : ((new_g < 0) ? 0 : (uint8_t)new_g);
-    pixel_data[8] = (new_b > 0xff) ? 0xff : ((new_b < 0) ? 0 : (uint8_t)new_b);
+    // Clamping to 0-255 range
+    param_1->r = (uint8_t)fmax(0, fmin(255, r_val));
+    param_1->g = (uint8_t)fmax(0, fmin(255, g_val));
+    param_1->b = (uint8_t)fmax(0, fmin(255, b_val));
   }
 }
 
 // Function: Opacity
-void Opacity(uint8_t *pixel_data, undefined alpha_val) {
-  pixel_data[9] = alpha_val; // Alpha is at offset 9
-}
-
-// Dummy implementations for external functions
-void seed_prng(uint32_t seed) {
-  srand(seed); // Using standard library PRNG
-}
-
-uint16_t prng_u16() {
-  return (uint16_t)rand();
-}
-
-uint8_t prng_u8() {
-  return (uint8_t)rand();
-}
-
-void receive_bytes(void* buffer, size_t size) {
-  memset(buffer, 0, size); // Dummy: fill with zeros
-}
-
-// Max number of pixels is 0x19a (410) as suggested by Push.
-#define MAX_PIXELS 0x19a
-
-void *g_pixel_array[MAX_PIXELS]; // Global array to store pixel data pointers
-
-void dummy_task_func(uint32_t data, int p3) {
-    // This function can be used to perform some operation on pixel data
-    // For demonstration, it just prints
-    // printf("Dummy task: data=0x%x, p3=%d\n", data, p3);
-}
-
-int main() {
-    // Initialize the global pixel array to NULL
-    for (int i = 0; i < MAX_PIXELS; ++i) {
-        g_pixel_array[i] = NULL;
-    }
-
-    printf("--- ReadFile ---\n");
-    ReadFile(g_pixel_array); // Populate the array with random pixel data
-    printf("First 5 pixels after ReadFile:\n");
-    CheckFile(g_pixel_array, 5); // Check first 5 pixels
-
-    printf("--- NewFile ---\n");
-    uint8_t new_file_data[0xffa];
-    // Fill new_file_data with some dummy data for testing
-    for (int i = 0; i < 0xffa; ++i) {
-        new_file_data[i] = i % 256;
-    }
-    NewFile(g_pixel_array, new_file_data); // Overwrite some pixel data
-    printf("First 5 pixels after NewFile:\n");
-    CheckFile(g_pixel_array, 5); // Check first 5 pixels again
-
-    printf("--- RotateX (first pixel by 90 degrees) ---\n");
-    if (g_pixel_array[0] != NULL) {
-        short *pixel = (short*)g_pixel_array[0];
-        printf("Before RotateX:\n");
-        ShowPixel(pixel);
-        RotateX(pixel, 90);
-        printf("After RotateX:\n");
-        ShowPixel(pixel);
-    }
-
-    printf("--- Scale (second pixel by 50 percent) ---\n");
-    if (g_pixel_array[1] != NULL) {
-        short *pixel = (short*)g_pixel_array[1];
-        printf("Before Scale:\n");
-        ShowPixel(pixel);
-        Scale(pixel, 50);
-        printf("After Scale:\n");
-        ShowPixel(pixel);
-    }
-
-    printf("--- Brightness (third pixel by 100) ---\n");
-    if (g_pixel_array[2] != NULL) {
-        uint8_t *pixel_bytes = (uint8_t*)g_pixel_array[2];
-        printf("Before Brightness:\n");
-        ShowPixel((short*)pixel_bytes);
-        Brightness(pixel_bytes, 100);
-        printf("After Brightness:\n");
-        ShowPixel((short*)pixel_bytes);
-    }
-
-    printf("--- RunTask (dummy task for first 5 pixels) ---\n");
-    RunTask((uint32_t*)g_pixel_array, dummy_task_func, 123);
-
-    // Free all allocated pixel data
-    for (int i = 0; i < MAX_PIXELS; ++i) {
-        if (g_pixel_array[i] != NULL) {
-            free(g_pixel_array[i]);
-            g_pixel_array[i] = NULL;
-        }
-    }
-
-    return 0;
+void Opacity(PixelData *param_1, uint8_t param_2) {
+  param_1->a = param_2;
 }

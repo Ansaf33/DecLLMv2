@@ -1,185 +1,176 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h> // For uint32_t, int32_t, uint8_t
+#include <stddef.h> // For size_t
 
-// --- Utility Functions (based on original disassembly) ---
+// Forward declarations for structs
+typedef struct BaseVarNode BaseVarNode;
+typedef struct NumVarNode NumVarNode;
+typedef struct ArrVarNode ArrVarNode;
+typedef struct ViewVarNode ViewVarNode;
+typedef struct ViewType ViewType;
 
-// Custom streq: returns 1 if strings are equal, 0 otherwise
-int streq(const char* s1, const char* s2) {
-    if (s1 == NULL || s2 == NULL) {
-        return s1 == s2; // Both NULL or one NULL means not equal unless both are NULL
-    }
+// Base structure for all variable nodes
+struct BaseVarNode {
+    BaseVarNode *next;
+    char *name;
+    int type;      // 0: Number, 1: Array, 2: View
+    int ref_count; // For tracking references to this node, especially for views
+};
+
+// Specific structure for Number variables (type 0)
+struct NumVarNode {
+    BaseVarNode base; // Inherits next, name, type, ref_count
+    int value;        // Numeric value at offset 0x10 from node start
+}; // Total size BaseVarNode + sizeof(int) = 0x10 + 0x4 = 0x14 on 32-bit
+
+// Specific structure for Array variables (type 1)
+struct ArrVarNode {
+    BaseVarNode base; // Inherits next, name, type, ref_count
+    unsigned int size_bytes; // Total bytes allocated for elements (e.g., count * sizeof(int)) (offset 0x10)
+    char elements[]; // Flexible array member for the actual data, starts at offset 0x14
+}; // Total size BaseVarNode + sizeof(unsigned int) + flexible array
+
+// Structure for View types, used in `viewtypes` array
+struct ViewType {
+    const char *name;
+    int element_size; // e.g., 1, 2, 4 for byte, short, int views
+    int signed_flag;  // 0 for unsigned, 1 for signed
+}; // Total size 0xc on 32-bit
+
+// Specific structure for View variables (type 2)
+struct ViewVarNode {
+    BaseVarNode base; // Inherits next, name, type, ref_count
+    BaseVarNode *target_array; // Points to the ArrVarNode being viewed (offset 0x10)
+    const ViewType *view_type_ptr; // Points to an entry in the global `viewtypes` array (offset 0x14)
+    char padding[4]; // Padding to align byte_size_expr at 0x1c for 32-bit architecture
+    char *byte_size_expr; // Optional string for custom byte size calculation (offset 0x1c)
+}; // Total size 0x20 on 32-bit
+
+// Global variables (assuming these exist and are initialized elsewhere)
+BaseVarNode *global_nspace = NULL; // Head of the linked list of variables
+BaseVarNode *DAT_00016084 = NULL;  // Pointer to the last added variable node (tail of list)
+int DAT_00016088 = 0;              // Counter for total number of variables
+
+// Global arrays for configuration/dispatch (assuming these are initialized elsewhere)
+ViewType viewtypes[6]; // Array of view type definitions
+const char *types[3]; // Array of strings for "new" command types ("num", "arr", "view")
+int (*constructors[3])(const char *, const char *); // Array of function pointers for constructors
+const char *cmds[4]; // Array of strings for commands ("new", "get", "set", "del")
+int (*handlers[4])(void); // Array of function pointers for command handlers
+
+// Helper function declarations (to make the code compilable)
+static inline int streq(const char *s1, const char *s2) {
     return strcmp(s1, s2) == 0;
 }
 
-// Custom _terminate: uses exit from stdlib.h
-void _terminate(int status) {
-    exit(status);
+static inline int str2int(const char *s) {
+    return atoi(s);
 }
 
-// Custom sendline: sends data to a file descriptor, typically stdout (fd 1) or stderr (fd 2).
-// Assuming it adds a newline character for line-based communication.
-int sendline(int fd, const void* buf, size_t len) {
-    FILE* stream = NULL;
-    if (fd == 1) {
-        stream = stdout;
-    } else if (fd == 2) {
-        stream = stderr;
-    } else {
-        return -1; // Unsupported file descriptor
+static inline unsigned int str2uint(const char *s) {
+    return strtoul(s, NULL, 10);
+}
+
+static inline void uint2str(char *buf, size_t buf_len, unsigned int val) {
+    snprintf(buf, buf_len, "%u", val);
+}
+
+static inline void int2str(char *buf, size_t buf_len, int val) {
+    snprintf(buf, buf_len, "%d", val);
+}
+
+// External functions, assuming they are defined elsewhere (e.g., in a runtime library)
+int sendline(int fd, const char *buf, size_t len);
+void _terminate(int status);
+
+// Function prototypes (to avoid implicit declarations)
+int delvar(const char *name);
+int addvar(BaseVarNode *node_ptr, const char *name, int type);
+BaseVarNode *getvar(const char *name);
+int calc_bytesize(const char *param_1);
+int newnum(const char *name, const char *value_str);
+int newarr(const char *name, const char *size_str);
+int newview(const char *name, const char *target_name);
+int handlenew(void);
+int handleget(void);
+int handleset(void);
+int handledel(void);
+int runcmd(char *command_line);
+int run_viewscript(char *script);
+
+// Function: delvar
+int delvar(const char *name_to_delete) {
+    BaseVarNode *current = global_nspace;
+    BaseVarNode *prev = NULL;
+
+    while (current != NULL) {
+        if (streq(current->name, name_to_delete)) {
+            if (prev == NULL) {
+                global_nspace = current->next;
+            } else {
+                prev->next = current->next;
+            }
+
+            if (current->next == NULL) {
+                DAT_00016084 = prev;
+            }
+
+            if (current->type == 2) { // View type
+                ViewVarNode *view_node = (ViewVarNode *)current;
+                if (view_node->target_array != NULL) {
+                    view_node->target_array->ref_count--;
+                    if (view_node->target_array->ref_count == 0) {
+                        free(view_node->target_array);
+                    }
+                }
+                if (view_node->byte_size_expr != NULL) {
+                    free(view_node->byte_size_expr);
+                }
+            }
+
+            if (current->name != NULL) {
+                free(current->name);
+            }
+
+            free(current);
+            DAT_00016088--;
+            return 0;
+        }
+        prev = current;
+        current = current->next;
     }
+    return 9; // Not found
+}
 
-    if (fwrite(buf, 1, len, stream) != len) {
-        return -1;
+// Function: addvar
+int addvar(BaseVarNode *node_ptr, const char *name, int type) {
+    node_ptr->name = (char *)calloc(strlen(name) + 1, 1);
+    if (node_ptr->name == NULL) {
+        return 10; // Memory allocation error
     }
-    if (fputc('\n', stream) == EOF) { // Add newline
-        return -1;
+    strcpy(node_ptr->name, name);
+    node_ptr->type = type;
+    node_ptr->ref_count = 0; // Initialized to 0 by calloc, but explicit is clear
+
+    if (DAT_00016084 != NULL) {
+        ((BaseVarNode *)DAT_00016084)->next = node_ptr;
     }
-    fflush(stream); // Ensure output is sent immediately
-    return (int)(len + 1); // Return bytes written including newline
+    DAT_00016084 = node_ptr;
+
+    if (global_nspace == NULL) {
+        global_nspace = node_ptr;
+    }
+    node_ptr->next = NULL;
+
+    DAT_00016088++;
+    return 0;
 }
-
-// Custom str2int: converts string to int
-int32_t str2int(const char* s) {
-    return (int32_t)atoi(s); // For simplicity, using atoi. strtol is more robust.
-}
-
-// Custom str2uint: converts string to unsigned int
-uint32_t str2uint(const char* s) {
-    return (uint32_t)strtoul(s, NULL, 10);
-}
-
-// Custom int2str: converts int to string
-void int2str(char* buf, size_t buf_size, int32_t val) {
-    snprintf(buf, buf_size, "%d", val);
-}
-
-// Custom uint2str: converts unsigned int to string
-void uint2str(char* buf, size_t buf_size, uint32_t val) {
-    snprintf(buf, buf_size, "%u", val);
-}
-
-// --- Data Structures ---
-
-// Base Node structure (20 bytes, 0x14)
-typedef struct VarNode {
-    struct VarNode* next;   // Offset 0x00
-    char* name;             // Offset 0x04 (points to dynamically allocated string)
-    uint32_t type;          // Offset 0x08 (0: Num, 1: Arr, 2: View)
-    uint32_t ref_count;     // Offset 0x0C (number of ViewVars referencing this VarNode)
-    // Data specific to type follows from 0x10.
-    // The memory allocated for this struct might be larger than 20 bytes depending on type.
-} VarNode; // Base size 20 bytes (0x14)
-
-// Type 0: Number (NumVar)
-// The value is stored directly in the 4 bytes after ref_count.
-typedef struct NumVar {
-    VarNode base;
-    int32_t value; // Offset 0x10 from start of NumVar
-} NumVar; // Total size 20 bytes (0x14)
-
-// Type 1: Array (ArrVar)
-// The byte_size of the array is stored after ref_count.
-// The actual array data (uint32_t elements) follows immediately after the ArrVar struct.
-typedef struct ArrVar {
-    VarNode base;
-    uint32_t byte_size; // Offset 0x10 from start of ArrVar (total bytes for elements)
-    // uint32_t elements[]; // Flexible array member (not explicitly declared as FAM, but memory is allocated this way)
-} ArrVar; // Base size 20 bytes (0x14) + elements
-
-// Type 2: View (ViewVar)
-// It's 32 bytes total.
-typedef struct ViewVar {
-    VarNode base;
-    VarNode* target_var;    // Offset 0x10 from start of ViewVar (pointer to the VarNode being viewed)
-    void* view_type_ptr;    // Offset 0x14 (points into viewtypes array)
-    uint32_t _padding;      // Offset 0x18 (padding, based on 0x20 total size and 4-byte alignment)
-    char* view_script;      // Offset 0x1C (points to dynamically allocated script string, can be NULL)
-} ViewVar; // Total size 32 bytes (0x20)
-
-// ViewType structure (12 bytes, 0xc)
-typedef struct ViewType {
-    char* name;         // Offset 0
-    uint32_t byte_size; // Offset 4 (e.g., 1, 2, 4 for char, short, int)
-    uint32_t is_signed; // Offset 8 (0 for unsigned, 1 for signed)
-} ViewType; // Total size 12 bytes (0xc)
-
-// --- Global Variables ---
-
-VarNode* global_nspace = NULL; // Head of the linked list of variables
-VarNode* DAT_00016084 = NULL;  // Tail of the linked list of variables
-int DAT_00016088 = 0;          // Count of variables in the global namespace
-
-// View Types Array
-ViewType viewtypes[] = {
-    {"byte", 1, 1},
-    {"word", 2, 1},
-    {"dword", 4, 1},
-    {"ubyte", 1, 0},
-    {"uword", 2, 0},
-    {"udword", 4, 0}
-};
-
-// --- Function Prototypes for Handlers and Constructors ---
-
-// Constructor function pointer type: int (*)(char* name, char* value_str)
-typedef int (*constructor_func)(char* name, char* value_str);
-
-// Handler function pointer type: uint32_t (*)(void)
-typedef uint32_t (*handler_func)(void);
-
-// Variable type names
-char* types[] = {
-    "num",
-    "arr",
-    "view",
-    NULL
-};
-
-// Command names
-char* cmds[] = {
-    "new",
-    "get",
-    "set",
-    "del",
-    NULL
-};
-
-// Forward declarations for functions used in global arrays
-int newnum(char* name, char* value_str);
-int newarr(char* name, char* value_str);
-int newview(char* name, char* value_str);
-uint32_t handlenew(void);
-uint32_t handleget(void);
-uint32_t handleset(void);
-uint32_t handledel(void);
-uint32_t runcmd(char* command_line); // Declared here for constructors/handlers, defined later
-int calc_bytesize(char* script_str); // Declared here, defined later
-
-// Constructor functions array
-constructor_func constructors[] = {
-    newnum,
-    newarr,
-    newview,
-    NULL
-};
-
-// Command handler functions array
-handler_func handlers[] = {
-    handlenew,
-    handleget,
-    handleset,
-    handledel,
-    NULL
-};
-
-// --- Core Logic Functions ---
 
 // Function: getvar
-VarNode* getvar(char* name) {
+BaseVarNode *getvar(const char *name) {
     if (DAT_00016088 > 0 && global_nspace != NULL) {
-        for (VarNode* current = global_nspace; current != NULL; current = current->next) {
+        for (BaseVarNode *current = global_nspace; current != NULL; current = current->next) {
             if (streq(current->name, name)) {
                 return current;
             }
@@ -188,542 +179,385 @@ VarNode* getvar(char* name) {
     return NULL;
 }
 
-// Function: addvar
-uint32_t addvar(VarNode* new_var, char* name, uint32_t type) {
-    new_var->name = (char*)calloc(strlen(name) + 1, 1);
-    if (new_var->name == NULL) {
-        return 10; // Memory allocation error
-    }
-    strcpy(new_var->name, name);
-
-    new_var->type = type;
-
-    if (DAT_00016084 != NULL) {
-        DAT_00016084->next = new_var;
-    }
-    DAT_00016084 = new_var;
-    new_var->next = NULL;
-
-    if (global_nspace == NULL) {
-        global_nspace = new_var;
-    }
-
-    DAT_00016088++;
-    return 0;
-}
-
-// Function: delvar
-uint32_t delvar(char* name) {
-    VarNode* prev = NULL;
-    VarNode* current = global_nspace;
-
-    while (current != NULL) {
-        if (streq(current->name, name)) {
-            break;
-        }
-        prev = current;
-        current = current->next;
-    }
-
-    if (current == NULL) {
-        return 9; // Not found
-    }
-
-    if (prev == NULL) {
-        global_nspace = current->next;
-    } else {
-        prev->next = current->next;
-    }
-
-    if (current == DAT_00016084) {
-        DAT_00016084 = prev;
-    }
-
-    if (current->type == 2) { // View type
-        ViewVar* view_var = (ViewVar*)current;
-        if (view_var->target_var != NULL) {
-            view_var->target_var->ref_count--;
-            if (view_var->target_var->ref_count == 0) {
-                free(view_var->target_var->name); // Free target's name
-                free(view_var->target_var);        // Free target VarNode
-            }
-        }
-        if (view_var->view_script != NULL) {
-            free(view_var->view_script);
-        }
-    }
-
-    free(current->name); // Free the name of the deleted variable
-
-    // Original code: if ((int)local_10[3] < 1) { free(local_10); }
-    // This implies `current->ref_count == 0`.
-    if (current->ref_count == 0) {
-        free(current);
-    } // Potential memory leak if ref_count > 0 but removed from global_nspace
-
-    DAT_00016088--;
-    return 0;
-}
-
 // Function: calc_bytesize
-int calc_bytesize(char* script_str) {
+int calc_bytesize(const char *param_1) {
     int total_bytes = 0;
-    char* script_copy = (char*)calloc(strlen(script_str) + 1, 1);
-    if (script_copy == NULL) {
+    char *temp_str = (char *)calloc(strlen(param_1) + 1, 1);
+    if (temp_str == NULL) {
         return 0;
     }
-    strcpy(script_copy, script_str);
+    strcpy(temp_str, param_1);
 
-    char* token = strtok(script_copy, ",");
-    while (token != NULL) {
+    char *token_context = temp_str;
+    char *token;
+
+    while ((token = strtok(token_context, ",")) != NULL) {
+        token_context = NULL;
+
         if (strlen(token) == 0) {
             total_bytes = 0;
             break;
         }
-        VarNode* var = getvar(token);
-        if (var == NULL) {
+
+        BaseVarNode *var_node = getvar(token);
+        if (var_node == NULL || var_node->type != 0) {
             total_bytes = 0;
             break;
         }
-        if (var->type != 0) { // Must be a number type
-            total_bytes = 0;
-            break;
-        }
-        total_bytes += ((NumVar*)var)->value;
-        token = strtok(NULL, ",");
+        total_bytes += ((NumVarNode *)var_node)->value;
     }
 
-    free(script_copy);
+    free(temp_str);
     return total_bytes;
 }
 
 // Function: newnum
-int newnum(char* name, char* value_str) {
-    NumVar* new_num_var = (NumVar*)calloc(1, sizeof(NumVar));
-    if (new_num_var == NULL) {
+int newnum(const char *name, const char *value_str) {
+    NumVarNode *node = (NumVarNode *)calloc(1, sizeof(NumVarNode));
+    if (node == NULL) {
         return 10; // Memory allocation error
     }
 
-    new_num_var->value = str2int(value_str);
-    int ret = addvar((VarNode*)new_num_var, name, 0); // Type 0 for number
+    node->value = str2int(value_str);
 
-    if (ret != 0) {
-        if (new_num_var->base.name) free(new_num_var->base.name); // Free allocated name if addvar failed
-        free(new_num_var);
+    int result = addvar((BaseVarNode *)node, name, 0); // Type 0 for number
+    if (result != 0) {
+        free(node->base.name);
+        free(node);
     }
-    return ret;
+    return result;
 }
 
 // Function: newarr
-int newarr(char* name, char* size_str) {
-    uint32_t num_elements = str2uint(size_str);
-    if (num_elements >= 0x200001) { // Max size check (e.g., ~8MB for elements)
-        return 0xB; // Size too large
+int newarr(const char *name, const char *size_str) {
+    unsigned int element_count = str2uint(size_str);
+    if (element_count >= 0x200001) { // Max 2MB array (approx 524288 ints)
+        return 11; // Too large
     }
 
-    ArrVar* new_arr_var = (ArrVar*)calloc(1, sizeof(ArrVar) + num_elements * sizeof(uint32_t));
-    if (new_arr_var == NULL) {
+    ArrVarNode *node = (ArrVarNode *)calloc(1, sizeof(BaseVarNode) + sizeof(unsigned int) + (element_count * sizeof(int)));
+    if (node == NULL) {
         return 10; // Memory allocation error
     }
 
-    new_arr_var->byte_size = num_elements * sizeof(uint32_t);
-    int ret = addvar((VarNode*)new_arr_var, name, 1); // Type 1 for array
+    node->size_bytes = element_count * sizeof(int);
 
-    if (ret != 0) {
-        if (new_arr_var->base.name) free(new_arr_var->base.name);
-        free(new_arr_var);
+    int result = addvar((BaseVarNode *)node, name, 1); // Type 1 for array
+    if (result != 0) {
+        free(node->base.name);
+        free(node);
     }
-    return ret;
+    return result;
 }
 
 // Function: newview
-int newview(char* name, char* target_name) {
-    char* view_type_str = strtok(NULL, " ");
+int newview(const char *name, const char *target_name) {
+    char *view_type_str = strtok(NULL, " ");
     if (view_type_str == NULL || strlen(view_type_str) == 0) {
-        return 6; // Missing view type
+        return 6; // Missing view type string
     }
 
-    VarNode* target_var = getvar(target_name);
-    if (target_var == NULL) {
+    BaseVarNode *target_node = getvar(target_name);
+    if (target_node == NULL) {
         return 9; // Target variable not found
     }
-    if (target_var->type != 1) { // Target must be an array type
-        return 0xC; // Type mismatch (not an array)
+    if (target_node->type != 1) { // Target must be an array (type 1)
+        return 12; // Not an array type
     }
 
-    ViewVar* new_view_var = (ViewVar*)calloc(1, sizeof(ViewVar));
-    if (new_view_var == NULL) {
+    ViewVarNode *node = (ViewVarNode *)calloc(1, sizeof(ViewVarNode));
+    if (node == NULL) {
         return 10; // Memory allocation error
     }
 
-    ViewType* selected_view_type = NULL;
-    for (uint32_t i = 0; i < sizeof(viewtypes) / sizeof(ViewType); i++) {
+    int view_type_idx = -1;
+    for (int i = 0; i < 6; i++) {
         if (streq(view_type_str, viewtypes[i].name)) {
-            selected_view_type = &viewtypes[i];
+            view_type_idx = i;
             break;
         }
     }
 
-    if (selected_view_type == NULL) {
-        free(new_view_var);
-        return 4; // Invalid view type string
+    if (view_type_idx == -1) {
+        free(node);
+        return 4; // Unknown view type
     }
 
-    new_view_var->target_var = target_var;
-    new_view_var->view_type_ptr = selected_view_type;
-    new_view_var->target_var->ref_count++; // Increment target's reference count
+    node->view_type_ptr = &viewtypes[view_type_idx];
+    node->target_array = target_node;
+    node->target_array->ref_count++; // Increment ref_count of the target array
 
-    int ret = addvar((VarNode*)new_view_var, name, 2); // Type 2 for view
-
-    if (ret != 0) {
-        new_view_var->target_var->ref_count--; // Decrement ref count if creation failed
-        if (new_view_var->base.name) free(new_view_var->base.name);
-        free(new_view_var);
+    int result = addvar((BaseVarNode *)node, name, 2); // Type 2 for view
+    if (result != 0) {
+        node->target_array->ref_count--; // Decrement if addvar failed
+        free(node->base.name);
+        free(node);
     }
-    return ret;
+    return result;
 }
 
 // Function: handlenew
-uint32_t handlenew(void) {
-    char* type_str = strtok(NULL, " ");
+int handlenew(void) {
+    char *type_str = strtok(NULL, " ");
     if (type_str == NULL || strlen(type_str) == 0) {
-        return 6; // Missing type
+        return 6; // Missing type string
     }
 
-    char* name = strtok(NULL, " ");
-    if (name == NULL || strlen(name) == 0) {
-        return 7; // Missing name
+    char *name_str = strtok(NULL, " ");
+    if (name_str == NULL) {
+        return 7; // Missing name string
     }
 
-    if (getvar(name) != NULL) {
-        return 8; // Variable with this name already exists
+    if (getvar(name_str) != NULL) {
+        return 8; // Variable already exists
     }
 
-    char* value_str = strtok(NULL, " ");
-    if (value_str == NULL || strlen(value_str) == 0) {
-        return 3; // Missing value/size/target
+    char *value_or_size_str = strtok(NULL, " ");
+    if (value_or_size_str == NULL || strlen(value_or_size_str) == 0) {
+        return 3; // Missing value/size string
     }
 
-    uint32_t type_idx = 0;
-    while (types[type_idx] != NULL) {
-        if (streq(type_str, types[type_idx])) {
-            return constructors[type_idx](name, value_str);
+    int type_idx = -1;
+    for (int i = 0; i < 3; i++) {
+        if (streq(type_str, types[i])) {
+            type_idx = i;
+            break;
         }
-        type_idx++;
-    }
-    return 4; // Invalid type string
-}
-
-// Function: handleget
-uint32_t handleget(void) {
-    char var_value_str_buffer[12]; // Buffer for int/uint to string conversion
-
-    char* name = strtok(NULL, " ");
-    if (name == NULL || strlen(name) == 0) {
-        return 7; // Missing variable name
     }
 
-    VarNode* var = getvar(name);
-    if (var == NULL) {
-        return 9; // Variable not found
-    }
-
-    if (var->type == 2) { // View type
-        ViewVar* view_var = (ViewVar*)var;
-        char* index_str = strtok(NULL, " ");
-        if (index_str == NULL) {
-            return 3; // Missing index for view
-        }
-        uint32_t index = str2uint(index_str);
-
-        ViewType* view_type = (ViewType*)view_var->view_type_ptr;
-        uint32_t offset = index * view_type->byte_size;
-
-        if (view_var->view_script == NULL) {
-            ArrVar* target_arr = (ArrVar*)view_var->target_var;
-            if (target_arr->byte_size < offset + view_type->byte_size) {
-                return 0xD; // Out of bounds
-            }
-        } else {
-            uint32_t scripted_byte_size = calc_bytesize(view_var->view_script);
-            if (scripted_byte_size <= offset + view_type->byte_size) {
-                return 0xD; // Out of bounds
-            }
-        }
-
-        uint32_t raw_value = 0;
-        char* array_data_ptr = (char*)view_var->target_var + sizeof(ArrVar);
-
-        for (uint32_t i = 0; i < view_type->byte_size; i++) {
-            raw_value |= (uint32_t)*(uint8_t*)(array_data_ptr + offset + i) << ((i << 3) & 0x1f);
-        }
-
-        if (view_type->is_signed == 0) { // Unsigned
-            uint2str(var_value_str_buffer, sizeof(var_value_str_buffer), raw_value);
-        } else { // Signed
-            if (view_type->byte_size == 4) {
-                int2str(var_value_str_buffer, sizeof(var_value_str_buffer), (int32_t)raw_value);
-            } else if (view_type->byte_size == 2) {
-                int2str(var_value_str_buffer, sizeof(var_value_str_buffer), (int32_t)(int16_t)raw_value);
-            } else if (view_type->byte_size == 1) {
-                int2str(var_value_str_buffer, sizeof(var_value_str_buffer), (int32_t)(int8_t)raw_value);
-            } else {
-                uint2str(var_value_str_buffer, sizeof(var_value_str_buffer), raw_value); // Fallback
-            }
-        }
-    } else if (var->type == 0) { // Num type
-        int2str(var_value_str_buffer, sizeof(var_value_str_buffer), ((NumVar*)var)->value);
-    } else if (var->type == 1) { // Arr type
-        ArrVar* arr_var = (ArrVar*)var;
-        char* index_str = strtok(NULL, " ");
-        if (index_str == NULL) {
-            return 3; // Missing index for array
-        }
-        uint32_t index = str2uint(index_str);
-
-        if (arr_var->byte_size / sizeof(uint32_t) <= index) {
-            return 0xD; // Out of bounds
-        }
-        uint32_t* elements = (uint32_t*)((char*)arr_var + sizeof(ArrVar));
-        int2str(var_value_str_buffer, sizeof(var_value_str_buffer), elements[index]);
-    } else {
+    if (type_idx == -1) {
         return 4; // Unknown type
     }
 
-    int bytes_sent = sendline(1, var_value_str_buffer, strlen(var_value_str_buffer));
-    if (bytes_sent < 0) {
+    return constructors[type_idx](name_str, value_or_size_str);
+}
+
+// Function: handleget
+int handleget(void) {
+    char output_buf[0xC]; // Buffer for string conversion
+    memset(output_buf, 0, sizeof(output_buf));
+
+    char *var_name = strtok(NULL, " ");
+    if (var_name == NULL || strlen(var_name) == 0) {
+        return 7; // Missing variable name
+    }
+
+    BaseVarNode *node = getvar(var_name);
+    if (node == NULL) {
+        return 9; // Variable not found
+    }
+
+    if (node->type == 2) { // View type
+        ViewVarNode *view_node = (ViewVarNode *)node;
+        char *index_str = strtok(NULL, " ");
+        if (index_str == NULL) {
+            return 3; // Missing index for view
+        }
+        unsigned int index = str2uint(index_str);
+
+        unsigned int offset = index * view_node->view_type_ptr->element_size;
+        ArrVarNode *target_arr_node = (ArrVarNode *)view_node->target_array;
+
+        // Check bounds
+        if (view_node->byte_size_expr == NULL) {
+            if (target_arr_node->size_bytes < (view_node->view_type_ptr->element_size + offset)) {
+                return 13; // Out of bounds
+            }
+        } else {
+            unsigned int calculated_size = calc_bytesize(view_node->byte_size_expr);
+            if (calculated_size <= (view_node->view_type_ptr->element_size + offset)) {
+                return 13; // Out of bounds
+            }
+        }
+
+        unsigned int value = 0;
+        char *array_elements_ptr = target_arr_node->elements;
+        for (unsigned int i = 0; i < view_node->view_type_ptr->element_size; i++) {
+            value |= (unsigned int)*(unsigned char *)(array_elements_ptr + offset + i) << ((i * 8) & 0x1f);
+        }
+
+        if (view_node->view_type_ptr->signed_flag == 0) { // Unsigned
+            uint2str(output_buf, sizeof(output_buf), value);
+        } else { // Signed
+            if (view_node->view_type_ptr->element_size == 4) {
+                int2str(output_buf, sizeof(output_buf), (int)value);
+            } else if (view_node->view_type_ptr->element_size == 2) {
+                int2str(output_buf, sizeof(output_buf), (short)value);
+            } else if (view_node->view_type_ptr->element_size == 1) {
+                int2str(output_buf, sizeof(output_buf), (char)value);
+            } else {
+                uint2str(output_buf, sizeof(output_buf), value); // Fallback to unsigned
+            }
+        }
+    } else if (node->type == 0) { // Number type
+        int2str(output_buf, sizeof(output_buf), ((NumVarNode *)node)->value);
+    } else if (node->type == 1) { // Array type
+        ArrVarNode *arr_node = (ArrVarNode *)node;
+        char *index_str = strtok(NULL, " ");
+        if (index_str == NULL) {
+            return 3; // Missing index for array
+        }
+        unsigned int index = str2uint(index_str);
+
+        if (arr_node->size_bytes / sizeof(int) <= index) {
+            return 13; // Out of bounds
+        }
+        int2str(output_buf, sizeof(output_buf), ((int *)arr_node->elements)[index]);
+    } else {
+        return 4; // Unknown variable type
+    }
+
+    if (sendline(1, output_buf, strlen(output_buf)) < 0) {
         _terminate(6);
     }
     return 0;
 }
 
 // Function: handleset
-uint32_t handleset(void) {
-    char* name = strtok(NULL, " ");
-    if (name == NULL || strlen(name) == 0) {
+int handleset(void) {
+    char *var_name = strtok(NULL, " ");
+    if (var_name == NULL || strlen(var_name) == 0) {
         return 7; // Missing variable name
     }
 
-    VarNode* var = getvar(name);
-    if (var == NULL) {
+    BaseVarNode *node = getvar(var_name);
+    if (node == NULL) {
         return 9; // Variable not found
     }
 
-    char* value_or_index_str = strtok(NULL, " ");
-    if (value_or_index_str == NULL) {
-        return 3; // Missing value/index
+    char *field_or_value_str = strtok(NULL, " ");
+    if (field_or_value_str == NULL) {
+        return 3; // Missing field/value
     }
 
-    if (var->type == 2) { // View type
-        ViewVar* view_var = (ViewVar*)var;
-        char* field_name = value_or_index_str; // "byteSize"
-        char* script_str = strtok(NULL, " ");
-        if (script_str == NULL) {
-            return 3; // Missing script string
+    if (node->type == 2) { // View type
+        ViewVarNode *view_node = (ViewVarNode *)node;
+        char *byte_size_expr_str = strtok(NULL, " ");
+        if (byte_size_expr_str == NULL) {
+            return 3; // Missing byte_size expression for view set
         }
 
-        if (!streq(field_name, "byteSize")) {
-            return 9; // Invalid field name for view
+        if (!streq(field_or_value_str, "byteSize")) {
+            return 9; // Invalid field for view
         }
 
-        char* new_script = (char*)calloc(strlen(script_str) + 1, 1);
-        if (new_script == NULL) {
+        char *temp_byte_size_expr = (char *)calloc(strlen(byte_size_expr_str) + 1, 1);
+        if (temp_byte_size_expr == NULL) {
             return 10; // Memory allocation error
         }
-        strcpy(new_script, script_str);
+        strcpy(temp_byte_size_expr, byte_size_expr_str);
 
-        uint32_t required_byte_size = calc_bytesize(new_script);
-        ArrVar* target_arr = (ArrVar*)view_var->target_var;
-        if (target_arr->byte_size < required_byte_size) {
-            free(new_script);
-            return 0xB; // Scripted size exceeds target array capacity
+        unsigned int calculated_size = calc_bytesize(temp_byte_size_expr);
+        ArrVarNode *target_arr_node = (ArrVarNode *)view_node->target_array;
+
+        if (target_arr_node->size_bytes < calculated_size) {
+            free(temp_byte_size_expr);
+            return 11; // Byte size too large
         }
 
-        if (view_var->view_script != NULL) {
-            free(view_var->view_script);
+        if (view_node->byte_size_expr != NULL) {
+            free(view_node->byte_size_expr);
         }
-        view_var->view_script = new_script;
-        return 0;
-    } else if (var->type == 0) { // Num type
-        ((NumVar*)var)->value = str2int(value_or_index_str);
-        return 0;
-    } else if (var->type == 1) { // Arr type
-        ArrVar* arr_var = (ArrVar*)var;
-        uint32_t index = str2uint(value_or_index_str);
-        if (arr_var->byte_size / sizeof(uint32_t) <= index) {
-            return 0xD; // Out of bounds
+        view_node->byte_size_expr = temp_byte_size_expr;
+        return 0; // Success
+    } else if (node->type == 0) { // Number type
+        ((NumVarNode *)node)->value = str2int(field_or_value_str);
+        return 0; // Success
+    } else if (node->type == 1) { // Array type
+        ArrVarNode *arr_node = (ArrVarNode *)node;
+        unsigned int index = str2uint(field_or_value_str); // This is the index
+
+        if (arr_node->size_bytes / sizeof(int) <= index) {
+            return 13; // Index out of bounds
         }
 
-        char* value_str = strtok(NULL, " ");
+        char *value_str = strtok(NULL, " "); // Get the value to set
         if (value_str == NULL) {
-            return 3; // Missing value for array element
+            return 3; // Missing value to set
         }
-        int32_t value = str2int(value_str);
 
-        uint32_t* elements = (uint32_t*)((char*)arr_var + sizeof(ArrVar));
-        elements[index] = value;
-        return 0;
+        ((int *)arr_node->elements)[index] = str2int(value_str);
+        return 0; // Success
     } else {
-        return 4; // Unknown type
+        return 4; // Unknown variable type
     }
 }
 
 // Function: handledel
-uint32_t handledel(void) {
-    char* name = strtok(NULL, " ");
-    if (name == NULL || strlen(name) == 0) {
+int handledel(void) {
+    char *var_name = strtok(NULL, " ");
+    if (var_name == NULL || strlen(var_name) == 0) {
         return 7; // Missing variable name
     }
-    return delvar(name);
+    return delvar(var_name);
 }
 
 // Function: runcmd
-uint32_t runcmd(char* command_line) {
-    char* cmd_token = strtok(command_line, " ");
+int runcmd(char *command_line) {
+    char *cmd_token = strtok(command_line, " ");
     if (cmd_token == NULL || strlen(cmd_token) == 0) {
         return 1; // Empty command
     }
 
-    uint32_t cmd_idx = 0;
-    while (cmds[cmd_idx] != NULL) {
-        if (streq(cmd_token, cmds[cmd_idx])) {
-            return handlers[cmd_idx]();
+    int cmd_idx = -1;
+    for (int i = 0; i < 4; i++) {
+        if (streq(cmd_token, cmds[i])) {
+            cmd_idx = i;
+            break;
         }
-        cmd_idx++;
     }
-    return 5; // Unknown command
+
+    if (cmd_idx == -1) {
+        return 5; // Unknown command
+    }
+
+    return handlers[cmd_idx]();
 }
 
 // Function: run_viewscript
-int run_viewscript(char* script_content) {
-    if (strlen(script_content) >= 0x200001) { // Max script size check (~2MB)
-        return 0xB;
+int run_viewscript(char *script) {
+    size_t script_len = strlen(script);
+    if (script_len >= 0x200001) {
+        return 11; // Script too large
     }
 
-    char* script_copy = (char*)calloc(strlen(script_content) + 1, 1);
-    if (script_copy == NULL) {
-        return 10; // Allocation error
-    }
-    strcpy(script_copy, script_content);
-
-    int num_lines = 0;
-    for (char* p = script_copy; *p != '\0'; p++) {
+    int line_count = 0;
+    for (char *p = script; *p != '\0'; p++) {
         if (*p == '\n') {
-            num_lines++;
+            line_count++;
         }
     }
-    if (strlen(script_copy) > 0 && script_copy[strlen(script_copy) - 1] != '\n') {
-        num_lines++; // Count last line if not ending with newline
+
+    // Original logic: if no newlines, it's an error.
+    if (line_count == 0) {
+        return 1; // No lines found (or no newlines)
     }
 
-    if (num_lines == 0) {
-        free(script_copy);
-        return 1; // Empty script or no commands
-    }
-
-    char** lines = (char**)calloc(num_lines, sizeof(char*));
+    char **lines = (char **)calloc(line_count + 1, sizeof(char *));
     if (lines == NULL) {
-        free(script_copy);
         return 10; // Memory allocation error
     }
 
-    char* line = strtok(script_copy, "\n");
-    int current_line_idx = 0;
-    while (line != NULL && current_line_idx < num_lines) {
-        lines[current_line_idx++] = line;
-        line = strtok(NULL, "\n");
+    char *line_token = strtok(script, "\n");
+    for (int i = 0; i < line_count && line_token != NULL; i++) {
+        lines[i] = line_token;
+        line_token = strtok(NULL, "\n");
     }
+    lines[line_count] = NULL; // Null-terminate the array of pointers
 
-    for (int i = 0; i < num_lines; i++) {
-        int ret = runcmd(lines[i]);
-        if (ret != 0) {
+    int result = 0;
+    for (int i = 0; i < line_count; i++) {
+        result = runcmd(lines[i]);
+        if (result != 0) {
             free(lines);
-            free(script_copy);
-            return ret;
+            return result;
         }
     }
 
     free(lines);
-    free(script_copy);
 
-    int bytes_sent = sendline(1, "Done.", 5); // Original length 5
-    if (bytes_sent < 0) {
+    if (sendline(1, "Done.", 5) < 0) {
         _terminate(6);
     }
-    return 0;
-}
-
-// Function: main
-int main(void) {
-    char input_buffer[1024];
-    int ret_code = 0;
-
-    sendline(1, "Welcome! Type 'help' or commands.", strlen("Welcome! Type 'help' or commands."));
-
-    while (1) {
-        sendline(1, "> ", 2); // Prompt
-        if (fgets(input_buffer, sizeof(input_buffer), stdin) == NULL) {
-            sendline(1, "Exiting...", strlen("Exiting..."));
-            break;
-        }
-
-        input_buffer[strcspn(input_buffer, "\n")] = 0; // Remove trailing newline
-
-        if (strlen(input_buffer) == 0) {
-            continue; // Empty line
-        }
-
-        if (streq(input_buffer, "exit")) {
-            sendline(1, "Exiting...", strlen("Exiting..."));
-            break;
-        }
-        if (streq(input_buffer, "help")) {
-            sendline(1, "Commands: new <type> <name> <value/size/target_name> [view_type/script]", strlen("Commands: new <type> <name> <value/size/target_name> [view_type/script]"));
-            sendline(1, "          get <name> [index]", strlen("          get <name> [index]"));
-            sendline(1, "          set <name> <value/index> [value_for_array]", strlen("          set <name> <value/index> [value_for_array]"));
-            sendline(1, "          del <name>", strlen("          del <name>"));
-            sendline(1, "          run_script <script_string_literal>", strlen("          run_script <script_string_literal>"));
-            sendline(1, "          exit", strlen("          exit"));
-            continue;
-        }
-
-        if (strncmp(input_buffer, "run_script ", strlen("run_script ")) == 0) {
-            char* script_arg = input_buffer + strlen("run_script ");
-            ret_code = run_viewscript(script_arg);
-            if (ret_code != 0) {
-                char error_msg[64];
-                snprintf(error_msg, sizeof(error_msg), "Script error: %d", ret_code);
-                sendline(2, error_msg, strlen(error_msg));
-            }
-        } else {
-            char cmd_copy[sizeof(input_buffer)];
-            strncpy(cmd_copy, input_buffer, sizeof(cmd_copy) - 1);
-            cmd_copy[sizeof(cmd_copy) - 1] = '\0';
-
-            ret_code = runcmd(cmd_copy);
-            if (ret_code != 0) {
-                char error_msg[64];
-                snprintf(error_msg, sizeof(error_msg), "Error: %d", ret_code);
-                sendline(2, error_msg, strlen(error_msg));
-            }
-        }
-    }
-
-    // Cleanup global_nspace before exiting
-    VarNode* current = global_nspace;
-    while (current != NULL) {
-        VarNode* next = current->next;
-        if (current->name) free(current->name);
-        if (current->type == 2) {
-            ViewVar* view_var = (ViewVar*)current;
-            if (view_var->view_script) free(view_var->view_script);
-            // The target_var is handled by delvar's ref_count logic.
-            // If the target_var's ref_count is still > 0, it won't be freed here.
-            // This reflects the original code's potential memory management quirks.
-        }
-        free(current);
-        current = next;
-    }
-
     return 0;
 }

@@ -1,395 +1,396 @@
-#include <stdio.h>
-#include <stdlib.h> // For atoi, abs, exit
-#include <string.h> // For strlen, memset
-#include <stdbool.h> // For bool type
+#include <stdio.h>  // For printf, stdin, fgets
+#include <stdlib.h> // For exit, abs, atoi
+#include <string.h> // For memset, strlen
 
-// Global board representation
-char board[8][8];
-char current_team = 1; // 1 for White, 0 for Black
+// Global variables
+char ptr_array[64]; // 8x8 board, indexed as ptr_array[row + col * 8]
+char current_team = 1; // 1 for White, 0 for Black (as per original logic with '\x01' and '\0')
 
-// Function prototypes for functions defined later
+// Function declarations (to avoid implicit declaration warnings)
+int getColor(char piece);
+void transmit(int fd, const void *buf, size_t count, int flags);
 void displayboard(void);
-char getPiece(int row, int col);
-void swap(int r1, int c1, int r2, int c2);
+void initboard(void);
+char getPiece(int col, int row);
+int checkNoCollision(int src_col, int src_row, int dest_col, int dest_row);
+void swap(int src_col, int src_row, int dest_col, int dest_row);
+int verifyFormat(char *input_buffer, int len);
+int receive(int fd, char *buf, size_t max_len, int *actual_len_ptr);
+int parseUserInput(int *coords);
 
-// Mock external functions
-// In a real system, these would be linked from a library or implemented elsewhere.
-// For compilation and basic functionality, we'll provide simple versions.
-void transmit(int fd, const char *buf, size_t count, int flags) {
-    // Assuming it's meant to print a single character from the board
-    if (count == 1) {
-        putchar(*buf);
+// Function: getColor
+int getColor(char piece) {
+    if ((piece >= 'a') && (piece <= 'f')) { // White pieces ('a' to 'f')
+        return 1;
+    } else if ((piece >= 'g') && (piece <= 'l')) { // Black pieces ('g' to 'l')
+        return 0;
+    } else {
+        return 0x2e; // '.' (empty spot)
     }
 }
 
-// Emulate receive to read from stdin
-// Returns 0 on success (read something), -1 on error (or if no input, like EOF)
-int receive(int fd, char *buf, size_t count, int *read_len) {
-    if (fgets(buf, count, stdin) != NULL) {
-        *read_len = strlen(buf);
-        if (*read_len > 0 && buf[*read_len - 1] == '\n') {
-            buf[*read_len - 1] = '\0'; // Remove newline
-            *read_len -= 1;
+// Dummy transmit function to simulate printing a character.
+// The original code uses transmit(0, ptr, 1, 0) to print a char.
+void transmit(int fd, const void *buf, size_t count, int flags) {
+    if (count > 0 && buf != NULL) {
+        printf("%c", *(char*)buf);
+    }
+}
+
+// Function: displayboard
+void displayboard(void) {
+    for (int row = 7; row >= 0; --row) {
+        for (int col = 0; col < 8; ++col) {
+            transmit(0, &ptr_array[row + col * 8], 1, 0);
+        }
+        printf("\n");
+    }
+}
+
+// Function: initboard
+void initboard(void) {
+    for (int row = 0; row < 8; ++row) {
+        for (int col = 0; col < 8; ++col) {
+            ptr_array[row + col * 8] = '.'; // 0x2e
+        }
+    }
+    // Row 0 (White pieces)
+    ptr_array[0 + 0 * 8] = 'd'; // King?
+    ptr_array[0 + 1 * 8] = 'b'; // Knight?
+    ptr_array[0 + 2 * 8] = 'c'; // Bishop?
+    ptr_array[0 + 3 * 8] = 'f'; // Queen?
+    ptr_array[0 + 4 * 8] = 'e'; // King?
+    ptr_array[0 + 5 * 8] = 'c'; // Bishop?
+    ptr_array[0 + 6 * 8] = 'b'; // Knight?
+    ptr_array[0 + 7 * 8] = 'd'; // Rook?
+    // Row 1 (White pawns)
+    for (int col = 0; col < 8; ++col) {
+        ptr_array[1 + col * 8] = 'a';
+    }
+    // Row 6 (Black pawns)
+    for (int col = 0; col < 8; ++col) {
+        ptr_array[6 + col * 8] = 'g';
+    }
+    // Row 7 (Black pieces)
+    ptr_array[7 + 0 * 8] = 'j'; // Rook?
+    ptr_array[7 + 1 * 8] = 'h'; // Knight?
+    ptr_array[7 + 2 * 8] = 'i'; // Bishop?
+    ptr_array[7 + 3 * 8] = 'l'; // Queen?
+    ptr_array[7 + 4 * 8] = 'k'; // King?
+    ptr_array[7 + 5 * 8] = 'i'; // Bishop?
+    ptr_array[7 + 6 * 8] = 'h'; // Knight?
+    ptr_array[7 + 7 * 8] = 'j'; // Rook?
+}
+
+// Function: getPiece
+char getPiece(int col, int row) {
+    return ptr_array[row + col * 8];
+}
+
+// Function: checkNoCollision
+int checkNoCollision(int src_col, int src_row, int dest_col, int dest_row) {
+    char src_piece = getPiece(src_col, src_row);
+    char dest_piece = getPiece(dest_col, dest_row);
+
+    // Knights ('b' and 'h') can jump over pieces. Only check destination color.
+    if (src_piece == 'b' || src_piece == 'h') {
+        return (getColor(src_piece) != getColor(dest_piece)); // 1 if different colors, 0 if same
+    }
+
+    // For other pieces, check if source and destination are the same color.
+    // If they are, it's an invalid capture/move.
+    if (getColor(src_piece) == getColor(dest_piece)) {
+        return 0;
+    }
+
+    // Array to store (col, row) pairs of path squares. Max 7 intermediate squares + 1 dest = 8 pairs.
+    int path_coords[16]; // Stores col, row, col, row...
+    int path_len = 0;    // Number of (col, row) pairs added to path_coords
+
+    if (src_col == dest_col) { // Vertical move
+        int row_step = (dest_row > src_row) ? 1 : -1;
+        for (int r = src_row + row_step; (row_step > 0) ? (r <= dest_row) : (r >= dest_row); r += row_step) {
+            path_coords[path_len * 2] = src_col;
+            path_coords[path_len * 2 + 1] = r;
+            path_len++;
+        }
+    } else if (src_row == dest_row) { // Horizontal move
+        int col_step = (dest_col > src_col) ? 1 : -1;
+        for (int c = src_col + col_step; (col_step > 0) ? (c <= dest_col) : (c >= dest_col); c += col_step) {
+            path_coords[path_len * 2] = c;
+            path_coords[path_len * 2 + 1] = src_row;
+            path_len++;
+        }
+    } else { // Diagonal move
+        int col_diff = abs(dest_col - src_col);
+        int row_diff = abs(dest_row - src_row);
+
+        if (col_diff == row_diff) { // Valid diagonal
+            int col_step = (dest_col > src_col) ? 1 : -1;
+            int row_step = (dest_row > src_row) ? 1 : -1;
+
+            for (int i = 1; i <= col_diff; ++i) { // Iterate up to and including destination
+                path_coords[path_len * 2] = src_col + i * col_step;
+                path_coords[path_len * 2 + 1] = src_row + i * row_step;
+                path_len++;
+            }
+        }
+        // If not straight or diagonal, path_len remains 0, which means no intermediate collision check.
+        // This relies on performMove to validate the move type.
+    }
+
+    // Check for intermediate collisions (excluding the destination square).
+    // The destination square is the last element in path_coords.
+    for (int i = 0; i < path_len - 1; ++i) { // Iterate up to the square *before* the destination
+        char piece_on_path = getPiece(path_coords[i * 2], path_coords[i * 2 + 1]);
+        if (piece_on_path != '.') {
+            return 0; // Collision detected on an intermediate square
+        }
+    }
+
+    return 1; // No intermediate collisions
+}
+
+// Function: performMove
+int performMove(int src_col, int src_row, int dest_col, int dest_row) {
+    char piece = getPiece(src_col, src_row);
+
+    // 1. Check if the piece belongs to the current team
+    int piece_color = getColor(piece);
+    if (current_team == 1) { // White's turn
+        if (piece_color == 0) return 0; // Trying to move a black piece
+    } else { // Black's turn
+        if (piece_color == 1) return 0; // Trying to move a white piece
+    }
+
+    // 2. Check if destination is within board bounds and source is not empty
+    if (dest_col < 0 || dest_col >= 8 || dest_row < 0 || dest_row >= 8 || piece == '.') {
+        return 0;
+    }
+
+    // 3. Check specific piece move rules
+    int valid_move_shape = 0; // Flag to indicate if the move is geometrically valid
+
+    switch (piece) {
+        case 'a': // White Pawn
+            if (src_col == dest_col && dest_row == src_row + 1) { // Forward one step
+                valid_move_shape = 1;
+            }
+            break;
+        case 'g': // Black Pawn
+            if (src_col == dest_col && dest_row == src_row - 1) { // Forward one step
+                valid_move_shape = 1;
+            }
+            break;
+        case 'b': // White Knight
+        case 'h': // Black Knight
+            // Knight L-shape moves: (2,1) or (1,2) in any direction
+            int col_diff_knight = abs(dest_col - src_col);
+            int row_diff_knight = abs(dest_row - src_row);
+            if ((col_diff_knight == 2 && row_diff_knight == 1) ||
+                (col_diff_knight == 1 && row_diff_knight == 2)) {
+                valid_move_shape = 1;
+            }
+            break;
+        case 'c': // White Bishop
+        case 'i': // Black Bishop
+            // Bishop moves diagonally
+            if (abs(dest_col - src_col) == abs(dest_row - src_row)) {
+                valid_move_shape = 1;
+            }
+            break;
+        case 'd': // White Rook
+        case 'j': // Black Rook
+            // Rook moves horizontally or vertically
+            if (src_col == dest_col || src_row == dest_row) {
+                valid_move_shape = 1;
+            }
+            break;
+        case 'e': // White King
+        case 'k': // Black King
+            // King moves one square in any direction
+            if (abs(dest_col - src_col) < 2 && abs(dest_row - src_row) < 2) {
+                valid_move_shape = 1;
+            }
+            break;
+        case 'f': // White Queen
+        case 'l': // Black Queen
+            // Queen moves horizontally, vertically, or diagonally
+            if (src_col == dest_col || src_row == dest_row ||
+                abs(dest_col - src_col) == abs(dest_row - src_row)) {
+                valid_move_shape = 1;
+            }
+            break;
+        default:
+            // Unknown piece or invalid piece character
+            return 0;
+    }
+
+    if (!valid_move_shape) {
+        return 0;
+    }
+
+    // 4. Check for collisions on the path (handled by checkNoCollision)
+    if (!checkNoCollision(src_col, src_row, dest_col, dest_row)) {
+        return 0;
+    }
+
+    // 5. If all checks pass, perform the swap (as per original snippet logic)
+    swap(src_col, src_row, dest_col, dest_row);
+    return 1;
+}
+
+// Function: swap
+void swap(int src_col, int src_row, int dest_col, int dest_row) {
+    char temp_piece = ptr_array[dest_row + dest_col * 8]; // Save dest piece
+    ptr_array[dest_row + dest_col * 8] = ptr_array[src_row + src_col * 8]; // Move source to dest
+    ptr_array[src_row + src_col * 8] = temp_piece; // Move saved dest piece to source
+}
+
+// Function: verifyFormat
+int verifyFormat(char *input_buffer, int len) {
+    // Expected format: "X,Y X,Y" where X,Y are single digits '0'-'9'
+    // Total length 7 (digit,comma,digit,space,digit,comma,digit)
+    if (len != 7) {
+        return 0;
+    }
+
+    // Ensure null termination for safety with atoi, although specific char checks precede.
+    input_buffer[len] = '\0';
+
+    // Check characters at specific positions
+    if (!('0' <= input_buffer[0] && input_buffer[0] <= '9')) return 0;
+    if (input_buffer[1] != ',') return 0;
+    if (!('0' <= input_buffer[2] && input_buffer[2] <= '9')) return 0;
+    if (input_buffer[3] != ' ') return 0;
+    if (!('0' <= input_buffer[4] && input_buffer[4] <= '9')) return 0;
+    if (input_buffer[5] != ',') return 0;
+    if (!('0' <= input_buffer[6] && input_buffer[6] <= '9')) return 0;
+
+    return 1;
+}
+
+// Dummy receive function to simulate reading a line from stdin.
+// It reads a line from stdin into buf, up to max_len.
+// It stores the actual length read (excluding newline, if present) into *actual_len_ptr.
+// Returns 0 on success, -1 on error.
+int receive(int fd, char *buf, size_t max_len, int *actual_len_ptr) {
+    // max_len is the buffer capacity *after* buf, so fgets should use max_len + 1 for null terminator.
+    if (fgets(buf, max_len + 1, stdin) != NULL) {
+        size_t len = strlen(buf);
+        if (len > 0 && buf[len - 1] == '\n') {
+            buf[len - 1] = '\0'; // Remove newline
+            *actual_len_ptr = len - 1;
+        } else {
+            *actual_len_ptr = len;
         }
         return 0; // Success
     }
     return -1; // Error or EOF
 }
 
-void _terminate(void) {
-    exit(0);
-}
-
-// Function: getColor
-// Determines the color of a piece based on its character.
-// Returns 1 for white (g-l), 0 for black (a-f), 0x2e ('.') for empty.
-int getColor(char piece) {
-    if ((piece >= 'a') && (piece <= 'f')) {
-        return 0; // Black pieces
-    } else if ((piece >= 'g') && (piece <= 'l')) {
-        return 1; // White pieces
-    }
-    return 0x2e; // Empty square ('.')
-}
-
-// Function: displayboard
-void displayboard(void) {
-    printf("  0 1 2 3 4 5 6 7\n");
-    printf(" -----------------\n");
-    for (int row = 7; row >= 0; row--) { // Iterate rows from top (7) to bottom (0)
-        printf("%d|", row);
-        for (int col = 0; col < 8; col++) { // Iterate columns from left (0) to right (7)
-            transmit(0, &board[row][col], 1, 0); // Print character
-            printf(" ");
-        }
-        printf("|\n");
-    }
-    printf(" -----------------\n");
-}
-
-// Function: initboard
-void initboard(void) {
-    // Initialize all squares to empty
-    for (int row = 0; row < 8; row++) {
-        for (int col = 0; col < 8; col++) {
-            board[row][col] = '.'; // 0x2e is ASCII for '.'
-        }
-    }
-
-    // Initialize specific pieces as per original snippet's logic
-    // This setup is unusual for chess, but strictly follows the provided indices.
-    // Indices are [col + row * 8] effectively, so board[row][col] is accessed as board_array[row*8 + col]
-    // The original code sets specific columns across all rows.
-    
-    // Column 0
-    board[0][0] = 'd'; // Black Rook
-    board[1][0] = 'b'; // Black Knight
-    board[2][0] = 'c'; // Black Bishop
-    board[3][0] = 'f'; // Black Queen
-    board[4][0] = 'e'; // Black King
-    board[5][0] = 'c'; // Black Bishop
-    board[6][0] = 'b'; // Black Knight
-    board[7][0] = 'd'; // Black Rook
-
-    // Column 1
-    board[0][1] = 'a'; // Black Pawn
-    board[1][1] = 'a'; // Black Pawn
-    board[2][1] = 'a'; // Black Pawn
-    board[3][1] = 'a'; // Black Pawn
-    board[4][1] = 'a'; // Black Pawn
-    board[5][1] = 'a'; // Black Pawn
-    board[6][1] = 'a'; // Black Pawn
-    board[7][1] = 'a'; // Black Pawn
-
-    // Column 6
-    board[0][6] = 'g'; // White Pawn
-    board[1][6] = 'g'; // White Pawn
-    board[2][6] = 'g'; // White Pawn
-    board[3][6] = 'g'; // White Pawn
-    board[4][6] = 'g'; // White Pawn
-    board[5][6] = 'g'; // White Pawn
-    board[6][6] = 'g'; // White Pawn
-    board[7][6] = 'g'; // White Pawn
-
-    // Column 7
-    board[0][7] = 'j'; // White Rook
-    board[1][7] = 'h'; // White Knight
-    board[2][7] = 'i'; // White Bishop
-    board[3][7] = 'l'; // White Queen
-    board[4][7] = 'k'; // White King
-    board[5][7] = 'i'; // White Bishop
-    board[6][7] = 'h'; // White Knight
-    board[7][7] = 'j'; // White Rook
-}
-
-// Function: getPiece
-char getPiece(int row, int col) {
-    // Ensure coordinates are within bounds, return '.' if out of bounds
-    if (row < 0 || row >= 8 || col < 0 || col >= 8) {
-        return '.';
-    }
-    return board[row][col];
-}
-
-// Function: checkNoCollision
-// Checks for collisions between (r1, c1) and (r2, c2)
-// Returns 1 if no collision, 0 if collision.
-int checkNoCollision(int r1, int c1, int r2, int c2) {
-    char piece_at_start = getPiece(r1, c1);
-    char piece_at_dest = getPiece(r2, c2);
-
-    // Knights ('b', 'h') jump over pieces, so only check destination for collision
-    if (piece_at_start == 'b' || piece_at_start == 'h') {
-        return (getColor(piece_at_start) != getColor(piece_at_dest));
-    }
-
-    // For all other pieces, if destination has a piece of the same color, it's a collision
-    if (getColor(piece_at_start) == getColor(piece_at_dest)) {
-        return 0;
-    }
-
-    // Array to store intermediate path coordinates (max path length 6 for 8x8 board)
-    int path_coords[6][2];
-    int path_length = 0;
-
-    int dr = r2 - r1; // Delta row
-    int dc = c2 - c1; // Delta col
-
-    if (dr == 0) { // Horizontal move
-        int step_c = (dc > 0) ? 1 : -1;
-        for (int c = c1 + step_c; c != c2; c += step_c) {
-            path_coords[path_length][0] = r1;
-            path_coords[path_length][1] = c;
-            path_length++;
-        }
-    } else if (dc == 0) { // Vertical move
-        int step_r = (dr > 0) ? 1 : -1;
-        for (int r = r1 + step_r; r != r2; r += step_r) {
-            path_coords[path_length][0] = r;
-            path_coords[path_length][1] = c1;
-            path_length++;
-        }
-    } else if (abs(dr) == abs(dc)) { // Diagonal move
-        int step_r = (dr > 0) ? 1 : -1;
-        int step_c = (dc > 0) ? 1 : -1;
-        int r = r1 + step_r;
-        int c = c1 + step_c;
-        while (r != r2) { // Loop until one step before destination
-            path_coords[path_length][0] = r;
-            path_coords[path_length][1] = c;
-            path_length++;
-            r += step_r;
-            c += step_c;
-        }
-    }
-
-    // Check intermediate squares for blockage
-    for (int i = 0; i < path_length; i++) {
-        if (getPiece(path_coords[i][0], path_coords[i][1]) != '.') {
-            return 0; // Path is blocked
-        }
-    }
-
-    return 1; // No collision or blockage
-}
-
-// Function: performMove
-// Attempts to perform a move from (r1, c1) to (r2, c2).
-// Returns 1 if move is successful, 0 otherwise.
-int performMove(int r1, int c1, int r2, int c2) {
-    // Boundary check for destination coordinates
-    if (r2 < 0 || r2 >= 8 || c2 < 0 || c2 >= 8) {
-        return 0;
-    }
-
-    char piece_at_start = getPiece(r1, c1);
-
-    // Check if the piece at the start position is empty
-    if (piece_at_start == '.') {
-        return 0;
-    }
-
-    // Check if the current player is moving their own piece
-    if (current_team == 1) { // White's turn
-        if (getColor(piece_at_start) == 0) { // Moving a black piece
-            return 0;
-        }
-    } else { // Black's turn
-        if (getColor(piece_at_start) == 1) { // Moving a white piece
-            return 0;
-        }
-    }
-
-    int dr_abs = abs(r2 - r1);
-    int dc_abs = abs(c2 - c1);
-
-    bool move_valid = false;
-
-    // Piece-specific move validation
-    if (piece_at_start == 'b' || piece_at_start == 'h') { // Knight
-        if ((dr_abs == 2 && dc_abs == 1) || (dr_abs == 1 && dc_abs == 2)) {
-            move_valid = true;
-        }
-    } else if (piece_at_start == 'a') { // Black Pawn (moves 1 col right)
-        if (r1 == r2 && c2 == c1 + 1) {
-            move_valid = true;
-        }
-    } else if (piece_at_start == 'g') { // White Pawn (moves 1 col left)
-        if (r1 == r2 && c2 == c1 - 1) {
-            move_valid = true;
-        }
-    } else if (piece_at_start == 'c' || piece_at_start == 'i') { // Bishop (diagonal)
-        if (dr_abs == dc_abs) {
-            move_valid = true;
-        }
-    } else if (piece_at_start == 'f' || piece_at_start == 'l') { // Queen (straight or diagonal)
-        if (dr_abs == dc_abs || r1 == r2 || c1 == c2) {
-            move_valid = true;
-        }
-    } else if (piece_at_start == 'e' || piece_at_start == 'k') { // King (one square any direction)
-        if (dr_abs < 2 && dc_abs < 2) {
-            move_valid = true;
-        }
-    } else if (piece_at_start == 'j' || piece_at_start == 'd') { // Rook (straight)
-        if (r1 == r2 || c1 == c2) {
-            move_valid = true;
-        }
-    }
-
-    if (!move_valid) {
-        return 0; // Invalid move for this piece type
-    }
-
-    // Check for collisions (path blockage and friendly fire)
-    if (checkNoCollision(r1, c1, r2, c2)) {
-        swap(r1, c1, r2, c2);
-        return 1;
-    }
-
-    return 0; // Collision detected or invalid move
-}
-
-// Function: swap
-// Swaps the pieces at (r1, c1) and (r2, c2).
-void swap(int r1, int c1, int r2, int c2) {
-    char temp_piece = board[r2][c2];
-    board[r2][c2] = board[r1][c1];
-    board[r1][c1] = temp_piece;
-}
-
-// Function: verifyFormat
-// Verifies the input string format "D,D D,D"
-// param_1: input string (e.g., "1,2 3,4")
-// param_2: length of the input string
-// Returns 1 if format is valid, 0 otherwise.
-int verifyFormat(char *input_str, int len) {
-    // The original code null-terminates the string at the given length.
-    // For fgets, this is usually handled, but for safety:
-    if (len < 0 || len >= 15) { // Max 7 chars + null for D,D D,D, or 1 for '9', 3 for '666'
-        return 0;
-    }
-    input_str[len] = '\0';
-
-    // Check for "D,D D,D" format (length 7)
-    if (len == 7 &&
-        (input_str[0] >= '0' && input_str[0] <= '9') &&
-        (input_str[1] == ',') &&
-        (input_str[2] >= '0' && input_str[2] <= '9') &&
-        (input_str[3] == ' ') &&
-        (input_str[4] >= '0' && input_str[4] <= '9') &&
-        (input_str[5] == ',') &&
-        (input_str[6] >= '0' && input_str[6] <= '9')) {
-        return 1;
-    }
-    return 0;
-}
-
 // Function: parseUserInput
-// Reads and parses user input for moves or commands.
-// param_1: An array of 4 ints to store start_row, start_col, end_row, end_col.
-// Returns: 1 for valid move, 2 for '9' (display board), 3 for '666' (quit), 0 for invalid input, -1 for read error.
-int parseUserInput(int *move_coords) {
-    char input_buffer[16]; // Buffer for input (max "D,D D,D\n\0" is 9 chars)
-    int input_len = 0;
+int parseUserInput(int *coords) {
+    char input_buffer[16]; // Buffer to hold user input
+    int bytes_read_len = 0;
+    int receive_status;
 
-    // Read input from stdin
-    if (receive(0, input_buffer, sizeof(input_buffer) - 1, &input_len) == -1) {
-        return -1; // Read error
+    memset(input_buffer, 0, sizeof(input_buffer)); // Clear the buffer
+
+    // Read input into input_buffer[1] onwards, leaving input_buffer[0] unused.
+    // This matches the original decompiler output's indexing (acStack_2c + 1).
+    receive_status = receive(0, input_buffer + 1, 0xe, &bytes_read_len);
+
+    if (receive_status == -1) { // If receive failed (e.g., EOF)
+        return -1;
     }
 
-    // Handle special commands
-    if (input_len == 1 && input_buffer[0] == '9') {
-        return 2; // Display board
-    }
-    if (input_len == 3 && strcmp(input_buffer, "666") == 0) {
-        return 3; // Quit game
-    }
-
-    // Verify format for a move
-    if (input_len != 7 || !verifyFormat(input_buffer, input_len)) {
-        printf("Incorrect input format.\n");
-        return 0; // Invalid input
-    }
-
-    // Parse coordinates
-    move_coords[0] = input_buffer[0] - '0'; // start_row
-    move_coords[1] = input_buffer[2] - '0'; // start_col
-    move_coords[2] = input_buffer[4] - '0'; // end_row
-    move_coords[3] = input_buffer[6] - '0'; // end_col
-
-    // Basic validation for coordinates
-    if (move_coords[0] < 0 || move_coords[0] >= 8 ||
-        move_coords[1] < 0 || move_coords[1] >= 8 ||
-        move_coords[2] < 0 || move_coords[2] >= 8 ||
-        move_coords[3] < 0 || move_coords[3] >= 8) {
-        printf("Coordinates out of board range (0-7).\n");
+    // Handle special commands based on input length and content
+    if (bytes_read_len == 1) {
+        if (input_buffer[1] == '9') { // '9' command to display board
+            return 2;
+        }
+    } else if (bytes_read_len == 3) {
+        if (input_buffer[1] == '6' && input_buffer[2] == '6' && input_buffer[3] == '6') { // '666' command to quit
+            return 3;
+        }
+    } else if (bytes_read_len != 7) { // Expected move format length "X,Y X,Y"
+        printf("incorrect input\n");
         return 0;
     }
-    
-    return 1; // Valid move input
+
+    // Verify move format "X,Y X,Y"
+    // Pass input_buffer + 1 as the start of the string to verifyFormat
+    if (!verifyFormat(input_buffer + 1, bytes_read_len)) {
+        printf("incorrect input\n");
+        return 0;
+    }
+
+    // Parse coordinates (src_col, src_row, dest_col, dest_row)
+    // input_buffer + 1 points to the first digit
+    // input_buffer + 3 points to the second digit
+    // input_buffer + 5 points to the third digit
+    // input_buffer + 7 points to the fourth digit
+    coords[0] = atoi(input_buffer + 1); // src_col
+    coords[1] = atoi(input_buffer + 3); // src_row
+    coords[2] = atoi(input_buffer + 5); // dest_col
+    coords[3] = atoi(input_buffer + 7); // dest_row
+
+    return 1; // Successfully parsed move
 }
 
 // Function: main
 int main(void) {
-    int move_info[4]; // Stores start_row, start_col, end_row, end_col
-    int parse_result;
+    int move_coords[4]; // Array to store parsed coordinates (src_col, src_row, dest_col, dest_row)
+    void (*display_board_func_ptr)(void) = displayboard; // Function pointer to displayboard
+    int parse_result; // Result from parseUserInput
 
     initboard();
-    displayboard();
+    display_board_func_ptr(); // Initial board display
 
-    while (true) {
-        while (true) {
-            if (current_team == 1) { // White
-                printf("WHITE: ");
-            } else { // Black
-                printf("BLACK: ");
-            }
-
-            parse_result = parseUserInput(move_info);
-            if (parse_result != 0) { // If input is valid or a special command
-                break;
-            }
-            // If parse_result is 0, it means incorrect format, so loop again.
-            // parseUserInput already prints "Incorrect input format."
+    while (1) {
+        if (current_team == 1) { // White's turn
+            printf("WHITE: ");
+        } else { // Black's turn
+            printf("BLACK: ");
         }
 
-        if (parse_result == 2) { // '9' command
-            displayboard();
-        } else if (parse_result == 3) { // '666' command
+        parse_result = parseUserInput(move_coords);
+
+        if (parse_result == 0) { // Incorrect format or invalid input
+            printf("Not a legal move format\n");
+            continue; // Go back to the start of the loop for new input
+        }
+
+        if (parse_result == 2) { // '9' command to display board
+            display_board_func_ptr();
+            continue; // Go back to the start of the loop for new input
+        }
+
+        if (parse_result == 3) { // '666' command to quit
             printf("good game\n");
-            _terminate();
-        } else if (parse_result == -1) { // Error reading input
-            printf("Input error, terminating.\n");
-            _terminate();
-        } else { // parse_result == 1, valid move input
-            if (performMove(move_info[0], move_info[1], move_info[2], move_info[3]) == 0) {
-                printf("Not a legal move\n");
+            exit(0); // Terminate program
+        }
+
+        if (parse_result == -1) { // Error from receive (e.g., EOF)
+            exit(0); // Terminate program
+        }
+
+        // Attempt to perform the move
+        int move_successful = performMove(move_coords[0], move_coords[1], move_coords[2], move_coords[3]);
+
+        if (move_successful == 0) {
+            printf("Not a legal move\n");
+        } else {
+            printf("Move successful\n");
+            // Switch turns
+            if (current_team == 1) {
+                current_team = 0;
             } else {
-                printf("move done\n");
-                // Switch team
-                current_team = (current_team == 1) ? 0 : 1;
+                current_team = 1;
             }
         }
     }
-    return 0; // Should not be reached due to _terminate()
+
+    return 0; // Should not be reached in this infinite loop
 }

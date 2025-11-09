@@ -1,99 +1,139 @@
-#include <stdio.h>   // For standard I/O if needed, though transmit_all/receive_delim replace direct use
-#include <string.h>  // For strlen, memset
-#include <stdlib.h>  // For exit
+#include <stdio.h>    // For puts, printf, getchar, fflush
+#include <string.h>   // For strlen, memset
+#include <stdlib.h>   // For exit
+#include <stdbool.h>  // For bool
+#include <unistd.h>   // For read, write, STDIN_FILENO, STDOUT_FILENO
 
-// Declare external functions.
-// These are assumed to be provided by the environment or a linked library.
-// transmit_all: Writes 'len' bytes from 'buf' to file descriptor 'fd'. Returns 0 on success, non-zero on error.
-int transmit_all(int fd, const char *buf, int len);
-// receive_delim: Reads into 'buf' from file descriptor 'fd' up to 'max_len' bytes or until 'delimiter' is found.
-//                Null-terminates 'buf'. Returns 0 on success, non-zero on error.
-int receive_delim(int fd, char *buf, int max_len, char delimiter);
-// _terminate: Exits the program with the given status.
-void _terminate(int status);
+// Stub for transmit_all
+// Assumes it writes to a given file descriptor (e.g., STDOUT_FILENO)
+// Returns 0 on success, -1 on failure
+int transmit_all(int fd, const char *message, size_t length) {
+    if (message == NULL) {
+        return -1;
+    }
+    ssize_t bytes_written = write(fd, message, length);
+    if (bytes_written == -1 || (size_t)bytes_written != length) {
+        return -1; // Error during write or incomplete write
+    }
+    return 0; // Success
+}
+
+// Stub for receive_delim
+// Assumes it reads from a given file descriptor (e.g., STDIN_FILENO)
+// into a buffer, up to max_len, until delimiter or EOF.
+// Returns 0 on success, -1 on failure (EOF or read error).
+// The delimiter is included in the buffer if read.
+int receive_delim(int fd, char *buffer, size_t max_len, char delimiter) {
+    if (buffer == NULL || max_len == 0) {
+        return -1;
+    }
+
+    size_t i = 0;
+    char c;
+    ssize_t bytes_read;
+
+    while (i < max_len - 1) { // Leave space for null terminator
+        bytes_read = read(fd, &c, 1);
+        if (bytes_read == -1) {
+            return -1; // Read error
+        }
+        if (bytes_read == 0) { // EOF
+            break;
+        }
+        buffer[i++] = c;
+        if (c == delimiter) {
+            break;
+        }
+    }
+    buffer[i] = '\0'; // Null-terminate the string
+
+    if (i == 0 && bytes_read == 0) { // Nothing read and EOF encountered
+        return -1;
+    }
+    return 0; // Success
+}
 
 // Function: check
 int check(void) {
-    char input_buffer[64];
-    int is_palindrome = 1; // 1: true, 0: false, -1: error
-    int len;
-    int i;
-
-    // Initialize buffer to nulls to ensure clean state
+    char input_buffer[64]; // Max 63 characters + null terminator
+    
+    // Clear the buffer
     memset(input_buffer, 0, sizeof(input_buffer));
 
-    // Receive input from stdin (fd 0), delimited by newline (ASCII 10).
-    // Max length is sizeof(input_buffer) - 1 to ensure space for null terminator.
-    if (receive_delim(0, input_buffer, sizeof(input_buffer) - 1, 10) != 0) {
-        return -1; // Indicate an error in receiving input
+    // Receive input from stdin (fd 0), up to sizeof(input_buffer) - 1 characters, until newline (10)
+    // The original code used 0x80 (128) as max_len with a 64-byte buffer, which is a bug.
+    // Fixed to use sizeof(input_buffer) to prevent buffer overflow.
+    if (receive_delim(STDIN_FILENO, input_buffer, sizeof(input_buffer), '\n') != 0) {
+        return -1; // Indicate error or EOF
     }
 
-    // Get the length of the string after receiving
-    len = strlen(input_buffer);
+    size_t len = strlen(input_buffer);
 
-    // Palindrome check: compare characters from start and end towards the middle.
-    // The original decompiler output for array indexing was likely incorrect;
-    // this implements a standard, correct palindrome check.
-    for (i = 0; i < len / 2; ++i) {
-        if (input_buffer[i] != input_buffer[len - 1 - i]) {
-            is_palindrome = 0; // Not a palindrome
-            break;             // No need to check further
+    // Palindrome check logic
+    // The original code includes the newline character in the palindrome check if present.
+    // This implementation retains that behavior.
+    bool is_palindrome = true;
+    if (len > 0) { // Only check if string is not empty
+        for (size_t i = 0; i < len / 2; ++i) {
+            if (input_buffer[i] != input_buffer[len - 1 - i]) {
+                is_palindrome = false;
+                break;
+            }
+        }
+    } else {
+        // An empty string is typically considered a palindrome.
+        // The original loop for length 0 would set local_10 to -1, then loop wouldn't run,
+        // local_18 (result) would remain 1.
+        is_palindrome = true;
+    }
+
+    // Easter egg check
+    // If the first character is '^' and transmit_all fails, terminate.
+    if (len > 0 && input_buffer[0] == '^') {
+        if (transmit_all(STDOUT_FILENO, "\n\nEASTER EGG!\n\n", strlen("\n\nEASTER EGG!\n\n")) != 0) {
+            exit(0); // Original code called _terminate(0) on success of transmit_all for easter egg.
+                     // The condition was `(iVar1 = transmit_all(1, ..., 0xf), iVar1 != 0)`
+                     // which means exit if transmit_all fails.
         }
     }
 
-    // Easter egg check: if the first character is '^'
-    // The original logic terminated if transmit_all failed. Keeping this behavior.
-    if (input_buffer[0] == '^') {
-        if (transmit_all(1, "\n\nEASTER EGG!\n\n", 0xf) != 0) {
-            _terminate(0); // Terminate if the Easter Egg message transmission fails
-        }
-    }
-
-    return is_palindrome;
+    return is_palindrome ? 1 : 0;
 }
 
 // Function: main
 int main(void) {
-    int check_result;
-
-    // Display welcome message
-    // fd 1 is stdout, 0x1f (31) is the length of the string
-    if (transmit_all(1, "\nWelcome to Palindrome Finder\n\n", 0x1f) != 0) {
-        _terminate(0); // Terminate if welcome message transmission fails
+    // Initial welcome message
+    if (transmit_all(STDOUT_FILENO, "\nWelcome to Palindrome Finder\n\n", strlen("\nWelcome to Palindrome Finder\n\n")) != 0) {
+        exit(1); // Exit on transmit error
     }
 
-    // Main program loop: repeatedly prompt for and check palindromes
-    while (1) {
-        // Prompt user for input
-        // fd 1 is stdout, 0x25 (37) is the length of the string
-        if (transmit_all(1, "\tPlease enter a possible palindrome: ", 0x25) != 0) {
-            _terminate(0); // Terminate if prompt transmission fails
+    // Main loop for palindrome finding, replacing the original goto
+    while (true) {
+        // Prompt for input
+        if (transmit_all(STDOUT_FILENO, "\tPlease enter a possible palindrome: ", strlen("\tPlease enter a possible palindrome: ")) != 0) {
+            exit(1); // Exit on transmit error
         }
 
-        // Call the check function to process input and determine if it's a palindrome
-        check_result = check();
+        int check_result = check();
 
-        // Handle the result from the check function
         if (check_result == -1) {
-            // An error occurred during input reception in check()
-            return 0; // Exit main gracefully as requested by original code's `return 0;` for -1
-        } else if (check_result == 0) {
-            // The input is not a palindrome
-            // fd 1 is stdout, 0x21 (33) is the length of the string
-            if (transmit_all(1, "\t\tNope, that\'s not a palindrome\n\n", 0x21) != 0) {
-                _terminate(0); // Terminate if message transmission fails
+            // Error during receive_delim or EOF encountered
+            return 0; // Original code returned 0 here, indicating a graceful exit after input error.
+        }
+
+        if (check_result == 0) {
+            // Not a palindrome
+            if (transmit_all(STDOUT_FILENO, "\t\tNope, that's not a palindrome\n\n", strlen("\t\tNope, that's not a palindrome\n\n")) != 0) {
+                exit(1); // Exit on transmit error
             }
         } else { // check_result == 1
-            // The input is a palindrome
-            // fd 1 is stdout, 0x1d (29) is the length of the string
-            if (transmit_all(1, "\t\tYes, that\'s a palindrome!\n\n", 0x1d) != 0) {
-                _terminate(0); // Terminate if message transmission fails
+            // Is a palindrome
+            if (transmit_all(STDOUT_FILENO, "\t\tYes, that's a palindrome!\n\n", strlen("\t\tYes, that's a palindrome!\n\n")) != 0) {
+                exit(1); // Exit on transmit error
             }
         }
-        // Loop continues for the next palindrome check
+        // The loop continues indefinitely as per the original do-while(true) with goto.
     }
-
-    // This part of the code is unreachable because of the infinite while(1) loop,
-    // but a main function typically returns 0 on successful termination.
-    return 0;
+    // This part is unreachable due to while(true)
+    // return 0;
 }

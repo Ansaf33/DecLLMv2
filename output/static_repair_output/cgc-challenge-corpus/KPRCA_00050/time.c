@@ -1,80 +1,105 @@
-#include <stdint.h> // For uint32_t, uint64_t, UINT32_MAX
-#include <stdbool.h> // For bool
+#include <stdint.h> // For uint32_t
+#include <stdio.h>  // For main function and potential testing
 
-// Assuming swap32 is a byte swap, often __builtin_bswap32 for GCC/Clang
-// On systems where __builtin_bswap32 is not available, a manual implementation or ntohl/htonl would be needed.
-// For Linux compilable C code, __builtin_bswap32 is common.
-#define swap32(x) __builtin_bswap32(x)
+// Global variables (initialized for compilation)
+uint32_t DAT_0001600c = 0;
+uint32_t current_time = 0;
 
-// Global variables (assuming these are defined elsewhere or need to be defined here)
-// Marked as static to restrict their scope to this compilation unit, as is common for decompiled globals.
-static uint32_t current_time = 0;
-static uint32_t DAT_0001600c = 0;
-
-// CARRY4 macro equivalent for unsigned 32-bit addition
-// Returns 1 if (a + b) results in a carry, 0 otherwise.
-#define CARRY4_MACRO(a, b) ((uint32_t)(a) + (uint32_t)(b) < (uint32_t)(a))
-
-// Helper function to encapsulate the complex fixed-point multiplication high-part calculation.
-// This function directly translates the decompiled arithmetic pattern.
-static inline uint32_t calculate_complex_high_part(uint32_t val) {
-    // (uint)(val * 0x20 < val) checks for overflow of val * 32.
-    // If val * 32 overflows, (val * 32 < val) is true (1), otherwise false (0).
-    uint32_t overflow_check_32 = (val > UINT32_MAX / 32) ? 1 : 0;
-
-    // CARRY4(val * 0x7c, val) checks for carry in (val * 124) + val = val * 125.
-    uint32_t carry_check_125 = CARRY4_MACRO(val * 124, val);
-
-    return ((((val >> 27) - overflow_check_32) * 4 | (val * 31) >> 30) + carry_check_125) * 8 | (val * 125) >> 29;
+// Helper function for byte swapping
+// Uses GCC/Clang built-in for efficiency if available, otherwise a portable manual swap.
+#if defined(__GNUC__) || defined(__clang__)
+#define swap32(val) __builtin_bswap32(val)
+#else
+static inline uint32_t swap32(uint32_t val) {
+    return ((val << 24) & 0xFF000000) |
+           ((val << 8) & 0x00FF0000) |
+           ((val >> 8) & 0x0000FF00) |
+           ((val >> 24) & 0x000000FF);
 }
+#endif
+
+// CARRY4 macro - checks for carry when adding two unsigned 32-bit integers.
+// Returns 1 if (a+b) overflows, 0 otherwise.
+#define CARRY4(a, b) (((uint32_t)(a) + (uint32_t)(b)) < (uint32_t)(a))
 
 // Function: handle_msg_time
 uint32_t handle_msg_time(uint32_t *param_1, uint32_t param_2) {
     if (param_2 < 8) {
-        return 0; // Input too short
+        return 0;
     }
 
-    uint32_t input_low_ts = swap32(param_1[0]);
-    uint32_t input_high_ts = swap32(param_1[1]);
+    uint32_t val_param1_0 = swap32(param_1[0]);
+    uint32_t val_param1_1 = swap32(param_1[1]);
 
-    // Calculate the high 32-bit part of a custom multiplication of input_low_ts
-    uint32_t uVar4 = calculate_complex_high_part(input_low_ts);
+    // Calculate uVar4 based on val_param1_0
+    uint32_t uVar4 = ((((val_param1_0 >> 27) - (uint32_t)(val_param1_0 * 32 < val_param1_0)) * 4 | ((val_param1_0 * 31) >> 30)) +
+                     CARRY4(val_param1_0 * 124, val_param1_0)) * 8 | ((val_param1_0 * 125) >> 29);
 
-    // Perform 64-bit addition: (input_high_ts * 1000) + uVar4
-    // The result is stored in `calculated_low_ts` and `calculated_high_ts`
-    uint32_t calculated_low_ts = input_high_ts * 1000;
-    uint32_t calculated_high_ts = calculate_complex_high_part(input_high_ts); // This is (input_high_ts * K) >> 32
+    uint32_t new_current_time_val = uVar4 + val_param1_1 * 1000;
 
-    // Add uVar4 to the low part and propagate carry to the high part
-    bool carry_from_uVar4_add = CARRY4_MACRO(calculated_low_ts, uVar4);
-    calculated_low_ts += uVar4;
-    calculated_high_ts += carry_from_uVar4_add;
-    
-    // The original code has an additional carry here which is `CARRY4(uVar4, uVar3 * 1000)`
-    // This implies that the 'uVar3 * 1000' and 'uVar4' are being added to form the new low 32 bits,
-    // and the carry from that addition is then added to the high 32 bits.
-    // Let's re-interpret the original lines directly:
-    // uVar2 = uVar4 + uVar3 * 1000;
-    // uVar3 = calculate_complex_high_part(uVar3) + (uint)CARRY4(uVar4, uVar3 * 1000);
-    //
-    // Let's use temporary variables to represent the intermediate `uVar2` and `uVar3` values.
-    uint32_t new_low_ts_val = uVar4 + (input_high_ts * 1000);
-    uint32_t new_high_ts_val = calculate_complex_high_part(input_high_ts) + CARRY4_MACRO(uVar4, (input_high_ts * 1000));
+    // Calculate new_DAT_0001600c based on val_param1_1 and uVar4
+    uint32_t new_DAT_0001600c_val = (((((val_param1_1 >> 27) - (uint32_t)(val_param1_1 * 32 < val_param1_1)) * 4 | ((val_param1_1 * 31) >> 30)) +
+                                      CARRY4(val_param1_1 * 124, val_param1_1)) * 8 | ((val_param1_1 * 125) >> 29)) +
+                                     CARRY4(uVar4, val_param1_1 * 1000);
 
-    // Combine into 64-bit values for comparison
-    uint64_t new_timestamp_64 = ((uint64_t)new_high_ts_val << 32) | new_low_ts_val;
-    uint64_t current_timestamp_64 = ((uint64_t)DAT_0001600c << 32) | current_time;
+    // Comparison logic
+    // The original code uses an `int` for `iVar5`, implying signed arithmetic for this part.
+    int32_t iVar5_intermediate = (int32_t)(new_DAT_0001600c_val - DAT_0001600c) - (int32_t)(new_current_time_val < current_time);
 
-    // Check if the new timestamp is outside the acceptable window
-    // (new_timestamp < current_timestamp) OR (new_timestamp - current_timestamp > 240000)
-    if (new_timestamp_64 < current_timestamp_64 || (new_timestamp_64 - current_timestamp_64) > 240000) {
-        // New timestamp is too old or too far in the future, do not update globals.
-        // The function still returns 1, indicating it processed the input.
+    if ((new_DAT_0001600c_val < DAT_0001600c) ||
+        ((new_DAT_0001600c_val - DAT_0001600c) < (uint32_t)(new_current_time_val < current_time)) ||
+        (iVar5_intermediate != 0) ||
+        (iVar5_intermediate == 0 && (new_current_time_val - current_time > 240000))) {
+        // Condition met: return 1 without updating global times
+        return 1;
     } else {
-        // Timestamp is within the acceptable range, update global time.
-        current_time = new_low_ts_val;
-        DAT_0001600c = new_high_ts_val;
+        // Condition not met: update global times and return 1
+        current_time = new_current_time_val;
+        DAT_0001600c = new_DAT_0001600c_val;
+        return 1;
     }
+}
 
-    return 1; // Indicates successful processing (even if globals weren't updated)
+// Main function for compilation and basic testing
+int main() {
+    uint32_t test_param_1[2];
+    uint32_t test_param_2;
+
+    // --- Test Case 1: param_2 < 8 ---
+    test_param_2 = 4;
+    uint32_t result1 = handle_msg_time(test_param_1, test_param_2);
+    printf("Test Case 1 (param_2 < 8): Result = %u (Expected: 0)\n", result1);
+
+    // --- Test Case 2: param_2 >= 8, initial state (should update and return 1) ---
+    // Example input values (assuming network byte order for swap32 to convert)
+    test_param_1[0] = swap32(100); // Represents a time component
+    test_param_1[1] = swap32(20);  // Represents another time component
+    test_param_2 = 8;
+
+    DAT_0001600c = 0;
+    current_time = 0;
+
+    printf("\nTest Case 2 (param_2 >= 8, initial): DAT_0001600c=%u, current_time=%u\n", DAT_0001600c, current_time);
+    uint32_t result2 = handle_msg_time(test_param_1, test_param_2);
+    printf("Test Case 2: Result = %u\n", result2);
+    printf("After Test Case 2: DAT_0001600c=%u, current_time=%u\n", DAT_0001600c, current_time);
+
+    // --- Test Case 3: param_2 >= 8, values that might trigger the 'if' condition (no update) ---
+    // This example aims to make new_DAT_0001600c_val less than current DAT_0001600c
+    // (exact behavior depends on the complex arithmetic, this is illustrative)
+    test_param_1[0] = swap32(1); // Smaller value
+    test_param_1[1] = swap32(1); // Smaller value
+    test_param_2 = 8;
+
+    // Set current global times to high values to make new values seem "older"
+    DAT_0001600c = 0xFFFFFFFF;
+    current_time = 0xFFFFFFFF;
+
+    printf("\nTest Case 3 (param_2 >= 8, 'older' values): DAT_0001600c=%u, current_time=%u\n", DAT_0001600c, current_time);
+    uint32_t result3 = handle_msg_time(test_param_1, test_param_2);
+    printf("Test Case 3: Result = %u\n", result3);
+    printf("After Test Case 3: DAT_0001600c=%u, current_time=%u\n", DAT_0001600c, current_time);
+
+
+    return 0;
 }
