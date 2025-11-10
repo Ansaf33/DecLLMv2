@@ -40,29 +40,35 @@ def get_initial_prompt(c_code: str) -> str:
 def change_name(dir: str, old_name: str, new_name: str) -> None:
     """
     Change the name of a file in a given directory from old_name to new_name.
-    Args:
-        dir: Directory path
-        old_name: Old file name
-        new_name: New file name
     """
     old_path = Path(dir) / old_name
     new_path = Path(dir) / new_name
-    print(f"Renaming {old_path} to {new_path}")
+    print(f"Renaming {old_name} to {new_name}...")
     shutil.move(old_path, new_path)
     os.sync()
     
+
+def re_execute(c_filename: str) -> None:
+    """
+    Re-execute any necessary commands after file name changes.
+    """
+    command = ["make", "src/" + Path(c_filename).stem]
+    try:
+      proc = subprocess.run(command, cwd=corpus_root, capture_output=True, text=True, check=True)
+      if proc.returncode == 0:
+        print(f"Restored original file {c_filename} compiled successfully.")
+      else:
+        print(f"Restored original file {c_filename} failed to compile.")
+    except subprocess.CalledProcessError as e:
+      print(f"Restored original file {c_filename} failed to compile due to exception: {str(e)}")
+
     
+    pass
     
 
-def run_repair_loop_for_file(c_file_path: str, max_iterations: int = 3) -> Tuple[bool, str]:
+def run_repair_loop_for_file(c_file_path: str, max_iterations: int) -> Tuple[bool, str]:
   """
   Run the repair loop for a single C file.
-  Args:
-      c_filename: Name of the C file to repair
-      max_iterations: Maximum number of repair iterations
-  Returns:
-      repaired: Whether the file was successfully repaired
-      optimized_code: The final optimized C code
   """
   repaired = False
   
@@ -102,6 +108,7 @@ def run_repair_loop_for_file(c_file_path: str, max_iterations: int = 3) -> Tuple
       print(f"File {c_filename} compiled successfully after initial LLM optimization.")
       repaired = True
       return repaired, optimized_code
+  
   except subprocess.CalledProcessError as e:
     print(f"File {c_filename} failed to compile after initial LLM optimization due to exception: {str(e)}")
 
@@ -110,7 +117,7 @@ def run_repair_loop_for_file(c_file_path: str, max_iterations: int = 3) -> Tuple
     
     error_normalizer = ErrorNormalizer()
     compilation_errors = error_normalizer.format_for_llm(message)
-    print(f"Compilation errors for LLM:\n{compilation_errors}\n")
+    print("Number of errors to fix:", len(compilation_errors.splitlines()))
     error_prompt = config["prompts"]["compilation_error"]
     error_prompt += f"\n\nCompilation Errors:\n{compilation_errors}\n\n```c\n{optimized_code}\n```"
     optimized_code = clean_llm_output(llm_interface.generate(error_prompt))
@@ -133,6 +140,8 @@ def run_repair_loop_for_file(c_file_path: str, max_iterations: int = 3) -> Tuple
         print(f"File {c_filename} compiled successfully after iteration {iteration+1}.")
         repaired = True
         return repaired, optimized_code
+      else:
+        print(f"File {c_filename} failed to compile after iteration {iteration+1}. Continuing repair loop...")
     except subprocess.CalledProcessError as e:
       print(f"File {c_filename} failed to compile after iteration {iteration+1} due to exception: {str(e)}")
       
@@ -142,11 +151,9 @@ def run_repair_loop_for_file(c_file_path: str, max_iterations: int = 3) -> Tuple
 def initialize_repair_loop(json_path: str) -> str:
   """
   Initialize the repair loop by reassembling the project from JSON.
-  Args:
-      json_path: Path to the JSON file containing decompiled code.
-  Returns:
-      Path to the temporary output directory containing C files.
   """
+  total_repaired = 0
+  total_files = 0
   # temporary directory to store C files
   r = Reassembler()
   output_dir, file_mapping = r.reassemble_project(json_path)
@@ -165,12 +172,10 @@ def initialize_repair_loop(json_path: str) -> str:
     final_code_path = real_output_dir / c_filename
     
     # since we are handling coreutils, change name in corpus from x.c to x_temp.c
-    # wait for it to complete
     change_name(corpus_root / "src", c_filename, f"{Path(c_filename).stem}_temp.c")
     
     
     # create a new c file and write c_file_path content into it
-  
     with open(corpus_root / "src" / c_filename, 'w', encoding='utf-8') as f:
       with open(c_file_path, 'r', encoding='utf-8') as original_f:
         f.write(original_f.read())
@@ -185,39 +190,59 @@ def initialize_repair_loop(json_path: str) -> str:
         print(f"Ghidra File {c_filename} compiled successfully on initial attempt.")
         # copy the optimized code to real output dir
         shutil.copy(corpus_root / "src" / c_filename, final_code_path)
-        break          
+        continue
+            
     except subprocess.CalledProcessError as e:
+      
       print(f"Ghidra File {c_filename} failed to compile on initial attempt.")
+      
       # Run the repair loop
-      max_iterations = 5
+      total_files += 1
+      max_iterations = 10
       repaired, optimized_code = run_repair_loop_for_file(corpus_root / "src" / c_filename, max_iterations)
       if repaired:
-        # write the optimized code to real output dir
-        with open(final_code_path, 'w', encoding='utf-8') as f:
-          f.write(optimized_code)
+        total_repaired += 1
         print(f"File {c_filename} repaired and written to output directory.")
       else:
         print(f"File {c_filename} could not be repaired after {max_iterations} iterations. Restoring original code.")
-        # copy the original ghidra code to real output dir
-        shutil.copy(c_file_path, final_code_path)   
+        #shutil.copy(c_file_path, final_code_path)   
+        
+      # write the optimized code (whether succeeds or not) to real output dir
+      with open(final_code_path, 'w', encoding='utf-8') as f:
+        f.write(optimized_code)
 
-       
     # delete temporary files and restore original
     print("Cleaning up temporary files...")
     os.remove(corpus_root / "src" / c_filename)
     change_name(corpus_root / "src", f"{Path(c_filename).stem}_temp.c", c_filename)
-  
+    os.sync()
+    #  re-execute make to restore state
+    re_execute(c_filename)  
     
   r.cleanup_temp_directory(output_dir)
+  
+  return total_repaired, total_files
   
   
   
         
 def main():
   # status
-  json_path = "/workspace/home/aiclub1/B220032CS_Jaefar/fyp/repos/ansaf/DecLLMv2/data/coreutils/decompiled/chcon_decompiled.json"
-  output_dir = initialize_repair_loop(json_path)
-  print(f"Reassembled C files are in: {output_dir}")
+  files = 0
+  repaired = 0
+  
+  # iterate through each json object
+  json_dir = config["paths"]["coreutils_decompiled_dir"]
+  for json_file in Path(json_dir).glob("*.json"):
+    total_repaired, total_files = initialize_repair_loop(str(json_file))
+    files += total_files
+    repaired += total_repaired
+    
+    print(f"Total Repaired files until now : {repaired} out of {files}")
+    
+  print(f"Total files processed: {files}")
+  print(f"Total files repaired: {repaired}")
+  print(f"Repair rate: {repaired/files*100:.2f}%")
       
       
       
